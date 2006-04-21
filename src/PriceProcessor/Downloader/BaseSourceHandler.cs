@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
+using Inforoom.Downloader.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -13,7 +14,7 @@ namespace Inforoom.Downloader
 		//Ссылка на рабочую нитку
 		protected Thread tWork;
 		//Время "застоя" нитки
-		protected int SpeepTime;
+		protected int SleepTime;
 		//Время последнего "касания" обработчика
 		protected DateTime lastPing;
 
@@ -27,7 +28,7 @@ namespace Inforoom.Downloader
 		{
 			Ping();
 			tWork = new Thread(new ThreadStart(ThreadWork));
-			SpeepTime = DownloadSettings.RequestInterval;
+            SleepTime = Settings.Default.RequestInterval;
 			CreateLogConnection();
 		}
 
@@ -36,7 +37,7 @@ namespace Inforoom.Downloader
 		{
 			get
 			{
-				return DateTime.Now.Subtract(lastPing).TotalMinutes < DownloadSettings.Timeout;
+				return DateTime.Now.Subtract(lastPing).TotalMinutes < Settings.Default.Timeout;
 			}
 		}
 
@@ -87,7 +88,7 @@ namespace Inforoom.Downloader
 
 		protected void Sleeping()
 		{
-			Thread.Sleep(SpeepTime * 1000);
+			Thread.Sleep(SleepTime * 1000);
 		}
 
 		//Метод для обработки данных для каждого источника - свой
@@ -98,10 +99,10 @@ namespace Inforoom.Downloader
 		{
 			cLog = new MySqlConnection(
 				String.Format("server={0};username={1}; password={2}; database={3}; pooling=false",
-					DownloadSettings.ServerName,
-					DownloadSettings.UserName,
-					DownloadSettings.Pass,
-					DownloadSettings.DatabaseName)
+					Settings.Default.DBServerName,
+                    Settings.Default.DBUserName,
+                    Settings.Default.DBPass,
+                    Settings.Default.DatabaseName)
 			);
 			try
 			{
