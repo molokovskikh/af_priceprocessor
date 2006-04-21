@@ -11,14 +11,31 @@ namespace Inforoom.Downloader
 	{
 		private static string[] FileType = new string[5] {".zip", ".exe", ".arj", ".gz", ".rar"};
 
+        public class ArchiveException : Exception
+        {
+            public int ExitCode;
+            public ArchiveException(int ExitCode)
+            {
+                this.ExitCode = ExitCode;
+            }
+
+            public override string ToString()
+            {
+                return base.ToString() + " ExitCode : " + ExitCode.ToString();
+            }
+
+        }
         /// <summary>
         /// Извлекает все файлы из архива в указанную папку
         /// </summary>
         /// <param name="FileName"></param>
         /// <param name="ExtractFolder"></param>
-		public static void Extract(string FileName, string ExtractFolder)
+		public static void Extract(string ArchFileName, string ExtractMask, string ExtractFolder)
 		{
-			Process.Start("WinRAR", String.Format("x -inul -y {0} {1}", FileName, ExtractFolder));
+			Process p = Process.Start("WinRAR", String.Format("x -inul -y {0} {1} {2}", ArchFileName, ExtractMask, ExtractFolder));
+            p.WaitForExit();
+            if (p.ExitCode != 0)
+                throw new ArchiveException(p.ExitCode);
 		}
 
         /// <summary>
@@ -26,10 +43,17 @@ namespace Inforoom.Downloader
         /// </summary>
         /// <param name="FileName"></param>
         /// <returns></returns>
-		public static bool IsArchive(string FileName)
+		public static bool IsArchive(string ArchFileName)
 		{
-            string FileExtension = Path.GetExtension(FileName).ToLower();
+            string FileExtension = Path.GetExtension(ArchFileName).ToLower();
             return (Array.IndexOf(FileType, FileExtension) > -1);
 		}
+
+        public static bool TestArchive(string ArchFileName)
+        {
+            Process p = Process.Start("WinRAR", String.Format("t -inul -y {0}", ArchFileName));
+            p.WaitForExit();
+            return (p.ExitCode == 0);
+        }
 	}
 }
