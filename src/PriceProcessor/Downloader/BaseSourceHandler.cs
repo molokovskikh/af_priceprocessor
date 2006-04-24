@@ -68,19 +68,24 @@ namespace Inforoom.Downloader
 
         //Код текущего обрабатываемого прайса
         protected int CurrPriceCode;
-        //текущая временная директория
+        //текущая временная директория (+ CurrPriceCode)
         protected string CurrTempPath;
         //текущая обрабатываема строка в таблице
         protected DataRow drCurrent;
-        //текущий скачанный файл
+        //текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
         protected string CurrFileName;
+        //временная директория для скачивания файлов (+ TempPath + 'Down' + SourceType)
+        protected string DownHandlerPath;
         //текущая дата файла
         protected DateTime CurrPriceDate;
 
         public BaseSourceHandler(string sourceType)
 		{
             this.sourceType = sourceType;
-			Ping();
+            DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
+            if (!Directory.Exists(DownHandlerPath))
+                Directory.CreateDirectory(DownHandlerPath);
+            DownHandlerPath += Path.DirectorySeparatorChar;
 			tWork = new Thread(new ThreadStart(ThreadWork));
             SleepTime = Settings.Default.RequestInterval;
 		}
@@ -97,7 +102,8 @@ namespace Inforoom.Downloader
 		//Запуск обработчика
 		public void StartWork()
 		{
-			tWork.Start();
+            Ping();
+            tWork.Start();
             CreateLogConnection();
             CreateWorkConnection();
         }
@@ -194,7 +200,7 @@ AND pd.AgencyEnabled= 1",
                 Settings.Default.tbSources,
                 Settings.Default.tbFormRules,
                 Settings.Default.tbClientsData,
-                SourceType());
+                SourceType);
         }
 
         protected void CreateWorkConnection()
@@ -228,7 +234,7 @@ AND pd.AgencyEnabled= 1",
         protected void OperatorMailSend()
         {
             MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserCopy,
-                String.Format("{0}; {1} ({2})", CurrPriceCode, drCurrent[colRegionName], SourceType()),
+                String.Format("{0}; {1} ({2})", CurrPriceCode, drCurrent[SourcesTable.colRegionName], SourceType),
                 String.Format("Код фирмы : {0}\nФирма: {1}; {2}\n{3}\nДата: {4}",
                     CurrPriceCode, drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colRegionName], "", DateTime.Now));
             if (!String.IsNullOrEmpty(CurrFileName))
@@ -255,11 +261,70 @@ AND pd.AgencyEnabled= 1",
         protected void SetCurrentPriceCode(DataRow dr)
         {
             drCurrent = dr;
-            CurrPriceCode = Convert.ToInt32(dr[SourcesTable.colFirmCode]);
+            CurrPriceCode = Convert.ToInt32(dr[SourcesTable.colPriceCode]);
             CurrTempPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString();
             if (!Directory.Exists(CurrTempPath))
                 Directory.CreateDirectory(CurrTempPath);
             CurrTempPath += Path.DirectorySeparatorChar;
+        }
+
+        protected string ExtractFromArhive(string ArchName, string TempDir, string ExtrMask)
+        {
+            if (Directory.Exists(TempDir))
+                Directory.Delete(TempDir, true);
+            Directory.CreateDirectory(TempDir);
+            ArchiveHlp.Extract(ArchName, ExtrMask, TempDir + Path.DirectorySeparatorChar);
+            string[] ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+            if (ExtrFiles.Length > 0)
+                return ExtrFiles[0];
+            else
+                return String.Empty;
+        }
+
+        protected string GetExt()
+        {
+            string FMT = ((string)drCurrent[SourcesTable.colPriceFMT]).ToUpper();
+            if ((FMT == "WIN") || (FMT == "DOS"))
+                return ".txt";
+            else
+                if (FMT == "XLS")
+                    return ".xls";
+                else
+                    if (FMT == "DBF")
+                        return ".dbf";
+                    else
+                        if (FMT == "DB")
+                            return ".db";
+        }
+
+        protected bool ProcessPriceFile(string InFile)
+        {
+            string ExtrFile = InFile;
+            if (ArchiveHlp.IsArchive(InFile))
+            {
+                string ExtrTempDir = CurrTempPath + Path.GetFileName(InFile) + "Extr";
+                ExtrFile = ExtractFromArhive(InFile, ExtrTempDir, (string)drCurrent[SourcesTable.colExtrMask]);
+            }
+            if (ExtrFile == String.Empty)
+            {
+                Logging(CurrPriceCode, "Cant find '" + (string)drCurrent[SourcesTable.colExtrMask] + "' file into archive");
+            }
+            else
+            {
+                string NormalName = Path.GetFullPath(Settings.Default.InboundPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString() + GetExt;
+                try
+                {
+                    File.Move(ExtrFile, NormalName);
+                    FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
+                    return true;
+                }
+                catch(Exception ex)
+                {
+                    Logging(CurrPriceCode, String.Format("Cant move price {0} to {1} directory", ExtrFile, NormalName));
+                    FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Cant move : " + ex.ToString());
+                    return false;
+                }
+            }
         }
 
         #region Logging
