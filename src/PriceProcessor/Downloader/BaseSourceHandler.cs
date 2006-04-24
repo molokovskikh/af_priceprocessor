@@ -48,11 +48,18 @@ namespace Inforoom.Downloader
 	/// </summary>
 	public abstract class BaseSourceHandler
 	{
-		//Ссылка на рабочую нитку
+		/// <summary>
+        /// Ссылка на рабочую нитку
+		/// </summary>
 		protected Thread tWork;
-		//Время "застоя" нитки
+
+		/// <summary>
+        /// Время "застоя" нитки
+		/// </summary>
 		protected int SleepTime;
-		//Время последнего "касания" обработчика
+		/// <summary>
+        /// Время последнего "касания" обработчика
+		/// </summary>
 		protected DateTime lastPing;
 
 		//Соединение для логирования
@@ -62,21 +69,42 @@ namespace Inforoom.Downloader
 		//Соединение для работы
 		protected MySqlConnection cWork;
         protected MySqlCommand cmdUpdatePriceDate;
+        protected MySqlCommand cmdFillSources;
+        protected MySqlDataAdapter daFillSources;
 
-        //Тип источника, за который отвечает данный обработчик
+        /// <summary>
+        /// Таблица с источниками
+        /// </summary>
+        protected DataTable dtSources = new DataTable();
+
+        /// <summary>
+        /// Тип источника, за который отвечает данный обработчик
+        /// </summary>
         protected string sourceType;
 
-        //Код текущего обрабатываемого прайса
+        /// <summary>
+        /// Код текущего обрабатываемого прайса
+        /// </summary>
         protected int CurrPriceCode;
-        //текущая временная директория (+ CurrPriceCode)
+        /// <summary>
+        /// текущая временная директория (+ CurrPriceCode)
+        /// </summary>
         protected string CurrTempPath;
-        //текущая обрабатываема строка в таблице
+        /// <summary>
+        /// текущая обрабатываема строка в таблице
+        /// </summary>
         protected DataRow drCurrent;
-        //текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
+        /// <summary>
+        /// текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
+        /// </summary>
         protected string CurrFileName;
-        //временная директория для скачивания файлов (+ TempPath + 'Down' + SourceType)
+        /// <summary>
+        /// временная директория для скачивания файлов (+ TempPath + 'Down' + SourceType)
+        /// </summary>
         protected string DownHandlerPath;
-        //текущая дата файла
+        /// <summary>
+        /// текущая дата файла
+        /// </summary>
         protected DateTime CurrPriceDate;
 
         public BaseSourceHandler(string sourceType)
@@ -224,10 +252,25 @@ AND pd.AgencyEnabled= 1",
                         cWork);
                 cmdUpdatePriceDate.Parameters.Add("FirmCode", MySqlDbType.Int64);
                 cmdUpdatePriceDate.Parameters.Add("DT", MySqlDbType.Datetime);
+                cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
+                daFillSources = new MySqlDataAdapter(cmdFillSources);
             }
             catch (Exception ex)
             {
                 FormLog.Log(this.GetType().Name + ".CreateWorkConnection", "{0}", ex);
+            }
+        }
+
+        protected void FillSourcesTable()
+        {
+            dtSources.Clear();
+            try
+            {
+                daFillSources.Fill(dtSources);
+            }
+            catch (Exception ex)
+            {
+                FormLog.Log(this.GetType().Name + ".FillSourcesTable", ex.ToString());
             }
         }
 
@@ -248,12 +291,12 @@ AND pd.AgencyEnabled= 1",
         /// </summary>
         /// <param name="UpadatePriceCode"></param>
         /// <param name="UpDT"></param>
-        protected void UpdateDB(int UpadatePriceCode, DateTime UpDT)
+        protected void UpdateDB(int UpdatePriceCode, DateTime UpDT)
         {
             if (cWork.State != System.Data.ConnectionState.Open)
                 cWork.Open();
 
-            cmdUpdatePriceDate.Parameters["FirmCode"].Value = UpadatePriceCode;
+            cmdUpdatePriceDate.Parameters["FirmCode"].Value = UpdatePriceCode;
             cmdUpdatePriceDate.Parameters["DT"].Value = UpDT;
             cmdUpdatePriceDate.ExecuteNonQuery();
         }
@@ -295,6 +338,8 @@ AND pd.AgencyEnabled= 1",
                     else
                         if (FMT == "DB")
                             return ".db";
+                        else
+                            return ".err";
         }
 
         protected bool ProcessPriceFile(string InFile)
@@ -308,10 +353,11 @@ AND pd.AgencyEnabled= 1",
             if (ExtrFile == String.Empty)
             {
                 Logging(CurrPriceCode, "Cant find '" + (string)drCurrent[SourcesTable.colExtrMask] + "' file into archive");
+                return false;
             }
             else
             {
-                string NormalName = Path.GetFullPath(Settings.Default.InboundPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString() + GetExt;
+                string NormalName = Path.GetFullPath(Settings.Default.InboundPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString() + GetExt();
                 try
                 {
                     File.Move(ExtrFile, NormalName);
@@ -378,6 +424,22 @@ AND pd.AgencyEnabled= 1",
                 FormLog.Log(this.GetType().Name, "Error on Logging : {0}", ex.ToString());
             }
         }
+
+        protected void LoggingToService(string Addition)
+        {
+            FormLog.Log(this.GetType().Name + ".Error", Addition);
+            try
+            {
+                MailMessage mm = new MailMessage("service@analit.net", "service@analit.net",
+                    "Ошибка в Downloader", Addition);
+                SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+                sc.Send(mm);
+            }
+            catch
+            {
+            }
+        }
+
         #endregion
     }
 }
