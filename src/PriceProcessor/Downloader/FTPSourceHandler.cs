@@ -123,7 +123,7 @@ namespace Inforoom.Downloader
             }
             catch (Exception ex)
             {
-                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colFTPDir]), ex.ToString());
+                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), ex.ToString());
             }
         }
 
