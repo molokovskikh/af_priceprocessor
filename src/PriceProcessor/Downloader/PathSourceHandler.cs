@@ -29,9 +29,21 @@ namespace Inforoom.Downloader
                     {
                         bool CorrectArchive = true;
                         //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-                        if (ArchiveHlp.IsArchive(CurrFileName) && !ArchiveHlp.TestArchive(CurrFileName))
+                        if (ArchiveHlp.IsArchive(CurrFileName))
                         {
-                            CorrectArchive = false; ;
+                            if (ArchiveHlp.TestArchive(CurrFileName))
+                            {
+                                try
+                                {
+                                    ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
+                                }
+                                catch (ArchiveHlp.ArchiveException)
+                                {
+                                    CorrectArchive = false;
+                                }
+                            }
+                            else
+                                CorrectArchive = false;
                         }
                         DataRow[] dr = GetLikeSources();
                         foreach (DataRow drS in drLS)

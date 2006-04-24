@@ -311,13 +311,17 @@ AND pd.AgencyEnabled= 1",
             CurrTempPath += Path.DirectorySeparatorChar;
         }
 
-        protected string ExtractFromArhive(string ArchName, string TempDir, string ExtrMask)
+        protected void ExtractFromArhive(string ArchName, string TempDir)
         {
             if (Directory.Exists(TempDir))
                 Directory.Delete(TempDir, true);
             Directory.CreateDirectory(TempDir);
-            ArchiveHlp.Extract(ArchName, ExtrMask, TempDir + Path.DirectorySeparatorChar);
-            string[] ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+            ArchiveHlp.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
+        }
+
+        protected string FindFromArhive(string TempDir, string ExtrMask)
+        {
+            string[] ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, ExtrMask, SearchOption.AllDirectories);
             if (ExtrFiles.Length > 0)
                 return ExtrFiles[0];
             else
@@ -352,8 +356,7 @@ AND pd.AgencyEnabled= 1",
             string ExtrFile = InFile;
             if (ArchiveHlp.IsArchive(InFile))
             {
-                string ExtrTempDir = CurrTempPath + Path.GetFileName(InFile) + "Extr";
-                ExtrFile = ExtractFromArhive(InFile, ExtrTempDir, (string)drCurrent[SourcesTable.colExtrMask]);
+                ExtrFile = FindFromArhive(InFile + "Extr", (string)drCurrent[SourcesTable.colExtrMask]);
             }
             if (ExtrFile == String.Empty)
             {
