@@ -31,6 +31,7 @@ namespace Inforoom.Downloader
                             //TODO: здесь надо Copy изменить на Move
                             File.Copy(fs, NewFile);
                             CurrFileName = NewFile;
+                            CurrPriceDate = pdt;
                             break;
                         }
                         catch
@@ -48,7 +49,6 @@ namespace Inforoom.Downloader
                 SourcesTable.colPricePath, dtSources.Rows[0][SourcesTable.colPricePath],
                 SourcesTable.colPriceMask, dtSources.Rows[0][SourcesTable.colPriceMask]));
         }
-
 
     }
 }

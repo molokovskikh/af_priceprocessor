@@ -115,6 +115,15 @@ namespace Inforoom.Downloader
             }
         }
 
+        protected void CopyStreams(Stream input, Stream output)
+        {
+            const int size = 4096;
+            byte[] bytes = new byte[4096];
+            int numBytes;
+            while ((numBytes = input.Read(bytes, 0, size)) > 0)
+                output.Write(bytes, 0, numBytes);
+        }
+
         /// <summary>
         /// Получает файл из источника, взятого из таблицы первым
         /// </summary>
