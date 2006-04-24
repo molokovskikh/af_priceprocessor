@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.IO;
+using Inforoom.Formalizer;
 
 namespace Inforoom.Downloader
 {
@@ -24,34 +25,42 @@ namespace Inforoom.Downloader
                 try
                 {
                     GetFileFromSource();
-                    bool CorrectArchive = true;
-                    //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-                    if (ArchiveHlp.IsArchive(CurrFileName) && !ArchiveHlp.TestArchive(CurrFileName))
+                    if (!String.IsNullOrEmpty(CurrFileName))
                     {
-                        CorrectArchive = false; ;
-                    }
-                    DataRow[] dr = GetLikeSources();
-                    foreach (DataRow drS in drLS)
-                    {
-                        SetCurrentPriceCode(drS);
-                        OperatorMailSend();
-                        if (CorrectArchive)
+                        bool CorrectArchive = true;
+                        //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
+                        if (ArchiveHlp.IsArchive(CurrFileName) && !ArchiveHlp.TestArchive(CurrFileName))
                         {
-                            if (ProcessPriceFile(CurrFileName))
+                            CorrectArchive = false; ;
+                        }
+                        DataRow[] dr = GetLikeSources();
+                        foreach (DataRow drS in drLS)
+                        {
+                            SetCurrentPriceCode(drS);
+                            OperatorMailSend();
+                            if (CorrectArchive)
                             {
-                                Logging(CurrPriceCode, String.Empty);
-                                UpdateDB(CurrPriceCode, CurrPriceDate);
+                                if (ProcessPriceFile(CurrFileName))
+                                {
+                                    Logging(CurrPriceCode, String.Empty);
+                                    UpdateDB(CurrPriceCode, CurrPriceDate);
+                                }
+                                else
+                                {
+                                    Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                }
                             }
                             else
                             {
-                                Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
                             }
+                            drS.Delete();
                         }
-                        else
-                        {
-                            Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
-                        }
-                        drS.Delete();
+                    }
+                    else
+                    {
+                        FormLog.Log(this.GetType().Name, "Skip source with pricecode = " + dtSources.Rows[0][SourcesTable.colPriceCode].ToString());
+                        dtSources.Rows[0].Delete();
                     }
                     dtSources.AcceptChanges();
                 }

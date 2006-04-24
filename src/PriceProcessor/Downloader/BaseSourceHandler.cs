@@ -324,6 +324,11 @@ AND pd.AgencyEnabled= 1",
                 return String.Empty;
         }
 
+        protected string NormalizeDir(string InputDir)
+        {
+            return Path.GetFullPath(InputDir) + Path.DirectorySeparatorChar;
+        }
+
         protected string GetExt()
         {
             string FMT = ((string)drCurrent[SourcesTable.colPriceFMT]).ToUpper();
