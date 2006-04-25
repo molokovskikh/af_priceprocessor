@@ -7,6 +7,7 @@ using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.Downloader.Properties;
 using Inforoom.Formalizer;
+using LumiSoft.Net.IMAP;
 
 
 namespace Inforoom.Downloader
@@ -29,84 +30,117 @@ namespace Inforoom.Downloader
                     c.Authenticate(Settings.Default.IMAPUser, Settings.Default.IMAPPass);
                     c.SelectFolder("INBOX");
 
-                    IMAP_FetchItem[] items = c.FetchMessages(1, -1, false, true, false);
-
-                    if (c.GetUnseenMessagesCount() > 0)
+                    IMAP_FetchItem[] items = null;
+                    do
                     {
-                        foreach (IMAP_FetchItem item in items)
-                            if (item.IsNewMessage)
-                            {
-                                Mime m = Mime.Parse(item.Data);
-                                if (m.Attachments.Length > 0)
-                                {
-                                    FillSourcesTable();
-                                    foreach (MimeEntity ent in m.Attachments)
-                                        if (ent.ContentType == MediaType_enum.Application_octet_stream)
-                                        {
-                                            
-                                            string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
-                                            CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
-                                            using (FileStream fs = new FileStream(CurrFileName, FileMode.CreateNew))
-                                            {
-                                                ent.ToStream(fs);
-                                                fs.Close();
-                                            }
-                                            bool CorrectArchive = true;
-                                            //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-                                            if (ArchiveHlp.IsArchive(CurrFileName))
-                                            {
-                                                if (ArchiveHlp.TestArchive(CurrFileName))
-                                                {
-                                                    try
-                                                    {
-                                                        ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
-                                                    }
-                                                    catch (ArchiveHlp.ArchiveException)
-                                                    {
-                                                        CorrectArchive = false;
-                                                    }
-                                                }
-                                                else
-                                                    CorrectArchive = false;
-                                            }
+                        try
+                        {
+                            IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
+                            sequence_set.Parse("1:5");
+                            items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.All, false, false);
+                        }
+                        catch (Exception ex)
+                        {
+                            FormLog.Log(this.GetType().Name, "On Fetch : " + ex.ToString());
+                        }
 
-                                            drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-                                                SourcesTable.colEMailTo, dtSources.Rows[0][SourcesTable.colEMailTo],
-                                                SourcesTable.colEMailFrom, dtSources.Rows[0][SourcesTable.colEMailFrom]));
-                                            foreach (DataRow drS in drLS)
+                        if ((c.GetUnseenMessagesCount() > 0) && (items != null))
+                        {
+                            foreach (IMAP_FetchItem item in items)
+                                if (item.IsNewMessage)
+                                {
+                                    Mime m = null;
+                                    try
+                                    {
+                                        m = Mime.Parse(item.MessageData);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        m = null;
+                                        FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+                                    }
+                                    if ((m != null) && (m.Attachments.Length > 0))
+                                    {
+                                        FillSourcesTable();
+                                        foreach (MimeEntity ent in m.Attachments)
+                                            //if (ent.ContentType == MediaType_enum.Application_octet_stream)
+                                            if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
                                             {
-                                                if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-                                                    (ShortFileName.ToLower() == ((string)drS[SourcesTable.colPriceMask]).ToLower()))
+                                                string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
+                                                CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
+                                                using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
                                                 {
-                                                    SetCurrentPriceCode(drS);
-                                                    OperatorMailSend();
-                                                    if (CorrectArchive)
+                                                    ent.DataToStream(fs);
+                                                    fs.Close();
+                                                }
+                                                bool CorrectArchive = true;
+                                                //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
+                                                if (ArchiveHlp.IsArchive(CurrFileName))
+                                                {
+                                                    if (ArchiveHlp.TestArchive(CurrFileName))
                                                     {
-                                                        if (ProcessPriceFile(CurrFileName))
+                                                        try
                                                         {
-                                                            Logging(CurrPriceCode, String.Empty);
-                                                            UpdateDB(CurrPriceCode, CurrPriceDate);
+                                                            ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
                                                         }
-                                                        else
+                                                        catch (ArchiveHlp.ArchiveException)
                                                         {
-                                                            Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                            CorrectArchive = false;
                                                         }
                                                     }
                                                     else
-                                                    {
-                                                        Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
-                                                    }
-                                                    drS.Delete();
+                                                        CorrectArchive = false;
                                                 }
-                                            }
-                                            dtSources.AcceptChanges();
 
-                                        }//if (ent.FileName != String.Empty)
+                                                drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
+                                                    SourcesTable.colEMailTo, m.MainEntity.To.Mailboxes[0].EmailAddress,
+                                                    SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
+                                                foreach (DataRow drS in drLS)
+                                                {
+                                                    if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+                                                        (ShortFileName.ToLower() == ((string)drS[SourcesTable.colPriceMask]).ToLower()))
+                                                    {
+                                                        SetCurrentPriceCode(drS);
+                                                        OperatorMailSend();
+                                                        if (CorrectArchive)
+                                                        {
+                                                            if (ProcessPriceFile(CurrFileName))
+                                                            {
+                                                                Logging(CurrPriceCode, String.Empty);
+                                                                UpdateDB(CurrPriceCode, DateTime.Now);
+                                                            }
+                                                            else
+                                                            {
+                                                                Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
+                                                        }
+                                                        drS.Delete();
+                                                    }
+                                                }
+                                                dtSources.AcceptChanges();
 
-                                }
-                            }//if(item.IsNewMessage) 
-                    }//else
-                    c.DeleteMessages(1, -1, false);
+                                            }//if (ent.FileName != String.Empty)
+
+                                    }
+                                }//if(item.IsNewMessage) 
+                        }//else
+                        if (items != null && items.Length > 0)
+                        {
+                            string uidseq = items[0].UID.ToString();
+                            for (int i = 1; i < items.Length; i++)
+                            {
+                                uidseq += "," + items[i].UID.ToString();
+                            }
+                            IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
+                            sequence_setDelete.Parse(uidseq);
+                            c.DeleteMessages(sequence_setDelete, true);
+                        }
+                    }
+                    while ((items != null) && (items.Length > 0));
                     c.Disconnect();
                 }
             }
