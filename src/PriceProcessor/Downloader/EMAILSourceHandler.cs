@@ -63,7 +63,6 @@ namespace Inforoom.Downloader
                                     {
                                         FillSourcesTable();
                                         foreach (MimeEntity ent in m.Attachments)
-                                            //if (ent.ContentType == MediaType_enum.Application_octet_stream)
                                             if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
                                             {
                                                 string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
