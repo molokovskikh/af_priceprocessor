@@ -21,6 +21,8 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(HTTPUser))
                 request.Credentials = new NetworkCredential(HTTPUser, HTTPPassword);
 
+            request.Proxy = null;
+
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             DateTime fdt = response.LastModified;
 
@@ -37,9 +39,11 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(HTTPUser))
                 request.Credentials = new NetworkCredential(HTTPUser, HTTPPassword);
 
+            request.Proxy = null;
+
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Stream responseStream = response.GetResponseStream();
-            using (FileStream fs = new FileStream(SaveFileName, FileMode.CreateNew))
+            using (FileStream fs = new FileStream(SaveFileName, FileMode.Create))
             {
                 CopyStreams(responseStream, fs);
                 fs.Close();
@@ -60,15 +64,15 @@ namespace Inforoom.Downloader
             string HTTPFileName = (string)dtSources.Rows[0][SourcesTable.colPriceMask];
             string DownFileName = String.Empty;
             try
-            {
-                DateTime pdt = (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+            {                
+                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
 
-                DateTime fdt = GetFileDateTime(PricePath + HTTPFileName, (string)dtSources.Rows[0][SourcesTable.colHTTPLogin], (string)dtSources.Rows[0][SourcesTable.colHTTPPassword]);
+                DateTime fdt = GetFileDateTime(PricePath + HTTPFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
 
                 if (fdt.CompareTo(pdt) > 0)
                 {
                     DownFileName = DownHandlerPath + HTTPFileName;
-                    GetFile(PricePath + HTTPFileName, DownFileName, (string)dtSources.Rows[0][SourcesTable.colHTTPLogin], (string)dtSources.Rows[0][SourcesTable.colHTTPPassword]);
+                    GetFile(PricePath + HTTPFileName, DownFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
                     CurrFileName = DownFileName;
                     CurrPriceDate = fdt;
                 }
@@ -82,7 +86,7 @@ namespace Inforoom.Downloader
 
         protected override DataRow[] GetLikeSources()
         {
-            return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and ({4} = '{5}')",
+            return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
                 SourcesTable.colPricePath, dtSources.Rows[0][SourcesTable.colPricePath],
                 SourcesTable.colPriceMask, dtSources.Rows[0][SourcesTable.colPriceMask],
                 SourcesTable.colHTTPLogin, dtSources.Rows[0][SourcesTable.colHTTPLogin],
