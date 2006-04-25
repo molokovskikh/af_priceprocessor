@@ -297,11 +297,12 @@ AND pd.AgencyEnabled= 1",
                 String.Format("Код прайса : {0}\nФирма: {1}; {2}\n{3}\nДата: {4}",
                     CurrPriceCode, drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colRegionName], "", DateTime.Now));
             if (!String.IsNullOrEmpty(CurrFileName))
-#if DEBUG
-                mm.Body += Environment.NewLine + Environment.NewLine + CurrFileName;
-#else
                 mm.Attachments.Add(new Attachment(CurrFileName));
-#endif
+//#if DEBUG
+//                mm.Body += Environment.NewLine + Environment.NewLine + CurrFileName;
+//#else
+//                mm.Attachments.Add(new Attachment(CurrFileName));
+//#endif
             SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
             sc.Send(mm);
         }
