@@ -24,7 +24,13 @@ namespace Inforoom.Downloader
                 drLS = null;
                 try
                 {
+#if DEBUG
+                    drLS = GetLikeSources();
+                    if (drLS.Length < 1)
+                        FormLog.Log(this.GetType().Name, "!!!!!!!!!!!!!   drLS.Length < 1");
+#endif
                     GetFileFromSource();
+
                     if (!String.IsNullOrEmpty(CurrFileName))
                     {
                         bool CorrectArchive = true;
@@ -45,7 +51,7 @@ namespace Inforoom.Downloader
                             else
                                 CorrectArchive = false;
                         }
-                        DataRow[] dr = GetLikeSources();
+                        drLS = GetLikeSources();
                         foreach (DataRow drS in drLS)
                         {
                             SetCurrentPriceCode(drS);
