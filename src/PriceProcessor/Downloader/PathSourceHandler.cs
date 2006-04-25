@@ -77,7 +77,6 @@ namespace Inforoom.Downloader
                     }
                     else
                     {
-                        FormLog.Log(this.GetType().Name, "Skip source with pricecode = " + dtSources.Rows[0][SourcesTable.colPriceCode].ToString());
                         dtSources.Rows[0].Delete();
                     }
                     dtSources.AcceptChanges();
