@@ -32,7 +32,7 @@ namespace Inforoom.Downloader
         /// <param name="ExtractFolder"></param>
 		public static void Extract(string ArchFileName, string ExtractMask, string ExtractFolder)
 		{
-			Process p = Process.Start("WinRAR", String.Format("x -inul -y {0} {1} {2}", ArchFileName, ExtractMask, ExtractFolder));
+			Process p = Process.Start("WinRAR", String.Format("x -inul -y \"{0}\" {1} \"{2}\"", ArchFileName, ExtractMask, ExtractFolder));
             p.WaitForExit();
             if (p.ExitCode != 0)
                 throw new ArchiveException(p.ExitCode);
@@ -51,7 +51,7 @@ namespace Inforoom.Downloader
 
         public static bool TestArchive(string ArchFileName)
         {
-            Process p = Process.Start("WinRAR", String.Format("t -inul -y {0}", ArchFileName));
+            Process p = Process.Start("WinRAR", String.Format("t -inul -y \"{0}\"", ArchFileName));
             p.WaitForExit();
             return (p.ExitCode == 0);
         }
