@@ -21,6 +21,8 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(FTPUser))
                 request.Credentials = new NetworkCredential(FTPUser, FTPPassword);
 
+            request.Proxy = null;
+
             FtpWebResponse response = (FtpWebResponse)request.GetResponse();
 
             Stream responseStream = response.GetResponseStream();
@@ -48,6 +50,8 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(FTPUser))
                 request.Credentials = new NetworkCredential(FTPUser, FTPPassword);
 
+            request.Proxy = null;
+
             FtpWebResponse response = (FtpWebResponse)request.GetResponse();
             DateTime fdt = response.LastModified;
 
@@ -64,9 +68,11 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(FTPUser))
                 request.Credentials = new NetworkCredential(FTPUser, FTPPassword);
 
+            request.Proxy = null;
+
             FtpWebResponse response = (FtpWebResponse)request.GetResponse();
             Stream responseStream = response.GetResponseStream();
-            using (FileStream fs = new FileStream(SaveFileName, FileMode.CreateNew))
+            using (FileStream fs = new FileStream(SaveFileName, FileMode.Create))
             {
                 CopyStreams(responseStream, fs);
                 fs.Close();
@@ -94,18 +100,18 @@ namespace Inforoom.Downloader
             {
                 if (WildcardsHlp.IsWildcards((string)dtSources.Rows[0][SourcesTable.colPriceMask]))
                 {
-                    files = GetFileList(PricePath, (string)dtSources.Rows[0][SourcesTable.colFTPLogin], (string)dtSources.Rows[0][SourcesTable.colFTPPassword], (string)dtSources.Rows[0][SourcesTable.colPriceMask]);
+                    files = GetFileList(PricePath, dtSources.Rows[0][SourcesTable.colFTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colFTPPassword].ToString(), dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
                 }
                 else
                     files = new string[] {(string)dtSources.Rows[0][SourcesTable.colPriceMask]};
 
-                DateTime pdt = (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
 
                 DateTime fdt = pdt;
 
                 foreach(string s in files)
                 {
-                    DateTime ndt = GetFileDateTime(PricePath + s, (string)dtSources.Rows[0][SourcesTable.colFTPLogin], (string)dtSources.Rows[0][SourcesTable.colFTPPassword]);
+                    DateTime ndt = GetFileDateTime(PricePath + s, dtSources.Rows[0][SourcesTable.colFTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colFTPPassword].ToString());
                     if (ndt.CompareTo(fdt) > 0)
                     {
                         fdt = ndt;
@@ -116,7 +122,7 @@ namespace Inforoom.Downloader
                 if (!String.IsNullOrEmpty(FTPFileName))
                 {
                     DownFileName = DownHandlerPath + FTPFileName;
-                    GetFile(PricePath + FTPFileName, DownFileName, (string)dtSources.Rows[0][SourcesTable.colFTPLogin], (string)dtSources.Rows[0][SourcesTable.colFTPPassword]);
+                    GetFile(PricePath + FTPFileName, DownFileName, dtSources.Rows[0][SourcesTable.colFTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colFTPPassword].ToString());
                     CurrFileName = DownFileName;
                     CurrPriceDate = fdt;
                 }
@@ -129,12 +135,12 @@ namespace Inforoom.Downloader
 
         protected override DataRow[] GetLikeSources()
         {
-            return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and ({4} = '{5}') and ({6} = '{7}')",
+            return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}') and (ISNULL({8}, '') = '{9}')",
                 SourcesTable.colPricePath, dtSources.Rows[0][SourcesTable.colPricePath],
                 SourcesTable.colPriceMask, dtSources.Rows[0][SourcesTable.colPriceMask],
-                SourcesTable.colFTPDir, dtSources.Rows[0][SourcesTable.colFTPDir],
-                SourcesTable.colFTPLogin, dtSources.Rows[0][SourcesTable.colFTPLogin],
-                SourcesTable.colFTPPassword, dtSources.Rows[0][SourcesTable.colFTPPassword]));
+                SourcesTable.colFTPDir, dtSources.Rows[0][SourcesTable.colFTPDir].ToString(),
+                SourcesTable.colFTPLogin, dtSources.Rows[0][SourcesTable.colFTPLogin].ToString(),
+                SourcesTable.colFTPPassword, dtSources.Rows[0][SourcesTable.colFTPPassword].ToString()));
         }
 
     }
