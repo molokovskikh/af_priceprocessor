@@ -19,7 +19,7 @@ namespace Inforoom.Downloader
             try
             {
                 string[] ff = Directory.GetFiles(PricePath, (string)dtSources.Rows[0][SourcesTable.colPriceMask]);
-                DateTime pdt = (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
                 foreach (string fs in ff)
                 {
                     if (File.GetLastWriteTime(fs).CompareTo(pdt) > 0)
