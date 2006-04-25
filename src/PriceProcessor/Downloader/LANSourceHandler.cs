@@ -29,7 +29,7 @@ namespace Inforoom.Downloader
                         try
                         {
                             //TODO: здесь надо Copy изменить на Move
-                            File.Copy(fs, NewFile);
+                            File.Move(fs, NewFile);
                             CurrFileName = NewFile;
                             CurrPriceDate = pdt;
                             break;
