@@ -131,9 +131,9 @@ namespace Inforoom.Downloader
 		public void StartWork()
 		{
             Ping();
-            tWork.Start();
             CreateLogConnection();
             CreateWorkConnection();
+            tWork.Start();
         }
 
 		public void StopWork()
@@ -154,10 +154,26 @@ namespace Inforoom.Downloader
 		//Перезапуск обработчика
 		public void RestartWork()
 		{
-			tWork.Abort();
-			Thread.Sleep(500);
+
+            FormLog.Log(this.GetType().Name, "Перезапуск нитки");
+            try
+            {
+                StopWork();
+                Thread.Sleep(1000);
+            }
+            catch (Exception ex)
+            {
+                FormLog.Log(this.GetType().Name, "Ошибка при останове нитки : {0}", ex);
+            }
 			tWork = new Thread(new ThreadStart(ThreadWork));
-			tWork.Start();
+            try
+            {
+                StartWork();
+            }
+            catch (Exception ex)
+            {
+                FormLog.Log(this.GetType().Name, "Ошибка при запуске нитки : {0}", ex);
+            }
 			FormLog.Log( this.GetType().Name, "Перезапустили нитку");
 		}
 
@@ -176,8 +192,8 @@ namespace Inforoom.Downloader
                 {
                     FormLog.Log(this.GetType().Name, "Ошибка в нитке : {0}", ex);
                 }
-				Sleeping();
                 Ping();
+                Sleeping();
 			}
 		}
 
@@ -234,7 +250,7 @@ AND pd.AgencyEnabled= 1",
         protected void CreateWorkConnection()
         {
             cWork = new MySqlConnection(
-                String.Format("server={0};username={1}; password={2}; database={3}; pooling=false",
+                String.Format("server={0};username={1}; password={2}; database={3}; pooling=false; allow zero datetime=true;",
                     Settings.Default.DBServerName,
                     Settings.Default.DBUserName,
                     Settings.Default.DBPass,
@@ -278,10 +294,14 @@ AND pd.AgencyEnabled= 1",
         {
             MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserCopy,
                 String.Format("{0}; {1} ({2})", CurrPriceCode, drCurrent[SourcesTable.colRegionName], SourceType),
-                String.Format("Код фирмы : {0}\nФирма: {1}; {2}\n{3}\nДата: {4}",
+                String.Format("Код прайса : {0}\nФирма: {1}; {2}\n{3}\nДата: {4}",
                     CurrPriceCode, drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colRegionName], "", DateTime.Now));
             if (!String.IsNullOrEmpty(CurrFileName))
+#if DEBUG
+                mm.Body += Environment.NewLine + Environment.NewLine + CurrFileName;
+#else
                 mm.Attachments.Add(new Attachment(CurrFileName));
+#endif
             SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
             sc.Send(mm);
         }
@@ -368,7 +388,9 @@ AND pd.AgencyEnabled= 1",
                 string NormalName = Path.GetFullPath(Settings.Default.InboundPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString() + GetExt();
                 try
                 {
-                    File.Move(ExtrFile, NormalName);
+                    if (File.Exists(NormalName))
+                        File.Delete(NormalName);
+                    File.Copy(ExtrFile, NormalName);
                     FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
                     return true;
                 }
