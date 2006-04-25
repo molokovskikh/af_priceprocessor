@@ -44,90 +44,93 @@ namespace Inforoom.Downloader
                             FormLog.Log(this.GetType().Name, "On Fetch : " + ex.ToString());
                         }
 
-                        if ((c.GetUnseenMessagesCount() > 0) && (items != null))
+                        //(c.GetUnseenMessagesCount() > 0)
+                        if ((items != null) && (items.Length > 0))
                         {
                             foreach (IMAP_FetchItem item in items)
-                                if (item.IsNewMessage)
+                            {
+                                Mime m = null;
+                                try
                                 {
-                                    Mime m = null;
-                                    try
-                                    {
-                                        m = Mime.Parse(item.MessageData);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        m = null;
-                                        FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
-                                    }
-                                    if ((m != null) && (m.Attachments.Length > 0))
-                                    {
-                                        FillSourcesTable();
-                                        foreach (MimeEntity ent in m.Attachments)
-                                            if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
+                                    m = Mime.Parse(item.MessageData);
+                                }
+                                catch (Exception ex)
+                                {
+                                    m = null;
+                                    FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+                                }
+                                if ((m != null) && (m.Attachments.Length > 0))
+                                {
+                                    FillSourcesTable();
+                                    foreach (MimeEntity ent in m.Attachments)
+                                        if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
+                                        {
+                                            string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
+                                            CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
+                                            using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
                                             {
-                                                string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
-                                                CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
-                                                using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
+                                                ent.DataToStream(fs);
+                                                fs.Close();
+                                            }
+                                            bool CorrectArchive = true;
+                                            //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
+                                            if (ArchiveHlp.IsArchive(CurrFileName))
+                                            {
+                                                if (ArchiveHlp.TestArchive(CurrFileName))
                                                 {
-                                                    ent.DataToStream(fs);
-                                                    fs.Close();
-                                                }
-                                                bool CorrectArchive = true;
-                                                //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-                                                if (ArchiveHlp.IsArchive(CurrFileName))
-                                                {
-                                                    if (ArchiveHlp.TestArchive(CurrFileName))
+                                                    try
                                                     {
-                                                        try
-                                                        {
-                                                            ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
-                                                        }
-                                                        catch (ArchiveHlp.ArchiveException)
-                                                        {
-                                                            CorrectArchive = false;
-                                                        }
+                                                        ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
                                                     }
-                                                    else
-                                                        CorrectArchive = false;
-                                                }
-
-                                                drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-                                                    SourcesTable.colEMailTo, m.MainEntity.To.Mailboxes[0].EmailAddress,
-                                                    SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
-                                                foreach (DataRow drS in drLS)
-                                                {
-                                                    if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-                                                        (ShortFileName.ToLower() == ((string)drS[SourcesTable.colPriceMask]).ToLower()))
+                                                    catch (ArchiveHlp.ArchiveException)
                                                     {
-                                                        SetCurrentPriceCode(drS);
-                                                        OperatorMailSend();
-                                                        if (CorrectArchive)
+                                                        CorrectArchive = false;
+                                                    }
+                                                }
+                                                else
+                                                    CorrectArchive = false;
+                                            }
+
+                                            drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
+                                                SourcesTable.colEMailTo, m.MainEntity.To.Mailboxes[0].EmailAddress,
+                                                SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
+                                            foreach (DataRow drS in drLS)
+                                            {
+                                                if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+                                                    (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true)))
+                                                {
+                                                    SetCurrentPriceCode(drS);
+                                                    if (CorrectArchive)
+                                                    {
+                                                        if (ProcessPriceFile(CurrFileName))
                                                         {
-                                                            if (ProcessPriceFile(CurrFileName))
-                                                            {
-                                                                Logging(CurrPriceCode, String.Empty);
-                                                                UpdateDB(CurrPriceCode, DateTime.Now);
-                                                            }
-                                                            else
-                                                            {
-                                                                Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
-                                                            }
+                                                            Logging(CurrPriceCode, String.Empty);
+                                                            UpdateDB(CurrPriceCode, DateTime.Now);
                                                         }
                                                         else
                                                         {
-                                                            Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
+                                                            Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
                                                         }
-                                                        drS.Delete();
                                                     }
+                                                    else
+                                                    {
+                                                        Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
+                                                    }
+                                                    drS.Delete();
                                                 }
-                                                dtSources.AcceptChanges();
+                                            }
+                                            dtSources.AcceptChanges();
 
-                                            }//if (ent.FileName != String.Empty)
+                                        }//if (ent.FileName != String.Empty)
 
-                                    }
-                                }//if(item.IsNewMessage) 
-                        }//else
-                        if (items != null && items.Length > 0)
+                                }// (m != null) && (m.Attachments.Length > 0)
+
+                            }//foreach (IMAP_FetchItem) 
+
+                        }//(items != null) && (items.Length > 0)
+
+                        //ѕроизводим удаление писем
+                        if ((items != null) && (items.Length > 0))
                         {
                             string uidseq = items[0].UID.ToString();
                             for (int i = 1; i < items.Length; i++)
@@ -138,6 +141,7 @@ namespace Inforoom.Downloader
                             sequence_setDelete.Parse(uidseq);
                             c.DeleteMessages(sequence_setDelete, true);
                         }
+
                     }
                     while ((items != null) && (items.Length > 0));
                     c.Disconnect();
