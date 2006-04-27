@@ -109,36 +109,40 @@ namespace Inforoom.Downloader
                                                     CorrectArchive = false;
                                             }
 
-                                            drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-                                                SourcesTable.colEMailTo, m.MainEntity.To.Mailboxes[0].EmailAddress,
-                                                SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
-                                            foreach (DataRow drS in drLS)
+                                            //–аньше не провер€лс€ весь список TO, теперь это делаетс€
+                                            foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
                                             {
-                                                if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-                                                    (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
+                                                drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
+                                                    SourcesTable.colEMailTo, mba.EmailAddress,
+                                                    SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
+                                                foreach (DataRow drS in drLS)
                                                 {
-                                                    Matched = true;
-                                                    SetCurrentPriceCode(drS);
-                                                    if (CorrectArchive)
+                                                    if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+                                                        (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
                                                     {
-                                                        if (ProcessPriceFile(CurrFileName))
+                                                        Matched = true;
+                                                        SetCurrentPriceCode(drS);
+                                                        if (CorrectArchive)
                                                         {
-                                                            Logging(CurrPriceCode, String.Empty);
-                                                            UpdateDB(CurrPriceCode, DateTime.Now);
+                                                            if (ProcessPriceFile(CurrFileName))
+                                                            {
+                                                                Logging(CurrPriceCode, String.Empty);
+                                                                UpdateDB(CurrPriceCode, DateTime.Now);
+                                                            }
+                                                            else
+                                                            {
+                                                                Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                            }
                                                         }
                                                         else
                                                         {
-                                                            Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                            Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
                                                         }
+                                                        drS.Delete();
                                                     }
-                                                    else
-                                                    {
-                                                        Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
-                                                    }
-                                                    drS.Delete();
                                                 }
+                                                dtSources.AcceptChanges();
                                             }
-                                            dtSources.AcceptChanges();
 
                                         }//if (ent.FileName != String.Empty)
 
