@@ -31,13 +31,17 @@ namespace Inforoom.Downloader
                     c.SelectFolder("INBOX");
 
                     IMAP_FetchItem[] items = null;
+                    List<string> ProcessedUID = null;
                     do
                     {
                         try
                         {
+                            Ping();
+                            ProcessedUID = new List<string>();
                             IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
-                            sequence_set.Parse("1:5");
-                            items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.All, false, false);
+                            sequence_set.Parse("1:*");
+                            items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
+                            Ping();
                         }
                         catch (Exception ex)
                         {
@@ -50,15 +54,29 @@ namespace Inforoom.Downloader
                             foreach (IMAP_FetchItem item in items)
                             {
                                 Mime m = null;
+                                IMAP_FetchItem[] OneItem = null;
                                 try
                                 {
-                                    m = Mime.Parse(item.MessageData);
+                                    IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
+                                    sequence_Mess.Parse(item.UID.ToString());
+                                    OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
+                                    m = Mime.Parse(OneItem[0].MessageData);
+                                    ProcessedUID.Add(item.UID.ToString());
+                                    Ping();
                                 }
                                 catch (Exception ex)
                                 {
                                     m = null;
+                                    MemoryStream ms = null;
+                                    if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+                                        ms = new MemoryStream(OneItem[0].MessageData);
+                                    ErrorMailSend(item.UID, ex.ToString(), ms);
                                     FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
                                 }
+
+                                //Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+                                bool Matched = false;
+
                                 if ((m != null) && (m.Attachments.Length > 0))
                                 {
                                     FillSourcesTable();
@@ -97,8 +115,9 @@ namespace Inforoom.Downloader
                                             foreach (DataRow drS in drLS)
                                             {
                                                 if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-                                                    (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true)))
+                                                    (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
                                                 {
+                                                    Matched = true;
                                                     SetCurrentPriceCode(drS);
                                                     if (CorrectArchive)
                                                     {
@@ -125,18 +144,29 @@ namespace Inforoom.Downloader
 
                                 }// (m != null) && (m.Attachments.Length > 0)
 
+                                if ((m != null) && !Matched)
+                                {
+                                    try
+                                    {
+                                        MemoryStream ms = new MemoryStream(m.ToByteData());
+                                        FailMailSend(m.MainEntity.Subject, m.MainEntity.From.Mailboxes[0].EmailAddress, m.MainEntity.Date, ms);
+                                        Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, m.MainEntity.From.Mailboxes[0].EmailAddress));
+                                    }
+                                    catch (Exception exMatch)
+                                    {
+                                        FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+                                    }
+                                }
+
                             }//foreach (IMAP_FetchItem) 
 
                         }//(items != null) && (items.Length > 0)
 
                         //Производим удаление писем
-                        if ((items != null) && (items.Length > 0))
+                        if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
                         {
-                            string uidseq = items[0].UID.ToString();
-                            for (int i = 1; i < items.Length; i++)
-                            {
-                                uidseq += "," + items[i].UID.ToString();
-                            }
+                            string uidseq = String.Empty;
+                            uidseq = String.Join(",", ProcessedUID.ToArray());
                             IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
                             sequence_setDelete.Parse(uidseq);
                             c.DeleteMessages(sequence_setDelete, true);
