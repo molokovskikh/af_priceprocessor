@@ -375,6 +375,15 @@ AND pd.AgencyEnabled= 1",
             return Path.GetFullPath(InputDir) + Path.DirectorySeparatorChar;
         }
 
+        protected string NormalizeFileName(string InputFilename)
+        {
+            foreach (Char ic in Path.GetInvalidFileNameChars())
+            {
+                InputFilename = InputFilename.Replace(ic.ToString(), "");
+            }
+            return InputFilename;
+        }
+
         protected string GetExt()
         {
             string FMT = ((string)drCurrent[SourcesTable.colPriceFMT]).ToUpper();
