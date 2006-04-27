@@ -307,6 +307,27 @@ AND pd.AgencyEnabled= 1",
             sc.Send(mm);
         }
 
+        protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
+        {
+            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserError,
+                String.Format("Письмо с UID {0} не было обработано", UID),
+                String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage));
+            if (ms != null)
+                mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
+            SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+            sc.Send(mm);
+        }
+
+        protected void FailMailSend(string Subject, string FromAddress, DateTime LetterDate, Stream ms)
+        {
+            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserFail,
+                String.Format("{0} ( {1} )", FromAddress, SourceType),
+                String.Format("Тема : {0}\nОт : {1}\nДата письма : {2}", Subject, FromAddress, LetterDate));
+            mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject ) + ".eml"));
+            SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+            sc.Send(mm);
+        }
+
         /// <summary>
         /// Обновить дату прайса в базе
         /// </summary>
@@ -446,7 +467,7 @@ AND pd.AgencyEnabled= 1",
                 if (CurrPriceCode > -1)
                     cmdLog.Parameters["PriceCode"].Value = CurrPriceCode;
                 else
-                    cmdLog.Parameters["PriceCode"].Value = DBNull.Value;
+                    cmdLog.Parameters["PriceCode"].Value = 0;
                 cmdLog.Parameters["Addition"].Value = Addition;
                 cmdLog.ExecuteNonQuery();
             }
