@@ -96,7 +96,7 @@ namespace Inforoom.Downloader
                                         if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
                                         {
                                             string ShortFileName = Path.GetFileName( NormalizeFileName( ent.ContentDisposition_FileName) );
-                                            CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
+                                            CurrFileName = DownHandlerPath + ShortFileName;
                                             using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
                                             {
                                                 ent.DataToStream(fs);
