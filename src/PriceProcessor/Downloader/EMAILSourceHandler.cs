@@ -79,11 +79,23 @@ namespace Inforoom.Downloader
 
                                 if ((m != null) && (m.Attachments.Length > 0))
                                 {
+                                    //Заполняем список адресов From
+                                    AddressList FromList = new AddressList();
+                                    bool SenderFound = false;
+                                    foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
+                                    {
+                                        FromList.Add(new MailboxAddress(a.EmailAddress));
+                                        if ((m.MainEntity.Sender != null) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
+                                            SenderFound = true;
+                                    }
+                                    if ((m.MainEntity.Sender != null) && (!SenderFound))
+                                        FromList.Add(new MailboxAddress(m.MainEntity.Sender.EmailAddress));
+
                                     FillSourcesTable();
                                     foreach (MimeEntity ent in m.Attachments)
                                         if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
                                         {
-                                            string ShortFileName = Path.GetFileName(ent.ContentDisposition_FileName);
+                                            string ShortFileName = Path.GetFileName( NormalizeFileName( ent.ContentDisposition_FileName) );
                                             CurrFileName = DownHandlerPath + Path.GetFileName(ent.ContentDisposition_FileName);
                                             using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
                                             {
@@ -109,40 +121,46 @@ namespace Inforoom.Downloader
                                                     CorrectArchive = false;
                                             }
 
-                                            //Раньше не проверялся весь список TO, теперь это делается
-                                            foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
+                                            //Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
+                                            foreach (MailboxAddress mbFrom in FromList.Mailboxes)
                                             {
-                                                drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-                                                    SourcesTable.colEMailTo, mba.EmailAddress,
-                                                    SourcesTable.colEMailFrom, m.MainEntity.From.Mailboxes[0].EmailAddress));
-                                                foreach (DataRow drS in drLS)
+                                                //Раньше не проверялся весь список TO, теперь это делается
+                                                foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
                                                 {
-                                                    if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-                                                        (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
+                                                    drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
+                                                        SourcesTable.colEMailTo, mba.EmailAddress,
+                                                        SourcesTable.colEMailFrom, mbFrom.EmailAddress));
+                                                    foreach (DataRow drS in drLS)
                                                     {
-                                                        Matched = true;
-                                                        SetCurrentPriceCode(drS);
-                                                        if (CorrectArchive)
+                                                        if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+                                                            (String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
                                                         {
-                                                            if (ProcessPriceFile(CurrFileName))
+                                                            Matched = true;
+                                                            SetCurrentPriceCode(drS);
+                                                            if (CorrectArchive)
                                                             {
-                                                                Logging(CurrPriceCode, String.Empty);
-                                                                UpdateDB(CurrPriceCode, DateTime.Now);
+                                                                if (ProcessPriceFile(CurrFileName))
+                                                                {
+                                                                    Logging(CurrPriceCode, String.Empty);
+                                                                    UpdateDB(CurrPriceCode, DateTime.Now);
+                                                                }
+                                                                else
+                                                                {
+                                                                    Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                                }
                                                             }
                                                             else
                                                             {
-                                                                Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                                                Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
                                                             }
+                                                            drS.Delete();
                                                         }
-                                                        else
-                                                        {
-                                                            Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
-                                                        }
-                                                        drS.Delete();
                                                     }
-                                                }
-                                                dtSources.AcceptChanges();
-                                            }
+                                                    dtSources.AcceptChanges();
+
+                                                }//foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
+
+                                            }//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
                                         }//if (ent.FileName != String.Empty)
 
@@ -153,8 +171,8 @@ namespace Inforoom.Downloader
                                     try
                                     {
                                         MemoryStream ms = new MemoryStream(m.ToByteData());
-                                        FailMailSend(m.MainEntity.Subject, m.MainEntity.From.Mailboxes[0].EmailAddress, m.MainEntity.Date, ms);
-                                        Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, m.MainEntity.From.Mailboxes[0].EmailAddress));
+                                        FailMailSend(m.MainEntity.Subject, m.MainEntity.From.ToAddressListString(), m.MainEntity.Date, ms);
+                                        Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, m.MainEntity.From.ToAddressListString()));
                                     }
                                     catch (Exception exMatch)
                                     {
