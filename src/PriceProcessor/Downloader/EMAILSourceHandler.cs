@@ -84,18 +84,27 @@ namespace Inforoom.Downloader
                                     bool SenderFound = false;
                                     foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
                                     {
-                                        FromList.Add(new MailboxAddress(a.EmailAddress));
-                                        if ((m.MainEntity.Sender != null) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
-                                            SenderFound = true;
+                                        //ѕровер€ем, что адрес что-то содержит
+                                        if (!String.IsNullOrEmpty(a.EmailAddress))
+                                        {
+                                            FromList.Add(new MailboxAddress(a.EmailAddress));
+                                            if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
+                                                SenderFound = true;
+                                        }
                                     }
-                                    if ((m.MainEntity.Sender != null) && (!SenderFound))
+                                    if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (!SenderFound))
                                         FromList.Add(new MailboxAddress(m.MainEntity.Sender.EmailAddress));
 
                                     FillSourcesTable();
                                     foreach (MimeEntity ent in m.Attachments)
-                                        if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
+                                        if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
                                         {
-                                            string ShortFileName = Path.GetFileName( NormalizeFileName( ent.ContentDisposition_FileName) );
+                                            string ShortFileName = String.Empty;
+                                            //¬ некоторых случа€х ContentDisposition_FileName не заполнено, тогда смотрим на ContentType_Name
+                                            if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
+                                                ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentDisposition_FileName));
+                                            else
+                                                ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentType_Name));
                                             CurrFileName = DownHandlerPath + ShortFileName;
                                             using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
                                             {
