@@ -377,7 +377,7 @@ AND pd.AgencyEnabled= 1",
 
         protected string NormalizeFileName(string InputFilename)
         {
-            foreach (Char ic in Path.GetInvalidFileNameChars())
+            foreach (Char ic in Path.GetInvalidPathChars())
             {
                 InputFilename = InputFilename.Replace(ic.ToString(), "");
             }
