@@ -32,6 +32,7 @@ namespace Inforoom.Downloader
 		{
             try
             {
+                FormLog.Log("Monitor", "Downloader started.");
                 foreach (BaseSourceHandler bsh in alHandlers)
                     try
                     {
@@ -71,7 +72,8 @@ namespace Inforoom.Downloader
             {
                 FormLog.Log("Monitor.Stop", "Ошибка при останове монитора : {0}", ex);
             }
-		}
+            FormLog.Log("Monitor", "Downloader stoppped.");
+        }
 
 		private void MonitorWork()
 		{
