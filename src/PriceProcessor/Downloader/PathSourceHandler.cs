@@ -31,6 +31,8 @@ namespace Inforoom.Downloader
 #endif
                     GetFileFromSource();
 
+                    //FormLog.Log(SourceType == "LAN", this.GetType().Name, "Обработали источник с кодом {0} файл '{1}'", dtSources.Rows[0][SourcesTable.colPriceCode], CurrFileName);
+
                     if (!String.IsNullOrEmpty(CurrFileName))
                     {
                         bool CorrectArchive = true;

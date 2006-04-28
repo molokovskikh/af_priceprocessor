@@ -422,7 +422,7 @@ AND pd.AgencyEnabled= 1",
                     if (File.Exists(NormalName))
                         File.Delete(NormalName);
                     File.Copy(ExtrFile, NormalName);
-                    FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
+                    FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
                     return true;
                 }
                 catch(Exception ex)

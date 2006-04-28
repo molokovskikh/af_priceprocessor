@@ -29,18 +29,24 @@ namespace Inforoom.Downloader
                         try
                         {
                             //TODO: здесь надо Copy изменить на Move
+                            if (File.Exists(NewFile))
+                                File.Delete(NewFile);
                             File.Move(fs, NewFile);
                             CurrFileName = NewFile;
                             CurrPriceDate = pdt;
                             break;
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось скопировать файл : {0}", ex));
                         }
                     }
                 }
             }
-            catch{}
+            catch(Exception exDir)
+            {
+                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось получить список файлов : {0}", exDir));
+            }
         }
 
         protected override DataRow[] GetLikeSources()
