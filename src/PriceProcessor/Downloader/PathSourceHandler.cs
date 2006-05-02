@@ -24,8 +24,8 @@ namespace Inforoom.Downloader
                 drLS = null;
                 try
                 {
-#if DEBUG
                     drLS = GetLikeSources();
+#if DEBUG
                     if (drLS.Length < 1)
                         FormLog.Log(this.GetType().Name, "!!!!!!!!!!!!!   drLS.Length < 1");
 #endif
@@ -53,7 +53,6 @@ namespace Inforoom.Downloader
                             else
                                 CorrectArchive = false;
                         }
-                        drLS = GetLikeSources();
                         foreach (DataRow drS in drLS)
                         {
                             SetCurrentPriceCode(drS);
@@ -79,7 +78,8 @@ namespace Inforoom.Downloader
                     }
                     else
                     {
-                        dtSources.Rows[0].Delete();
+                        foreach (DataRow drDel in drLS)
+                            drDel.Delete();
                     }
                     dtSources.AcceptChanges();
                 }
