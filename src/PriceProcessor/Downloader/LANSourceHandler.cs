@@ -38,7 +38,7 @@ namespace Inforoom.Downloader
                         }
                         catch (Exception ex)
                         {
-                            Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось скопировать файл : {0}", ex));
+                            Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
                         }
                     }
                 }
