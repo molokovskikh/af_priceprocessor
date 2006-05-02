@@ -15,9 +15,9 @@ namespace Inforoom.Downloader
         protected override void GetFileFromSource()
         {
             CurrFileName = String.Empty;
-            string PricePath = NormalizeDir((string)dtSources.Rows[0][SourcesTable.colPricePath]);
             try
             {
+                string PricePath = NormalizeDir((string)dtSources.Rows[0][SourcesTable.colPricePath]);
                 string[] ff = Directory.GetFiles(PricePath, (string)dtSources.Rows[0][SourcesTable.colPriceMask]);
                 DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
                 foreach (string fs in ff)
