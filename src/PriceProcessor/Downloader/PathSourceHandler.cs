@@ -43,7 +43,7 @@ namespace Inforoom.Downloader
                             {
                                 try
                                 {
-                                    ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
+                                    ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
                                 }
                                 catch (ArchiveHlp.ArchiveException)
                                 {
