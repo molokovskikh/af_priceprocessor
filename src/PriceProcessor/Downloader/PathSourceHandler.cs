@@ -75,6 +75,7 @@ namespace Inforoom.Downloader
                             }
                             drS.Delete();
                         }
+                        DeleteCurrFile();
                     }
                     else
                     {
