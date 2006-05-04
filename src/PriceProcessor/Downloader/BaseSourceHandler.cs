@@ -453,6 +453,22 @@ AND pd.AgencyEnabled= 1",
             }
         }
 
+        protected void DeleteCurrFile()
+        {
+            try
+            {
+                if (Directory.Exists(CurrFileName + ExtrDirSuffix))
+                    Directory.Delete(CurrFileName + ExtrDirSuffix, true);
+            }
+            catch { }
+            try
+            {
+                if (Directory.Exists(CurrFileName + ExtrDirSuffix))
+                    Directory.Delete(CurrFileName + ExtrDirSuffix, true);
+            }
+            catch { }
+        }
+
         #region Logging
         protected void CreateLogConnection()
 		{
