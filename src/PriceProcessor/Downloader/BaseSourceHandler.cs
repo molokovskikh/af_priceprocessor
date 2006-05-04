@@ -107,6 +107,8 @@ namespace Inforoom.Downloader
         /// </summary>
         protected DateTime CurrPriceDate;
 
+        protected static string ExtrDirSuffix = "Extr";
+
         public BaseSourceHandler(string sourceType)
 		{
             this.sourceType = sourceType;
@@ -318,11 +320,16 @@ AND pd.AgencyEnabled= 1",
             sc.Send(mm);
         }
 
-        protected void FailMailSend(string Subject, string FromAddress, DateTime LetterDate, Stream ms)
+        protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames)
         {
             MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserFail,
                 String.Format("{0} ( {1} )", FromAddress, SourceType),
-                String.Format("Тема : {0}\nОт : {1}\nДата письма : {2}", Subject, FromAddress, LetterDate));
+                String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\n\nСписок приложений :\n{4}", 
+                Subject, 
+                FromAddress, 
+                ToAddress, 
+                LetterDate,
+                AttachNames));
             mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject ) + ".eml"));
             SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
             sc.Send(mm);
@@ -377,11 +384,23 @@ AND pd.AgencyEnabled= 1",
 
         protected string NormalizeFileName(string InputFilename)
         {
+            string PathPart = String.Empty;
             foreach (Char ic in Path.GetInvalidPathChars())
             {
                 InputFilename = InputFilename.Replace(ic.ToString(), "");
             }
-            return InputFilename;
+            //Пытаемся найти последний разделитель директории в пути
+            int EndDirPos = InputFilename.LastIndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+            if (EndDirPos > -1)
+            {
+                PathPart = InputFilename.Substring(0, EndDirPos + 1);
+                InputFilename = InputFilename.Substring(EndDirPos + 1);
+            }
+            foreach (Char ic in Path.GetInvalidFileNameChars())
+            {
+                InputFilename = InputFilename.Replace(ic.ToString(), "");
+            }
+            return (PathPart + InputFilename);
         }
 
         protected string GetExt()
@@ -407,7 +426,7 @@ AND pd.AgencyEnabled= 1",
             string ExtrFile = InFile;
             if (ArchiveHlp.IsArchive(InFile))
             {
-                ExtrFile = FindFromArhive(InFile + "Extr", (string)drCurrent[SourcesTable.colExtrMask]);
+                ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
             }
             if (ExtrFile == String.Empty)
             {
