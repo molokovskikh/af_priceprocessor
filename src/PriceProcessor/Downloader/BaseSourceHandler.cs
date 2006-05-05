@@ -87,10 +87,6 @@ namespace Inforoom.Downloader
         /// </summary>
         protected int CurrPriceCode;
         /// <summary>
-        /// текущая временная директория (+ CurrPriceCode)
-        /// </summary>
-        protected string CurrTempPath;
-        /// <summary>
         /// текущая обрабатываема строка в таблице
         /// </summary>
         protected DataRow drCurrent;
@@ -354,10 +350,6 @@ AND pd.AgencyEnabled= 1",
         {
             drCurrent = dr;
             CurrPriceCode = Convert.ToInt32(dr[SourcesTable.colPriceCode]);
-            CurrTempPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString();
-            if (!Directory.Exists(CurrTempPath))
-                Directory.CreateDirectory(CurrTempPath);
-            CurrTempPath += Path.DirectorySeparatorChar;
         }
 
         protected void ExtractFromArhive(string ArchName, string TempDir)
