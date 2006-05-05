@@ -66,12 +66,12 @@ namespace Inforoom.Downloader
                                 }
                                 else
                                 {
-                                    Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+                                    Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
                                 }
                             }
                             else
                             {
-                                Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
+                                Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
                             }
                             drS.Delete();
                         }
