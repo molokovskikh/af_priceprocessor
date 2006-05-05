@@ -46,10 +46,9 @@ namespace Inforoom.Downloader
                         }
                         catch (Exception ex)
                         {
-                            FormLog.Log(this.GetType().Name, "On Fetch : " + ex.ToString());
+                            LoggingToService("On Fetch : " + ex.ToString());
                         }
 
-                        //(c.GetUnseenMessagesCount() > 0)
                         if ((items != null) && (items.Length > 0))
                         {
                             foreach (IMAP_FetchItem item in items)
@@ -60,7 +59,7 @@ namespace Inforoom.Downloader
                                 {
                                     IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
                                     sequence_Mess.Parse(item.UID.ToString());
-									OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
+                                    OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
                                     m = Mime.Parse(OneItem[0].MessageData);
                                     ProcessedUID.Add(item.UID.ToString());
                                     Ping();
@@ -75,51 +74,23 @@ namespace Inforoom.Downloader
                                     FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
                                 }
 
-                                //Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-                                bool Matched = false;
-
                                 if (m != null)
-                                {
-									AddressList FromList = GetAddressList(m);
-									bool CorrectArchive = true;
-									string ShortFileName = string.Empty;
-
-									if (m.Attachments.Length > 0)
-									{
-										foreach (MimeEntity ent in m.Attachments)
-										{
-											if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
-											{
-												ShortFileName = SaveAttachement(ent);
-												CorrectArchive = CheckFile();
-												drLS = UnPack(m, ref Matched, FromList, ShortFileName, CorrectArchive);
-											}
-										}
-									}
-									else
-									{
-										if (IsUUE(m))
-										{
-											ShortFileName = ExtractFromUUE(m);
-											CurrFileName = DownHandlerPath + ShortFileName;
-											CorrectArchive = CheckFile();
-											drLS = UnPack(m, ref Matched, FromList, ShortFileName, CorrectArchive);
-										}
-									}
-								}
-                                if ((m != null) && !Matched)
                                 {
                                     try
                                     {
-                                        MemoryStream ms = new MemoryStream(m.ToByteData());
-                                        FailMailSend(m.MainEntity.Subject, m.MainEntity.From.ToAddressListString(), m.MainEntity.Date, ms);
-                                        Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, m.MainEntity.From.ToAddressListString()));
+                                        drLS = ProcessMime(m);
                                     }
-                                    catch (Exception exMatch)
+                                    catch (Exception ex)
                                     {
-                                        FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+                                        if (ProcessedUID.Contains(item.UID.ToString()))
+                                            ProcessedUID.Remove(item.UID.ToString());
+                                        MemoryStream ms = null;
+                                        if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+                                            ms = new MemoryStream(OneItem[0].MessageData);
+                                        ErrorMailSend(item.UID, ex.ToString(), ms);
+                                        FormLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
                                     }
-                                }
+								}
 
                             }//foreach (IMAP_FetchItem) 
 
@@ -142,20 +113,91 @@ namespace Inforoom.Downloader
             }
             catch(Exception ex)
             {
-                FormLog.Log(this.GetType().Name, ex.ToString());
+                LoggingToService(ex.ToString());
             }
+        }
+
+        private DataRow[] ProcessMime(Mime m)
+        {
+            DataRow[] drLS = null;
+
+            //Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+            bool Matched = false;
+
+            AddressList FromList = GetAddressList(m);
+
+            bool CorrectArchive = true;
+
+            string ShortFileName = string.Empty;
+
+            MimeEntity[] mailAttachs = m.Attachments;
+
+            //Название аттачментов
+            string AttachNames = String.Empty;
+
+
+            //Если нет вложений, а письмо выглядит как UUE, то добавляем его как вложение
+            if ((mailAttachs.Length == 0) && IsUUE(m))
+            {
+                ShortFileName = ExtractFromUUE(m);
+                if (!String.IsNullOrEmpty(ShortFileName))
+                {
+                    MimeEntity uueAttach = new MimeEntity();
+                    uueAttach.ContentType = MediaType_enum.Application_octet_stream;
+                    uueAttach.ContentDisposition = ContentDisposition_enum.Attachment;
+                    uueAttach.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+                    uueAttach.ContentDisposition_FileName = ShortFileName;
+                    uueAttach.ContentType_Name = ShortFileName;
+                    uueAttach.DataFromFile(DownHandlerPath + ShortFileName);
+                    mailAttachs = new MimeEntity[] { uueAttach };
+                }
+            }
+
+            if (mailAttachs.Length > 0)
+            {
+                FillSourcesTable();
+
+                foreach (MimeEntity ent in mailAttachs)
+                {
+                    if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
+                    {
+                        ShortFileName = SaveAttachement(ent);
+                        AttachNames += "\"" + ShortFileName + "\"" + Environment.NewLine;
+                        CorrectArchive = CheckFile();
+                        drLS = UnPack(m, ref Matched, FromList, ShortFileName, CorrectArchive);
+                        DeleteCurrFile();
+                    }
+                }
+            }
+
+            if (!Matched)
+            {
+                try
+                {
+                    MemoryStream ms = new MemoryStream(m.ToByteData());
+                    FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames);
+                    Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, FromList.ToAddressListString()));
+                }
+                catch (Exception exMatch)
+                {
+                    FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+                }
+            }
+            return drLS;
         }
 
 		private bool IsUUE(Mime m)
 		{
-			string body = Encoding.GetEncoding("koi8-r").GetString(m.MainEntity.Data);
-			Regex reg = new Regex(@"begin\s\d\d\d");
-			if (reg.Match(body).Success)
-			{
-				return true;
-			}
-			return false;
+            if (m.MainEntity.Data != null)
+            {
+                string body = Encoding.GetEncoding("koi8-r").GetString(m.MainEntity.Data);
+                Regex reg = new Regex(@"begin\s\d\d\d");
+                return reg.Match(body).Success;
+            }
+            else
+                return false;
 		}
+
 		/// <summary>
 		/// Функция обработки тела письма в формате UUE.
 		/// </summary>
@@ -164,31 +206,46 @@ namespace Inforoom.Downloader
 		private string ExtractFromUUE(Mime m)
 		{
 			//Двойная перекодировка сначала и koi8r -> UTF7 -> default(cp1251)
-			FileStream file = new FileStream("MailTemp.uue", FileMode.Create);
-			string body = Encoding.GetEncoding("koi8-r").GetString(m.MainEntity.Data);
-			file.Write(Encoding.Default.GetBytes(body), 0, m.MainEntity.Data.Length);
-			file.Flush();
-			file.Close();
-			if (ArchiveHlp.TestArchive("MailTemp.uue"))
-			{
-				try
-				{
-					ExtractFromArhive("MailTemp.uue", "Extr");
-					string[] fileList =  Directory.GetFiles("Extr");
-					if (fileList.Length > 0)
-					{
-						if (File.Exists(DownHandlerPath + Path.GetFileName(fileList[0])))
-							File.Delete(DownHandlerPath + Path.GetFileName(fileList[0]));
-						File.Move(fileList[0], DownHandlerPath + Path.GetFileName(fileList[0]));
-						return Path.GetFileName(fileList[0]);
-					}
-				}
-				catch (ArchiveHlp.ArchiveException)
-				{
-					
-				}
-			}
-			return "";
+            string UUEFileName = DownHandlerPath + "MailTemp.uue";
+            using (FileStream file = new FileStream(UUEFileName, FileMode.Create))
+            {
+                string body = Encoding.GetEncoding("koi8-r").GetString(m.MainEntity.Data);
+                file.Write(Encoding.Default.GetBytes(body), 0, m.MainEntity.Data.Length);
+                file.Flush();
+                file.Close();
+            }
+            try
+            {
+                if (ArchiveHlp.TestArchive(UUEFileName))
+                {
+                    try
+                    {
+                        ExtractFromArhive(UUEFileName, UUEFileName + ExtrDirSuffix);
+                        string[] fileList = Directory.GetFiles(UUEFileName + ExtrDirSuffix);
+                        if (fileList.Length > 0)
+                        {
+                            if (File.Exists(DownHandlerPath + Path.GetFileName(fileList[0])))
+                                File.Delete(DownHandlerPath + Path.GetFileName(fileList[0]));
+                            File.Move(fileList[0], DownHandlerPath + Path.GetFileName(fileList[0]));
+                            return Path.GetFileName(fileList[0]);
+                        }
+                    }
+                    catch (ArchiveHlp.ArchiveException)
+                    {
+
+                    }
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(UUEFileName + ExtrDirSuffix))
+                    try
+                    {
+                        Directory.Delete(UUEFileName + ExtrDirSuffix, true);
+                    }
+                    catch { }
+            } 
+            return String.Empty;
 		}
 
 		private DataRow[] UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName, bool CorrectArchive)
@@ -220,12 +277,12 @@ namespace Inforoom.Downloader
 								}
 								else
 								{
-									Logging(CurrPriceCode, "Failed to process price file " + Path.GetFileName(CurrFileName));
+									Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
 								}
 							}
 							else
 							{
-								Logging(CurrPriceCode, "Cant unpack file " + Path.GetFileName(CurrFileName));
+								Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
 							}
 							drS.Delete();
 						}
@@ -243,20 +300,28 @@ namespace Inforoom.Downloader
 			//Заполняем список адресов From
 			AddressList FromList = new AddressList();
 			bool SenderFound = false;
-			foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
-			{
-				//Проверяем, что адрес что-то содержит
-				if (!String.IsNullOrEmpty(a.EmailAddress))
-				{
-					FromList.Add(new MailboxAddress(a.EmailAddress));
-					if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
-						SenderFound = true;
-				}
-			}
+
+            //Иногда список адресов оказывается пуст - СПАМ
+            if (m.MainEntity.From != null)
+            {
+                foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
+                {
+                    //Проверяем, что адрес что-то содержит
+                    if (!String.IsNullOrEmpty(a.EmailAddress))
+                    {
+                        FromList.Add(new MailboxAddress(a.EmailAddress));
+                        if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
+                            SenderFound = true;
+                    }
+                }
+            }
 			if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (!SenderFound))
 				FromList.Add(new MailboxAddress(m.MainEntity.Sender.EmailAddress));
 
-			FillSourcesTable();
+            //Иногда список адресов оказывается пуст - СПАМ, в этом случае создаем пустую коллекцию, чтобы все было в порядке
+            if (m.MainEntity.To == null)
+                m.MainEntity.To = new AddressList();
+
 			return FromList;
 		}
 
@@ -269,7 +334,7 @@ namespace Inforoom.Downloader
 				{
 					try
 					{
-						ExtractFromArhive(CurrFileName, CurrFileName + "Extr");
+                        ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 						return true;
 					}
 					catch (ArchiveHlp.ArchiveException)
