@@ -343,7 +343,7 @@ AND pd.AgencyEnabled= 1",
 
             cmdUpdatePriceDate.Parameters["FirmCode"].Value = UpdatePriceCode;
             cmdUpdatePriceDate.Parameters["DT"].Value = UpDT;
-            cmdUpdatePriceDate.ExecuteNonQuery();
+            ExecuteCommand(cmdUpdatePriceDate);
         }
 
         protected void SetCurrentPriceCode(DataRow dr)
@@ -461,6 +461,38 @@ AND pd.AgencyEnabled= 1",
             catch { }
         }
 
+        protected void ExecuteCommand(MySqlCommand cmd)
+        {
+            bool Quit = false;
+
+            do
+            {
+                try
+                {
+                    if (cmd.Connection.State != ConnectionState.Open)
+                    {
+                        cmd.Connection.Open();
+                    }
+
+                    cmd.ExecuteNonQuery();
+
+                    Quit = true;
+                }
+                catch (MySqlException MySQLErr)
+                {
+                    if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
+                    {
+                        FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
+                        Ping();
+                        System.Threading.Thread.Sleep(5000);
+                        Ping();
+                    }
+                    else
+                        throw;
+                }
+            } while (!Quit);
+        }
+
         #region Logging
         protected void CreateLogConnection()
 		{
@@ -505,7 +537,7 @@ AND pd.AgencyEnabled= 1",
                 else
                     cmdLog.Parameters["PriceCode"].Value = 0;
                 cmdLog.Parameters["Addition"].Value = Addition;
-                cmdLog.ExecuteNonQuery();
+                ExecuteCommand(cmdLog);
             }
             catch (Exception ex)
             {
