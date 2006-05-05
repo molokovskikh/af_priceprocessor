@@ -430,7 +430,7 @@ AND pd.AgencyEnabled= 1",
             }
             if (ExtrFile == String.Empty)
             {
-                Logging(CurrPriceCode, "Cant find '" + (string)drCurrent[SourcesTable.colExtrMask] + "' file into archive");
+                Logging(CurrPriceCode, "Не удалось найти файл '" + (string)drCurrent[SourcesTable.colExtrMask] + "' в архиве");
                 return false;
             }
             else
@@ -446,7 +446,7 @@ AND pd.AgencyEnabled= 1",
                 }
                 catch(Exception ex)
                 {
-                    Logging(CurrPriceCode, String.Format("Cant move price {0} to {1} directory", ExtrFile, NormalName));
+                    Logging(CurrPriceCode, String.Format("Не удалось перенести файл '{0}' в каталог '{1}'", ExtrFile, NormalName));
                     FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Cant move : " + ex.ToString());
                     return false;
                 }
