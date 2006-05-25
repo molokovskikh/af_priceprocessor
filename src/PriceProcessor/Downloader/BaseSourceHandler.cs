@@ -6,6 +6,7 @@ using Inforoom.Downloader.Properties;
 using System.IO;
 using System.Data;
 using System.Net.Mail;
+using System.Collections.Generic;
 
 namespace Inforoom.Downloader
 {
@@ -105,8 +106,12 @@ namespace Inforoom.Downloader
 
         protected static string ExtrDirSuffix = "Extr";
 
+		//Известные ошибки, которые не надо несколько раз отправлять
+		protected List<string> knowErrors;
+
         public BaseSourceHandler(string sourceType)
 		{
+			knowErrors = new List<string>();
             this.sourceType = sourceType;
             DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
             if (!Directory.Exists(DownHandlerPath))
@@ -548,12 +553,14 @@ AND pd.AgencyEnabled= 1",
         protected void LoggingToService(string Addition)
         {
             FormLog.Log(this.GetType().Name + ".Error", Addition);
+			if (!knowErrors.Contains(Addition))
             try
             {
                 MailMessage mm = new MailMessage("service@analit.net", "service@analit.net",
                     "Ошибка в Downloader", Addition);
                 SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
                 sc.Send(mm);
+				knowErrors.Add(Addition);
             }
             catch
             {

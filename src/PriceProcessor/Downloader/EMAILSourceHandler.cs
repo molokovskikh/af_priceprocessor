@@ -15,9 +15,14 @@ namespace Inforoom.Downloader
 {
     public class EMAILSourceHandler : BaseSourceHandler
     {
-        public EMAILSourceHandler(string sourceType)
+		//Список ошибочных UID, по которым не надо еще раз отправлять письма
+		protected List<int> errorUIDs;
+
+		public EMAILSourceHandler(string sourceType)
             : base(sourceType)
-        { }
+        {
+			errorUIDs = new List<int>();
+		}
 
         protected override void ProcessData()
         {
@@ -66,11 +71,15 @@ namespace Inforoom.Downloader
                                 }
                                 catch (Exception ex)
                                 {
-                                    m = null;
-                                    MemoryStream ms = null;
-                                    if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
-                                        ms = new MemoryStream(OneItem[0].MessageData);
-                                    ErrorMailSend(item.UID, ex.ToString(), ms);
+									if (!errorUIDs.Contains(item.UID))
+									{
+										m = null;
+										MemoryStream ms = null;
+										if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+											ms = new MemoryStream(OneItem[0].MessageData);
+										ErrorMailSend(item.UID, ex.ToString(), ms);
+										errorUIDs.Add(item.UID);
+									}
                                     FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
                                 }
 
@@ -78,16 +87,20 @@ namespace Inforoom.Downloader
                                 {
                                     try
                                     {
-                                        drLS = ProcessMime(m);
-                                    }
+										drLS = ProcessMime(m);
+									}
                                     catch (Exception ex)
                                     {
                                         if (ProcessedUID.Contains(item.UID.ToString()))
                                             ProcessedUID.Remove(item.UID.ToString());
-                                        MemoryStream ms = null;
-                                        if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
-                                            ms = new MemoryStream(OneItem[0].MessageData);
-                                        ErrorMailSend(item.UID, ex.ToString(), ms);
+										if (!errorUIDs.Contains(item.UID))
+										{
+											MemoryStream ms = null;
+											if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+												ms = new MemoryStream(OneItem[0].MessageData);
+											ErrorMailSend(item.UID, ex.ToString(), ms);
+											errorUIDs.Add(item.UID);
+										}
                                         FormLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
                                     }
 								}
