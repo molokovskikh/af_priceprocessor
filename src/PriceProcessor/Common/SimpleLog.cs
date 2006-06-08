@@ -2,31 +2,53 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Collections;
-using System.Web.Mail;
 using System.Configuration;
+using System.Net.Mail;
 
-namespace Inforoom.Formalizer
+namespace Inforoom.Logging
 {
 	/// <summary>
-	/// Summary description for FormLog.
+	/// Summary description for SimpleLog
 	/// </summary>
-	public sealed class FormLog
+	public sealed class SimpleLog
 	{
 		private static StreamWriter log;
 		private static ArrayList mess;
 
-		static FormLog()
+		private static string logFileName = String.Empty;
+		private static string FromMail;
+		private static string ToMail;
+
+		static SimpleLog()
 		{
-			string logFileName = String.Empty;
-			AppSettingsReader logSettings = new AppSettingsReader();			
 
 			try
 			{
-				logFileName = (string)logSettings.GetValue("FormLog.FileName", typeof(string));
+				logFileName = ConfigurationManager.AppSettings["SimpleLog.FileName"];
+				if (String.IsNullOrEmpty(logFileName))
+					logFileName = Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".log");
 			}
 			catch
 			{
 				logFileName = Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".log");
+			}
+
+			try
+			{
+				FromMail = ConfigurationManager.AppSettings["SimpleLog.FromMail"];
+			}
+			catch
+			{
+				FromMail = "service@analit.net";
+			}
+
+			try
+			{
+				ToMail = ConfigurationManager.AppSettings["SimpleLog.ToMail"];
+			}
+			catch
+			{
+				ToMail = "service@analit.net";
 			}
 
 			mess = new ArrayList();
@@ -46,22 +68,29 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception ex)
 			{
-				try
-				{
-					MailMessage m = new MailMessage();
-					m.From = FormalizeSettings.FromEmail;
-					m.To = FormalizeSettings.RepEmail;
-					m.Subject = "Error";
-					m.BodyFormat = MailFormat.Text;
-					m.BodyEncoding = System.Text.Encoding.GetEncoding(1251);
-					m.Body = ex.ToString();
-					SmtpMail.SmtpServer = "box.analit.net";
-					SmtpMail.Send(m);
-					mess.Add(ex.Message);
-				}
-				catch
-				{
-				}
+				SendError(ex);
+			}
+		}
+
+		private static void SendError(Exception ex)
+		{
+			try
+			{
+				MailMessage Message = new MailMessage(FromMail, ToMail, "Error on SimpleLog on " + logFileName,
+					String.Format(
+						"Процесс : {0}\n" +
+						"Источник: {1}\n" +
+						"Ошибка  : {2}",
+						Process.GetCurrentProcess().MainModule.FileName,
+						ex.Source,
+						ex.ToString()));
+				Message.BodyEncoding = System.Text.Encoding.UTF8;
+				SmtpClient Client = new SmtpClient("box.analit.net");
+				Client.Send(Message);
+				mess.Add(ex.Message);
+			}
+			catch
+			{
 			}
 		}
 
@@ -75,22 +104,7 @@ namespace Inforoom.Formalizer
 			{
 				if (!mess.Contains(e.Message))
 				{
-					try
-					{
-						MailMessage m = new MailMessage();
-						m.From = FormalizeSettings.FromEmail;
-						m.To = FormalizeSettings.RepEmail;
-						m.Subject = "Error";
-						m.BodyFormat = MailFormat.Text;
-						m.BodyEncoding = System.Text.Encoding.GetEncoding(1251);
-						m.Body = e.ToString();
-						SmtpMail.SmtpServer = "box.analit.net";
-						SmtpMail.Send(m);
-						mess.Add(e.Message);
-					}
-					catch
-					{
-					}
+					SendError(e);
 				}
 			}
 		}

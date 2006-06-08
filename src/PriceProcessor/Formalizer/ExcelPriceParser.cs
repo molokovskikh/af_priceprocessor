@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.OleDb;
 using MySql.Data.MySqlClient;
+using Inforoom.Logging;
 
 namespace Inforoom.Formalizer
 {
@@ -82,7 +83,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < FormalizeSettings.MinRepeatTranCount)
 					{
 						tryCount++;
-						FormLog.Log( getParserID(), "Repeat dbcMain.Open on OleDbException");
+						SimpleLog.Log( getParserID(), "Repeat dbcMain.Open on OleDbException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else
@@ -93,7 +94,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < FormalizeSettings.MinRepeatTranCount)
 					{
 						tryCount++;
-						FormLog.Log( getParserID(), "Repeat dbcMain.Open on InvalidComObjectException");
+						SimpleLog.Log( getParserID(), "Repeat dbcMain.Open on InvalidComObjectException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else

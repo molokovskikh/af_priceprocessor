@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Web.Mail;
 using MySql.Data.MySqlClient;
+using Inforoom.Logging;
 
 
 namespace Inforoom.Formalizer
@@ -125,7 +126,7 @@ namespace Inforoom.Formalizer
 		/// <param name="Message"></param>
 		private void InternalLog(string Message)
 		{
-			FormLog.Log( String.Format("TID={0}", PPTID), Message);
+			SimpleLog.Log( String.Format("TID={0}", PPTID), Message);
 		}
 
 		private void InternalLog(string format, params object[] args)

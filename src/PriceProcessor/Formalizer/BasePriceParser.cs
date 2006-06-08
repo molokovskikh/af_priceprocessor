@@ -6,6 +6,7 @@ using System.Data.OleDb;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Web.Mail;
+using Inforoom.Logging;
 
 namespace Inforoom.Formalizer
 {
@@ -445,7 +446,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < FormalizeSettings.MinRepeatTranCount)
 					{
 						tryCount++;
-						FormLog.Log( getParserID(), "Repeat Fill dtPrice on InvalidComObjectException");
+						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on InvalidComObjectException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else
@@ -456,7 +457,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < FormalizeSettings.MinRepeatTranCount)
 					{
 						tryCount++;
-						FormLog.Log( getParserID(), "Repeat Fill dtPrice on NullReferenceException");
+						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on NullReferenceException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else
@@ -677,7 +678,7 @@ namespace Inforoom.Formalizer
 //				try
 //				{
 					affectedrows = cmd.ExecuteNonQuery();
-					FormLog.Log(getParserID(), "AffectedRows = {0}  Command = {1}", affectedrows, cmd.CommandText);
+					SimpleLog.Log(getParserID(), "AffectedRows = {0}  Command = {1}", affectedrows, cmd.CommandText);
 					res = true;					
 //				}
 //				catch(MySqlException MyError)
@@ -732,7 +733,7 @@ namespace Inforoom.Formalizer
 		{
 			if (e.Status != UpdateStatus.Continue)
 			{
-				FormLog.Log( getParserID(), e.Errors.ToString());
+				SimpleLog.Log( getParserID(), e.Errors.ToString());
 			}
 		}
 
@@ -740,7 +741,7 @@ namespace Inforoom.Formalizer
 		{
 			if (e.Status != UpdateStatus.Continue)
 			{
-				FormLog.Log( getParserID(), e.Errors.ToString());
+				SimpleLog.Log( getParserID(), e.Errors.ToString());
 			}
 		}
 
@@ -756,17 +757,17 @@ namespace Inforoom.Formalizer
 
 					da.SelectCommand.Transaction = tran;
 					affectedrows = da.Update(dt);
-					FormLog.Log(getParserID(), "AffectedRows = {0}  Table = {1}", affectedrows, dt.TableName);
+					SimpleLog.Log(getParserID(), "AffectedRows = {0}  Table = {1}", affectedrows, dt.TableName);
 					res = true;					
 //				}
 //				catch(MySqlException MyError)
 //				{
-//					FormLog.Log( getParserID(), "Try update: ErrNo = {0}  IsFatal = {1}", MyError.Number, MyError.IsFatal);
+//					SimpleLog.Log( getParserID(), "Try update: ErrNo = {0}  IsFatal = {1}", MyError.Number, MyError.IsFatal);
 //					//(1213 == MyError.Number) || (1205 == MyError.Number)
 //					if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( !MyError.IsFatal ) )
 //					{
 //						tryCount++;
-//						FormLog.Log( getParserID(), "Try update: tryCount = {0}", tryCount);
+//						SimpleLog.Log( getParserID(), "Try update: tryCount = {0}", tryCount);
 //						System.Threading.Thread.Sleep(tryCount*1000);
 //					}
 //					else
@@ -802,7 +803,7 @@ namespace Inforoom.Formalizer
 					int tryCount = 0;
 					do
 					{
-						FormLog.Log( getParserID(), "Finalize started.");
+						SimpleLog.Log( getParserID(), "Finalize started.");
 
 						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -827,7 +828,7 @@ namespace Inforoom.Formalizer
 								TryCommand(mcClear);
 							}
 
-							FormLog.Log( getParserID(), "Finalize started: delete from UnrecExp");
+							SimpleLog.Log( getParserID(), "Finalize started: delete from UnrecExp");
 							MySqlDataAdapter daUnrecExpBlock = new MySqlDataAdapter(String.Format("SELECT BlockBy FROM {1} where FirmCode={0} and BlockBy <> '' limit 1", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 							daUnrecExpBlock.SelectCommand.Transaction = myTrans;
 							DataTable dtUnrecExpBlock = new DataTable();
@@ -844,20 +845,20 @@ namespace Inforoom.Formalizer
 								TryCommand(mcClear);
 							}
 
-							FormLog.Log( getParserID(), "Finalize started: {0}", "Core");
+							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Core");
 //							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 //							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
 							TryUpdate(daCore, dtCore.Copy(), myTrans);
-							FormLog.Log( getParserID(), "Finalize started: {0}", "Forb");
+							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Forb");
 							TryUpdate(daForb, dtForb.Copy(), myTrans);
-							FormLog.Log( getParserID(), "Finalize started: {0}", "Zero" );
+							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Zero" );
 							TryUpdate(daZero, dtZero.Copy(), myTrans);
-							FormLog.Log( getParserID(), "Finalize started: {0}", "UnrecExp" );
+							SimpleLog.Log( getParserID(), "Finalize started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
 							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
-								FormLog.Log( getParserID(), "Finalize started.prepare: {0}", "CoreCosts" );
+								SimpleLog.Log( getParserID(), "Finalize started.prepare: {0}", "CoreCosts" );
 								DataRow drCore;
 								DataRow drCoreCost;
 								dtCoreCosts.MinimumCapacity = dtCore.Rows.Count*currentCoreCosts.Count;
@@ -880,14 +881,14 @@ namespace Inforoom.Formalizer
 									}
 								}
 
-								FormLog.Log( getParserID(), "Finalize started: {0}", "CoreCosts" );
+								SimpleLog.Log( getParserID(), "Finalize started: {0}", "CoreCosts" );
 								//TryUpdate(daCoreCosts, dtCoreCosts.Copy());
 							}
 
 							mcClear.CommandText = String.Format("UPDATE {2} SET PosNum={0} , DateLastForm=NOW() WHERE FirmCode={1}", formCount, priceCode, FormalizeSettings.tbFormRules);
 							TryCommand(mcClear);
 
-							FormLog.Log( getParserID(), "Finalize started: {0}", "Commit");
+							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Commit");
 							myTrans.Commit();
 							res = true;					
 						}
@@ -896,14 +897,14 @@ namespace Inforoom.Formalizer
 							if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( (1213 == MyError.Number) || (1205 == MyError.Number) ) )
 							{
 								tryCount++;
-								FormLog.Log( getParserID(), "Try transaction: tryCount = {0}", tryCount);
+								SimpleLog.Log( getParserID(), "Try transaction: tryCount = {0}", tryCount);
 								try
 								{ 
 									myTrans.Rollback();
 								}
 								catch(Exception ex)
 								{
-									FormLog.Log( getParserID(), "Error on rollback = {0}", ex);
+									SimpleLog.Log( getParserID(), "Error on rollback = {0}", ex);
 								}
 								System.Threading.Thread.Sleep(tryCount*1000);
 							}
@@ -933,7 +934,7 @@ namespace Inforoom.Formalizer
 			}
 			finally
 			{
-				FormLog.Log( getParserID(), "Open time: {0}", DateTime.UtcNow.Subtract(tmOpen) );
+				SimpleLog.Log( getParserID(), "Open time: {0}", DateTime.UtcNow.Subtract(tmOpen) );
 			}
 
 			try
@@ -958,7 +959,7 @@ namespace Inforoom.Formalizer
 					}
 					finally
 					{
-						FormLog.Log( getParserID(), "Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare) );
+						SimpleLog.Log( getParserID(), "Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare) );
 					}
 
 
@@ -1025,7 +1026,7 @@ namespace Inforoom.Formalizer
 					}
 					finally
 					{
-						FormLog.Log( getParserID(), "Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize) );
+						SimpleLog.Log( getParserID(), "Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize) );
 					}
 
 					DateTime tmFinalize = DateTime.UtcNow;
@@ -1035,7 +1036,7 @@ namespace Inforoom.Formalizer
 					}
 					finally
 					{
-						FormLog.Log( getParserID(), "Finalize time: {0}", DateTime.UtcNow.Subtract(tmFinalize) );
+						SimpleLog.Log( getParserID(), "Finalize time: {0}", DateTime.UtcNow.Subtract(tmFinalize) );
 					}
 				}
 				catch
@@ -1583,7 +1584,7 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				FormLog.Log(getParserID(), "Error on SendMessageToOperator : {0}", e);
+				SimpleLog.Log(getParserID(), "Error on SendMessageToOperator : {0}", e);
 			}
 		}
 	}
