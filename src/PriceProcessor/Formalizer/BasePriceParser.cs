@@ -782,7 +782,7 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Окончание разбора прайса, с последующим логированием статистики
 		/// </summary>
-		public void Finalize()
+		public void FinalizePrice()
 		{
 			if (FormalizeSettings.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{
@@ -803,7 +803,7 @@ namespace Inforoom.Formalizer
 					int tryCount = 0;
 					do
 					{
-						SimpleLog.Log( getParserID(), "Finalize started.");
+						SimpleLog.Log( getParserID(), "FinalizePrice started.");
 
 						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -828,7 +828,7 @@ namespace Inforoom.Formalizer
 								TryCommand(mcClear);
 							}
 
-							SimpleLog.Log( getParserID(), "Finalize started: delete from UnrecExp");
+							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
 							MySqlDataAdapter daUnrecExpBlock = new MySqlDataAdapter(String.Format("SELECT BlockBy FROM {1} where FirmCode={0} and BlockBy <> '' limit 1", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 							daUnrecExpBlock.SelectCommand.Transaction = myTrans;
 							DataTable dtUnrecExpBlock = new DataTable();
@@ -845,20 +845,20 @@ namespace Inforoom.Formalizer
 								TryCommand(mcClear);
 							}
 
-							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Core");
+							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Core");
 //							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 //							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
 							TryUpdate(daCore, dtCore.Copy(), myTrans);
-							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Forb");
+							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Forb");
 							TryUpdate(daForb, dtForb.Copy(), myTrans);
-							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Zero" );
+							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Zero" );
 							TryUpdate(daZero, dtZero.Copy(), myTrans);
-							SimpleLog.Log( getParserID(), "Finalize started: {0}", "UnrecExp" );
+							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
 							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
-								SimpleLog.Log( getParserID(), "Finalize started.prepare: {0}", "CoreCosts" );
+								SimpleLog.Log( getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts" );
 								DataRow drCore;
 								DataRow drCoreCost;
 								dtCoreCosts.MinimumCapacity = dtCore.Rows.Count*currentCoreCosts.Count;
@@ -881,14 +881,14 @@ namespace Inforoom.Formalizer
 									}
 								}
 
-								SimpleLog.Log( getParserID(), "Finalize started: {0}", "CoreCosts" );
+								SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "CoreCosts" );
 								//TryUpdate(daCoreCosts, dtCoreCosts.Copy());
 							}
 
 							mcClear.CommandText = String.Format("UPDATE {2} SET PosNum={0} , DateLastForm=NOW() WHERE FirmCode={1}", formCount, priceCode, FormalizeSettings.tbFormRules);
 							TryCommand(mcClear);
 
-							SimpleLog.Log( getParserID(), "Finalize started: {0}", "Commit");
+							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Commit");
 							myTrans.Commit();
 							res = true;					
 						}
@@ -1032,11 +1032,11 @@ namespace Inforoom.Formalizer
 					DateTime tmFinalize = DateTime.UtcNow;
 					try
 					{
-						Finalize();
+						FinalizePrice();
 					}
 					finally
 					{
-						SimpleLog.Log( getParserID(), "Finalize time: {0}", DateTime.UtcNow.Subtract(tmFinalize) );
+						SimpleLog.Log( getParserID(), "FinalizePrice time: {0}", DateTime.UtcNow.Subtract(tmFinalize) );
 					}
 				}
 				catch
