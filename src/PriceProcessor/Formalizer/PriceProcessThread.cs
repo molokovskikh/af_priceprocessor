@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Web.Mail;
+using System.Net.Mail;
 using MySql.Data.MySqlClient;
 using Inforoom.Logging;
 
@@ -205,15 +205,10 @@ namespace Inforoom.Formalizer
 		{
 			try
 			{
-				MailMessage m = new MailMessage();
-				m.From = From;
-				m.To = To;
-				m.Subject = mSubject;
-				m.BodyFormat = MailFormat.Text;
-				m.BodyEncoding = System.Text.Encoding.GetEncoding(1251);
-				m.Body = mBody;
-				SmtpMail.SmtpServer = "box.analit.net";
-				SmtpMail.Send(m);
+				MailMessage Message = new MailMessage(From, To, mSubject, mBody);
+				Message.BodyEncoding = System.Text.Encoding.UTF8;
+				SmtpClient Client = new SmtpClient("box.analit.net");
+				Client.Send(Message);
 			}
 			catch(Exception e)
 			{

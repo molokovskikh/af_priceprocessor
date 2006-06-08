@@ -5,7 +5,7 @@ using System.Data;
 using System.Data.OleDb;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
-using System.Web.Mail;
+using System.Net.Mail;
 using Inforoom.Logging;
 
 namespace Inforoom.Formalizer
@@ -1562,25 +1562,23 @@ namespace Inforoom.Formalizer
 		{
 			try
 			{
-				MailMessage m = new MailMessage();
-				m.From = FormalizeSettings.FromEmail;
-				m.To = FormalizeSettings.RepEmail;
-				m.Subject = String.Format("{0} {1}", SubjectPrefix, PriceCode);
-				m.BodyFormat = MailFormat.Text;
-				m.BodyEncoding = System.Text.Encoding.GetEncoding(1251);
-				m.Body = String.Format(
+				MailMessage mailMessage = new MailMessage(FormalizeSettings.FromEmail, FormalizeSettings.RepEmail,
+					String.Format("{0} {1}", SubjectPrefix, PriceCode),
+					null);
+				mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
+				mailMessage.Body = String.Format(
 @"Код фирмы       : {0}
 Код прайса      : {1}
 Название прайса : {2}
 Дата события    : {3}
-Ошибка          : {4}", 
+Ошибка          : {4}",
 					ClientCode,
 					PriceCode,
 					String.Format("{0} ({1})", ClientName, PriceName),
 					DateTime.Now,
 					Message);
-				SmtpMail.SmtpServer = "box.analit.net";
-				SmtpMail.Send(m);
+				SmtpClient Client = new SmtpClient("box.analit.net");
+				Client.Send(mailMessage);
 			}
 			catch(Exception e)
 			{
