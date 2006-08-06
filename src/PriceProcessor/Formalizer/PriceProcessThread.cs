@@ -137,7 +137,7 @@ namespace Inforoom.Formalizer
 		private MySqlConnection getConnection()
 		{
 			return new MySqlConnection(
-				String.Format("server={0};username={1}; password={2}; database={3}; pooling=false",
+				String.Format("server={0};username={1}; password={2}; database={3}; pooling=false; allow zero datetime=true;",
 					FormalizeSettings.ServerName, 
 					FormalizeSettings.UserName, 
 					FormalizeSettings.Pass, 

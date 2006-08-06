@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Data;
 using System.Data.OleDb;
@@ -100,6 +101,12 @@ namespace Inforoom.Formalizer
 		OriginalName
 	}
 
+	public enum CostTypes : int
+	{ 
+		MultiColumn = 0,
+		MiltiFile = 1
+	}
+
 	[Flags]
 	public enum UnrecExpStatus : int 
 	{
@@ -134,10 +141,12 @@ namespace Inforoom.Formalizer
 		public static string colBillingStatus = "BillingStatus";
 		public static string colFirmStatus = "FirmStatus";
 		public static string colFirmSegment = "FirmSegment";
+		public static string colHasParentPrice = "HasParentPrice";
+		public static string colCostType = "CostType";
 	}
 
 	//
-	public class CoreCost
+	public class CoreCost : ICloneable
 	{
 		public System.Int64 costCode = -1;
 		public bool baseCost = false;
@@ -156,6 +165,17 @@ namespace Inforoom.Formalizer
 			txtBegin = ATxtBegin;
 			txtEnd = ATxtEnd;
 		}
+
+		#region ICloneable Members
+
+		public object Clone()
+		{
+			CoreCost ccNew = new CoreCost(this.costCode, this.costName, this.baseCost, this.fieldName, this.txtBegin, this.txtEnd);
+			ccNew.cost = this.cost;
+			return ccNew;
+		}
+
+		#endregion
 	}
 
 	public class BaseCostFinder{
@@ -277,6 +297,10 @@ namespace Inforoom.Formalizer
 		protected string junkPos;
 		//“ип прайса : ассортиментный
 		protected int    priceType;
+		//явл€етс€ ли текущий прайс ценовой колонкой прайса-родител€
+		protected bool hasParentPrice;
+		//“ип ценовых колонок прайса-родител€: 1 - мультиколоночный, 2 - многофайловый
+		protected int costType;
 
 		//Ќадо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI = false;
@@ -321,6 +345,8 @@ namespace Inforoom.Formalizer
 			parentSynonym = Convert.ToInt64(mydr.Rows[0][FormRules.colParentSynonym]); 
 			priceCurrency = mydr.Rows[0][FormRules.colCurrency].ToString();
 			firmSegment = Convert.ToInt32(mydr.Rows[0][FormRules.colFirmSegment]);
+			hasParentPrice = Convert.ToBoolean(mydr.Rows[0][FormRules.colHasParentPrice]);
+			costType = Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
 
 
 			priceFmt = ((string)mydr.Rows[0][FormRules.colPriceFMT]).ToUpper();
@@ -360,7 +386,13 @@ namespace Inforoom.Formalizer
 			if (String.Empty != nameMask)
 				toughMask = new ToughMask(nameMask, clientCode, priceCode, clientShortName, priceName);
 
-			MySqlDataAdapter daPricesCost = new MySqlDataAdapter( String.Format("select * from {1} pc, {2} cfr where pc.PriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode, FormalizeSettings.tbPricesCosts, FormalizeSettings.tbCostsFormRules), MyConn );
+			string selectCostFormRulesSQL = String.Empty;
+			if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+				selectCostFormRulesSQL = String.Format("select * from {1} pc, {2} cfr where pc.ShowPriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode, FormalizeSettings.tbPricesCosts, FormalizeSettings.tbCostsFormRules);
+			else
+				selectCostFormRulesSQL = String.Format("select * from {1} pc, {2} cfr where pc.PriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode, FormalizeSettings.tbPricesCosts, FormalizeSettings.tbCostsFormRules);
+
+			MySqlDataAdapter daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, MyConn );
 			DataTable dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
 
@@ -378,10 +410,8 @@ namespace Inforoom.Formalizer
 					)
 				);
 
-
-			//≈сли прайс не ассортиментный, то его надо проверить на базовую цену.
-/*
-			if (FormalizeSettings.ASSORT_FLG != priceType)
+			//≈сли прайс €вл€етс€ не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
+			if ((FormalizeSettings.ASSORT_FLG != priceType) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 			{
 				if (1 == currentCoreCosts.Count)
 				{
@@ -390,38 +420,31 @@ namespace Inforoom.Formalizer
 				}
 				else
 				{
-					int baseIndex = currentCoreCosts.IndexOf(new BaseCostFinder());
-					if (-1 == baseIndex)
+					CoreCost[] bc = Array.FindAll<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.baseCost; });
+					if (bc.Length == 0)
 					{
 						throw new WarningFormalizeException(FormalizeSettings.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
 					}
 					else
-					{
-						int lastBaseIndex = currentCoreCosts.LastIndexOf(new BaseCostFinder());
-						if (baseIndex != lastBaseIndex)
+						if (bc.Length > 1)
 						{
 							throw new WarningFormalizeException(
-								String.Format(FormalizeSettings.DoubleBaseCostsError, 
-									(currentCoreCosts[baseIndex] as CoreCost).costCode, 
-									(currentCoreCosts[lastBaseIndex] as CoreCost).costCode), 
+								String.Format(FormalizeSettings.DoubleBaseCostsError,
+									(bc[0] as CoreCost).costCode,
+									(bc[1] as CoreCost).costCode),
 								clientCode, priceCode, clientShortName, priceName);
 						}
 						else
 						{
-							if (0 != baseIndex)
-							{
-								CoreCost tmp = (CoreCost)currentCoreCosts[baseIndex];
-								currentCoreCosts.RemoveAt(baseIndex);
-								currentCoreCosts.Insert(0, tmp);
-							}
+							currentCoreCosts.Remove(bc[0]);
+							currentCoreCosts.Insert(0, bc[0]);
 						}
-					}
+
 				}
 
-				if (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)
+				if (((this is TXTFPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
 					throw new WarningFormalizeException(FormalizeSettings.FieldNameBaseCostsError, clientCode, priceCode, clientShortName, priceName);
 			}
-*/			
 		}
 
 		/// <summary>
@@ -516,8 +539,18 @@ namespace Inforoom.Formalizer
 
 			dsMyDB.Tables["Core"].Rows.Add(drCore);
 			if (priceType != FormalizeSettings.ASSORT_FLG)
-				CoreCosts.Add( currentCoreCosts.Clone() );
+				CoreCosts.Add(DeepCopy(currentCoreCosts));
 			formCount++;
+		}
+
+		object DeepCopy(ArrayList al)
+		{
+			ArrayList alNew = new ArrayList();
+			for (int i = 0; i < al.Count; i++)
+			{
+				alNew.Add(((ICloneable)al[i]).Clone());
+			}
+			return alNew;
 		}
 
 		/// <summary>
@@ -649,6 +682,7 @@ namespace Inforoom.Formalizer
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
 			daUnrecExp.Fill(dsMyDB, "UnrecExp");
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
+			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
 
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
@@ -826,6 +860,8 @@ namespace Inforoom.Formalizer
 							{
 								mcClear.CommandText = String.Format("delete from {0} where pc_costcode = {1}", FormalizeSettings.tbCoreCosts, c.costCode);
 								TryCommand(mcClear);
+								mcClear.CommandText = String.Format("delete from {1}{2} where FirmCode={0}", c.costCode, FormalizeSettings.tbCore, firmSegment);
+								TryCommand(mcClear);
 							}
 
 							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
@@ -848,7 +884,9 @@ namespace Inforoom.Formalizer
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Core");
 //							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 //							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
-							TryUpdate(daCore, dtCore.Copy(), myTrans);
+							//ƒелаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
+							DataTable dtCoreCopy = dtCore.Copy();
+							TryUpdate(daCore, dtCoreCopy, myTrans);
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Forb");
 							TryUpdate(daForb, dtForb.Copy(), myTrans);
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Zero" );
@@ -856,17 +894,19 @@ namespace Inforoom.Formalizer
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
-							if (priceType != FormalizeSettings.ASSORT_FLG)
+							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 							{
 								SimpleLog.Log( getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts" );
 								DataRow drCore;
 								DataRow drCoreCost;
-								dtCoreCosts.MinimumCapacity = dtCore.Rows.Count*currentCoreCosts.Count;
+								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
+								dtCoreCosts.Clear();
+								dtCoreCosts.AcceptChanges();
 								ArrayList currCC;
 								//«десь вставить проверку того, что не надо заполн€ть цены два раза или обновл€ть их
-								for(int i = 0; i<=dtCore.Rows.Count-1; i++)
+								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
 								{
-									drCore = dtCore.Rows[i];
+									drCore = dtCoreCopy.Rows[i];
 									currCC = (ArrayList)CoreCosts[i];
 									foreach(CoreCost c in currCC)
 									{
@@ -882,7 +922,47 @@ namespace Inforoom.Formalizer
 								}
 
 								SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "CoreCosts" );
-								//TryUpdate(daCoreCosts, dtCoreCosts.Copy());
+								TryUpdate(daCoreCosts, dtCoreCosts, myTrans);
+								List<DataTable> lCores = new List<DataTable>();
+								for (int i = 0; i < ((ArrayList)CoreCosts[0]).Count; i++)
+								{
+									lCores.Add(dtCore.Clone());
+								}
+
+								DataRow inCore;
+
+								for (int i = 0; i < CoreCosts.Count; i++)
+								{
+									currCC = (ArrayList)CoreCosts[i];
+									for (int j = 0; j < currCC.Count; j++)
+									{ 
+										CoreCost c = (CoreCost)currCC[j];
+										//¬ставл€ем только дл€ цен, которые не базовые, чтобы не было дубликата базового прайса
+										if (c.costCode != priceCode)
+										{
+											//≈сли не нулева€ цена, что производим вставку записи
+											if (!checkZeroCost(c.cost))
+											{
+												inCore = lCores[j].NewRow();
+												inCore.ItemArray = dtCore.Rows[i].ItemArray;
+												inCore["FirmCode"] = c.costCode;
+												inCore["BaseCost"] = c.cost;
+												lCores[j].Rows.Add(inCore);
+											}
+										}
+
+										//lCores[j].Rows[i]["FirmCode"] = c.costCode;
+										//if (c.cost > 0)
+										//    lCores[j].Rows[i]["BaseCost"] = c.cost;
+										//else
+										//    lCores[j].Rows[i]["BaseCost"] = DBNull.Value;
+									}
+								}
+								foreach (DataTable dtcc in lCores)
+								{
+									if ((dtcc.Rows.Count > 0) && (Convert.ToInt64(dtcc.Rows[0]["FirmCode"]) != priceCode))
+										TryUpdate(daCore, dtcc, myTrans);
+								}
 							}
 
 							mcClear.CommandText = String.Format("UPDATE {2} SET PosNum={0} , DateLastForm=NOW() WHERE FirmCode={1}", formCount, priceCode, FormalizeSettings.tbFormRules);
@@ -982,13 +1062,26 @@ namespace Inforoom.Formalizer
 								if (priceType != FormalizeSettings.ASSORT_FLG)
 								{
 									costCount = ProcessCosts();
-									//≈сли кол-во ненулевых цен = 0
-									if ( 0 == costCount )
+									//ѕроизводим проверку дл€ мультиколоночных прайсов
+									if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 									{
-										InsertToZero();
-										continue;
+										if (checkZeroCost((currentCoreCosts[0] as CoreCost).cost))
+										{
+											InsertToZero();
+											continue;
+										}
+										else
+											currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
 									}
-									currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
+									else
+										//Ёта проверка дл€ всех остальных
+										//≈сли кол-во ненулевых цен = 0
+										if ( 0 == costCount )
+										{
+											InsertToZero();
+											continue;
+										}
+										currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
 								}
 								else
 									currBaseCost = -1m;

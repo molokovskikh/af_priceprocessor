@@ -106,6 +106,8 @@ namespace Inforoom.Formalizer
 		public static readonly string ThreadAbortError = "Формализация прайса был остановленна.";
 		public static readonly string FileCopyError = "Не удалось скопировать файл {0} в каталог {1}. \nПричина : {2}";
 		public static readonly string MaxErrorsError = "Файл {0} помещен в каталог {1} в результате {2} неудачных попыток формализации.";
+		public static readonly string UnknowCostTypeError = "Неизвестный тип ценовых колонок прайса : ({0})";
+		public static readonly string MulticolumnAsPriceError = "Попытка формализовать ценовую колонку мультиколоночного прайс-листа как прайс.";
 
 
 		static FormalizeSettings()
@@ -169,6 +171,9 @@ namespace Inforoom.Formalizer
 			PeriodParseError = (string)configurationAppSettings.GetValue("FormalizeSettings.PeriodParseError", typeof(string));
 			ThreadAbortError = (string)configurationAppSettings.GetValue("FormalizeSettings.ThreadAbortError", typeof(string));
 			FileCopyError = (string)configurationAppSettings.GetValue("FormalizeSettings.FileCopyError", typeof(string));
+			MaxErrorsError = (string)configurationAppSettings.GetValue("FormalizeSettings.MaxErrorsError", typeof(string));
+			UnknowCostTypeError = (string)configurationAppSettings.GetValue("FormalizeSettings.UnknowCostTypeError", typeof(string));
+			MulticolumnAsPriceError = (string)configurationAppSettings.GetValue("FormalizeSettings.MulticolumnAsPriceError", typeof(string));
 
 		}
 
