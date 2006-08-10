@@ -820,19 +820,19 @@ namespace Inforoom.Formalizer
 		{
 			if (FormalizeSettings.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{
-				//myTrans.Rollback();
 				throw new RollbackFormalizeException(FormalizeSettings.ZeroRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 			}
 			else
 			{
 				if (formCount * 1.3 < posNum)
 				{
-					//myTrans.Rollback();
 					throw new RollbackFormalizeException(FormalizeSettings.PrevFormRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 				}
 				else
 				{
 
+					//Производим первую транзакцию с применением главного прайса и таблицы цен
+					List<DataTable> lCores = new List<DataTable>();
 					bool res = false;
 					int tryCount = 0;
 					do
@@ -843,7 +843,7 @@ namespace Inforoom.Formalizer
 
 						try
 						{
-							//TODO: Сделать одним запросом
+							//TODO: Сделать одним вызовом несколько SQL-запросов
 							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1}{2} where FirmCode={0}", priceCode, FormalizeSettings.tbCore, firmSegment), MyConn, myTrans);
 							TryCommand(mcClear);
 
@@ -852,19 +852,17 @@ namespace Inforoom.Formalizer
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbForb);
 							TryCommand(mcClear);
-
-							//mcClear.CommandText = String.Format("delete cc from {1} cc, {2} pc where cc.pc_costcode =pc.costcode and pc.pricecode = {0}", priceCode, FormalizeSettings.tbCoreCosts, FormalizeSettings.tbPricesCosts);
-							//TryCommand(mcClear);
-					
+			
 							foreach(CoreCost c in currentCoreCosts)
 							{
 								mcClear.CommandText = String.Format("delete from {0} where pc_costcode = {1}", FormalizeSettings.tbCoreCosts, c.costCode);
 								TryCommand(mcClear);
-								mcClear.CommandText = String.Format("delete from {1}{2} where FirmCode={0}", c.costCode, FormalizeSettings.tbCore, firmSegment);
-								TryCommand(mcClear);
+								//mcClear.CommandText = String.Format("delete from {1}{2} where FirmCode={0}", c.costCode, FormalizeSettings.tbCore, firmSegment);
+								//TryCommand(mcClear);
 							}
 
 							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
+							//TODO:Это здесь не нужно, т.к. никто не выставляе блокировку прайса в поле BlockBy. Требует проверки
 							MySqlDataAdapter daUnrecExpBlock = new MySqlDataAdapter(String.Format("SELECT BlockBy FROM {1} where FirmCode={0} and BlockBy <> '' limit 1", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 							daUnrecExpBlock.SelectCommand.Transaction = myTrans;
 							DataTable dtUnrecExpBlock = new DataTable();
@@ -894,9 +892,10 @@ namespace Inforoom.Formalizer
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
-							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+							//Если прайс не является ассортиментным, то производим обновление цен
+							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
-								SimpleLog.Log( getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts" );
+								SimpleLog.Log(getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts");
 								DataRow drCore;
 								DataRow drCoreCost;
 								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
@@ -908,7 +907,7 @@ namespace Inforoom.Formalizer
 								{
 									drCore = dtCoreCopy.Rows[i];
 									currCC = (ArrayList)CoreCosts[i];
-									foreach(CoreCost c in currCC)
+									foreach (CoreCost c in currCC)
 									{
 										drCoreCost = dtCoreCosts.NewRow();
 										drCoreCost["Core_ID"] = drCore["ID"];
@@ -916,20 +915,26 @@ namespace Inforoom.Formalizer
 										if (c.cost > 0)
 											drCoreCost["Cost"] = c.cost;
 										else
-											drCoreCost["Cost"] =  DBNull.Value;
+											drCoreCost["Cost"] = DBNull.Value;
 										dtCoreCosts.Rows.Add(drCoreCost);
 									}
 								}
 
-								SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "CoreCosts" );
+								SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
 								TryUpdate(daCoreCosts, dtCoreCosts, myTrans);
-								List<DataTable> lCores = new List<DataTable>();
+							}
+
+							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+							{
+								lCores.Clear();
 								for (int i = 0; i < ((ArrayList)CoreCosts[0]).Count; i++)
 								{
 									lCores.Add(dtCore.Clone());
 								}
 
 								DataRow inCore;
+
+								ArrayList currCC;
 
 								for (int i = 0; i < CoreCosts.Count; i++)
 								{
@@ -950,18 +955,7 @@ namespace Inforoom.Formalizer
 												lCores[j].Rows.Add(inCore);
 											}
 										}
-
-										//lCores[j].Rows[i]["FirmCode"] = c.costCode;
-										//if (c.cost > 0)
-										//    lCores[j].Rows[i]["BaseCost"] = c.cost;
-										//else
-										//    lCores[j].Rows[i]["BaseCost"] = DBNull.Value;
 									}
-								}
-								foreach (DataTable dtcc in lCores)
-								{
-									if ((dtcc.Rows.Count > 0) && (Convert.ToInt64(dtcc.Rows[0]["FirmCode"]) != priceCode))
-										TryUpdate(daCore, dtcc, myTrans);
 								}
 							}
 
@@ -995,6 +989,62 @@ namespace Inforoom.Formalizer
 
 					if (tryCount > maxLockCount)
 						maxLockCount = tryCount;
+
+					//Производим последующие транзации в том случае, если это прайс мультиколоночный
+					if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+					{
+						long currentCostCode;
+						foreach (DataTable dtcc in lCores)
+						{
+							if ((dtcc.Rows.Count > 0) && (Convert.ToInt64(dtcc.Rows[0]["FirmCode"]) != priceCode))
+							{
+								currentCostCode = Convert.ToInt64(dtcc.Rows[0]["FirmCode"]);
+								res = false;
+								tryCount = 0;
+								do
+								{
+									SimpleLog.Log(getParserID(), "FinalizePrice started. CostCode = {0}", currentCostCode);
+
+									myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+
+									try
+									{
+										SimpleLog.Log(getParserID(), "FinalizePrice started: {0}, CostCode = {1}", "Commit", currentCostCode);
+
+										MySqlHelper.ExecuteNonQuery(MyConn, String.Format("delete from {1}{2} where FirmCode={0}", currentCostCode, FormalizeSettings.tbCore, firmSegment), null);
+
+										TryUpdate(daCore, dtcc, myTrans);
+
+										myTrans.Commit();
+										res = true;
+									}
+									catch (MySqlException MyError)
+									{
+										if ((tryCount <= FormalizeSettings.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number)))
+										{
+											tryCount++;
+											SimpleLog.Log(getParserID(), "Try transaction: tryCount = {0}, CostCode = {1}", tryCount, currentCostCode);
+											try
+											{
+												myTrans.Rollback();
+											}
+											catch (Exception ex)
+											{
+												SimpleLog.Log(getParserID(), "Error on rollback = {0}", ex);
+											}
+											System.Threading.Thread.Sleep(tryCount * 1000);
+										}
+										else
+											throw;
+									}
+								} while (!res);
+
+								if (tryCount > maxLockCount)
+									maxLockCount = tryCount;
+							}
+						}
+					}
+
 				}
 			}
 

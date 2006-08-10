@@ -102,14 +102,14 @@ namespace Inforoom.Formalizer
 
 			foreach(CoreCost cc in currentCoreCosts)
 			{
-				if (String.Empty !=  cc.fieldName)
-					fds.Add(
-						new TxtFieldDef(
-							cc.fieldName, 
-							cc.txtBegin, 
-							cc.txtEnd
-						)
-					);
+				cc.fieldName = "Cost" + cc.costCode.ToString();
+				fds.Add(
+					new TxtFieldDef(
+						cc.fieldName,
+						cc.txtBegin,
+						cc.txtEnd
+					)
+				);
 			}
 
 			if (fds.Count < 1)
