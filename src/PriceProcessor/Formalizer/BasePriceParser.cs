@@ -273,6 +273,8 @@ namespace Inforoom.Formalizer
 		protected System.Int64		formID;
 		//ключ прайса
 		public System.Int64		priceCode = -1;
+		//индекс цены с таким же кодом как у прайса в списке цен (currentCoreCosts)
+		public int				priceCodeCostIndex = -1;
 		//родительский синоним : прайс-родитель, нужен для выбора различных параметров
 		protected System.Int64		parentSynonym;
 		//Кол-во распознаных позиций в прошлый раз
@@ -444,6 +446,10 @@ namespace Inforoom.Formalizer
 
 				if (((this is TXTFPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
 					throw new WarningFormalizeException(FormalizeSettings.FieldNameBaseCostsError, clientCode, priceCode, clientShortName, priceName);
+
+				priceCodeCostIndex = Array.FindIndex<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.costCode == priceCode; });
+				if (priceCodeCostIndex == -1)
+					priceCodeCostIndex = 0;
 			}
 		}
 
@@ -927,7 +933,7 @@ namespace Inforoom.Formalizer
 							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 							{
 								lCores.Clear();
-								for (int i = 0; i < ((ArrayList)CoreCosts[0]).Count; i++)
+								for (int i = 0; i < currentCoreCosts.Count; i++)
 								{
 									lCores.Add(dtCore.Clone());
 								}
@@ -1115,23 +1121,25 @@ namespace Inforoom.Formalizer
 									//Производим проверку для мультиколоночных прайсов
 									if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 									{
-										if (checkZeroCost((currentCoreCosts[0] as CoreCost).cost))
+										if (checkZeroCost((currentCoreCosts[0] as CoreCost).cost) || checkZeroCost((currentCoreCosts[priceCodeCostIndex] as CoreCost).cost))
 										{
 											InsertToZero();
 											continue;
 										}
 										else
-											currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
+											currBaseCost = (currentCoreCosts[priceCodeCostIndex] as CoreCost).cost;
 									}
 									else
+									{
 										//Эта проверка для всех остальных
 										//Если кол-во ненулевых цен = 0
-										if ( 0 == costCount )
+										if (0 == costCount)
 										{
 											InsertToZero();
 											continue;
 										}
 										currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
+									}
 								}
 								else
 									currBaseCost = -1m;
