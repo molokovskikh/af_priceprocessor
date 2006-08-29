@@ -1019,7 +1019,7 @@ namespace Inforoom.Formalizer
 
 										MySqlHelper.ExecuteNonQuery(MyConn, String.Format("delete from {1}{2} where FirmCode={0}", currentCostCode, FormalizeSettings.tbCore, firmSegment), null);
 
-										TryUpdate(daCore, dtcc, myTrans);
+										TryUpdate(daCore, dtcc.Copy(), myTrans);
 
 										myTrans.Commit();
 										res = true;
