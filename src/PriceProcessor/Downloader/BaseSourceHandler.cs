@@ -312,7 +312,7 @@ AND pd.AgencyEnabled= 1",
 
         protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
-            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserError,
+            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPErrorList,
                 String.Format("Письмо с UID {0} не было обработано", UID),
                 String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage));
             if (ms != null)
