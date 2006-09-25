@@ -845,7 +845,7 @@ namespace Inforoom.Formalizer
 					{
 						SimpleLog.Log( getParserID(), "FinalizePrice started.");
 
-						myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
+						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 						try
 						{
@@ -853,19 +853,71 @@ namespace Inforoom.Formalizer
 							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1}{2} where FirmCode={0}", priceCode, FormalizeSettings.tbCore, firmSegment), MyConn, myTrans);
 							TryCommand(mcClear);
 
-							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero );
+							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Core");
+							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
+							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
+							//Делаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
+							DataTable dtCoreCopy = dtCore.Copy();
+							TryUpdate(daCore, dtCoreCopy, myTrans);
+
+
+							//Если прайс не является ассортиментным, то производим обновление цен
+							if (priceType != FormalizeSettings.ASSORT_FLG)
+							{
+								SimpleLog.Log(getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts");
+								DataRow drCore;
+								DataRow drCoreCost;
+								System.Text.StringBuilder sb = new System.Text.StringBuilder();
+								foreach (CoreCost c in currentCoreCosts)
+								{
+									sb.AppendLine(String.Format("delete from {0} where pc_costcode = {1};", FormalizeSettings.tbCoreCosts, c.costCode));
+								}
+								mcClear.CommandText = sb.ToString();
+								SimpleLog.Log(getParserID(), "Delete AffectedRows = {0}", mcClear.ExecuteNonQuery());
+
+								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
+								dtCoreCosts.Clear();
+								dtCoreCosts.AcceptChanges();
+
+								sb = new System.Text.StringBuilder();
+								sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
+								bool FirstInsert = true;
+								ArrayList currCC;
+								//Здесь вставить проверку того, что не надо заполнять цены два раза или обновлять их
+								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
+								{
+									drCore = dtCoreCopy.Rows[i];
+									currCC = (ArrayList)CoreCosts[i];
+									foreach (CoreCost c in currCC)
+									{
+										drCoreCost = dtCoreCosts.NewRow();
+										drCoreCost["Core_ID"] = drCore["ID"];
+										drCoreCost["PC_CostCode"] = c.costCode;
+										if (c.cost > 0)
+											drCoreCost["Cost"] = c.cost;
+										else
+											drCoreCost["Cost"] = DBNull.Value;
+										dtCoreCosts.Rows.Add(drCoreCost);
+										if (!FirstInsert)
+										{
+											sb.Append(", ");
+										}
+										FirstInsert = false;
+										sb.AppendFormat("({0}, {1}, {2}) ", drCore["ID"], c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
+									}
+								}
+								sb.Append(";");
+
+								SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
+								mcClear.CommandText = sb.ToString();
+								SimpleLog.Log(getParserID(), "Insert AffectedRows = {0}", mcClear.ExecuteNonQuery());
+							}
+
+							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero);
 							TryCommand(mcClear);
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbForb);
-							TryCommand(mcClear);
-			
-							foreach(CoreCost c in currentCoreCosts)
-							{
-								mcClear.CommandText = String.Format("delete from {0} where pc_costcode = {1}", FormalizeSettings.tbCoreCosts, c.costCode);
-								TryCommand(mcClear);
-								//mcClear.CommandText = String.Format("delete from {1}{2} where FirmCode={0}", c.costCode, FormalizeSettings.tbCore, firmSegment);
-								//TryCommand(mcClear);
-							}
+							TryCommand(mcClear);			
 
 							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
 							//TODO:Это здесь не нужно, т.к. никто не выставляе блокировку прайса в поле BlockBy. Требует проверки
@@ -885,50 +937,12 @@ namespace Inforoom.Formalizer
 								TryCommand(mcClear);
 							}
 
-							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Core");
-//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
-//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
-							//Делаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
-							DataTable dtCoreCopy = dtCore.Copy();
-							TryUpdate(daCore, dtCoreCopy, myTrans);
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Forb");
 							TryUpdate(daForb, dtForb.Copy(), myTrans);
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Zero" );
 							TryUpdate(daZero, dtZero.Copy(), myTrans);
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
-
-							//Если прайс не является ассортиментным, то производим обновление цен
-							if (priceType != FormalizeSettings.ASSORT_FLG)
-							{
-								SimpleLog.Log(getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts");
-								DataRow drCore;
-								DataRow drCoreCost;
-								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
-								dtCoreCosts.Clear();
-								dtCoreCosts.AcceptChanges();
-								ArrayList currCC;
-								//Здесь вставить проверку того, что не надо заполнять цены два раза или обновлять их
-								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
-								{
-									drCore = dtCoreCopy.Rows[i];
-									currCC = (ArrayList)CoreCosts[i];
-									foreach (CoreCost c in currCC)
-									{
-										drCoreCost = dtCoreCosts.NewRow();
-										drCoreCost["Core_ID"] = drCore["ID"];
-										drCoreCost["PC_CostCode"] = c.costCode;
-										if (c.cost > 0)
-											drCoreCost["Cost"] = c.cost;
-										else
-											drCoreCost["Cost"] = DBNull.Value;
-										dtCoreCosts.Rows.Add(drCoreCost);
-									}
-								}
-
-								SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
-								TryUpdate(daCoreCosts, dtCoreCosts, myTrans);
-							}
 
 							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 							{
@@ -1011,7 +1025,7 @@ namespace Inforoom.Formalizer
 								{
 									SimpleLog.Log(getParserID(), "FinalizePrice started. CostCode = {0}", currentCostCode);
 
-									myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
+									myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 									try
 									{
