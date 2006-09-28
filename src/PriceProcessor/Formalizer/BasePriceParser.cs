@@ -819,6 +819,87 @@ namespace Inforoom.Formalizer
 				maxLockCount = tryCount;
 		}
 
+		public long MultiInsertIntoCore(DataTable dtCore, MySqlConnection con, MySqlTransaction tran)
+		{
+			if (dtCore.Rows.Count > 0)
+			{
+				System.Text.StringBuilder sb = new System.Text.StringBuilder();
+				MySqlCommand cmd = new MySqlCommand(String.Empty, con, tran);
+
+				int Index = 0;
+
+				bool FirstInsert = true;
+				sb.AppendLine(String.Format("insert into {0}{1} (" + 
+					"FirmCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
+					"Period, Junk, Await, BaseCost, MinBoundCost, " +
+					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore, firmSegment));
+
+				foreach (DataRow drCore in dtCore.Rows)
+				{
+					if (!FirstInsert)
+						sb.Append(", ");
+					FirstInsert = false;
+					sb.Append("(");
+					sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, {5}, ", drCore["FirmCode"], drCore["FullCode"], drCore["ShortCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
+					sb.AppendFormat("{0}, ", (drCore["Period"] is DBNull) ? "null" : "'" + drCore["Period"].ToString() + "'");
+					sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
+					sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
+					sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+					sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+					AddTextParameter("Code", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("CodeCr", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Unit", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Volume", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Quantity", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Note", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Doc", Index, cmd, drCore, sb);
+					sb.Append(", ");
+					AddTextParameter("Currency", Index, cmd, drCore, sb);
+
+					sb.AppendLine(")");
+					Index++;
+				}
+
+				cmd.CommandText = sb.ToString();
+				cmd.ExecuteNonQuery();
+
+				cmd.CommandText = "select last_insert_id()";
+				return Convert.ToInt64(cmd.ExecuteScalar());
+			}
+			else
+				return 0;
+		}
+
+		public void AddTextParameter(string ParamName, int Index, MySqlCommand cmd, DataRow dr, System.Text.StringBuilder sb)
+		{
+			if (dr[ParamName] is DBNull)
+				sb.Append("null");
+			else
+			{
+				string s = dr[ParamName].ToString();
+				s = s.Replace("\\", "\\\\");
+				s = s.Replace("\'", "\\\'");
+				s = s.Replace("\"", "\\\"");
+				s = s.Replace("`", "\\`");
+				sb.AppendFormat("'{0}'", s);
+			}
+		}
+
+		void SetCoreID(DataTable dtCore, long LastID)
+		{
+			foreach (DataRow drCore in dtCore.Rows)
+			{
+				drCore["ID"] = Convert.ToUInt64(LastID);
+				LastID++;
+			}
+		}
+
 		/// <summary>
 		/// Окончание разбора прайса, с последующим логированием статистики
 		/// </summary>
@@ -858,8 +939,8 @@ namespace Inforoom.Formalizer
 							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
 							//Делаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
 							DataTable dtCoreCopy = dtCore.Copy();
-							TryUpdate(daCore, dtCoreCopy, myTrans);
-
+							long LastID = MultiInsertIntoCore(dtCoreCopy, MyConn, myTrans);
+							SetCoreID(dtCoreCopy, LastID);
 
 							//Если прайс не является ассортиментным, то производим обновление цен
 							if (priceType != FormalizeSettings.ASSORT_FLG)
@@ -899,18 +980,20 @@ namespace Inforoom.Formalizer
 											drCoreCost["Cost"] = DBNull.Value;
 										dtCoreCosts.Rows.Add(drCoreCost);
 										if (!FirstInsert)
-										{
 											sb.Append(", ");
-										}
 										FirstInsert = false;
 										sb.AppendFormat("({0}, {1}, {2}) ", drCore["ID"], c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
 									}
 								}
 								sb.Append(";");
 
-								SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
-								mcClear.CommandText = sb.ToString();
-								SimpleLog.Log(getParserID(), "Insert AffectedRows = {0}", mcClear.ExecuteNonQuery());
+								//Если есть цены, которые нужно вставлять, то делаем вставку, иначе ничего не делаем
+								if (dtCoreCosts.Rows.Count > 0)
+								{
+									SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
+									mcClear.CommandText = sb.ToString();
+									SimpleLog.Log(getParserID(), "Insert AffectedRows = {0}", mcClear.ExecuteNonQuery());
+								}
 							}
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero);
@@ -920,18 +1003,12 @@ namespace Inforoom.Formalizer
 							TryCommand(mcClear);			
 
 							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
-							//TODO:Это здесь не нужно, т.к. никто не выставляе блокировку прайса в поле BlockBy. Требует проверки
-							MySqlDataAdapter daUnrecExpBlock = new MySqlDataAdapter(String.Format("SELECT BlockBy FROM {1} where FirmCode={0} and BlockBy <> '' limit 1", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
-							daUnrecExpBlock.SelectCommand.Transaction = myTrans;
-							DataTable dtUnrecExpBlock = new DataTable();
-							daUnrecExpBlock.Fill(dtUnrecExpBlock);
-
 							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM {1} where PriceCode={0} limit 1", priceCode, FormalizeSettings.tbBlockedPrice), MyConn);
 							daBlockedPrice.SelectCommand.Transaction = myTrans;
 							DataTable dtBlockedPrice = new DataTable();
 							daBlockedPrice.Fill(dtBlockedPrice);
 
-							if ( (dtUnrecExpBlock.Rows.Count == 0) && (dtBlockedPrice.Rows.Count == 0) )
+							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
 								mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbUnrecExp);
 								TryCommand(mcClear);
@@ -1000,7 +1077,7 @@ namespace Inforoom.Formalizer
 								{
 									SimpleLog.Log( getParserID(), "Error on rollback = {0}", ex);
 								}
-								System.Threading.Thread.Sleep(tryCount*1000);
+								System.Threading.Thread.Sleep(10000 + tryCount*1000);
 							}
 							else
 								throw;
@@ -1033,7 +1110,7 @@ namespace Inforoom.Formalizer
 
 										MySqlHelper.ExecuteNonQuery(MyConn, String.Format("delete from {1}{2} where FirmCode={0}", currentCostCode, FormalizeSettings.tbCore, firmSegment), null);
 
-										TryUpdate(daCore, dtcc.Copy(), myTrans);
+										MultiInsertIntoCore(dtcc.Copy(), MyConn, myTrans);
 
 										myTrans.Commit();
 										res = true;
@@ -1052,7 +1129,7 @@ namespace Inforoom.Formalizer
 											{
 												SimpleLog.Log(getParserID(), "Error on rollback = {0}", ex);
 											}
-											System.Threading.Thread.Sleep(tryCount * 1000);
+											System.Threading.Thread.Sleep(10000 + tryCount * 1000);
 										}
 										else
 											throw;
