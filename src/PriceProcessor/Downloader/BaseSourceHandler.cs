@@ -217,7 +217,7 @@ namespace Inforoom.Downloader
             }
         }
 
-        protected string GetSQLSources()
+        protected virtual string GetSQLSources()
         {
             return String.Format(@"
 SELECT
@@ -280,7 +280,7 @@ AND pd.AgencyEnabled= 1",
             }
         }
 
-        protected void FillSourcesTable()
+        protected virtual void FillSourcesTable()
         {
             dtSources.Clear();
             try

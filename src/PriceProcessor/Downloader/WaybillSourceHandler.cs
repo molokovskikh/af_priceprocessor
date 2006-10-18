@@ -113,18 +113,22 @@ and Apteka.FirmCode = ?AptekaClientCode",
 			}
 		}
 
-		private override void ProcessAttachs(Mime m, ref bool Matched, AddressList FromList, ref string AttachNames)
+		protected override void ProcessAttachs(Mime m, ref bool Matched, AddressList FromList, ref string AttachNames)
 		{
 			bool CorrectArchive = true;
 			string ShortFileName = string.Empty;
 
 			DataRow[] drLS = null;
 
-			//Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
+			/*В накладных письма обрабатываются немного по-другому: письма обрабатываются относительно адреса отправителя
+			 * и если такой отправитель найден в истониках, то все вложения сохраняются относительно него.
+			 * Если он не найден, то ничего не делаем.
+			 */
 			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 			{
 				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
+				//Адрес отправителя должен быть только у одного поставщика, если получилось больше, то это ошибка
 				if (drLS.Length == 1)
 				{
 					DataRow drS = drLS[0];
@@ -143,6 +147,7 @@ and Apteka.FirmCode = ?AptekaClientCode",
 							}
 							else
 							{
+								FormLog.Log(this.GetType().Name + ".ProcessAttachs", "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
 								//TODO: надо что-то делать с такими файлами
 								//Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
 							}
@@ -150,103 +155,11 @@ and Apteka.FirmCode = ?AptekaClientCode",
 						}
 					}
 
-					Matched = true;
-					if (CorrectArchive)
-					{
-						ProcessWaybillFile(CurrFileName, drS);
-					}
-					else
-					{
-						//TODO: надо что-то делать с такими файлами
-						//Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
-					}
-					drS.Delete();
-
-			
-					foreach (DataRow drS in drLS)
-					{
-						Matched = true;
-						//drCurrent = drS;
-						//SetCurrentPriceCode(drS);
-						if (CorrectArchive)
-						{
-							ProcessWaybillFile(CurrFileName, drS);
-							//if (ProcessPriceFile(CurrFileName))
-							//{
-							//    Logging(CurrPriceCode, String.Empty);
-							//    UpdateDB(CurrPriceCode, DateTime.Now);
-							//}
-							//else
-							//{
-							//    Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
-							//}
-						}
-						else
-						{
-							//TODO: надо что-то делать с такими файлами
-							//Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
-						}
-						drS.Delete();
-					}
+					drS.Delete();			
 				}
 				else
 					if (drLS.Length > 1)
 						throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", mbFrom.EmailAddress));
-				dtSources.AcceptChanges();
-			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
-
-
-
-			foreach (MimeEntity ent in m.Attachments)
-			{
-				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
-				{
-					ShortFileName = SaveAttachement(ent);
-					AttachNames += "\"" + ShortFileName + "\"" + Environment.NewLine;
-					CorrectArchive = CheckFile();
-					UnPack(m, ref Matched, FromList, ShortFileName, CorrectArchive);
-					DeleteCurrFile();
-				}
-			}
-		}
-
-		protected override void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName, bool CorrectArchive)
-		{
-			DataRow[] drLS = null;
-
-			//Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
-			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
-			{
-				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
-					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
-				if (drLS.Length == 1)
-					foreach (DataRow drS in drLS)
-					{
-						Matched = true;
-						//drCurrent = drS;
-						//SetCurrentPriceCode(drS);
-						if (CorrectArchive)
-						{
-							ProcessWaybillFile(CurrFileName, drS);
-							//if (ProcessPriceFile(CurrFileName))
-							//{
-							//    Logging(CurrPriceCode, String.Empty);
-							//    UpdateDB(CurrPriceCode, DateTime.Now);
-							//}
-							//else
-							//{
-							//    Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
-							//}
-						}
-						else
-						{
-							//TODO: надо что-то делать с такими файлами
-							//Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
-						}
-						drS.Delete();
-					}
-				else
-					throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", mbFrom.EmailAddress));
 				dtSources.AcceptChanges();
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 		}
