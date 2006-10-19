@@ -9,6 +9,7 @@ using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using MySql.Data.MySqlClient;
 using System.IO;
+using ExecuteTemplate;
 
 
 namespace Inforoom.Downloader
@@ -98,20 +99,16 @@ and Apteka.FirmCode = ?AptekaClientCode",
 				Settings.Default.tbWaybillSources);
 		}
 
-		protected override void FillSourcesTable()
+		protected override DataTable GetSourcesTable(ExecuteArgs e)
 		{
 			dtSources.Clear();
-			try
-			{
-				daFillSources.SelectCommand.Parameters.Clear();
-				daFillSources.SelectCommand.Parameters.Add("AptekaClientCode", AptekaClientCode);
-				daFillSources.Fill(dtSources);
-			}
-			catch (Exception ex)
-			{
-				FormLog.Log(this.GetType().Name + ".FillSourcesTable", ex.ToString());
-			}
+			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
+			daFillSources.SelectCommand.Parameters.Clear();
+			daFillSources.SelectCommand.Parameters.Add("AptekaClientCode", AptekaClientCode);
+			daFillSources.Fill(dtSources);
+			return dtSources;
 		}
+
 
 		protected override void ProcessAttachs(Mime m, ref bool Matched, AddressList FromList, ref string AttachNames)
 		{

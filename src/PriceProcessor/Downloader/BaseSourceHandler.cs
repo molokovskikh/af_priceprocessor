@@ -7,6 +7,7 @@ using System.IO;
 using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
+using ExecuteTemplate;
 
 namespace Inforoom.Downloader
 {
@@ -280,18 +281,18 @@ AND pd.AgencyEnabled= 1",
             }
         }
 
-        protected virtual void FillSourcesTable()
+        protected void FillSourcesTable()
         {
-            dtSources.Clear();
-            try
-            {
-                daFillSources.Fill(dtSources);
-            }
-            catch (Exception ex)
-            {
-                FormLog.Log(this.GetType().Name + ".FillSourcesTable", ex.ToString());
-            }
+			dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
         }
+
+		protected virtual DataTable GetSourcesTable(ExecuteArgs e)
+		{
+			dtSources.Clear();
+			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
+			daFillSources.Fill(dtSources);
+			return dtSources;
+		}
 
         protected void OperatorMailSend()
         {
