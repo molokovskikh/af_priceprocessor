@@ -98,7 +98,10 @@ namespace Inforoom.Formalizer
 		MinBoundCost,
 		Junk,
 		Await,
-		OriginalName
+		OriginalName,
+		VitallyImportant,
+		RequestRatio,
+		RegistryCost
 	}
 
 	public enum CostTypes : int
@@ -135,6 +138,7 @@ namespace Inforoom.Formalizer
 		public static string colForbWords = "ForbWords";
 		public static string colSelfAwaitPos = "SelfAwaitPos";
 		public static string colSelfJunkPos = "SelfJunkPos";
+		public static string colSelfVitallyImportantMask = "SelfVitallyImportantMask";
 		public static string colSelfPosNum = "SelfPosNum";
 		public static string colSelfFlag = "SelfFlag";
 		public static string colDelimiter = "Delimiter";
@@ -297,6 +301,8 @@ namespace Inforoom.Formalizer
 		protected string awaitPos;
 		//как в прайсе поставщика метятся "плохие" позиции
 		protected string junkPos;
+		//как в прайсе поставщика метятся жизненно-важные позиции
+		protected string vitallyImportantMask;
 		//Тип прайса : ассортиментный
 		protected int    priceType;
 		//Является ли текущий прайс ценовой колонкой прайса-родителя
@@ -381,6 +387,7 @@ namespace Inforoom.Formalizer
 
 			awaitPos = mydr.Rows[0][FormRules.colSelfAwaitPos].ToString();
 			junkPos  = mydr.Rows[0][FormRules.colSelfJunkPos].ToString();
+			vitallyImportantMask = mydr.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
 			posNum = mydr.Rows[0][FormRules.colSelfPosNum] is DBNull ? 0 : Convert.ToInt64(mydr.Rows[0][FormRules.colSelfPosNum]);
 			priceType = Convert.ToInt32(mydr.Rows[0][FormRules.colSelfFlag]);
 
@@ -525,6 +532,9 @@ namespace Inforoom.Formalizer
 			drCore["Volume"] = GetFieldValue(PriceFields.Volume);
 			drCore["Quantity"] = GetFieldValue(PriceFields.Quantity);
 			drCore["Note"] = GetFieldValue(PriceFields.Note);
+			drCore["VitallyImportant"] = GetFieldValueObject(PriceFields.VitallyImportant);
+			drCore["RequestRatio"] = GetFieldValueObject(PriceFields.RequestRatio);
+			drCore["RegistryCost"] = GetFieldValueObject(PriceFields.RegistryCost);
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
 			if (dt is DateTime)
@@ -832,6 +842,7 @@ namespace Inforoom.Formalizer
 				sb.AppendLine(String.Format("insert into {0}{1} (" + 
 					"FirmCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, BaseCost, MinBoundCost, " +
+					"VitallyImportant, RequestRatio, RegistryCost, " +
 					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore, firmSegment));
 
 				foreach (DataRow drCore in dtCore.Rows)
@@ -846,6 +857,9 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+					sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
+					sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
+					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					AddTextParameter("Code", Index, cmd, drCore, sb);
 					sb.Append(", ");
 					AddTextParameter("CodeCr", Index, cmd, drCore, sb);
@@ -949,12 +963,22 @@ namespace Inforoom.Formalizer
 								DataRow drCore;
 								DataRow drCoreCost;
 								System.Text.StringBuilder sb = new System.Text.StringBuilder();
+								sb.Append(String.Format("delete from {0} where pc_costcode in (", FormalizeSettings.tbCoreCosts));
+								bool FirstInsert = true;
 								foreach (CoreCost c in currentCoreCosts)
 								{
-									sb.AppendLine(String.Format("delete from {0} where pc_costcode = {1};", FormalizeSettings.tbCoreCosts, c.costCode));
+									if (!FirstInsert)
+										sb.Append(", ");
+									FirstInsert = false;
+									sb.Append(c.costCode.ToString());
 								}
-								mcClear.CommandText = sb.ToString();
-								SimpleLog.Log(getParserID(), "Delete AffectedRows = {0}", mcClear.ExecuteNonQuery());
+								sb.Append(");");
+
+								if (currentCoreCosts.Count > 0)
+								{
+									mcClear.CommandText = sb.ToString();
+									SimpleLog.Log(getParserID(), "Delete AffectedRows = {0}", mcClear.ExecuteNonQuery());
+								}
 
 								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
 								dtCoreCosts.Clear();
@@ -962,7 +986,7 @@ namespace Inforoom.Formalizer
 
 								sb = new System.Text.StringBuilder();
 								sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
-								bool FirstInsert = true;
+								FirstInsert = true;
 								ArrayList currCC;
 								//Здесь вставить проверку того, что не надо заполнять цены два раза или обновлять их
 								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
@@ -1454,6 +1478,12 @@ namespace Inforoom.Formalizer
 				case (int)PriceFields.Junk:
 					return GetJunkValue();
 
+				case (int)PriceFields.VitallyImportant:
+					return GetVitallyImportantValue();
+
+				case (int)PriceFields.RequestRatio:
+					return GetRequestRatioValue();
+
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
 				case (int)PriceFields.CountryCr:
@@ -1472,6 +1502,7 @@ namespace Inforoom.Formalizer
 
 				case (int)PriceFields.BaseCost:
 				case (int)PriceFields.MinBoundCost:
+				case (int)PriceFields.RegistryCost:
 					return ProcessCost(GetFieldRawValue(PF));
 
 				case (int)PriceFields.Period:
@@ -1753,6 +1784,41 @@ namespace Inforoom.Formalizer
 			}
 
 			return AwaitValue;
+		}
+
+		public byte GetVitallyImportantValue()
+		{ 
+			byte VitallyImportantValue = 0;
+
+			try
+			{
+				Regex re = new Regex(vitallyImportantMask);
+				Match m = re.Match(GetFieldValue(PriceFields.VitallyImportant));
+				VitallyImportantValue = (m.Success) ? (byte)1 : (byte)0;
+			}
+			catch
+			{ 
+			}
+
+			return VitallyImportantValue;
+		}
+
+		public object GetRequestRatioValue()
+		{
+			try
+			{
+				string rr = GetFieldRawValue(PriceFields.RequestRatio);
+				if (rr != null)
+				{
+					int rrValue;
+					if (int.TryParse(rr, out rrValue))
+						return rrValue;
+				}
+			}
+			catch
+			{
+			}
+			return DBNull.Value;
 		}
 
 		/// <summary>

@@ -31,6 +31,7 @@ namespace Inforoom.Formalizer
         FR.JunkPos                                            as SelfJunkPos,
         FR.AwaitPos                                           as SelfAwaitPos,
         FR.PosNum                                             as SelfPosNum,
+        FR.VitallyImportantMask                               as SelfVitallyImportantMask,           
         PFR.*,
         CD.FirmStatus,
         CD.BillingStatus,
