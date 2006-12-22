@@ -24,6 +24,7 @@ namespace Inforoom.Downloader
         public static string colDatePrevPrice = "DatePrevPrice";
 
         public static string colPriceFMT = "PriceFMT";
+		public static string colFileExtention = "FileExtention";
 
         public static string colSourceType = "SourceType";
         public static string colLastDateTime = "LastDateTime";
@@ -230,6 +231,7 @@ SELECT
   fr.DateCurPrice,
   fr.DatePrevPrice,
   fr.PriceFMT,
+  pf.FileExtention,
   st.SourceType, st.LastDateTime, st.PriceDateTime, 
   st.PricePath,  
   st.EMailPassword, st.EMailTo, st.EMailFrom, 
@@ -239,6 +241,7 @@ SELECT
 FROM       {0}             as st
 INNER JOIN UserSettings.PricesData  AS PD ON PD.PriceCode = st.FirmCode
 INNER JOIN {1}           AS fr ON fr.FirmCode = st.FirmCode
+INNER JOIN farm.pricefmts           AS pf ON pf.Format = fr.PriceFMT
 INNER JOIN {2} AS CD ON CD.FirmCode = PD.FirmCode
 inner join farm.regions             as r  on r.RegionCode = cd.RegionCode
 WHERE
@@ -403,20 +406,10 @@ AND pd.AgencyEnabled= 1",
 
         protected string GetExt()
         {
-            string FMT = ((string)drCurrent[SourcesTable.colPriceFMT]).ToUpper();
-            if ((FMT == "WIN") || (FMT == "DOS"))
-                return ".txt";
-            else
-                if (FMT == "XLS")
-                    return ".xls";
-                else
-                    if (FMT == "DBF")
-                        return ".dbf";
-                    else
-                        if (FMT == "DB")
-                            return ".db";
-                        else
-                            return ".err";
+			string FileExt = drCurrent[SourcesTable.colFileExtention].ToString();
+			if (String.IsNullOrEmpty(FileExt))
+				FileExt = ".err";
+			return FileExt;
         }
 
         protected bool ProcessPriceFile(string InFile)

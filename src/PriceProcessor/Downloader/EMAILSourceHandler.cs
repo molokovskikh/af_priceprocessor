@@ -282,6 +282,14 @@ namespace Inforoom.Downloader
             return String.Empty;
 		}
 
+		/// <summary>
+		/// Происходит разбор собственно вложения и сверка его с источниками
+		/// </summary>
+		/// <param name="m"></param>
+		/// <param name="Matched"></param>
+		/// <param name="FromList"></param>
+		/// <param name="ShortFileName"></param>
+		/// <param name="CorrectArchive"></param>
 		protected virtual void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName, bool CorrectArchive)
 		{
 			DataRow[] drLS = null;

@@ -51,6 +51,7 @@ namespace Inforoom.Downloader
 
         protected override DataRow[] GetLikeSources()
         { 
+			//TODO: Здесь может ничего не выбраться, в том случае, если параметры установленны не корректно
             return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}')", 
                 SourcesTable.colPricePath, dtSources.Rows[0][SourcesTable.colPricePath],
                 SourcesTable.colPriceMask, dtSources.Rows[0][SourcesTable.colPriceMask]));
