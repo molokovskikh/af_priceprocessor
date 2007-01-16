@@ -336,7 +336,7 @@ namespace Inforoom.Downloader
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 		}
 
-		private AddressList GetAddressList(Mime m)
+		protected AddressList GetAddressList(Mime m)
 		{
 			//Заполняем список адресов From
 			AddressList FromList = new AddressList();

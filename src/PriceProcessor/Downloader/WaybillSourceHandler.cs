@@ -39,7 +39,28 @@ namespace Inforoom.Downloader
 
 		protected override bool CheckMime(Mime m)
 		{
-			return (m.Attachments.Length > 0) && (CorrectClientAddress(m.MainEntity.To));
+			bool IsCorrectAddres = CorrectClientAddress(m.MainEntity.To);
+			bool res = (m.Attachments.Length > 0) && IsCorrectAddres;
+			//Производим отправку уведомлений
+			if ((m.Attachments.Length == 0) && IsCorrectAddres)
+				try
+				{
+					string Address = AptekaClientCode.ToString() + "@waybills.analit.net";
+					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
+
+					string Subj = String.Format(Settings.Default.ResponseWaybillSubjectTemplate, Address, LetterDate);
+					string Body = String.Format(Settings.Default.ResponseWaybillBodyTemplate, Address, LetterDate);
+
+					AddressList _to = GetAddressList(m);
+					AddressList _from = new AddressList();
+					_from.Parse("farm@analit.net");
+
+					Mime responseMime = Mime.CreateSimple(_from, _to, Subj, Body, String.Empty);
+					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+				}
+				catch
+				{ }
+			return res;
 		}
 
 		private int GetClientCode(string Address)
