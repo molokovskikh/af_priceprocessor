@@ -105,7 +105,9 @@ WHERE   (FR.FirmCode = {0})",
 									(string)dtFormRules.Rows[0][FormRules.colClientShortName],
 									(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
 
-							if (currPriceFMT == FormalizeSettings.EXCEL_FMT)
+							if (currPriceFMT == FormalizeSettings.XML_FMT)
+								return new CommerceMLParser(FileName, myconn, dtFormRules);
+							else if (currPriceFMT == FormalizeSettings.EXCEL_FMT)
 								return new ExcelPriceParser(FileName, myconn, dtFormRules);
 							else if (currPriceFMT == FormalizeSettings.DBF_FMT)
 								return new DBFPriceParser(FileName, myconn, dtFormRules);

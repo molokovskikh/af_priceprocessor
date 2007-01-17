@@ -37,7 +37,9 @@ namespace Inforoom.Formalizer
 		// Текстовый файл в Win кодировке
 		public static readonly string WIN_FMT = "WIN";
 		// Текстовый файл в DOS кодировке
-		public static readonly string DOS_FMT = "DOS";	
+		public static readonly string DOS_FMT = "DOS";
+		// XML-файл в формате CommerceML
+		public static readonly string XML_FMT = "XML";	
 
 
 		public static readonly string DateMask = @"([^\d]*(?<Day>\d*?)[\s\.\-\/])?(?<Month>[^\s\.\-\/]*?)[\s\.\-\/](?<Year>\d+)([^\d].*)?$";
