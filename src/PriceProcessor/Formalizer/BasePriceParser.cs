@@ -101,7 +101,8 @@ namespace Inforoom.Formalizer
 		OriginalName,
 		VitallyImportant,
 		RequestRatio,
-		RegistryCost
+		RegistryCost,
+		MaxBoundCost
 	}
 
 	public enum CostTypes : int
@@ -535,6 +536,9 @@ namespace Inforoom.Formalizer
 			drCore["VitallyImportant"] = GetFieldValueObject(PriceFields.VitallyImportant);
 			drCore["RequestRatio"] = GetFieldValueObject(PriceFields.RequestRatio);
 			drCore["RegistryCost"] = GetFieldValueObject(PriceFields.RegistryCost);
+			object MaxBoundCost = GetFieldValueObject(PriceFields.MaxBoundCost);
+			if ((MaxBoundCost is decimal) && !checkZeroCost((decimal)MaxBoundCost))
+				drCore["MaxBoundCost"] = (decimal)MaxBoundCost;
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
 			if (dt is DateTime)
@@ -843,6 +847,7 @@ namespace Inforoom.Formalizer
 					"FirmCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, BaseCost, MinBoundCost, " +
 					"VitallyImportant, RequestRatio, RegistryCost, " +
+					"MaxBoundCost, " +
 					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore, firmSegment));
 
 				foreach (DataRow drCore in dtCore.Rows)
@@ -860,6 +865,7 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+					sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					AddTextParameter("Code", Index, cmd, drCore, sb);
 					sb.Append(", ");
 					AddTextParameter("CodeCr", Index, cmd, drCore, sb);
@@ -1503,6 +1509,7 @@ namespace Inforoom.Formalizer
 				case (int)PriceFields.BaseCost:
 				case (int)PriceFields.MinBoundCost:
 				case (int)PriceFields.RegistryCost:
+				case (int)PriceFields.MaxBoundCost:
 					return ProcessCost(GetFieldRawValue(PF));
 
 				case (int)PriceFields.Period:
