@@ -39,10 +39,11 @@ namespace Inforoom.Downloader
 
 		protected override bool CheckMime(Mime m)
 		{
-			bool IsCorrectAddres = CorrectClientAddress(m.MainEntity.To);
-			bool res = (m.Attachments.Length > 0) && IsCorrectAddres;
+			string EmailList = String.Empty;
+			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
+			bool res = (m.Attachments.Length > 0) && (CorrectAddresCount == 1);
 			//ѕроизводим отправку уведомлений
-			if ((m.Attachments.Length == 0) && IsCorrectAddres)
+			if ((m.Attachments.Length == 0) && (CorrectAddresCount == 1))
 				try
 				{
 					string Address = AptekaClientCode.ToString() + "@waybills.analit.net";
@@ -50,6 +51,23 @@ namespace Inforoom.Downloader
 
 					string Subj = String.Format(Settings.Default.ResponseWaybillSubjectTemplate, Address, LetterDate);
 					string Body = String.Format(Settings.Default.ResponseWaybillBodyTemplate, Address, LetterDate);
+
+					AddressList _to = GetAddressList(m);
+					AddressList _from = new AddressList();
+					_from.Parse("farm@analit.net");
+
+					Mime responseMime = Mime.CreateSimple(_from, _to, Subj, Body, String.Empty);
+					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+				}
+				catch
+				{ }
+			if (CorrectAddresCount > 1)
+				try
+				{
+					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
+
+					string Subj = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
+					string Body = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
 
 					AddressList _to = GetAddressList(m);
 					AddressList _from = new AddressList();
@@ -79,10 +97,10 @@ namespace Inforoom.Downloader
 				return -1;
 		}
 
-		private bool CorrectClientAddress(AddressList addressList)
+		private int CorrectClientAddress(AddressList addressList, ref string EmailList)
 		{
-			bool Find = false;
 			int CurrentClientCode = -1;
+			int ClientCodeCount = 0;
 
 			//ѕробегаемс€ по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net>
 			//≈сли таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
@@ -91,13 +109,13 @@ namespace Inforoom.Downloader
 				CurrentClientCode = GetClientCode(ma.EmailAddress);
 				if (CurrentClientCode > -1)
 				{
-					if (!Find)
-						Find = true;
-					else
-						return false;				
+					if (!String.IsNullOrEmpty(EmailList))
+						EmailList += Environment.NewLine;
+					EmailList += ma.EmailAddress;
+					ClientCodeCount++;
 				}
 			}
-			return Find;
+			return ClientCodeCount;
 		}
 
 		protected override string GetSQLSources()
