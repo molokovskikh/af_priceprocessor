@@ -37,7 +37,7 @@ namespace Inforoom.Downloader
 			c.Authenticate(Settings.Default.WaybillIMAPUser, Settings.Default.WaybillIMAPPass);
 		}
 
-		protected override bool CheckMime(Mime m)
+		protected override bool CheckMime(Mime m, ref string causeSubject, ref string causeBody)
 		{
 			string EmailList = String.Empty;
 			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
@@ -49,15 +49,8 @@ namespace Inforoom.Downloader
 					string Address = AptekaClientCode.ToString() + "@waybills.analit.net";
 					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					string Subj = String.Format(Settings.Default.ResponseWaybillSubjectTemplate, Address, LetterDate);
-					string Body = String.Format(Settings.Default.ResponseWaybillBodyTemplate, Address, LetterDate);
-
-					AddressList _to = GetAddressList(m);
-					AddressList _from = new AddressList();
-					_from.Parse("farm@analit.net");
-
-					Mime responseMime = Mime.CreateSimple(_from, _to, Subj, Body, String.Empty);
-					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+					causeSubject = String.Format(Settings.Default.ResponseWaybillSubjectTemplate, Address, LetterDate);
+					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplate, Address, LetterDate);
 				}
 				catch
 				{ }
@@ -66,15 +59,8 @@ namespace Inforoom.Downloader
 				{
 					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					string Subj = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
-					string Body = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
-
-					AddressList _to = GetAddressList(m);
-					AddressList _from = new AddressList();
-					_from.Parse("farm@analit.net");
-
-					Mime responseMime = Mime.CreateSimple(_from, _to, Subj, Body, String.Empty);
-					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+					causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
+					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
 				}
 				catch
 				{ }
@@ -148,9 +134,33 @@ and Apteka.FirmCode = ?AptekaClientCode",
 			return dtSources;
 		}
 
-
-		protected override void ProcessAttachs(Mime m, ref bool Matched, AddressList FromList, ref string AttachNames)
+		protected override void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
 		{
+			if (causeBody != String.Empty)
+				try
+				{
+					AddressList _from = new AddressList();
+					_from.Parse("farm@analit.net");
+
+					Mime responseMime = Mime.CreateSimple(_from, FromList, causeSubject, causeBody, String.Empty);
+					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+				}
+				catch
+				{ }
+			else
+				SendUnrecLetter(m, FromList, AttachNames, "Не найден источник.");
+		}
+
+		protected override string GetFailMail()
+		{
+			return "tech@analit.net";
+		}
+
+		protected override bool ProcessAttachs(Mime m, AddressList FromList, ref string causeSubject, ref string causeBody)
+		{
+			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+			bool _Matched = false;
+
 			bool CorrectArchive = true;
 			string ShortFileName = string.Empty;
 
@@ -174,9 +184,8 @@ and Apteka.FirmCode = ?AptekaClientCode",
 						if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
 						{
 							ShortFileName = SaveAttachement(ent);
-							AttachNames += "\"" + ShortFileName + "\"" + Environment.NewLine;
 							CorrectArchive = CheckFile();
-							Matched = true;
+							_Matched = true;
 							if (CorrectArchive)
 							{
 								ProcessWaybillFile(CurrFileName, drS);
@@ -198,6 +207,10 @@ and Apteka.FirmCode = ?AptekaClientCode",
 						throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", mbFrom.EmailAddress));
 				dtSources.AcceptChanges();
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+
+			if (!_Matched)
+				causeBody = "Не найден источник.";
+			return _Matched;
 		}
 
 		protected void ProcessWaybillFile(string InFile, DataRow drCurrent)

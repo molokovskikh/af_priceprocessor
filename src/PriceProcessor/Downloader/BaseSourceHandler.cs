@@ -325,15 +325,21 @@ AND pd.AgencyEnabled= 1",
             sc.Send(mm);
         }
 
-        protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames)
+		protected virtual string GetFailMail()
+		{
+			return Settings.Default.SMTPUserFail;
+		}
+
+        protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
         {
-            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserFail,
+			MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, GetFailMail(),
                 String.Format("{0} ( {1} )", FromAddress, SourceType),
-                String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\n\nСписок приложений :\n{4}", 
+				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}", 
                 Subject, 
                 FromAddress, 
                 ToAddress, 
                 LetterDate,
+				cause,
                 AttachNames));
             mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject ) + ".eml"));
             SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);

@@ -135,15 +135,13 @@ namespace Inforoom.Downloader
 
         private void ProcessMime(Mime m)
         {
-            //Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-            bool Matched = false;
-
             AddressList FromList = GetAddressList(m);
 
             string ShortFileName = string.Empty;
 
             //Название аттачментов
             string AttachNames = String.Empty;
+			string _causeSubject = String.Empty, _causeBody = String.Empty;
 
 
             //Если нет вложений, а письмо выглядит как UUE, то добавляем его как вложение
@@ -168,30 +166,52 @@ namespace Inforoom.Downloader
                 }
             }
 
-			if (CheckMime(m))
-            {
-                FillSourcesTable();
+			//Формируем список приложений, чтобы использовать его при отчете о нераспознанном письме
+			foreach (MimeEntity ent in m.Attachments)
+				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
+					AttachNames += "\"" + GetShortFileNameFromAttachement(ent) + "\"" + Environment.NewLine;
 
-				ProcessAttachs(m, ref Matched, FromList, ref AttachNames);
-            }
 
-            if (!Matched)
-            {
-                try
-                {
-                    MemoryStream ms = new MemoryStream(m.ToByteData());
-                    FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames);
-                    Logging(String.Format("Письмо не распознано. Тема :{0}; От : {1}", m.MainEntity.Subject, FromList.ToAddressListString()));
-                }
-                catch (Exception exMatch)
-                {
-                    FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
-                }
-            }
+			if (CheckMime(m, ref _causeSubject, ref _causeBody))
+			{
+				FillSourcesTable();
+
+				if (!ProcessAttachs(m, FromList, ref _causeSubject, ref _causeBody))
+					ErrorOnProcessAttachs(m, FromList, AttachNames, _causeSubject, _causeBody);
+			}
+			else
+				ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody);
         }
 
-		protected virtual void ProcessAttachs(Mime m, ref bool Matched, AddressList FromList, ref string AttachNames)
+		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
 		{
+			SendUnrecLetter(m, FromList, AttachNames, causeBody);
+		}
+
+		protected virtual void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
+		{
+			SendUnrecLetter(m, FromList, AttachNames, causeBody);
+		}
+
+		protected void SendUnrecLetter(Mime m, AddressList FromList, string AttachNames, string cause)
+		{
+			try
+			{
+				MemoryStream ms = new MemoryStream(m.ToByteData());
+				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+				Logging(String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", cause, m.MainEntity.Subject, FromList.ToAddressListString()));
+			}
+			catch (Exception exMatch)
+			{
+				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+			}
+		}
+
+		protected virtual bool ProcessAttachs(Mime m, AddressList FromList, ref string causeSubject, ref string causeBody)
+		{
+			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+			bool _Matched = false;
+
 			bool CorrectArchive = true;
 			string ShortFileName = string.Empty;
 
@@ -200,12 +220,15 @@ namespace Inforoom.Downloader
 				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
 				{
 					ShortFileName = SaveAttachement(ent);
-					AttachNames += "\"" + ShortFileName + "\"" + Environment.NewLine;
 					CorrectArchive = CheckFile();
-					UnPack(m, ref Matched, FromList, ShortFileName, CorrectArchive);
+					UnPack(m, ref _Matched, FromList, ShortFileName, CorrectArchive);
 					DeleteCurrFile();
 				}
 			}
+
+			if (!_Matched)
+				causeBody = "Не найден источник.";
+			return _Matched;
 		}
 
 		/// <summary>
@@ -213,8 +236,10 @@ namespace Inforoom.Downloader
 		/// </summary>
 		/// <param name="m"></param>
 		/// <returns></returns>
-		protected virtual bool CheckMime(Mime m)
+		protected virtual bool CheckMime(Mime m, ref string causeSubject, ref string causeBody)
 		{
+			if (m.Attachments.Length == 0)
+				causeBody = "Письмо не содержит вложений.";
 			return m.Attachments.Length > 0;
 		}
 
@@ -391,18 +416,24 @@ namespace Inforoom.Downloader
 
 		protected string SaveAttachement(MimeEntity ent)
 		{
-			string ShortFileName = String.Empty;
-			//В некоторых случаях ContentDisposition_FileName не заполнено, тогда смотрим на ContentType_Name
-			if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
-				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentDisposition_FileName));
-			else
-				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentType_Name));
+			string ShortFileName = GetShortFileNameFromAttachement(ent);
 			CurrFileName = DownHandlerPath + ShortFileName;
 			using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
 			{
 				ent.DataToStream(fs);
 				fs.Close();
 			}
+			return ShortFileName;
+		}
+
+		protected string GetShortFileNameFromAttachement(MimeEntity ent)
+		{
+			string ShortFileName = String.Empty;
+			//В некоторых случаях ContentDisposition_FileName не заполнено, тогда смотрим на ContentType_Name
+			if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
+				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentDisposition_FileName));
+			else
+				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentType_Name));
 			return ShortFileName;
 		}
 
