@@ -1051,40 +1051,43 @@ namespace Inforoom.Formalizer
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
-							if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
-							{
-								lCores.Clear();
-								for (int i = 0; i < currentCoreCosts.Count; i++)
-								{
-									lCores.Add(dtCore.Clone());
-								}
+							//‘ормируем таблицу Core дл€ всех ценовых колонок мультиколоночного прайса
+#region Create Core
+							//if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+							//{
+							//    lCores.Clear();
+							//    for (int i = 0; i < currentCoreCosts.Count; i++)
+							//    {
+							//        lCores.Add(dtCore.Clone());
+							//    }
 
-								DataRow inCore;
+							//    DataRow inCore;
 
-								ArrayList currCC;
+							//    ArrayList currCC;
 
-								for (int i = 0; i < CoreCosts.Count; i++)
-								{
-									currCC = (ArrayList)CoreCosts[i];
-									for (int j = 0; j < currCC.Count; j++)
-									{ 
-										CoreCost c = (CoreCost)currCC[j];
-										//¬ставл€ем только дл€ цен, которые не базовые, чтобы не было дубликата базового прайса
-										if (c.costCode != priceCode)
-										{
-											//≈сли не нулева€ цена, что производим вставку записи
-											if (!checkZeroCost(c.cost))
-											{
-												inCore = lCores[j].NewRow();
-												inCore.ItemArray = dtCore.Rows[i].ItemArray;
-												inCore["FirmCode"] = c.costCode;
-												inCore["BaseCost"] = c.cost;
-												lCores[j].Rows.Add(inCore);
-											}
-										}
-									}
-								}
-							}
+							//    for (int i = 0; i < CoreCosts.Count; i++)
+							//    {
+							//        currCC = (ArrayList)CoreCosts[i];
+							//        for (int j = 0; j < currCC.Count; j++)
+							//        { 
+							//            CoreCost c = (CoreCost)currCC[j];
+							//            //¬ставл€ем только дл€ цен, которые не базовые, чтобы не было дубликата базового прайса
+							//            if (c.costCode != priceCode)
+							//            {
+							//                //≈сли не нулева€ цена, что производим вставку записи
+							//                if (!checkZeroCost(c.cost))
+							//                {
+							//                    inCore = lCores[j].NewRow();
+							//                    inCore.ItemArray = dtCore.Rows[i].ItemArray;
+							//                    inCore["FirmCode"] = c.costCode;
+							//                    inCore["BaseCost"] = c.cost;
+							//                    lCores[j].Rows.Add(inCore);
+							//                }
+							//            }
+							//        }
+							//    }
+							//}
+#endregion
 
 							mcClear.CommandText = String.Format("UPDATE {2} SET PosNum={0} , DateLastForm=NOW() WHERE FirmCode={1}", formCount, priceCode, FormalizeSettings.tbFormRules);
 							TryCommand(mcClear);
@@ -1118,59 +1121,61 @@ namespace Inforoom.Formalizer
 						maxLockCount = tryCount;
 
 					//ѕроизводим последующие транзации в том случае, если это прайс мультиколоночный
-					if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
-					{
-						long currentCostCode;
-						foreach (DataTable dtcc in lCores)
-						{
-							if ((dtcc.Rows.Count > 0) && (Convert.ToInt64(dtcc.Rows[0]["FirmCode"]) != priceCode))
-							{
-								currentCostCode = Convert.ToInt64(dtcc.Rows[0]["FirmCode"]);
-								res = false;
-								tryCount = 0;
-								do
-								{
-									SimpleLog.Log(getParserID(), "FinalizePrice started. CostCode = {0}", currentCostCode);
+#region Apply CoreCost in Core
+					//if ((priceType != FormalizeSettings.ASSORT_FLG) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+					//{
+					//    long currentCostCode;
+					//    foreach (DataTable dtcc in lCores)
+					//    {
+					//        if ((dtcc.Rows.Count > 0) && (Convert.ToInt64(dtcc.Rows[0]["FirmCode"]) != priceCode))
+					//        {
+					//            currentCostCode = Convert.ToInt64(dtcc.Rows[0]["FirmCode"]);
+					//            res = false;
+					//            tryCount = 0;
+					//            do
+					//            {
+					//                SimpleLog.Log(getParserID(), "FinalizePrice started. CostCode = {0}", currentCostCode);
 
-									myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+					//                myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
-									try
-									{
-										SimpleLog.Log(getParserID(), "FinalizePrice started: {0}, CostCode = {1}", "Commit", currentCostCode);
+					//                try
+					//                {
+					//                    SimpleLog.Log(getParserID(), "FinalizePrice started: {0}, CostCode = {1}", "Commit", currentCostCode);
 
-										MySqlHelper.ExecuteNonQuery(MyConn, String.Format("delete from {1}{2} where FirmCode={0}", currentCostCode, FormalizeSettings.tbCore, firmSegment), null);
+					//                    MySqlHelper.ExecuteNonQuery(MyConn, String.Format("delete from {1}{2} where FirmCode={0}", currentCostCode, FormalizeSettings.tbCore, firmSegment), null);
 
-										MultiInsertIntoCore(dtcc.Copy(), MyConn, myTrans);
+					//                    MultiInsertIntoCore(dtcc.Copy(), MyConn, myTrans);
 
-										myTrans.Commit();
-										res = true;
-									}
-									catch (MySqlException MyError)
-									{
-										if ((tryCount <= FormalizeSettings.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number)))
-										{
-											tryCount++;
-											SimpleLog.Log(getParserID(), "Try transaction: tryCount = {0}, CostCode = {1}", tryCount, currentCostCode);
-											try
-											{
-												myTrans.Rollback();
-											}
-											catch (Exception ex)
-											{
-												SimpleLog.Log(getParserID(), "Error on rollback = {0}", ex);
-											}
-											System.Threading.Thread.Sleep(10000 + tryCount * 1000);
-										}
-										else
-											throw;
-									}
-								} while (!res);
+					//                    myTrans.Commit();
+					//                    res = true;
+					//                }
+					//                catch (MySqlException MyError)
+					//                {
+					//                    if ((tryCount <= FormalizeSettings.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number)))
+					//                    {
+					//                        tryCount++;
+					//                        SimpleLog.Log(getParserID(), "Try transaction: tryCount = {0}, CostCode = {1}", tryCount, currentCostCode);
+					//                        try
+					//                        {
+					//                            myTrans.Rollback();
+					//                        }
+					//                        catch (Exception ex)
+					//                        {
+					//                            SimpleLog.Log(getParserID(), "Error on rollback = {0}", ex);
+					//                        }
+					//                        System.Threading.Thread.Sleep(10000 + tryCount * 1000);
+					//                    }
+					//                    else
+					//                        throw;
+					//                }
+					//            } while (!res);
 
-								if (tryCount > maxLockCount)
-									maxLockCount = tryCount;
-							}
-						}
-					}
+					//            if (tryCount > maxLockCount)
+					//                maxLockCount = tryCount;
+					//        }
+					//    }
+					//}
+#endregion 
 
 				}
 			}
