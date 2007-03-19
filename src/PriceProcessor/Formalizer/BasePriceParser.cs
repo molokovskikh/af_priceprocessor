@@ -1001,18 +1001,18 @@ namespace Inforoom.Formalizer
 									currCC = (ArrayList)CoreCosts[i];
 									foreach (CoreCost c in currCC)
 									{
-										drCoreCost = dtCoreCosts.NewRow();
-										drCoreCost["Core_ID"] = drCore["ID"];
-										drCoreCost["PC_CostCode"] = c.costCode;
 										if (c.cost > 0)
+										{
+											drCoreCost = dtCoreCosts.NewRow();
+											drCoreCost["Core_ID"] = drCore["ID"];
+											drCoreCost["PC_CostCode"] = c.costCode;
 											drCoreCost["Cost"] = c.cost;
-										else
-											drCoreCost["Cost"] = DBNull.Value;
-										dtCoreCosts.Rows.Add(drCoreCost);
-										if (!FirstInsert)
-											sb.Append(", ");
-										FirstInsert = false;
-										sb.AppendFormat("({0}, {1}, {2}) ", drCore["ID"], c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
+											dtCoreCosts.Rows.Add(drCoreCost);
+											if (!FirstInsert)
+												sb.Append(", ");
+											FirstInsert = false;
+											sb.AppendFormat("({0}, {1}, {2}) ", drCore["ID"], c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
+										}
 									}
 								}
 								sb.Append(";");
