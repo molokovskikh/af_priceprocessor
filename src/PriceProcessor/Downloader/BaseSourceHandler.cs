@@ -46,6 +46,14 @@ namespace Inforoom.Downloader
         public static string colPriceMask = "PriceMask";
         public static string colExtrMask = "ExtrMask";
     }
+
+	//Класс для хранения последней ошибки по каждому прайс-листу
+	//Позволяет не логировать ошибки по два раза
+	public static class ErrorPriceLogging
+	{
+		public static Dictionary<int, string> ErrorMessages = new Dictionary<int, string>();
+	}
+
 	/// <summary>
 	/// Summary description for BaseSourceHandle.
 	/// </summary>
@@ -542,7 +550,28 @@ AND pd.AgencyEnabled= 1",
                 else
                     cmdLog.Parameters["PriceCode"].Value = 0;
                 cmdLog.Parameters["Addition"].Value = Addition;
-                ExecuteCommand(cmdLog);
+				bool NeedLogging = true;
+				//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
+				//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
+				if (!String.IsNullOrEmpty(Addition))
+				{
+					if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
+					{
+						if (ErrorPriceLogging.ErrorMessages[CurrPriceCode] == Addition)
+							NeedLogging = false;
+						else
+							ErrorPriceLogging.ErrorMessages[CurrPriceCode] = Addition;
+					}
+					else
+						ErrorPriceLogging.ErrorMessages.Add(CurrPriceCode, Addition);
+				}
+				else
+				{
+					if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
+						ErrorPriceLogging.ErrorMessages.Remove(CurrPriceCode);
+				}
+				if (NeedLogging)
+					ExecuteCommand(cmdLog);
             }
             catch (Exception ex)
             {
