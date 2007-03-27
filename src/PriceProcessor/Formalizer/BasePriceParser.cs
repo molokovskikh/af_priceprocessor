@@ -673,7 +673,7 @@ namespace Inforoom.Formalizer
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
 			daSynonym = new MySqlDataAdapter(
-				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, ShortCode, Code, Junk, Date FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
+				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, ShortCode, Code, Junk FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
