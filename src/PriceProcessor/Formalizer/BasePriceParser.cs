@@ -1051,7 +1051,12 @@ namespace Inforoom.Formalizer
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
 							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
 
-							mcClear.CommandText = String.Format("UPDATE {2} SET PosNum={0} , DateLastForm=NOW() WHERE FirmCode={1}", formCount, priceCode, FormalizeSettings.tbFormRules);
+							//Производим обновление DateLastForm в информации о формализации
+							mcClear.CommandText = String.Format(@"UPDATE {2} SET PosNum={0}, DateLastForm=NOW() WHERE FirmCode={1}; UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=NOW() WHERE PriceCode={1};", 
+								formCount, priceCode, FormalizeSettings.tbFormRules);
+							TryCommand(mcClear);
+
+							mcClear.CommandText = String.Format("", formCount, priceCode);
 							TryCommand(mcClear);
 
 							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Commit");
