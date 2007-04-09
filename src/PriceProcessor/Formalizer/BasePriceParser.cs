@@ -514,16 +514,15 @@ namespace Inforoom.Formalizer
 		/// <param name="ABaseCost"></param>
 		/// <param name="AJunk"></param>
 		/// <param name="ACurrency"></param>
-		public void InsertToCore(Int64 AFullCode, Int64 AShortCode, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, string AJunk, string ACurrency)
+		public void InsertToCore(Int64 AFullCode, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk, string ACurrency)
 		{
-			if (String.Empty == AJunk)
-				AJunk = (string)GetFieldValueObject(PriceFields.Junk);
+			if (!AJunk)
+				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
 					 
 			DataRow drCore = dsMyDB.Tables["Core"].NewRow();
 
 			drCore["FirmCode"] = priceCode;
 			drCore["FullCode"] = AFullCode;
-			drCore["ShortCode"] = AShortCode;
 			drCore["CodeFirmCr"] = ACodeFirmCr;
 			drCore["SynonymCode"] = ASynonymCode;
 			drCore["SynonymFirmCrCode"] = ASynonymFirmCrCode;
@@ -548,8 +547,8 @@ namespace Inforoom.Formalizer
 			drCore["Period"] = st;
 			drCore["Doc"] = GetFieldValueObject(PriceFields.Doc);
 
-			drCore["Junk"] = AJunk;
-			drCore["Await"] = GetFieldValueObject(PriceFields.Await);
+			drCore["Junk"] = GetJunkValueAsString( AJunk );
+			drCore["Await"] = GetAwaitValueAsString( (bool)GetFieldValueObject(PriceFields.Await) );
 
 			drCore["Currency"] = ACurrency;
 			if ( !checkZeroCost(ABaseCost) )
@@ -591,7 +590,6 @@ namespace Inforoom.Formalizer
 			drZero["Note"] = GetFieldValueObject(PriceFields.Note);
 			drZero["Period"] = GetFieldValueObject(PriceFields.Period);
 			drZero["Doc"] = GetFieldValueObject(PriceFields.Doc);
-			drZero["Junk"] = GetFieldValueObject(PriceFields.Junk);
 			drZero["Currency"] = GetFieldValueObject(PriceFields.Currency);
 
 			dtZero.Rows.Add(drZero);
@@ -608,7 +606,7 @@ namespace Inforoom.Formalizer
 		/// <param name="AStatus"></param>
 		/// <param name="AJunk"></param>
 		/// <param name="ACurrency"></param>
-		public void InsertToUnrec(Int64 AFullCode, Int64 AShortCode, Int64 ACodeFirmCr, int AStatus, string AJunk, string ACurrency)
+		public void InsertToUnrec(Int64 AFullCode, Int64 ACodeFirmCr, int AStatus, bool AJunk, string ACurrency)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
 			drUnrecExp["FirmCode"] = priceCode;
@@ -624,7 +622,7 @@ namespace Inforoom.Formalizer
 			drUnrecExp["Doc"] = GetFieldValueObject(PriceFields.Doc);
 
 
-			drUnrecExp["Junk"] = AJunk;
+			drUnrecExp["Junk"] = Convert.ToByte(AJunk);
 
 			drUnrecExp["Currency"] = GetFieldValue(PriceFields.Currency);
 			drUnrecExp["BaseCost"] = GetFieldValueObject(PriceFields.BaseCost);
@@ -633,7 +631,6 @@ namespace Inforoom.Formalizer
 			drUnrecExp["Status"] = AStatus;
 			drUnrecExp["Already"] = AStatus;
 			drUnrecExp["TmpFullCode"] = AFullCode;
-			drUnrecExp["TmpShortCode"] = AShortCode;
 			drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
 			drUnrecExp["TmpCurrency"] = ACurrency;
 
@@ -673,7 +670,7 @@ namespace Inforoom.Formalizer
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
 			daSynonym = new MySqlDataAdapter(
-				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, ShortCode, Code, Junk FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
+				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, Junk FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
@@ -844,7 +841,7 @@ namespace Inforoom.Formalizer
 
 				bool FirstInsert = true;
 				sb.AppendLine(String.Format("insert into {0}{1} (" + 
-					"FirmCode, FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
+					"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, BaseCost, MinBoundCost, " +
 					"VitallyImportant, RequestRatio, RegistryCost, " +
 					"MaxBoundCost, " +
@@ -856,7 +853,7 @@ namespace Inforoom.Formalizer
 						sb.Append(", ");
 					FirstInsert = false;
 					sb.Append("(");
-					sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, {5}, ", drCore["FirmCode"], drCore["FullCode"], drCore["ShortCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
+					sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["FirmCode"], drCore["FullCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
 					sb.AppendFormat("{0}, ", (drCore["Period"] is DBNull) ? "null" : "'" + drCore["Period"].ToString() + "'");
 					sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
 					sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
@@ -1140,9 +1137,10 @@ namespace Inforoom.Formalizer
 					{
 						UnrecExpStatus st;
 						decimal currBaseCost = -1m;
-						string PosName, Junk = String.Empty, Currency = String.Empty;
+						string PosName, Currency = String.Empty;
+						bool Junk = false;
 						int costCount;
-						Int64 FullCode = -1, ShortCode = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
+						Int64 FullCode = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
 						string strCode, strName1, strOriginalName, strFirmCr, strCurrency;
 						do
 						{
@@ -1157,7 +1155,8 @@ namespace Inforoom.Formalizer
 									//Производим проверку для мультиколоночных прайсов
 									if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 									{
-										if (checkZeroCost((currentCoreCosts[0] as CoreCost).cost) || checkZeroCost((currentCoreCosts[priceCodeCostIndex] as CoreCost).cost))
+										//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
+										if (0 == costCount)
 										{
 											InsertToZero();
 											continue;
@@ -1184,7 +1183,7 @@ namespace Inforoom.Formalizer
 								strName1 = GetFieldValue(PriceFields.Name1, true);
 								strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
 							
-								if (GetFullCode( strCode, strName1, strOriginalName, out FullCode,out  ShortCode,out  SynonymCode, out Junk))
+								if (GetFullCode( strCode, strName1, strOriginalName, out FullCode, out  SynonymCode, out Junk))
 									st = UnrecExpStatus.NAME_FORM;
 
 								strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
@@ -1196,12 +1195,12 @@ namespace Inforoom.Formalizer
 									st = st | UnrecExpStatus.CURR_FORM;
 
 								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-									InsertToCore(FullCode, ShortCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk, Currency);
+									InsertToCore(FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk, Currency);
 								else
 									unformCount++;
 
 								if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-									InsertToUnrec(FullCode, ShortCode, CodeFirmCr, (int)st, Junk, Currency);
+									InsertToUnrec(FullCode, CodeFirmCr, (int)st, Junk, Currency);
 
 							}
 							else
@@ -1572,7 +1571,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ASynonymCode"></param>
 		/// <param name="AJunk"></param>
 		/// <returns></returns>
-		public bool GetFullCode(string ACode, string AName, string AOriginalName, out Int64 AFullCode, out Int64 AShortCode, out Int64 ASynonymCode, out string AJunk)
+		public bool GetFullCode(string ACode, string AName, string AOriginalName, out Int64 AFullCode, out Int64 ASynonymCode, out bool AJunk)
 		{
 			DataRow[] dr = null;
 			if (formByCode)
@@ -1592,17 +1591,15 @@ namespace Inforoom.Formalizer
 			if ((null != dr) && (dr.Length > 0))
 			{
 				AFullCode = Convert.ToInt64(dr[0]["FullCode"]);
-				AShortCode = Convert.ToInt64(dr[0]["ShortCode"]);
 				ASynonymCode = Convert.ToInt64(dr[0]["SynonymCode"]);
-				AJunk = dr[0]["Junk"].ToString();
+				AJunk = Convert.ToBoolean(dr[0]["Junk"]);
 				return true;
 			}
 			else
 			{
 				AFullCode = 0;
-				AShortCode = 0;
 				ASynonymCode = 0;
-				AJunk = String.Empty;
+				AJunk = false;
 				return false;
 			}
 
@@ -1664,24 +1661,23 @@ namespace Inforoom.Formalizer
 		/// Получить значение поля Junk
 		/// </summary>
 		/// <returns></returns>
-		public string GetJunkValue()
+		public bool GetJunkValue()
 		{
-			string JunkValue = "";
+			bool JunkValue = false;
 			object t = GetFieldValueObject(PriceFields.Period);			
 			if (t is DateTime)
 			{
 				DateTime dt = (DateTime)t;
 				TimeSpan ts = DateTime.Now.Subtract(dt);
-				if (Math.Abs(ts.Days) < 180)
-					JunkValue = FormalizeSettings.JUNK;
+				JunkValue = (Math.Abs(ts.Days) < 180);
 			}
-			if (String.Empty == JunkValue)
+			if (!JunkValue)
 			{
 				try
 				{
 					Regex re = new Regex(junkPos);
 					Match m = re.Match( GetFieldValue(PriceFields.Junk) );
-					JunkValue = (m.Success) ? FormalizeSettings.JUNK : "";
+					JunkValue = m.Success;
 				}
 				catch
 				{
@@ -1691,21 +1687,31 @@ namespace Inforoom.Formalizer
 			return JunkValue;
 		}
 
-		public string GetAwaitValue()
+		public string GetJunkValueAsString(bool Junk)
 		{
-			string AwaitValue = "";
+			return (Junk) ? FormalizeSettings.JUNK : String.Empty;
+		}
+
+		public bool GetAwaitValue()
+		{
+			bool AwaitValue = false;
 
 			try
 			{
 				Regex re = new Regex(awaitPos);
 				Match m = re.Match( GetFieldValue(PriceFields.Await) );
-				AwaitValue = (m.Success) ? FormalizeSettings.AWAIT : "";
+				AwaitValue = (m.Success);
 			}
 			catch
 			{
 			}
 
 			return AwaitValue;
+		}
+
+		public string GetAwaitValueAsString(bool Await)
+		{
+			return (Await) ? FormalizeSettings.AWAIT : String.Empty;
 		}
 
 		public byte GetVitallyImportantValue()
