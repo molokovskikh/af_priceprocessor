@@ -5,6 +5,8 @@
 	<xsl:output method="xml" indent="yes" encoding="windows-1251" />
 
 	<xsl:template match="/" >
+		<xsl:variable name="CodeCr" select="КоммерческаяИнформация/ПакетПредложений/Ид"/>
+		
 		<Price>
 
 			<xsl:for-each select="КоммерческаяИнформация/ПакетПредложений/Предложения/Предложение">
@@ -12,6 +14,9 @@
 					<Code>
 						<xsl:value-of select="Ид"/>
 					</Code>
+					<CodeCr>
+						<xsl:value-of select="$CodeCr"/>
+					</CodeCr>
 					<Name1>
 						<xsl:value-of select="Наименование"/>
 					</Name1>
