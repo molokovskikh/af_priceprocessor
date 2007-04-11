@@ -184,7 +184,7 @@ namespace Inforoom.Formalizer
 			}
 
 			if (startLine > 0)
-				CurrPos = Convert.ToInt32(startLine)-1;
+				CurrPos = Convert.ToInt32(startLine);
 			else
 				CurrPos = 0;
 		}
