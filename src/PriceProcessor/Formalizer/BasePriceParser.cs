@@ -854,7 +854,7 @@ namespace Inforoom.Formalizer
 					FirstInsert = false;
 					sb.Append("(");
 					sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["FirmCode"], drCore["FullCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
-					sb.AppendFormat("{0}, ", (drCore["Period"] is DBNull) ? "null" : "'" + drCore["Period"].ToString() + "'");
+                    sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty :  drCore["Period"].ToString());
 					sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
 					sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
@@ -863,20 +863,40 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					AddTextParameter("Code", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("CodeCr", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("Unit", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("Volume", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("Quantity", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("Note", Index, cmd, drCore, sb);
-					sb.Append(", ");
-					AddTextParameter("Doc", Index, cmd, drCore, sb);
-					sb.Append(", ");
+                    //AddTextParameter("Code", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Code"] is DBNull) ? String.Empty : drCore["Code"].ToString());
+
+                    //AddTextParameter("CodeCr", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["CodeCr"] is DBNull) ? String.Empty : drCore["CodeCr"].ToString());
+
+
+                    //AddTextParameter("Unit", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Unit"] is DBNull) ? String.Empty : drCore["Unit"].ToString());
+
+
+                    //AddTextParameter("Volume", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Volume"] is DBNull) ? String.Empty : drCore["Volume"].ToString());
+
+
+                    //AddTextParameter("Quantity", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Quantity"] is DBNull) ? String.Empty : drCore["Quantity"].ToString());
+
+
+                    //AddTextParameter("Note", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Note"] is DBNull) ? String.Empty : drCore["Note"].ToString());
+
+
+                    //AddTextParameter("Doc", Index, cmd, drCore, sb);
+                    //sb.Append(", ");
+                    sb.AppendFormat("'{0}', ", (drCore["Doc"] is DBNull) ? String.Empty : drCore["Doc"].ToString());
+
+
 					AddTextParameter("Currency", Index, cmd, drCore, sb);
 
 					sb.AppendLine(")");
