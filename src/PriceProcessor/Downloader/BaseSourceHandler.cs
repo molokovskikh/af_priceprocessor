@@ -296,8 +296,23 @@ AND pd.AgencyEnabled= 1",
 
         protected void FillSourcesTable()
         {
-			dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
-        }
+			ConnectionState oldstate = cWork.State;
+			try
+			{
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
+			}
+			catch(Exception ex)
+			{
+				//Если здесь возникает ошибка, то мы пытаемся открыть соединение и сновы запрашивает таблицу с источниками
+				ConnectionState newstate = cWork.State;
+				//TODO:Это логирование тестовое его потом надо удалить
+				FormLog.Log(this.GetType().Name + ".FillSourcesTable", "OldState ={0}  NewState = {1} Error = {2}", oldstate, newstate, ex);
+				if (cWork.State != ConnectionState.Closed)
+					try { cWork.Close(); } catch { }
+				cWork.Open();
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
+			}
+		}
 
 		protected virtual DataTable GetSourcesTable(ExecuteArgs e)
 		{
