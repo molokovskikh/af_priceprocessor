@@ -162,6 +162,8 @@ namespace Inforoom.Downloader
 		protected void Ping()
 		{
 			lastPing = DateTime.Now;
+			try { cWork.Ping(); } catch{}
+			try { cLog.Ping(); } catch { }
 		}
 
 		//Перезапуск обработчика
