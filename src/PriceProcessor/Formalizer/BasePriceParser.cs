@@ -863,41 +863,28 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
 					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-                    //AddTextParameter("Code", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Code"] is DBNull) ? String.Empty : drCore["Code"].ToString());
+                    AddTextParameter("Code", drCore, sb);
+                    sb.Append(", ");
 
-                    //AddTextParameter("CodeCr", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["CodeCr"] is DBNull) ? String.Empty : drCore["CodeCr"].ToString());
+                    AddTextParameter("CodeCr", drCore, sb);
+                    sb.Append(", ");
 
+                    AddTextParameter("Unit", drCore, sb);
+                    sb.Append(", ");
 
-                    //AddTextParameter("Unit", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Unit"] is DBNull) ? String.Empty : drCore["Unit"].ToString());
+                    AddTextParameter("Volume", drCore, sb);
+                    sb.Append(", ");
 
+                    AddTextParameter("Quantity", drCore, sb);
+                    sb.Append(", ");
 
-                    //AddTextParameter("Volume", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Volume"] is DBNull) ? String.Empty : drCore["Volume"].ToString());
+                    AddTextParameter("Note", drCore, sb);
+                    sb.Append(", ");
 
+                    AddTextParameter("Doc", drCore, sb);
+                    sb.Append(", ");
 
-                    //AddTextParameter("Quantity", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Quantity"] is DBNull) ? String.Empty : drCore["Quantity"].ToString());
-
-
-                    //AddTextParameter("Note", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Note"] is DBNull) ? String.Empty : drCore["Note"].ToString());
-
-
-                    //AddTextParameter("Doc", Index, cmd, drCore, sb);
-                    //sb.Append(", ");
-                    sb.AppendFormat("'{0}', ", (drCore["Doc"] is DBNull) ? String.Empty : drCore["Doc"].ToString());
-
-
-					AddTextParameter("Currency", Index, cmd, drCore, sb);
+					AddTextParameter("Currency", drCore, sb);
 
 					sb.AppendLine(")");
 					Index++;
@@ -913,10 +900,10 @@ namespace Inforoom.Formalizer
 				return 0;
 		}
 
-		public void AddTextParameter(string ParamName, int Index, MySqlCommand cmd, DataRow dr, System.Text.StringBuilder sb)
+		public void AddTextParameter(string ParamName, DataRow dr, System.Text.StringBuilder sb)
 		{
 			if (dr[ParamName] is DBNull)
-				sb.Append("null");
+				sb.Append("''");
 			else
 			{
 				string s = dr[ParamName].ToString();
