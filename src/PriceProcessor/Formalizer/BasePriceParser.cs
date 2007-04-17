@@ -621,7 +621,8 @@ namespace Inforoom.Formalizer
 			drUnrecExp["Period"] = GetFieldValueObject(PriceFields.Period);
 			drUnrecExp["Doc"] = GetFieldValueObject(PriceFields.Doc);
 
-
+			if (!AJunk)
+				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
 			drUnrecExp["Junk"] = Convert.ToByte(AJunk);
 
 			drUnrecExp["Currency"] = GetFieldValue(PriceFields.Currency);
