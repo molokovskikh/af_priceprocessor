@@ -721,66 +721,6 @@ namespace Inforoom.Formalizer
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 		}
 
-		public void TryCommand(MySqlCommand cmd)
-		{
-			bool res = false;
-			int tryCount = 0;
-			int affectedrows = -1;
-			do{
-//				try
-//				{
-					affectedrows = cmd.ExecuteNonQuery();
-					SimpleLog.Log(getParserID(), "AffectedRows = {0}  Command = {1}", affectedrows, cmd.CommandText);
-					res = true;					
-//				}
-//				catch(MySqlException MyError)
-//				{
-//					//(1213 == MyError.Number) || (1205 == MyError.Number)
-//					if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( !MyError.IsFatal ) )
-//					{
-//						tryCount++;
-//						System.Threading.Thread.Sleep(tryCount*1000);
-//					}
-//					else
-//						throw;
-//				}
-			}while(!res);
-
-			if (tryCount > maxLockCount)
-				maxLockCount = tryCount;
-		}
-
-		public MySqlDataReader TryReader(MySqlCommand cmd)
-		{
-			bool res = false;
-			MySqlDataReader reader = null;
-			int tryCount = 0;
-			do
-			{
-//				try
-//				{
-					reader = cmd.ExecuteReader();
-					res = true;					
-//				}
-//				catch(MySqlException MyError)
-//				{
-//					//(1213 == MyError.Number) || (1205 == MyError.Number)
-//					if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( !MyError.IsFatal ) )
-//					{
-//						tryCount++;
-//						System.Threading.Thread.Sleep(tryCount*1000);
-//					}
-//					else
-//						throw;
-//				}
-			}while(!res);
-
-			if (tryCount > maxLockCount)
-				maxLockCount = tryCount;
-
-			return reader;
-		}
-
 		public void onUpdating(object sender, MySqlRowUpdatingEventArgs e)
 		{
 			if (e.Status != UpdateStatus.Continue)
@@ -797,41 +737,13 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		public void TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
+		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
 		{
-			bool res = false;
-			int tryCount = 0;
-			int affectedrows = -1;
-			do
-			{
-//				try
-//				{
-
-					da.SelectCommand.Transaction = tran;
-					affectedrows = da.Update(dt);
-					SimpleLog.Log(getParserID(), "AffectedRows = {0}  Table = {1}", affectedrows, dt.TableName);
-					res = true;					
-//				}
-//				catch(MySqlException MyError)
-//				{
-//					SimpleLog.Log( getParserID(), "Try update: ErrNo = {0}  IsFatal = {1}", MyError.Number, MyError.IsFatal);
-//					//(1213 == MyError.Number) || (1205 == MyError.Number)
-//					if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( !MyError.IsFatal ) )
-//					{
-//						tryCount++;
-//						SimpleLog.Log( getParserID(), "Try update: tryCount = {0}", tryCount);
-//						System.Threading.Thread.Sleep(tryCount*1000);
-//					}
-//					else
-//						throw;
-//				}
-			}while(!res);
-
-			if (tryCount > maxLockCount)
-				maxLockCount = tryCount;
+			da.SelectCommand.Transaction = tran;
+			return (da.Update(dt));
 		}
 
-		public long MultiInsertIntoCore(DataTable dtCore, MySqlConnection con, MySqlTransaction tran)
+		public long MultiInsertIntoCore(DataTable dtCore, MySqlConnection con, MySqlTransaction tran, System.Text.StringBuilder Log)
 		{
 			if (dtCore.Rows.Count > 0)
 			{
@@ -892,7 +804,7 @@ namespace Inforoom.Formalizer
 				}
 
 				cmd.CommandText = sb.ToString();
-				cmd.ExecuteNonQuery();
+				Log.AppendFormat("InsToCore={0}  ", cmd.ExecuteNonQuery());
 
 				cmd.CommandText = "select last_insert_id()";
 				return Convert.ToInt64(cmd.ExecuteScalar());
@@ -947,9 +859,12 @@ namespace Inforoom.Formalizer
 					List<DataTable> lCores = new List<DataTable>();
 					bool res = false;
 					int tryCount = 0;
+					//ƒл€ логировани€ статистики
+					System.Text.StringBuilder sbLog;
 					do
 					{
 						SimpleLog.Log( getParserID(), "FinalizePrice started.");
+						sbLog = new System.Text.StringBuilder();
 
 						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -957,20 +872,18 @@ namespace Inforoom.Formalizer
 						{
 							//TODO: —делать одним вызовом несколько SQL-запросов
 							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1}{2} where FirmCode={0}", priceCode, FormalizeSettings.tbCore, firmSegment), MyConn, myTrans);
-							TryCommand(mcClear);
+							sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
 
-							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Core");
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
 							//ƒелаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
 							DataTable dtCoreCopy = dtCore.Copy();
-							long LastID = MultiInsertIntoCore(dtCoreCopy, MyConn, myTrans);
+							long LastID = MultiInsertIntoCore(dtCoreCopy, MyConn, myTrans, sbLog);
 							SetCoreID(dtCoreCopy, LastID);
 
 							//≈сли прайс не €вл€етс€ ассортиментным, то производим обновление цен
 							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
-								SimpleLog.Log(getParserID(), "FinalizePrice started.prepare: {0}", "CoreCosts");
 								DataRow drCore;
 								DataRow drCoreCost;
 								System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -987,8 +900,9 @@ namespace Inforoom.Formalizer
 
 								if (currentCoreCosts.Count > 0)
 								{
+									//ѕроизводим удаление цен
 									mcClear.CommandText = sb.ToString();
-									SimpleLog.Log(getParserID(), "Delete AffectedRows = {0}", mcClear.ExecuteNonQuery());
+									sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
 								}
 
 								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
@@ -1025,19 +939,17 @@ namespace Inforoom.Formalizer
 								//≈сли есть цены, которые нужно вставл€ть, то делаем вставку, иначе ничего не делаем
 								if (dtCoreCosts.Rows.Count > 0)
 								{
-									SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "CoreCosts");
 									mcClear.CommandText = sb.ToString();
-									SimpleLog.Log(getParserID(), "Insert AffectedRows = {0}", mcClear.ExecuteNonQuery());
+									sbLog.AppendFormat("InsToCoreCosts={0}  ", mcClear.ExecuteNonQuery());
 								}
 							}
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero);
-							TryCommand(mcClear);
+							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbForb);
-							TryCommand(mcClear);			
+							sbLog.AppendFormat("DelFromForb={0}  ", mcClear.ExecuteNonQuery());
 
-							SimpleLog.Log( getParserID(), "FinalizePrice started: delete from UnrecExp");
 							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM {1} where PriceCode={0} limit 1", priceCode, FormalizeSettings.tbBlockedPrice), MyConn);
 							daBlockedPrice.SelectCommand.Transaction = myTrans;
 							DataTable dtBlockedPrice = new DataTable();
@@ -1046,25 +958,20 @@ namespace Inforoom.Formalizer
 							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
 								mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbUnrecExp);
-								TryCommand(mcClear);
+								sbLog.AppendFormat("DelFromUnrecExp={0}  ", mcClear.ExecuteNonQuery());
 							}
 
-							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Forb");
-							TryUpdate(daForb, dtForb.Copy(), myTrans);
-							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Zero" );
-							TryUpdate(daZero, dtZero.Copy(), myTrans);
-							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "UnrecExp" );
-							TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans);
+							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), myTrans));
+							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), myTrans));
+							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
 
 							//ѕроизводим обновление DateLastForm в информации о формализации
 							mcClear.CommandText = String.Format(@"UPDATE {2} SET PosNum={0}, DateLastForm=NOW() WHERE FirmCode={1}; UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=NOW() WHERE PriceCode={1};", 
 								formCount, priceCode, FormalizeSettings.tbFormRules);
-							TryCommand(mcClear);
+							mcClear.ExecuteNonQuery();
 
-							mcClear.CommandText = String.Format("", formCount, priceCode);
-							TryCommand(mcClear);
-
-							SimpleLog.Log( getParserID(), "FinalizePrice started: {0}", "Commit");
+							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
+							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Commit");
 							myTrans.Commit();
 							res = true;					
 						}
