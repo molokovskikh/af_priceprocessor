@@ -16,11 +16,24 @@ namespace Inforoom.Logging
 		private static ArrayList mess;
 
 		private static string logFileName = String.Empty;
+
 		private static string FromMail;
 		private static string ToMail;
 
+		//производить ли логирование
+		private static bool Logging;
+
 		static SimpleLog()
 		{
+
+			try
+			{
+				Logging = Convert.ToBoolean(ConfigurationManager.AppSettings["SimpleLog.Logging"]);
+			}
+			catch
+			{
+				Logging = false;
+			}
 
 			try
 			{
@@ -53,23 +66,24 @@ namespace Inforoom.Logging
 
 			mess = new ArrayList();
 
-			try
-			{
-				log = new StreamWriter(
-					logFileName, 
-					true, 
-					System.Text.Encoding.GetEncoding(1251) 
-					);
+			if (Logging)
+				try
+				{
+					log = new StreamWriter(
+						logFileName, 
+						true, 
+						System.Text.Encoding.GetEncoding(1251) 
+						);
 
-				Trace.Listeners.Add( new TextWriterTraceListener( log ) );
-				Trace.AutoFlush = true;
-				Trace.WriteLine("\n\n\n");
-				Log("Log", "Started.");
-			}
-			catch(Exception ex)
-			{
-				SendError(ex);
-			}
+					log.AutoFlush = true;
+					log.WriteLine("\n\n\n");
+
+					Log("Log", "Started.");
+				}
+				catch(Exception ex)
+				{
+					SendError(ex);
+				}
 		}
 
 		private static void SendError(Exception ex)
@@ -98,7 +112,8 @@ namespace Inforoom.Logging
 		{
 			try
 			{
-				Trace.WriteLine( String.Format("{0}\t\t{1,-20}\t\t\t{2}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), SubSystem, Message) );
+				if (Logging)
+					log.WriteLine("{0}\t\t{1,-20}\t\t\t{2}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), SubSystem, Message);
 			}
 			catch(Exception e)
 			{
