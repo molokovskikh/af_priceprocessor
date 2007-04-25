@@ -39,92 +39,93 @@ namespace Inforoom.Downloader
 					IMAPAuth(c);
                     c.SelectFolder("INBOX");
 
-                    IMAP_FetchItem[] items = null;
-                    List<string> ProcessedUID = null;
-                    do
-                    {
-                        try
-                        {
-                            Ping();
-                            ProcessedUID = new List<string>();
-                            IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
+					try
+					{
+						IMAP_FetchItem[] items = null;
+						List<string> ProcessedUID = null;
+						do
+						{
+							Ping();
+							ProcessedUID = new List<string>();
+							items = null;
+							IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
 							sequence_set.Parse("1:*", long.MaxValue);
 							items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
 							Ping();
-                        }
-                        catch (Exception ex)
-                        {
-                            LoggingToService("On Fetch : " + ex.ToString());
-                        }
 
-                        if ((items != null) && (items.Length > 0))
-                        {
-                            foreach (IMAP_FetchItem item in items)
-                            {
-                                Mime m = null;
-                                IMAP_FetchItem[] OneItem = null;
-                                try
-                                {
-                                    IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
-                                    sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
-                                    OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
-                                    m = Mime.Parse(OneItem[0].MessageData);
-                                    ProcessedUID.Add(item.UID.ToString());
-                                    Ping();
-                                }
-                                catch (Exception ex)
-                                {
-									if (!errorUIDs.Contains(item.UID))
+							if ((items != null) && (items.Length > 0))
+							{
+								foreach (IMAP_FetchItem item in items)
+								{
+									Mime m = null;
+									IMAP_FetchItem[] OneItem = null;
+									try
 									{
-										m = null;
-										MemoryStream ms = null;
-										if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
-											ms = new MemoryStream(OneItem[0].MessageData);
-										ErrorMailSend(item.UID, ex.ToString(), ms);
-										errorUIDs.Add(item.UID);
+										IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
+										sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
+										OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
+										m = Mime.Parse(OneItem[0].MessageData);
+										ProcessedUID.Add(item.UID.ToString());
+										Ping();
 									}
-                                    FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
-                                }
-
-                                if (m != null)
-                                {
-                                    try
-                                    {
-										ProcessMime(m);
-									}
-                                    catch (Exception ex)
-                                    {
-                                        if (ProcessedUID.Contains(item.UID.ToString()))
-                                            ProcessedUID.Remove(item.UID.ToString());
+									catch (Exception ex)
+									{
 										if (!errorUIDs.Contains(item.UID))
 										{
+											m = null;
 											MemoryStream ms = null;
 											if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
 												ms = new MemoryStream(OneItem[0].MessageData);
 											ErrorMailSend(item.UID, ex.ToString(), ms);
 											errorUIDs.Add(item.UID);
 										}
-                                        FormLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
-                                    }
-								}
+										FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+									}
 
-                            }//foreach (IMAP_FetchItem) 
+									if (m != null)
+									{
+										try
+										{
+											ProcessMime(m);
+										}
+										catch (Exception ex)
+										{
+											if (ProcessedUID.Contains(item.UID.ToString()))
+												ProcessedUID.Remove(item.UID.ToString());
+											if (!errorUIDs.Contains(item.UID))
+											{
+												MemoryStream ms = null;
+												if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+													ms = new MemoryStream(OneItem[0].MessageData);
+												ErrorMailSend(item.UID, ex.ToString(), ms);
+												errorUIDs.Add(item.UID);
+											}
+											FormLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
+										}
+									}
 
-                        }//(items != null) && (items.Length > 0)
+								}//foreach (IMAP_FetchItem) 
 
-                        //Производим удаление писем
-                        if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
-                        {
-                            string uidseq = String.Empty;
-                            uidseq = String.Join(",", ProcessedUID.ToArray());
-                            IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
-							sequence_setDelete.Parse(uidseq, long.MaxValue);
-                            c.DeleteMessages(sequence_setDelete, true);
-                        }
+							}//(items != null) && (items.Length > 0)
 
-                    }
-                    while ((items != null) && (items.Length > 0));
-                    c.Disconnect();
+							//Производим удаление писем
+							if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
+							{
+								string uidseq = String.Empty;
+								uidseq = String.Join(",", ProcessedUID.ToArray());
+								IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
+								sequence_setDelete.Parse(uidseq, long.MaxValue);
+								c.DeleteMessages(sequence_setDelete, true);
+							}
+
+						}
+						while ((items != null) && (items.Length > 0));
+					}
+					finally
+					{
+						try { c.Disconnect(); }
+						catch { }
+					}                    
                 }
             }
             catch(Exception ex)
