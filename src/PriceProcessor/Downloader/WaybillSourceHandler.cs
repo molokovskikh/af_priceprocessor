@@ -92,12 +92,12 @@ namespace Inforoom.Downloader
 			//Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
 			foreach(MailboxAddress ma in  addressList.Mailboxes)
 			{
-				CurrentClientCode = GetClientCode(ma.EmailAddress);
+				CurrentClientCode = GetClientCode(GetCorrectEmailAddress(ma.EmailAddress));
 				if (CurrentClientCode > -1)
 				{
 					if (!String.IsNullOrEmpty(EmailList))
 						EmailList += Environment.NewLine;
-					EmailList += ma.EmailAddress;
+					EmailList += GetCorrectEmailAddress(ma.EmailAddress);
 					ClientCodeCount++;
 				}
 			}
@@ -173,7 +173,7 @@ and Apteka.FirmCode = ?AptekaClientCode",
 			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 			{
 				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
-					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
+					WaybillSourcesTable.colEMailFrom, GetCorrectEmailAddress(mbFrom.EmailAddress)));
 				//Адрес отправителя должен быть только у одного поставщика, если получилось больше, то это ошибка
 				if (drLS.Length == 1)
 				{

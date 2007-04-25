@@ -24,6 +24,11 @@ namespace Inforoom.Downloader
 			errorUIDs = new List<int>();
 		}
 
+		protected string GetCorrectEmailAddress(string Source)
+		{
+			return Source.Replace("'", String.Empty);
+		}
+
         protected override void ProcessData()
         {
             try
@@ -326,8 +331,8 @@ namespace Inforoom.Downloader
 				foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
 				{
 					drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-						SourcesTable.colEMailTo, mba.EmailAddress,
-						SourcesTable.colEMailFrom, mbFrom.EmailAddress));
+						SourcesTable.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
+						SourcesTable.colEMailFrom, GetCorrectEmailAddress(mbFrom.EmailAddress)));
 					foreach (DataRow drS in drLS)
 					{
 						if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
@@ -375,7 +380,7 @@ namespace Inforoom.Downloader
                     //Проверяем, что адрес что-то содержит
                     if (!String.IsNullOrEmpty(a.EmailAddress))
                     {
-                        FromList.Add(new MailboxAddress(a.EmailAddress));
+						FromList.Add(new MailboxAddress(a.EmailAddress));
                         if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
                             SenderFound = true;
                     }
