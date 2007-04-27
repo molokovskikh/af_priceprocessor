@@ -1372,7 +1372,7 @@ namespace Inforoom.Formalizer
 						}
 					}
 					decimal d = Decimal.Parse(res, NumberStyles.Currency);
-					d = Math.Round(d, 2);
+					d = Math.Round(d, 6);
 					return d;
 				}
 				catch
