@@ -966,8 +966,8 @@ namespace Inforoom.Formalizer
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
 
 							//Производим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = String.Format(@"UPDATE {2} SET PosNum={0}, DateLastForm=NOW() WHERE FirmCode={1}; UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=NOW() WHERE PriceCode={1};", 
-								formCount, priceCode, FormalizeSettings.tbFormRules);
+							mcClear.CommandText = String.Format(@"UPDATE {2} SET PosNum={0}, DateLastForm=NOW() WHERE FirmCode={1}; UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=NOW(), UnformCount={3} WHERE PriceCode={1};",
+								formCount, priceCode, FormalizeSettings.tbFormRules, unformCount);
 							mcClear.ExecuteNonQuery();
 
 							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
