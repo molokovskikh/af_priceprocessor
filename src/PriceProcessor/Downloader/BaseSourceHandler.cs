@@ -288,14 +288,16 @@ AND pd.AgencyEnabled= 1",
                 cWork.Open();
                 cmdUpdatePriceDate = new MySqlCommand(
                         String.Format(
-                            "UPDATE {0} SET LastDateTime = now(), PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
-                            "UPDATE {1} SET DatePrevPrice = DateCurPrice, DateCurPrice = now() WHERE FirmCode = ?FirmCode", 
+                            "UPDATE {0} SET LastDateTime = ?NowDate, PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
+							"UPDATE {1} SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE FirmCode = ?FirmCode;" +
+							"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
                             Settings.Default.tbSources,
                             Settings.Default.tbFormRules), 
                         cWork);
                 cmdUpdatePriceDate.Parameters.Add("FirmCode", MySqlDbType.Int64);
                 cmdUpdatePriceDate.Parameters.Add("DT", MySqlDbType.Datetime);
-                cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
+				cmdUpdatePriceDate.Parameters.Add("NowDate", MySqlDbType.Datetime);
+				cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
                 daFillSources = new MySqlDataAdapter(cmdFillSources);
             }
             catch (Exception ex)
@@ -393,7 +395,8 @@ AND pd.AgencyEnabled= 1",
 
             cmdUpdatePriceDate.Parameters["FirmCode"].Value = UpdatePriceCode;
             cmdUpdatePriceDate.Parameters["DT"].Value = UpDT;
-            ExecuteCommand(cmdUpdatePriceDate);
+			cmdUpdatePriceDate.Parameters["NowDate"].Value = DateTime.Now;
+			ExecuteCommand(cmdUpdatePriceDate);
         }
 
         protected void SetCurrentPriceCode(DataRow dr)
