@@ -109,7 +109,11 @@ namespace Inforoom.Downloader
         /// временная директория для скачивания файлов (+ TempPath + 'Down' + SourceType)
         /// </summary>
         protected string DownHandlerPath;
-        /// <summary>
+		/// <summary>
+		/// директория для сохранения файлов для истории 
+		/// </summary>
+		protected string DownHistoryPath;
+		/// <summary>
         /// текущая дата файла
         /// </summary>
         protected DateTime CurrPriceDate;
@@ -127,6 +131,12 @@ namespace Inforoom.Downloader
             if (!Directory.Exists(DownHandlerPath))
                 Directory.CreateDirectory(DownHandlerPath);
             DownHandlerPath += Path.DirectorySeparatorChar;
+
+			DownHistoryPath = Path.GetFullPath(Settings.Default.HistoryPath);
+			if (!Directory.Exists(DownHistoryPath))
+				Directory.CreateDirectory(DownHistoryPath);
+			DownHistoryPath += Path.DirectorySeparatorChar;
+
 			tWork = new Thread(new ThreadStart(ThreadWork));
             SleepTime = Settings.Default.RequestInterval;
 		}
@@ -523,6 +533,41 @@ AND pd.AgencyEnabled= 1",
             } while (!Quit);
         }
 
+		protected UInt64 ExecuteScalar(MySqlCommand cmd)
+		{
+			bool Quit = false;
+			UInt64 result = 0;
+
+			do
+			{
+				try
+				{
+					if (cmd.Connection.State != ConnectionState.Open)
+					{
+						cmd.Connection.Open();
+					}
+
+					result = Convert.ToUInt64(cmd.ExecuteScalar());
+
+					Quit = true;
+				}
+				catch (MySqlException MySQLErr)
+				{
+					if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
+					{
+						FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
+						Ping();
+						System.Threading.Thread.Sleep(5000);
+						Ping();
+					}
+					else
+						throw;
+				}
+			} while (!Quit);
+
+			return result;
+		}
+
         #region Logging
         protected void CreateLogConnection()
 		{
@@ -536,7 +581,7 @@ AND pd.AgencyEnabled= 1",
 			try
 			{
 				cLog.Open();
-                cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition) VALUES (now(), ?AppCode, ?PriceCode, ?Addition)", Settings.Default.tbLogs), cLog);
+                cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition) VALUES (now(), ?AppCode, ?PriceCode, ?Addition); select last_insert_id()", Settings.Default.tbLogs), cLog);
                 cmdLog.Parameters.Add("AppCode", Settings.Default.AppCode);
                 cmdLog.Parameters.Add("PriceCode", MySqlDbType.Int64);
                 cmdLog.Parameters.Add("Addition", MySqlDbType.VarString);
@@ -552,48 +597,45 @@ AND pd.AgencyEnabled= 1",
             Logging(-1, Addition);
         }
 
-        protected void Logging(int CurrPriceCode, string Addition)
+        protected UInt64 Logging(int CurrPriceCode, string Addition)
         {
             if (CurrPriceCode > -1)
                 FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "{0}", Addition);
             else
                 FormLog.Log(this.GetType().Name, "{0}", Addition);
-            try
-            {
-                if (cLog.State != System.Data.ConnectionState.Open)
-                    cLog.Open();
-                if (CurrPriceCode > -1)
-                    cmdLog.Parameters["PriceCode"].Value = CurrPriceCode;
-                else
-                    cmdLog.Parameters["PriceCode"].Value = 0;
-                cmdLog.Parameters["Addition"].Value = Addition;
-				bool NeedLogging = true;
-				//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
-				//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
-				if (!String.IsNullOrEmpty(Addition))
+
+            if (cLog.State != System.Data.ConnectionState.Open)
+                cLog.Open();
+            if (CurrPriceCode > -1)
+                cmdLog.Parameters["PriceCode"].Value = CurrPriceCode;
+            else
+                cmdLog.Parameters["PriceCode"].Value = 0;
+            cmdLog.Parameters["Addition"].Value = Addition;
+			bool NeedLogging = true;
+			//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
+			//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
+			if (!String.IsNullOrEmpty(Addition))
+			{
+				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
 				{
-					if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
-					{
-						if (ErrorPriceLogging.ErrorMessages[CurrPriceCode] == Addition)
-							NeedLogging = false;
-						else
-							ErrorPriceLogging.ErrorMessages[CurrPriceCode] = Addition;
-					}
+					if (ErrorPriceLogging.ErrorMessages[CurrPriceCode] == Addition)
+						NeedLogging = false;
 					else
-						ErrorPriceLogging.ErrorMessages.Add(CurrPriceCode, Addition);
+						ErrorPriceLogging.ErrorMessages[CurrPriceCode] = Addition;
 				}
 				else
-				{
-					if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
-						ErrorPriceLogging.ErrorMessages.Remove(CurrPriceCode);
-				}
-				if (NeedLogging)
-					ExecuteCommand(cmdLog);
-            }
-            catch (Exception ex)
-            {
-                FormLog.Log(this.GetType().Name, "Error on Logging : {0}", ex.ToString());
-            }
+					ErrorPriceLogging.ErrorMessages.Add(CurrPriceCode, Addition);
+			}
+			else
+			{
+				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
+					ErrorPriceLogging.ErrorMessages.Remove(CurrPriceCode);
+			}
+
+			if (NeedLogging)
+				return ExecuteScalar(cmdLog);
+			else
+				return 0;
         }
 
         protected void LoggingToService(string Addition)

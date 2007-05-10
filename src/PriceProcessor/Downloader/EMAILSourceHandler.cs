@@ -345,7 +345,11 @@ namespace Inforoom.Downloader
 							{
 								if (ProcessPriceFile(CurrFileName))
 								{
-									Logging(CurrPriceCode, String.Empty);
+									ulong PriceID = Logging(CurrPriceCode, String.Empty);
+									if (PriceID != 0)
+										CopyToHistory(PriceID, m);
+									else
+										throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
 									UpdateDB(CurrPriceCode, DateTime.Now);
 								}
 								else
@@ -365,6 +369,18 @@ namespace Inforoom.Downloader
 				}//foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
 
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+		}
+
+		void CopyToHistory(UInt64 PriceID, Mime Letter)
+		{
+			string HistoryFileName = DownHistoryPath + PriceID.ToString() + ".eml";
+			string SavedFile = DownHandlerPath + PriceID.ToString() + ".eml";
+			try
+			{
+				Letter.ToFile(SavedFile);
+				File.Copy(SavedFile, HistoryFileName);
+			}
+			catch { }
 		}
 
 		protected AddressList GetAddressList(Mime m)

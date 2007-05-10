@@ -61,7 +61,11 @@ namespace Inforoom.Downloader
                             {
                                 if (ProcessPriceFile(CurrFileName))
                                 {
-                                    Logging(CurrPriceCode, String.Empty);
+                                    ulong PriceID = Logging(CurrPriceCode, String.Empty);
+									if (PriceID != 0)
+										CopyToHistory(PriceID, CurrFileName);
+									else
+										throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
                                     UpdateDB(CurrPriceCode, CurrPriceDate);
                                 }
                                 else
@@ -122,6 +126,16 @@ namespace Inforoom.Downloader
                 }
             }
         }
+
+		void CopyToHistory(UInt64 PriceID, string SavedFile)
+		{
+			string HistoryFileName = DownHistoryPath + PriceID.ToString() + Path.GetExtension(SavedFile);
+			try
+			{
+				File.Copy(SavedFile, HistoryFileName);
+			}
+			catch { }
+		}
 
         protected void CopyStreams(Stream input, Stream output)
         {
