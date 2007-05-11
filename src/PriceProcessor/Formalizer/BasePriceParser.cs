@@ -691,7 +691,7 @@ namespace Inforoom.Formalizer
 
 			//TODO: Сделать это одним запросом
 				daCore = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1}{2} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore, firmSegment), MyConn);
+				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
 			cbCore = new MySqlCommandBuilder(daCore);
 			daCore.InsertCommand = cbCore.GetInsertCommand();
 			daCore.InsertCommand.Parameters["MinBoundCost"].MySqlDbType = MySqlDbType.Decimal;
@@ -757,12 +757,12 @@ namespace Inforoom.Formalizer
 				int Index = 0;
 
 				bool FirstInsert = true;
-				sb.AppendLine(String.Format("insert into {0}{1} (" + 
+				sb.AppendLine(String.Format("insert into {0} (" + 
 					"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, BaseCost, MinBoundCost, " +
 					"VitallyImportant, RequestRatio, RegistryCost, " +
 					"MaxBoundCost, OrderCost, " +
-					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore, firmSegment));
+					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
 
 				foreach (DataRow drCore in dtCore.Rows)
 				{
@@ -876,7 +876,7 @@ namespace Inforoom.Formalizer
 						try
 						{
 							//TODO: Сделать одним вызовом несколько SQL-запросов
-							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1}{2} where FirmCode={0}", priceCode, FormalizeSettings.tbCore, firmSegment), MyConn, myTrans);
+							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore), MyConn, myTrans);
 							sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
 
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
