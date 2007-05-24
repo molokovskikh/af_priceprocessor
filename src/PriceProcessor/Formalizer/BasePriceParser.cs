@@ -103,7 +103,8 @@ namespace Inforoom.Formalizer
 		RequestRatio,
 		RegistryCost,
 		MaxBoundCost,
-		OrderCost
+		OrderCost,
+		MinOrderCount
 	}
 
 	public enum CostTypes : int
@@ -542,6 +543,9 @@ namespace Inforoom.Formalizer
 			object OrderCost = GetFieldValueObject(PriceFields.OrderCost);
 			if ((OrderCost is decimal) && ((decimal)OrderCost >= 0))
 				drCore["OrderCost"] = (decimal)OrderCost;
+			object MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount);
+			if ((MinOrderCount is int) && ((int)MinOrderCount >= 0))
+				drCore["MinOrderCount"] = (int)MinOrderCount;
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
 			if (dt is DateTime)
@@ -761,7 +765,7 @@ namespace Inforoom.Formalizer
 					"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, BaseCost, MinBoundCost, " +
 					"VitallyImportant, RequestRatio, RegistryCost, " +
-					"MaxBoundCost, OrderCost, " +
+					"MaxBoundCost, OrderCost, MinOrderCount, " +
 					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
 
 				foreach (DataRow drCore in dtCore.Rows)
@@ -781,6 +785,7 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 					sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+					sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
                     AddTextParameter("Code", drCore, sb);
                     sb.Append(", ");
 
@@ -1353,6 +1358,9 @@ namespace Inforoom.Formalizer
 				case (int)PriceFields.OrderCost:					
 					return ProcessCost(GetFieldRawValue(PF));
 
+				case (int)PriceFields.MinOrderCount:
+					return ProcessInt(GetFieldRawValue(PF));
+
 				case (int)PriceFields.Period:
 					return ProcessPeriod(GetFieldRawValue(PF));
 
@@ -1386,6 +1394,27 @@ namespace Inforoom.Formalizer
 					decimal d = Decimal.Parse(res, NumberStyles.Currency);
 					d = Math.Round(d, 6);
 					return d;
+				}
+				catch
+				{
+					return DBNull.Value;
+				}
+			else
+				return DBNull.Value;
+		}
+
+		/// <summary>
+		/// Обработать значение IntValue и получить результать как целое число
+		/// </summary>
+		/// <param name="IntValue"></param>
+		/// <returns></returns>
+		public virtual object ProcessInt(string IntValue)
+		{
+			if (!String.IsNullOrEmpty(IntValue))
+				try
+				{
+					int i = Convert.ToInt32(IntValue);
+					return i;
 				}
 				catch
 				{
