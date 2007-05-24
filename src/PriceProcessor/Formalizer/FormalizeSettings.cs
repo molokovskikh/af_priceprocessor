@@ -47,7 +47,6 @@ namespace Inforoom.Formalizer
 		//Путь с входящими прайсами
 		public static readonly string InboundPath = "C:\\Temp\\Inbound\\";
 		public static readonly string BasePath = "C:\\Temp\\Base\\";
-		public static readonly string InboundCopy = "C:\\Temp\\InboundCopy\\";
 
 		//Каталог с ошибочными файлами
 		public static readonly string ErrorFiles = "C:\\Temp\\ErrorFiles\\";
@@ -120,7 +119,6 @@ namespace Inforoom.Formalizer
 			CheckZero = (bool)configurationAppSettings.GetValue("FormalizeSettings.CheckZero", typeof(bool));
 			InboundPath = (string)configurationAppSettings.GetValue("FormalizeSettings.InboundPath", typeof(string));
 			BasePath = (string)configurationAppSettings.GetValue("FormalizeSettings.BasePath", typeof(string));
-			InboundCopy = (string)configurationAppSettings.GetValue("FormalizeSettings.InboundCopy", typeof(string));
 			MaxWorkThread = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxWorkThread", typeof(int));
 			MaxRepeatTranCount = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxRepeatTranCount", typeof(int));
 			MinRepeatTranCount = (int)configurationAppSettings.GetValue("FormalizeSettings.MinRepeatTranCount", typeof(int));
