@@ -532,7 +532,7 @@ namespace Inforoom.Formalizer
 			drCore["CodeCr"] = GetFieldValue(PriceFields.CodeCr);
 			drCore["Unit"] = GetFieldValue(PriceFields.Unit);
 			drCore["Volume"] = GetFieldValue(PriceFields.Volume);
-			drCore["Quantity"] = GetFieldValue(PriceFields.Quantity);
+			drCore["Quantity"] = GetFieldValueObject(PriceFields.Quantity);
 			drCore["Note"] = GetFieldValue(PriceFields.Note);
 			drCore["VitallyImportant"] = GetFieldValueObject(PriceFields.VitallyImportant);
 			drCore["RequestRatio"] = GetFieldValueObject(PriceFields.RequestRatio);
@@ -624,7 +624,7 @@ namespace Inforoom.Formalizer
 			drUnrecExp["CodeCr"] = GetFieldValue(PriceFields.CodeCr);
 			drUnrecExp["Unit"] = GetFieldValue(PriceFields.Unit);
 			drUnrecExp["Volume"] = GetFieldValue(PriceFields.Volume);
-			drUnrecExp["Quantity"] = GetFieldValue(PriceFields.Quantity);
+			drUnrecExp["Quantity"] = GetFieldValueObject(PriceFields.Quantity);
 			drUnrecExp["Note"] = GetFieldValue(PriceFields.Note);
 			drUnrecExp["Period"] = GetFieldValueObject(PriceFields.Period);
 			drUnrecExp["Doc"] = GetFieldValueObject(PriceFields.Doc);
@@ -1083,11 +1083,13 @@ namespace Inforoom.Formalizer
 								if (priceType != FormalizeSettings.ASSORT_FLG)
 								{
 									costCount = ProcessCosts();
+									object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
 									//Производим проверку для мультиколоночных прайсов
 									if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 									{
 										//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-										if (0 == costCount)
+										//или если количество определенно и оно равно 0
+										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
 										{
 											InsertToZero();
 											continue;
@@ -1099,7 +1101,8 @@ namespace Inforoom.Formalizer
 									{
 										//Эта проверка для всех остальных
 										//Если кол-во ненулевых цен = 0
-										if (0 == costCount)
+										//или если количество определенно и оно равно 0
+										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
 										{
 											InsertToZero();
 											continue;
@@ -1345,7 +1348,6 @@ namespace Inforoom.Formalizer
 				case (int)PriceFields.Name2:
 				case (int)PriceFields.Name3:
 				case (int)PriceFields.Note:
-				case (int)PriceFields.Quantity:
 				case (int)PriceFields.Unit:
 				case (int)PriceFields.Volume:
 				case (int)PriceFields.OriginalName:
@@ -1358,6 +1360,7 @@ namespace Inforoom.Formalizer
 				case (int)PriceFields.OrderCost:					
 					return ProcessCost(GetFieldRawValue(PF));
 
+				case (int)PriceFields.Quantity:
 				case (int)PriceFields.MinOrderCount:
 					return ProcessInt(GetFieldRawValue(PF));
 
