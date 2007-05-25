@@ -1379,7 +1379,7 @@ namespace Inforoom.Formalizer
 		/// <returns></returns>
 		public virtual object ProcessCost(string CostValue)
 		{
-			if (null != CostValue)
+			if (!String.IsNullOrEmpty(CostValue))
 				try
 				{
 					NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;			
@@ -1416,8 +1416,11 @@ namespace Inforoom.Formalizer
 			if (!String.IsNullOrEmpty(IntValue))
 				try
 				{
-					int i = Convert.ToInt32(IntValue);
-					return i;
+					object cost = ProcessCost(IntValue);
+					if (cost is decimal)
+						return Convert.ToInt32( decimal.Truncate((decimal)cost) );
+					else
+						return cost;
 				}
 				catch
 				{
