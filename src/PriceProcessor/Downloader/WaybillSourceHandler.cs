@@ -119,7 +119,8 @@ INNER JOIN {0} AS CD ON CD.FirmCode = st.FirmCode
 inner join farm.regions             as r  on r.RegionCode = cd.RegionCode
 WHERE
 cd.FirmStatus   = 1
-and Apteka.FirmCode = ?AptekaClientCode",
+and Apteka.FirmCode = ?AptekaClientCode
+and st.SourceID = 1",
 				Settings.Default.tbClientsData,
 				Settings.Default.tbWaybillSources);
 		}
