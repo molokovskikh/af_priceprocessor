@@ -379,6 +379,7 @@ namespace Inforoom.Downloader
 			{
 				Letter.ToFile(SavedFile);
 				File.Copy(SavedFile, HistoryFileName);
+				File.Delete(SavedFile);
 			}
 			catch { }
 		}

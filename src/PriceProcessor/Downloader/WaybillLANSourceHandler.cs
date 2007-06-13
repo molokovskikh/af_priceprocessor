@@ -87,7 +87,10 @@ and st.SourceID = 4",
 								DeleteCurrFile();
 							}
 							else
-								LoggingToService(String.Format("Не нашли клиента с указанным FirmClientCode '{0}' для поставщика {1} ({2})" , Path.GetFileName(CurrFileName), drLanSource[SourcesTable.colShortName], drLanSource[SourcesTable.colFirmCode]));
+							{
+								DeleteCurrFile();
+								LoggingToService(String.Format("Не нашли клиента с указанным FirmClientCode '{0}' для поставщика {1} ({2})", Path.GetFileName(CurrFileName), drLanSource[SourcesTable.colShortName], drLanSource[SourcesTable.colFirmCode]));
+							}
 
 					}
 

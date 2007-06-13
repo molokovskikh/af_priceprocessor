@@ -498,10 +498,16 @@ AND pd.AgencyEnabled= 1",
             catch { }
             try
             {
-                if (Directory.Exists(CurrFileName + ExtrDirSuffix))
-                    Directory.Delete(CurrFileName + ExtrDirSuffix, true);
-            }
-            catch { }
+
+				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Попытка удалить файл : " + CurrFileName);
+				if (File.Exists(CurrFileName))
+					File.Delete(CurrFileName);
+				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Файл удален : " + CurrFileName);
+			}
+            catch (Exception ex)
+			{
+				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Ошибка при удалении файла : " + CurrFileName + "  Ошибка : " + ex.ToString());
+			}
         }
 
         protected void ExecuteCommand(MySqlCommand cmd)
