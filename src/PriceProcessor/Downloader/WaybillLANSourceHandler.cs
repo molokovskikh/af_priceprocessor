@@ -46,7 +46,9 @@ and st.SourceID = 4",
 				{
 					drLanSource = dtSources.Rows[0];
 
+					//Получаем список файлов из папки
 					files = GetFileFromSource();
+
 					foreach (string SourceFileName in files)
 					{
 						GetCurrentFile(SourceFileName);
@@ -76,20 +78,27 @@ and st.SourceID = 4",
 								if (CorrectArchive)
 								{
 									ProcessWaybillFile(CurrFileName, drLanSource, Path.GetFileName(CurrFileName).Split('_')[0]);
+									//После обработки файла удаляем его из папки
 									if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
 										File.Delete(SourceFileName);
 								}
 								else
 								{
-									//TODO: надо что-то делать с такими файлами
-									LoggingToService("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
+									WriteLog(Convert.ToInt32(drLanSource[SourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+									//Распаковать файл не удалось, поэтому удаляем его из папки
+									if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
+										File.Delete(SourceFileName);
 								}
 								DeleteCurrFile();
 							}
 							else
 							{
 								DeleteCurrFile();
+								WriteLog(Convert.ToInt32(drLanSource[SourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не нашли клиента с указанным FirmClientCode '{0}'", Path.GetFileName(CurrFileName)));
 								LoggingToService(String.Format("Не нашли клиента с указанным FirmClientCode '{0}' для поставщика {1} ({2})", Path.GetFileName(CurrFileName), drLanSource[SourcesTable.colShortName], drLanSource[SourcesTable.colFirmCode]));
+								//Сопоставить с клиентом файл не удалось, поэтому удаляем его из папки, нам он не нужен
+								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
+									File.Delete(SourceFileName);
 							}
 
 					}
@@ -141,7 +150,6 @@ and st.SourceID = 4",
 			{
 				if (File.Exists(NewFile))
 					File.Delete(NewFile);
-				//TODO: здесь надо Move изменить на Copy, а после обработки накладной удалить файл
 				File.Copy(sourceFile, NewFile);
 				CurrFileName = NewFile;
 			}
@@ -305,15 +313,47 @@ group by cd.firmcode
 				}
 				catch
 				{
-					//if (!String.IsNullOrEmpty(OutFileName) && File.Exists(OutFileName))
-					//    try
-					//    {
-					//        File.Delete(OutFileName);
-					//    }
-					//    catch { }
 					throw;
 				}
 			} while (!Quit);
+		}
+
+		class WaybillLogArgs : ExecuteTemplate.ExecuteArgs
+		{
+			internal int firmCode;
+			internal int waybillClientCode;
+			internal string fileName;
+			internal string addition;
+
+			public WaybillLogArgs(int FirmCode, int ClientCode, string FileName, string Addition)
+			{
+				firmCode = FirmCode;
+				waybillClientCode = ClientCode;
+				fileName = FileName;
+				addition = Addition;		
+			}
+		}
+
+
+		private void WriteLog(int FirmCode, int ClientCode, string FileName, string Addition)
+		{
+			ExecuteTemplate.MethodTemplate.ExecuteMethod<WaybillLogArgs, object>(new WaybillLogArgs(FirmCode, ClientCode, FileName, Addition), delegate(WaybillLogArgs args)
+			{
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?Addition)", args.DataAdapter.SelectCommand.Connection);
+				
+				cmdInsert.Parameters.Add("?FirmCode", args.firmCode);
+				cmdInsert.Parameters.Add("?ClientCode", args.waybillClientCode);
+				cmdInsert.Parameters.Add("?FileName", args.fileName);
+				cmdInsert.Parameters.Add("?Addition", args.addition);
+				cmdInsert.ExecuteNonQuery();
+
+				return null;
+			}, 
+				null,
+				cWork,
+				true,
+				false);
+
 		}
 
 
