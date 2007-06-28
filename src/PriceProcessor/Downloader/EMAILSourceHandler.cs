@@ -18,6 +18,9 @@ namespace Inforoom.Downloader
 		//Список ошибочных UID, по которым не надо еще раз отправлять письма
 		protected List<int> errorUIDs;
 
+		//UID текущего обрабатываемого письма
+		protected int currentUID;
+
 		public EMAILSourceHandler(string sourceType)
             : base(sourceType)
         {
@@ -65,6 +68,7 @@ namespace Inforoom.Downloader
 										sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
 										OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
 										m = Mime.Parse(OneItem[0].MessageData);
+										currentUID = item.UID;
 										ProcessedUID.Add(item.UID.ToString());
 										Ping();
 									}
@@ -147,7 +151,7 @@ namespace Inforoom.Downloader
 
             //Название аттачментов
             string AttachNames = String.Empty;
-			string _causeSubject = String.Empty, _causeBody = String.Empty;
+			string _causeSubject = String.Empty, _causeBody = String.Empty, _systemError = String.Empty;
 
 
             //Если нет вложений, а письмо выглядит как UUE, то добавляем его как вложение
@@ -178,7 +182,7 @@ namespace Inforoom.Downloader
 					AttachNames += "\"" + GetShortFileNameFromAttachement(ent) + "\"" + Environment.NewLine;
 
 
-			if (CheckMime(m, ref _causeSubject, ref _causeBody))
+			if (CheckMime(m, ref _causeSubject, ref _causeBody, ref _systemError))
 			{
 				FillSourcesTable();
 
@@ -186,7 +190,7 @@ namespace Inforoom.Downloader
 					ErrorOnProcessAttachs(m, FromList, AttachNames, _causeSubject, _causeBody);
 			}
 			else
-				ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody);
+				ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody, _systemError);
         }
 
 		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
@@ -194,7 +198,7 @@ namespace Inforoom.Downloader
 			SendUnrecLetter(m, FromList, AttachNames, causeBody);
 		}
 
-		protected virtual void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
+		protected virtual void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody, string systemError)
 		{
 			SendUnrecLetter(m, FromList, AttachNames, causeBody);
 		}
@@ -242,10 +246,13 @@ namespace Inforoom.Downloader
 		/// </summary>
 		/// <param name="m"></param>
 		/// <returns></returns>
-		protected virtual bool CheckMime(Mime m, ref string causeSubject, ref string causeBody)
+		protected virtual bool CheckMime(Mime m, ref string causeSubject, ref string causeBody, ref string systemError)
 		{
 			if (m.Attachments.Length == 0)
+			{
 				causeBody = "Письмо не содержит вложений.";
+				systemError = causeBody;
+			}
 			return m.Attachments.Length > 0;
 		}
 

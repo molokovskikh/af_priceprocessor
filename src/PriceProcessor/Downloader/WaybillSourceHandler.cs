@@ -37,34 +37,57 @@ namespace Inforoom.Downloader
 			c.Authenticate(Settings.Default.WaybillIMAPUser, Settings.Default.WaybillIMAPPass);
 		}
 
-		protected override bool CheckMime(Mime m, ref string causeSubject, ref string causeBody)
+		protected override bool CheckMime(Mime m, ref string causeSubject, ref string causeBody, ref string systemError)
 		{
 			string EmailList = String.Empty;
 			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
 			bool res = (m.Attachments.Length > 0) && (CorrectAddresCount == 1);
-			//Производим отправку уведомлений
-			if ((m.Attachments.Length == 0) && (CorrectAddresCount == 1))
-				try
+			//Если не сопоставили с клиентом
+			if (CorrectAddresCount == 0)
+			{
+				systemError = "Не найден клиент.";
+
+				causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnNonExistentClient;
+				causeBody = Settings.Default.ResponseWaybillBodyTemplateOnNonExistentClient;
+			}
+			else
+				//Если нет вложений
+				if ((CorrectAddresCount == 1) && (m.Attachments.Length == 0))
 				{
+					systemError = "Письмо не содержит вложений.";
 					string Address = AptekaClientCode.ToString() + "@waybills.analit.net";
 					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					causeSubject = String.Format(Settings.Default.ResponseWaybillSubjectTemplate, Address, LetterDate);
-					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplate, Address, LetterDate);
+					causeSubject = String.Format(Settings.Default.ResponseWaybillSubjectTemplateOnNothingAttachs, Address, LetterDate);
+					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnNothingAttachs, Address, LetterDate);
 				}
-				catch
-				{ }
-			if (CorrectAddresCount > 1)
-				try
-				{
-					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
+				else
+					//Если несколько клиентов в списке получателей
+					if (CorrectAddresCount > 1)
+					{
+						systemError = "Письмо отправленно нескольким клиентам.";
+						string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
-					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
-				}
-				catch
-				{ }
+						causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
+						causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
+					}
 			return res;
+		}
+
+		private bool ClientExists(int CheckClientCode)
+		{
+			return ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, bool>(
+				new ExecuteArgs(), 
+				delegate(ExecuteArgs args)
+				{
+					object clientCode = MySqlHelper.ExecuteScalar(cWork, "select ClientCode from usersettings.retclientsset where ClientCode = " + CheckClientCode.ToString());
+
+					return (clientCode != null);
+				},
+				false,
+				cWork,
+				true,
+				false);
 		}
 
 		private int GetClientCode(string Address)
@@ -75,17 +98,21 @@ namespace Inforoom.Downloader
 			{
 				AptekaClientCode = 0;
 				if (int.TryParse(Address.Substring(0, Index), out AptekaClientCode))
+				{
+					if (!ClientExists(AptekaClientCode))
+						AptekaClientCode = 0;
 					return AptekaClientCode;
+				}
 				else
-					return -1;				
+					return 0;				
 			}
 			else
-				return -1;
+				return 0;
 		}
 
 		private int CorrectClientAddress(AddressList addressList, ref string EmailList)
 		{
-			int CurrentClientCode = -1;
+			int CurrentClientCode = 0;
 			int ClientCodeCount = 0;
 
 			//Пробегаемся по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net>
@@ -93,7 +120,7 @@ namespace Inforoom.Downloader
 			foreach(MailboxAddress ma in  addressList.Mailboxes)
 			{
 				CurrentClientCode = GetClientCode(GetCorrectEmailAddress(ma.EmailAddress));
-				if (CurrentClientCode > -1)
+				if (CurrentClientCode > 0)
 				{
 					if (!String.IsNullOrEmpty(EmailList))
 						EmailList += Environment.NewLine;
@@ -135,9 +162,10 @@ and st.SourceID = 1",
 			return dtSources;
 		}
 
-		protected override void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
+		protected override void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody, string systemError)
 		{
 			if (causeBody != String.Empty)
+			{
 				try
 				{
 					AddressList _from = new AddressList();
@@ -148,8 +176,28 @@ and st.SourceID = 1",
 				}
 				catch
 				{ }
+				WriteLog(
+					0, 
+					AptekaClientCode, 
+					null, 
+					String.Format(@"{0}
+Отправители            : {1}
+Получатели             : {2}
+Список вложений        : 
+{3}
+Тема письма поставщику : {4}
+Тело письма поставщику : 
+{5}", 
+							 systemError, 
+							 FromList.ToAddressListString(), 
+							 m.MainEntity.To.ToAddressListString(), 
+							 AttachNames, 
+							 causeSubject, 
+							 causeBody), 
+					currentUID);
+			}
 			else
-				SendUnrecLetter(m, FromList, AttachNames, "Не найден источник.");
+				SendUnrecLetter(m, FromList, AttachNames, "Не распознанное письмо.");
 		}
 
 		protected override string GetFailMail()
@@ -193,9 +241,7 @@ and st.SourceID = 1",
 							}
 							else
 							{
-								FormLog.Log(this.GetType().Name + ".ProcessAttachs", "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
-								//TODO: надо что-то делать с такими файлами
-								//Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
+								WriteLog(Convert.ToInt32(drS[WaybillSourcesTable.colFirmCode]), AptekaClientCode, Path.GetFileName(CurrFileName), "Не удалось распаковать файл", currentUID);
 							}
 							DeleteCurrFile();
 						}
@@ -231,10 +277,11 @@ and st.SourceID = 1",
 		protected void MoveWaybill(string FileName, DataRow drCurrent)
 		{
 			bool Quit = false;
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName) values (?FirmCode, ?ClientCode, ?FileName); select last_insert_id();", cWork);
-			cmdInsert.Parameters.Add("FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
-			cmdInsert.Parameters.Add("ClientCode", AptekaClientCode);
-			cmdInsert.Parameters.Add("FileName", Path.GetFileName(FileName));
+			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, MessageUID) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID); select last_insert_id();", cWork);
+			cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
+			cmdInsert.Parameters.Add("?ClientCode", AptekaClientCode);
+			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
+			cmdInsert.Parameters.Add("?MessageUID", currentUID);			
 
 			MySqlTransaction tran;
 
@@ -302,6 +349,28 @@ and st.SourceID = 1",
 				}
 			} while (!Quit);
 		}
+
+		private void WriteLog(int FirmCode, int ClientCode, string FileName, string Addition, int MessageUID)
+		{
+			ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
+			{
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, Addition, MessageUID) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID)", args.DataAdapter.SelectCommand.Connection);
+
+				cmdInsert.Parameters.Add("?FirmCode", FirmCode);
+				cmdInsert.Parameters.Add("?ClientCode", ClientCode);
+				cmdInsert.Parameters.Add("?FileName", FileName);
+				cmdInsert.Parameters.Add("?Addition", Addition);
+				cmdInsert.Parameters.Add("?MessageUID", MessageUID);
+				cmdInsert.ExecuteNonQuery();
+
+				return null;
+			},
+				null,
+				cWork,
+				true,
+				false);
+		}
+
 
 	}
 }
