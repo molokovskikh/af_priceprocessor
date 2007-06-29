@@ -35,6 +35,7 @@ namespace Inforoom.Downloader
             try
             {
                 m_pFtpClient = new FTP_Client();
+				m_pFtpClient.PassiveMode = Convert.ToByte(dtSources.Rows[0][SourcesTable.colFTPPassiveMode]) == 1;
                 m_pFtpClient.Connect(FTPHost, 21);
                 m_pFtpClient.Authenticate(dtSources.Rows[0][SourcesTable.colFTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colFTPPassword].ToString());
                 m_pFtpClient.SetCurrentDir(PricePath);

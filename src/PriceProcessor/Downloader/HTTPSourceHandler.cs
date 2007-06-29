@@ -15,7 +15,7 @@ namespace Inforoom.Downloader
 
         protected DateTime GetFileDateTime(string HTTPFile, string HTTPUser, string HTTPPassword)
         {
-            HttpWebRequest request = (HttpWebRequest)FtpWebRequest.Create(HTTPFile);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(HTTPFile);
             request.Method = WebRequestMethods.Http.Head;
 
             if (!String.IsNullOrEmpty(HTTPUser))
@@ -33,7 +33,7 @@ namespace Inforoom.Downloader
 
         protected void GetFile(string HTTPFile, string SaveFileName, string HTTPUser, string HTTPPassword)
         {
-            HttpWebRequest request = (HttpWebRequest)FtpWebRequest.Create(HTTPFile);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(HTTPFile);
             request.Method = WebRequestMethods.Http.Get;
 
             if (!String.IsNullOrEmpty(HTTPUser))

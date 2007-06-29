@@ -39,6 +39,7 @@ namespace Inforoom.Downloader
         public static string colFTPDir = "FTPDir";
         public static string colFTPLogin = "FTPLogin";
         public static string colFTPPassword = "FTPPassword";
+		public static string colFTPPassiveMode = "FTPPassiveMode";
 
         public static string colHTTPLogin = "HTTPLogin";
         public static string colHTTPPassword = "HTTPPassword";
@@ -255,7 +256,7 @@ SELECT
   st.SourceType, st.LastDateTime, st.PriceDateTime, 
   st.PricePath,  
   st.EMailPassword, st.EMailTo, st.EMailFrom, 
-  st.FTPDir, st.FTPLogin, st.FTPPassword, 
+  st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask
 FROM       {0}             as st
