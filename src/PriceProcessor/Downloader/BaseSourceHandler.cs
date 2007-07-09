@@ -55,6 +55,13 @@ namespace Inforoom.Downloader
 		public static Dictionary<int, string> ErrorMessages = new Dictionary<int, string>();
 	}
 
+	//Перечисление с указанием кода результата обработки источника
+	public enum DownPriceResultCode
+	{ 
+		SuccessDownload = 2,
+		ErrorDownload = 5
+	}
+
 	/// <summary>
 	/// Summary description for BaseSourceHandle.
 	/// </summary>
@@ -456,16 +463,25 @@ AND pd.AgencyEnabled= 1",
 			return FileExt;
         }
 
-        protected bool ProcessPriceFile(string InFile)
+		protected string GetSuccessAddition(string ArchName, string FileName)
+		{
+			return String.Format(
+@"Имя прайса-архива  : {0}
+Имя файла в архиве : {1}",
+				Path.GetFileName(ArchName),
+				Path.GetFileName(FileName));
+		}
+
+        protected bool ProcessPriceFile(string InFile, out string ExtrFile)
         {
-            string ExtrFile = InFile;
+            ExtrFile = InFile;
             if (ArchiveHlp.IsArchive(InFile))
             {
                 ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
             }
             if (ExtrFile == String.Empty)
             {
-                Logging(CurrPriceCode, "Не удалось найти файл '" + (string)drCurrent[SourcesTable.colExtrMask] + "' в архиве");
+				Logging(CurrPriceCode, "Не удалось найти файл '" + (string)drCurrent[SourcesTable.colExtrMask] + "' в архиве");
                 return false;
             }
             else
@@ -562,10 +578,11 @@ AND pd.AgencyEnabled= 1",
 			try
 			{
 				cLog.Open();
-                cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition) VALUES (now(), ?AppCode, ?PriceCode, ?Addition); select last_insert_id()", Settings.Default.tbLogs), cLog);
+				cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition, ResultCode) VALUES (now(), ?AppCode, ?PriceCode, ?Addition, ?ResultCode); select last_insert_id()", Settings.Default.tbLogs), cLog);
                 cmdLog.Parameters.Add("?AppCode", Settings.Default.AppCode);
                 cmdLog.Parameters.Add("?PriceCode", MySqlDbType.Int64);
                 cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
+				cmdLog.Parameters.Add("?ResultCode", MySqlDbType.Byte);
 			}
 			catch(Exception ex)
 			{
@@ -575,10 +592,15 @@ AND pd.AgencyEnabled= 1",
 
         protected void Logging(string Addition)
         {
-            Logging(-1, Addition);
+            Logging(-1, Addition, DownPriceResultCode.ErrorDownload);
         }
 
-        protected UInt64 Logging(int CurrPriceCode, string Addition)
+		protected void Logging(int CurrPriceCode, string Addition)
+		{
+			Logging(CurrPriceCode, Addition, DownPriceResultCode.ErrorDownload);
+		}
+
+		protected UInt64 Logging(int CurrPriceCode, string Addition, DownPriceResultCode resultCode)
         {
             if (CurrPriceCode > -1)
                 FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "{0}", Addition);
@@ -592,6 +614,7 @@ AND pd.AgencyEnabled= 1",
             else
                 cmdLog.Parameters["?PriceCode"].Value = 0;
             cmdLog.Parameters["?Addition"].Value = Addition;
+			cmdLog.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
 			bool NeedLogging = true;
 			//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
 			//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем

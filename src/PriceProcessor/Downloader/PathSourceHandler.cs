@@ -59,9 +59,10 @@ namespace Inforoom.Downloader
                             OperatorMailSend();
                             if (CorrectArchive)
                             {
-                                if (ProcessPriceFile(CurrFileName))
+								string ExtrFile = String.Empty;
+								if (ProcessPriceFile(CurrFileName, out ExtrFile))
                                 {
-                                    ulong PriceID = Logging(CurrPriceCode, null);
+									ulong PriceID = Logging(CurrPriceCode, GetSuccessAddition(CurrFileName, ExtrFile), DownPriceResultCode.SuccessDownload);
 									if (PriceID != 0)
 										CopyToHistory(PriceID, CurrFileName);
 									else
