@@ -465,11 +465,7 @@ AND pd.AgencyEnabled= 1",
 
 		protected string GetSuccessAddition(string ArchName, string FileName)
 		{
-			return String.Format(
-@"Имя прайса-архива  : {0}
-Имя файла в архиве : {1}",
-				Path.GetFileName(ArchName),
-				Path.GetFileName(FileName));
+			return String.Format("{0} > {1}", Path.GetFileName(ArchName), Path.GetFileName(FileName));
 		}
 
         protected bool ProcessPriceFile(string InFile, out string ExtrFile)
