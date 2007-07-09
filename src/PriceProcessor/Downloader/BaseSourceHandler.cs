@@ -294,9 +294,9 @@ AND pd.AgencyEnabled= 1",
                             Settings.Default.tbSources,
                             Settings.Default.tbFormRules), 
                         cWork);
-                cmdUpdatePriceDate.Parameters.Add("FirmCode", MySqlDbType.Int64);
-                cmdUpdatePriceDate.Parameters.Add("DT", MySqlDbType.Datetime);
-				cmdUpdatePriceDate.Parameters.Add("NowDate", MySqlDbType.Datetime);
+                cmdUpdatePriceDate.Parameters.Add("?FirmCode", MySqlDbType.Int64);
+                cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.Datetime);
+				cmdUpdatePriceDate.Parameters.Add("?NowDate", MySqlDbType.Datetime);
 				cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
                 daFillSources = new MySqlDataAdapter(cmdFillSources);
             }
@@ -311,7 +311,11 @@ AND pd.AgencyEnabled= 1",
 			ConnectionState oldstate = cWork.State;
 			try
 			{
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
+					delegate(ExecuteArgs args, MySqlException ex)
+					{
+						Ping();
+					});
 			}
 			catch
 			{
@@ -319,7 +323,11 @@ AND pd.AgencyEnabled= 1",
 				if (cWork.State != ConnectionState.Closed)
 					try { cWork.Close(); } catch { }
 				cWork.Open();
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, false);
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
+					delegate(ExecuteArgs args, MySqlException ex)
+					{
+						Ping();
+					});
 			}
 		}
 
@@ -339,11 +347,6 @@ AND pd.AgencyEnabled= 1",
                     CurrPriceCode, drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colRegionName], "", DateTime.Now));
             if (!String.IsNullOrEmpty(CurrFileName))
                 mm.Attachments.Add(new Attachment(CurrFileName));
-//#if DEBUG
-//                mm.Body += Environment.NewLine + Environment.NewLine + CurrFileName;
-//#else
-//                mm.Attachments.Add(new Attachment(CurrFileName));
-//#endif
             SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
             sc.Send(mm);
         }
@@ -390,9 +393,9 @@ AND pd.AgencyEnabled= 1",
             if (cWork.State != System.Data.ConnectionState.Open)
                 cWork.Open();
 
-            cmdUpdatePriceDate.Parameters["FirmCode"].Value = UpdatePriceCode;
-            cmdUpdatePriceDate.Parameters["DT"].Value = UpDT;
-			cmdUpdatePriceDate.Parameters["NowDate"].Value = DateTime.Now;
+            cmdUpdatePriceDate.Parameters["?FirmCode"].Value = UpdatePriceCode;
+            cmdUpdatePriceDate.Parameters["?DT"].Value = UpDT;
+			cmdUpdatePriceDate.Parameters["?NowDate"].Value = DateTime.Now;
 			ExecuteCommand(cmdUpdatePriceDate);
         }
 
@@ -509,69 +512,41 @@ AND pd.AgencyEnabled= 1",
 
         protected void ExecuteCommand(MySqlCommand cmd)
         {
-            bool Quit = false;
-
-            do
-            {
-                try
-                {
-                    if (cmd.Connection.State != ConnectionState.Open)
-                    {
-                        cmd.Connection.Open();
-                    }
-
-                    cmd.ExecuteNonQuery();
-
-                    Quit = true;
-                }
-                catch (MySqlException MySQLErr)
-                {
-                    if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
-                    {
-                        FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
-                        Ping();
-                        System.Threading.Thread.Sleep(5000);
-                        Ping();
-                    }
-                    else
-                        throw;
-                }
-            } while (!Quit);
+			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
+				new ExecuteArgs(),
+				delegate(ExecuteArgs args)
+				{
+					cmd.ExecuteNonQuery();
+					return null;
+				},
+				null,
+				cmd.Connection,
+				true,
+				null,
+				false,
+				delegate(ExecuteArgs args, MySqlException ex)
+				{
+					Ping();
+				});
         }
 
 		protected UInt64 ExecuteScalar(MySqlCommand cmd)
 		{
-			bool Quit = false;
-			UInt64 result = 0;
-
-			do
-			{
-				try
+			return MethodTemplate.ExecuteMethod<ExecuteArgs, UInt64>(
+				new ExecuteArgs(), 
+				delegate(ExecuteArgs args)
 				{
-					if (cmd.Connection.State != ConnectionState.Open)
-					{
-						cmd.Connection.Open();
-					}
-
-					result = Convert.ToUInt64(cmd.ExecuteScalar());
-
-					Quit = true;
-				}
-				catch (MySqlException MySQLErr)
+					return Convert.ToUInt64(cmd.ExecuteScalar());
+				}, 
+				0, 
+				cmd.Connection, 
+				true, 
+				null, 
+				false, 
+				delegate(ExecuteArgs args, MySqlException ex)
 				{
-					if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
-					{
-						FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
-						Ping();
-						System.Threading.Thread.Sleep(5000);
-						Ping();
-					}
-					else
-						throw;
-				}
-			} while (!Quit);
-
-			return result;
+					Ping();
+				});
 		}
 
         #region Logging
@@ -588,9 +563,9 @@ AND pd.AgencyEnabled= 1",
 			{
 				cLog.Open();
                 cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition) VALUES (now(), ?AppCode, ?PriceCode, ?Addition); select last_insert_id()", Settings.Default.tbLogs), cLog);
-                cmdLog.Parameters.Add("AppCode", Settings.Default.AppCode);
-                cmdLog.Parameters.Add("PriceCode", MySqlDbType.Int64);
-                cmdLog.Parameters.Add("Addition", MySqlDbType.VarString);
+                cmdLog.Parameters.Add("?AppCode", Settings.Default.AppCode);
+                cmdLog.Parameters.Add("?PriceCode", MySqlDbType.Int64);
+                cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
 			}
 			catch(Exception ex)
 			{
@@ -613,10 +588,10 @@ AND pd.AgencyEnabled= 1",
             if (cLog.State != System.Data.ConnectionState.Open)
                 cLog.Open();
             if (CurrPriceCode > -1)
-                cmdLog.Parameters["PriceCode"].Value = CurrPriceCode;
+                cmdLog.Parameters["?PriceCode"].Value = CurrPriceCode;
             else
-                cmdLog.Parameters["PriceCode"].Value = 0;
-            cmdLog.Parameters["Addition"].Value = Addition;
+                cmdLog.Parameters["?PriceCode"].Value = 0;
+            cmdLog.Parameters["?Addition"].Value = Addition;
 			bool NeedLogging = true;
 			//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
 			//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем

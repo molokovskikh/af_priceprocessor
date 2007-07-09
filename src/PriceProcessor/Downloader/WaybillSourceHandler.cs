@@ -99,7 +99,12 @@ namespace Inforoom.Downloader
 				false,
 				cWork,
 				true,
-				false);
+				null,
+				false,
+				delegate(ExecuteArgs args, MySqlException ex)
+				{
+					Ping();
+				});
 		}
 
 		private int GetClientCode(string Address)
@@ -181,7 +186,7 @@ and st.SourceID = 1",
 			dtSources.Clear();
 			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
 			daFillSources.SelectCommand.Parameters.Clear();
-			daFillSources.SelectCommand.Parameters.Add("AptekaClientCode", AptekaClientCode);
+			daFillSources.SelectCommand.Parameters.Add("?AptekaClientCode", AptekaClientCode);
 			daFillSources.Fill(dtSources);
 			return dtSources;
 		}
@@ -385,7 +390,7 @@ and st.SourceID = 1",
 				}
 				catch (MySqlException MySQLErr)
 				{
-					if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
+					if ((MySQLErr.Number == 1205) || (MySQLErr.Number == 1213) || (MySQLErr.Number == 1422))
 					{
 						FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
 						Ping();
@@ -410,7 +415,7 @@ and st.SourceID = 1",
 
 		private void WriteLog(int DocumentType, int FirmCode, int ClientCode, string FileName, string Addition, int MessageUID)
 		{
-			ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
+			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
 				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
@@ -427,7 +432,12 @@ and st.SourceID = 1",
 				null,
 				cWork,
 				true,
-				false);
+				null,
+				false,
+				delegate(ExecuteArgs args, MySqlException ex)
+				{
+					Ping();
+				});
 		}
 
 

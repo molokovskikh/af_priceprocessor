@@ -6,6 +6,7 @@ using System.IO;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
 using Inforoom.Downloader.Properties;
+using ExecuteTemplate;
 
 namespace Inforoom.Downloader
 {
@@ -219,31 +220,21 @@ group by cd.firmcode
 
 		protected void MoveWaybill(string FileName, DataRow drCurrent, string FirmClientCode)
 		{
-			bool Quit = false;
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, 1); select last_insert_id();", cWork);
-			cmdInsert.Parameters.Add("?FirmCode", drCurrent[SourcesTable.colFirmCode]);
-			cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
-			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
-
-			MySqlTransaction tran;
-
-			int AptekaClientCode;
-			string AptekaClientDirectory;
-			string OutFileNameTemplate;
-			string OutFileName;
-
-			do
-			{
-				try
+			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
+				new ExecuteArgs(),
+				delegate(ExecuteArgs args)
 				{
-					if (cWork.State != ConnectionState.Open)
-					{
-						cWork.Open();
-					}
+					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, 1); select last_insert_id();", cWork);
+					cmdInsert.Parameters.Add("?FirmCode", drCurrent[SourcesTable.colFirmCode]);
+					cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
+					cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
 
-					tran = cWork.BeginTransaction();
+					int AptekaClientCode;
+					string AptekaClientDirectory;
+					string OutFileNameTemplate;
+					string OutFileName;
 
-					cmdInsert.Transaction = tran;
+					cmdInsert.Transaction = args.DataAdapter.SelectCommand.Transaction;
 
 					DataSet ds = MySqlHelper.ExecuteDataset(cWork, @"
 SELECT
@@ -293,59 +284,31 @@ group by cd.firmcode
 						File.Copy(FileName, OutFileName);
 					}
 
-
 					File.Delete(FileName);
 
-					tran.Commit();
-
-					Quit = true;
-				}
-				catch (MySqlException MySQLErr)
+					return null;
+				},
+				null,
+				cWork,
+				true,
+				null,
+				false,
+				delegate(ExecuteArgs args, MySqlException ex)
 				{
-					if (MySQLErr.Number == 1213 || MySQLErr.Number == 1205)
-					{
-						FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
-						Ping();
-						System.Threading.Thread.Sleep(5000);
-						Ping();
-					}
-					else
-						throw;
-				}
-				catch
-				{
-					throw;
-				}
-			} while (!Quit);
+					Ping();
+				});
 		}
 
-		class WaybillLogArgs : ExecuteTemplate.ExecuteArgs
+		private void WriteLog(int logFirmCode, int logClientCode, string logFileName, string logAddition)
 		{
-			internal int firmCode;
-			internal int waybillClientCode;
-			internal string fileName;
-			internal string addition;
-
-			public WaybillLogArgs(int FirmCode, int ClientCode, string FileName, string Addition)
-			{
-				firmCode = FirmCode;
-				waybillClientCode = ClientCode;
-				fileName = FileName;
-				addition = Addition;		
-			}
-		}
-
-
-		private void WriteLog(int FirmCode, int ClientCode, string FileName, string Addition)
-		{
-			ExecuteTemplate.MethodTemplate.ExecuteMethod<WaybillLogArgs, object>(new WaybillLogArgs(FirmCode, ClientCode, FileName, Addition), delegate(WaybillLogArgs args)
+			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
 				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
-				
-				cmdInsert.Parameters.Add("?FirmCode", args.firmCode);
-				cmdInsert.Parameters.Add("?ClientCode", args.waybillClientCode);
-				cmdInsert.Parameters.Add("?FileName", args.fileName);
-				cmdInsert.Parameters.Add("?Addition", args.addition);
+
+				cmdInsert.Parameters.Add("?FirmCode", logFirmCode);
+				cmdInsert.Parameters.Add("?ClientCode", logClientCode);
+				cmdInsert.Parameters.Add("?FileName", logFileName);
+				cmdInsert.Parameters.Add("?Addition", logAddition);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;
@@ -353,7 +316,12 @@ group by cd.firmcode
 				null,
 				cWork,
 				true,
-				false);
+				null,
+				false,
+				delegate(ExecuteArgs args, MySqlException ex)
+				{
+					Ping();
+				});
 
 		}
 
