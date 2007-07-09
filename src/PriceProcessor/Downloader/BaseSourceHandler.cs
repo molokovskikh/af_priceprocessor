@@ -346,18 +346,6 @@ AND pd.AgencyEnabled= 1",
 			return dtSources;
 		}
 
-        protected void OperatorMailSend()
-        {
-            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPUserCopy,
-                String.Format("{0}; {1} ({2})", CurrPriceCode, drCurrent[SourcesTable.colRegionName], SourceType),
-                String.Format("Код прайса : {0}\nФирма: {1}; {2}\n{3}\nДата: {4}",
-                    CurrPriceCode, drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colRegionName], "", DateTime.Now));
-            if (!String.IsNullOrEmpty(CurrFileName))
-                mm.Attachments.Add(new Attachment(CurrFileName));
-            SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-            sc.Send(mm);
-        }
-
         protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
             MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPErrorList,
@@ -612,9 +600,9 @@ AND pd.AgencyEnabled= 1",
             cmdLog.Parameters["?Addition"].Value = Addition;
 			cmdLog.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
 			bool NeedLogging = true;
-			//Если строка с дополнением не пустая, то это ошибка, если пустая, то сбрасываем все ошибки
-			//Если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
-			if (!String.IsNullOrEmpty(Addition))
+			//Если это успешная загрузка, то сбрасываем все ошибки
+			//Если это ошибка, то если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
+			if (resultCode == DownPriceResultCode.ErrorDownload)
 			{
 				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceCode))
 				{

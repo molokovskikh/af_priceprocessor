@@ -56,7 +56,6 @@ namespace Inforoom.Downloader
                         foreach (DataRow drS in drLS)
                         {
                             SetCurrentPriceCode(drS);
-                            OperatorMailSend();
                             if (CorrectArchive)
                             {
 								string ExtrFile = String.Empty;
