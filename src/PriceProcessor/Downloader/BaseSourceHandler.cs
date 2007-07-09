@@ -134,15 +134,6 @@ namespace Inforoom.Downloader
         public BaseSourceHandler()
 		{
 			knowErrors = new List<string>();
-            DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
-            if (!Directory.Exists(DownHandlerPath))
-                Directory.CreateDirectory(DownHandlerPath);
-            DownHandlerPath += Path.DirectorySeparatorChar;
-
-			DownHistoryPath = Path.GetFullPath(Settings.Default.HistoryPath);
-			if (!Directory.Exists(DownHistoryPath))
-				Directory.CreateDirectory(DownHistoryPath);
-			DownHistoryPath += Path.DirectorySeparatorChar;
 
 			tWork = new Thread(new ThreadStart(ThreadWork));
             SleepTime = Settings.Default.RequestInterval;
@@ -161,6 +152,7 @@ namespace Inforoom.Downloader
 		public void StartWork()
 		{
             Ping();
+			CreateDirectoryPath();
             CreateLogConnection();
             CreateWorkConnection();
             tWork.Start();
@@ -280,6 +272,19 @@ AND pd.AgencyEnabled= 1",
                 Settings.Default.tbClientsData,
                 SourceType);
         }
+
+		protected void CreateDirectoryPath()
+		{
+			DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
+			if (!Directory.Exists(DownHandlerPath))
+				Directory.CreateDirectory(DownHandlerPath);
+			DownHandlerPath += Path.DirectorySeparatorChar;
+
+			DownHistoryPath = Path.GetFullPath(Settings.Default.HistoryPath);
+			if (!Directory.Exists(DownHistoryPath))
+				Directory.CreateDirectory(DownHistoryPath);
+			DownHistoryPath += Path.DirectorySeparatorChar;
+		}
 
         protected void CreateWorkConnection()
         {
