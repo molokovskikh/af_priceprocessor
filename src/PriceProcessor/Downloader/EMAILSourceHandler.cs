@@ -21,9 +21,10 @@ namespace Inforoom.Downloader
 		//UID текущего обрабатываемого письма
 		protected int currentUID;
 
-		public EMAILSourceHandler(string sourceType)
-            : base(sourceType)
+		public EMAILSourceHandler()
+            : base()
         {
+			this.sourceType = "EMAIL";
 			errorUIDs = new List<int>();
 		}
 
@@ -203,7 +204,7 @@ namespace Inforoom.Downloader
 			SendUnrecLetter(m, FromList, AttachNames, causeBody);
 		}
 
-		protected void SendUnrecLetter(Mime m, AddressList FromList, string AttachNames, string cause)
+		protected virtual void SendUnrecLetter(Mime m, AddressList FromList, string AttachNames, string cause)
 		{
 			try
 			{
@@ -352,7 +353,7 @@ namespace Inforoom.Downloader
 							{
 								if (ProcessPriceFile(CurrFileName))
 								{
-									ulong PriceID = Logging(CurrPriceCode, String.Empty);
+									ulong PriceID = Logging(CurrPriceCode, null);
 									if (PriceID != 0)
 										CopyToHistory(PriceID, m);
 									else

@@ -9,8 +9,8 @@ namespace Inforoom.Downloader
 {
     public abstract class PathSourceHandler : BaseSourceHandler
     {
-        public PathSourceHandler(string sourceType)
-            : base(sourceType)
+        public PathSourceHandler()
+            : base()
         { 
         }
 
@@ -61,7 +61,7 @@ namespace Inforoom.Downloader
                             {
                                 if (ProcessPriceFile(CurrFileName))
                                 {
-                                    ulong PriceID = Logging(CurrPriceCode, String.Empty);
+                                    ulong PriceID = Logging(CurrPriceCode, null);
 									if (PriceID != 0)
 										CopyToHistory(PriceID, CurrFileName);
 									else

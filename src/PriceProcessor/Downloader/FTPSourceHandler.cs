@@ -12,9 +12,11 @@ namespace Inforoom.Downloader
     {
         private FTP_Client m_pFtpClient = null;
 
-        public FTPSourceHandler(string sourceType)
-            : base(sourceType)
-        { }
+        public FTPSourceHandler()
+            : base()
+        {
+			this.sourceType = "FTP";
+		}
 
         protected override void GetFileFromSource()
         {

@@ -8,9 +8,11 @@ namespace Inforoom.Downloader
 {
     public class LANSourceHandler : PathSourceHandler
     {
-        public LANSourceHandler(string sourceType)
-            : base(sourceType)
-        { }
+        public LANSourceHandler()
+            : base()
+        {
+			this.sourceType = "LAN";
+		}
 
         protected override void GetFileFromSource()
         {

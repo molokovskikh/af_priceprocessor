@@ -124,10 +124,9 @@ namespace Inforoom.Downloader
 		//Известные ошибки, которые не надо несколько раз отправлять
 		protected List<string> knowErrors;
 
-        public BaseSourceHandler(string sourceType)
+        public BaseSourceHandler()
 		{
 			knowErrors = new List<string>();
-            this.sourceType = sourceType;
             DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
             if (!Directory.Exists(DownHandlerPath))
                 Directory.CreateDirectory(DownHandlerPath);

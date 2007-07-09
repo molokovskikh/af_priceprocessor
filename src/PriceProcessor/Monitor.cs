@@ -20,12 +20,12 @@ namespace Inforoom.Downloader
 		public Monitor()
 		{
 			alHandlers = new List<BaseSourceHandler>();
-			alHandlers.Add(new LANSourceHandler("LAN"));
-			alHandlers.Add(new FTPSourceHandler("FTP"));
-			alHandlers.Add(new HTTPSourceHandler("HTTP"));
-			alHandlers.Add(new EMAILSourceHandler("EMAIL"));
-			alHandlers.Add(new WaybillSourceHandler("WAYBILL"));
-			alHandlers.Add(new WaybillLANSourceHandler("WAYBILLLAN"));			
+			alHandlers.Add(new LANSourceHandler());
+			alHandlers.Add(new FTPSourceHandler());
+			alHandlers.Add(new HTTPSourceHandler());
+			alHandlers.Add(new EMAILSourceHandler());
+			alHandlers.Add(new WaybillSourceHandler());
+			alHandlers.Add(new WaybillLANSourceHandler());			
             tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}
 

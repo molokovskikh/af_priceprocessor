@@ -10,6 +10,7 @@ using LumiSoft.Net.IMAP;
 using MySql.Data.MySqlClient;
 using System.IO;
 using ExecuteTemplate;
+using Inforoom.Downloader.Documents;
 
 
 namespace Inforoom.Downloader
@@ -28,9 +29,18 @@ namespace Inforoom.Downloader
 
 		private int AptekaClientCode = 0;
 
-		public WaybillSourceHandler(string sourceType)
-            : base(sourceType)
-        { }
+		private List<InboundDocumentType> types;
+
+		private InboundDocumentType currentType = null;
+
+		public WaybillSourceHandler()
+            : base()
+        {
+			this.sourceType = "WAYBILL";
+			types = new List<InboundDocumentType>();
+			types.Add(new WaybillType());
+			types.Add(new RejectType());
+		}
 
 		protected override void IMAPAuth(IMAP_Client c)
 		{
@@ -40,6 +50,8 @@ namespace Inforoom.Downloader
 		protected override bool CheckMime(Mime m, ref string causeSubject, ref string causeBody, ref string systemError)
 		{
 			string EmailList = String.Empty;
+			AptekaClientCode = 0;
+			currentType = null;
 			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
 			bool res = (m.Attachments.Length > 0) && (CorrectAddresCount == 1);
 			//Если не сопоставили с клиентом
@@ -47,19 +59,19 @@ namespace Inforoom.Downloader
 			{
 				systemError = "Не найден клиент.";
 
-				causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnNonExistentClient;
-				causeBody = Settings.Default.ResponseWaybillBodyTemplateOnNonExistentClient;
+				causeSubject = Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient;
+				causeBody = Settings.Default.ResponseDocBodyTemplateOnNonExistentClient;
 			}
 			else
 				//Если нет вложений
 				if ((CorrectAddresCount == 1) && (m.Attachments.Length == 0))
 				{
 					systemError = "Письмо не содержит вложений.";
-					string Address = AptekaClientCode.ToString() + "@waybills.analit.net";
+					string Address = AptekaClientCode.ToString() + "@" + currentType.Domen;
 					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					causeSubject = String.Format(Settings.Default.ResponseWaybillSubjectTemplateOnNothingAttachs, Address, LetterDate);
-					causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnNothingAttachs, Address, LetterDate);
+					causeSubject = String.Format(Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs, Address, LetterDate);
+					causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnNothingAttachs, Address, LetterDate);
 				}
 				else
 					//Если несколько клиентов в списке получателей
@@ -68,8 +80,8 @@ namespace Inforoom.Downloader
 						systemError = "Письмо отправленно нескольким клиентам.";
 						string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-						causeSubject = Settings.Default.ResponseWaybillSubjectTemplateOnMultiDomen;
-						causeBody = String.Format(Settings.Default.ResponseWaybillBodyTemplateOnMultiDomen, LetterDate, EmailList);
+						causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMultiDomen;
+						causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnMultiDomen, LetterDate, EmailList);
 					}
 			return res;
 		}
@@ -93,21 +105,33 @@ namespace Inforoom.Downloader
 		private int GetClientCode(string Address)
 		{ 
 			Address = Address.ToLower();
-			int Index = Address.IndexOf("@waybills.analit.net");
-			if (Index > -1)
+			InboundDocumentType testType = null;
+			int testClientCode = 0;
+
+			foreach (InboundDocumentType id in types)
 			{
-				AptekaClientCode = 0;
-				if (int.TryParse(Address.Substring(0, Index), out AptekaClientCode))
+				if (id.ParseEmail(Address, out testClientCode))
 				{
-					if (!ClientExists(AptekaClientCode))
-						AptekaClientCode = 0;
-					return AptekaClientCode;
+					testType = id;
+					break;
+				}
+			}
+
+			if (testType != null)
+			{
+				if (ClientExists(testClientCode))
+				{
+					if (currentType == null)
+					{
+						currentType = testType;
+						AptekaClientCode = testClientCode;
+					}
 				}
 				else
-					return 0;				
+					testClientCode = 0;
 			}
-			else
-				return 0;
+
+			return testClientCode;
 		}
 
 		private int CorrectClientAddress(AddressList addressList, ref string EmailList)
@@ -115,7 +139,7 @@ namespace Inforoom.Downloader
 			int CurrentClientCode = 0;
 			int ClientCodeCount = 0;
 
-			//Пробегаемся по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net>
+			//Пробегаемся по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net> или <\d+@refused.analit.net>
 			//Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
 			foreach(MailboxAddress ma in  addressList.Mailboxes)
 			{
@@ -177,6 +201,7 @@ and st.SourceID = 1",
 				catch
 				{ }
 				WriteLog(
+					(currentType != null)? currentType.TypeID : 0,
 					0, 
 					AptekaClientCode, 
 					null, 
@@ -202,8 +227,40 @@ and st.SourceID = 1",
 
 		protected override string GetFailMail()
 		{
-			return "tech@analit.net";
+			return Settings.Default.DocumentFailMail;
 		}
+
+		protected override void SendUnrecLetter(Mime m, AddressList FromList, string AttachNames, string cause)
+		{
+			try
+			{
+				MemoryStream ms = new MemoryStream(m.ToByteData());
+				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+				WriteLog(
+					(currentType != null) ? currentType.TypeID : 0,
+					0,
+					AptekaClientCode,
+					null,
+					String.Format(@"{0} 
+Тема            : {1} 
+Отправители     : {2}
+Получатели      : {3}
+Список вложений : 
+{4}
+", 
+						cause, 
+						m.MainEntity.Subject, 
+						FromList.ToAddressListString(), 
+						m.MainEntity.To.ToAddressListString(), 
+						AttachNames),
+					currentUID);
+			}
+			catch (Exception exMatch)
+			{
+				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+			}
+		}
+
 
 		protected override bool ProcessAttachs(Mime m, AddressList FromList, ref string causeSubject, ref string causeBody)
 		{
@@ -241,7 +298,7 @@ and st.SourceID = 1",
 							}
 							else
 							{
-								WriteLog(Convert.ToInt32(drS[WaybillSourcesTable.colFirmCode]), AptekaClientCode, Path.GetFileName(CurrFileName), "Не удалось распаковать файл", currentUID);
+								WriteLog(currentType.TypeID, Convert.ToInt32(drS[WaybillSourcesTable.colFirmCode]), AptekaClientCode, Path.GetFileName(CurrFileName), "Не удалось распаковать файл", currentUID);
 							}
 							DeleteCurrFile();
 						}
@@ -277,15 +334,16 @@ and st.SourceID = 1",
 		protected void MoveWaybill(string FileName, DataRow drCurrent)
 		{
 			bool Quit = false;
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, MessageUID) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID); select last_insert_id();", cWork);
+			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", cWork);
 			cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 			cmdInsert.Parameters.Add("?ClientCode", AptekaClientCode);
 			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
-			cmdInsert.Parameters.Add("?MessageUID", currentUID);			
+			cmdInsert.Parameters.Add("?MessageUID", currentUID);
+			cmdInsert.Parameters.Add("?DocumentType", currentType.TypeID);			
 
 			MySqlTransaction tran;
 
-			string AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+			string AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
 			string OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 			string OutFileName = String.Empty;
 
@@ -350,17 +408,18 @@ and st.SourceID = 1",
 			} while (!Quit);
 		}
 
-		private void WriteLog(int FirmCode, int ClientCode, string FileName, string Addition, int MessageUID)
+		private void WriteLog(int DocumentType, int FirmCode, int ClientCode, string FileName, string Addition, int MessageUID)
 		{
 			ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, Addition, MessageUID) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID)", args.DataAdapter.SelectCommand.Connection);
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
 				cmdInsert.Parameters.Add("?FirmCode", FirmCode);
 				cmdInsert.Parameters.Add("?ClientCode", ClientCode);
 				cmdInsert.Parameters.Add("?FileName", FileName);
 				cmdInsert.Parameters.Add("?Addition", Addition);
 				cmdInsert.Parameters.Add("?MessageUID", MessageUID);
+				cmdInsert.Parameters.Add("?DocumentType", DocumentType);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;

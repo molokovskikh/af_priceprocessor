@@ -11,9 +11,10 @@ namespace Inforoom.Downloader
 {
 	class WaybillLANSourceHandler : BaseSourceHandler
 	{
-		public WaybillLANSourceHandler(string sourceType)
-			: base(sourceType)
-		{ 
+		public WaybillLANSourceHandler()
+			: base()
+		{
+			this.sourceType = "WAYBILLLAN";
 		}
 
 		protected override string GetSQLSources()
@@ -219,7 +220,7 @@ group by cd.firmcode
 		protected void MoveWaybill(string FileName, DataRow drCurrent, string FirmClientCode)
 		{
 			bool Quit = false;
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName) values (?FirmCode, ?ClientCode, ?FileName); select last_insert_id();", cWork);
+			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, 1); select last_insert_id();", cWork);
 			cmdInsert.Parameters.Add("?FirmCode", drCurrent[SourcesTable.colFirmCode]);
 			cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
 			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
@@ -339,7 +340,7 @@ group by cd.firmcode
 		{
 			ExecuteTemplate.MethodTemplate.ExecuteMethod<WaybillLogArgs, object>(new WaybillLogArgs(FirmCode, ClientCode, FileName, Addition), delegate(WaybillLogArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.waybill_receive_logs (FirmCode, ClientCode, FileName, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?Addition)", args.DataAdapter.SelectCommand.Connection);
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
 				
 				cmdInsert.Parameters.Add("?FirmCode", args.firmCode);
 				cmdInsert.Parameters.Add("?ClientCode", args.waybillClientCode);

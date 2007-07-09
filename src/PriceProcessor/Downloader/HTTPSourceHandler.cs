@@ -9,9 +9,11 @@ namespace Inforoom.Downloader
 {
     public class HTTPSourceHandler : PathSourceHandler
     {
-        public HTTPSourceHandler(string sourceType)
-            : base(sourceType)
-        { }
+        public HTTPSourceHandler()
+            : base()
+        {
+			this.sourceType = "HTTP";
+		}
 
         protected DateTime GetFileDateTime(string HTTPFile, string HTTPUser, string HTTPPassword)
         {
