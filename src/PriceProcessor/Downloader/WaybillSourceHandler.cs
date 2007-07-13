@@ -16,14 +16,6 @@ using Inforoom.Downloader.Documents;
 namespace Inforoom.Downloader
 {
 
-	//Класс содержит название полей из таблицы Sources
-	public sealed class WaybillSourcesTable
-	{
-		public static string colFirmCode = "FirmCode";
-		public static string colShortName = "ShortName";
-		public static string colEMailFrom = "EMailFrom";
-	}
-
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
 

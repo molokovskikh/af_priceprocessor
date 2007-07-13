@@ -4,6 +4,15 @@ using System.Text;
 
 namespace Inforoom.Downloader.Documents
 {
+	//Класс содержит название полей из таблицы Document.Waybill_Sources
+	public sealed class WaybillSourcesTable
+	{
+		public static string colFirmCode = "FirmCode";
+		public static string colShortName = "ShortName";
+		public static string colEMailFrom = "EMailFrom";
+		public static string colReaderClassName = "ReaderClassName";
+	}
+
 	//Абстрактный класс, описывающий тип документа
 	public abstract class InboundDocumentType
 	{

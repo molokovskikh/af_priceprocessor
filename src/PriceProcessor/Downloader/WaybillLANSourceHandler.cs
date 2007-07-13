@@ -7,6 +7,10 @@ using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
 using Inforoom.Downloader.Properties;
 using ExecuteTemplate;
+using Inforoom.Downloader.DocumentReaders;
+using Inforoom.Downloader.Documents;
+using System.Net.Mail;
+using System.Reflection;
 
 namespace Inforoom.Downloader
 {
@@ -24,7 +28,8 @@ namespace Inforoom.Downloader
 SELECT
   cd.FirmCode,
   cd.ShortName,
-  st.EMailFrom
+  st.EMailFrom,
+  st.ReaderClassName
 FROM
            {1}             as st
 INNER JOIN {0} AS CD ON CD.FirmCode = st.FirmCode
@@ -41,12 +46,16 @@ and st.SourceID = 4",
 			DataRow drLanSource;
 			string[] files;
 			FillSourcesTable();
+			BaseDocumentReader documentReader;
+
 			while (dtSources.Rows.Count > 0)
 			{
 				drLanSource = null;
 				try
 				{
 					drLanSource = dtSources.Rows[0];
+
+					documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
 
 					//Получаем список файлов из папки
 					files = GetFileFromSource();
@@ -56,52 +65,55 @@ and st.SourceID = 4",
 						GetCurrentFile(SourceFileName);
 
 						if (!String.IsNullOrEmpty(CurrFileName))
-							if (CheckClientCode(Path.GetFileName(CurrFileName), Convert.ToInt32(drLanSource[SourcesTable.colFirmCode])))
+						{
+							bool CorrectArchive = true;
+							//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+							if (ArchiveHlp.IsArchive(CurrFileName))
 							{
-								bool CorrectArchive = true;
-								//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-								if (ArchiveHlp.IsArchive(CurrFileName))
+								if (ArchiveHlp.TestArchive(CurrFileName))
 								{
-									if (ArchiveHlp.TestArchive(CurrFileName))
+									try
 									{
-										try
-										{
-											ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
-										}
-										catch (ArchiveHlp.ArchiveException)
-										{
-											CorrectArchive = false;
-										}
+										ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 									}
-									else
+									catch (ArchiveHlp.ArchiveException)
+									{
 										CorrectArchive = false;
-								}
-
-								if (CorrectArchive)
-								{
-									ProcessWaybillFile(CurrFileName, drLanSource, Path.GetFileName(CurrFileName).Split('_')[0]);
-									//После обработки файла удаляем его из папки
-									if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-										File.Delete(SourceFileName);
+									}
 								}
 								else
-								{
-									WriteLog(Convert.ToInt32(drLanSource[SourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
-									//Распаковать файл не удалось, поэтому удаляем его из папки
-									if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-										File.Delete(SourceFileName);
-								}
-								DeleteCurrFile();
+									CorrectArchive = false;
 							}
-							else
+
+							if (CorrectArchive)
 							{
-								DeleteCurrFile();
-								WriteLog(Convert.ToInt32(drLanSource[SourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не нашли клиента с указанным FirmClientCode '{0}'", Path.GetFileName(CurrFileName)));
-								LoggingToService(String.Format("Не нашли клиента с указанным FirmClientCode '{0}' для поставщика {1} ({2})", Path.GetFileName(CurrFileName), drLanSource[SourcesTable.colShortName], drLanSource[SourcesTable.colFirmCode]));
-								//Сопоставить с клиентом файл не удалось, поэтому удаляем его из папки, нам он не нужен
+								if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
+								{
+									MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.DocumentFailMail,
+										String.Format("{1} ({2})", CurrPriceCode, drLanSource[WaybillSourcesTable.colShortName], SourceType),
+										String.Format("Код поставщика : {0}\nФирма: {1}\nДата: {2}\nПричина: {3}",
+											drLanSource[WaybillSourcesTable.colFirmCode], 
+											drLanSource[SourcesTable.colShortName], 
+											DateTime.Now,
+											"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_receive_logs."));
+									if (!String.IsNullOrEmpty(CurrFileName))
+										mm.Attachments.Add(new Attachment(CurrFileName));
+									SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+									sc.Send(mm);
+								}
+								//После обработки файла удаляем его из папки
 								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
 									File.Delete(SourceFileName);
 							}
+							else
+							{
+								WriteLog(Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+								//Распаковать файл не удалось, поэтому удаляем его из папки
+								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
+									File.Delete(SourceFileName);
+							}
+							DeleteCurrFile();
+						}
 
 					}
 
@@ -111,7 +123,7 @@ and st.SourceID = 4",
 				catch (Exception ex)
 				{
 					string Error = String.Empty;
-					Error = String.Format("Источник : {0}", dtSources.Rows[0][SourcesTable.colFirmCode]);
+					Error = String.Format("Источник : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
 					try
 					{
 						dtSources.Rows[0].Delete();
@@ -161,134 +173,97 @@ and st.SourceID = 4",
 			}
 		}
 
-		bool CheckClientCode(string FileName, int FirmCode)
+		protected bool ProcessWaybillFile(string InFile, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			string FirmClientCode;
-			if (FileName.Contains("_"))
-			{
-				FirmClientCode = FileName.Split('_')[0];
-				if (cWork.State != ConnectionState.Open)
-				{
-					cWork.Open();
-				}
-				try
-				{
-					object res = MySqlHelper.ExecuteScalar(cWork, @"
-SELECT
-  cd.firmcode as ClientCode,
-  IncludeRegulation.IncludeType,
-  i.FirmClientCode
-FROM
-  (usersettings.clientsdata as cd,
-   usersettings.intersection i,
-   usersettings.pricesdata pd)
-   LEFT JOIN usersettings.includeregulation
-        ON includeclientcode= cd.firmcode
-WHERE
-  i.clientCode = cd.FirmCode
-  and i.PriceCode = pd.PriceCode
-  and pd.FirmCode = ?FirmCode
-  and if(IncludeRegulation.PrimaryClientCode is null, 1, IncludeRegulation.IncludeType <>2)
-  and i.FirmClientCode = ?FirmClientCode
-group by cd.firmcode
-", new MySqlParameter("?FirmCode", FirmCode), new MySqlParameter("?FirmClientCode", FirmClientCode));
-					return res != null;
-				}
-				finally
-				{
-					try { cWork.Close(); }
-					catch { }
-				}
-			}
-			else
-				return false;
-		}
-
-		protected void ProcessWaybillFile(string InFile, DataRow drCurrent, string FirmClientCode)
-		{
+			bool processed = false;
 			//Массив файлов 
 			string[] Files = new string[] { InFile };
 			if (ArchiveHlp.IsArchive(InFile))
 			{
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
 			}
+
+			if (!Directory.Exists(InFile + ExtrDirSuffix))
+				Directory.CreateDirectory(InFile + ExtrDirSuffix);
+
+			Files = documentReader.DivideFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, Files);
+
 			foreach (string s in Files)
 			{
-				MoveWaybill(s, drCurrent, FirmClientCode);
+				if (MoveWaybill(InFile, s, drCurrent, documentReader))
+					processed = true;
 			}
+			return processed;
 		}
 
-		protected void MoveWaybill(string FileName, DataRow drCurrent, string FirmClientCode)
+		protected bool MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
+			return MethodTemplate.ExecuteMethod<ExecuteArgs, bool>(
 				new ExecuteArgs(),
 				delegate(ExecuteArgs args)
 				{
-					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, 1); select last_insert_id();", cWork);
-					cmdInsert.Parameters.Add("?FirmCode", drCurrent[SourcesTable.colFirmCode]);
+					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, 1, ?Addition); select last_insert_id();", cWork);
+					cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 					cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
 					cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
+					cmdInsert.Parameters.Add("?Addition", DBNull.Value);
 
-					int AptekaClientCode;
+					List<ulong> listClients = null;
 					string AptekaClientDirectory;
 					string OutFileNameTemplate;
 					string OutFileName;
 
 					cmdInsert.Transaction = args.DataAdapter.SelectCommand.Transaction;
 
-					DataSet ds = MySqlHelper.ExecuteDataset(cWork, @"
-SELECT
-  cd.firmcode as ClientCode,
-  IncludeRegulation.IncludeType,
-  i.FirmClientCode
-FROM
-  (usersettings.clientsdata as cd,
-   usersettings.intersection i,
-   usersettings.pricesdata pd)
-   LEFT JOIN usersettings.includeregulation
-        ON includeclientcode= cd.firmcode
-WHERE
-  i.clientCode = cd.FirmCode
-  and i.PriceCode = pd.PriceCode
-  and pd.FirmCode = ?FirmCode
-  and if(IncludeRegulation.PrimaryClientCode is null, 1, IncludeRegulation.IncludeType <>2)
-  and i.FirmClientCode = ?FirmClientCode
-group by cd.firmcode
-", new MySqlParameter("?FirmCode", drCurrent["FirmCode"]), new MySqlParameter("?FirmClientCode", FirmClientCode));
-
-					foreach (DataRow drApteka in ds.Tables[0].Rows)
+					try
 					{
-						AptekaClientCode = Convert.ToInt32(drApteka["ClientCode"]);
-
-						AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
-						OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
-						OutFileName = String.Empty;
-
-						if (!Directory.Exists(AptekaClientDirectory))
-							Directory.CreateDirectory(AptekaClientDirectory);
-
-						cmdInsert.Parameters["?ClientCode"].Value = AptekaClientCode;
-
-						OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
-							+ drCurrent["ShortName"].ToString()
-							+ Path.GetExtension(FileName);
-						OutFileName = NormalizeFileName(OutFileName);
-
-						if (File.Exists(OutFileName))
-							try
-							{
-								File.Delete(OutFileName);
-							}
-							catch { }
-
-						File.Copy(FileName, OutFileName);
+						//Пытаемся получить список клиентов для накладной
+						listClients = documentReader.GetClientCodes(cWork, Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]), ArchFileName, FileName);
+					}
+					catch (Exception ex)
+					{
+						//Логируем и выходим
+						cmdInsert.Parameters["?ClientCode"].Value = 0;
+						cmdInsert.Parameters["?Addition"].Value = "Не удалось сопоставить документ клиентам.\nОшибка: " + ex.ToString();
+						cmdInsert.ExecuteNonQuery();
+						return false;
 					}
 
-					File.Delete(FileName);
+					if (listClients != null)
+					{
+						foreach (ulong AptekaClientCode in listClients)
+						{
+							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+							OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
+							OutFileName = String.Empty;
 
-					return null;
+							if (!Directory.Exists(AptekaClientDirectory))
+								Directory.CreateDirectory(AptekaClientDirectory);
+
+							cmdInsert.Parameters["?ClientCode"].Value = AptekaClientCode;
+
+							OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
+								+ drCurrent["ShortName"].ToString()
+								+ Path.GetExtension(FileName);
+							OutFileName = NormalizeFileName(OutFileName);
+
+							if (File.Exists(OutFileName))
+								try
+								{
+									File.Delete(OutFileName);
+								}
+								catch { }
+
+							File.Copy(FileName, OutFileName);
+						}
+
+						File.Delete(FileName);
+
+					}
+
+					return true;
 				},
-				null,
+				false,
 				cWork,
 				true,
 				null,
@@ -325,7 +300,18 @@ group by cd.firmcode
 
 		}
 
-
+		private BaseDocumentReader GetDocumentReader(string ReaderClassName)
+		{ 
+			Type result = null;
+			Type[] types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, ReaderClassName);
+			if (types.Length > 1)
+				throw new Exception(String.Format("Найдено более одного типа с именем {0}", ReaderClassName));
+			if (types.Length == 1)
+				result = types[0];
+			if (result == null)
+				throw new Exception(String.Format("Класс {0} не найден", ReaderClassName));
+			return (BaseDocumentReader)Activator.CreateInstance(result);
+		}
 
 	}
 }
