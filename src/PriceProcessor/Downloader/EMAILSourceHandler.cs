@@ -30,7 +30,7 @@ namespace Inforoom.Downloader
 
 		protected string GetCorrectEmailAddress(string Source)
 		{
-			return Source.Replace("'", String.Empty);
+			return Source.Replace("'", String.Empty).Trim();
 		}
 
         protected override void ProcessData()
