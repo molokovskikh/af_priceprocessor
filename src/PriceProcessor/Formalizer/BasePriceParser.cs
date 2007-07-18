@@ -698,8 +698,8 @@ namespace Inforoom.Formalizer
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
 			cbCore = new MySqlCommandBuilder(daCore);
 			daCore.InsertCommand = cbCore.GetInsertCommand();
-			daCore.InsertCommand.Parameters["MinBoundCost"].MySqlDbType = MySqlDbType.Decimal;
-			daCore.InsertCommand.Parameters["MinBoundCost"].DbType = DbType.Decimal;
+			daCore.InsertCommand.Parameters["?MinBoundCost"].MySqlDbType = MySqlDbType.Decimal;
+			daCore.InsertCommand.Parameters["?MinBoundCost"].DbType = DbType.Decimal;
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
@@ -993,7 +993,7 @@ namespace Inforoom.Formalizer
 						}
 						catch(MySqlException MyError)
 						{
-							if ( (tryCount <= FormalizeSettings.MaxRepeatTranCount) && ( (1213 == MyError.Number) || (1205 == MyError.Number) ) )
+							if ((tryCount <= FormalizeSettings.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
 							{
 								tryCount++;
 								SimpleLog.Log( getParserID(), "Try transaction: tryCount = {0}", tryCount);

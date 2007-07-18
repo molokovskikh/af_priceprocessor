@@ -176,14 +176,14 @@ namespace Inforoom.Formalizer
 					{
 						mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs );", FormalizeSettings.tbFormLogs);
 						mcLog.Parameters.Clear();
-						mcLog.Parameters.Add("AppCode", FormalizeSettings.AppCode);
-						mcLog.Parameters.Add("PriceCode", p.priceCode);
-						mcLog.Parameters.Add("Form", p.formCount);
-						mcLog.Parameters.Add("Unform", p.unformCount);
-						mcLog.Parameters.Add("Zero", p.zeroCount);
-						mcLog.Parameters.Add("Forb", p.forbCount);
-						mcLog.Parameters.Add("ResultId", (p.maxLockCount <= FormalizeSettings.MinRepeatTranCount) ? 2 : 3);
-						mcLog.Parameters.Add("TotalSecs", formSecs);					
+						mcLog.Parameters.Add("?AppCode", FormalizeSettings.AppCode);
+						mcLog.Parameters.Add("?PriceCode", p.priceCode);
+						mcLog.Parameters.Add("?Form", p.formCount);
+						mcLog.Parameters.Add("?Unform", p.unformCount);
+						mcLog.Parameters.Add("?Zero", p.zeroCount);
+						mcLog.Parameters.Add("?Forb", p.forbCount);
+						mcLog.Parameters.Add("?ResultId", (p.maxLockCount <= FormalizeSettings.MinRepeatTranCount) ? 2 : 3);
+						mcLog.Parameters.Add("?TotalSecs", formSecs);					
 						mcLog.ExecuteNonQuery();
 					}
 					finally
@@ -326,17 +326,17 @@ namespace Inforoom.Formalizer
 							{
 								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.Add("PriceCode", (null != p) ? p.priceCode : ((FormalizeException)ex).priceCode);
+								mcLog.Parameters.Add("?PriceCode", (null != p) ? p.priceCode : ((FormalizeException)ex).priceCode);
 							}
 							else
 							{
 								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
 								mcLog.Parameters.Clear();
 							}
-							mcLog.Parameters.Add("AppCode", FormalizeSettings.AppCode);
-							mcLog.Parameters.Add("Addition", Addition);
-							mcLog.Parameters.Add("ResultId", 5);
-							mcLog.Parameters.Add("TotalSecs", formSecs);					
+							mcLog.Parameters.Add("?AppCode", FormalizeSettings.AppCode);
+							mcLog.Parameters.Add("?Addition", Addition);
+							mcLog.Parameters.Add("?ResultId", 5);
+							mcLog.Parameters.Add("?TotalSecs", formSecs);					
 							mcLog.ExecuteNonQuery();
 						}
 						finally
@@ -403,32 +403,32 @@ namespace Inforoom.Formalizer
 							{
 								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.Add("AppCode", FormalizeSettings.AppCode);
+								mcLog.Parameters.Add("?AppCode", FormalizeSettings.AppCode);
 							}
 							else
 							{
 								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.Add("AppCode", FormalizeSettings.AppCode);
-								mcLog.Parameters.Add("PriceCode", e.priceCode);
+								mcLog.Parameters.Add("?AppCode", FormalizeSettings.AppCode);
+								mcLog.Parameters.Add("?PriceCode", e.priceCode);
 								if (e is RollbackFormalizeException)
 								{
-									mcLog.Parameters.Add("Form", ((RollbackFormalizeException)e).FormCount);
-									mcLog.Parameters.Add("Unform", ((RollbackFormalizeException)e).UnformCount);
-									mcLog.Parameters.Add("Zero", ((RollbackFormalizeException)e).ZeroCount);
-									mcLog.Parameters.Add("Forb", ((RollbackFormalizeException)e).ForbCount);
+									mcLog.Parameters.Add("?Form", ((RollbackFormalizeException)e).FormCount);
+									mcLog.Parameters.Add("?Unform", ((RollbackFormalizeException)e).UnformCount);
+									mcLog.Parameters.Add("?Zero", ((RollbackFormalizeException)e).ZeroCount);
+									mcLog.Parameters.Add("?Forb", ((RollbackFormalizeException)e).ForbCount);
 								}
 								else
 								{
-									mcLog.Parameters.Add("Form", DBNull.Value);
-									mcLog.Parameters.Add("Unform", DBNull.Value);
-									mcLog.Parameters.Add("Zero", DBNull.Value);
-									mcLog.Parameters.Add("Forb", DBNull.Value);
+									mcLog.Parameters.Add("?Form", DBNull.Value);
+									mcLog.Parameters.Add("?Unform", DBNull.Value);
+									mcLog.Parameters.Add("?Zero", DBNull.Value);
+									mcLog.Parameters.Add("?Forb", DBNull.Value);
 								}
 							}
-							mcLog.Parameters.Add("Addition", Addition);
-							mcLog.Parameters.Add("ResultId", 5);
-							mcLog.Parameters.Add("TotalSecs", formSecs);					
+							mcLog.Parameters.Add("?Addition", Addition);
+							mcLog.Parameters.Add("?ResultId", 5);
+							mcLog.Parameters.Add("?TotalSecs", formSecs);					
 							mcLog.ExecuteNonQuery();
 						}
 						finally
