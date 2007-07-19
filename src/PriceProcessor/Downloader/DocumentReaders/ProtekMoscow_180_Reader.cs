@@ -10,6 +10,11 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	class ProtekMoscow_180_Reader : BaseDocumentReader
 	{
+		public ProtekMoscow_180_Reader()
+		{
+			excludeExtentions = new string[] { ".fls" };
+		}
+
 		public override string[] DivideFiles(string ExtractDir, string[] InputFiles)
 		{
 			List<string> outFiles = new List<string>();

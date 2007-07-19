@@ -7,6 +7,8 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public abstract class BaseDocumentReader
 	{
+		protected string[] excludeExtentions;
+
 		/// <summary>
 		/// Из двух файлов получает список клиентов, для которых надо транспортировать накладные.
 		/// Если список клиентов получить не удалось, то будет вызванно исключение
@@ -47,6 +49,14 @@ WHERE
 		protected string GetFilterSQLFooter()
 		{
 			return "group by cd.firmcode";
+		}
+
+		public string[] ExcludeExtentions
+		{
+			get
+			{
+				return excludeExtentions;
+			}
 		}
 	}
 }

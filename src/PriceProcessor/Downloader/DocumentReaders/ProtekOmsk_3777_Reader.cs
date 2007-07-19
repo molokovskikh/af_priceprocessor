@@ -9,6 +9,11 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public class ProtekOmsk_3777_Reader : BaseDocumentReader
 	{
+		public ProtekOmsk_3777_Reader()
+		{
+			excludeExtentions = new string[] { };
+		}
+
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			List<ulong> list = new List<ulong>();

@@ -58,7 +58,7 @@ and st.SourceID = 4",
 					documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
 
 					//Получаем список файлов из папки
-					files = GetFileFromSource();
+					files = GetFileFromSource(documentReader);
 
 					foreach (string SourceFileName in files)
 					{
@@ -140,14 +140,28 @@ and st.SourceID = 4",
 			}		
 		}
 
-		protected string[] GetFileFromSource()
+		protected string[] GetFileFromSource(BaseDocumentReader documentReader)
 		{
 			string PricePath = String.Empty;
 			try
 			{
 				PricePath = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 				string[] ff = Directory.GetFiles(PricePath);
-				return ff;
+
+				//Отсекаем файлы с некорректным расширением
+				List<string> newFiles = new List<string>();
+				foreach (string newFileName in ff)
+				{
+					if (Array.Exists<string>(documentReader.ExcludeExtentions, delegate(string s) { return s == Path.GetExtension(newFileName); }))
+					{
+						if (File.Exists(newFileName))
+							File.Delete(newFileName);
+					}
+					else
+						newFiles.Add(newFileName);				
+				}
+
+				return newFiles.ToArray();
 			}
 			catch (Exception exDir)
 			{
