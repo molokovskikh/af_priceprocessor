@@ -5,6 +5,7 @@ using System.Net;
 using System.IO;
 using System.Data;
 using LumiSoft.Net.FTP.Client;
+using Inforoom.Downloader.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -44,9 +45,7 @@ namespace Inforoom.Downloader
 
                 DataSet dsEntries = m_pFtpClient.GetList();
 
-                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
-
-                DateTime fdt = pdt;
+                DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
 
                 foreach (DataRow drEnt in dsEntries.Tables["DirInfo"].Rows)
                 {
@@ -56,10 +55,10 @@ namespace Inforoom.Downloader
                         if ((WildcardsHlp.IsWildcards((string)dtSources.Rows[0][SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)dtSources.Rows[0][SourcesTable.colPriceMask], ShortFileName)) ||
                             (String.Compare(ShortFileName, (string)dtSources.Rows[0][SourcesTable.colPriceMask], true) == 0))
                         {
-                            DateTime ndt = Convert.ToDateTime(drEnt["Date"]);
-                            if (ndt.CompareTo(fdt) > 0)
+                            DateTime fileLastWriteTime = Convert.ToDateTime(drEnt["Date"]);
+							if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                             {
-                                fdt = ndt;
+								priceDateTime = fileLastWriteTime;
                                 FTPFileName = ShortFileName;
                             }
                         }
@@ -75,7 +74,7 @@ namespace Inforoom.Downloader
                         fs.Close();
                     }
                     CurrFileName = DownFileName;
-                    CurrPriceDate = fdt;
+					CurrPriceDate = priceDateTime;
                 }
             }
             catch (Exception ex)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Data;
+using Inforoom.Downloader.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -21,12 +22,13 @@ namespace Inforoom.Downloader
             {
                 string PricePath = NormalizeDir((string)dtSources.Rows[0][SourcesTable.colPricePath]);
                 string[] ff = Directory.GetFiles(PricePath, (string)dtSources.Rows[0][SourcesTable.colPriceMask]);
-                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
+                DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
                 foreach (string fs in ff)
                 {
-                    if (File.GetLastWriteTime(fs).CompareTo(pdt) > 0)
+					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);
+					if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                     {
-                        pdt = File.GetLastWriteTime(fs);
+						priceDateTime = fileLastWriteTime;
                         string NewFile = DownHandlerPath + Path.GetFileName(fs);
                         try
                         {
@@ -35,7 +37,7 @@ namespace Inforoom.Downloader
                                 File.Delete(NewFile);
                             File.Move(fs, NewFile);
                             CurrFileName = NewFile;
-                            CurrPriceDate = pdt;
+                            CurrPriceDate = priceDateTime;
                             break;
                         }
                         catch (Exception ex)

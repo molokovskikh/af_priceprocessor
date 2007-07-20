@@ -158,7 +158,8 @@ and st.SourceID = 4",
 							File.Delete(newFileName);
 					}
 					else
-						newFiles.Add(newFileName);				
+						if (DateTime.Now.Subtract(File.GetLastWriteTime(newFileName)).TotalMinutes > Settings.Default.FileDownloadInterval)
+							newFiles.Add(newFileName);				
 				}
 
 				return newFiles.ToArray();

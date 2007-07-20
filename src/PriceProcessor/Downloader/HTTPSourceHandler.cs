@@ -4,6 +4,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Data;
+using Inforoom.Downloader.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -67,16 +68,16 @@ namespace Inforoom.Downloader
             string DownFileName = String.Empty;
             try
             {                
-                DateTime pdt = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
+                DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
 
-                DateTime fdt = GetFileDateTime(PricePath + HTTPFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
+                DateTime fileLastWriteTime = GetFileDateTime(PricePath + HTTPFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
 
-                if (fdt.CompareTo(pdt) > 0)
+				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                 {
                     DownFileName = DownHandlerPath + HTTPFileName;
                     GetFile(PricePath + HTTPFileName, DownFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
                     CurrFileName = DownFileName;
-                    CurrPriceDate = fdt;
+                    CurrPriceDate = fileLastWriteTime;
                 }
 
             }
