@@ -190,7 +190,7 @@ and st.SourceID = 4",
 
 		protected bool ProcessWaybillFile(string InFile, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			bool processed = false;
+			bool processed;
 			//Массив файлов 
 			string[] Files = new string[] { InFile };
 			if (ArchiveHlp.IsArchive(InFile))
@@ -203,10 +203,13 @@ and st.SourceID = 4",
 
 			Files = documentReader.DivideFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, Files);
 
+			//Если есть файлы для разбора, то хорошо, если нет, то архив не разобран
+			processed = Files.Length > 0;
+
 			foreach (string s in Files)
 			{
-				if (MoveWaybill(InFile, s, drCurrent, documentReader))
-					processed = true;
+				if (!MoveWaybill(InFile, s, drCurrent, documentReader))
+					processed = false;
 			}
 			return processed;
 		}
