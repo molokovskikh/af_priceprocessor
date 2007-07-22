@@ -61,21 +61,17 @@ namespace Inforoom.Downloader
 								string ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
                                 {
-									ulong PriceID = Logging(CurrPriceCode, GetSuccessAddition(CurrFileName, ExtrFile), DownPriceResultCode.SuccessDownload);
-									if (PriceID != 0)
-										CopyToHistory(PriceID, CurrFileName);
-									else
-										throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
+									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), Path.GetFileName(ExtrFile));
                                     UpdateDB(CurrPriceCode, CurrPriceDate);
                                 }
                                 else
                                 {
-                                    Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
+									LogDownloaderPrice("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
                                 }
                             }
                             else
                             {
-                                Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
+								LogDownloaderPrice("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
                             }
                             drS.Delete();
                         }
@@ -126,6 +122,15 @@ namespace Inforoom.Downloader
                 }
             }
         }
+
+		private void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		{
+			ulong PriceID = Logging(CurrPriceCode, AdditionMessage, resultCode, ArchFileName, ExtrFileName);
+			if (PriceID != 0)
+				CopyToHistory(PriceID, CurrFileName);
+			else
+				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
+		}
 
 		void CopyToHistory(UInt64 PriceID, string SavedFile)
 		{

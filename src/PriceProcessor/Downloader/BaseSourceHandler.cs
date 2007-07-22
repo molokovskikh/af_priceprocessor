@@ -59,6 +59,7 @@ namespace Inforoom.Downloader
 	public enum DownPriceResultCode
 	{ 
 		SuccessDownload = 2,
+		ErrorProcess = 3,
 		ErrorDownload = 5
 	}
 
@@ -567,11 +568,13 @@ AND pd.AgencyEnabled= 1",
 			try
 			{
 				cLog.Open();
-				cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition, ResultCode) VALUES (now(), ?AppCode, ?PriceCode, ?Addition, ?ResultCode); select last_insert_id()", Settings.Default.tbLogs), cLog);
+				cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition, ResultCode, ArchFileName, ExtrFileName) VALUES (now(), ?AppCode, ?PriceCode, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()", Settings.Default.tbLogs), cLog);
                 cmdLog.Parameters.Add("?AppCode", Settings.Default.AppCode);
                 cmdLog.Parameters.Add("?PriceCode", MySqlDbType.Int64);
                 cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
 				cmdLog.Parameters.Add("?ResultCode", MySqlDbType.Byte);
+				cmdLog.Parameters.Add("?ArchFileName", MySqlDbType.VarString);
+				cmdLog.Parameters.Add("?ExtrFileName", MySqlDbType.VarString);
 			}
 			catch(Exception ex)
 			{
@@ -581,15 +584,15 @@ AND pd.AgencyEnabled= 1",
 
         protected void Logging(string Addition)
         {
-            Logging(-1, Addition, DownPriceResultCode.ErrorDownload);
+            Logging(-1, Addition, DownPriceResultCode.ErrorDownload, null, null);
         }
 
 		protected void Logging(int CurrPriceCode, string Addition)
 		{
-			Logging(CurrPriceCode, Addition, DownPriceResultCode.ErrorDownload);
+			Logging(CurrPriceCode, Addition, DownPriceResultCode.ErrorDownload, null, null);
 		}
 
-		protected UInt64 Logging(int CurrPriceCode, string Addition, DownPriceResultCode resultCode)
+		protected UInt64 Logging(int CurrPriceCode, string Addition, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
         {
             if (CurrPriceCode > -1)
                 FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "{0}", Addition);
@@ -604,6 +607,9 @@ AND pd.AgencyEnabled= 1",
                 cmdLog.Parameters["?PriceCode"].Value = 0;
             cmdLog.Parameters["?Addition"].Value = Addition;
 			cmdLog.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
+			cmdLog.Parameters["?ArchFileName"].Value = ArchFileName;
+			cmdLog.Parameters["?ExtrFileName"].Value = ExtrFileName;
+
 			bool NeedLogging = true;
 			//Если это успешная загрузка, то сбрасываем все ошибки
 			//Если это ошибка, то если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем

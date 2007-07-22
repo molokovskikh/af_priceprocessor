@@ -354,21 +354,17 @@ namespace Inforoom.Downloader
 								string ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
 								{
-									ulong PriceID = Logging(CurrPriceCode, GetSuccessAddition(CurrFileName, ExtrFile), DownPriceResultCode.SuccessDownload);
-									if (PriceID != 0)
-										CopyToHistory(PriceID, m);
-									else
-										throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
+									LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), Path.GetFileName(ExtrFile));
 									UpdateDB(CurrPriceCode, DateTime.Now);
 								}
 								else
 								{
-									Logging(CurrPriceCode, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'");
+									LogDownloaderPrice(m, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
 								}
 							}
 							else
 							{
-								Logging(CurrPriceCode, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'");
+								LogDownloaderPrice(m, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
 							}
 							drS.Delete();
 						}
@@ -378,6 +374,15 @@ namespace Inforoom.Downloader
 				}//foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
 
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+		}
+
+		private void LogDownloaderPrice(Mime Letter, string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		{
+			ulong PriceID = Logging(CurrPriceCode, AdditionMessage, resultCode, ArchFileName, ExtrFileName);
+			if (PriceID != 0)
+				CopyToHistory(PriceID, Letter);
+			else
+				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
 		}
 
 		void CopyToHistory(UInt64 PriceID, Mime Letter)
