@@ -8,7 +8,7 @@ using System.Xml;
 
 namespace Inforoom.Downloader.DocumentReaders
 {
-	class ProtekMoscow_180_Reader : BaseDocumentReader
+	public class ProtekMoscow_180_Reader : BaseDocumentReader
 	{
 		public ProtekMoscow_180_Reader()
 		{

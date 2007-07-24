@@ -145,14 +145,14 @@ and st.SourceID = 4",
 			string PricePath = String.Empty;
 			try
 			{
-				PricePath = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+				PricePath = NormalizeDir(Settings.Default.FTPOptBox) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 				string[] ff = Directory.GetFiles(PricePath);
 
 				//Отсекаем файлы с некорректным расширением
 				List<string> newFiles = new List<string>();
 				foreach (string newFileName in ff)
 				{
-					if (Array.Exists<string>(documentReader.ExcludeExtentions, delegate(string s) { return s == Path.GetExtension(newFileName); }))
+					if (Array.Exists<string>(documentReader.ExcludeExtentions, delegate(string s) { return s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase); }))
 					{
 						if (File.Exists(newFileName))
 							File.Delete(newFileName);
@@ -162,7 +162,7 @@ and st.SourceID = 4",
 							newFiles.Add(newFileName);				
 				}
 
-				return newFiles.ToArray();
+				return documentReader.UnionFiles(newFiles.ToArray());
 			}
 			catch (Exception exDir)
 			{
@@ -201,7 +201,16 @@ and st.SourceID = 4",
 			if (!Directory.Exists(InFile + ExtrDirSuffix))
 				Directory.CreateDirectory(InFile + ExtrDirSuffix);
 
-			Files = documentReader.DivideFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, Files);
+			try
+			{
+				Files = documentReader.DivideFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, Files);
+			}
+			catch (Exception exDivide)
+			{
+				processed = false;
+				WriteLog(Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
+				return processed;
+			}
 
 			//Если есть файлы для разбора, то хорошо, если нет, то архив не разобран
 			processed = Files.Length > 0;
@@ -230,6 +239,7 @@ and st.SourceID = 4",
 					string AptekaClientDirectory;
 					string OutFileNameTemplate;
 					string OutFileName;
+					string formatFile;
 
 					cmdInsert.Transaction = args.DataAdapter.SelectCommand.Transaction;
 
@@ -249,6 +259,20 @@ and st.SourceID = 4",
 
 					if (listClients != null)
 					{
+						try
+						{
+							//Пытаемся получить список клиентов для накладной
+							formatFile = documentReader.FormatOutputFile(FileName, drCurrent);
+						}
+						catch (Exception ex)
+						{
+							//Логируем и выходим
+							cmdInsert.Parameters["?ClientCode"].Value = listClients[0];
+							cmdInsert.Parameters["?Addition"].Value = "Не удалось отформатировать документ.\nОшибка: " + ex.ToString();
+							cmdInsert.ExecuteNonQuery();
+							return false;
+						}
+
 						foreach (ulong AptekaClientCode in listClients)
 						{
 							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
@@ -262,7 +286,7 @@ and st.SourceID = 4",
 
 							OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
 								+ drCurrent["ShortName"].ToString()
-								+ Path.GetExtension(FileName);
+								+ Path.GetExtension(formatFile);
 							OutFileName = NormalizeFileName(OutFileName);
 
 							if (File.Exists(OutFileName))
@@ -272,10 +296,13 @@ and st.SourceID = 4",
 								}
 								catch { }
 
-							File.Copy(FileName, OutFileName);
+							File.Copy(formatFile, OutFileName);
 						}
 
-						File.Delete(FileName);
+						if (File.Exists(formatFile))
+							File.Delete(formatFile);
+						if (File.Exists(FileName))
+							File.Delete(FileName);
 
 					}
 

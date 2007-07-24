@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace Inforoom.Downloader.DocumentReaders
 {
@@ -20,7 +21,14 @@ namespace Inforoom.Downloader.DocumentReaders
 		/// <returns>список сопоставленных клиентов</returns>
 		public abstract List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName);
 
+		//Разделяем файлы перед обработкой, если в одном файле содержится несколько документов
 		public virtual string[] DivideFiles(string ExtractDir, string[] InputFiles)
+		{
+			return InputFiles;
+		}
+
+		//Объединяем файлы после получения из списка источников, если информация о документе содержится в нескольких файлах
+		public virtual string[] UnionFiles(string[] InputFiles)
 		{
 			return InputFiles;
 		}
@@ -57,6 +65,13 @@ WHERE
 			{
 				return excludeExtentions;
 			}
+		}
+
+		//Формируем файл для отдачи его клиенту в качестве документа
+		//Потом это будет отдельный класс
+		public virtual string FormatOutputFile(string InputFile, DataRow drSource)
+		{
+			return InputFile;
 		}
 	}
 }
