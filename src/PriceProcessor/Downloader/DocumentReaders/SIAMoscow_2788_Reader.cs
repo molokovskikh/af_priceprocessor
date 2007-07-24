@@ -298,11 +298,12 @@ namespace Inforoom.Downloader.DocumentReaders
 			foreach (DataRow drBody in dsDocument.Tables["Body"].Rows)
 			{
 				drResult = dtResult.NewRow();
-				drResult[ResultTable.colDocumentID] = Convert.ToInt32(drHeader[HeaderTable.colCMN]);
-				drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colMsgD]).Add(TimeSpan.Parse(drHeader[HeaderTable.colMsgT].ToString()));
-				drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
-				drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
-				drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+                drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
+                //drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colMsgD]).Add(TimeSpan.Parse(drHeader[HeaderTable.colMsgT].ToString()));
+                drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+                //drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
+                //drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+                //drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
 				drResult[ResultTable.colFirmName] = drSource[WaybillSourcesTable.colShortName];
 
 
@@ -332,7 +333,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		DataTable GetResultTable()
 		{
 			DataTable dtResult = new DataTable("Result");
-			dtResult.Columns.Add(ResultTable.colDocumentID, typeof(int));
+			dtResult.Columns.Add(ResultTable.colDocumentID, typeof(string));
 			dtResult.Columns.Add(ResultTable.colDocumentDate, typeof(DateTime));
 			dtResult.Columns.Add(ResultTable.colBillingNumber, typeof(string));
 			dtResult.Columns[ResultTable.colBillingNumber].MaxLength = 20;
