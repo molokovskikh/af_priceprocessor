@@ -232,7 +232,6 @@ namespace Inforoom.Formalizer
 		protected DataTable dtSynonymCurrency;
 
 		protected MySqlDataAdapter daCore;
-		protected MySqlCommandBuilder cbCore;
 		protected DataTable dtCore;
 		protected MySqlDataAdapter daUnrecExp;
 		protected MySqlCommandBuilder cbUnrecExp;
@@ -244,7 +243,6 @@ namespace Inforoom.Formalizer
 		protected MySqlCommandBuilder cbForb;
 		protected DataTable dtForb;
 		protected MySqlDataAdapter daCoreCosts;
-		protected MySqlCommandBuilder cbCoreCosts;
 		protected DataTable dtCoreCosts;
 
 		protected DataSet dsMyDB;
@@ -696,16 +694,14 @@ namespace Inforoom.Formalizer
 			//TODO: Сделать это одним запросом
 				daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
-			cbCore = new MySqlCommandBuilder(daCore);
-			daCore.InsertCommand = cbCore.GetInsertCommand();
-			daCore.InsertCommand.Parameters["?MinBoundCost"].MySqlDbType = MySqlDbType.Decimal;
-			daCore.InsertCommand.Parameters["?MinBoundCost"].DbType = DbType.Decimal;
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
+			daUnrecExp.InsertCommand = (MySqlCommand)cbUnrecExp.GetInsertCommand(true);
+			daUnrecExp.InsertCommand.CommandTimeout = 0;
 			daUnrecExp.Fill(dsMyDB, "UnrecExp");
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
 			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
@@ -713,18 +709,21 @@ namespace Inforoom.Formalizer
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
+			daZero.InsertCommand = (MySqlCommand)cbZero.GetInsertCommand(true);
+			daZero.InsertCommand.CommandTimeout = 0;
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
 
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
+			daForb.InsertCommand = (MySqlCommand)cbForb.GetInsertCommand(true);
+			daForb.InsertCommand.CommandTimeout = 0;
 			daForb.Fill(dsMyDB, "Forb");
 			dtForb = dsMyDB.Tables["Forb"];
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
 
 			daCoreCosts = new MySqlDataAdapter( String.Format("SELECT * FROM {0} LIMIT 0", FormalizeSettings.tbCoreCosts), MyConn);
-			cbCoreCosts = new MySqlCommandBuilder(daCoreCosts);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 		}
@@ -883,6 +882,7 @@ namespace Inforoom.Formalizer
 							MySqlCommand mcClear = new MySqlCommand();
 							mcClear.Connection = MyConn;
 							mcClear.Transaction = myTrans;
+							mcClear.CommandTimeout = 0;
 
 							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
@@ -989,10 +989,10 @@ namespace Inforoom.Formalizer
 							mcClear.CommandText = String.Format(@"UPDATE {0} SET PosNum=?FormCount, DateLastForm=?NOWDT WHERE FirmCode=?PriceCode; UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=?NOWDT, UnformCount=?UnformCount WHERE PriceCode=?PriceCode;",
 								FormalizeSettings.tbFormRules);
 							mcClear.Parameters.Clear();
-							mcClear.Parameters.Add("?NOWDT", DateTime.Now);
-							mcClear.Parameters.Add("?PriceCode", priceCode);
-							mcClear.Parameters.Add("?FormCount", formCount);
-							mcClear.Parameters.Add("?UnformCount", unformCount);
+							mcClear.Parameters.AddWithValue("?NOWDT", DateTime.Now);
+							mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
+							mcClear.Parameters.AddWithValue("?FormCount", formCount);
+							mcClear.Parameters.AddWithValue("?UnformCount", unformCount);
 							mcClear.ExecuteNonQuery();
 							mcClear.Parameters.Clear();
 
