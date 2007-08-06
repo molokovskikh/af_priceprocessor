@@ -880,8 +880,35 @@ namespace Inforoom.Formalizer
 
 						try
 						{
-							//TODO: Сделать одним вызовом несколько SQL-запросов
-							MySqlCommand mcClear = new MySqlCommand(String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore), MyConn, myTrans);
+							MySqlCommand mcClear = new MySqlCommand();
+							mcClear.Connection = MyConn;
+							mcClear.Transaction = myTrans;
+
+							if (priceType != FormalizeSettings.ASSORT_FLG)
+							{
+								//Удалаем цены из CoreCosts
+								System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
+								sbDelCoreCosts.Append(String.Format("delete from {0} where pc_costcode in (", FormalizeSettings.tbCoreCosts));
+								bool FirstInsertCoreCosts = true;
+								foreach (CoreCost c in currentCoreCosts)
+								{
+									if (!FirstInsertCoreCosts)
+										sbDelCoreCosts.Append(", ");
+									FirstInsertCoreCosts = false;
+									sbDelCoreCosts.Append(c.costCode.ToString());
+								}
+								sbDelCoreCosts.Append(");");
+
+								if (currentCoreCosts.Count > 0)
+								{
+									//Производим удаление цен
+									mcClear.CommandText = sbDelCoreCosts.ToString();
+									sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+								}
+							}
+
+							//Удалаем данные из Core
+							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore);
 							sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
 
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
@@ -896,24 +923,7 @@ namespace Inforoom.Formalizer
 							{
 								DataRow drCore;
 								DataRow drCoreCost;
-								System.Text.StringBuilder sb = new System.Text.StringBuilder();
-								sb.Append(String.Format("delete from {0} where pc_costcode in (", FormalizeSettings.tbCoreCosts));
-								bool FirstInsert = true;
-								foreach (CoreCost c in currentCoreCosts)
-								{
-									if (!FirstInsert)
-										sb.Append(", ");
-									FirstInsert = false;
-									sb.Append(c.costCode.ToString());
-								}
-								sb.Append(");");
-
-								if (currentCoreCosts.Count > 0)
-								{
-									//Производим удаление цен
-									mcClear.CommandText = sb.ToString();
-									sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-								}
+								System.Text.StringBuilder sb;
 
 								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
 								dtCoreCosts.Clear();
@@ -921,7 +931,7 @@ namespace Inforoom.Formalizer
 
 								sb = new System.Text.StringBuilder();
 								sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
-								FirstInsert = true;
+								bool FirstInsert = true;
 								ArrayList currCC;
 								//Здесь вставить проверку того, что не надо заполнять цены два раза или обновлять их
 								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
