@@ -691,8 +691,7 @@ namespace Inforoom.Formalizer
 			daSynonymCurrency.Fill(dsMyDB, "SynonymCurrency");
 			dtSynonymCurrency = dsMyDB.Tables["SynonymCurrency"];
 
-			//TODO: Сделать это одним запросом
-				daCore = new MySqlDataAdapter(
+			daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
@@ -700,7 +699,7 @@ namespace Inforoom.Formalizer
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
-			daUnrecExp.InsertCommand = (MySqlCommand)cbUnrecExp.GetInsertCommand(true);
+			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.CommandTimeout = 0;
 			daUnrecExp.Fill(dsMyDB, "UnrecExp");
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
@@ -709,7 +708,7 @@ namespace Inforoom.Formalizer
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
-			daZero.InsertCommand = (MySqlCommand)cbZero.GetInsertCommand(true);
+			daZero.InsertCommand = cbZero.GetInsertCommand();
 			daZero.InsertCommand.CommandTimeout = 0;
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
@@ -717,7 +716,7 @@ namespace Inforoom.Formalizer
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
-			daForb.InsertCommand = (MySqlCommand)cbForb.GetInsertCommand(true);
+			daForb.InsertCommand = cbForb.GetInsertCommand();
 			daForb.InsertCommand.CommandTimeout = 0;
 			daForb.Fill(dsMyDB, "Forb");
 			dtForb = dsMyDB.Tables["Forb"];
