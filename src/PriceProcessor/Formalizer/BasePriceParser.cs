@@ -874,7 +874,7 @@ namespace Inforoom.Formalizer
 						SimpleLog.Log( getParserID(), "FinalizePrice started.");
 						sbLog = new System.Text.StringBuilder();
 
-						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+						myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
 
 						try
 						{
@@ -898,17 +898,21 @@ namespace Inforoom.Formalizer
 								}
 								sbDelCoreCosts.Append(");");
 
-								if (currentCoreCosts.Count > 0)
-								{
-									//Производим удаление цен
-									mcClear.CommandText = sbDelCoreCosts.ToString();
-									sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-								}
-							}
+                                //if (currentCoreCosts.Count > 0)
+                                //{
+                                //    //Производим удаление цен
+                                //    mcClear.CommandText = sbDelCoreCosts.ToString();
+                                //    sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+                                //}
+							
 
 							//Удалаем данные из Core
-							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore);
+
+                            sbDelCoreCosts.Append(String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore));
+
+                            mcClear.CommandText = sbDelCoreCosts.ToString();
 							sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
+                        }
 
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
