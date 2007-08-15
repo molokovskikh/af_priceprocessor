@@ -357,7 +357,7 @@ and st.SourceID = 1",
 					if (!Directory.Exists(AptekaClientDirectory))
 						Directory.CreateDirectory(AptekaClientDirectory);
 
-					tran = cWork.BeginTransaction();
+					tran = cWork.BeginTransaction(IsolationLevel.RepeatableRead);
 
 					cmdInsert.Transaction = tran;
 
