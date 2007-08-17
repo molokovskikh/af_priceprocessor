@@ -671,31 +671,37 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void Prepare()
 		{
+			SimpleLog.Log(getParserID(), "get Forbidden");
 			daForbidden = new MySqlDataAdapter(
 				String.Format("SELECT FirmCode, LOWER(Forbidden) AS Forbidden FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbForbidden), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
+			SimpleLog.Log(getParserID(), "get Synonym");
 			daSynonym = new MySqlDataAdapter(
 				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, Junk FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
+			SimpleLog.Log(getParserID(), "get SynonymFirmCr");
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonymFirmCr), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 
+			SimpleLog.Log(getParserID(), "get SynonymCurrency");
 			daSynonymCurrency = new MySqlDataAdapter(
 				String.Format("SELECT Currency, LOWER(Synonym) AS Synonym FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonymCurrency), MyConn);
 			daSynonymCurrency.Fill(dsMyDB, "SynonymCurrency");
 			dtSynonymCurrency = dsMyDB.Tables["SynonymCurrency"];
 
+			SimpleLog.Log(getParserID(), "get Core");
 			daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
+			SimpleLog.Log(getParserID(), "get UnrecExp");
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
@@ -705,6 +711,7 @@ namespace Inforoom.Formalizer
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
 			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
 
+			SimpleLog.Log(getParserID(), "get Zero");
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
@@ -713,6 +720,7 @@ namespace Inforoom.Formalizer
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
 
+			SimpleLog.Log(getParserID(), "get Forb");
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
@@ -722,9 +730,12 @@ namespace Inforoom.Formalizer
 			dtForb = dsMyDB.Tables["Forb"];
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
 
-			daCoreCosts = new MySqlDataAdapter( String.Format("SELECT * FROM {0} LIMIT 0", FormalizeSettings.tbCoreCosts), MyConn);
+			SimpleLog.Log(getParserID(), "get CoreCosts");
+			daCoreCosts = new MySqlDataAdapter(String.Format("SELECT * FROM {0} LIMIT 0", FormalizeSettings.tbCoreCosts), MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
+
+			SimpleLog.Log(getParserID(), "stop Core");
 		}
 
 		public void onUpdating(object sender, MySqlRowUpdatingEventArgs e)
@@ -883,7 +894,10 @@ namespace Inforoom.Formalizer
 							mcClear.Transaction = myTrans;
 							mcClear.CommandTimeout = 0;
 
-							if (priceType != FormalizeSettings.ASSORT_FLG)
+                            //Выставляем значение команды
+                            mcClear.CommandText = String.Empty;
+
+                            if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
 								//Удалаем цены из CoreCosts
 								System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
@@ -898,21 +912,17 @@ namespace Inforoom.Formalizer
 								}
 								sbDelCoreCosts.Append(");");
 
-                                //if (currentCoreCosts.Count > 0)
-                                //{
-                                //    //Производим удаление цен
-                                //    mcClear.CommandText = sbDelCoreCosts.ToString();
-                                //    sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-                                //}
-							
+                                if (currentCoreCosts.Count > 0)
+                                {
+                                    //Производим удаление цен
+                                    mcClear.CommandText += sbDelCoreCosts.ToString();
+                                    sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+                                }
+                            }							
 
-							//Удалаем данные из Core
-
-                            sbDelCoreCosts.Append(String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbCore));
-
-                            mcClear.CommandText = sbDelCoreCosts.ToString();
-							sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
-                        }
+							//Добавляем команду на удаление данных из Core
+                            mcClear.CommandText += String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
+							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
 							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
@@ -1052,23 +1062,29 @@ namespace Inforoom.Formalizer
 
 			try
 			{
-				MyConn.Open();
+                SimpleLog.Log(getParserID(), "Open prepare connection");
+                MyConn.Open();
 
 				try
 				{
-					myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
+                    SimpleLog.Log(getParserID(), "Start prepare transaction");
+                    myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
 
 					DateTime tmPrepare = DateTime.UtcNow;
 					try
 					{
 						try
 						{
-							Prepare();					
-						}
+                            SimpleLog.Log(getParserID(), "Start prepare method");
+                            Prepare();
+                            SimpleLog.Log(getParserID(), "Stop prepare method");
+                        }
 						finally
 						{
-							myTrans.Commit();
-						}
+                            SimpleLog.Log(getParserID(), "Commiting prepare");
+                            myTrans.Commit();
+                            SimpleLog.Log(getParserID(), "Commited prepare");
+                        }
 					}
 					finally
 					{
