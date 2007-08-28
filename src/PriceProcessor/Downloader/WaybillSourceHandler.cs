@@ -331,7 +331,7 @@ and st.SourceID = 1",
 		protected void MoveWaybill(string FileName, DataRow drCurrent)
 		{
 			bool Quit = false;
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", cWork);
+			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", cWork);
 			cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 			cmdInsert.Parameters.Add("?ClientCode", AptekaClientCode);
 			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
@@ -409,7 +409,7 @@ and st.SourceID = 1",
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
 				cmdInsert.Parameters.Add("?FirmCode", FirmCode);
 				cmdInsert.Parameters.Add("?ClientCode", ClientCode);

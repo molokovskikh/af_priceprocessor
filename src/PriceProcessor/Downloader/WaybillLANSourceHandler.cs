@@ -95,7 +95,7 @@ and st.SourceID = 4",
 											drLanSource[WaybillSourcesTable.colFirmCode], 
 											drLanSource[SourcesTable.colShortName], 
 											DateTime.Now,
-											"Ќе удалось сопоставить документ клиентам. ѕодробнее смотрите в таблице logs.document_receive_logs."));
+											"Ќе удалось сопоставить документ клиентам. ѕодробнее смотрите в таблице logs.document_logs."));
 									if (!String.IsNullOrEmpty(CurrFileName))
 										mm.Attachments.Add(new Attachment(CurrFileName));
 									SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
@@ -229,7 +229,7 @@ and st.SourceID = 4",
 				new ExecuteArgs(),
 				delegate(ExecuteArgs args)
 				{
-					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, 1, ?Addition); select last_insert_id();", cWork);
+					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, 1, ?Addition); select last_insert_id();", cWork);
 					cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 					cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
 					cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
@@ -323,7 +323,7 @@ and st.SourceID = 4",
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_receive_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
 
 				cmdInsert.Parameters.Add("?FirmCode", logFirmCode);
 				cmdInsert.Parameters.Add("?ClientCode", logClientCode);
