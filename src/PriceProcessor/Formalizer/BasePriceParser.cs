@@ -885,7 +885,7 @@ namespace Inforoom.Formalizer
 						SimpleLog.Log( getParserID(), "FinalizePrice started.");
 						sbLog = new System.Text.StringBuilder();
 
-						myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
+						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 						try
 						{
@@ -1068,7 +1068,7 @@ namespace Inforoom.Formalizer
 				try
 				{
                     SimpleLog.Log(getParserID(), "Start prepare transaction");
-                    myTrans = MyConn.BeginTransaction(IsolationLevel.RepeatableRead);
+                    myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 					DateTime tmPrepare = DateTime.UtcNow;
 					try
