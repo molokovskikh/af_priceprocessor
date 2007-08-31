@@ -363,6 +363,7 @@ and st.SourceID = 1",
 
 					OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
 						+ drCurrent[WaybillSourcesTable.colShortName].ToString()
+						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
 						+ Path.GetExtension(FileName);
 
 					OutFileName = NormalizeFileName(OutFileName);

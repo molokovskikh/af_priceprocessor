@@ -299,10 +299,9 @@ namespace Inforoom.Downloader.DocumentReaders
 			{
 				drResult = dtResult.NewRow();
                 drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
-                //drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colMsgD]).Add(TimeSpan.Parse(drHeader[HeaderTable.colMsgT].ToString()));
                 drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+				//Эти два поля не заполняются, т.к. СИА Москва не может их заполнить в реальном времени
                 //drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
-                //drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
                 //drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
 				drResult[ResultTable.colFirmName] = drSource[WaybillSourcesTable.colShortName];
 

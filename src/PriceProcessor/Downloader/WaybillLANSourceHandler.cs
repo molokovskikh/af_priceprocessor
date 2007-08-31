@@ -286,6 +286,7 @@ and st.SourceID = 4",
 
 							OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
 								+ drCurrent["ShortName"].ToString()
+								+ "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
 								+ Path.GetExtension(formatFile);
 							OutFileName = NormalizeFileName(OutFileName);
 
