@@ -107,7 +107,7 @@ and st.SourceID = 4",
 							}
 							else
 							{
-								WriteLog(Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+								WriteLog(Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
 								//Распаковать файл не удалось, поэтому удаляем его из папки
 								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
 									File.Delete(SourceFileName);
@@ -208,7 +208,7 @@ and st.SourceID = 4",
 			catch (Exception exDivide)
 			{
 				processed = false;
-				WriteLog(Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), 0, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
+				WriteLog(Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
 				return processed;
 			}
 
@@ -251,7 +251,6 @@ and st.SourceID = 4",
 					catch (Exception ex)
 					{
 						//Логируем и выходим
-						cmdInsert.Parameters["?ClientCode"].Value = 0;
 						cmdInsert.Parameters["?Addition"].Value = "Не удалось сопоставить документ клиентам.\nОшибка: " + ex.ToString();
 						cmdInsert.ExecuteNonQuery();
 						return false;
@@ -261,7 +260,7 @@ and st.SourceID = 4",
 					{
 						try
 						{
-							//Пытаемся получить список клиентов для накладной
+							//пытаемся отформатировать документ
 							formatFile = documentReader.FormatOutputFile(FileName, drCurrent);
 						}
 						catch (Exception ex)
@@ -320,7 +319,7 @@ and st.SourceID = 4",
 				});
 		}
 
-		private void WriteLog(int logFirmCode, int logClientCode, string logFileName, string logAddition)
+		private void WriteLog(int? logFirmCode, int? logClientCode, string logFileName, string logAddition)
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{

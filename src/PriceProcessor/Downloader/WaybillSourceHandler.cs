@@ -19,7 +19,7 @@ namespace Inforoom.Downloader
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
 
-		private int AptekaClientCode = 0;
+		private int? AptekaClientCode = null;
 
 		private List<InboundDocumentType> types;
 
@@ -42,7 +42,7 @@ namespace Inforoom.Downloader
 		protected override bool CheckMime(Mime m, ref string causeSubject, ref string causeBody, ref string systemError)
 		{
 			string EmailList = String.Empty;
-			AptekaClientCode = 0;
+			AptekaClientCode = null;
 			currentType = null;
 			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
 			bool res = (m.Attachments.Length > 0) && (CorrectAddresCount == 1);
@@ -99,16 +99,18 @@ namespace Inforoom.Downloader
 				});
 		}
 
-		private int GetClientCode(string Address)
+		private int? GetClientCode(string Address)
 		{ 
 			Address = Address.ToLower();
 			InboundDocumentType testType = null;
-			int testClientCode = 0;
+			int? testClientCode = null;
 
 			foreach (InboundDocumentType id in types)
 			{
-				if (id.ParseEmail(Address, out testClientCode))
+				int clientCode = 0;
+				if (id.ParseEmail(Address, out clientCode))
 				{
+					testClientCode = clientCode;
 					testType = id;
 					break;
 				}
@@ -116,7 +118,7 @@ namespace Inforoom.Downloader
 
 			if (testType != null)
 			{
-				if (ClientExists(testClientCode))
+				if (ClientExists(testClientCode.Value))
 				{
 					if (currentType == null)
 					{
@@ -124,8 +126,6 @@ namespace Inforoom.Downloader
 						AptekaClientCode = testClientCode;
 					}
 				}
-				else
-					testClientCode = 0;
 			}
 
 			return testClientCode;
@@ -133,7 +133,7 @@ namespace Inforoom.Downloader
 
 		private int CorrectClientAddress(AddressList addressList, ref string EmailList)
 		{
-			int CurrentClientCode = 0;
+			int? CurrentClientCode = null;
 			int ClientCodeCount = 0;
 
 			//Пробегаемся по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net> или <\d+@refused.analit.net>
@@ -141,7 +141,7 @@ namespace Inforoom.Downloader
 			foreach(MailboxAddress ma in  addressList.Mailboxes)
 			{
 				CurrentClientCode = GetClientCode(GetCorrectEmailAddress(ma.EmailAddress));
-				if (CurrentClientCode > 0)
+				if (CurrentClientCode.HasValue)
 				{
 					if (!String.IsNullOrEmpty(EmailList))
 						EmailList += Environment.NewLine;
@@ -198,8 +198,8 @@ and st.SourceID = 1",
 				catch
 				{ }
 				WriteLog(
-					(currentType != null)? currentType.TypeID : 0,
-					0, 
+					(currentType != null) ? (int?)currentType.TypeID : null,
+					GetFirmCodeByFromList(FromList), 
 					AptekaClientCode, 
 					null, 
 					String.Format(@"{0}
@@ -222,6 +222,41 @@ and st.SourceID = 1",
 				SendUnrecLetter(m, FromList, AttachNames, "Не распознанное письмо.");
 		}
 
+		private int? GetFirmCodeByFromList(AddressList FromList)
+		{
+			try
+			{
+				foreach (MailboxAddress address in FromList)
+				{
+					object FirmCode = ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
+						new ExecuteArgs(),
+						delegate(ExecuteArgs args)
+						{
+							return MySqlHelper.ExecuteScalar(
+								cWork,
+								String.Format("select w.FirmCode FROM documents.waybill_sources w WHERE w.EMailFrom like '%{0}%' and w.SourceID = 1", address.EmailAddress)); ;
+						},
+						null,
+						cWork,
+						true,
+						null,
+						false,
+						delegate(ExecuteArgs args, MySqlException ex)
+						{
+							Ping();
+						});
+						
+					if (FirmCode != null)
+						return Convert.ToInt32(FirmCode);
+				}
+				return null;
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
 		protected override string GetFailMail()
 		{
 			return Settings.Default.DocumentFailMail;
@@ -234,8 +269,8 @@ and st.SourceID = 1",
 				MemoryStream ms = new MemoryStream(m.ToByteData());
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
 				WriteLog(
-					(currentType != null) ? currentType.TypeID : 0,
-					0,
+					(currentType != null) ? (int?)currentType.TypeID : null,
+					GetFirmCodeByFromList(FromList),
 					AptekaClientCode,
 					null,
 					String.Format(@"{0} 
@@ -406,7 +441,7 @@ and st.SourceID = 1",
 			} while (!Quit);
 		}
 
-		private void WriteLog(int DocumentType, int FirmCode, int ClientCode, string FileName, string Addition, int MessageUID)
+		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode, string FileName, string Addition, int MessageUID)
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
