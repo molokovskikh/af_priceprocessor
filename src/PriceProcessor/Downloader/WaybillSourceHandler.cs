@@ -59,21 +59,18 @@ namespace Inforoom.Downloader
 				if ((CorrectAddresCount == 1) && (m.Attachments.Length == 0))
 				{
 					systemError = "Письмо не содержит вложений.";
-					string Address = AptekaClientCode.ToString() + "@" + currentType.Domen;
-					string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
-					causeSubject = String.Format(Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs, Address, LetterDate);
-					causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnNothingAttachs, Address, LetterDate);
+					causeSubject = Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs;
+					causeBody = Settings.Default.ResponseDocBodyTemplateOnNothingAttachs;
 				}
 				else
 					//Если несколько клиентов в списке получателей
 					if (CorrectAddresCount > 1)
 					{
 						systemError = "Письмо отправленно нескольким клиентам.";
-						string LetterDate = m.MainEntity.Date.ToString("yyyy.MM.dd HH.mm.ss");
 
 						causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMultiDomen;
-						causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnMultiDomen, LetterDate, EmailList);
+						causeBody = Settings.Default.ResponseDocBodyTemplateOnMultiDomen;
 					}
 			return res;
 		}
@@ -187,16 +184,7 @@ and st.SourceID = 1",
 		{
 			if (causeBody != String.Empty)
 			{
-				try
-				{
-					AddressList _from = new AddressList();
-					_from.Parse("farm@analit.net");
-
-					Mime responseMime = Mime.CreateSimple(_from, FromList, causeSubject, causeBody, String.Empty);
-					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
-				}
-				catch
-				{ }
+				SendErrorLetterToProvider(FromList, causeSubject, causeBody, m);
 				WriteLog(
 					(currentType != null) ? (int?)currentType.TypeID : null,
 					GetFirmCodeByFromList(FromList), 
@@ -220,6 +208,77 @@ and st.SourceID = 1",
 			}
 			else
 				SendUnrecLetter(m, FromList, AttachNames, "Не распознанное письмо.");
+		}
+
+		protected override void ErrorOnProcessAttachs(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
+		{
+			try
+			{
+				string cause = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
+				MemoryStream ms = new MemoryStream(m.ToByteData());
+				SendErrorLetterToProvider(
+					FromList, 
+					Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
+					Settings.Default.ResponseDocBodyTemplateOnUnknownProvider, 
+					m);
+				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+				WriteLog(
+					(currentType != null) ? (int?)currentType.TypeID : null,
+					GetFirmCodeByFromList(FromList),
+					AptekaClientCode,
+					null,
+					String.Format(@"{0} 
+Отправители     : {1}
+Получатели      : {2}
+Список вложений : 
+{3}
+Тема письма поставщику : {4}
+Тело письма поставщику : 
+{5}",
+						cause,
+						FromList.ToAddressListString(),
+						m.MainEntity.To.ToAddressListString(),
+						AttachNames,
+						Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
+						Settings.Default.ResponseDocBodyTemplateOnUnknownProvider),
+					currentUID);
+			}
+			catch (Exception exMatch)
+			{
+				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+			}
+		}
+
+		private static void SendErrorLetterToProvider(AddressList FromList, string causeSubject, string causeBody, Mime sourceLetter)
+		{
+			try
+			{
+				AddressList _from = new AddressList();
+				_from.Parse("farm@analit.net");
+
+				//Mime responseMime = Mime.CreateSimple(_from, FromList, causeSubject, causeBody, String.Empty);
+				Mime responseMime = new Mime();
+				responseMime.MainEntity.From = _from;
+				responseMime.MainEntity.To = FromList;
+				responseMime.MainEntity.Subject = causeSubject;
+				responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+
+				MimeEntity testEntity  = responseMime.MainEntity.ChildEntities.Add();
+				testEntity.ContentType = MediaType_enum.Text_plain;
+				testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+				testEntity.DataText = causeBody;
+
+				MimeEntity attachEntity  = responseMime.MainEntity.ChildEntities.Add();
+				attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+				attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+				attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+				attachEntity.ContentDisposition_FileName = (!String.IsNullOrEmpty(sourceLetter.MainEntity.Subject)) ? sourceLetter.MainEntity.Subject + ".eml" : "Unrec.eml";
+				attachEntity.Data = sourceLetter.ToByteData();
+
+				LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost("box.analit.net", 25, String.Empty, responseMime);
+			}
+			catch
+			{ }
 		}
 
 		private int? GetFirmCodeByFromList(AddressList FromList)
