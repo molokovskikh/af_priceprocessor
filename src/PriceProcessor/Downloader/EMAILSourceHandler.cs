@@ -209,6 +209,17 @@ namespace Inforoom.Downloader
 			try
 			{
 				MemoryStream ms = new MemoryStream(m.ToByteData());
+				try
+				{
+					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost(
+						"box.analit.net",
+						25,
+						Environment.MachineName,
+						"service@analit.net",
+						new string[] { Settings.Default.UnrecLetterMail },
+						ms);
+				}
+				catch { }
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
 				Logging(String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", cause, m.MainEntity.Subject, FromList.ToAddressListString()));
 			}
