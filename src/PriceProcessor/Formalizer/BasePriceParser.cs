@@ -999,8 +999,7 @@ namespace Inforoom.Formalizer
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
 
 							//Производим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = String.Format(@"UPDATE {0} SET PosNum=?FormCount, DateLastForm=?NOWDT WHERE FirmCode=?PriceCode; UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=?NOWDT, UnformCount=?UnformCount WHERE PriceCode=?PriceCode;",
-								FormalizeSettings.tbFormRules);
+							mcClear.CommandText = "UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=?NOWDT, UnformCount=?UnformCount WHERE PriceCode=?PriceCode;";
 							mcClear.Parameters.Clear();
 							mcClear.Parameters.AddWithValue("?NOWDT", DateTime.Now);
 							mcClear.Parameters.AddWithValue("?PriceCode", priceCode);

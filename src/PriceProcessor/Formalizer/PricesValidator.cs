@@ -30,7 +30,7 @@ namespace Inforoom.Formalizer
         PD.PriceType                                          as SelfFlag,
         FR.JunkPos                                            as SelfJunkPos,
         FR.AwaitPos                                           as SelfAwaitPos,
-        FR.PosNum                                             as SelfPosNum,
+        pui.RowCount                                          as SelfPosNum,
         FR.VitallyImportantMask                               as SelfVitallyImportantMask,           
         PFR.*,
         CD.FirmStatus,
@@ -44,6 +44,7 @@ INNER JOIN Farm.formrules           AS FR
         ON FR.FirmCode= PD.PriceCode
 inner join UserSettings.pricescosts pc on pc.PriceCode = pd.PriceCode
 inner join UserSettings.PricesData ppd on ppd.PriceCode = pc.ShowPriceCode
+inner join UserSettings.price_update_info pui on pui.PriceCode = pd.PriceCode
 LEFT JOIN Farm.FormRules AS PFR
         ON PFR.FirmCode= IF(FR.ParentFormRules,FR.ParentFormRules,FR.FirmCode)
 WHERE   (FR.FirmCode = {0})",
