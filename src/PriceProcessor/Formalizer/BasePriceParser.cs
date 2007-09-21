@@ -867,7 +867,7 @@ namespace Inforoom.Formalizer
 			}
 			else
 			{
-				if (formCount * 1.3 < posNum)
+				if (formCount * 1.6 < posNum)
 				{
 					throw new RollbackFormalizeException(FormalizeSettings.PrevFormRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 				}
