@@ -302,10 +302,8 @@ AND pd.AgencyEnabled= 1",
                 cmdUpdatePriceDate = new MySqlCommand(
                         String.Format(
                             "UPDATE {0} SET LastDateTime = ?NowDate, PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
-							"UPDATE {1} SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE FirmCode = ?FirmCode;" +
 							"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
-                            Settings.Default.tbSources,
-                            Settings.Default.tbFormRules), 
+                            Settings.Default.tbSources), 
                         cWork);
                 cmdUpdatePriceDate.Parameters.Add("?FirmCode", MySqlDbType.Int64);
                 cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.Datetime);
