@@ -73,5 +73,10 @@ WHERE
 		{
 			return InputFile;
 		}
+
+		public virtual void ImportDocument(MySqlConnection Connection, ulong FirmCode, ulong ClientCode, int DocumentType, string CurrentFileName)
+		{ 
+		}
+	
 	}
 }

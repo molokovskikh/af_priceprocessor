@@ -445,5 +445,37 @@ namespace Inforoom.Downloader.DocumentReaders
 					File.Move(Path.ChangeExtension(fileName, "dbf"), fileName);
 			}
 		}
+
+		public override void ImportDocument(MySqlConnection Connection, ulong FirmCode, ulong ClientCode, int DocumentType, string CurrentFileName)
+		{
+			DataSet dsDocument = new DataSet();
+			dsDocument.ReadXml(CurrentFileName);
+			string ProviderDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
+			object DocumentHeaderId = MySqlHelper.ExecuteScalar(
+				Connection, 
+				"select id from documents.documentheaders where FirmCode = ?FirmCode and ClientCode = ?ClientCode and DocumentType = ?DocumentType and ProviderDocumentId = ?ProviderDocumentId",
+				new MySqlParameter("?FirmCode", FirmCode),
+				new MySqlParameter("?ClientCode", ClientCode),
+				new MySqlParameter("?DocumentType", DocumentType),
+				new MySqlParameter("?ProviderDocumentId", ProviderDocumentId));
+			if (DocumentHeaderId == null)
+			{
+				MySqlHelper.ExecuteNonQuery(
+					Connection,
+					"insert into documents.documentheaders (FirmCode, ClientCode, DocumentType, ProviderDocumentId) values (?FirmCode, ?ClientCode, ?DocumentType, ?ProviderDocumentId)",
+					new MySqlParameter("?FirmCode", FirmCode),
+					new MySqlParameter("?ClientCode", ClientCode),
+					new MySqlParameter("?DocumentType", DocumentType),
+					new MySqlParameter("?ProviderDocumentId", ProviderDocumentId));
+			}
+			else
+				throw new Exception(String.Format(
+					"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
+					FirmCode,
+					ClientCode,
+					DocumentType,
+					ProviderDocumentId));
+		}
+
 	}
 }

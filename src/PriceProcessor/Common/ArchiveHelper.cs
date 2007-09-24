@@ -14,6 +14,8 @@ namespace Inforoom.Downloader
 
 		private static string[] FileType = new string[5] {".zip", ".exe", ".arj", ".gz", ".rar"};
 
+		private static string SevenZipExePath = @"C:\Program Files\7-Zip\7z.exe";
+
         public class ArchiveException : Exception
         {
             private int _exitCode;
@@ -42,7 +44,7 @@ namespace Inforoom.Downloader
         /// <param name="ExtractFolder"></param>
 		public static void Extract(string ArchFileName, string ExtractMask, string ExtractFolder)
 		{
-            Process p = Process.Start("WinRAR", String.Format("x -inul -ibck -y \"{0}\" {1} \"{2}\"", ArchFileName, ExtractMask, ExtractFolder));
+			Process p = Process.Start(SevenZipExePath, String.Format("x -y \"{0}\"  \"-o{1}\" \"{2}\" -r", ArchFileName, ExtractFolder, ExtractMask));
 			bool Stopped = p.WaitForExit(MaxArchiveTimeOut);
 			if (Stopped)
 			{
@@ -69,7 +71,7 @@ namespace Inforoom.Downloader
 
         public static bool TestArchive(string ArchFileName)
         {
-            Process p = Process.Start("WinRAR", String.Format("t -inul -ibck -y \"{0}\"", ArchFileName));
+			Process p = Process.Start(SevenZipExePath, String.Format("t -y \"{0}\"", ArchFileName));
 			bool Stopped = p.WaitForExit(MaxArchiveTimeOut);
 			if (!Stopped)
 				try { p.Kill(); } catch { }

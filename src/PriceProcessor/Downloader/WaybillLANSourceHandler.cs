@@ -274,6 +274,24 @@ and st.SourceID = 4",
 
 						foreach (ulong AptekaClientCode in listClients)
 						{
+							cmdInsert.Parameters["?ClientCode"].Value = AptekaClientCode;
+							cmdInsert.Parameters["?Addition"].Value = DBNull.Value;
+
+							try
+							{
+								documentReader.ImportDocument(
+									cWork,
+									Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]),
+									AptekaClientCode,
+									1,
+									FileName);
+							}
+							catch (Exception ex)
+							{
+								cmdInsert.Parameters["?Addition"].Value = "Не удалось импортировать документ в базу.\nОшибка: " + ex.ToString();
+								cmdInsert.ExecuteNonQuery();
+								continue;
+							}
 							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 							OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 							OutFileName = String.Empty;
@@ -281,7 +299,6 @@ and st.SourceID = 4",
 							if (!Directory.Exists(AptekaClientDirectory))
 								Directory.CreateDirectory(AptekaClientDirectory);
 
-							cmdInsert.Parameters["?ClientCode"].Value = AptekaClientCode;
 
 							OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
 								+ drCurrent["ShortName"].ToString()
