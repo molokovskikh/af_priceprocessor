@@ -248,8 +248,8 @@ SELECT
   cd.ShortName,
   pd.PriceName,
   r.Region as RegionName,
-  fr.DateCurPrice,
-  fr.DatePrevPrice,
+  pui.DateCurPrice,
+  pui.DatePrevPrice,
   fr.PriceFMT,
   pf.FileExtention,
   st.SourceType, st.LastDateTime, st.PriceDateTime, 
@@ -264,6 +264,7 @@ INNER JOIN {1}           AS fr ON fr.FirmCode = st.FirmCode
 INNER JOIN farm.pricefmts           AS pf ON pf.Format = fr.PriceFMT
 INNER JOIN {2} AS CD ON CD.FirmCode = PD.FirmCode
 inner join farm.regions             as r  on r.RegionCode = cd.RegionCode
+inner join usersettings.price_update_info pui on pui.PriceCode = PD.PriceCode
 WHERE
     st.SourceType = '{3}'
 AND cd.FirmStatus   = 1
