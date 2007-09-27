@@ -81,7 +81,7 @@ namespace Inforoom.Downloader
 				new ExecuteArgs(), 
 				delegate(ExecuteArgs args)
 				{
-					object clientCode = MySqlHelper.ExecuteScalar(cWork, "select ClientCode from usersettings.retclientsset where ClientCode = " + CheckClientCode.ToString());
+					object clientCode = MySqlHelper.ExecuteScalar(cWork, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode.ToString());
 
 					return (clientCode != null);
 				},
@@ -123,6 +123,8 @@ namespace Inforoom.Downloader
 						AptekaClientCode = testClientCode;
 					}
 				}
+				else
+					testClientCode = null;
 			}
 
 			return testClientCode;
