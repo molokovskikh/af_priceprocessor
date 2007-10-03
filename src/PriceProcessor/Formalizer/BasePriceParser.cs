@@ -894,12 +894,20 @@ namespace Inforoom.Formalizer
 							mcClear.Transaction = myTrans;
 							mcClear.CommandTimeout = 0;
 
-                            //Выставляем значение команды
-                            mcClear.CommandText = String.Empty;
+							//Производим обновление DateLastForm в информации о формализации
+							mcClear.CommandText = "UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=now(), UnformCount=?UnformCount WHERE PriceCode=?PriceCode;";
+							mcClear.Parameters.Clear();
+							mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
+							mcClear.Parameters.AddWithValue("?FormCount", formCount);
+							mcClear.Parameters.AddWithValue("?UnformCount", unformCount);
+							int priceUpdateCount = mcClear.ExecuteNonQuery();
+							SimpleLog.Log(getParserID(), "UPDATE price_update_info: PriceUpdateCount={0}, PriceCode={1}, FormCount={2}, UnformCount={3}", priceUpdateCount, priceCode, formCount, unformCount);
+							
+							mcClear.Parameters.Clear();
 
-                            if (priceType != FormalizeSettings.ASSORT_FLG)
+							if (priceType != FormalizeSettings.ASSORT_FLG)
 							{
-								//Удалаем цены из CoreCosts
+								//Удаляем цены из CoreCosts
 								System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
 								sbDelCoreCosts.Append(String.Format("delete from {0} where pc_costcode in (", FormalizeSettings.tbCoreCosts));
 								bool FirstInsertCoreCosts = true;
@@ -915,13 +923,13 @@ namespace Inforoom.Formalizer
                                 if (currentCoreCosts.Count > 0)
                                 {
                                     //Производим удаление цен
-                                    mcClear.CommandText += sbDelCoreCosts.ToString();
+                                    mcClear.CommandText = sbDelCoreCosts.ToString();
                                     sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
                                 }
                             }							
 
 							//Добавляем команду на удаление данных из Core
-                            mcClear.CommandText += String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
+                            mcClear.CommandText = String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
 							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
 							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
@@ -997,16 +1005,6 @@ namespace Inforoom.Formalizer
 							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), myTrans));
 							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), myTrans));
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
-
-							//Производим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = "UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=?NOWDT, UnformCount=?UnformCount WHERE PriceCode=?PriceCode;";
-							mcClear.Parameters.Clear();
-							mcClear.Parameters.AddWithValue("?NOWDT", DateTime.Now);
-							mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
-							mcClear.Parameters.AddWithValue("?FormCount", formCount);
-							mcClear.Parameters.AddWithValue("?UnformCount", unformCount);
-							mcClear.ExecuteNonQuery();
-							mcClear.Parameters.Clear();
 
 							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
 							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Commit");
