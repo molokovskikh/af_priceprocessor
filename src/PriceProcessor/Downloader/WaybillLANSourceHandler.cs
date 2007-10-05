@@ -292,7 +292,7 @@ and st.SourceID = 4",
 								cmdInsert.ExecuteNonQuery();
 								continue;
 							}
-							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 							OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 							OutFileName = String.Empty;
 

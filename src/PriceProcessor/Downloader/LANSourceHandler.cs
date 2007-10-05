@@ -20,7 +20,7 @@ namespace Inforoom.Downloader
             CurrFileName = String.Empty;
             try
             {
-                string PricePath = NormalizeDir((string)dtSources.Rows[0][SourcesTable.colPricePath]);
+				string PricePath = NormalizeDir(Settings.Default.FTPOptBox) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
                 string[] ff = Directory.GetFiles(PricePath, (string)dtSources.Rows[0][SourcesTable.colPriceMask]);
                 DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
                 foreach (string fs in ff)

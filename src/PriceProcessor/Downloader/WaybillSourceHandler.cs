@@ -436,7 +436,7 @@ and st.SourceID = 1",
 
 			MySqlTransaction tran;
 
-			string AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + Path.DirectorySeparatorChar + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
+			string AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBox) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
 			string OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 			string OutFileName = String.Empty;
 
