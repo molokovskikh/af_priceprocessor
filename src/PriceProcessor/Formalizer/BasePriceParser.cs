@@ -738,98 +738,97 @@ namespace Inforoom.Formalizer
 			SimpleLog.Log(getParserID(), "stop Core");
 		}
 
-		public void onUpdating(object sender, MySqlRowUpdatingEventArgs e)
-		{
-			if (e.Status != UpdateStatus.Continue)
-			{
-				SimpleLog.Log( getParserID(), e.Errors.ToString());
-			}
-		}
-
-		public void onUpdated(object sender, MySqlRowUpdatedEventArgs e)
-		{
-			if (e.Status != UpdateStatus.Continue)
-			{
-				SimpleLog.Log( getParserID(), e.Errors.ToString());
-			}
-		}
-
 		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
 		{
 			da.SelectCommand.Transaction = tran;
 			return (da.Update(dt));
 		}
 
-		public long MultiInsertIntoCore(DataTable dtCore, MySqlConnection con, MySqlTransaction tran, System.Text.StringBuilder Log)
+		private string GetSQLToInsertCoreAndCoreCosts()
 		{
 			if (dtCore.Rows.Count > 0)
 			{
 				System.Text.StringBuilder sb = new System.Text.StringBuilder();
-				MySqlCommand cmd = new MySqlCommand(String.Empty, con, tran);
-
-				int Index = 0;
-
-				bool FirstInsert = true;
-				sb.AppendLine(String.Format("insert into {0} (" + 
-					"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
-					"Period, Junk, Await, BaseCost, MinBoundCost, " +
-					"VitallyImportant, RequestRatio, RegistryCost, " +
-					"MaxBoundCost, OrderCost, MinOrderCount, " +
-					"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
-
-				foreach (DataRow drCore in dtCore.Rows)
+				DataRow drCore;
+				for(int i = 0; i < dtCore.Rows.Count; i++)
 				{
-					if (!FirstInsert)
-						sb.Append(", ");
-					FirstInsert = false;
-					sb.Append("(");
-					sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["FirmCode"], drCore["FullCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
-                    sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty :  drCore["Period"].ToString());
-					sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
-					sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
-					sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
-					sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
-					sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-					sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
-                    AddTextParameter("Code", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("CodeCr", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("Unit", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("Volume", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("Quantity", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("Note", drCore, sb);
-                    sb.Append(", ");
-
-                    AddTextParameter("Doc", drCore, sb);
-                    sb.Append(", ");
-
-					AddTextParameter("Currency", drCore, sb);
-
-					sb.AppendLine(")");
-					Index++;
+					drCore = dtCore.Rows[i];
+					InsertCorePosition(drCore, sb);
+					if (priceType != FormalizeSettings.ASSORT_FLG)
+						InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
 				}
-
-				cmd.CommandText = sb.ToString();
-				Log.AppendFormat("InsToCore={0}  ", cmd.ExecuteNonQuery());
-
-				cmd.CommandText = "select last_insert_id()";
-				return Convert.ToInt64(cmd.ExecuteScalar());
+				return sb.ToString();
 			}
 			else
-				return 0;
+				return String.Empty;
+		}
+
+		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
+		{
+			if ((coreCosts != null) && (coreCosts.Count > 0))
+			{
+				sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
+				bool FirstInsert = true;
+				foreach (CoreCost c in coreCosts)
+				{
+					if (c.cost > 0)
+					{
+						if (!FirstInsert)
+							sb.Append(", ");
+						FirstInsert = false;
+						sb.AppendFormat("(@LastCoreID, {0}, {1}) ", c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
+					}
+				}
+				sb.AppendLine(";");
+			}
+		}
+
+		private void InsertCorePosition(DataRow drCore, System.Text.StringBuilder sb)
+		{
+			sb.AppendLine(String.Format("insert into {0} (" +
+				"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
+				"Period, Junk, Await, BaseCost, MinBoundCost, " +
+				"VitallyImportant, RequestRatio, RegistryCost, " +
+				"MaxBoundCost, OrderCost, MinOrderCount, " +
+				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
+			sb.Append("(");
+			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["FirmCode"], drCore["FullCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
+			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
+			sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
+			sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
+			sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
+			sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
+			sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
+			AddTextParameter("Code", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("CodeCr", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Unit", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Volume", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Quantity", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Note", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Doc", drCore, sb);
+			sb.Append(", ");
+
+			AddTextParameter("Currency", drCore, sb);
+
+			sb.AppendLine(");");
+			sb.AppendLine("set @LastCoreID = last_insert_id();");
 		}
 
 		public void AddTextParameter(string ParamName, DataRow dr, System.Text.StringBuilder sb)
@@ -844,15 +843,6 @@ namespace Inforoom.Formalizer
 				s = s.Replace("\"", "\\\"");
 				s = s.Replace("`", "\\`");
 				sb.AppendFormat("'{0}'", s);
-			}
-		}
-
-		void SetCoreID(DataTable dtCore, long LastID)
-		{
-			foreach (DataRow drCore in dtCore.Rows)
-			{
-				drCore["ID"] = Convert.ToUInt64(LastID);
-				LastID++;
 			}
 		}
 
@@ -873,9 +863,8 @@ namespace Inforoom.Formalizer
 				}
 				else
 				{
-
-					//ѕроизводим первую транзакцию с применением главного прайса и таблицы цен
-					List<DataTable> lCores = new List<DataTable>();
+					string insertCoreAndCoreCostsSQL = GetSQLToInsertCoreAndCoreCosts();
+					//ѕроизводим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
 					//ƒл€ логировани€ статистики
@@ -895,13 +884,12 @@ namespace Inforoom.Formalizer
 							mcClear.CommandTimeout = 0;
 
 							//ѕроизводим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = "UPDATE usersettings.price_update_info SET RowCount=?FormCount, DateLastForm=now(), UnformCount=?UnformCount WHERE PriceCode=?PriceCode;";
+							mcClear.CommandText = String.Format(
+								"UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=now(), UnformCount={1} WHERE PriceCode={2};", formCount, unformCount, priceCode);
 							mcClear.Parameters.Clear();
-							mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
-							mcClear.Parameters.AddWithValue("?FormCount", formCount);
-							mcClear.Parameters.AddWithValue("?UnformCount", unformCount);
+							SimpleLog.Log(getParserID(), "UPDATE price_update_info command: {0}", mcClear.CommandText);
 							int priceUpdateCount = mcClear.ExecuteNonQuery();
-							SimpleLog.Log(getParserID(), "UPDATE price_update_info: PriceUpdateCount={0}, PriceCode={1}, FormCount={2}, UnformCount={3}", priceUpdateCount, priceCode, formCount, unformCount);
+							SimpleLog.Log(getParserID(), "UPDATE price_update_info        : PriceUpdateCount={0}, PriceCode={1}, FormCount={2}, UnformCount={3}", priceUpdateCount, priceCode, formCount, unformCount);
 							
 							mcClear.Parameters.Clear();
 
@@ -932,58 +920,15 @@ namespace Inforoom.Formalizer
                             mcClear.CommandText = String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
 							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
-							//							daCore.RowUpdating += new MySqlRowUpdatingEventHandler(onUpdating);
-							//							daCore.RowUpdated += new MySqlRowUpdatedEventHandler(onUpdated);
-							//ƒелаем копию Core чтобы получить ID вставленных записей и использовать их при вставке цен
-							DataTable dtCoreCopy = dtCore.Copy();
-							long LastID = MultiInsertIntoCore(dtCoreCopy, MyConn, myTrans, sbLog);
-							SetCoreID(dtCoreCopy, LastID);
-
-							//≈сли прайс не €вл€етс€ ассортиментным, то производим обновление цен
-							if (priceType != FormalizeSettings.ASSORT_FLG)
+							if (!String.IsNullOrEmpty(insertCoreAndCoreCostsSQL))
 							{
-								DataRow drCore;
-								DataRow drCoreCost;
-								System.Text.StringBuilder sb;
-
-								dtCoreCosts.MinimumCapacity = dtCoreCopy.Rows.Count * currentCoreCosts.Count;
-								dtCoreCosts.Clear();
-								dtCoreCosts.AcceptChanges();
-
-								sb = new System.Text.StringBuilder();
-								sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
-								bool FirstInsert = true;
-								ArrayList currCC;
-								//«десь вставить проверку того, что не надо заполн€ть цены два раза или обновл€ть их
-								for (int i = 0; i <= dtCoreCopy.Rows.Count - 1; i++)
-								{
-									drCore = dtCoreCopy.Rows[i];
-									currCC = (ArrayList)CoreCosts[i];
-									foreach (CoreCost c in currCC)
-									{
-										if (c.cost > 0)
-										{
-											drCoreCost = dtCoreCosts.NewRow();
-											drCoreCost["Core_ID"] = drCore["ID"];
-											drCoreCost["PC_CostCode"] = c.costCode;
-											drCoreCost["Cost"] = c.cost;
-											dtCoreCosts.Rows.Add(drCoreCost);
-											if (!FirstInsert)
-												sb.Append(", ");
-											FirstInsert = false;
-											sb.AppendFormat("({0}, {1}, {2}) ", drCore["ID"], c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
-										}
-									}
-								}
-								sb.Append(";");
-
-								//≈сли есть цены, которые нужно вставл€ть, то делаем вставку, иначе ничего не делаем
-								if (dtCoreCosts.Rows.Count > 0)
-								{
-									mcClear.CommandText = sb.ToString();
-									sbLog.AppendFormat("InsToCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-								}
+								//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts command: {0}", insertCoreAndCoreCostsSQL);
+								mcClear.CommandText = insertCoreAndCoreCostsSQL;
+								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
 							}
+							else
+								sbLog.Append("InsToCoreAndCoreCosts=0  ");
+
 
 							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero);
 							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
