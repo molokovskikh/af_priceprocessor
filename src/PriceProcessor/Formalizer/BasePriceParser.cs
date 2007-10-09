@@ -828,7 +828,7 @@ namespace Inforoom.Formalizer
 			AddTextParameter("Currency", drCore, sb);
 
 			sb.AppendLine(");");
-			sb.AppendLine("set @LastCoreID = last_insert_id();");
+            //sb.AppendLine("set @LastCoreID = last_insert_id();");
 		}
 
 		public void AddTextParameter(string ParamName, DataRow dr, System.Text.StringBuilder sb)
