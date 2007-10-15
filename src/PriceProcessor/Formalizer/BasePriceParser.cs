@@ -744,23 +744,39 @@ namespace Inforoom.Formalizer
 			return (da.Update(dt));
 		}
 
-		private string GetSQLToInsertCoreAndCoreCosts()
+		private string[] GetSQLToInsertCoreAndCoreCosts()
 		{
 			if (dtCore.Rows.Count > 0)
 			{
+				List<string> commandList = new List<string>();
+				string lastCommand = String.Empty;
 				System.Text.StringBuilder sb = new System.Text.StringBuilder();
 				DataRow drCore;
+
 				for(int i = 0; i < dtCore.Rows.Count; i++)
 				{
 					drCore = dtCore.Rows[i];
 					InsertCorePosition(drCore, sb);
 					if (priceType != FormalizeSettings.ASSORT_FLG)
 						InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
+
+					if ((i+1) % FormalizeSettings.MaxPositionInsertToCore == 0)
+					{
+						lastCommand = sb.ToString();
+						if (!String.IsNullOrEmpty(lastCommand))
+							commandList.Add(lastCommand);
+						sb = new System.Text.StringBuilder();
+					}
 				}
-				return sb.ToString();
+
+				lastCommand = sb.ToString();
+				if (!String.IsNullOrEmpty(lastCommand))
+					commandList.Add(lastCommand);
+
+				return commandList.ToArray();
 			}
 			else
-				return String.Empty;
+				return new string[] {};
 		}
 
 		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
@@ -828,7 +844,7 @@ namespace Inforoom.Formalizer
 			AddTextParameter("Currency", drCore, sb);
 
 			sb.AppendLine(");");
-            //sb.AppendLine("set @LastCoreID = last_insert_id();");
+            sb.AppendLine("set @LastCoreID = last_insert_id();");
 		}
 
 		public void AddTextParameter(string ParamName, DataRow dr, System.Text.StringBuilder sb)
@@ -863,7 +879,7 @@ namespace Inforoom.Formalizer
 				}
 				else
 				{
-					string insertCoreAndCoreCostsSQL = GetSQLToInsertCoreAndCoreCosts();
+					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts();
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
@@ -920,11 +936,18 @@ namespace Inforoom.Formalizer
                             mcClear.CommandText = String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
 							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
-							if (!String.IsNullOrEmpty(insertCoreAndCoreCostsSQL))
+							if (insertCoreAndCoreCostsCommandList.Length > 0)
 							{
 								//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts command: {0}", insertCoreAndCoreCostsSQL);
-								mcClear.CommandText = insertCoreAndCoreCostsSQL;
-								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+								int insertCoreCount = 0;
+								foreach (string command in insertCoreAndCoreCostsCommandList)
+								{
+									mcClear.CommandText = command;
+									//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts command: {0}", mcClear.CommandText);
+									insertCoreCount += mcClear.ExecuteNonQuery();
+									//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts Count: {0}", insertCoreCount);
+								}
+								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", insertCoreCount);
 							}
 							else
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");

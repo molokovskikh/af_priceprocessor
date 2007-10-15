@@ -61,6 +61,9 @@ namespace Inforoom.Formalizer
 		//Допустимое кол-во повторов запроса при блокировки
 		public static readonly int MinRepeatTranCount = 7;
 
+		//Максимальное кол-во позиций, вставляемых в Core, за один раз
+		public static readonly int MaxPositionInsertToCore = 1000;
+
 		//database settings
 		public static readonly string ServerName = "sql.analit.net";
 		public static readonly string UserName = "mor";
@@ -122,6 +125,8 @@ namespace Inforoom.Formalizer
 			MaxWorkThread = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxWorkThread", typeof(int));
 			MaxRepeatTranCount = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxRepeatTranCount", typeof(int));
 			MinRepeatTranCount = (int)configurationAppSettings.GetValue("FormalizeSettings.MinRepeatTranCount", typeof(int));
+
+			MaxPositionInsertToCore = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxPositionInsertToCore", typeof(int));
 
 			ErrorFiles = (string)configurationAppSettings.GetValue("FormalizeSettings.ErrorFiles", typeof(string));
 			MaxErrorCount = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxErrorCount", typeof(int));
