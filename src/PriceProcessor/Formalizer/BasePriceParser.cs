@@ -245,7 +245,7 @@ namespace Inforoom.Formalizer
 		protected MySqlDataAdapter daCoreCosts;
 		protected DataTable dtCoreCosts;
 
-		protected DataSet dsMyDB;
+    	protected DataSet dsMyDB;
 
 		protected string[] FieldNames;
 
@@ -880,6 +880,7 @@ namespace Inforoom.Formalizer
 				else
 				{
 					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts();
+
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
@@ -899,14 +900,6 @@ namespace Inforoom.Formalizer
 							mcClear.Transaction = myTrans;
 							mcClear.CommandTimeout = 0;
 
-							//Производим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = String.Format(
-								"UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=now(), UnformCount={1} WHERE PriceCode={2};", formCount, unformCount, priceCode);
-							mcClear.Parameters.Clear();
-							SimpleLog.Log(getParserID(), "UPDATE price_update_info command: {0}", mcClear.CommandText);
-							int priceUpdateCount = mcClear.ExecuteNonQuery();
-							SimpleLog.Log(getParserID(), "UPDATE price_update_info        : PriceUpdateCount={0}, PriceCode={1}, FormCount={2}, UnformCount={3}", priceUpdateCount, priceCode, formCount, unformCount);
-							
 							mcClear.Parameters.Clear();
 
 							if (priceType != FormalizeSettings.ASSORT_FLG)
@@ -948,6 +941,22 @@ namespace Inforoom.Formalizer
 									//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts Count: {0}", insertCoreCount);
 								}
 								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", insertCoreCount);
+
+								mcClear.CommandText = @"
+insert into farm.assortment
+  (FullCode, CodeFirmCr)
+select
+  distinct c.FullCode, c.CodeFirmCr
+from
+  farm.core0 c
+  left join farm.assortment a on a.FullCode = c.FullCode and a.CodeFirmCr = c.CodeFirmCr
+where
+    c.FirmCode = ?PriceCode
+and c.CodeFirmCr > 1
+and a.FullCode is null";
+								mcClear.Parameters.Clear();
+								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
+								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
 							}
 							else
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
@@ -973,6 +982,12 @@ namespace Inforoom.Formalizer
 							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), myTrans));
 							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), myTrans));
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
+
+							//Производим обновление DateLastForm в информации о формализации
+							mcClear.CommandText = String.Format(
+								"UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=now(), UnformCount={1} WHERE PriceCode={2};", formCount, unformCount, priceCode);
+							mcClear.Parameters.Clear();
+							mcClear.ExecuteNonQuery();
 
 							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
 							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Commit");
