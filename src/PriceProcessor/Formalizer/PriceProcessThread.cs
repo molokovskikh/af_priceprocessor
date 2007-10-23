@@ -578,8 +578,11 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				InternalLog( e.ToString() );
-				InternalMailSendBy(FormalizeSettings.FromEmail, "morozov@analit.net", "ThreadWork Error", e.ToString());
+				if (!(e is System.Threading.ThreadAbortException))
+				{
+					InternalLog(e.ToString());
+					InternalMailSendBy(FormalizeSettings.FromEmail, "service@analit.net", "ThreadWork Error", e.ToString());
+				}
 			}
 			finally
 			{
