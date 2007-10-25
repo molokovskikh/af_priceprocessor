@@ -25,7 +25,8 @@ namespace Inforoom.Downloader
 			alHandlers.Add(new HTTPSourceHandler());
 			alHandlers.Add(new EMAILSourceHandler());
 			alHandlers.Add(new WaybillSourceHandler());
-			alHandlers.Add(new WaybillLANSourceHandler());			
+			alHandlers.Add(new WaybillLANSourceHandler());
+			alHandlers.Add(new ClearArchivedPriceSourceHandler());
             tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}
 
