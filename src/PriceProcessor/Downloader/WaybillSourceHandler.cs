@@ -177,7 +177,7 @@ and st.SourceID = 1",
 			dtSources.Clear();
 			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
 			daFillSources.SelectCommand.Parameters.Clear();
-			daFillSources.SelectCommand.Parameters.Add("?AptekaClientCode", AptekaClientCode);
+			daFillSources.SelectCommand.Parameters.AddWithValue("?AptekaClientCode", AptekaClientCode);
 			daFillSources.Fill(dtSources);
 			return dtSources;
 		}
@@ -428,11 +428,11 @@ and st.SourceID = 1",
 		{
 			bool Quit = false;
 			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", cWork);
-			cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
-			cmdInsert.Parameters.Add("?ClientCode", AptekaClientCode);
-			cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
-			cmdInsert.Parameters.Add("?MessageUID", currentUID);
-			cmdInsert.Parameters.Add("?DocumentType", currentType.TypeID);			
+			cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
+			cmdInsert.Parameters.AddWithValue("?ClientCode", AptekaClientCode);
+			cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
+			cmdInsert.Parameters.AddWithValue("?MessageUID", currentUID);
+			cmdInsert.Parameters.AddWithValue("?DocumentType", currentType.TypeID);			
 
 			MySqlTransaction tran;
 
@@ -508,12 +508,12 @@ and st.SourceID = 1",
 			{
 				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
-				cmdInsert.Parameters.Add("?FirmCode", FirmCode);
-				cmdInsert.Parameters.Add("?ClientCode", ClientCode);
-				cmdInsert.Parameters.Add("?FileName", FileName);
-				cmdInsert.Parameters.Add("?Addition", Addition);
-				cmdInsert.Parameters.Add("?MessageUID", MessageUID);
-				cmdInsert.Parameters.Add("?DocumentType", DocumentType);
+				cmdInsert.Parameters.AddWithValue("?FirmCode", FirmCode);
+				cmdInsert.Parameters.AddWithValue("?ClientCode", ClientCode);
+				cmdInsert.Parameters.AddWithValue("?FileName", FileName);
+				cmdInsert.Parameters.AddWithValue("?Addition", Addition);
+				cmdInsert.Parameters.AddWithValue("?MessageUID", MessageUID);
+				cmdInsert.Parameters.AddWithValue("?DocumentType", DocumentType);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;

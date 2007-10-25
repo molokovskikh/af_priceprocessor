@@ -230,10 +230,10 @@ and st.SourceID = 4",
 				delegate(ExecuteArgs args)
 				{
 					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, 1, ?Addition); select last_insert_id();", cWork);
-					cmdInsert.Parameters.Add("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
-					cmdInsert.Parameters.Add("?ClientCode", DBNull.Value);
-					cmdInsert.Parameters.Add("?FileName", Path.GetFileName(FileName));
-					cmdInsert.Parameters.Add("?Addition", DBNull.Value);
+					cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
+					cmdInsert.Parameters.AddWithValue("?ClientCode", DBNull.Value);
+					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
+					cmdInsert.Parameters.AddWithValue("?Addition", DBNull.Value);
 
 					List<ulong> listClients = null;
 					string AptekaClientDirectory;
@@ -342,10 +342,10 @@ and st.SourceID = 4",
 			{
 				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
 
-				cmdInsert.Parameters.Add("?FirmCode", logFirmCode);
-				cmdInsert.Parameters.Add("?ClientCode", logClientCode);
-				cmdInsert.Parameters.Add("?FileName", logFileName);
-				cmdInsert.Parameters.Add("?Addition", logAddition);
+				cmdInsert.Parameters.AddWithValue("?FirmCode", logFirmCode);
+				cmdInsert.Parameters.AddWithValue("?ClientCode", logClientCode);
+				cmdInsert.Parameters.AddWithValue("?FileName", logFileName);
+				cmdInsert.Parameters.AddWithValue("?Addition", logAddition);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;

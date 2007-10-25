@@ -568,7 +568,7 @@ AND pd.AgencyEnabled= 1",
 			{
 				cLog.Open();
 				cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition, ResultCode, ArchFileName, ExtrFileName) VALUES (now(), ?AppCode, ?PriceCode, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()", Settings.Default.tbLogs), cLog);
-                cmdLog.Parameters.Add("?AppCode", Settings.Default.AppCode);
+                cmdLog.Parameters.AddWithValue("?AppCode", Settings.Default.AppCode);
                 cmdLog.Parameters.Add("?PriceCode", MySqlDbType.Int64);
                 cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
 				cmdLog.Parameters.Add("?ResultCode", MySqlDbType.Byte);
