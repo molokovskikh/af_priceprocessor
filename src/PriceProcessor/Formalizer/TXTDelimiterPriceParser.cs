@@ -37,6 +37,19 @@ namespace Inforoom.Formalizer
 				w.WriteLine("MaxScanRows=300");
 			}
 
+			string replaceFile;
+			using (StreamReader r = new StreamReader(priceFileName, Encoding.GetEncoding(1251)))
+			{
+				replaceFile = r.ReadToEnd();
+			}
+
+			replaceFile = replaceFile.Replace("\"", "");
+
+			using (StreamWriter rw = new StreamWriter(priceFileName, false, Encoding.GetEncoding(1251)))
+			{
+				rw.Write(replaceFile);
+			}
+
 			int MaxColCount = 0;
 			string TableName = System.IO.Path.GetFileName(priceFileName).Replace(".", "#");
 			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName));
@@ -65,20 +78,6 @@ namespace Inforoom.Formalizer
 					w.WriteLine("Col{0}=F{0} Text", i);
 				}
 			}
-
-			string replaceFile;
-			using(StreamReader r = new StreamReader(priceFileName, Encoding.GetEncoding(1251)))
-			{
-				replaceFile = r.ReadToEnd();
-			}
-			
-			replaceFile = replaceFile.Replace("\"", "");
-
-			using(StreamWriter rw = new StreamWriter(priceFileName, false, Encoding.GetEncoding(1251)))
-			{
-				rw.Write(replaceFile);
-			}
-
 
 			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName));
 			dbcMain.Open();
