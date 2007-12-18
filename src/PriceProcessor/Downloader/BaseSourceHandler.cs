@@ -369,6 +369,7 @@ AND pd.AgencyEnabled= 1",
 
         protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
         {
+			ms.Position = 0;
 			MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, GetFailMail(),
                 String.Format("{0} ( {1} )", FromAddress, SourceType),
 				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}", 
