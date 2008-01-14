@@ -45,7 +45,7 @@ namespace Inforoom.Downloader
 
                 DataSet dsEntries = m_pFtpClient.GetList();
 
-                DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
+				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
 
                 foreach (DataRow drEnt in dsEntries.Tables["DirInfo"].Rows)
                 {

@@ -291,7 +291,7 @@ AND pd.AgencyEnabled= 1",
         protected void CreateWorkConnection()
         {
             cWork = new MySqlConnection(
-                String.Format("server={0};username={1}; password={2}; database={3}; pooling=true; allow zero datetime=true;",
+				String.Format("server={0};username={1}; password={2}; database={3}; pooling=true; Convert Zero Datetime=true;",
                     Settings.Default.DBServerName,
                     Settings.Default.DBUserName,
                     Settings.Default.DBPass,

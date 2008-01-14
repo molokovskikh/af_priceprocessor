@@ -22,7 +22,7 @@ namespace Inforoom.Downloader
             {
 				string PricePath = NormalizeDir(Settings.Default.FTPOptBox) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
                 string[] ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
-				DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
+				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
                 foreach (string fs in ff)
                 {
 					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);

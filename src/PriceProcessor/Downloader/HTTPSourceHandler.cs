@@ -24,7 +24,7 @@ namespace Inforoom.Downloader
             if (!String.IsNullOrEmpty(HTTPUser))
                 request.Credentials = new NetworkCredential(HTTPUser, HTTPPassword);
 
-            request.Proxy = null;
+			request.Proxy = null;
 
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             DateTime fdt = response.LastModified;
@@ -58,24 +58,22 @@ namespace Inforoom.Downloader
         protected override void GetFileFromSource()
         {
             CurrFileName = String.Empty;
-            string PricePath = (string)dtSources.Rows[0][SourcesTable.colPricePath];
+            string PricePath = dtSources.Rows[0][SourcesTable.colPricePath].ToString().Trim();
             if (!PricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
                 PricePath = @"http://" + PricePath;
-            if (!PricePath.EndsWith(@"/"))
-                PricePath += @"/";
 
             string HTTPFileName = (string)dtSources.Rows[0][SourcesTable.colPriceMask];
             string DownFileName = String.Empty;
             try
-            {                
-                DateTime priceDateTime = ((MySql.Data.Types.MySqlDateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime]).GetDateTime();
+            {
+				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
 
-                DateTime fileLastWriteTime = GetFileDateTime(PricePath + HTTPFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
+                DateTime fileLastWriteTime = GetFileDateTime(PricePath, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
 
 				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                 {
                     DownFileName = DownHandlerPath + HTTPFileName;
-                    GetFile(PricePath + HTTPFileName, DownFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
+                    GetFile(PricePath, DownFileName, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
                     CurrFileName = DownFileName;
                     CurrPriceDate = fileLastWriteTime;
                 }
