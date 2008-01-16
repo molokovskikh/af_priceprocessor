@@ -32,7 +32,6 @@ namespace Inforoom.Downloader
 
         public static string colPricePath = "PricePath";
 
-        public static string colEMailPassword = "EMailPassword";
         public static string colEMailTo = "EMailTo";
         public static string colEMailFrom = "EMailFrom";
 
@@ -254,7 +253,7 @@ SELECT
   pf.FileExtention,
   st.SourceType, st.LastDateTime, st.PriceDateTime, 
   st.PricePath,  
-  st.EMailPassword, st.EMailTo, st.EMailFrom, 
+  st.EMailTo, st.EMailFrom, 
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask
