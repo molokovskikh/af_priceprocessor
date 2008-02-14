@@ -212,7 +212,7 @@ namespace Inforoom.Downloader
 				try
 				{
 					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost(
-						"box.analit.net",
+						Settings.Default.SMTPHost,
 						25,
 						Environment.MachineName,
 						"service@analit.net",
