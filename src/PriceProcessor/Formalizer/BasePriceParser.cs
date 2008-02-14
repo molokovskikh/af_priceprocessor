@@ -227,9 +227,6 @@ namespace Inforoom.Formalizer
 		//Таблица со списоком синонимов производителей
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
-		//Таблица со списоком синонимов валют
-		protected MySqlDataAdapter daSynonymCurrency;
-		protected DataTable dtSynonymCurrency;
 
 		protected MySqlDataAdapter daCore;
 		protected DataTable dtCore;
@@ -245,7 +242,7 @@ namespace Inforoom.Formalizer
 		protected MySqlDataAdapter daCoreCosts;
 		protected DataTable dtCoreCosts;
 
-    	protected DataSet dsMyDB;
+		protected DataSet dsMyDB;
 
 		protected string[] FieldNames;
 
@@ -506,7 +503,7 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Производится вставка данных в таблицу Core
 		/// </summary>
-		/// <param name="AFullCode"></param>
+		/// <param name="AProductId"></param>
 		/// <param name="AShortCode"></param>
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="ASynonymCode"></param>
@@ -514,15 +511,15 @@ namespace Inforoom.Formalizer
 		/// <param name="ABaseCost"></param>
 		/// <param name="AJunk"></param>
 		/// <param name="ACurrency"></param>
-		public void InsertToCore(Int64 AFullCode, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk, string ACurrency)
+		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk, string ACurrency)
 		{
 			if (!AJunk)
 				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
 					 
 			DataRow drCore = dsMyDB.Tables["Core"].NewRow();
 
-			drCore["FirmCode"] = priceCode;
-			drCore["FullCode"] = AFullCode;
+			drCore["PriceCode"] = priceCode;
+			drCore["ProductId"] = AProductId;
 			drCore["CodeFirmCr"] = ACodeFirmCr;
 			drCore["SynonymCode"] = ASynonymCode;
 			drCore["SynonymFirmCrCode"] = ASynonymFirmCrCode;
@@ -585,7 +582,7 @@ namespace Inforoom.Formalizer
 		{
 			DataRow drZero = dtZero.NewRow();
 
-			drZero["FirmCode"] = priceCode;
+			drZero["PriceCode"] = priceCode;
 			drZero["Name"] = GetFieldValueObject(PriceFields.Name1);
 			drZero["FirmCr"] = GetFieldValueObject(PriceFields.FirmCr);
 			drZero["Code"] = GetFieldValueObject(PriceFields.Code);
@@ -606,16 +603,16 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Вставка в нераспознанные позиции
 		/// </summary>
-		/// <param name="AFullCode"></param>
+		/// <param name="AProductId"></param>
 		/// <param name="AShortCode"></param>
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="AStatus"></param>
 		/// <param name="AJunk"></param>
 		/// <param name="ACurrency"></param>
-		public void InsertToUnrec(Int64 AFullCode, Int64 ACodeFirmCr, int AStatus, bool AJunk, string ACurrency)
+		public void InsertToUnrec(Int64 AProductId, Int64 ACodeFirmCr, int AStatus, bool AJunk, string ACurrency)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
-			drUnrecExp["FirmCode"] = priceCode;
+			drUnrecExp["PriceCode"] = priceCode;
 			drUnrecExp["Name1"] = GetFieldValue(PriceFields.Name1);
 			drUnrecExp["FirmCr"] = GetFieldValue(PriceFields.FirmCr);
 			drUnrecExp["Code"] = GetFieldValue(PriceFields.Code);
@@ -637,7 +634,7 @@ namespace Inforoom.Formalizer
 
 			drUnrecExp["Status"] = AStatus;
 			drUnrecExp["Already"] = AStatus;
-			drUnrecExp["TmpFullCode"] = AFullCode;
+			drUnrecExp["TmpProductId"] = AProductId;
 			drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
 			drUnrecExp["TmpCurrency"] = ACurrency;
 
@@ -655,7 +652,7 @@ namespace Inforoom.Formalizer
 		public void InsertIntoForb(string PosName)
 		{
 			DataRow newRow = dsMyDB.Tables["Forb"].NewRow();
-			newRow["FirmCode"] = priceCode;
+			newRow["PriceCode"] = priceCode;
 			newRow["Forb"] = PosName;
 			try
 			{
@@ -673,37 +670,31 @@ namespace Inforoom.Formalizer
 		{
 			SimpleLog.Log(getParserID(), "get Forbidden");
 			daForbidden = new MySqlDataAdapter(
-				String.Format("SELECT FirmCode, LOWER(Forbidden) AS Forbidden FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbForbidden), MyConn);
+				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbForbidden), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
 			SimpleLog.Log(getParserID(), "get Synonym");
 			daSynonym = new MySqlDataAdapter(
-				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, FullCode, Junk FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
+				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
 			SimpleLog.Log(getParserID(), "get SynonymFirmCr");
 			daSynonymFirmCr = new MySqlDataAdapter(
-				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonymFirmCr), MyConn);
+				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbSynonymFirmCr), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 
-			SimpleLog.Log(getParserID(), "get SynonymCurrency");
-			daSynonymCurrency = new MySqlDataAdapter(
-				String.Format("SELECT Currency, LOWER(Synonym) AS Synonym FROM {1} WHERE FirmCode={0}", parentSynonym, FormalizeSettings.tbSynonymCurrency), MyConn);
-			daSynonymCurrency.Fill(dsMyDB, "SynonymCurrency");
-			dtSynonymCurrency = dsMyDB.Tables["SynonymCurrency"];
-
 			SimpleLog.Log(getParserID(), "get Core");
 			daCore = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
+				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
 			SimpleLog.Log(getParserID(), "get UnrecExp");
 			daUnrecExp = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
+				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
 			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.CommandTimeout = 0;
@@ -713,7 +704,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Zero");
 			daZero = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
+				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
 			daZero.InsertCommand = cbZero.GetInsertCommand();
 			daZero.InsertCommand.CommandTimeout = 0;
@@ -722,7 +713,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Forb");
 			daForb = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE FirmCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
+				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
 			daForb.InsertCommand = cbForb.GetInsertCommand();
 			daForb.InsertCommand.CommandTimeout = 0;
@@ -802,13 +793,13 @@ namespace Inforoom.Formalizer
 		private void InsertCorePosition(DataRow drCore, System.Text.StringBuilder sb)
 		{
 			sb.AppendLine(String.Format("insert into {0} (" +
-				"FirmCode, FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
+				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 				"Period, Junk, Await, BaseCost, MinBoundCost, " +
 				"VitallyImportant, RequestRatio, RegistryCost, " +
 				"MaxBoundCost, OrderCost, MinOrderCount, " +
 				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
 			sb.Append("(");
-			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["FirmCode"], drCore["FullCode"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
+			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["PriceCode"], drCore["ProductId"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
 			sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
 			sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
@@ -880,7 +871,6 @@ namespace Inforoom.Formalizer
 				else
 				{
 					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts();
-
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
@@ -926,7 +916,7 @@ namespace Inforoom.Formalizer
                             }							
 
 							//Добавляем команду на удаление данных из Core
-                            mcClear.CommandText = String.Format("delete from {1} where FirmCode={0};", priceCode, FormalizeSettings.tbCore); 
+                            mcClear.CommandText = String.Format("delete from {1} where PriceCode={0};", priceCode, FormalizeSettings.tbCore); 
 							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
 							if (insertCoreAndCoreCostsCommandList.Length > 0)
@@ -943,17 +933,17 @@ namespace Inforoom.Formalizer
 								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", insertCoreCount);
 
 								mcClear.CommandText = @"
-insert into farm.assortment
-  (FullCode, CodeFirmCr)
+insert into catalogs.assortment
+  (ProductId, CodeFirmCr)
 select
-  distinct c.FullCode, c.CodeFirmCr
+  distinct c.ProductId, c.CodeFirmCr
 from
   farm.core0 c
-  left join farm.assortment a on a.FullCode = c.FullCode and a.CodeFirmCr = c.CodeFirmCr
+  left join catalogs.assortment a on a.ProductId = c.ProductId and a.CodeFirmCr = c.CodeFirmCr
 where
-    c.FirmCode = ?PriceCode
+    c.PriceCode = ?PriceCode
 and c.CodeFirmCr > 1
-and a.FullCode is null";
+and a.ProductId is null";
 								mcClear.Parameters.Clear();
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
 								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
@@ -962,10 +952,10 @@ and a.FullCode is null";
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
 
 
-							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbZero);
+							mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbZero);
 							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
 
-							mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbForb);
+							mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbForb);
 							sbLog.AppendFormat("DelFromForb={0}  ", mcClear.ExecuteNonQuery());
 
 							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM {1} where PriceCode={0} limit 1", priceCode, FormalizeSettings.tbBlockedPrice), MyConn);
@@ -975,7 +965,7 @@ and a.FullCode is null";
 
 							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
-								mcClear.CommandText = String.Format("delete from {1} where FirmCode={0}", priceCode, FormalizeSettings.tbUnrecExp);
+								mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbUnrecExp);
 								sbLog.AppendFormat("DelFromUnrecExp={0}  ", mcClear.ExecuteNonQuery());
 							}
 
@@ -1080,8 +1070,8 @@ and a.FullCode is null";
 						string PosName, Currency = String.Empty;
 						bool Junk = false;
 						int costCount;
-						Int64 FullCode = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
-						string strCode, strName1, strOriginalName, strFirmCr, strCurrency;
+						Int64 ProductId = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
+						string strCode, strName1, strOriginalName, strFirmCr;
 						do
 						{
 							st = UnrecExpStatus.NOT_FORM;
@@ -1126,24 +1116,23 @@ and a.FullCode is null";
 								strName1 = GetFieldValue(PriceFields.Name1, true);
 								strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
 							
-								if (GetFullCode( strCode, strName1, strOriginalName, out FullCode, out  SynonymCode, out Junk))
+								if (GetProductId( strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
 									st = UnrecExpStatus.NAME_FORM;
 
 								strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
 								if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
 									st = st | UnrecExpStatus.FIRM_FORM;
 
-								strCurrency = GetFieldValue(PriceFields.Currency, true);
-								if (GetCurrency(strCurrency, out Currency))
-									st = st | UnrecExpStatus.CURR_FORM;
+								Currency = priceCurrency;
+								st = st | UnrecExpStatus.CURR_FORM;									
 
 								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-									InsertToCore(FullCode, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk, Currency);
+									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk, Currency);
 								else
 									unformCount++;
 
 								if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-									InsertToUnrec(FullCode, CodeFirmCr, (int)st, Junk, Currency);
+									InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk, Currency);
 
 							}
 							else
@@ -1537,12 +1526,12 @@ and a.FullCode is null";
 		/// <param name="ACode"></param>
 		/// <param name="AName"></param>
 		/// <param name="AOriginalName"></param>
-		/// <param name="AFullCode"></param>
+		/// <param name="AProductId"></param>
 		/// <param name="AShortCode"></param>
 		/// <param name="ASynonymCode"></param>
 		/// <param name="AJunk"></param>
 		/// <returns></returns>
-		public bool GetFullCode(string ACode, string AName, string AOriginalName, out Int64 AFullCode, out Int64 ASynonymCode, out bool AJunk)
+		public bool GetProductId(string ACode, string AName, string AOriginalName, out Int64 AProductId, out Int64 ASynonymCode, out bool AJunk)
 		{
 			DataRow[] dr = null;
 			if (formByCode)
@@ -1561,14 +1550,14 @@ and a.FullCode is null";
 
 			if ((null != dr) && (dr.Length > 0))
 			{
-				AFullCode = Convert.ToInt64(dr[0]["FullCode"]);
+				AProductId = Convert.ToInt64(dr[0]["ProductId"]);
 				ASynonymCode = Convert.ToInt64(dr[0]["SynonymCode"]);
 				AJunk = Convert.ToBoolean(dr[0]["Junk"]);
 				return true;
 			}
 			else
 			{
-				AFullCode = 0;
+				AProductId = 0;
 				ASynonymCode = 0;
 				AJunk = false;
 				return false;
@@ -1601,31 +1590,6 @@ and a.FullCode is null";
 				ASynonymFirmCrCode = 0;
 				return (null == FirmCr || String.Empty == FirmCr) ? true : false;
 			}
-		}
-
-		/// <summary>
-		/// Смогли ли мы распознать валюту позиции?
-		/// </summary>
-		/// <param name="ACurrency"></param>
-		/// <param name="OCurrency"></param>
-		/// <returns></returns>
-		public bool GetCurrency(string  ACurrency, out string  OCurrency)
-		{
-			OCurrency = priceCurrency;
-			if (FormalizeSettings.DIFF_CURR == OCurrency.ToLower())
-			{
-				if (null != ACurrency)
-				{
-					DataRow[] dr = dsMyDB.Tables["SynonymCurrency"].Select(String.Format("Synonym = '{0}'", ACurrency.Replace("'", "''")));
-					if ((null != dr) && (dr.Length > 0))
-						OCurrency = dr[0]["Currency"].ToString();
-					else
-						OCurrency = String.Empty;
-				}
-				else
-					OCurrency = String.Empty;
-			}
-			return (String.Empty != OCurrency);
 		}
 
 		/// <summary>
