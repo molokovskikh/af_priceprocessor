@@ -77,7 +77,6 @@ namespace Inforoom.Formalizer
 		public static readonly string tbForbidden = "farm.Forbidden";
 		public static readonly string tbSynonym = "farm.Synonym";		
 		public static readonly string tbSynonymFirmCr = "farm.SynonymFirmCr";
-		public static readonly string tbSynonymCurrency = "farm.SynonymCurrency";
 		public static readonly string tbCore = "temp.Core0";
 		public static readonly string tbUnrecExp = "temp.UnrecExp";
 		public static readonly string tbZero = "temp.Zero";
@@ -147,7 +146,6 @@ namespace Inforoom.Formalizer
 			tbForbidden = (string)configurationAppSettings.GetValue("FormalizeSettings.Forbidden", typeof(string));			
 			tbSynonym = (string)configurationAppSettings.GetValue("FormalizeSettings.Synonym", typeof(string));
 			tbSynonymFirmCr = (string)configurationAppSettings.GetValue("FormalizeSettings.SynonymFirmCr", typeof(string));
-			tbSynonymCurrency = (string)configurationAppSettings.GetValue("FormalizeSettings.SynonymCurrency", typeof(string));
 			tbCore = (string)configurationAppSettings.GetValue("FormalizeSettings.Core", typeof(string));
 			tbUnrecExp = (string)configurationAppSettings.GetValue("FormalizeSettings.UnrecExp", typeof(string));
 			tbZero = (string)configurationAppSettings.GetValue("FormalizeSettings.Zero", typeof(string));
