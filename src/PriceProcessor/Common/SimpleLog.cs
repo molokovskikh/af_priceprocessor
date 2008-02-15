@@ -17,6 +17,8 @@ namespace Inforoom.Logging
 
 		private static string logFileName = String.Empty;
 
+		private static string SMTPHost;
+
 		private static string FromMail;
 		private static string ToMail;
 
@@ -44,6 +46,15 @@ namespace Inforoom.Logging
 			catch
 			{
 				logFileName = Path.ChangeExtension(System.Reflection.Assembly.GetExecutingAssembly().Location, ".log");
+			}
+
+			try
+			{
+				SMTPHost = ConfigurationManager.AppSettings["SimpleLog.SMTPHost"];
+			}
+			catch
+			{
+				SMTPHost = "mail.adc.analit.net";
 			}
 
 			try
@@ -99,7 +110,7 @@ namespace Inforoom.Logging
 						ex.Source,
 						ex.ToString()));
 				Message.BodyEncoding = System.Text.Encoding.UTF8;
-				SmtpClient Client = new SmtpClient("box.analit.net");
+				SmtpClient Client = new SmtpClient(SMTPHost);
 				Client.Send(Message);
 				mess.Add(ex.Message);
 			}
