@@ -5,7 +5,7 @@ using System.Net;
 using System.IO;
 using System.Data;
 using LumiSoft.Net.FTP.Client;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
 {

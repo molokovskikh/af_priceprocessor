@@ -59,5 +59,51 @@ namespace Inforoom.PriceProcessor {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&quot;1.0&quot; encoding=&quot;windows-1251&quot;?&gt;
+        ///&lt;cml:schema xmlns:cml=&quot;http://www.w3.org/2001/XMLSchema&quot; version=&quot;2.021&quot;&gt;
+        ///	&lt;!--Предусматривается использование данной схемы, в частности, для обмена:
+        ///·	каталогами товаров; 
+        ///·	коммерческими предложениями (прайс – листами); 
+        ///·	документами, сопровождающими наиболее распространенные торговые (хозяйственные) операции :
+        ///Заказ товара;
+        ///Cчет на оплату;
+        ///Отпуск товара;
+        ///Счет-фактура;
+        ///Возврат товара;
+        ///Передача товара на комиссию;
+        ///Возврат комиссионного товара;
+        ///Отч [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string CommerceML {
+            get {
+                return ResourceManager.GetString("CommerceML", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?xml version=&apos;1.0&apos; encoding = &quot;windows-1251&quot; standalone = &quot;yes&quot;?&gt;
+        ///
+        ///&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;
+        ///
+        ///	&lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot; encoding=&quot;windows-1251&quot; /&gt;
+        ///
+        ///	&lt;xsl:template match=&quot;/&quot; &gt;
+        ///		&lt;xsl:variable name=&quot;CodeCr&quot; select=&quot;КоммерческаяИнформация/ПакетПредложений/Ид&quot;/&gt;
+        ///		
+        ///		&lt;Price&gt;
+        ///
+        ///			&lt;xsl:for-each select=&quot;КоммерческаяИнформация/ПакетПредложений/Предложения/Предложение&quot;&gt;
+        ///				&lt;Position&gt;
+        ///					&lt;Code&gt;
+        ///						&lt;xsl:value-of select=&quot;Ид&quot;/&gt;
+        ///				 [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string PriceProtek {
+            get {
+                return ResourceManager.GetString("PriceProtek", resourceCulture);
+            }
+        }
     }
 }

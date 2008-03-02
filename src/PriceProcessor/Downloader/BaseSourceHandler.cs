@@ -2,12 +2,13 @@ using System;
 using System.Threading;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using System.IO;
 using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using ExecuteTemplate;
+using Inforoom.Logging;
 
 namespace Inforoom.Downloader
 {
@@ -179,7 +180,7 @@ namespace Inforoom.Downloader
 		public void RestartWork()
 		{
 
-            FormLog.Log(this.GetType().Name, "Перезапуск нитки");
+            SimpleLog.Log(this.GetType().Name, "Перезапуск нитки");
             try
             {
                 StopWork();
@@ -187,7 +188,7 @@ namespace Inforoom.Downloader
             }
             catch (Exception ex)
             {
-                FormLog.Log(this.GetType().Name, "Ошибка при останове нитки : {0}", ex);
+                SimpleLog.Log(this.GetType().Name, "Ошибка при останове нитки : {0}", ex);
             }
 			tWork = new Thread(new ThreadStart(ThreadWork));
             try
@@ -196,9 +197,9 @@ namespace Inforoom.Downloader
             }
             catch (Exception ex)
             {
-                FormLog.Log(this.GetType().Name, "Ошибка при запуске нитки : {0}", ex);
+                SimpleLog.Log(this.GetType().Name, "Ошибка при запуске нитки : {0}", ex);
             }
-			FormLog.Log( this.GetType().Name, "Перезапустили нитку");
+			SimpleLog.Log( this.GetType().Name, "Перезапустили нитку");
 		}
 
 		//Нитка, в которой осуществляется работа обработчика источника
@@ -214,7 +215,7 @@ namespace Inforoom.Downloader
                 { }
                 catch (Exception ex)
                 {
-                    FormLog.Log(this.GetType().Name, "Ошибка в нитке : {0}", ex);
+                    SimpleLog.Log(this.GetType().Name, "Ошибка в нитке : {0}", ex);
                 }
                 Ping();
                 Sleeping();
@@ -313,7 +314,7 @@ AND pd.AgencyEnabled= 1",
             }
             catch (Exception ex)
             {
-                FormLog.Log(this.GetType().Name + ".CreateWorkConnection", "{0}", ex);
+                SimpleLog.Log(this.GetType().Name + ".CreateWorkConnection", "{0}", ex);
             }
         }
 
@@ -481,13 +482,13 @@ AND pd.AgencyEnabled= 1",
                     if (File.Exists(NormalName))
                         File.Delete(NormalName);
                     File.Copy(ExtrFile, NormalName);
-                    FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
+                    SimpleLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " downloaded/decompressed");
                     return true;
                 }
                 catch(Exception ex)
                 {
                     Logging(CurrPriceCode, String.Format("Не удалось перенести файл '{0}' в каталог '{1}'", ExtrFile, NormalName));
-                    FormLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Cant move : " + ex.ToString());
+                    SimpleLog.Log(this.GetType().Name + CurrPriceCode.ToString(), "Cant move : " + ex.ToString());
                     return false;
                 }
             }
@@ -504,14 +505,14 @@ AND pd.AgencyEnabled= 1",
             try
             {
 
-				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Попытка удалить файл : " + CurrFileName);
+				SimpleLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Попытка удалить файл : " + CurrFileName);
 				if (File.Exists(CurrFileName))
 					File.Delete(CurrFileName);
-				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Файл удален : " + CurrFileName);
+				SimpleLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Файл удален : " + CurrFileName);
 			}
             catch (Exception ex)
 			{
-				FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Ошибка при удалении файла : " + CurrFileName + "  Ошибка : " + ex.ToString());
+				SimpleLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "Ошибка при удалении файла : " + CurrFileName + "  Ошибка : " + ex.ToString());
 			}
         }
 
@@ -577,7 +578,7 @@ AND pd.AgencyEnabled= 1",
 			}
 			catch(Exception ex)
 			{
-				FormLog.Log( this.GetType().Name + ".CreateLogConnection", "{0}", ex);
+				SimpleLog.Log( this.GetType().Name + ".CreateLogConnection", "{0}", ex);
 			}
 		}
 
@@ -594,9 +595,9 @@ AND pd.AgencyEnabled= 1",
 		protected UInt64 Logging(int CurrPriceCode, string Addition, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
         {
             if (CurrPriceCode > -1)
-                FormLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "{0}", Addition);
+                SimpleLog.Log(this.GetType().Name + "." + CurrPriceCode.ToString(), "{0}", Addition);
             else
-                FormLog.Log(this.GetType().Name, "{0}", Addition);
+                SimpleLog.Log(this.GetType().Name, "{0}", Addition);
 
             if (cLog.State != System.Data.ConnectionState.Open)
                 cLog.Open();
@@ -638,7 +639,7 @@ AND pd.AgencyEnabled= 1",
 
         protected void LoggingToService(string Addition)
         {
-            FormLog.Log(this.GetType().Name + ".Error", Addition);
+            SimpleLog.Log(this.GetType().Name + ".Error", Addition);
 			if (!knowErrors.Contains(Addition))
             try
             {

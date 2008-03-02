@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;
 using ICSharpCode.SharpZipLib.Zip;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
 

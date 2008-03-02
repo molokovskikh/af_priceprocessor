@@ -5,10 +5,11 @@ using System.IO;
 using System.Data;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
+using Inforoom.Logging;
 
 
 namespace Inforoom.Downloader
@@ -84,7 +85,7 @@ namespace Inforoom.Downloader
 											ErrorMailSend(item.UID, ex.ToString(), ms);
 											errorUIDs.Add(item.UID);
 										}
-										FormLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+										SimpleLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
 									}
 
 									if (m != null)
@@ -105,7 +106,7 @@ namespace Inforoom.Downloader
 												ErrorMailSend(item.UID, ex.ToString(), ms);
 												errorUIDs.Add(item.UID);
 											}
-											FormLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
+											SimpleLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
 										}
 									}
 
@@ -225,7 +226,7 @@ namespace Inforoom.Downloader
 			}
 			catch (Exception exMatch)
 			{
-				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
 			}
 		}
 

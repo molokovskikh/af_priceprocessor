@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using Inforoom.Formalizer;
+using Inforoom.Logging;
 
 namespace Inforoom.Downloader
 {
@@ -35,7 +35,7 @@ namespace Inforoom.Downloader
 		{
             try
             {
-                FormLog.Log("Monitor", "Downloader started.");
+                SimpleLog.Log("Monitor", "Downloader started.");
                 foreach (BaseSourceHandler bsh in alHandlers)
                     try
                     {
@@ -43,13 +43,13 @@ namespace Inforoom.Downloader
                     }
                     catch(Exception exHan)
                     {
-                        FormLog.Log("Monitor.Start." + bsh.GetType().Name, "Ошибка при старте обработчика : {0}", exHan);
+                        SimpleLog.Log("Monitor.Start." + bsh.GetType().Name, "Ошибка при старте обработчика : {0}", exHan);
                     }
                 tMonitor.Start();
             }
             catch (Exception ex)
             {
-                FormLog.Log("Monitor.Start", "Ошибка при старте монитора : {0}", ex);
+                SimpleLog.Log("Monitor.Start", "Ошибка при старте монитора : {0}", ex);
             }
 		}
 
@@ -68,14 +68,14 @@ namespace Inforoom.Downloader
                     }
                     catch (Exception exHan)
                     {
-                        FormLog.Log("Monitor.Stop." + bs.GetType().Name, "Ошибка при останове обработчика : {0}", exHan);
+                        SimpleLog.Log("Monitor.Stop." + bs.GetType().Name, "Ошибка при останове обработчика : {0}", exHan);
                     }
             }
             catch (Exception ex)
             {
-                FormLog.Log("Monitor.Stop", "Ошибка при останове монитора : {0}", ex);
+                SimpleLog.Log("Monitor.Stop", "Ошибка при останове монитора : {0}", ex);
             }
-            FormLog.Log("Monitor", "Downloader stoppped.");
+            SimpleLog.Log("Monitor", "Downloader stoppped.");
         }
 
 		private void MonitorWork()
@@ -93,7 +93,7 @@ namespace Inforoom.Downloader
 				}
 				catch(Exception e)
 				{
-                    FormLog.Log("Monitor", "Ошибка в нитке : {0}", e);
+                    SimpleLog.Log("Monitor", "Ошибка в нитке : {0}", e);
 				}
 		}
 	}

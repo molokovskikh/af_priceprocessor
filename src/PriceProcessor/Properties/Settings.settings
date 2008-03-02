@@ -1,0 +1,138 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Inforoom.PriceProcessor.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="AppCode" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">13</Value>
+    </Setting>
+    <Setting Name="DBServerName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">testsql.analit.net</Value>
+    </Setting>
+    <Setting Name="DBUserName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">system</Value>
+    </Setting>
+    <Setting Name="DBPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">123</Value>
+    </Setting>
+    <Setting Name="DatabaseName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farm</Value>
+    </Setting>
+    <Setting Name="tbSources" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farm.Sources</Value>
+    </Setting>
+    <Setting Name="tbFormRules" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farm.FormRules</Value>
+    </Setting>
+    <Setting Name="tbClientsData" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">usersettings.ClientsData</Value>
+    </Setting>
+    <Setting Name="tbRegions" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farm.Regions</Value>
+    </Setting>
+    <Setting Name="tbLogs" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">logs.downlogs</Value>
+    </Setting>
+    <Setting Name="IMAPHost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">mail.adc.analit.net</Value>
+    </Setting>
+    <Setting Name="SMTPHost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">mail.adc.analit.net</Value>
+    </Setting>
+    <Setting Name="SMTPUserCopy" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="SMTPUserError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farmsystem@analit.net</Value>
+    </Setting>
+    <Setting Name="InboundPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\Inbound0</Value>
+    </Setting>
+    <Setting Name="TempPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\DownTemp\</Value>
+    </Setting>
+    <Setting Name="RequestInterval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="Timeout" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">120</Value>
+    </Setting>
+    <Setting Name="IMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">prccopy@analit.net</Value>
+    </Setting>
+    <Setting Name="IMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">123</Value>
+    </Setting>
+    <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ErrorList@subscribe.analit.net</Value>
+    </Setting>
+    <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">prccopy@analit.net</Value>
+    </Setting>
+    <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">123</Value>
+    </Setting>
+    <Setting Name="FTPOptBox" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\FTPOptBox</Value>
+    </Setting>
+    <Setting Name="tbWaybillSources" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Documents.Waybill_Sources</Value>
+    </Setting>
+    <Setting Name="ResponseDocSubjectTemplateOnNothingAttachs" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Пришло письмо без вложенных документов</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnNothingAttachs" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Пришло письмо без вложенных документов.
+
+С уважением,
+  АК Инфорум</Value>
+    </Setting>
+    <Setting Name="ResponseDocSubjectTemplateOnMultiDomen" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Не возможно определить клиента для доставки документов</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnMultiDomen" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">В письме указано несколько адресов с доменом waybills.analit.net или refused.analit.net.
+
+С уважением,
+  АК Инфорум</Value>
+    </Setting>
+    <Setting Name="HistoryPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\DownHistory</Value>
+    </Setting>
+    <Setting Name="ResponseDocSubjectTemplateOnNonExistentClient" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ошибка при обработке письма</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnNonExistentClient" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ошибка при обработке письма
+
+С уважением,
+  АК Инфорум</Value>
+    </Setting>
+    <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="FileDownloadInterval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="ResponseDocSubjectTemplateOnUnknownProvider" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Неизвестный адрес отправителя</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnUnknownProvider" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Неизвестный адрес отправителя.
+
+С уважением,
+  АК Инфорум</Value>
+    </Setting>
+    <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="DepthOfStorageArchivePrices" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">60</Value>
+    </Setting>
+    <Setting Name="ClearScanInterval" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

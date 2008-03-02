@@ -4,13 +4,14 @@ using System.Text;
 using System.Data;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using MySql.Data.MySqlClient;
 using System.IO;
 using ExecuteTemplate;
 using Inforoom.Downloader.Documents;
+using Inforoom.Logging;
 
 
 namespace Inforoom.Downloader
@@ -247,7 +248,7 @@ and st.SourceID = 1",
 			}
 			catch (Exception exMatch)
 			{
-				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
 			}
 		}
 
@@ -350,7 +351,7 @@ and st.SourceID = 1",
 			}
 			catch (Exception exMatch)
 			{
-				FormLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
 			}
 		}
 
@@ -481,7 +482,7 @@ and st.SourceID = 1",
 				{
 					if ((MySQLErr.Number == 1205) || (MySQLErr.Number == 1213) || (MySQLErr.Number == 1422))
 					{
-						FormLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
+						SimpleLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
 						Ping();
 						System.Threading.Thread.Sleep(5000);
 						Ping();

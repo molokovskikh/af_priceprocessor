@@ -8,6 +8,7 @@ using System.Resources;
 using System.IO;
 using System.Data;
 using MySql.Data.MySqlClient;
+using Inforoom.PriceProcessor;
 
 
 namespace Inforoom.Formalizer
@@ -34,7 +35,7 @@ namespace Inforoom.Formalizer
 				//Если установим CallBack, то будем получать все ошибки в нем. Если не установим, то получем первую и завершим разбор
 				//settings.ValidationEventHandler += new ValidationEventHandler(test79ValidationCallBack);
 				//settings.Schemas.Add(XmlSchema.Read(new StreamReader("CommerceML.xsd", Encoding.Default), test79SchemaValidationCallBack));
-				settings.Schemas.Add(XmlSchema.Read(new StringReader(FormalizerRes.CommerceML), null));
+				settings.Schemas.Add(XmlSchema.Read(new StringReader(PriceProcessorResource.CommerceML), null));
 
 				// Create the XmlReader object.
 				XmlReader reader = XmlReader.Create(priceFileName, settings);
@@ -44,7 +45,7 @@ namespace Inforoom.Formalizer
 
 				//Создаем класс для выполнения XSLT-преобразований
 				XslCompiledTransform xslt = new XslCompiledTransform();
-				xslt.Load(XmlReader.Create(new StringReader(FormalizerRes.PriceProtek)));
+				xslt.Load(XmlReader.Create(new StringReader(PriceProcessorResource.PriceProtek)));
 
 				//Производим преобразование
 				newXMLFile = Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "PriceProtek.xml";

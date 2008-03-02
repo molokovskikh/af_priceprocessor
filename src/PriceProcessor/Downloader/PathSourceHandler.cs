@@ -4,6 +4,7 @@ using System.Text;
 using System.Data;
 using System.IO;
 using Inforoom.Formalizer;
+using Inforoom.Logging;
 
 namespace Inforoom.Downloader
 {
@@ -27,11 +28,11 @@ namespace Inforoom.Downloader
                     drLS = GetLikeSources();
 #if DEBUG
                     if (drLS.Length < 1)
-                        FormLog.Log(this.GetType().Name, "!!!!!!!!!!!!!   drLS.Length < 1");
+                        SimpleLog.Log(this.GetType().Name, "!!!!!!!!!!!!!   drLS.Length < 1");
 #endif
                     GetFileFromSource();
 
-                    //FormLog.Log(SourceType == "LAN", this.GetType().Name, "Обработали источник с кодом {0} файл '{1}'", dtSources.Rows[0][SourcesTable.colPriceCode], CurrFileName);
+                    //SimpleLog.Log(SourceType == "LAN", this.GetType().Name, "Обработали источник с кодом {0} файл '{1}'", dtSources.Rows[0][SourcesTable.colPriceCode], CurrFileName);
 
                     if (!String.IsNullOrEmpty(CurrFileName))
                     {

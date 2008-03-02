@@ -5,7 +5,7 @@ using System.Data;
 using System.IO;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using ExecuteTemplate;
 using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;

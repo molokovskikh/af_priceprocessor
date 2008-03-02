@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 using System.Threading;
 
 namespace Inforoom.Downloader

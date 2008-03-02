@@ -4,7 +4,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Data;
-using Inforoom.Downloader.Properties;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
 {
