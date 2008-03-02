@@ -9,9 +9,9 @@ using System.Text;
 
 namespace PriceProcessor
 {
-	public partial class Service1 : ServiceBase
+	public partial class PriceProcessorService : ServiceBase
 	{
-		public Service1()
+		public PriceProcessorService()
 		{
 			InitializeComponent();
 		}

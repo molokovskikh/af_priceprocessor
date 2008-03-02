@@ -16,7 +16,7 @@ namespace PriceProcessor
 			ServiceBase[] ServicesToRun;
 			ServicesToRun = new ServiceBase[] 
 			{ 
-				new Service1() 
+				new PriceProcessorService() 
 			};
 			ServiceBase.Run(ServicesToRun);
 		}
