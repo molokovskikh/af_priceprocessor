@@ -15,6 +15,9 @@ namespace Inforoom.Formalizer
 
 		public static readonly bool CheckZero = false;
 
+		//Хост SMTP-сервера
+		public static readonly string SMTPHost = "mail.adc.analit.net";
+
 		//Сегмент рынка
 		public static readonly int Segment = 0;
 		//Разновалютный прайс
@@ -114,7 +117,8 @@ namespace Inforoom.Formalizer
 
 		static FormalizeSettings()
 		{
-			AppSettingsReader configurationAppSettings = new AppSettingsReader();			
+			AppSettingsReader configurationAppSettings = new AppSettingsReader();
+			SMTPHost = (string)configurationAppSettings.GetValue("FormalizeSettings.SMTPHost", typeof(string));
 			Segment = (int)configurationAppSettings.GetValue("FormalizeSettings.Segment", typeof(int));
 			AppCode = (int)configurationAppSettings.GetValue("FormalizeSettings.AppCode", typeof(int));
 			MaxLiveTime = (int)configurationAppSettings.GetValue("FormalizeSettings.MaxLiveTime", typeof(int));

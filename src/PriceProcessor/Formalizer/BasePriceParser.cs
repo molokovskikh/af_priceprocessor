@@ -1748,7 +1748,7 @@ and a.ProductId is null";
 					String.Format("{0} ({1})", ClientName, PriceName),
 					DateTime.Now,
 					Message);
-				SmtpClient Client = new SmtpClient("box.analit.net");
+				SmtpClient Client = new SmtpClient(FormalizeSettings.SMTPHost);
 				Client.Send(mailMessage);
 			}
 			catch(Exception e)

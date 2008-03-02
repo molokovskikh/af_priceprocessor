@@ -207,7 +207,7 @@ namespace Inforoom.Formalizer
 			{
 				MailMessage Message = new MailMessage(From, To, mSubject, mBody);
 				Message.BodyEncoding = System.Text.Encoding.UTF8;
-				SmtpClient Client = new SmtpClient("box.analit.net");
+				SmtpClient Client = new SmtpClient(FormalizeSettings.SMTPHost);
 				Client.Send(Message);
 			}
 			catch(Exception e)
