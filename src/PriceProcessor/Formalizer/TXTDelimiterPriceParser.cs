@@ -4,6 +4,7 @@ using System.Data;
 using System.Text;
 using System.Data.OleDb;
 using MySql.Data.MySqlClient;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
@@ -27,11 +28,11 @@ namespace Inforoom.Formalizer
 
 		public override void Open()
 		{
-			convertedToANSI = (FormalizeSettings.DOS_FMT == priceFmt);
+			convertedToANSI = (Settings.Default.DOS_FMT == priceFmt);
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
                 w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
-				w.WriteLine((FormalizeSettings.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
+				w.WriteLine((Settings.Default.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
 				w.WriteLine(("TAB" == delimiter.ToUpper()) ? "Format=TabDelimited" : "Format=Delimited(" + delimiter + ")");
 				w.WriteLine("ColNameHeader=False");
 				w.WriteLine("MaxScanRows=300");
@@ -69,7 +70,7 @@ namespace Inforoom.Formalizer
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
 				w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
-				w.WriteLine((FormalizeSettings.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
+				w.WriteLine((Settings.Default.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
 				w.WriteLine(("TAB" == delimiter.ToUpper()) ? "Format=TabDelimited" : "Format=Delimited(" + delimiter + ")");
 				w.WriteLine("ColNameHeader=False");
 				w.WriteLine("MaxScanRows=300");
