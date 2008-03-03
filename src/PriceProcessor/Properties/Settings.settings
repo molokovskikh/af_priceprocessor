@@ -9,13 +9,13 @@
       <Value Profile="(Default)">mail.adc.analit.net</Value>
     </Setting>
     <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farm@analit.net</Value>
+      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="InboundPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">T:\CurrentPrices\Inbound0</Value>
+      <Value Profile="(Default)">C:\Temp\Inbound0</Value>
     </Setting>
     <Setting Name="TempPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">T:\temp\Down\</Value>
+      <Value Profile="(Default)">C:\Temp\DownTemp</Value>
     </Setting>
     <Setting Name="RequestInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
@@ -24,22 +24,22 @@
       <Value Profile="(Default)">30</Value>
     </Setting>
     <Setting Name="IMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prc@analit.net</Value>
+      <Value Profile="(Default)">prccopy@analit.net</Value>
     </Setting>
     <Setting Name="IMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">YjdsaReHtZq</Value>
+      <Value Profile="(Default)">123</Value>
     </Setting>
     <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ErrorList@subscribe.analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">root@waybills.analit.net</Value>
+      <Value Profile="(Default)">prccopy@analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">&lt;fcnjy241</Value>
+      <Value Profile="(Default)">123</Value>
     </Setting>
-    <Setting Name="FTPOptBox" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">\\acdcserv\ftp\optbox</Value>
+    <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\FTPOptBox</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNothingAttachs" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) не доставлены аптеке</Value>
@@ -48,13 +48,13 @@
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="HistoryPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">T:\ArchivePrices</Value>
+      <Value Profile="(Default)">C:\Temp\DownHistory</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNonExistentClient" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">tech@analit.net</Value>
+      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="FileDownloadInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
@@ -63,7 +63,7 @@
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">pricescopy@analit.net</Value>
+      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="DepthOfStorageArchivePrices" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">60</Value>
@@ -144,10 +144,10 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="BasePath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">T:\CurrentPrices\Base\</Value>
+      <Value Profile="(Default)">C:\Temp\Base</Value>
     </Setting>
-    <Setting Name="ErrorFiles" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">T:\CurrentPrices\ErrorFiles</Value>
+    <Setting Name="ErrorFilesPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Temp\ErrorFiles</Value>
     </Setting>
     <Setting Name="MaxErrorCount" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
