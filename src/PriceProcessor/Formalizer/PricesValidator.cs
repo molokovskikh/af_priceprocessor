@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Data;
 using MySql.Data.MySqlClient;
+using Inforoom.PriceProcessor.Properties;
+using System.Reflection;
 
 namespace Inforoom.Formalizer
 {
@@ -10,6 +12,15 @@ namespace Inforoom.Formalizer
 	/// </summary>
 	public class PricesValidator
 	{
+
+		public static Type GetParserClassName(string ParserClassName)
+		{
+			Type[] types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, ParserClassName);
+			if (types.Length == 1)
+				return types[0];
+			else
+				return null;
+		}
 
 		/// <summary>
 		/// ѕроизводит проверку прайса на существовани€ правил и создает соответствующий тип парсера
@@ -58,6 +69,8 @@ WHERE   (FR.FirmCode = {0})",
 			{	
 				string currPriceFMT = dtFormRules.Rows[0][FormRules.colPriceFMT].ToString().ToUpper();
 
+				string CurrentParserClassName = "test";
+
 				#region  опирование файла
 				//«десь будем производить копирование файла
 				int CopyErrorCount = 0;
@@ -78,7 +91,7 @@ WHERE   (FR.FirmCode = {0})",
 						}
 						else
 							throw new FormalizeException(
-								String.Format(FormalizeSettings.FileCopyError, FileName, Path.GetDirectoryName(TempFileName), e), 
+								String.Format(Settings.Default.FileCopyError, FileName, Path.GetDirectoryName(TempFileName), e), 
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]), 
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 								(string)dtFormRules.Rows[0][FormRules.colClientShortName],
@@ -100,30 +113,21 @@ WHERE   (FR.FirmCode = {0})",
 							//ѕровер€ем, чтобы не было попыток формализовать колонку мультиколоночного прайс-листа
 							if (Convert.ToBoolean(dtFormRules.Rows[0][FormRules.colHasParentPrice]) && (Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType]) == (int)CostTypes.MultiColumn))
 								throw new WarningFormalizeException(
-									FormalizeSettings.MulticolumnAsPriceError,
+									Settings.Default.MulticolumnAsPriceError,
 									Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]),
 									Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 									(string)dtFormRules.Rows[0][FormRules.colClientShortName],
 									(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
 
-							if (currPriceFMT == FormalizeSettings.XML_FMT)
-								return new CommerceMLParser(FileName, myconn, dtFormRules);
-							else if (currPriceFMT == FormalizeSettings.EXCEL_FMT)
-								return new ExcelPriceParser(FileName, myconn, dtFormRules);
-							else if (currPriceFMT == FormalizeSettings.DBF_FMT)
-								return new DBFPriceParser(FileName, myconn, dtFormRules);
-							else if (currPriceFMT == FormalizeSettings.DB_FMT)
-								return new DBPriceParser(FileName, myconn, dtFormRules);
-							else if (currPriceFMT == FormalizeSettings.WIN_FMT || currPriceFMT == FormalizeSettings.DOS_FMT)
+							Type parserClass = GetParserClassName(CurrentParserClassName);
+
+							if (parserClass != null)
 							{
-								if (String.Empty == dtFormRules.Rows[0][FormRules.colDelimiter].ToString())
-									return new TXTFPriceParser(FileName, myconn, dtFormRules);
-								else
-									return new TXTDPriceParser(FileName, myconn, dtFormRules);
+								return (BasePriceParser)Activator.CreateInstance(parserClass, new object[] { FileName, myconn, dtFormRules });
 							}
 							else
 								throw new WarningFormalizeException(
-									String.Format(FormalizeSettings.UnknownPriceFMTError, currPriceFMT),
+									String.Format(Settings.Default.UnknownPriceFMTError, currPriceFMT),
 									Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]),
 									Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 									(string)dtFormRules.Rows[0][FormRules.colClientShortName],
@@ -132,7 +136,7 @@ WHERE   (FR.FirmCode = {0})",
 						}
 						else
 							throw new WarningFormalizeException(
-								String.Format(FormalizeSettings.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
+								String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]),
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 								(string)dtFormRules.Rows[0][FormRules.colClientShortName],
@@ -141,7 +145,7 @@ WHERE   (FR.FirmCode = {0})",
 					else
 					{
 						throw new WarningFormalizeException(
-							FormalizeSettings.DisableByFirmStatusError, 
+							Settings.Default.DisableByFirmStatusError, 
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]), 
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 							(string)dtFormRules.Rows[0][FormRules.colClientShortName],
@@ -150,7 +154,7 @@ WHERE   (FR.FirmCode = {0})",
 				}
 				else
 					throw new WarningFormalizeException(
-						FormalizeSettings.DisableByBillingStatusError, 
+						Settings.Default.DisableByBillingStatusError, 
 						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colClientCode]), 
 						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colSelfPriceCode]),
 						(string)dtFormRules.Rows[0][FormRules.colClientShortName],
@@ -158,7 +162,7 @@ WHERE   (FR.FirmCode = {0})",
 
 			}
 			else
-				throw new WarningFormalizeException(String.Format(FormalizeSettings.UnknownPriceError, ShortFileName));
+				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, ShortFileName));
 		}
 	}
 }

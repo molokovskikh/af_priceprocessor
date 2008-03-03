@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
@@ -34,7 +35,7 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				throw new WarningFormalizeException(String.Format(FormalizeSettings.ParseMaskError, e), clientCode, priceCode, clientShortName, priceName);
+				throw new WarningFormalizeException(String.Format(Settings.Default.ParseMaskError, e), clientCode, priceCode, clientShortName, priceName);
 			}
 			foreach(string gname in re.GetGroupNames())
 			{
@@ -47,7 +48,7 @@ namespace Inforoom.Formalizer
 						if (null == reGroupName[(int)ng])
 							reGroupName[(int)ng] = gname;
 						else
-							throw new WarningFormalizeException(String.Format(FormalizeSettings.DoubleGroupMaskError, ng), clientCode, priceCode, clientShortName, priceName);
+							throw new WarningFormalizeException(String.Format(Settings.Default.DoubleGroupMaskError, ng), clientCode, priceCode, clientShortName, priceName);
 						break;
 					}
 				}

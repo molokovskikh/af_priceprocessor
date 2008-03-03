@@ -9,6 +9,7 @@ using System.Net.Mail;
 using System.Collections.Generic;
 using ExecuteTemplate;
 using Inforoom.Logging;
+using System.Configuration;
 
 namespace Inforoom.Downloader
 {
@@ -258,20 +259,17 @@ SELECT
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask
-FROM       {0}             as st
+FROM       farm.Sources             as st
 INNER JOIN UserSettings.PricesData  AS PD ON PD.PriceCode = st.FirmCode
-INNER JOIN {1}           AS fr ON fr.FirmCode = st.FirmCode
+INNER JOIN farm.FormRules           AS fr ON fr.FirmCode = st.FirmCode
 INNER JOIN farm.pricefmts           AS pf ON pf.Format = fr.PriceFMT
-INNER JOIN {2} AS CD ON CD.FirmCode = PD.FirmCode
+INNER JOIN usersettings.ClientsData AS CD ON CD.FirmCode = PD.FirmCode
 inner join farm.regions             as r  on r.RegionCode = cd.RegionCode
 inner join usersettings.price_update_info pui on pui.PriceCode = PD.PriceCode
 WHERE
     st.SourceType = '{3}'
 AND cd.FirmStatus   = 1
 AND pd.AgencyEnabled= 1", 
-                Settings.Default.tbSources,
-                Settings.Default.tbFormRules,
-                Settings.Default.tbClientsData,
                 SourceType);
         }
 
@@ -290,22 +288,14 @@ AND pd.AgencyEnabled= 1",
 
         protected void CreateWorkConnection()
         {
-            cWork = new MySqlConnection(
-				String.Format("server={0};username={1}; password={2}; database={3}; pooling=true; Convert Zero Datetime=true;",
-                    Settings.Default.DBServerName,
-                    Settings.Default.DBUserName,
-                    Settings.Default.DBPass,
-                    Settings.Default.DatabaseName)
-            );
+            cWork = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
             try
             {
                 cWork.Open();
                 cmdUpdatePriceDate = new MySqlCommand(
-                        String.Format(
-                            "UPDATE {0} SET LastDateTime = ?NowDate, PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
-							"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
-                            Settings.Default.tbSources), 
-                        cWork);
+					"UPDATE farm.sources SET LastDateTime = ?NowDate, PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
+					"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
+                     cWork);
                 cmdUpdatePriceDate.Parameters.Add("?FirmCode", MySqlDbType.Int64);
                 cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.Datetime);
 				cmdUpdatePriceDate.Parameters.Add("?NowDate", MySqlDbType.Datetime);
@@ -353,7 +343,7 @@ AND pd.AgencyEnabled= 1",
 
         protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
-            MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.SMTPErrorList,
+			MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPErrorList,
                 String.Format("Письмо с UID {0} не было обработано", UID),
                 String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage));
             if (ms != null)
@@ -370,7 +360,7 @@ AND pd.AgencyEnabled= 1",
         protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
         {
 			ms.Position = 0;
-			MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, GetFailMail(),
+			MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, GetFailMail(),
                 String.Format("{0} ( {1} )", FromAddress, SourceType),
 				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}", 
                 Subject, 
@@ -558,18 +548,12 @@ AND pd.AgencyEnabled= 1",
         #region Logging
         protected void CreateLogConnection()
 		{
-			cLog = new MySqlConnection(
-				String.Format("server={0};username={1}; password={2}; database={3}; pooling=true",
-					Settings.Default.DBServerName,
-                    Settings.Default.DBUserName,
-                    Settings.Default.DBPass,
-                    Settings.Default.DatabaseName)
-			);
+			cLog = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
 			try
 			{
 				cLog.Open();
-				cmdLog = new MySqlCommand(String.Format("insert into {0} (LogTime, AppCode, PriceCode, Addition, ResultCode, ArchFileName, ExtrFileName) VALUES (now(), ?AppCode, ?PriceCode, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()", Settings.Default.tbLogs), cLog);
-                cmdLog.Parameters.AddWithValue("?AppCode", Settings.Default.AppCode);
+				cmdLog = new MySqlCommand("insert into logs.downlogs (LogTime, Host, PriceCode, Addition, ResultCode, ArchFileName, ExtrFileName) VALUES (now(), ?Host, ?PriceCode, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()", cLog);
+				cmdLog.Parameters.AddWithValue("?Host", Environment.MachineName);
                 cmdLog.Parameters.Add("?PriceCode", MySqlDbType.Int64);
                 cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
 				cmdLog.Parameters.Add("?ResultCode", MySqlDbType.Byte);

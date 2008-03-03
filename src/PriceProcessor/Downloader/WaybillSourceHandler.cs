@@ -154,23 +154,21 @@ namespace Inforoom.Downloader
 
 		protected override string GetSQLSources()
 		{
-			return String.Format(@"
+			return @"
 SELECT
   cd.FirmCode,
   cd.ShortName,
   r.Region as RegionName,
   st.EMailFrom
 FROM
-           {0} AS Apteka,
-           {1}             as st
-INNER JOIN {0} AS CD ON CD.FirmCode = st.FirmCode
+usersettings.ClientsData AS Apteka,
+Documents.Waybill_Sources             as st
+INNER JOIN usersettings.ClientsData AS CD ON CD.FirmCode = st.FirmCode
 inner join farm.regions             as r  on r.RegionCode = cd.RegionCode
 WHERE
 cd.FirmStatus   = 1
 and Apteka.FirmCode = ?AptekaClientCode
-and st.SourceID = 1",
-				Settings.Default.tbClientsData,
-				Settings.Default.tbWaybillSources);
+and st.SourceID = 1";
 		}
 
 		protected override DataTable GetSourcesTable(ExecuteArgs e)

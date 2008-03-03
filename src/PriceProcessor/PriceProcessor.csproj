@@ -84,16 +84,18 @@
     <Compile Include="Formalizer\BasePriceParser.cs" />
     <Compile Include="Formalizer\CommerceMLParser.cs" />
     <Compile Include="Formalizer\DBFPriceParser.cs" />
-    <Compile Include="Formalizer\DBPriceParser.cs" />
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
-    <Compile Include="Formalizer\FormalizeSettings.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
     <Compile Include="Formalizer\ToughDate.cs" />
     <Compile Include="Formalizer\ToughMask.cs" />
-    <Compile Include="Formalizer\TXTDPriceParser.cs" />
-    <Compile Include="Formalizer\TXTFPriceParser.cs" />
+    <Compile Include="Formalizer\TXTDelimiterPriceParser.cs" />
+    <Compile Include="Formalizer\TXTDosDelimiterPriceParser.cs" />
+    <Compile Include="Formalizer\TXTDosFixedPriceParser.cs" />
+    <Compile Include="Formalizer\TXTFixedPriceParser.cs" />
+    <Compile Include="Formalizer\TXTWinDelimiterPriceParser.cs" />
+    <Compile Include="Formalizer\TXTWinFixedPriceParser.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="PriceProcessorResource.Designer.cs">
       <AutoGen>True</AutoGen>

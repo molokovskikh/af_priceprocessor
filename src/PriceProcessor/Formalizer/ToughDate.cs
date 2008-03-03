@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
@@ -14,7 +15,7 @@ namespace Inforoom.Formalizer
 
 		public ToughDate()
 		{
-			re = new Regex(FormalizeSettings.DateMask);
+			re = new Regex(Settings.Default.DateMask);
 			EngMonth = new String[] {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
 			RusMonth = new String[] {"ъмб", "теб", "люп", "юоп", "люи", "хчм", "хчк", "юбц", "яем", "нйр", "мнъ", "дей"};
 		}

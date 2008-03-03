@@ -2,137 +2,229 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Inforoom.PriceProcessor.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="AppCode" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">13</Value>
-    </Setting>
-    <Setting Name="DBServerName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">testsql.analit.net</Value>
-    </Setting>
-    <Setting Name="DBUserName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">system</Value>
-    </Setting>
-    <Setting Name="DBPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
-    </Setting>
-    <Setting Name="DatabaseName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farm</Value>
-    </Setting>
-    <Setting Name="tbSources" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farm.Sources</Value>
-    </Setting>
-    <Setting Name="tbFormRules" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farm.FormRules</Value>
-    </Setting>
-    <Setting Name="tbClientsData" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">usersettings.ClientsData</Value>
-    </Setting>
-    <Setting Name="tbRegions" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farm.Regions</Value>
-    </Setting>
-    <Setting Name="tbLogs" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">logs.downlogs</Value>
-    </Setting>
     <Setting Name="IMAPHost" Type="System.String" Scope="Application">
       <Value Profile="(Default)">mail.adc.analit.net</Value>
     </Setting>
     <Setting Name="SMTPHost" Type="System.String" Scope="Application">
       <Value Profile="(Default)">mail.adc.analit.net</Value>
     </Setting>
-    <Setting Name="SMTPUserCopy" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
-    </Setting>
     <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
-    </Setting>
-    <Setting Name="SMTPUserError" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">farmsystem@analit.net</Value>
+      <Value Profile="(Default)">farm@analit.net</Value>
     </Setting>
     <Setting Name="InboundPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\Inbound0</Value>
+      <Value Profile="(Default)">T:\CurrentPrices\Inbound0</Value>
     </Setting>
     <Setting Name="TempPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\DownTemp\</Value>
+      <Value Profile="(Default)">T:\temp\Down\</Value>
     </Setting>
     <Setting Name="RequestInterval" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">5</Value>
+      <Value Profile="(Default)">30</Value>
     </Setting>
     <Setting Name="Timeout" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">120</Value>
+      <Value Profile="(Default)">30</Value>
     </Setting>
     <Setting Name="IMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prccopy@analit.net</Value>
+      <Value Profile="(Default)">prc@analit.net</Value>
     </Setting>
     <Setting Name="IMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
+      <Value Profile="(Default)">YjdsaReHtZq</Value>
     </Setting>
     <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ErrorList@subscribe.analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prccopy@analit.net</Value>
+      <Value Profile="(Default)">root@waybills.analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
+      <Value Profile="(Default)">&lt;fcnjy241</Value>
     </Setting>
     <Setting Name="FTPOptBox" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\FTPOptBox</Value>
-    </Setting>
-    <Setting Name="tbWaybillSources" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Documents.Waybill_Sources</Value>
+      <Value Profile="(Default)">\\acdcserv\ftp\optbox</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNothingAttachs" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Пришло письмо без вложенных документов</Value>
-    </Setting>
-    <Setting Name="ResponseDocBodyTemplateOnNothingAttachs" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Пришло письмо без вложенных документов.
-
-С уважением,
-  АК Инфорум</Value>
+      <Value Profile="(Default)">Документы (накладные, отказы) не доставлены аптеке</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnMultiDomen" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Не возможно определить клиента для доставки документов</Value>
-    </Setting>
-    <Setting Name="ResponseDocBodyTemplateOnMultiDomen" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">В письме указано несколько адресов с доменом waybills.analit.net или refused.analit.net.
-
-С уважением,
-  АК Инфорум</Value>
+      <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="HistoryPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\DownHistory</Value>
+      <Value Profile="(Default)">T:\ArchivePrices</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNonExistentClient" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Ошибка при обработке письма</Value>
-    </Setting>
-    <Setting Name="ResponseDocBodyTemplateOnNonExistentClient" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Ошибка при обработке письма
-
-С уважением,
-  АК Инфорум</Value>
+      <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
+      <Value Profile="(Default)">tech@analit.net</Value>
     </Setting>
     <Setting Name="FileDownloadInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnUnknownProvider" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Неизвестный адрес отправителя</Value>
-    </Setting>
-    <Setting Name="ResponseDocBodyTemplateOnUnknownProvider" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Неизвестный адрес отправителя.
-
-С уважением,
-  АК Инфорум</Value>
+      <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
+      <Value Profile="(Default)">pricescopy@analit.net</Value>
     </Setting>
     <Setting Name="DepthOfStorageArchivePrices" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">60</Value>
     </Setting>
     <Setting Name="ClearScanInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="ASSORT_FLG" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="CostsNotExistsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Прайс не является ассортиментным, но не содержит ни одной цены.</Value>
+    </Setting>
+    <Setting Name="UnknownPriceError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Не возможно сопоставить прайс файлу : ({0})</Value>
+    </Setting>
+    <Setting Name="DisableByBillingStatusError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Прайс отключен по причине : BillingStatus</Value>
+    </Setting>
+    <Setting Name="DisableByFirmStatusError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Прайс отключен по причине : FirmStatus</Value>
+    </Setting>
+    <Setting Name="UnknownPriceFMTError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Неизвестный формат прайса : ({0})</Value>
+    </Setting>
+    <Setting Name="SheetsNotExistsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Файл не содержит листов</Value>
+    </Setting>
+    <Setting Name="BaseCostNotExistsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Прайс не имеет базовой цены.</Value>
+    </Setting>
+    <Setting Name="DoubleBaseCostsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Прайс имеет две базовые цены : {0} и {1}.</Value>
+    </Setting>
+    <Setting Name="FieldNameBaseCostsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">У базовой цены прайса не определенно название поля.</Value>
+    </Setting>
+    <Setting Name="ZeroRollbackError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Кол-во нулевых позиций выше допустимого.</Value>
+    </Setting>
+    <Setting Name="PrevFormRollbackError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Кол-во формализованных позиций меньше кол-ва формализованных в прошлый раз.</Value>
+    </Setting>
+    <Setting Name="FieldsNotExistsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Лист не содержит полей.</Value>
+    </Setting>
+    <Setting Name="ParseMaskError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Не удалось разобрать маску имени {0}</Value>
+    </Setting>
+    <Setting Name="DoubleGroupMaskError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">В маски имени два раза встречается группа {0}.</Value>
+    </Setting>
+    <Setting Name="MinFieldCountError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Кол-во полей, объявленных для распознания, меньше 1.</Value>
+    </Setting>
+    <Setting Name="PeriodParseError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Ошибка в разборе срока годности для значения '{0}'.</Value>
+    </Setting>
+    <Setting Name="ThreadAbortError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Формализация прайса был остановленна.</Value>
+    </Setting>
+    <Setting Name="FileCopyError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Не удалось скопировать файл {0} в каталог {1}.\nПричина : {2}</Value>
+    </Setting>
+    <Setting Name="MaxErrorsError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Файл {0} помещен в каталог {1} в результате {2} неудачных попыток формализации.</Value>
+    </Setting>
+    <Setting Name="UnknowCostTypeError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Неизвестный тип ценовых колонок прайса : ({0})</Value>
+    </Setting>
+    <Setting Name="MulticolumnAsPriceError" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Попытка формализовать ценовую колонку мультиколоночного прайс-листа как прайс.</Value>
+    </Setting>
+    <Setting Name="MaxLiveTime" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="CheckZero" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="BasePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">T:\CurrentPrices\Base\</Value>
+    </Setting>
+    <Setting Name="ErrorFiles" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">T:\CurrentPrices\ErrorFiles</Value>
+    </Setting>
+    <Setting Name="MaxErrorCount" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="MaxWorkThread" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="MaxRepeatTranCount" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="MinRepeatTranCount" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">20</Value>
+    </Setting>
+    <Setting Name="MaxPositionInsertToCore" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">250</Value>
+    </Setting>
+    <Setting Name="DateMask" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">([^\d]*(?&amp;lt;Day&amp;gt;\d*?)[\s\.\-\/])?(?&amp;lt;Month&amp;gt;[^\s\.\-\/]*?)[\s\.\-\/](?&amp;lt;Year&amp;gt;\d+)([^\d].*)?$</Value>
+    </Setting>
+    <Setting Name="FarmSystemEmail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">farmsystem@analit.net</Value>
+    </Setting>
+    <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">WarningList@subscribe.analit.net</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnNothingAttachs" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к. в Вашем письме отсутствуют вложения.
+К обработке принимаются только сообщения, содержащие документы во вложении.
+
+Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК "Инфорум".</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnMultiDomen" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+в адресе получателя указано несколько клиентов (вероятно, указаны адреса разных аптек), допускается только один.
+
+Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК "Инфорум".</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnNonExistentClient" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+указанный адрес получателя не соответствует ни одной из аптек.
+
+Пожалуйста, проверьте корректность указания адреса аптеки и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК "Инфорум".</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnUnknownProvider" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+адрес, с которого отправлено сообщение с документами, не зарегистрирован в системе, как разрешенный адрес для приема документов от Вашей организации .
+Пожалуйста, для отправки документов используйте согласованные ранее адреса. Либо если Вы в дальнейшем предполагаете отправлять документы с этого адреса, добавьте его в список разрешенных, используя интерфейс поставщика.
+
+Пожалуйста, изменив адрес отправителя или выполнив настройки, отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК "Инфорум".</Value>
     </Setting>
   </Settings>
 </SettingsFile>

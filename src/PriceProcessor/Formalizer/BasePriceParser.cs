@@ -8,6 +8,7 @@ using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
 using Inforoom.Logging;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
@@ -395,16 +396,16 @@ namespace Inforoom.Formalizer
 
 			string selectCostFormRulesSQL = String.Empty;
 			if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
-				selectCostFormRulesSQL = String.Format("select * from {1} pc, {2} cfr where pc.ShowPriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode, FormalizeSettings.tbPricesCosts, FormalizeSettings.tbCostsFormRules);
+				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostsFormRules cfr where pc.ShowPriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode);
 			else
-				selectCostFormRulesSQL = String.Format("select * from {1} pc, {2} cfr where pc.PriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode, FormalizeSettings.tbPricesCosts, FormalizeSettings.tbCostsFormRules);
+				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostsFormRules cfr where pc.PriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode);
 
 			MySqlDataAdapter daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, MyConn );
 			DataTable dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
 
-			if (0 == dtPricesCost.Rows.Count && FormalizeSettings.ASSORT_FLG != priceType)
-				throw new WarningFormalizeException(FormalizeSettings.CostsNotExistsError, clientCode, priceCode, clientShortName, priceName);
+			if ((0 == dtPricesCost.Rows.Count) && (Settings.Default.ASSORT_FLG != priceType))
+				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, clientCode, priceCode, clientShortName, priceName);
 			foreach(DataRow r in dtPricesCost.Rows)
 				currentCoreCosts.Add(
 					new CoreCost(
@@ -418,25 +419,25 @@ namespace Inforoom.Formalizer
 				);
 
 			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
-			if ((FormalizeSettings.ASSORT_FLG != priceType) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+			if ((Settings.Default.ASSORT_FLG != priceType) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
 			{
 				if (1 == currentCoreCosts.Count)
 				{
 					if ( !(currentCoreCosts[0] as CoreCost).baseCost )
-						throw new WarningFormalizeException(FormalizeSettings.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
+						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
 				}
 				else
 				{
 					CoreCost[] bc = Array.FindAll<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.baseCost; });
 					if (bc.Length == 0)
 					{
-						throw new WarningFormalizeException(FormalizeSettings.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
+						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
 					}
 					else
 						if (bc.Length > 1)
 						{
 							throw new WarningFormalizeException(
-								String.Format(FormalizeSettings.DoubleBaseCostsError,
+								String.Format(Settings.Default.DoubleBaseCostsError,
 									(bc[0] as CoreCost).costCode,
 									(bc[1] as CoreCost).costCode),
 								clientCode, priceCode, clientShortName, priceName);
@@ -449,8 +450,8 @@ namespace Inforoom.Formalizer
 
 				}
 
-				if (((this is TXTFPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
-					throw new WarningFormalizeException(FormalizeSettings.FieldNameBaseCostsError, clientCode, priceCode, clientShortName, priceName);
+				if (((this is TXTFixedPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFixedPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
+					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, clientCode, priceCode, clientShortName, priceName);
 
 				priceCodeCostIndex = Array.FindIndex<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.costCode == priceCode; });
 				if (priceCodeCostIndex == -1)
@@ -477,7 +478,7 @@ namespace Inforoom.Formalizer
 				}
 				catch(System.Runtime.InteropServices.InvalidComObjectException)
 				{
-					if (tryCount < FormalizeSettings.MinRepeatTranCount)
+					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
 						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on InvalidComObjectException");
@@ -488,7 +489,7 @@ namespace Inforoom.Formalizer
 				}
 				catch(NullReferenceException)
 				{
-					if (tryCount < FormalizeSettings.MinRepeatTranCount)
+					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
 						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on NullReferenceException");
@@ -550,8 +551,8 @@ namespace Inforoom.Formalizer
 			drCore["Period"] = st;
 			drCore["Doc"] = GetFieldValueObject(PriceFields.Doc);
 
-			drCore["Junk"] = GetJunkValueAsString( AJunk );
-			drCore["Await"] = GetAwaitValueAsString( (bool)GetFieldValueObject(PriceFields.Await) );
+			drCore["Junk"] = Convert.ToByte(AJunk);
+			drCore["Await"] = Convert.ToByte( (bool)GetFieldValueObject(PriceFields.Await) );
 
 			drCore["Currency"] = ACurrency;
 			if ( !checkZeroCost(ABaseCost) )
@@ -560,7 +561,7 @@ namespace Inforoom.Formalizer
 
 
 			dsMyDB.Tables["Core"].Rows.Add(drCore);
-			if (priceType != FormalizeSettings.ASSORT_FLG)
+			if (priceType != Settings.Default.ASSORT_FLG)
 				CoreCosts.Add(DeepCopy(currentCoreCosts));
 			formCount++;
 		}
@@ -670,31 +671,31 @@ namespace Inforoom.Formalizer
 		{
 			SimpleLog.Log(getParserID(), "get Forbidden");
 			daForbidden = new MySqlDataAdapter(
-				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbForbidden), MyConn);
+				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", parentSynonym), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
 			SimpleLog.Log(getParserID(), "get Synonym");
 			daSynonym = new MySqlDataAdapter(
-				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbSynonym), MyConn);
+				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
 			SimpleLog.Log(getParserID(), "get SynonymFirmCr");
 			daSynonymFirmCr = new MySqlDataAdapter(
-				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM {1} WHERE PriceCode={0}", parentSynonym, FormalizeSettings.tbSynonymFirmCr), MyConn);
+				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM farm.SynonymFirmCr WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 
 			SimpleLog.Log(getParserID(), "get Core");
 			daCore = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbCore), MyConn);
+				String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
 			SimpleLog.Log(getParserID(), "get UnrecExp");
 			daUnrecExp = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbUnrecExp), MyConn);
+				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
 			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.CommandTimeout = 0;
@@ -704,7 +705,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Zero");
 			daZero = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbZero), MyConn);
+				String.Format("SELECT * FROM farm.Zero WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
 			daZero.InsertCommand = cbZero.GetInsertCommand();
 			daZero.InsertCommand.CommandTimeout = 0;
@@ -713,7 +714,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Forb");
 			daForb = new MySqlDataAdapter(
-				String.Format("SELECT * FROM {1} WHERE PriceCode={0} LIMIT 0", priceCode, FormalizeSettings.tbForb), MyConn);
+				String.Format("SELECT * FROM farm.Forb WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
 			daForb.InsertCommand = cbForb.GetInsertCommand();
 			daForb.InsertCommand.CommandTimeout = 0;
@@ -722,7 +723,7 @@ namespace Inforoom.Formalizer
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
 
 			SimpleLog.Log(getParserID(), "get CoreCosts");
-			daCoreCosts = new MySqlDataAdapter(String.Format("SELECT * FROM {0} LIMIT 0", FormalizeSettings.tbCoreCosts), MyConn);
+			daCoreCosts = new MySqlDataAdapter("SELECT * FROM farm.CoreCosts LIMIT 0", MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 
@@ -748,10 +749,10 @@ namespace Inforoom.Formalizer
 				{
 					drCore = dtCore.Rows[i];
 					InsertCorePosition(drCore, sb);
-					if (priceType != FormalizeSettings.ASSORT_FLG)
+					if (priceType != Settings.Default.ASSORT_FLG)
 						InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
 
-					if ((i+1) % FormalizeSettings.MaxPositionInsertToCore == 0)
+					if ((i+1) % Settings.Default.MaxPositionInsertToCore == 0)
 					{
 						lastCommand = sb.ToString();
 						if (!String.IsNullOrEmpty(lastCommand))
@@ -774,7 +775,7 @@ namespace Inforoom.Formalizer
 		{
 			if ((coreCosts != null) && (coreCosts.Count > 0))
 			{
-				sb.AppendLine(String.Format("insert into {0} (Core_ID, PC_CostCode, Cost) values ", FormalizeSettings.tbCoreCosts));
+				sb.AppendLine("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ");
 				bool FirstInsert = true;
 				foreach (CoreCost c in coreCosts)
 				{
@@ -792,16 +793,16 @@ namespace Inforoom.Formalizer
 
 		private void InsertCorePosition(DataRow drCore, System.Text.StringBuilder sb)
 		{
-			sb.AppendLine(String.Format("insert into {0} (" +
+			sb.AppendLine("insert into farm.Core0 (" +
 				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 				"Period, Junk, Await, BaseCost, MinBoundCost, " +
 				"VitallyImportant, RequestRatio, RegistryCost, " +
 				"MaxBoundCost, OrderCost, MinOrderCount, " +
-				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ", FormalizeSettings.tbCore));
+				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ");
 			sb.Append("(");
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["PriceCode"], drCore["ProductId"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
-			sb.AppendFormat("'{0}', ", (drCore["Junk"] is DBNull) ? String.Empty : drCore["Junk"].ToString());
+			sb.AppendFormat("{0}, ", drCore["Junk"]);
 			sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
 			sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
@@ -858,15 +859,15 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void FinalizePrice()
 		{
-			if (FormalizeSettings.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
+			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{
-				throw new RollbackFormalizeException(FormalizeSettings.ZeroRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
+				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 			}
 			else
 			{
 				if (formCount * 1.6 < posNum)
 				{
-					throw new RollbackFormalizeException(FormalizeSettings.PrevFormRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
+					throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 				}
 				else
 				{
@@ -892,11 +893,11 @@ namespace Inforoom.Formalizer
 
 							mcClear.Parameters.Clear();
 
-							if (priceType != FormalizeSettings.ASSORT_FLG)
+							if (priceType != Settings.Default.ASSORT_FLG)
 							{
 								//Удаляем цены из CoreCosts
 								System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
-								sbDelCoreCosts.Append(String.Format("delete from {0} where pc_costcode in (", FormalizeSettings.tbCoreCosts));
+								sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
 								bool FirstInsertCoreCosts = true;
 								foreach (CoreCost c in currentCoreCosts)
 								{
@@ -916,7 +917,7 @@ namespace Inforoom.Formalizer
                             }							
 
 							//Добавляем команду на удаление данных из Core
-                            mcClear.CommandText = String.Format("delete from {1} where PriceCode={0};", priceCode, FormalizeSettings.tbCore); 
+							mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode); 
 							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
 
 							if (insertCoreAndCoreCostsCommandList.Length > 0)
@@ -952,20 +953,20 @@ and a.ProductId is null";
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
 
 
-							mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbZero);
+							mcClear.CommandText = String.Format("delete from farm.Zero where PriceCode={0}", priceCode);
 							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
 
-							mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbForb);
+							mcClear.CommandText = String.Format("delete from farm.Forb where PriceCode={0}", priceCode);
 							sbLog.AppendFormat("DelFromForb={0}  ", mcClear.ExecuteNonQuery());
 
-							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM {1} where PriceCode={0} limit 1", priceCode, FormalizeSettings.tbBlockedPrice), MyConn);
+							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceCode={0} limit 1", priceCode), MyConn);
 							daBlockedPrice.SelectCommand.Transaction = myTrans;
 							DataTable dtBlockedPrice = new DataTable();
 							daBlockedPrice.Fill(dtBlockedPrice);
 
 							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
-								mcClear.CommandText = String.Format("delete from {1} where PriceCode={0}", priceCode, FormalizeSettings.tbUnrecExp);
+								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceCode={0}", priceCode);
 								sbLog.AppendFormat("DelFromUnrecExp={0}  ", mcClear.ExecuteNonQuery());
 							}
 
@@ -986,7 +987,7 @@ and a.ProductId is null";
 						}
 						catch(MySqlException MyError)
 						{
-							if ((tryCount <= FormalizeSettings.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
+							if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
 							{
 								tryCount++;
 								SimpleLog.Log( getParserID(), "Try transaction: tryCount = {0}", tryCount);
@@ -1079,7 +1080,7 @@ and a.ProductId is null";
 
 							if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
 							{
-								if (priceType != FormalizeSettings.ASSORT_FLG)
+								if (priceType != Settings.Default.ASSORT_FLG)
 								{
 									costCount = ProcessCosts();
 									object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
@@ -1452,8 +1453,8 @@ and a.ProductId is null";
 				res = toughDate.Analyze( PeriodValue );
 				if (DateTime.MaxValue.Equals(res))
 				{
-					//throw new WarningFormalizeException(String.Format(FormalizeSettings.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
-					//SendMessageToOperator("Предупреждение", String.Format(FormalizeSettings.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
+					//throw new WarningFormalizeException(String.Format(Settings.Default.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
+					//SendMessageToOperator("Предупреждение", String.Format(Settings.Default.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
 					return DBNull.Value;
 				}
 				return res;
@@ -1622,11 +1623,6 @@ and a.ProductId is null";
 			return JunkValue;
 		}
 
-		public string GetJunkValueAsString(bool Junk)
-		{
-			return (Junk) ? FormalizeSettings.JUNK : String.Empty;
-		}
-
 		public bool GetAwaitValue()
 		{
 			bool AwaitValue = false;
@@ -1642,11 +1638,6 @@ and a.ProductId is null";
 			}
 
 			return AwaitValue;
-		}
-
-		public string GetAwaitValueAsString(bool Await)
-		{
-			return (Await) ? FormalizeSettings.AWAIT : String.Empty;
 		}
 
 		public byte GetVitallyImportantValue()
@@ -1733,7 +1724,7 @@ and a.ProductId is null";
 		{
 			try
 			{
-				MailMessage mailMessage = new MailMessage(FormalizeSettings.FromEmail, FormalizeSettings.RepEmail,
+				MailMessage mailMessage = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList,
 					String.Format("{0} {1}", SubjectPrefix, PriceCode),
 					null);
 				mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
@@ -1748,7 +1739,7 @@ and a.ProductId is null";
 					String.Format("{0} ({1})", ClientName, PriceName),
 					DateTime.Now,
 					Message);
-				SmtpClient Client = new SmtpClient(FormalizeSettings.SMTPHost);
+				SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
 				Client.Send(mailMessage);
 			}
 			catch(Exception e)

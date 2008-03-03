@@ -24,20 +24,18 @@ namespace Inforoom.Downloader
 
 		protected override string GetSQLSources()
 		{
-			return String.Format(@"
+			return @"
 SELECT
   cd.FirmCode,
   cd.ShortName,
   st.EMailFrom,
   st.ReaderClassName
 FROM
-           {1}             as st
-INNER JOIN {0} AS CD ON CD.FirmCode = st.FirmCode
+  usersettings.ClientsData             as st
+  INNER JOIN Documents.Waybill_Sources AS CD ON CD.FirmCode = st.FirmCode
 WHERE
 cd.FirmStatus   = 1
-and st.SourceID = 4",
-				Settings.Default.tbClientsData,
-				Settings.Default.tbWaybillSources);
+and st.SourceID = 4";
 		}
 
 		protected override void ProcessData()
@@ -89,7 +87,7 @@ and st.SourceID = 4",
 							{
 								if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
 								{
-									MailMessage mm = new MailMessage(Settings.Default.SMTPUserError, Settings.Default.DocumentFailMail,
+									MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.DocumentFailMail,
 										String.Format("{1} ({2})", CurrPriceCode, drLanSource[WaybillSourcesTable.colShortName], SourceType),
 										String.Format("Код поставщика : {0}\nФирма: {1}\nДата: {2}\nПричина: {3}",
 											drLanSource[WaybillSourcesTable.colFirmCode], 

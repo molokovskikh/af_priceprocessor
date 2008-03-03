@@ -4,6 +4,8 @@ using System.Threading;
 using System.Net.Mail;
 using MySql.Data.MySqlClient;
 using Inforoom.Logging;
+using Inforoom.PriceProcessor.Properties;
+using System.Configuration;
 
 
 namespace Inforoom.Formalizer
@@ -136,14 +138,7 @@ namespace Inforoom.Formalizer
 
 		private MySqlConnection getConnection()
 		{
-			return new MySqlConnection(
-				String.Format("server={0};username={1}; password={2}; database={3}; pooling=true; allow zero datetime=true;",
-					FormalizeSettings.ServerName, 
-					FormalizeSettings.UserName, 
-					FormalizeSettings.Pass, 
-					FormalizeSettings.DatabaseName
-				)
-			);
+			return new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
 		}
 
 		private void SuccesLog(BasePriceParser p)
@@ -174,15 +169,15 @@ namespace Inforoom.Formalizer
 					myconn.Open();
 					try
 					{
-						mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs );", FormalizeSettings.tbFormLogs);
+						mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs )";
 						mcLog.Parameters.Clear();
-						mcLog.Parameters.AddWithValue("?AppCode", FormalizeSettings.AppCode);
+						mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 						mcLog.Parameters.AddWithValue("?PriceCode", p.priceCode);
 						mcLog.Parameters.AddWithValue("?Form", p.formCount);
 						mcLog.Parameters.AddWithValue("?Unform", p.unformCount);
 						mcLog.Parameters.AddWithValue("?Zero", p.zeroCount);
 						mcLog.Parameters.AddWithValue("?Forb", p.forbCount);
-						mcLog.Parameters.AddWithValue("?ResultId", (p.maxLockCount <= FormalizeSettings.MinRepeatTranCount) ? 2 : 3);
+						mcLog.Parameters.AddWithValue("?ResultId", (p.maxLockCount <= Settings.Default.MinRepeatTranCount) ? 2 : 3);
 						mcLog.Parameters.AddWithValue("?TotalSecs", formSecs);					
 						mcLog.ExecuteNonQuery();
 					}
@@ -207,7 +202,7 @@ namespace Inforoom.Formalizer
 			{
 				MailMessage Message = new MailMessage(From, To, mSubject, mBody);
 				Message.BodyEncoding = System.Text.Encoding.UTF8;
-				SmtpClient Client = new SmtpClient(FormalizeSettings.SMTPHost);
+				SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
 				Client.Send(Message);
 			}
 			catch(Exception e)
@@ -218,7 +213,7 @@ namespace Inforoom.Formalizer
 
 		private void InternalMailSend(string mSubject, string mBody)
 		{
-			InternalMailSendBy(FormalizeSettings.FromEmail, FormalizeSettings.RepEmail, mSubject, mBody);
+			InternalMailSendBy(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, mSubject, mBody);
 		}
 
 		private void SuccesGetBody(string mSubjPref, ref string mSubj, ref string mBody, long priceCode, long clientCode, string priceName)
@@ -324,16 +319,16 @@ namespace Inforoom.Formalizer
 
 							if ((null != p) || (ex is FormalizeException))
 							{
-								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Addition, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
 								mcLog.Parameters.AddWithValue("?PriceCode", (null != p) ? p.priceCode : ((FormalizeException)ex).priceCode);
 							}
 							else
 							{
-								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?Addition, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
 							}
-							mcLog.Parameters.AddWithValue("?AppCode", FormalizeSettings.AppCode);
+							mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 							mcLog.Parameters.AddWithValue("?Addition", Addition);
 							mcLog.Parameters.AddWithValue("?ResultId", 5);
 							mcLog.Parameters.AddWithValue("?TotalSecs", formSecs);					
@@ -401,15 +396,15 @@ namespace Inforoom.Formalizer
 						{
 							if (-1 == e.priceCode)
 							{
-								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?Addition, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?Addition, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.AddWithValue("?AppCode", FormalizeSettings.AppCode);
+								mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 							}
 							else
 							{
-								mcLog.CommandText = String.Format("INSERT INTO {0} (LogTime, AppCode, PriceCode, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?AppCode, ?PriceCode, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs);", FormalizeSettings.tbFormLogs);
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.AddWithValue("?AppCode", FormalizeSettings.AppCode);
+								mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 								mcLog.Parameters.AddWithValue("?PriceCode", e.priceCode);
 								if (e is RollbackFormalizeException)
 								{
@@ -502,17 +497,17 @@ namespace Inforoom.Formalizer
 						if (formalizeOK)
 						{
 							//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-							File.Copy(TempFileName, FormalizeSettings.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
 							DateTime ft = DateTime.UtcNow;
-							File.SetCreationTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
-							File.SetLastWriteTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
-							File.SetLastAccessTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
+							File.SetCreationTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+							File.SetLastWriteTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+							File.SetLastAccessTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
 						}
 					}
 					catch(Exception e)
 					{
 						throw new FormalizeException(
-							String.Format(FormalizeSettings.FileCopyError, TempFileName, FormalizeSettings.BasePath, e), 
+							String.Format(Settings.Default.FileCopyError, TempFileName, Settings.Default.BasePath, e), 
 							WorkPrice.clientCode, 
 							WorkPrice.priceCode, 
 							WorkPrice.clientShortName, 
@@ -528,14 +523,14 @@ namespace Inforoom.Formalizer
 					{
 						//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
 						if (File.Exists(TempFileName))
-							File.Copy(TempFileName, FormalizeSettings.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
 						else
 							//Копируем оригинальный файл в случае неизвестного файла
-							File.Copy(fileName, FormalizeSettings.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(fileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
 						DateTime ft = DateTime.UtcNow;
-						File.SetCreationTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
-						File.SetLastWriteTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
-						File.SetLastAccessTimeUtc(FormalizeSettings.BasePath + Path.GetFileName(fileName), ft);
+						File.SetCreationTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+						File.SetLastWriteTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+						File.SetLastAccessTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
 						WarningLog(e, e.Message);
 						formalizeOK = true;
 					}
@@ -544,7 +539,7 @@ namespace Inforoom.Formalizer
 						formalizeOK = false;
 						ErrodLog(WorkPrice, 
 							new FormalizeException(
-								String.Format(FormalizeSettings.FileCopyError, TempFileName, FormalizeSettings.BasePath, ex), 
+								String.Format(Settings.Default.FileCopyError, TempFileName, Settings.Default.BasePath, ex), 
 								e.clientCode, 
 								e.priceCode, 
 								e.clientName, 
@@ -562,7 +557,7 @@ namespace Inforoom.Formalizer
 					if ( !(e is System.Threading.ThreadAbortException) )
 						ErrodLog(WorkPrice, e);
 					else
-						ErrodLog(WorkPrice, new Exception(FormalizeSettings.ThreadAbortError));
+						ErrodLog(WorkPrice, new Exception(Settings.Default.ThreadAbortError));
 				}
 				finally
 				{
@@ -581,7 +576,7 @@ namespace Inforoom.Formalizer
 				if (!(e is System.Threading.ThreadAbortException))
 				{
 					InternalLog(e.ToString());
-					InternalMailSendBy(FormalizeSettings.FromEmail, "service@analit.net", "ThreadWork Error", e.ToString());
+					InternalMailSendBy(Settings.Default.FarmSystemEmail, "service@analit.net", "ThreadWork Error", e.ToString());
 				}
 			}
 			finally

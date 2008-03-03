@@ -25,96 +25,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("13")]
-        public int AppCode {
-            get {
-                return ((int)(this["AppCode"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("testsql.analit.net")]
-        public string DBServerName {
-            get {
-                return ((string)(this["DBServerName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("system")]
-        public string DBUserName {
-            get {
-                return ((string)(this["DBUserName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("123")]
-        public string DBPass {
-            get {
-                return ((string)(this["DBPass"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("farm")]
-        public string DatabaseName {
-            get {
-                return ((string)(this["DatabaseName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("farm.Sources")]
-        public string tbSources {
-            get {
-                return ((string)(this["tbSources"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("farm.FormRules")]
-        public string tbFormRules {
-            get {
-                return ((string)(this["tbFormRules"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("usersettings.ClientsData")]
-        public string tbClientsData {
-            get {
-                return ((string)(this["tbClientsData"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("farm.Regions")]
-        public string tbRegions {
-            get {
-                return ((string)(this["tbRegions"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("logs.downlogs")]
-        public string tbLogs {
-            get {
-                return ((string)(this["tbLogs"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("mail.adc.analit.net")]
         public string IMAPHost {
             get {
@@ -133,16 +43,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
-        public string SMTPUserCopy {
-            get {
-                return ((string)(this["SMTPUserCopy"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("farm@analit.net")]
         public string SMTPUserFail {
             get {
                 return ((string)(this["SMTPUserFail"]));
@@ -151,16 +52,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("farmsystem@analit.net")]
-        public string SMTPUserError {
-            get {
-                return ((string)(this["SMTPUserError"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\Inbound0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("T:\\CurrentPrices\\Inbound0")]
         public string InboundPath {
             get {
                 return ((string)(this["InboundPath"]));
@@ -169,7 +61,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\DownTemp\\")]
+        [global::System.Configuration.DefaultSettingValueAttribute("T:\\temp\\Down\\")]
         public string TempPath {
             get {
                 return ((string)(this["TempPath"]));
@@ -178,7 +70,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
         public int RequestInterval {
             get {
                 return ((int)(this["RequestInterval"]));
@@ -187,7 +79,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("120")]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
         public int Timeout {
             get {
                 return ((int)(this["Timeout"]));
@@ -196,7 +88,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("prccopy@analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("prc@analit.net")]
         public string IMAPUser {
             get {
                 return ((string)(this["IMAPUser"]));
@@ -205,7 +97,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("123")]
+        [global::System.Configuration.DefaultSettingValueAttribute("YjdsaReHtZq")]
         public string IMAPPass {
             get {
                 return ((string)(this["IMAPPass"]));
@@ -223,7 +115,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("prccopy@analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("root@waybills.analit.net")]
         public string WaybillIMAPUser {
             get {
                 return ((string)(this["WaybillIMAPUser"]));
@@ -232,7 +124,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("123")]
+        [global::System.Configuration.DefaultSettingValueAttribute("<fcnjy241")]
         public string WaybillIMAPPass {
             get {
                 return ((string)(this["WaybillIMAPPass"]));
@@ -241,7 +133,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\FTPOptBox")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\\\\acdcserv\\ftp\\optbox")]
         public string FTPOptBox {
             get {
                 return ((string)(this["FTPOptBox"]));
@@ -250,16 +142,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Documents.Waybill_Sources")]
-        public string tbWaybillSources {
-            get {
-                return ((string)(this["tbWaybillSources"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Пришло письмо без вложенных документов")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) не доставлены аптеке")]
         public string ResponseDocSubjectTemplateOnNothingAttachs {
             get {
                 return ((string)(this["ResponseDocSubjectTemplateOnNothingAttachs"]));
@@ -268,16 +151,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Пришло письмо без вложенных документов.\r\n\r\nС уважением,\r\n  АК Инфорум")]
-        public string ResponseDocBodyTemplateOnNothingAttachs {
-            get {
-                return ((string)(this["ResponseDocBodyTemplateOnNothingAttachs"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Не возможно определить клиента для доставки документов")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) невозможно доставить аптеке")]
         public string ResponseDocSubjectTemplateOnMultiDomen {
             get {
                 return ((string)(this["ResponseDocSubjectTemplateOnMultiDomen"]));
@@ -286,17 +160,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("В письме указано несколько адресов с доменом waybills.analit.net или refused.anal" +
-            "it.net.\r\n\r\nС уважением,\r\n  АК Инфорум")]
-        public string ResponseDocBodyTemplateOnMultiDomen {
-            get {
-                return ((string)(this["ResponseDocBodyTemplateOnMultiDomen"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\DownHistory")]
+        [global::System.Configuration.DefaultSettingValueAttribute("T:\\ArchivePrices")]
         public string HistoryPath {
             get {
                 return ((string)(this["HistoryPath"]));
@@ -305,7 +169,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Ошибка при обработке письма")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) невозможно доставить аптеке")]
         public string ResponseDocSubjectTemplateOnNonExistentClient {
             get {
                 return ((string)(this["ResponseDocSubjectTemplateOnNonExistentClient"]));
@@ -314,16 +178,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Ошибка при обработке письма\r\n\r\nС уважением,\r\n  АК Инфорум")]
-        public string ResponseDocBodyTemplateOnNonExistentClient {
-            get {
-                return ((string)(this["ResponseDocBodyTemplateOnNonExistentClient"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("tech@analit.net")]
         public string DocumentFailMail {
             get {
                 return ((string)(this["DocumentFailMail"]));
@@ -341,7 +196,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Неизвестный адрес отправителя")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) невозможно доставить аптеке")]
         public string ResponseDocSubjectTemplateOnUnknownProvider {
             get {
                 return ((string)(this["ResponseDocSubjectTemplateOnUnknownProvider"]));
@@ -350,16 +205,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Неизвестный адрес отправителя.\r\n\r\nС уважением,\r\n  АК Инфорум")]
-        public string ResponseDocBodyTemplateOnUnknownProvider {
-            get {
-                return ((string)(this["ResponseDocBodyTemplateOnUnknownProvider"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("pricescopy@analit.net")]
         public string UnrecLetterMail {
             get {
                 return ((string)(this["UnrecLetterMail"]));
@@ -381,6 +227,390 @@ namespace Inforoom.PriceProcessor.Properties {
         public int ClearScanInterval {
             get {
                 return ((int)(this["ClearScanInterval"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int ASSORT_FLG {
+            get {
+                return ((int)(this["ASSORT_FLG"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Прайс не является ассортиментным, но не содержит ни одной цены.")]
+        public string CostsNotExistsError {
+            get {
+                return ((string)(this["CostsNotExistsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Не возможно сопоставить прайс файлу : ({0})")]
+        public string UnknownPriceError {
+            get {
+                return ((string)(this["UnknownPriceError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Прайс отключен по причине : BillingStatus")]
+        public string DisableByBillingStatusError {
+            get {
+                return ((string)(this["DisableByBillingStatusError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Прайс отключен по причине : FirmStatus")]
+        public string DisableByFirmStatusError {
+            get {
+                return ((string)(this["DisableByFirmStatusError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Неизвестный формат прайса : ({0})")]
+        public string UnknownPriceFMTError {
+            get {
+                return ((string)(this["UnknownPriceFMTError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Файл не содержит листов")]
+        public string SheetsNotExistsError {
+            get {
+                return ((string)(this["SheetsNotExistsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Прайс не имеет базовой цены.")]
+        public string BaseCostNotExistsError {
+            get {
+                return ((string)(this["BaseCostNotExistsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Прайс имеет две базовые цены : {0} и {1}.")]
+        public string DoubleBaseCostsError {
+            get {
+                return ((string)(this["DoubleBaseCostsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("У базовой цены прайса не определенно название поля.")]
+        public string FieldNameBaseCostsError {
+            get {
+                return ((string)(this["FieldNameBaseCostsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Кол-во нулевых позиций выше допустимого.")]
+        public string ZeroRollbackError {
+            get {
+                return ((string)(this["ZeroRollbackError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Кол-во формализованных позиций меньше кол-ва формализованных в прошлый раз.")]
+        public string PrevFormRollbackError {
+            get {
+                return ((string)(this["PrevFormRollbackError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Лист не содержит полей.")]
+        public string FieldsNotExistsError {
+            get {
+                return ((string)(this["FieldsNotExistsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Не удалось разобрать маску имени {0}")]
+        public string ParseMaskError {
+            get {
+                return ((string)(this["ParseMaskError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("В маски имени два раза встречается группа {0}.")]
+        public string DoubleGroupMaskError {
+            get {
+                return ((string)(this["DoubleGroupMaskError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Кол-во полей, объявленных для распознания, меньше 1.")]
+        public string MinFieldCountError {
+            get {
+                return ((string)(this["MinFieldCountError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Ошибка в разборе срока годности для значения \'{0}\'.")]
+        public string PeriodParseError {
+            get {
+                return ((string)(this["PeriodParseError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Формализация прайса был остановленна.")]
+        public string ThreadAbortError {
+            get {
+                return ((string)(this["ThreadAbortError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Не удалось скопировать файл {0} в каталог {1}.\\nПричина : {2}")]
+        public string FileCopyError {
+            get {
+                return ((string)(this["FileCopyError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Файл {0} помещен в каталог {1} в результате {2} неудачных попыток формализации.")]
+        public string MaxErrorsError {
+            get {
+                return ((string)(this["MaxErrorsError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Неизвестный тип ценовых колонок прайса : ({0})")]
+        public string UnknowCostTypeError {
+            get {
+                return ((string)(this["UnknowCostTypeError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Попытка формализовать ценовую колонку мультиколоночного прайс-листа как прайс.")]
+        public string MulticolumnAsPriceError {
+            get {
+                return ((string)(this["MulticolumnAsPriceError"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int MaxLiveTime {
+            get {
+                return ((int)(this["MaxLiveTime"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CheckZero {
+            get {
+                return ((bool)(this["CheckZero"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("T:\\CurrentPrices\\Base\\")]
+        public string BasePath {
+            get {
+                return ((string)(this["BasePath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("T:\\CurrentPrices\\ErrorFiles")]
+        public string ErrorFiles {
+            get {
+                return ((string)(this["ErrorFiles"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int MaxErrorCount {
+            get {
+                return ((int)(this["MaxErrorCount"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int MaxWorkThread {
+            get {
+                return ((int)(this["MaxWorkThread"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int MaxRepeatTranCount {
+            get {
+                return ((int)(this["MaxRepeatTranCount"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20")]
+        public int MinRepeatTranCount {
+            get {
+                return ((int)(this["MinRepeatTranCount"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("250")]
+        public int MaxPositionInsertToCore {
+            get {
+                return ((int)(this["MaxPositionInsertToCore"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("([^\\d]*(?&lt;Day&gt;\\d*?)[\\s\\.\\-\\/])?(?&lt;Month&gt;[^\\s\\.\\-\\/]*?)[\\s\\.\\-\\/](?&lt" +
+            ";Year&gt;\\d+)([^\\d].*)?$")]
+        public string DateMask {
+            get {
+                return ((string)(this["DateMask"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("farmsystem@analit.net")]
+        public string FarmSystemEmail {
+            get {
+                return ((string)(this["FarmSystemEmail"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("WarningList@subscribe.analit.net")]
+        public string SMTPWarningList {
+            get {
+                return ((string)(this["SMTPWarningList"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к. в Вашем письме отсутствуют вложения.
+К обработке принимаются только сообщения, содержащие документы во вложении.
+
+Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".")]
+        public string ResponseDocBodyTemplateOnNothingAttachs {
+            get {
+                return ((string)(this["ResponseDocBodyTemplateOnNothingAttachs"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+в адресе получателя указано несколько клиентов (вероятно, указаны адреса разных аптек), допускается только один.
+
+Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".")]
+        public string ResponseDocBodyTemplateOnMultiDomen {
+            get {
+                return ((string)(this["ResponseDocBodyTemplateOnMultiDomen"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+указанный адрес получателя не соответствует ни одной из аптек.
+
+Пожалуйста, проверьте корректность указания адреса аптеки и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".")]
+        public string ResponseDocBodyTemplateOnNonExistentClient {
+            get {
+                return ((string)(this["ResponseDocBodyTemplateOnNonExistentClient"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к.
+адрес, с которого отправлено сообщение с документами, не зарегистрирован в системе, как разрешенный адрес для приема документов от Вашей организации .
+Пожалуйста, для отправки документов используйте согласованные ранее адреса. Либо если Вы в дальнейшем предполагаете отправлять документы с этого адреса, добавьте его в список разрешенных, используя интерфейс поставщика.
+
+Пожалуйста, изменив адрес отправителя или выполнив настройки, отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".")]
+        public string ResponseDocBodyTemplateOnUnknownProvider {
+            get {
+                return ((string)(this["ResponseDocBodyTemplateOnUnknownProvider"]));
             }
         }
     }

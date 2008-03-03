@@ -9,30 +9,32 @@ using Inforoom.PriceProcessor.Properties;
 namespace Inforoom.Formalizer
 {
 	/// <summary>
-	/// Summary description for TXTDPriceParser.
+	/// Summary description for TXTDelimiterPriceParser.
 	/// </summary>
-	public class TXTDPriceParser : InterPriceParser
+	public class TXTDelimiterPriceParser : InterPriceParser
 	{
 		//строка, с которой надо разбирать прайс
 		protected System.Int64 startLine;
 		//Разделитель между полями
 		protected string delimiter;
 
-		public TXTDPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
+		//Кодировка файла
+		protected string FileEncoding;
+
+		public TXTDelimiterPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
 		{
 			delimiter = mydr.Rows[0][FormRules.colDelimiter].ToString();
 			startLine = mydr.Rows[0]["StartLine"] is DBNull ? -1 : Convert.ToInt64(mydr.Rows[0]["StartLine"]);
-			//mydr.Close();
 			conn.Close();
 		}
 
 		public override void Open()
 		{
-			convertedToANSI = (Settings.Default.DOS_FMT == priceFmt);
+			convertedToANSI = (FileEncoding == "OEM");
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
                 w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
-				w.WriteLine((Settings.Default.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
+				w.WriteLine("CharacterSet=" + FileEncoding);
 				w.WriteLine(("TAB" == delimiter.ToUpper()) ? "Format=TabDelimited" : "Format=Delimited(" + delimiter + ")");
 				w.WriteLine("ColNameHeader=False");
 				w.WriteLine("MaxScanRows=300");
@@ -70,7 +72,7 @@ namespace Inforoom.Formalizer
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
 				w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
-				w.WriteLine((Settings.Default.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
+				w.WriteLine("CharacterSet=" + FileEncoding);
 				w.WriteLine(("TAB" == delimiter.ToUpper()) ? "Format=TabDelimited" : "Format=Delimited(" + delimiter + ")");
 				w.WriteLine("ColNameHeader=False");
 				w.WriteLine("MaxScanRows=300");
@@ -85,7 +87,6 @@ namespace Inforoom.Formalizer
 			try
 			{
 				OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain);
-				//da.Fill(dtPrice);
 				FillPrice(da);
 			}
 			finally
