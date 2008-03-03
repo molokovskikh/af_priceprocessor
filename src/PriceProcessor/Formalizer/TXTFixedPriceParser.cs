@@ -5,20 +5,12 @@ using System.Data;
 using System.Data.OleDb;
 using System.Collections;
 using MySql.Data.MySqlClient;
+using Inforoom.PriceProcessor.Properties;
 
 
 namespace Inforoom.Formalizer
 {
 
-/*
-    public class myReverserClass : IComparer  {
-
-      // Calls CaseInsensitiveComparer.Compare with the parameters reversed.
-      int IComparer.Compare( Object x, Object y )  {
-          return( (new CaseInsensitiveComparer()).Compare( y, x ) );
-      }
-* 
- * */
 	public class TxtFieldDef : IComparer
 	{
 		public string fieldName;
@@ -43,16 +35,19 @@ namespace Inforoom.Formalizer
 	}
 
 	/// <summary>
-	/// Summary description for TXTFPriceParser.
+	/// Summary description for TXTFixedPriceParser.
 	/// </summary>
-	public class TXTFPriceParser : BasePriceParser
+	public class TXTFixedPriceParser : BasePriceParser
 	{
 		//строка, с которой надо разбирать прайс
 		protected System.Int64 startLine;
 
 		private ArrayList fds;
 
-		public TXTFPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
+		//Кодировка файла
+		protected string FileEncoding;
+
+		public TXTFixedPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
 		{
 			string TmpName;
 			int TmpIndex;
@@ -113,12 +108,11 @@ namespace Inforoom.Formalizer
 			}
 
 			if (fds.Count < 1)
-				throw new WarningFormalizeException(FormalizeSettings.MinFieldCountError, clientCode, priceCode, clientShortName, priceName);
+				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, clientCode, priceCode, clientShortName, priceName);
 
 			//Производим сортировку полей по полую с позицией начала
 			fds.Sort( new TxtFieldDef() );
 
-			//mydr.Close();
 			conn.Close();
 		}
 
@@ -128,8 +122,8 @@ namespace Inforoom.Formalizer
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
 				w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
-				convertedToANSI = (FormalizeSettings.DOS_FMT == priceFmt);
-				w.WriteLine((FormalizeSettings.WIN_FMT == priceFmt) ? "CharacterSet=ANSI" : "CharacterSet=OEM");
+				convertedToANSI = (FileEncoding == "OEM");
+				w.WriteLine("CharacterSet=" + FileEncoding);
 				w.WriteLine("Format=FixedLength");
 				w.WriteLine("ColNameHeader=False");
 				w.WriteLine("MaxScanRows=300");
@@ -174,7 +168,6 @@ namespace Inforoom.Formalizer
 			try
 			{
 				OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain);
-				//da.Fill(dtPrice);
 				FillPrice(da);
 			}
 			finally
