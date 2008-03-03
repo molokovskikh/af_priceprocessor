@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using Inforoom.Formalizer;
 using Inforoom.Logging;
+using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
@@ -38,15 +39,15 @@ namespace Inforoom.Downloader
                     {
                         bool CorrectArchive = true;
                         //явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-                        if (ArchiveHlp.IsArchive(CurrFileName))
+                        if (ArchiveHelper.IsArchive(CurrFileName))
                         {
-                            if (ArchiveHlp.TestArchive(CurrFileName))
+                            if (ArchiveHelper.TestArchive(CurrFileName))
                             {
                                 try
                                 {
                                     ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
                                 }
-                                catch (ArchiveHlp.ArchiveException)
+                                catch (ArchiveHelper.ArchiveException)
                                 {
                                     CorrectArchive = false;
                                 }

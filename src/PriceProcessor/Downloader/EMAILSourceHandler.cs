@@ -10,6 +10,7 @@ using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
 using Inforoom.Logging;
+using Inforoom.Common;
 
 
 namespace Inforoom.Downloader
@@ -301,7 +302,7 @@ namespace Inforoom.Downloader
             }
             try
             {
-                if (ArchiveHlp.TestArchive(UUEFileName))
+                if (ArchiveHelper.TestArchive(UUEFileName))
                 {
                     try
                     {
@@ -315,7 +316,7 @@ namespace Inforoom.Downloader
                             return Path.GetFileName(fileList[0]);
                         }
                     }
-                    catch (ArchiveHlp.ArchiveException)
+                    catch (ArchiveHelper.ArchiveException)
                     {
 
                     }
@@ -356,7 +357,7 @@ namespace Inforoom.Downloader
 						SourcesTable.colEMailFrom, GetCorrectEmailAddress(mbFrom.EmailAddress)));
 					foreach (DataRow drS in drLS)
 					{
-						if ((WildcardsHlp.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+						if ((WildcardsHelper.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
 							(String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
 						{
 							Matched = true;
@@ -443,16 +444,16 @@ namespace Inforoom.Downloader
 		protected bool CheckFile()
 		{
 			//явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-			if (ArchiveHlp.IsArchive(CurrFileName))
+			if (ArchiveHelper.IsArchive(CurrFileName))
 			{
-				if (ArchiveHlp.TestArchive(CurrFileName))
+				if (ArchiveHelper.TestArchive(CurrFileName))
 				{
 					try
 					{
                         ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 						return true;
 					}
-					catch (ArchiveHlp.ArchiveException)
+					catch (ArchiveHelper.ArchiveException)
 					{
 						return false;
 					}

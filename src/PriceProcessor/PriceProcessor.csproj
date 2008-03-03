@@ -64,10 +64,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common\ArchiveHlp.cs" />
-    <Compile Include="Common\FileHlp.cs" />
+    <Compile Include="Common\ArchiveHelper.cs" />
+    <Compile Include="Common\FileHelper.cs" />
     <Compile Include="Common\SimpleLog.cs" />
-    <Compile Include="Common\WildcardsHlp.cs" />
+    <Compile Include="Common\WildcardsHelper.cs" />
     <Compile Include="Downloader\BaseSourceHandler.cs" />
     <Compile Include="Downloader\ClearArchivedPriceSourceHandler.cs" />
     <Compile Include="Downloader\DocumentReaders\BaseDocumentReader.cs" />

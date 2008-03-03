@@ -12,6 +12,7 @@ using System.IO;
 using ExecuteTemplate;
 using Inforoom.Downloader.Documents;
 using Inforoom.Logging;
+using Inforoom.Common;
 
 
 namespace Inforoom.Downloader
@@ -413,7 +414,7 @@ and st.SourceID = 1";
 		{
 			//Массив файлов 
 			string[] Files = new string[] { InFile };
-			if (ArchiveHlp.IsArchive(InFile))
+			if (ArchiveHelper.IsArchive(InFile))
 			{
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
 			}

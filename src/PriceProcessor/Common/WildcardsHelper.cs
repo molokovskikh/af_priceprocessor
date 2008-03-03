@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Inforoom.Downloader
+namespace Inforoom.Common
 {
-    public sealed class WildcardsHlp
+    public sealed class WildcardsHelper
     {
         public static bool IsWildcards(string InputStr)
         {

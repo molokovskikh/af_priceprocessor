@@ -2,12 +2,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Inforoom.Downloader
+namespace Inforoom.Common
 {
 	/// <summary>
 	/// Summary description for Archive.
 	/// </summary>
-	public sealed class ArchiveHlp
+	public sealed class ArchiveHelper
 	{
 		//Максимальное время ожидания операции с процессом распаковки
 		public const int MaxArchiveTimeOut = 180 * 1000;

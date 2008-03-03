@@ -11,6 +11,7 @@ using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
 using System.Net.Mail;
 using System.Reflection;
+using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
@@ -66,15 +67,15 @@ and st.SourceID = 4";
 						{
 							bool CorrectArchive = true;
 							//явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
-							if (ArchiveHlp.IsArchive(CurrFileName))
+							if (ArchiveHelper.IsArchive(CurrFileName))
 							{
-								if (ArchiveHlp.TestArchive(CurrFileName))
+								if (ArchiveHelper.TestArchive(CurrFileName))
 								{
 									try
 									{
 										ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 									}
-									catch (ArchiveHlp.ArchiveException)
+									catch (ArchiveHelper.ArchiveException)
 									{
 										CorrectArchive = false;
 									}
@@ -191,7 +192,7 @@ and st.SourceID = 4";
 			bool processed;
 			//ћассив файлов 
 			string[] Files = new string[] { InFile };
-			if (ArchiveHlp.IsArchive(InFile))
+			if (ArchiveHelper.IsArchive(InFile))
 			{
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
 			}

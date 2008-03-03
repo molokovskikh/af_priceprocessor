@@ -6,6 +6,7 @@ using System.IO;
 using System.Data;
 using LumiSoft.Net.FTP.Client;
 using Inforoom.PriceProcessor.Properties;
+using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
@@ -52,7 +53,7 @@ namespace Inforoom.Downloader
                     if (!Convert.ToBoolean(drEnt["IsDirectory"]))
                     {
                         ShortFileName = drEnt["Name"].ToString();
-                        if ((WildcardsHlp.IsWildcards((string)dtSources.Rows[0][SourcesTable.colPriceMask]) && WildcardsHlp.Matched((string)dtSources.Rows[0][SourcesTable.colPriceMask], ShortFileName)) ||
+                        if ((WildcardsHelper.IsWildcards((string)dtSources.Rows[0][SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)dtSources.Rows[0][SourcesTable.colPriceMask], ShortFileName)) ||
                             (String.Compare(ShortFileName, (string)dtSources.Rows[0][SourcesTable.colPriceMask], true) == 0))
                         {
                             DateTime fileLastWriteTime = Convert.ToDateTime(drEnt["Date"]);

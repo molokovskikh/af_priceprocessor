@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Inforoom.Common
 {
-	public sealed class FileHlp
+	public sealed class FileHelper
 	{
 		public static string NormalizeDir(string InputDir)
 		{

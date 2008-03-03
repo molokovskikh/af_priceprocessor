@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using ExecuteTemplate;
 using Inforoom.Logging;
 using System.Configuration;
+using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
@@ -401,7 +402,7 @@ AND pd.AgencyEnabled= 1",
             if (Directory.Exists(TempDir))
                 Directory.Delete(TempDir, true);
             Directory.CreateDirectory(TempDir);
-            ArchiveHlp.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
+            ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
         }
 
         protected string FindFromArhive(string TempDir, string ExtrMask)
@@ -455,7 +456,7 @@ AND pd.AgencyEnabled= 1",
         protected bool ProcessPriceFile(string InFile, out string ExtrFile)
         {
             ExtrFile = InFile;
-            if (ArchiveHlp.IsArchive(InFile))
+            if (ArchiveHelper.IsArchive(InFile))
             {
                 ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
             }
