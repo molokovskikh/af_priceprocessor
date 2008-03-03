@@ -144,7 +144,7 @@ and st.SourceID = 4";
 			string PricePath = String.Empty;
 			try
 			{
-				PricePath = NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+				PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 				string[] ff = Directory.GetFiles(PricePath);
 
 				//Отсекаем файлы с некорректным расширением
@@ -291,7 +291,7 @@ and st.SourceID = 4";
 								cmdInsert.ExecuteNonQuery();
 								continue;
 							}
-							AptekaClientDirectory = NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+							AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
 							OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 							OutFileName = String.Empty;
 

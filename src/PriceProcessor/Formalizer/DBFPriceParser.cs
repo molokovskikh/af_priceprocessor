@@ -12,19 +12,16 @@ namespace Inforoom.Formalizer
 	{
 		public DBFPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
 		{
-			//mydr.Close();
 			conn.Close();
 		}
 		public override void Open()
 		{
 			convertedToANSI = true;
 			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"dBase 5.0\"", System.IO.Path.GetDirectoryName(priceFileName));
-			//dbcMain.ConnectionString = String.Format("Provider=vfpoledb.1;Data Source={0};Collating Sequence=RUSSIAN", System.IO.Path.GetDirectoryName(priceFileName));
 			dbcMain.Open();
 			try
 			{
 				OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from [{0}]", System.IO.Path.GetFileNameWithoutExtension(priceFileName)), dbcMain);
-				//da.Fill(dtPrice);
 				FillPrice(da);
 			}
 			finally

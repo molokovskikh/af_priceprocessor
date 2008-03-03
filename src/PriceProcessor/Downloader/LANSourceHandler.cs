@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.Data;
 using Inforoom.PriceProcessor.Properties;
+using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
@@ -20,7 +21,7 @@ namespace Inforoom.Downloader
             CurrFileName = String.Empty;
             try
             {
-				string PricePath = NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
+				string PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
                 string[] ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
 				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
                 foreach (string fs in ff)

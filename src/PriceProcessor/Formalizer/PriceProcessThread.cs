@@ -6,6 +6,7 @@ using MySql.Data.MySqlClient;
 using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.Configuration;
+using Inforoom.Common;
 
 
 namespace Inforoom.Formalizer
@@ -448,7 +449,6 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			string workStr = String.Empty;
-			//TempPath = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location ) + "\\" + PPTID + "\\";
 			TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(fileName) + "\\";
 			TempFileName = TempPath + Path.GetFileName(fileName);
 			InternalLog("Запущена нитка на обработку файла : {0}", fileName);
@@ -497,11 +497,11 @@ namespace Inforoom.Formalizer
 						if (formalizeOK)
 						{
 							//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-							File.Copy(TempFileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
 							DateTime ft = DateTime.UtcNow;
-							File.SetCreationTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
-							File.SetLastWriteTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
-							File.SetLastAccessTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+							File.SetCreationTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+							File.SetLastWriteTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+							File.SetLastAccessTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
 						}
 					}
 					catch(Exception e)
@@ -523,14 +523,14 @@ namespace Inforoom.Formalizer
 					{
 						//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
 						if (File.Exists(TempFileName))
-							File.Copy(TempFileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
 						else
 							//Копируем оригинальный файл в случае неизвестного файла
-							File.Copy(fileName, Settings.Default.BasePath + Path.GetFileName(fileName), true);
+							File.Copy(fileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
 						DateTime ft = DateTime.UtcNow;
-						File.SetCreationTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
-						File.SetLastWriteTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
-						File.SetLastAccessTimeUtc(Settings.Default.BasePath + Path.GetFileName(fileName), ft);
+						File.SetCreationTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+						File.SetLastWriteTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+						File.SetLastAccessTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
 						WarningLog(e, e.Message);
 						formalizeOK = true;
 					}

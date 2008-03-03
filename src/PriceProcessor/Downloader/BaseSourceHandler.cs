@@ -276,15 +276,14 @@ AND pd.AgencyEnabled= 1",
 
 		protected void CreateDirectoryPath()
 		{
-			DownHandlerPath = Path.GetFullPath(Settings.Default.TempPath) + Path.DirectorySeparatorChar + "Down" + this.sourceType;
+			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + this.sourceType;
 			if (!Directory.Exists(DownHandlerPath))
 				Directory.CreateDirectory(DownHandlerPath);
 			DownHandlerPath += Path.DirectorySeparatorChar;
 
-			DownHistoryPath = Path.GetFullPath(Settings.Default.HistoryPath);
+			DownHistoryPath = FileHelper.NormalizeDir(Settings.Default.HistoryPath);
 			if (!Directory.Exists(DownHistoryPath))
 				Directory.CreateDirectory(DownHistoryPath);
-			DownHistoryPath += Path.DirectorySeparatorChar;
 		}
 
         protected void CreateWorkConnection()
@@ -414,11 +413,6 @@ AND pd.AgencyEnabled= 1",
                 return String.Empty;
         }
 
-        protected string NormalizeDir(string InputDir)
-        {
-            return Path.GetFullPath(InputDir) + Path.DirectorySeparatorChar;
-        }
-
         protected string NormalizeFileName(string InputFilename)
         {
             string PathPart = String.Empty;
@@ -467,7 +461,7 @@ AND pd.AgencyEnabled= 1",
             }
             else
             {
-                string NormalName = Path.GetFullPath(Settings.Default.InboundPath) + Path.DirectorySeparatorChar + CurrPriceCode.ToString() + GetExt();
+                string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + CurrPriceCode.ToString() + GetExt();
                 try
                 {
                     if (File.Exists(NormalName))
