@@ -52,7 +52,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\Inbound0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Temp\\Inbound0")]
         public string InboundPath {
             get {
                 return ((string)(this["InboundPath"]));
@@ -61,7 +61,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\DownTemp")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Temp\\DownTemp")]
         public string TempPath {
             get {
                 return ((string)(this["TempPath"]));
@@ -71,18 +71,18 @@ namespace Inforoom.PriceProcessor.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("30")]
-        public int RequestInterval {
+        public int HandlerRequestInterval {
             get {
-                return ((int)(this["RequestInterval"]));
+                return ((int)(this["HandlerRequestInterval"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("30")]
-        public int Timeout {
+        public int HandlerTimeout {
             get {
-                return ((int)(this["Timeout"]));
+                return ((int)(this["HandlerTimeout"]));
             }
         }
         
@@ -106,7 +106,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ErrorList@subscribe.analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
         public string SMTPErrorList {
             get {
                 return ((string)(this["SMTPErrorList"]));
@@ -160,7 +160,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\DownHistory")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Temp\\DownHistory")]
         public string HistoryPath {
             get {
                 return ((string)(this["HistoryPath"]));
@@ -448,7 +448,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\Base")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Temp\\Base")]
         public string BasePath {
             get {
                 return ((string)(this["BasePath"]));
@@ -457,7 +457,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Temp\\ErrorFiles")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Temp\\ErrorFiles")]
         public string ErrorFilesPath {
             get {
                 return ((string)(this["ErrorFilesPath"]));
@@ -511,8 +511,8 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("([^\\d]*(?&lt;Day&gt;\\d*?)[\\s\\.\\-\\/])?(?&lt;Month&gt;[^\\s\\.\\-\\/]*?)[\\s\\.\\-\\/](?&lt" +
-            ";Year&gt;\\d+)([^\\d].*)?$")]
+        [global::System.Configuration.DefaultSettingValueAttribute("([^\\d]*(?<Day>\\d*?)[\\s\\.\\-\\/])?(?<Month>[^\\s\\.\\-\\/]*?)[\\s\\.\\-\\/](?<Year>\\d+)([^\\d" +
+            "].*)?$")]
         public string DateMask {
             get {
                 return ((string)(this["DateMask"]));
@@ -530,7 +530,7 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("WarningList@subscribe.analit.net")]
+        [global::System.Configuration.DefaultSettingValueAttribute("morozov@analit.net")]
         public string SMTPWarningList {
             get {
                 return ((string)(this["SMTPWarningList"]));
@@ -611,6 +611,15 @@ namespace Inforoom.PriceProcessor.Properties {
         public string ResponseDocBodyTemplateOnUnknownProvider {
             get {
                 return ((string)(this["ResponseDocBodyTemplateOnUnknownProvider"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("service@analit.net")]
+        public string ServiceMail {
+            get {
+                return ((string)(this["ServiceMail"]));
             }
         }
     }

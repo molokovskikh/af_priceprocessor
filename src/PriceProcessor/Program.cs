@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ServiceProcess;
 using System.Text;
 
-namespace PriceProcessor
+namespace Inforoom.PriceProcessor
 {
 	static class Program
 	{
@@ -12,12 +12,17 @@ namespace PriceProcessor
 		/// </summary>
 		static void Main()
 		{
+#if DEBUG
+			Monitor monitor = new Monitor();
+			monitor.Start();
+#else
 			ServiceBase[] ServicesToRun;
 			ServicesToRun = new ServiceBase[] 
 			{ 
 				new PriceProcessorService() 
 			};
 			ServiceBase.Run(ServicesToRun);
+#endif
 		}
 	}
 }

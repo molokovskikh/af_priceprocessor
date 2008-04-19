@@ -12,15 +12,15 @@
       <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="InboundPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\Inbound0</Value>
+      <Value Profile="(Default)">D:\Temp\Inbound0</Value>
     </Setting>
     <Setting Name="TempPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\DownTemp</Value>
+      <Value Profile="(Default)">D:\Temp\DownTemp</Value>
     </Setting>
-    <Setting Name="RequestInterval" Type="System.Int32" Scope="Application">
+    <Setting Name="HandlerRequestInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
     </Setting>
-    <Setting Name="Timeout" Type="System.Int32" Scope="Application">
+    <Setting Name="HandlerTimeout" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
     </Setting>
     <Setting Name="IMAPUser" Type="System.String" Scope="Application">
@@ -30,7 +30,7 @@
       <Value Profile="(Default)">123</Value>
     </Setting>
     <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">ErrorList@subscribe.analit.net</Value>
+      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">prccopy@analit.net</Value>
@@ -48,7 +48,7 @@
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
     <Setting Name="HistoryPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\DownHistory</Value>
+      <Value Profile="(Default)">D:\Temp\DownHistory</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNonExistentClient" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
@@ -144,10 +144,10 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="BasePath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\Base</Value>
+      <Value Profile="(Default)">D:\Temp\Base</Value>
     </Setting>
     <Setting Name="ErrorFilesPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\ErrorFiles</Value>
+      <Value Profile="(Default)">D:\Temp\ErrorFiles</Value>
     </Setting>
     <Setting Name="MaxErrorCount" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
@@ -165,13 +165,13 @@
       <Value Profile="(Default)">250</Value>
     </Setting>
     <Setting Name="DateMask" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">([^\d]*(?&amp;lt;Day&amp;gt;\d*?)[\s\.\-\/])?(?&amp;lt;Month&amp;gt;[^\s\.\-\/]*?)[\s\.\-\/](?&amp;lt;Year&amp;gt;\d+)([^\d].*)?$</Value>
+      <Value Profile="(Default)">([^\d]*(?&lt;Day&gt;\d*?)[\s\.\-\/])?(?&lt;Month&gt;[^\s\.\-\/]*?)[\s\.\-\/](?&lt;Year&gt;\d+)([^\d].*)?$</Value>
     </Setting>
     <Setting Name="FarmSystemEmail" Type="System.String" Scope="Application">
       <Value Profile="(Default)">farmsystem@analit.net</Value>
     </Setting>
     <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">WarningList@subscribe.analit.net</Value>
+      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="ResponseDocBodyTemplateOnNothingAttachs" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Добрый день.
@@ -225,6 +225,9 @@
 
 С уважением,
 АК "Инфорум".</Value>
+    </Setting>
+    <Setting Name="ServiceMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">service@analit.net</Value>
     </Setting>
   </Settings>
 </SettingsFile>
