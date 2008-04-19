@@ -20,31 +20,21 @@ namespace Inforoom.Downloader
 
 		protected override void ProcessData()
 		{
-			try
+			//Сканируем через некоторое время
+			if (DateTime.Now.Subtract(lastScan).TotalHours > Settings.Default.ClearScanInterval)
 			{
-				//Сканируем через некоторое время
-				if (DateTime.Now.Subtract(lastScan).TotalHours > Settings.Default.ClearScanInterval)
+				string[] archivedPrices = Directory.GetFiles(DownHistoryPath);
+
+				foreach (string priceFile in archivedPrices)
 				{
-					string[] archivedPrices = Directory.GetFiles(DownHistoryPath);
+					DateTime fileLastWrite = File.GetLastWriteTime(priceFile);
 
-					foreach (string priceFile in archivedPrices)
-					{
-						DateTime fileLastWrite = File.GetLastWriteTime(priceFile);
-
-						//Если разность в днях больше чем в настройки, то файл удяляем
-						if (DateTime.Now.Subtract(fileLastWrite).TotalDays > Settings.Default.DepthOfStorageArchivePrices)
-							File.Delete(priceFile);
-					}
-
-					lastScan = DateTime.Now;
+					//Если разность в днях больше чем в настройки, то файл удяляем
+					if (DateTime.Now.Subtract(fileLastWrite).TotalDays > Settings.Default.DepthOfStorageArchivePrices)
+						File.Delete(priceFile);
 				}
-			}
-			catch (ThreadAbortException)
-			{
-			}
-			catch (Exception ex)
-			{
-				LoggingToService(ex.ToString());
+
+				lastScan = DateTime.Now;
 			}
 		}
 
