@@ -16,5 +16,29 @@ namespace Inforoom.Common
 			return result;
 		}
 
+		public static void FileDelete(string FileName)
+		{
+			int DeleteErrorCount = 0;
+			bool DeleteSucces = false;
+			do
+			{
+				try
+				{
+					File.Delete(FileName);
+					DeleteSucces = true;
+				}
+				catch 
+				{
+					if (DeleteErrorCount < 10)
+					{
+						DeleteErrorCount++;
+						System.Threading.Thread.Sleep(500);
+					}
+					else
+						throw;
+				}
+			}
+			while (!DeleteSucces);
+		}
 	}
 }
