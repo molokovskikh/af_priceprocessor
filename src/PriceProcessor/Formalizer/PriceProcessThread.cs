@@ -7,6 +7,7 @@ using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.Configuration;
 using Inforoom.Common;
+using Inforoom.PriceProcessor;
 
 
 namespace Inforoom.Formalizer
@@ -17,6 +18,14 @@ namespace Inforoom.Formalizer
 		public string ErrorMessage = String.Empty;
 		public int ErrorCount = 0;
 	}
+
+	enum FormResults : int
+	{ 
+		OK = 2,
+		Warrning = 3,
+		Error = 5
+	}
+
 	/// <summary>
 	/// Summary description for Class1.
 	/// </summary>
@@ -25,18 +34,20 @@ namespace Inforoom.Formalizer
 		//идентификатор нити
 		private static int GlobalPPTID = -1;
 		private int PPTID;
-		//Имя обрабатываемого файла
-		private string fileName;
+
 		//Временный каталог для файла
 		private string TempPath;
 		//Имя файла, который реально проходит обработку
 		private string TempFileName;
 
+		/// <summary>
+		/// Ссылка на обрабатываемый элемент
+		/// </summary>
+		private PriceProcessItem _processItem;
+
 		//Соединение с базой
 		private MySqlConnection myconn;
 		private MySqlCommand mcLog = null;
-
-//		private int formID;
 
 		//Событие, выполняемое в нити
 		private ThreadStart ts;
@@ -62,25 +73,16 @@ namespace Inforoom.Formalizer
 
 		private BasePriceParser WorkPrice = null;
 
-		public PriceProcessThread(string FileName, string PrevErrorMessage)
+		public PriceProcessThread(PriceProcessItem item, string PrevErrorMessage)
 		{
 			this.tmFormalize = DateTime.UtcNow;
-			this.fileName = FileName;
 			this.PPTID = ++GlobalPPTID;
 			this.prevErrorMessage = PrevErrorMessage;
-			ts = new ThreadStart(ThreadWork);
-			t = new Thread(ts);
-			t.Name = String.Format("PPT{0}", PPTID);
-			t.Start();
-
-		}
-
-		public string FileName
-		{
-			get
-			{
-				return fileName;
-			}
+			this._processItem = item;
+			this.ts = new ThreadStart(ThreadWork);
+			this.t = new Thread(ts);
+			this.t.Name = String.Format("PPT{0}", PPTID);
+			this.t.Start();
 		}
 
 		public bool FormalizeOK
@@ -124,6 +126,17 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
+		/// Ссылка на обрабатываемый элемент
+		/// </summary>
+		public PriceProcessItem ProcessItem
+		{
+			get
+			{
+				return _processItem;
+			}
+		}
+
+		/// <summary>
 		/// Внутренее логирование
 		/// </summary>
 		/// <param name="Message"></param>
@@ -152,7 +165,7 @@ namespace Inforoom.Formalizer
 			}
 			else
 			{
-				SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p.priceCode, p.clientCode, String.Format("{0} ({1})", p.clientShortName, p.priceName) );
+				SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName) );
 			}
 
 
@@ -170,15 +183,15 @@ namespace Inforoom.Formalizer
 					myconn.Open();
 					try
 					{
-						mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs )";
+						mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs )";
 						mcLog.Parameters.Clear();
 						mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
-						mcLog.Parameters.AddWithValue("?PriceCode", p.priceCode);
+						mcLog.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
 						mcLog.Parameters.AddWithValue("?Form", p.formCount);
 						mcLog.Parameters.AddWithValue("?Unform", p.unformCount);
 						mcLog.Parameters.AddWithValue("?Zero", p.zeroCount);
 						mcLog.Parameters.AddWithValue("?Forb", p.forbCount);
-						mcLog.Parameters.AddWithValue("?ResultId", (p.maxLockCount <= Settings.Default.MinRepeatTranCount) ? 2 : 3);
+						mcLog.Parameters.AddWithValue("?ResultId", (p.maxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
 						mcLog.Parameters.AddWithValue("?TotalSecs", formSecs);					
 						mcLog.ExecuteNonQuery();
 					}
@@ -225,7 +238,7 @@ namespace Inforoom.Formalizer
 				mBody = String.Format(
 					@"Файл         : {0}
 Дата события : {1}", 
-					Path.GetFileName(fileName),
+					Path.GetFileName(_processItem.FilePath),
 					DateTime.Now);
 			}
 			else
@@ -252,7 +265,7 @@ namespace Inforoom.Formalizer
 @"Файл         : {0}
 Дата события : {1}
 Ошибка       : {2}", 
-					Path.GetFileName(fileName),
+					Path.GetFileName(_processItem.FilePath),
 					DateTime.Now,
 					Add);
 				Add = mBody;
@@ -290,7 +303,7 @@ namespace Inforoom.Formalizer
 				//Формирование заголовков письма и 
 				if (null != p)
 				{
-					GetBody("Ошибка формализации", ref Addition, ref messageSubject, ref messageBody, p.priceCode, p.clientCode, String.Format("{0} ({1})", p.clientShortName, p.priceName) );
+					GetBody("Ошибка формализации", ref Addition, ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName) );
 				}
 				else
 					if (ex is FormalizeException)
@@ -299,7 +312,7 @@ namespace Inforoom.Formalizer
 				}
 				else
 				{
-					GetBody("Ошибка формализации", ref Addition, ref messageSubject, ref messageBody, -1, -1, null);
+					GetBody("Ошибка формализации", ref Addition, ref messageSubject, ref messageBody, Convert.ToInt64(_processItem.PriceCode), -1, null);
 				}
 
 				//Пытаемся залогировать в базу
@@ -318,20 +331,12 @@ namespace Inforoom.Formalizer
 						try
 						{
 
-							if ((null != p) || (ex is FormalizeException))
-							{
-								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Addition, ?ResultId, ?TotalSecs)";
-								mcLog.Parameters.Clear();
-								mcLog.Parameters.AddWithValue("?PriceCode", (null != p) ? p.priceCode : ((FormalizeException)ex).priceCode);
-							}
-							else
-							{
-								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?Addition, ?ResultId, ?TotalSecs)";
-								mcLog.Parameters.Clear();
-							}
+							mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
+							mcLog.Parameters.Clear();
+							mcLog.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
 							mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 							mcLog.Parameters.AddWithValue("?Addition", Addition);
-							mcLog.Parameters.AddWithValue("?ResultId", 5);
+							mcLog.Parameters.AddWithValue("?ResultId", FormResults.Error);
 							mcLog.Parameters.AddWithValue("?TotalSecs", formSecs);					
 							mcLog.ExecuteNonQuery();
 						}
@@ -397,16 +402,13 @@ namespace Inforoom.Formalizer
 						{
 							if (-1 == e.priceCode)
 							{
-								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?Addition, ?ResultId, ?TotalSecs)";
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
 							}
 							else
 							{
-								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceCode, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceCode, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs)";
+								mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs)";
 								mcLog.Parameters.Clear();
-								mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
-								mcLog.Parameters.AddWithValue("?PriceCode", e.priceCode);
 								if (e is RollbackFormalizeException)
 								{
 									mcLog.Parameters.AddWithValue("?Form", ((RollbackFormalizeException)e).FormCount);
@@ -422,8 +424,10 @@ namespace Inforoom.Formalizer
 									mcLog.Parameters.AddWithValue("?Forb", DBNull.Value);
 								}
 							}
+							mcLog.Parameters.AddWithValue("?Host", Environment.MachineName);
+							mcLog.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
 							mcLog.Parameters.AddWithValue("?Addition", Addition);
-							mcLog.Parameters.AddWithValue("?ResultId", 5);
+							mcLog.Parameters.AddWithValue("?ResultId", FormResults.Error);
 							mcLog.Parameters.AddWithValue("?TotalSecs", formSecs);					
 							mcLog.ExecuteNonQuery();
 						}
@@ -449,9 +453,11 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			string workStr = String.Empty;
-			TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(fileName) + "\\";
-			TempFileName = TempPath + Path.GetFileName(fileName);
-			InternalLog("Запущена нитка на обработку файла : {0}", fileName);
+			//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
+			string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
+			TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
+			TempFileName = TempPath + Path.GetFileName(_processItem.FilePath);
+			InternalLog("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 			try
 			{
 				myconn = getConnection();
@@ -468,7 +474,7 @@ namespace Inforoom.Formalizer
 					{
 						try
 						{
-							WorkPrice = PricesValidator.Validate(myconn, fileName, TempFileName);
+							WorkPrice = PricesValidator.Validate(myconn, _processItem.FilePath, TempFileName, _processItem);
 						}
 						finally
 						{
@@ -480,6 +486,8 @@ namespace Inforoom.Formalizer
 								catch
 								{}
 						}
+
+						WorkPrice.downloaded = _processItem.Downloaded;
 
 						WorkPrice.Formalize();
 
@@ -497,20 +505,20 @@ namespace Inforoom.Formalizer
 						if (formalizeOK)
 						{
 							//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-							File.Copy(TempFileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, outPriceFileName, true);
 							DateTime ft = DateTime.UtcNow;
-							File.SetCreationTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
-							File.SetLastWriteTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
-							File.SetLastAccessTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+							File.SetCreationTimeUtc(outPriceFileName, ft);
+							File.SetLastWriteTimeUtc(outPriceFileName, ft);
+							File.SetLastAccessTimeUtc(outPriceFileName, ft);
 						}
 					}
 					catch(Exception e)
 					{
 						throw new FormalizeException(
 							String.Format(Settings.Default.FileCopyError, TempFileName, Settings.Default.BasePath, e), 
-							WorkPrice.clientCode, 
+							WorkPrice.firmCode, 
 							WorkPrice.priceCode, 
-							WorkPrice.clientShortName, 
+							WorkPrice.firmShortName, 
 							WorkPrice.priceName);
 					}
 
@@ -523,14 +531,14 @@ namespace Inforoom.Formalizer
 					{
 						//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
 						if (File.Exists(TempFileName))
-							File.Copy(TempFileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
+							File.Copy(TempFileName, outPriceFileName, true);
 						else
 							//Копируем оригинальный файл в случае неизвестного файла
-							File.Copy(fileName, FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), true);
+							File.Copy(_processItem.FilePath, outPriceFileName, true);
 						DateTime ft = DateTime.UtcNow;
-						File.SetCreationTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
-						File.SetLastWriteTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
-						File.SetLastAccessTimeUtc(FileHelper.NormalizeDir(Settings.Default.BasePath) + Path.GetFileName(fileName), ft);
+						File.SetCreationTimeUtc(outPriceFileName, ft);
+						File.SetLastWriteTimeUtc(outPriceFileName, ft);
+						File.SetLastAccessTimeUtc(outPriceFileName, ft);
 						WarningLog(e, e.Message);
 						formalizeOK = true;
 					}
@@ -576,7 +584,7 @@ namespace Inforoom.Formalizer
 				if (!(e is System.Threading.ThreadAbortException))
 				{
 					InternalLog(e.ToString());
-					InternalMailSendBy(Settings.Default.FarmSystemEmail, "service@analit.net", "ThreadWork Error", e.ToString());
+					InternalMailSendBy(Settings.Default.FarmSystemEmail, Settings.Default.ServiceMail, "ThreadWork Error", e.ToString());
 				}
 			}
 			finally
@@ -590,7 +598,7 @@ namespace Inforoom.Formalizer
 				{
 					InternalLog("Ошибка при удалении {0}", e);
 				}
-				InternalLog( "Нитка завершила работу с прайсом {0}: {1}.", fileName, workStr);
+				InternalLog( "Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
 				FormalizeEnd = true;
 			}
 		}
