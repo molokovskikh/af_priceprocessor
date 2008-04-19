@@ -6,6 +6,8 @@ using System.IO;
 using Inforoom.Formalizer;
 using Inforoom.Logging;
 using Inforoom.Common;
+using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -15,6 +17,15 @@ namespace Inforoom.Downloader
             : base()
         { 
         }
+
+		protected DateTime GetPriceDateTime()
+		{
+			DateTime d = (dtSources.Rows[0][SourcesTable.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDate];
+			PriceProcessItem item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]));
+			if (item != null)
+				d = item.FileTime.Value;
+			return d;
+		}
 
         protected override void ProcessData()
         {
@@ -63,8 +74,9 @@ namespace Inforoom.Downloader
 								string ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
                                 {
-									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), Path.GetFileName(ExtrFile));
-                                    UpdateDB(CurrPriceCode, CurrPriceDate);
+									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
+									//todo: это надо включить
+                                    //UpdateDB(CurrPriceCode, CurrPriceDate);
                                 }
                                 else
                                 {
@@ -127,11 +139,35 @@ namespace Inforoom.Downloader
 
 		private void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
 		{
-			ulong PriceID = Logging(CurrPriceCode, AdditionMessage, resultCode, ArchFileName, ExtrFileName);
+			ulong PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
 			if (PriceID != 0)
+			{
 				CopyToHistory(PriceID, CurrFileName);
+				//≈сли все сложилось, то копируем файл в Inbound
+				if (resultCode == DownPriceResultCode.SuccessDownload)
+				{
+					string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId.ToString() + "_" + PriceID.ToString() + GetExt();
+					try
+					{
+						if (File.Exists(NormalName))
+							File.Delete(NormalName);
+						File.Copy(ExtrFileName, NormalName);
+						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
+						//устанавливаем врем€ загрузки файла
+						item.FileTime = CurrPriceDate;
+						PriceItemList.AddItem(item);
+						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " скачан/распакован");
+					}
+					catch (Exception ex)
+					{
+						//todo: по идее здесь не должно возникнуть ошибок, но на вс€кий случай логируем, возможно надо включить логирование письмом
+						//Logging(CurrPriceCode, String.Format("Ќе удалось перенести файл '{0}' в каталог '{1}'", ExtrFile, NormalName));
+						SimpleLog.Log(this.GetType().Name + CurrPriceItemId.ToString(), String.Format("Ќе удалось перенести файл '{0}' в каталог '{1}': {2} ", ExtrFileName, NormalName, ex));
+					}
+				}
+			}
 			else
-				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
+				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
 		}
 
 		void CopyToHistory(UInt64 PriceID, string SavedFile)
