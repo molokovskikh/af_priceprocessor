@@ -531,7 +531,7 @@ namespace Inforoom.Formalizer
 			drCore["Volume"] = GetFieldValue(PriceFields.Volume);
 			drCore["Quantity"] = GetFieldValueObject(PriceFields.Quantity);
 			drCore["Note"] = GetFieldValue(PriceFields.Note);
-			drCore["VitallyImportant"] = GetFieldValueObject(PriceFields.VitallyImportant);
+			drCore["VitallyImportant"] = Convert.ToByte( (bool)GetFieldValueObject(PriceFields.VitallyImportant) );
 			drCore["RequestRatio"] = GetFieldValueObject(PriceFields.RequestRatio);
 			drCore["RegistryCost"] = GetFieldValueObject(PriceFields.RegistryCost);
 			object MaxBoundCost = GetFieldValueObject(PriceFields.MaxBoundCost);
@@ -1623,6 +1623,49 @@ and a.ProductId is null";
 			}
 		}
 
+		protected bool GetBoolValue(PriceFields priceField, string mask)
+		{
+			bool value = false;
+
+			string[] trueValues = new string[] { "истина", "true"};
+			string[] falseValues = new string[] { "ложь", "false" };
+
+			string[] selectedValues = null;
+
+			try
+			{
+				foreach (string boolValue in trueValues)
+					if (boolValue.Equals(mask, StringComparison.OrdinalIgnoreCase))
+						selectedValues = trueValues;
+
+				foreach (string boolValue in falseValues)
+					if (boolValue.Equals(mask, StringComparison.OrdinalIgnoreCase))
+						selectedValues = falseValues;
+
+				string fieldValue = GetFieldValue(priceField);
+
+				if (selectedValues != null)
+				{
+					Regex reRussian = new Regex(selectedValues[0], RegexOptions.IgnoreCase);
+					Match mRussian = reRussian.Match(fieldValue);
+					Regex reEnglish = new Regex(selectedValues[1], RegexOptions.IgnoreCase);
+					Match mEnglish = reEnglish.Match(fieldValue);
+					value = (mRussian.Success || mEnglish.Success);
+				}
+				else
+				{
+					Regex re = new Regex(mask);
+					Match m = re.Match(fieldValue);
+					value = (m.Success);
+				}
+			}
+			catch
+			{
+			}
+
+			return value;
+		}
+
 		/// <summary>
 		/// Получить значение поля Junk
 		/// </summary>
@@ -1639,52 +1682,21 @@ and a.ProductId is null";
 			}
 			if (!JunkValue)
 			{
-				try
-				{
-					Regex re = new Regex(junkPos);
-					Match m = re.Match( GetFieldValue(PriceFields.Junk) );
-					JunkValue = m.Success;
-				}
-				catch
-				{
-				}
+				JunkValue = GetBoolValue(PriceFields.Junk, junkPos);
 			}
 
 			return JunkValue;
 		}
 
+
 		public bool GetAwaitValue()
 		{
-			bool AwaitValue = false;
-
-			try
-			{
-				Regex re = new Regex(awaitPos);
-				Match m = re.Match( GetFieldValue(PriceFields.Await) );
-				AwaitValue = (m.Success);
-			}
-			catch
-			{
-			}
-
-			return AwaitValue;
+			return GetBoolValue(PriceFields.Await, awaitPos);
 		}
 
-		public byte GetVitallyImportantValue()
-		{ 
-			byte VitallyImportantValue = 0;
-
-			try
-			{
-				Regex re = new Regex(vitallyImportantMask);
-				Match m = re.Match(GetFieldValue(PriceFields.VitallyImportant));
-				VitallyImportantValue = (m.Success) ? (byte)1 : (byte)0;
-			}
-			catch
-			{ 
-			}
-
-			return VitallyImportantValue;
+		public bool GetVitallyImportantValue()
+		{
+			return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
 		}
 
 		public object GetRequestRatioValue()
