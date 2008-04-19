@@ -12,7 +12,7 @@ namespace Inforoom.Logging
 	/// </summary>
 	public sealed class SimpleLog
 	{
-		private static StreamWriter log;
+		private static TextWriter log;
 		private static ArrayList mess;
 
 		private static string logFileName = String.Empty;
@@ -80,13 +80,15 @@ namespace Inforoom.Logging
 			if (Logging)
 				try
 				{
-					log = new StreamWriter(
-						logFileName, 
-						true, 
-						System.Text.Encoding.GetEncoding(1251) 
-						);
+					StreamWriter streamWriter = new StreamWriter(
+							logFileName,
+							true,
+							System.Text.Encoding.GetEncoding(1251)
+					);
+					streamWriter.AutoFlush = true;
 
-					log.AutoFlush = true;
+					log = TextWriter.Synchronized(streamWriter);
+
 					log.WriteLine("\n\n\n");
 
 					Log("Log", "Started.");
