@@ -46,7 +46,7 @@ namespace Inforoom.Downloader
 
                 DataSet dsEntries = m_pFtpClient.GetList();
 
-				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+				DateTime priceDateTime = GetPriceDateTime();
 
                 foreach (DataRow drEnt in dsEntries.Tables["DirInfo"].Rows)
                 {
@@ -80,7 +80,7 @@ namespace Inforoom.Downloader
             }
             catch (Exception ex)
             {
-                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), ex.ToString());
+				Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), ex.ToString());
             }
             finally
             { 
