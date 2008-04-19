@@ -23,7 +23,7 @@ namespace Inforoom.Downloader
             {
 				string PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
                 string[] ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
-				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+				DateTime priceDateTime = GetPriceDateTime();
                 foreach (string fs in ff)
                 {
 					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);
@@ -43,14 +43,14 @@ namespace Inforoom.Downloader
                         }
                         catch (Exception ex)
                         {
-                            Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+							Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
                         }
                     }
                 }
             }
             catch(Exception exDir)
             {
-                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), String.Format("Не удалось получить список файлов : {0}", exDir));
+				Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось получить список файлов : {0}", exDir));
             }
         }
 
