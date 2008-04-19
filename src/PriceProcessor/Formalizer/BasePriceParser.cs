@@ -997,12 +997,12 @@ and a.ProductId is null";
 							if (downloaded)
 							{
 								mcClear.CommandText = String.Format(
-									"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+									"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
 							}
 							else
 							{
 								mcClear.CommandText = String.Format(
-									"UPDATE usersettings.PriceItems SET RowCount={0}, UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+									"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
 								if (costCode.HasValue)
 									mcClear.CommandText += String.Format(
 										"update usersettings.intersection_update_info, usersettings.intersection set lastsent = default where intersection_update_info.id = intersection.id and intersection.PriceCode = {0} and intersection.CostCode = {1}", priceCode, costCode);
