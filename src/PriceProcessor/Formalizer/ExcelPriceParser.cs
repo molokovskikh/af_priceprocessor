@@ -110,6 +110,7 @@ namespace Inforoom.Formalizer
 
 			blackCount = 0;
 
+			base.Open();
 		}
 
 		public override bool Next()

@@ -794,7 +794,7 @@ namespace Inforoom.Formalizer
 		{
 			sb.AppendLine("insert into farm.Core0 (" +
 				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
-				"Period, Junk, Await, BaseCost, MinBoundCost, " +
+				"Period, Junk, Await, MinBoundCost, " +
 				"VitallyImportant, RequestRatio, RegistryCost, " +
 				"MaxBoundCost, OrderCost, MinOrderCount, " +
 				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ");
@@ -803,7 +803,6 @@ namespace Inforoom.Formalizer
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
 			sb.AppendFormat("{0}, ", drCore["Junk"]);
 			sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
-			sb.AppendFormat("{0}, ", (drCore["BaseCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["BaseCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
 			sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());

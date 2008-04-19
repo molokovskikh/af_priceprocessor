@@ -99,6 +99,8 @@ namespace Inforoom.Formalizer
 				CurrPos = Convert.ToInt32(startLine);
 			else
 				CurrPos = 0;
+
+			base.Open();
 		}
 	}
 }

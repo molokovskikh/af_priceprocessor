@@ -31,6 +31,8 @@ namespace Inforoom.Formalizer
 			}
 
 			CurrPos = 0;
+
+			base.Open();
 		}
 	}
 }

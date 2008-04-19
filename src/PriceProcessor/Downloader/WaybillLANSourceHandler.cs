@@ -32,8 +32,8 @@ SELECT
   st.EMailFrom,
   st.ReaderClassName
 FROM
-  usersettings.ClientsData             as st
-  INNER JOIN Documents.Waybill_Sources AS CD ON CD.FirmCode = st.FirmCode
+  usersettings.ClientsData             as cd
+  INNER JOIN Documents.Waybill_Sources AS st ON CD.FirmCode = st.FirmCode
 WHERE
 cd.FirmStatus   = 1
 and st.SourceID = 4";

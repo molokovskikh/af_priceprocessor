@@ -22,13 +22,13 @@ namespace Inforoom.PriceProcessor
 		public Monitor()
 		{
 			alHandlers = new List<AbstractHandler>();
-			alHandlers.Add(new LANSourceHandler());
-			alHandlers.Add(new FTPSourceHandler());
-			alHandlers.Add(new HTTPSourceHandler());
-			alHandlers.Add(new EMAILSourceHandler());
-			alHandlers.Add(new WaybillSourceHandler());
-			alHandlers.Add(new WaybillLANSourceHandler());
-			alHandlers.Add(new ClearArchivedPriceSourceHandler());
+			//alHandlers.Add(new LANSourceHandler());
+			//alHandlers.Add(new FTPSourceHandler());
+			//alHandlers.Add(new HTTPSourceHandler());
+			//alHandlers.Add(new EMAILSourceHandler());
+			//alHandlers.Add(new WaybillSourceHandler());
+			//alHandlers.Add(new WaybillLANSourceHandler());
+			//alHandlers.Add(new ClearArchivedPriceSourceHandler());
 			alHandlers.Add(new FormalizeHandler());
 			tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}

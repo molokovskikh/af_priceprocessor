@@ -1,6 +1,10 @@
 using System;
 using System.Data;
 using MySql.Data.MySqlClient;
+using System.Text;
+using System.Net.Mail;
+using Inforoom.PriceProcessor.Properties;
+using System.Configuration;
 
 
 namespace Inforoom.Formalizer
@@ -18,11 +22,55 @@ namespace Inforoom.Formalizer
 				TmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf.ToString();
 				SetFieldName(pf, mydr.Rows[0][TmpName] is DBNull ? String.Empty : (string)mydr.Rows[0][TmpName]);
 			}
-
 		}
 
 		public override void Open()	
 		{
+			StringBuilder sb = new StringBuilder();
+
+			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
+			{
+				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)))
+					if (!dtPrice.Columns.Contains(GetFieldName(pf)))
+						sb.AppendFormat("{0} настроено на {1}\n", pf, GetFieldName(pf));
+			}
+
+			if (sb.Length > 0)
+			{
+				DataRow drProvider = MySqlHelper.ExecuteDataRow(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, @"
+select
+  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
+  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
+from
+usersettings.pricescosts pc,
+usersettings.pricesdata pd,
+usersettings.clientsdata cd,
+farm.regions r
+where
+    pc.PriceItemId = ?PriceItemId
+and pd.PriceCode = pc.PriceCode
+and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and cd.FirmCode = pd.FirmCode
+and r.RegionCode = cd.RegionCode",
+								 new MySqlParameter("?PriceItemId", priceItemId));
+				string subject = "PriceProcessor: В файле отсутствуют настроенные поля";
+				string body = String.Format(@"
+Здравствуйте!
+  В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
+  Следующие поля отсутствуют:
+{2}
+
+С уважением,
+  PriceProcessor.",
+				  drProvider["PriceName"],
+				  drProvider["ShortFirmName"],
+				  sb.ToString());
+
+				MailMessage m = new MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body);
+				SmtpClient client = new SmtpClient(Settings.Default.SMTPHost);
+				client.Send(m);
+			}
+
 		}
 
 		public override string GetFieldValue(PriceFields PF)
