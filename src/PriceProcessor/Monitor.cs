@@ -3,15 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Inforoom.Logging;
+using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Formalizer;
 
-namespace Inforoom.Downloader
+namespace Inforoom.PriceProcessor
 {
 	/// <summary>
 	/// Класс для отслеживание работа обработчиков источников.
 	/// </summary>
 	public class Monitor
 	{
-		private List<BaseSourceHandler> alHandlers = null;
+		private List<AbstractHandler> alHandlers = null;
 		private bool Stopped = false;
 
 		private Thread tMonitor;
@@ -19,7 +21,7 @@ namespace Inforoom.Downloader
 
 		public Monitor()
 		{
-			alHandlers = new List<BaseSourceHandler>();
+			alHandlers = new List<AbstractHandler>();
 			alHandlers.Add(new LANSourceHandler());
 			alHandlers.Add(new FTPSourceHandler());
 			alHandlers.Add(new HTTPSourceHandler());
@@ -27,7 +29,8 @@ namespace Inforoom.Downloader
 			alHandlers.Add(new WaybillSourceHandler());
 			alHandlers.Add(new WaybillLANSourceHandler());
 			alHandlers.Add(new ClearArchivedPriceSourceHandler());
-            tMonitor = new Thread(new ThreadStart(MonitorWork));
+			alHandlers.Add(new FormalizeHandler());
+			tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}
 
 		//запускаем монитор с обработчиками
@@ -35,18 +38,18 @@ namespace Inforoom.Downloader
 		{
             try
             {
-                SimpleLog.Log("Monitor", "Downloader started.");
-                foreach (BaseSourceHandler bsh in alHandlers)
+				foreach (AbstractHandler handler in alHandlers)
                     try
                     {
-                        bsh.StartWork();
+                        handler.StartWork();
                     }
                     catch(Exception exHan)
                     {
-                        SimpleLog.Log("Monitor.Start." + bsh.GetType().Name, "Ошибка при старте обработчика : {0}", exHan);
+                        SimpleLog.Log("Monitor.Start." + handler.GetType().Name, "Ошибка при старте обработчика : {0}", exHan);
                     }
                 tMonitor.Start();
-            }
+				SimpleLog.Log("Monitor", "PriceProcessor запущен.");
+			}
             catch (Exception ex)
             {
                 SimpleLog.Log("Monitor.Start", "Ошибка при старте монитора : {0}", ex);
@@ -61,21 +64,21 @@ namespace Inforoom.Downloader
                 Stopped = true;
                 System.Threading.Thread.Sleep(3000);
                 tMonitor.Abort();
-                foreach (BaseSourceHandler bs in alHandlers)
+				foreach (AbstractHandler handler in alHandlers)
                     try
                     {
-                        bs.StopWork();
+                        handler.StopWork();
                     }
                     catch (Exception exHan)
                     {
-                        SimpleLog.Log("Monitor.Stop." + bs.GetType().Name, "Ошибка при останове обработчика : {0}", exHan);
+                        SimpleLog.Log("Monitor.Stop." + handler.GetType().Name, "Ошибка при останове обработчика : {0}", exHan);
                     }
             }
             catch (Exception ex)
             {
                 SimpleLog.Log("Monitor.Stop", "Ошибка при останове монитора : {0}", ex);
             }
-            SimpleLog.Log("Monitor", "Downloader stoppped.");
+			SimpleLog.Log("Monitor", "PriceProcessor остановлен.");
         }
 
 		private void MonitorWork()
@@ -83,10 +86,10 @@ namespace Inforoom.Downloader
 			while (!Stopped)
 				try
 				{
-					foreach(BaseSourceHandler bs in alHandlers)
+					foreach(AbstractHandler handler in alHandlers)
 					{
-						if (!bs.Worked)
-							bs.RestartWork();
+						if (!handler.Worked)
+							handler.RestartWork();
 					}
 
 					System.Threading.Thread.Sleep(500);
