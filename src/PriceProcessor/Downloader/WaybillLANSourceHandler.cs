@@ -89,7 +89,7 @@ and st.SourceID = 4";
 								if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
 								{
 									MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.DocumentFailMail,
-										String.Format("{1} ({2})", CurrPriceCode, drLanSource[WaybillSourcesTable.colShortName], SourceType),
+										String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
 										String.Format("Код поставщика : {0}\nФирма: {1}\nДата: {2}\nПричина: {3}",
 											drLanSource[WaybillSourcesTable.colFirmCode], 
 											drLanSource[SourcesTable.colShortName], 
