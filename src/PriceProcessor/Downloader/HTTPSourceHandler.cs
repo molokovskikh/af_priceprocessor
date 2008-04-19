@@ -66,7 +66,7 @@ namespace Inforoom.Downloader
             string DownFileName = String.Empty;
             try
             {
-				DateTime priceDateTime = (dtSources.Rows[0][SourcesTable.colPriceDateTime] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDateTime];
+				DateTime priceDateTime = GetPriceDateTime();
 
                 DateTime fileLastWriteTime = GetFileDateTime(PricePath, dtSources.Rows[0][SourcesTable.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTable.colHTTPPassword].ToString());
 
@@ -81,7 +81,7 @@ namespace Inforoom.Downloader
             }
             catch (Exception ex)
             {
-                Logging(Convert.ToInt32(dtSources.Rows[0][SourcesTable.colPriceCode]), ex.ToString());
+                Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), ex.ToString());
             }
         }
 
