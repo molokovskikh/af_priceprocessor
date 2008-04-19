@@ -45,7 +45,7 @@ namespace Inforoom.Formalizer
 						DataTable TableNames = dbcMain.GetOleDbSchemaTable(OleDbSchemaGuid.Tables,
 							new object[] {null, null, null, "TABLE"});
 						if (0 == TableNames.Rows.Count)
-							throw new WarningFormalizeException(Settings.Default.SheetsNotExistsError, clientCode, priceCode, clientShortName, priceName);
+							throw new WarningFormalizeException(Settings.Default.SheetsNotExistsError, firmCode, priceCode, firmShortName, priceName);
 						string Sheet = null;
 						foreach(DataRow dr in TableNames.Rows)
 						{
@@ -61,7 +61,7 @@ namespace Inforoom.Formalizer
 						DataTable ColumnNames = dbcMain.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
 							new object[] {null, null, Sheet, null});
 						if (0 == ColumnNames.Rows.Count)
-							throw new WarningFormalizeException(Settings.Default.FieldsNotExistsError, clientCode, priceCode, clientShortName, priceName);
+							throw new WarningFormalizeException(Settings.Default.FieldsNotExistsError, firmCode, priceCode, firmShortName, priceName);
 						string FieldNames = "F1";
 						int MaxColCount = (ColumnNames.Rows.Count >= 256) ? 255 : ColumnNames.Rows.Count;
 						//todo: Поставить проверку на максимальное кол-во столбцов
