@@ -108,7 +108,7 @@ namespace Inforoom.Formalizer
 			}
 
 			if (fds.Count < 1)
-				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, clientCode, priceCode, clientShortName, priceName);
+				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, firmCode, priceCode, firmShortName, priceName);
 
 			//Производим сортировку полей по полую с позицией начала
 			fds.Sort( new TxtFieldDef() );
