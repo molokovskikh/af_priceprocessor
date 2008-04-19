@@ -11,6 +11,7 @@ using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
 using Inforoom.Logging;
 using Inforoom.Common;
+using Inforoom.PriceProcessor;
 
 
 namespace Inforoom.Downloader
@@ -37,108 +38,101 @@ namespace Inforoom.Downloader
 
         protected override void ProcessData()
         {
-            try
-            {
-                using (IMAP_Client c = new IMAP_Client())
-                {
-                    c.Connect(Settings.Default.IMAPHost, 143);
-					IMAPAuth(c);
-                    c.SelectFolder("INBOX");
+			using (IMAP_Client c = new IMAP_Client())
+			{
+				c.Connect(Settings.Default.IMAPHost, 143);
+				IMAPAuth(c);
+				c.SelectFolder("INBOX");
 
-					try
+				try
+				{
+					IMAP_FetchItem[] items = null;
+					List<string> ProcessedUID = null;
+					do
 					{
-						IMAP_FetchItem[] items = null;
-						List<string> ProcessedUID = null;
-						do
-						{
-							Ping();
-							ProcessedUID = new List<string>();
-							items = null;
-							IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
-							sequence_set.Parse("1:*", long.MaxValue);
-							items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
-							Ping();
+						Ping();
+						ProcessedUID = new List<string>();
+						items = null;
+						IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
+						sequence_set.Parse("1:*", long.MaxValue);
+						items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
+						Ping();
 
-							if ((items != null) && (items.Length > 0))
+						if ((items != null) && (items.Length > 0))
+						{
+							foreach (IMAP_FetchItem item in items)
 							{
-								foreach (IMAP_FetchItem item in items)
+								Mime m = null;
+								IMAP_FetchItem[] OneItem = null;
+								try
 								{
-									Mime m = null;
-									IMAP_FetchItem[] OneItem = null;
+									IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
+									sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
+									OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
+									m = Mime.Parse(OneItem[0].MessageData);
+									currentUID = item.UID;
+									ProcessedUID.Add(item.UID.ToString());
+									Ping();
+								}
+								catch (Exception ex)
+								{
+									if (!errorUIDs.Contains(item.UID))
+									{
+										m = null;
+										MemoryStream ms = null;
+										if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
+											ms = new MemoryStream(OneItem[0].MessageData);
+										ErrorMailSend(item.UID, ex.ToString(), ms);
+										errorUIDs.Add(item.UID);
+									}
+									SimpleLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+								}
+
+								if (m != null)
+								{
 									try
 									{
-										IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
-										sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
-										OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
-										m = Mime.Parse(OneItem[0].MessageData);
-										currentUID = item.UID;
-										ProcessedUID.Add(item.UID.ToString());
-										Ping();
+										ProcessMime(m);
 									}
 									catch (Exception ex)
 									{
+										if (ProcessedUID.Contains(item.UID.ToString()))
+											ProcessedUID.Remove(item.UID.ToString());
 										if (!errorUIDs.Contains(item.UID))
 										{
-											m = null;
 											MemoryStream ms = null;
 											if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
 												ms = new MemoryStream(OneItem[0].MessageData);
 											ErrorMailSend(item.UID, ex.ToString(), ms);
 											errorUIDs.Add(item.UID);
 										}
-										SimpleLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+										SimpleLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
 									}
+								}
 
-									if (m != null)
-									{
-										try
-										{
-											ProcessMime(m);
-										}
-										catch (Exception ex)
-										{
-											if (ProcessedUID.Contains(item.UID.ToString()))
-												ProcessedUID.Remove(item.UID.ToString());
-											if (!errorUIDs.Contains(item.UID))
-											{
-												MemoryStream ms = null;
-												if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
-													ms = new MemoryStream(OneItem[0].MessageData);
-												ErrorMailSend(item.UID, ex.ToString(), ms);
-												errorUIDs.Add(item.UID);
-											}
-											SimpleLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
-										}
-									}
+							}//foreach (IMAP_FetchItem) 
 
-								}//foreach (IMAP_FetchItem) 
+						}//(items != null) && (items.Length > 0)
 
-							}//(items != null) && (items.Length > 0)
-
-							//Производим удаление писем
-							if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
-							{
-								string uidseq = String.Empty;
-								uidseq = String.Join(",", ProcessedUID.ToArray());
-								IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
-								sequence_setDelete.Parse(uidseq, long.MaxValue);
-								c.DeleteMessages(sequence_setDelete, true);
-							}
-
+						//Производим удаление писем
+						if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
+						{
+							string uidseq = String.Empty;
+							uidseq = String.Join(",", ProcessedUID.ToArray());
+							IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
+							sequence_setDelete.Parse(uidseq, long.MaxValue);
+							c.DeleteMessages(sequence_setDelete, true);
 						}
-						while ((items != null) && (items.Length > 0));
+
 					}
-					finally
-					{
-						try { c.Disconnect(); }
-						catch { }
-					}                    
-                }
-            }
-            catch(Exception ex)
-            {
-                LoggingToService(ex.ToString());
-            }
+					while ((items != null) && (items.Length > 0));
+				}
+				finally
+				{
+					try { c.Disconnect(); }
+					catch { }
+				}
+			}
         }
 
 		protected virtual void IMAPAuth(IMAP_Client c)
@@ -217,7 +211,7 @@ namespace Inforoom.Downloader
 						Settings.Default.SMTPHost,
 						25,
 						Environment.MachineName,
-						"service@analit.net",
+						Settings.Default.ServiceMail,
 						new string[] { Settings.Default.UnrecLetterMail },
 						ms);
 				}
@@ -367,8 +361,9 @@ namespace Inforoom.Downloader
 								string ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
 								{
-									LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), Path.GetFileName(ExtrFile));
-									UpdateDB(CurrPriceCode, DateTime.Now);
+									LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
+									//todo: это надо включить
+									//UpdateDB(CurrPriceCode, DateTime.Now);
 								}
 								else
 								{
@@ -391,11 +386,35 @@ namespace Inforoom.Downloader
 
 		private void LogDownloaderPrice(Mime Letter, string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
 		{
-			ulong PriceID = Logging(CurrPriceCode, AdditionMessage, resultCode, ArchFileName, ExtrFileName);
+			ulong PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
 			if (PriceID != 0)
+			{
 				CopyToHistory(PriceID, Letter);
+
+				//Если все сложилось, то копируем файл в Inbound
+				if (resultCode == DownPriceResultCode.SuccessDownload)
+				{
+					string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId.ToString() + "_" + PriceID.ToString() + GetExt();
+					try
+					{
+						if (File.Exists(NormalName))
+							File.Delete(NormalName);
+						File.Copy(ExtrFileName, NormalName);
+						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
+						item.FileTime = DateTime.Now;
+						PriceItemList.AddItem(item);
+						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " скачан/распакован");
+					}
+					catch (Exception ex)
+					{
+						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
+						//Logging(CurrPriceCode, String.Format("Не удалось перенести файл '{0}' в каталог '{1}'", ExtrFile, NormalName));
+						SimpleLog.Log(this.GetType().Name + CurrPriceItemId.ToString(), String.Format("Не удалось перенести файл '{0}' в каталог '{1}': {2} ", ExtrFileName, NormalName, ex));
+					}
+				}
+			}
 			else
-				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceCode));
+				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
 		}
 
 		void CopyToHistory(UInt64 PriceID, Mime Letter)
