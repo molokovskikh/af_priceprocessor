@@ -6,21 +6,26 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Text;
 
-namespace PriceProcessor
+namespace Inforoom.PriceProcessor
 {
 	public partial class PriceProcessorService : ServiceBase
 	{
+		private Monitor monitor = null;
+
 		public PriceProcessorService()
 		{
 			InitializeComponent();
+			monitor = new Monitor();
 		}
 
 		protected override void OnStart(string[] args)
 		{
+			monitor.Start();
 		}
 
 		protected override void OnStop()
 		{
+			monitor.Stop();
 		}
 	}
 }

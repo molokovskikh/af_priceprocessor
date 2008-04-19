@@ -1,4 +1,4 @@
-﻿namespace PriceProcessor
+﻿namespace Inforoom.PriceProcessor
 {
 	partial class PriceProcessorService
 	{
