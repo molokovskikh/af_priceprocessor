@@ -129,13 +129,14 @@ namespace Inforoom.Formalizer
 	//Класс содержит название полей из таблицы FormRules
 	public sealed class FormRules
 	{
-		public static string colPriceFMT = "PriceFmt";
+		public static string colParserClassName = "ParserClassName";
 		public static string colSelfPriceName = "SelfPriceName";
-		public static string colClientShortName = "ClientShortName";
-		public static string colClientCode = "ClientCode";
+		public static string colFirmShortName = "FirmShortName";
+		public static string colFirmCode = "FirmCode";
 		public static string colFormByCode = "FormByCode";
-		public static string colFormID = "FormID";
-		public static string colSelfPriceCode = "SelfPriceCode";
+		public static string colPriceCode = "PriceCode";
+		public static string colPriceItemId = "PriceItemId";
+		public static string colCostCode = "CostCode";
 		public static string colParentSynonym = "ParentSynonym";
 		public static string colCurrency = "Currency";
 		public static string colNameMask = "NameMask";
@@ -143,13 +144,11 @@ namespace Inforoom.Formalizer
 		public static string colSelfAwaitPos = "SelfAwaitPos";
 		public static string colSelfJunkPos = "SelfJunkPos";
 		public static string colSelfVitallyImportantMask = "SelfVitallyImportantMask";
-		public static string colSelfPosNum = "SelfPosNum";
-		public static string colSelfFlag = "SelfFlag";
+		public static string colPrevRowCount = "RowCount";
+		public static string colPriceType = "PriceType";
 		public static string colDelimiter = "Delimiter";
 		public static string colBillingStatus = "BillingStatus";
 		public static string colFirmStatus = "FirmStatus";
-		public static string colFirmSegment = "FirmSegment";
-		public static string colHasParentPrice = "HasParentPrice";
 		public static string colCostType = "CostType";
 	}
 
@@ -260,7 +259,7 @@ namespace Inforoom.Formalizer
 		//Кол-во "запрещенных" позиций
 		public int forbCount = 0;
 
-		//Максимальное кол-во блокировок при 
+		//Максимальное кол-во рестартов транзакций при применении прайс-листа в базу данных
 		public int maxLockCount = 0;
 
 		protected string priceFileName;
@@ -269,28 +268,30 @@ namespace Inforoom.Formalizer
 		//имя прайса
 		public string	priceName;
 		//Имя клиента
-		public string	clientShortName;
+		public string	firmShortName;
 		//Код клиента
-		public System.Int64	clientCode;
-		//ключ правил разбора прайса
-		protected System.Int64		formID;
+		public long	firmCode;
 		//ключ прайса
-		public System.Int64		priceCode = -1;
+		public long		priceCode = -1;
+		//код ценовой колонки, может быть не установлен
+		public long?	costCode;
+
+		//Является ли обрабатываемый прайс-лист загруженным?
+		public bool downloaded = false;
+
+		//ключ для priceitems
+		public long priceItemId;
 		//индекс цены с таким же кодом как у прайса в списке цен (currentCoreCosts)
 		public int				priceCodeCostIndex = -1;
 		//родительский синоним : прайс-родитель, нужен для выбора различных параметров
-		protected System.Int64		parentSynonym;
+		protected long		parentSynonym;
 		//Кол-во распознаных позиций в прошлый раз
-		protected System.Int64		posNum;
-		//Сегмент прайса
-		protected int				firmSegment;
+		protected long		prevRowCount;
 		//производить формализацию по коду
 		protected bool				formByCode;
 		//валюта прайса
 		protected string			priceCurrency;
 
-		//Формат прайса
-		protected string priceFmt;
 		//Маска, которая накладывается на имя позиции
 		protected string nameMask;
 		//Запрещенные слова, которые могут быть в имени
@@ -306,8 +307,8 @@ namespace Inforoom.Formalizer
 		protected int    priceType;
 		//Является ли текущий прайс ценовой колонкой прайса-родителя
 		protected bool hasParentPrice;
-		//Тип ценовых колонок прайса-родителя: 1 - мультиколоночный, 2 - многофайловый
-		protected int costType;
+		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
+		protected CostTypes costType;
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI = false;
@@ -344,19 +345,19 @@ namespace Inforoom.Formalizer
 			FieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
 			
 			priceName = mydr.Rows[0][FormRules.colSelfPriceName].ToString();
-			clientShortName = mydr.Rows[0][FormRules.colClientShortName].ToString();
-			clientCode = Convert.ToInt64(mydr.Rows[0][FormRules.colClientCode]); 
+			firmShortName = mydr.Rows[0][FormRules.colFirmShortName].ToString();
+			firmCode = Convert.ToInt64(mydr.Rows[0][FormRules.colFirmCode]); 
 			formByCode = Convert.ToBoolean(mydr.Rows[0][FormRules.colFormByCode]);
-			formID = Convert.ToInt64(mydr.Rows[0][FormRules.colFormID]); 
-			priceCode = Convert.ToInt64(mydr.Rows[0][FormRules.colSelfPriceCode]); 
+			priceItemId = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceItemId]); 
+			priceCode = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceCode]);
+			costCode = (mydr.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(mydr.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(mydr.Rows[0][FormRules.colParentSynonym]); 
 			priceCurrency = mydr.Rows[0][FormRules.colCurrency].ToString();
-			firmSegment = Convert.ToInt32(mydr.Rows[0][FormRules.colFirmSegment]);
-			hasParentPrice = Convert.ToBoolean(mydr.Rows[0][FormRules.colHasParentPrice]);
-			costType = Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
+			//todo: не помню зачем используется это поле, имеет true, если формализовали ценовую колонку много файлового прайс-листа
+			hasParentPrice = false;
+			costType = (CostTypes)Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
 
 
-			priceFmt = ((string)mydr.Rows[0][FormRules.colPriceFMT]).ToUpper();
 			nameMask = mydr.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)mydr.Rows[0][FormRules.colNameMask];
 
 			//Производим попытку разобрать строку с "запрещенными выражениями"
@@ -387,25 +388,25 @@ namespace Inforoom.Formalizer
 			awaitPos = mydr.Rows[0][FormRules.colSelfAwaitPos].ToString();
 			junkPos  = mydr.Rows[0][FormRules.colSelfJunkPos].ToString();
 			vitallyImportantMask = mydr.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
-			posNum = mydr.Rows[0][FormRules.colSelfPosNum] is DBNull ? 0 : Convert.ToInt64(mydr.Rows[0][FormRules.colSelfPosNum]);
-			priceType = Convert.ToInt32(mydr.Rows[0][FormRules.colSelfFlag]);
+			prevRowCount = mydr.Rows[0][FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(mydr.Rows[0][FormRules.colPrevRowCount]);
+			priceType = Convert.ToInt32(mydr.Rows[0][FormRules.colPriceType]);
 
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
-				toughMask = new ToughMask(nameMask, clientCode, priceCode, clientShortName, priceName);
+				toughMask = new ToughMask(nameMask, firmCode, priceCode, firmShortName, priceName);
 
 			string selectCostFormRulesSQL = String.Empty;
-			if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostsFormRules cfr where pc.ShowPriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode);
+			if (costType == CostTypes.MultiColumn)
+				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", priceCode);
 			else
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostsFormRules cfr where pc.PriceCode={0} and cfr.FR_ID = pc.PriceCode and cfr.PC_CostCode = pc.CostCode", priceCode);
+				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", priceCode, costCode.Value);
 
 			MySqlDataAdapter daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, MyConn );
 			DataTable dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
 
 			if ((0 == dtPricesCost.Rows.Count) && (Settings.Default.ASSORT_FLG != priceType))
-				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, clientCode, priceCode, clientShortName, priceName);
+				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, firmCode, priceCode, firmShortName, priceName);
 			foreach(DataRow r in dtPricesCost.Rows)
 				currentCoreCosts.Add(
 					new CoreCost(
@@ -419,19 +420,19 @@ namespace Inforoom.Formalizer
 				);
 
 			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
-			if ((Settings.Default.ASSORT_FLG != priceType) && !hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+			if ((Settings.Default.ASSORT_FLG != priceType) && (costType == CostTypes.MultiColumn))
 			{
 				if (1 == currentCoreCosts.Count)
 				{
 					if ( !(currentCoreCosts[0] as CoreCost).baseCost )
-						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
+						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, firmCode, priceCode, firmShortName, priceName);
 				}
 				else
 				{
 					CoreCost[] bc = Array.FindAll<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.baseCost; });
 					if (bc.Length == 0)
 					{
-						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, clientCode, priceCode, clientShortName, priceName);
+						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, firmCode, priceCode, firmShortName, priceName);
 					}
 					else
 						if (bc.Length > 1)
@@ -440,7 +441,7 @@ namespace Inforoom.Formalizer
 								String.Format(Settings.Default.DoubleBaseCostsError,
 									(bc[0] as CoreCost).costCode,
 									(bc[1] as CoreCost).costCode),
-								clientCode, priceCode, clientShortName, priceName);
+								firmCode, priceCode, firmShortName, priceName);
 						}
 						else
 						{
@@ -451,7 +452,7 @@ namespace Inforoom.Formalizer
 				}
 
 				if (((this is TXTFixedPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFixedPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
-					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, clientCode, priceCode, clientShortName, priceName);
+					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, firmCode, priceCode, firmShortName, priceName);
 
 				priceCodeCostIndex = Array.FindIndex<CoreCost>((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.costCode == priceCode; });
 				if (priceCodeCostIndex == -1)
@@ -555,8 +556,6 @@ namespace Inforoom.Formalizer
 			drCore["Await"] = Convert.ToByte( (bool)GetFieldValueObject(PriceFields.Await) );
 
 			drCore["Currency"] = ACurrency;
-			if ( !checkZeroCost(ABaseCost) )
-				drCore["BaseCost"] = ABaseCost;
 			drCore["MinBoundCost"] = GetFieldValueObject(PriceFields.MinBoundCost);
 
 
@@ -583,7 +582,7 @@ namespace Inforoom.Formalizer
 		{
 			DataRow drZero = dtZero.NewRow();
 
-			drZero["PriceCode"] = priceCode;
+			drZero["PriceItemId"] = priceItemId;
 			drZero["Name"] = GetFieldValueObject(PriceFields.Name1);
 			drZero["FirmCr"] = GetFieldValueObject(PriceFields.FirmCr);
 			drZero["Code"] = GetFieldValueObject(PriceFields.Code);
@@ -613,7 +612,7 @@ namespace Inforoom.Formalizer
 		public void InsertToUnrec(Int64 AProductId, Int64 ACodeFirmCr, int AStatus, bool AJunk, string ACurrency)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
-			drUnrecExp["PriceCode"] = priceCode;
+			drUnrecExp["PriceItemId"] = priceItemId;
 			drUnrecExp["Name1"] = GetFieldValue(PriceFields.Name1);
 			drUnrecExp["FirmCr"] = GetFieldValue(PriceFields.FirmCr);
 			drUnrecExp["Code"] = GetFieldValue(PriceFields.Code);
@@ -653,7 +652,7 @@ namespace Inforoom.Formalizer
 		public void InsertIntoForb(string PosName)
 		{
 			DataRow newRow = dsMyDB.Tables["Forb"].NewRow();
-			newRow["PriceCode"] = priceCode;
+			newRow["PriceItemId"] = priceItemId;
 			newRow["Forb"] = PosName;
 			try
 			{
@@ -695,7 +694,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get UnrecExp");
 			daUnrecExp = new MySqlDataAdapter(
-				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
+				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
 			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.CommandTimeout = 0;
@@ -705,7 +704,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Zero");
 			daZero = new MySqlDataAdapter(
-				String.Format("SELECT * FROM farm.Zero WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
+				String.Format("SELECT * FROM farm.Zero WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
 			daZero.InsertCommand = cbZero.GetInsertCommand();
 			daZero.InsertCommand.CommandTimeout = 0;
@@ -714,7 +713,7 @@ namespace Inforoom.Formalizer
 
 			SimpleLog.Log(getParserID(), "get Forb");
 			daForb = new MySqlDataAdapter(
-				String.Format("SELECT * FROM farm.Forb WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
+				String.Format("SELECT * FROM farm.Forb WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
 			daForb.InsertCommand = cbForb.GetInsertCommand();
 			daForb.InsertCommand.CommandTimeout = 0;
@@ -861,13 +860,13 @@ namespace Inforoom.Formalizer
 		{
 			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{
-				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
+				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, firmCode, priceCode, firmShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 			}
 			else
 			{
-				if (formCount * 1.6 < posNum)
+				if (formCount * 1.6 < prevRowCount)
 				{
-					throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, clientCode, priceCode, clientShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
+					throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, firmCode, priceCode, firmShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
 				}
 				else
 				{
@@ -893,32 +892,50 @@ namespace Inforoom.Formalizer
 
 							mcClear.Parameters.Clear();
 
-							if (priceType != Settings.Default.ASSORT_FLG)
+							if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
 							{
-								//Удаляем цены из CoreCosts
-								System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
-								sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
-								bool FirstInsertCoreCosts = true;
-								foreach (CoreCost c in currentCoreCosts)
+								mcClear.CommandText = String.Format(@"
+delete
+  farm.CoreCosts,
+  farm.Core0
+from
+  farm.CoreCosts,
+  farm.Core0
+where
+    CoreCosts.Core_Id = Core0.Id
+and Core0.PriceCode = {0}
+and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
+								sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+							}
+							else
+							{
+								if (priceType != Settings.Default.ASSORT_FLG)
 								{
-									if (!FirstInsertCoreCosts)
-										sbDelCoreCosts.Append(", ");
-									FirstInsertCoreCosts = false;
-									sbDelCoreCosts.Append(c.costCode.ToString());
+									//Удаляем цены из CoreCosts
+									System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
+									sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
+									bool FirstInsertCoreCosts = true;
+									foreach (CoreCost c in currentCoreCosts)
+									{
+										if (!FirstInsertCoreCosts)
+											sbDelCoreCosts.Append(", ");
+										FirstInsertCoreCosts = false;
+										sbDelCoreCosts.Append(c.costCode.ToString());
+									}
+									sbDelCoreCosts.Append(");");
+
+									if (currentCoreCosts.Count > 0)
+									{
+										//Производим удаление цен
+										mcClear.CommandText = sbDelCoreCosts.ToString();
+										sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+									}
 								}
-								sbDelCoreCosts.Append(");");
 
-                                if (currentCoreCosts.Count > 0)
-                                {
-                                    //Производим удаление цен
-                                    mcClear.CommandText = sbDelCoreCosts.ToString();
-                                    sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-                                }
-                            }							
-
-							//Добавляем команду на удаление данных из Core
-							mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode); 
-							sbLog.AppendFormat("DelFromCoreAndCosts={0}  ", mcClear.ExecuteNonQuery());
+								//Добавляем команду на удаление данных из Core
+								mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
+								sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
+							}
 
 							if (insertCoreAndCoreCostsCommandList.Length > 0)
 							{
@@ -953,20 +970,20 @@ and a.ProductId is null";
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
 
 
-							mcClear.CommandText = String.Format("delete from farm.Zero where PriceCode={0}", priceCode);
+							mcClear.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
 							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
 
-							mcClear.CommandText = String.Format("delete from farm.Forb where PriceCode={0}", priceCode);
+							mcClear.CommandText = String.Format("delete from farm.Forb where PriceItemId={0}", priceItemId);
 							sbLog.AppendFormat("DelFromForb={0}  ", mcClear.ExecuteNonQuery());
 
-							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceCode={0} limit 1", priceCode), MyConn);
+							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), MyConn);
 							daBlockedPrice.SelectCommand.Transaction = myTrans;
 							DataTable dtBlockedPrice = new DataTable();
 							daBlockedPrice.Fill(dtBlockedPrice);
 
 							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
-								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceCode={0}", priceCode);
+								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
 								sbLog.AppendFormat("DelFromUnrecExp={0}  ", mcClear.ExecuteNonQuery());
 							}
 
@@ -975,9 +992,24 @@ and a.ProductId is null";
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
 
 							//Производим обновление DateLastForm в информации о формализации
-							mcClear.CommandText = String.Format(
-								"UPDATE usersettings.price_update_info SET RowCount={0}, DateLastForm=now(), UnformCount={1} WHERE PriceCode={2};", formCount, unformCount, priceCode);
+							//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
 							mcClear.Parameters.Clear();
+							if (downloaded)
+							{
+								mcClear.CommandText = String.Format(
+									"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+							}
+							else
+							{
+								mcClear.CommandText = String.Format(
+									"UPDATE usersettings.PriceItems SET RowCount={0}, UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+								if (costCode.HasValue)
+									mcClear.CommandText += String.Format(
+										"update usersettings.intersection_update_info, usersettings.intersection set lastsent = default where intersection_update_info.id = intersection.id and intersection.PriceCode = {0} and intersection.CostCode = {1}", priceCode, costCode);
+								else
+									mcClear.CommandText += String.Format(
+										"update usersettings.intersection_update_info set lastsent = default where intersection_update_info.PriceCode = {0}", priceCode);
+							}
 							mcClear.ExecuteNonQuery();
 
 							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
@@ -1085,7 +1117,7 @@ and a.ProductId is null";
 									costCount = ProcessCosts();
 									object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
 									//Производим проверку для мультиколоночных прайсов
-									if (!hasParentPrice && (costType == (int)CostTypes.MultiColumn))
+									if (costType == CostTypes.MultiColumn)
 									{
 										//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
 										//или если количество определенно и оно равно 0
@@ -1095,6 +1127,7 @@ and a.ProductId is null";
 											continue;
 										}
 										else
+											//todo: По-моему, здесь это не имеет смысл
 											currBaseCost = (currentCoreCosts[priceCodeCostIndex] as CoreCost).cost;
 									}
 									else
@@ -1453,8 +1486,6 @@ and a.ProductId is null";
 				res = toughDate.Analyze( PeriodValue );
 				if (DateTime.MaxValue.Equals(res))
 				{
-					//throw new WarningFormalizeException(String.Format(Settings.Default.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
-					//SendMessageToOperator("Предупреждение", String.Format(Settings.Default.PeriodParseError, PeriodValue), clientCode, priceCode, clientShortName, priceName);
 					return DBNull.Value;
 				}
 				return res;
@@ -1712,7 +1743,7 @@ and a.ProductId is null";
 
 		public string getParserID()
 		{
-			return  String.Format("{0}.{1}", this.GetType().Name, priceCode);
+			return String.Format("{0}.{1}.{2}", this.GetType().Name, priceCode, costCode);
 		}
 
 		public bool checkZeroCost(decimal cost)
