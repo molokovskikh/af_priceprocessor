@@ -735,11 +735,18 @@ namespace Inforoom.Formalizer
 			return (da.Update(dt));
 		}
 
-		private string[] GetSQLToInsertCoreAndCoreCosts()
+		private string[] GetSQLToInsertCoreAndCoreCosts(out string SynonymUpdateCommand, out string SynonymFirmCrUpdateCommand)
 		{
+			SynonymUpdateCommand = null;
+			SynonymFirmCrUpdateCommand = null;
+
 			if (dtCore.Rows.Count > 0)
 			{
 				List<string> commandList = new List<string>();
+
+				List<string> synonymCodes = new List<string>();
+				List<string> synonymFirmCrCodes = new List<string>();
+
 				string lastCommand = String.Empty;
 				System.Text.StringBuilder sb = new System.Text.StringBuilder();
 				DataRow drCore;
@@ -748,6 +755,13 @@ namespace Inforoom.Formalizer
 				{
 					drCore = dtCore.Rows[i];
 					InsertCorePosition(drCore, sb);
+
+					if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
+						synonymCodes.Add(drCore["SynonymCode"].ToString());
+
+					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
+
 					if (priceType != Settings.Default.ASSORT_FLG)
 						InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
 
@@ -763,6 +777,10 @@ namespace Inforoom.Formalizer
 				lastCommand = sb.ToString();
 				if (!String.IsNullOrEmpty(lastCommand))
 					commandList.Add(lastCommand);
+
+				SynonymUpdateCommand = "update farm.Synonym set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+
+				SynonymFirmCrUpdateCommand = "update farm.SynonymFirmCr set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";				
 
 				return commandList.ToArray();
 			}
@@ -869,7 +887,9 @@ namespace Inforoom.Formalizer
 				}
 				else
 				{
-					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts();
+					string SynonymUpdateCommand = null, SynonymFirmCrUpdateCommand = null;
+
+					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
@@ -964,6 +984,14 @@ and a.ProductId is null";
 								mcClear.Parameters.Clear();
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
 								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
+
+								mcClear.CommandText = SynonymUpdateCommand;
+								mcClear.Parameters.Clear();
+								sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
+
+								mcClear.CommandText = SynonymFirmCrUpdateCommand;
+								mcClear.Parameters.Clear();
+								sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
 							}
 							else
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
@@ -990,7 +1018,7 @@ and a.ProductId is null";
 							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), myTrans));
 							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
 
-							//Производим обновление DateLastForm в информации о формализации
+							//Производим обновление PriceDate и LastFormalization в информации о формализации
 							//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
 							mcClear.Parameters.Clear();
 							if (downloaded)
