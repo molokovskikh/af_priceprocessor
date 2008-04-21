@@ -229,5 +229,24 @@
     <Setting Name="ServiceMail" Type="System.String" Scope="Application">
       <Value Profile="(Default)">service@analit.net</Value>
     </Setting>
+    <Setting Name="MaxWaybillAttachmentSize" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="ResponseDocSubjectTemplateOnMaxWaybillAttachment" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Размер документа (накладные, отказы) больше доспустимого значения</Value>
+    </Setting>
+    <Setting Name="ResponseDocBodyTemplateOnMaxWaybillAttachment" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к. одно из вложений имеет размер больше маскимально допустимого значения в {0} Кб.
+
+Пожалуйста, изменив содержимое вложения, отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК "Инфорум".
+</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

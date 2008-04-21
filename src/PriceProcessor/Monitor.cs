@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor
 			//alHandlers.Add(new WaybillSourceHandler());
 			//alHandlers.Add(new WaybillLANSourceHandler());
 			//alHandlers.Add(new ClearArchivedPriceSourceHandler());
-			alHandlers.Add(new FormalizeHandler());
+			//alHandlers.Add(new FormalizeHandler());
 			tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}
 

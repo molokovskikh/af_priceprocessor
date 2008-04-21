@@ -622,5 +622,42 @@ namespace Inforoom.PriceProcessor.Properties {
                 return ((string)(this["ServiceMail"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int MaxWaybillAttachmentSize {
+            get {
+                return ((int)(this["MaxWaybillAttachmentSize"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Размер документа (накладные, отказы) больше доспустимого значения")]
+        public string ResponseDocSubjectTemplateOnMaxWaybillAttachment {
+            get {
+                return ((string)(this["ResponseDocSubjectTemplateOnMaxWaybillAttachment"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к. одно из вложений имеет размер больше маскимально допустимого значения в {0} Кб.
+
+Пожалуйста, изменив содержимое вложения, отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".
+")]
+        public string ResponseDocBodyTemplateOnMaxWaybillAttachment {
+            get {
+                return ((string)(this["ResponseDocBodyTemplateOnMaxWaybillAttachment"]));
+            }
+        }
     }
 }

@@ -47,6 +47,7 @@ namespace Inforoom.Downloader
 			AptekaClientCode = null;
 			currentType = null;
 			int CorrectAddresCount = CorrectClientAddress(m.MainEntity.To, ref EmailList);
+			//¬се хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
 			bool res = (m.Attachments.Length > 0) && (CorrectAddresCount == 1);
 			//≈сли не сопоставили с клиентом
 			if (CorrectAddresCount == 0)
@@ -74,6 +75,26 @@ namespace Inforoom.Downloader
 						causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMultiDomen;
 						causeBody = Settings.Default.ResponseDocBodyTemplateOnMultiDomen;
 					}
+					else
+						if (m.Attachments.Length > 0)
+						{ 
+							bool attachmentsIsBigger = false;
+							foreach(MimeEntity attachment in m.Attachments)
+								if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
+								{
+									attachmentsIsBigger = true;
+									break;
+								}
+							if (attachmentsIsBigger)
+							{
+								res = false;
+
+								systemError = String.Format("ѕисьмо содержит вложение размером больше максимально допустимого значени€ ({0}  б).", Settings.Default.MaxWaybillAttachmentSize);
+
+								causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment;
+								causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment, Settings.Default.MaxWaybillAttachmentSize);
+							}
+						}
 			return res;
 		}
 
