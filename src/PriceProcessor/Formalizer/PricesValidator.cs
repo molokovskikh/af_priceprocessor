@@ -79,7 +79,7 @@ select
   FR.JunkPos                                            as SelfJunkPos,
   FR.AwaitPos                                           as SelfAwaitPos,
   FR.VitallyImportantMask                               as SelfVitallyImportantMask,
-  ifnull(FR.ParentSynonym, pd.PriceCode)                as ParentSynonym,
+  ifnull(pd.ParentSynonym, pd.PriceCode)                as ParentSynonym,
   PFR.*,
   pricefmts.FileExtention,
   pricefmts.ParserClassName
