@@ -357,6 +357,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					//и отправляем уведомление
 					if ((hi.ErrorCount > Settings.Default.MaxErrorCount) && (!p.ProcessItem.Downloaded))
 					{
+						SimpleLog.Log(this.GetType().Name, "Удаляем файл из-за большого кол-ва ошибок: FileName:{0} ErrorCount:{1} Downloaded:{2} ErrorMessage:{3} PriceItemId:{4}", p.ProcessItem.FilePath, hi.ErrorCount, p.ProcessItem.Downloaded, hi.ErrorMessage, p.ProcessItem.PriceItemId);
 						try
 						{
 							PriceItemList.list.Remove(p.ProcessItem);

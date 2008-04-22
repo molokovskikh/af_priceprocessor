@@ -668,31 +668,26 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void Prepare()
 		{
-			SimpleLog.Log(getParserID(), "get Forbidden");
 			daForbidden = new MySqlDataAdapter(
 				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", priceCode), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
-			SimpleLog.Log(getParserID(), "get Synonym");
 			daSynonym = new MySqlDataAdapter(
 				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 
-			SimpleLog.Log(getParserID(), "get SynonymFirmCr");
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM farm.SynonymFirmCr WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 
-			SimpleLog.Log(getParserID(), "get Core");
 			daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
 
-			SimpleLog.Log(getParserID(), "get UnrecExp");
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
@@ -702,7 +697,6 @@ namespace Inforoom.Formalizer
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
 			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
 
-			SimpleLog.Log(getParserID(), "get Zero");
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Zero WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbZero = new MySqlCommandBuilder(daZero);
@@ -711,7 +705,6 @@ namespace Inforoom.Formalizer
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
 
-			SimpleLog.Log(getParserID(), "get Forb");
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Forb WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			cbForb = new MySqlCommandBuilder(daForb);
@@ -721,12 +714,9 @@ namespace Inforoom.Formalizer
 			dtForb = dsMyDB.Tables["Forb"];
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
 
-			SimpleLog.Log(getParserID(), "get CoreCosts");
 			daCoreCosts = new MySqlDataAdapter("SELECT * FROM farm.CoreCosts LIMIT 0", MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
-
-			SimpleLog.Log(getParserID(), "stop Core");
 		}
 
 		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
@@ -1092,12 +1082,10 @@ and a.ProductId is null";
 
 			try
 			{
-                SimpleLog.Log(getParserID(), "Open prepare connection");
                 MyConn.Open();
 
 				try
 				{
-                    SimpleLog.Log(getParserID(), "Start prepare transaction");
                     myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 					DateTime tmPrepare = DateTime.UtcNow;
@@ -1105,15 +1093,11 @@ and a.ProductId is null";
 					{
 						try
 						{
-                            SimpleLog.Log(getParserID(), "Start prepare method");
                             Prepare();
-                            SimpleLog.Log(getParserID(), "Stop prepare method");
                         }
 						finally
 						{
-                            SimpleLog.Log(getParserID(), "Commiting prepare");
                             myTrans.Commit();
-                            SimpleLog.Log(getParserID(), "Commited prepare");
                         }
 					}
 					finally
