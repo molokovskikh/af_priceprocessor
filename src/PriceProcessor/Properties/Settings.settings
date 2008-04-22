@@ -248,5 +248,11 @@
 АК "Инфорум".
 </Value>
     </Setting>
+    <Setting Name="RemotingPort" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">888</Value>
+    </Setting>
+    <Setting Name="RemotingServiceName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">RemotePriceProcessor</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -55,15 +55,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\MySqlData5\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="RemotePricePricessor, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="RemotePriceProcessor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\RemotePricePricessor.dll</HintPath>
+      <HintPath>..\lib\RemotePriceProcessor.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Management" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -130,6 +131,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RemotePricePricessorService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="PriceProcessorResource.resx">

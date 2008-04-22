@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor", "PriceProc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor.Test", "PriceProcessor.Test\PriceProcessor.Test.csproj", "{1E627B3F-1151-48EA-ABA7-DE10247FCB6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemotePricePricessor", "RemotePricePricessor\RemotePricePricessor.csproj", "{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemotePriceProcessor", "RemotePricePricessor\RemotePriceProcessor.csproj", "{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}"
 EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
@@ -17,7 +17,7 @@ Global
 		SccProjectUniqueName2 = PriceProcessor.Test\\PriceProcessor.Test.csproj
 		SccLocalPath2 = .
 		SccProjectFilePathRelativizedFromConnection2 = PriceProcessor.Test\\
-		SccProjectUniqueName3 = RemotePricePricessor\\RemotePricePricessor.csproj
+		SccProjectUniqueName3 = RemotePricePricessor\\RemotePriceProcessor.csproj
 		SccLocalPath3 = .
 		SccProjectFilePathRelativizedFromConnection3 = RemotePricePricessor\\
 	EndGlobalSection

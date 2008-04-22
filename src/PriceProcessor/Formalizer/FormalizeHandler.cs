@@ -45,7 +45,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			//Получили список файдов и добавил его на обраобтку
 			foreach (string priceFile in Directory.GetFiles(Settings.Default.InboundPath))
+			{
 				AddPriceFileToList(priceFile);
+				//Если файл имеет префикс "d", то значит он был закачан в прошлый раз, поэтому сейчас с ним никак не удастся поработать
+				if (Path.GetFileName(priceFile).StartsWith("d", StringComparison.OrdinalIgnoreCase))
+					try
+					{
+						FileHelper.FileDelete(priceFile);
+					} catch { }
+			}
 
 			htEMessages = new Hashtable();
 

@@ -5,6 +5,12 @@ using System.Threading;
 using Inforoom.Logging;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Http;
+using Inforoom.PriceProcessor.Properties;
+using RemotePricePricessor;
+
 
 namespace Inforoom.PriceProcessor
 {
@@ -21,15 +27,25 @@ namespace Inforoom.PriceProcessor
 
 		public Monitor()
 		{
+			ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
+
+			RemotingConfiguration.RegisterWellKnownServiceType(
+			  typeof(RemotePricePricessorService),
+			  Settings.Default.RemotingServiceName,
+			  WellKnownObjectMode.Singleton);
+
 			alHandlers = new List<AbstractHandler>();
-			//alHandlers.Add(new LANSourceHandler());
-			//alHandlers.Add(new FTPSourceHandler());
-			//alHandlers.Add(new HTTPSourceHandler());
-			//alHandlers.Add(new EMAILSourceHandler());
-			//alHandlers.Add(new WaybillSourceHandler());
-			//alHandlers.Add(new WaybillLANSourceHandler());
-			//alHandlers.Add(new ClearArchivedPriceSourceHandler());
-			//alHandlers.Add(new FormalizeHandler());
+
+			alHandlers.Add(new FormalizeHandler());
+
+			alHandlers.Add(new LANSourceHandler());
+			alHandlers.Add(new FTPSourceHandler());
+			alHandlers.Add(new HTTPSourceHandler());
+			alHandlers.Add(new EMAILSourceHandler());
+			alHandlers.Add(new WaybillSourceHandler());
+			alHandlers.Add(new WaybillLANSourceHandler());
+			alHandlers.Add(new ClearArchivedPriceSourceHandler());
+
 			tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}
 

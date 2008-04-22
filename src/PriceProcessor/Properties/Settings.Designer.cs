@@ -659,5 +659,23 @@ namespace Inforoom.PriceProcessor.Properties {
                 return ((string)(this["ResponseDocBodyTemplateOnMaxWaybillAttachment"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("888")]
+        public int RemotingPort {
+            get {
+                return ((int)(this["RemotingPort"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("RemotePriceProcessor")]
+        public string RemotingServiceName {
+            get {
+                return ((string)(this["RemotingServiceName"]));
+            }
+        }
     }
 }
