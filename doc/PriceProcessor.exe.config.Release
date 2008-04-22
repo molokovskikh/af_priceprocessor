@@ -259,6 +259,12 @@
 АК "Инфорум".
 </value>
    </setting>
+   <setting name="RemotingPort" serializeAs="String">
+    <value>888</value>
+   </setting>
+   <setting name="RemotingServiceName" serializeAs="String">
+    <value>RemotePriceProcessor</value>
+   </setting>
   </Inforoom.PriceProcessor.Properties.Settings>
 	</applicationSettings>
 </configuration>
