@@ -8,8 +8,8 @@
     <ProjectGuid>{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RemotePricePricessor</RootNamespace>
-    <AssemblyName>RemotePricePricessor</AssemblyName>
+    <RootNamespace>RemotePriceProcessor</RootNamespace>
+    <AssemblyName>RemotePriceProcessor</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IRemotePricePricessor.cs" />
+    <Compile Include="IRemotePriceProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
