@@ -456,7 +456,8 @@ namespace Inforoom.Formalizer
 			//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
 			string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
 			TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
-			TempFileName = TempPath + Path.GetFileName(_processItem.FilePath);
+			//изменяем имя файла, что оно было без недопустимых символов ('_')
+			TempFileName = TempPath + _processItem.ToString() + Path.GetExtension(_processItem.FilePath);
 			InternalLog("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 			try
 			{
