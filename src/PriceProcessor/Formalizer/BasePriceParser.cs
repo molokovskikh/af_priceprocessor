@@ -670,7 +670,7 @@ namespace Inforoom.Formalizer
 		{
 			SimpleLog.Log(getParserID(), "get Forbidden");
 			daForbidden = new MySqlDataAdapter(
-				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", parentSynonym), MyConn);
+				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", priceCode), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 
