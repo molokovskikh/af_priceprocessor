@@ -7,7 +7,7 @@ namespace RemotePricePricessor
 	/// <summary>
 	/// интерфейс для удаленного взаимодействия с PriceProcessor'ом
 	/// </summary>
-	public interface IRemotePricePricessor
+	public interface IRemotePriceProcessor
 	{
 		/// <summary>
 		/// Метод позволяющий переслать прайс-лист из истории так, как будто он был скачен
