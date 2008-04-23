@@ -8,6 +8,13 @@
 	<connectionStrings>
 		<add name="DB" connectionString="server=sql.analit.net;username=ProcessingSvc; password=samepass; database=farm; pooling=true; Convert Zero Datetime=true;"/>
 	</connectionStrings>
+	<appSettings>
+		<add key="SimpleLog.FileName" value="C:\log.log"/>
+		<add key="SimpleLog.SMTPHost" value="mail.adc.analit.net"/>
+		<add key="SimpleLog.FromMail" value="service@analit.net"/>
+		<add key="SimpleLog.ToMail" value="service@analit.net"/>
+		<add key="SimpleLog.Logging" value="true"/>
+	</appSettings>
 	<applicationSettings>
 		<Inforoom.PriceProcessor.Properties.Settings>
    <setting name="IMAPHost" serializeAs="String">
