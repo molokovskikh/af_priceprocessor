@@ -351,7 +351,12 @@ drop trigger if exists usersettings.pricesdataLogInsert;
 drop trigger if exists usersettings.pricesdataLogUpdate;
 
 alter table logs.prices_data_logs
-  drop column WaitingDownloadInterval;
+  drop column WaitingDownloadInterval,
+  add column ParentSynonym INT(11) UNSIGNED DEFAULT NULL;
+
+alter table usersettings.pricesdata
+  add column ParentSynonym INT(11) UNSIGNED DEFAULT NULL;
+
 
 
 -- обновляем таблицу PricesFmts
@@ -588,7 +593,7 @@ DELIMITER ;;
 CREATE PROCEDURE usersettings.`FillPriceItems`()
 BEGIN
   DECLARE done INT DEFAULT 0;
-  DECLARE PriceCode, CostCode INT Unsigned;
+  DECLARE PriceCode, CostCode, CostParentSynonym INT Unsigned;
   DECLARE PriceRowCount, PriceUnformCount, CostRowCount, CostUnformCount, PriceWaitingDownloadInterval INT Unsigned;
   Declare PriceDate, PriceLastRetrans, PriceLastSynonymsCreation, CostDate, CostLastRetrans, CostLastSynonymsCreation, PriceLastFormalization, CostLastFormalization datetime;
   DECLARE CostType, BaseCost Tinyint;
@@ -611,7 +616,8 @@ cui.LastRetrans,
 cui.LastSynonymsCreation,
 cui.DateCurPrice,
 cui.DateLastForm,
-p.WaitingDownloadInterval
+p.WaitingDownloadInterval,
+fr.ParentSynonym
 from
 (
 usersettings.pricesdata p,
@@ -619,6 +625,7 @@ usersettings.pricescosts pc,
 usersettings.price_update_info pui
 )
 left join usersettings.price_update_info cui on cui.PRICECODE = pc.PriceCode
+left join farm.formrules fr on fr.FirmCode = pc.PriceCode
 where
     pc.SHOWPRICECODE = p.PriceCode
 and ( ( ((p.COSTTYPE = 0) or (p.CostType is null)) and (pc.BaseCost = 1) ) or (p.CostType = 1) )
@@ -631,7 +638,7 @@ and pui.PRICECODE = p.PriceCode
   REPEAT
     FETCH Prices INTO PriceCode, CostType, CostCode, BaseCost,
           PriceRowCount, PriceUnformCount, PriceLastRetrans, PriceLastSynonymsCreation, PriceDate, PriceLastFormalization,
-          CostRowCount, CostUnformCount, CostLastRetrans, CostLastSynonymsCreation, CostDate, CostLastFormalization, PriceWaitingDownloadInterval;
+          CostRowCount, CostUnformCount, CostLastRetrans, CostLastSynonymsCreation, CostDate, CostLastFormalization, PriceWaitingDownloadInterval, CostParentSynonym;
     IF NOT done THEN
 
       -- Вставка
@@ -646,6 +653,12 @@ and pui.PRICECODE = p.PriceCode
           (FormRuleId, SourceId, RowCount, UnformCount, PriceDate, LastRetrans, LastSynonymsCreation, WaitingDownloadInterval, LastFormalization)
           values
           (CostCode, CostCode, CostRowCount, CostUnformCount, CostDate, CostLastRetrans, CostLastSynonymsCreation, PriceWaitingDownloadInterval, CostLastFormalization);
+      end if;
+      -- обновляем ParentSynonym у прайсов, только у базовых ценовых колонок
+      if ((BaseCost = 1) and (CostParentSynonym is not null)) then
+        if (PriceCode != CostParentSynonym) then
+          update usersettings.pricesdata set ParentSynonym = CostParentSynonym where pricesdata.PriceCode = PriceCode;
+        end if;
       end if;
       select last_insert_id() into LastPriceItemId;
       update usersettings.pricescosts set PriceItemId = LastPriceItemId where pricescosts.CostCode = CostCode;
