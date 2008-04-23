@@ -243,8 +243,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//существует ли файл на диске?
 						if (File.Exists(item.FilePath))
 						{
-							//Если разница между временем последнего обращения к файлу и текущим временем больше 10 секунд, то берем файл в обработку
-							if (DateTime.UtcNow.Subtract(File.GetLastWriteTimeUtc(item.FilePath)).TotalSeconds > 5)
+							//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
+							if (DateTime.UtcNow.Subtract(item.CreateTime).TotalSeconds > 5)
 							{
 								SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Adding PriceProcessThread = {0}", item.FilePath);
 								FileHashItem hashItem;

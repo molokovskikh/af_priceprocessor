@@ -975,13 +975,15 @@ and a.ProductId is null";
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
 								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
 
-								mcClear.CommandText = SynonymUpdateCommand;
-								mcClear.Parameters.Clear();
-								sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
+								//Временно комментируем обновление синонимов
+								//mcClear.CommandText = SynonymUpdateCommand;
+								//mcClear.Parameters.Clear();
+								//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
 
-								mcClear.CommandText = SynonymFirmCrUpdateCommand;
-								mcClear.Parameters.Clear();
-								sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
+								//Временно комментируем обновление синонимов
+								//mcClear.CommandText = SynonymFirmCrUpdateCommand;
+								//mcClear.Parameters.Clear();
+								//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
 							}
 							else
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");

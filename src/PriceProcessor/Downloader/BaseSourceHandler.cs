@@ -54,7 +54,7 @@ namespace Inforoom.Downloader
 	//Позволяет не логировать ошибки по два раза
 	public static class ErrorPriceLogging
 	{
-		public static Dictionary<ulong?, string> ErrorMessages = new Dictionary<ulong?, string>();
+		public static Dictionary<ulong, string> ErrorMessages = new Dictionary<ulong, string>();
 	}
 
 	//Перечисление с указанием кода результата обработки источника
@@ -408,10 +408,10 @@ and pd.AgencyEnabled= 1",
             try
             {
 
-				SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Попытка удалить файл : " + CurrFileName);
+				//SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Попытка удалить файл : " + CurrFileName);
 				if (File.Exists(CurrFileName))
 					File.Delete(CurrFileName);
-				SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Файл удален : " + CurrFileName);
+				//SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Файл удален : " + CurrFileName);
 			}
             catch (Exception ex)
 			{
@@ -507,22 +507,23 @@ and pd.AgencyEnabled= 1",
 			bool NeedLogging = true;
 			//Если это успешная загрузка, то сбрасываем все ошибки
 			//Если это ошибка, то если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
+			ulong tmpCurrPriceItemId = (CurrPriceItemId.HasValue) ? CurrPriceItemId.Value : 0;
 			if (resultCode == DownPriceResultCode.ErrorDownload)
 			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceItemId))
+				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
 				{
-					if (ErrorPriceLogging.ErrorMessages[CurrPriceItemId] == Addition)
+					if (ErrorPriceLogging.ErrorMessages[tmpCurrPriceItemId] == Addition)
 						NeedLogging = false;
 					else
-						ErrorPriceLogging.ErrorMessages[CurrPriceItemId] = Addition;
+						ErrorPriceLogging.ErrorMessages[tmpCurrPriceItemId] = Addition;
 				}
 				else
-					ErrorPriceLogging.ErrorMessages.Add(CurrPriceItemId, Addition);
+					ErrorPriceLogging.ErrorMessages.Add(tmpCurrPriceItemId, Addition);
 			}
 			else
 			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceItemId))
-					ErrorPriceLogging.ErrorMessages.Remove(CurrPriceItemId);
+				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
+					ErrorPriceLogging.ErrorMessages.Remove(tmpCurrPriceItemId);
 			}
 
 			if (NeedLogging)

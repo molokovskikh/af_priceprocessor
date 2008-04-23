@@ -400,6 +400,7 @@ namespace Inforoom.Downloader
 						if (File.Exists(NormalName))
 							File.Delete(NormalName);
 						File.Copy(ExtrFileName, NormalName);
+						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Попытка добавить прайс-листа " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " в PriceItemList");
 						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
 						item.FileTime = DateTime.Now;
 						PriceItemList.AddItem(item);

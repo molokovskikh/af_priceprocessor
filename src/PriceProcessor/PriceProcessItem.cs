@@ -12,6 +12,7 @@ namespace Inforoom.PriceProcessor
 		private ulong? _costCode;
 		private ulong _priceItemId;
 		private DateTime? _fileTime;
+		private DateTime _createTime;
 
 		//Скачан ли прайс-лист или переподложен
 		public bool Downloaded
@@ -51,6 +52,12 @@ namespace Inforoom.PriceProcessor
 			set { _fileTime = value; }
 		}
 
+		//Дата создания элемента, чтобы знать: можно ли его брать в обработку или нет
+		public DateTime CreateTime
+		{
+			get { return _createTime; }
+		}
+
 		public PriceProcessItem(bool downloaded, ulong priceCode, ulong? costCode, ulong priceItemId, string filePath)
 		{
 			_downloaded = downloaded;
@@ -58,6 +65,7 @@ namespace Inforoom.PriceProcessor
 			_costCode = costCode;
 			_priceItemId = priceItemId;
 			_filePath = filePath;
+			_createTime = DateTime.UtcNow;
 		}
 	}
 }
