@@ -344,15 +344,15 @@ alter table farm.formrules
 alter table farm.formrules
   drop column `FirmCode`,
   drop column `PriceCode`,
-  drop column `PriceFmt`;
+  drop column `PriceFmt`,
+  drop column `ParentSynonym`;
 
 alter table farm.formrules
   change column `Id` `Id` int(11) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY;
 
 alter table farm.formrules
   add constraint `PriceFormatId_FK` foreign key `PriceFormatId_IDX` (`PriceFormatId`) REFERENCES `farm`.`pricefmts` (`Id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  add constraint `ParentFormRules_FK` foreign key `ParentFormRules_IDX` (`ParentFormRules`) REFERENCES `farm`.`formrules` (`Id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  add constraint `ParentSynonym_FK` foreign key `ParentSynonym_IDX` (`ParentSynonym`) REFERENCES `usersettings`.`pricesdata` (`PriceCode`) ON DELETE SET NULL ON UPDATE CASCADE;
+  add constraint `ParentFormRules_FK` foreign key `ParentFormRules_IDX` (`ParentFormRules`) REFERENCES `farm`.`formrules` (`Id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 
 
@@ -387,7 +387,8 @@ alter table usersettings.PricesCosts
   add constraint `PriceCode_FK` foreign key (`PriceCode`) REFERENCES `usersettings`.`pricesdata` (`PriceCode`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 alter table usersettings.PricesData
-  drop column `WaitingDownloadInterval`;
+  drop column `WaitingDownloadInterval`,
+  add constraint `PricesData_ParentSynonym_FK` foreign key `PricesData_ParentSynonym_IDX` (`ParentSynonym`) REFERENCES `usersettings`.`pricesdata` (`PriceCode`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 update 
   usersettings.PricesCosts pc,
@@ -571,6 +572,7 @@ pricesdataID = NEW.PriceCode
 ,OrderEmailSubject = NEW.OrderEmailSubject
 ,Protek = NEW.Protek
 ,CostType = NEW.CostType
+,ParentSynonym = NEW.ParentSynonym
 ;END ;;
 
 DELIMITER ;
@@ -601,6 +603,7 @@ pricesdataID = OLD.PriceCode
 ,OrderEmailSubject = NULLIF(NEW.OrderEmailSubject, OLD.OrderEmailSubject)
 ,Protek = NULLIF(NEW.Protek, OLD.Protek)
 ,CostType = NULLIF(NEW.CostType, OLD.CostType)
+,ParentSynonym = NULLIF(NEW.ParentSynonym, OLD.ParentSynonym)
 ;END ;;
 
 DELIMITER ;
@@ -631,6 +634,7 @@ pricesdataID = OLD.PriceCode
 ,OrderEmailSubject = OLD.OrderEmailSubject
 ,Protek = OLD.Protek
 ,CostType = OLD.CostType
+,ParentSynonym = OLD.ParentSynonym
 ;END ;;
 
 DELIMITER ;
@@ -651,7 +655,6 @@ FormRulesID = NEW.Id
 ,MaxOld = NEW.MaxOld
 ,Delimiter = NEW.Delimiter
 ,ParentFormRules = NEW.ParentFormRules
-,ParentSynonym = NEW.ParentSynonym
 ,FormByCode = NEW.FormByCode
 ,NameMask = NEW.NameMask
 ,ForbWords = NEW.ForbWords
@@ -749,7 +752,6 @@ FormRulesID = OLD.Id
 ,MaxOld = NULLIF(NEW.MaxOld, OLD.MaxOld)
 ,Delimiter = NULLIF(NEW.Delimiter, OLD.Delimiter)
 ,ParentFormRules = IFNULL(NEW.ParentFormRules, OLD.ParentFormRules)
-,ParentSynonym = IFNULL(NEW.ParentSynonym, OLD.ParentSynonym)
 ,FormByCode = NULLIF(NEW.FormByCode, OLD.FormByCode)
 ,NameMask = NULLIF(NEW.NameMask, OLD.NameMask)
 ,ForbWords = NULLIF(NEW.ForbWords, OLD.ForbWords)
@@ -847,7 +849,6 @@ FormRulesID = OLD.Id
 ,MaxOld = OLD.MaxOld
 ,Delimiter = OLD.Delimiter
 ,ParentFormRules = OLD.ParentFormRules
-,ParentSynonym = OLD.ParentSynonym
 ,FormByCode = OLD.FormByCode
 ,NameMask = OLD.NameMask
 ,ForbWords = OLD.ForbWords
@@ -1571,6 +1572,8 @@ DELIMITER ;
 -- usersettings GetOffers GetPrices GetActivePrices
 
 
+DROP PROCEDURE IF EXISTS usersettings.PrgData1;
+
 DROP PROCEDURE IF EXISTS usersettings.GetOffers;
 
 DROP PROCEDURE IF EXISTS usersettings.GetActivePrices;
@@ -1596,13 +1599,13 @@ drop temporary table IF EXISTS Prices;
 create temporary table
 Prices
 (
-
  FirmCode int Unsigned,
  PriceCode int Unsigned, 
  CostCode int Unsigned,  
  PriceSynonymCode int Unsigned,
  RegionCode BigInt Unsigned,
  AlowInt bool,
+ Fresh bool,
  Upcost decimal(7,5),
  PublicUpCost decimal(7,5),
  MaxSynonymCode Int Unsigned,
@@ -1629,13 +1632,13 @@ Prices
 )engine=MEMORY;
 INSERT
 INTO    Prices
-
 SELECT  pricesdata.firmcode,
         i.pricecode,
         i.costcode,
-        ifnull(ParentSynonym, pricesdata.pricecode) PriceSynonymCode,
+        ifnull(pricesdata.ParentSynonym, pricesdata.pricecode) PriceSynonymCode,
         i.RegionCode,
         AlowInt,
+        iui.lastsent< pi.PriceDate, 
         round((1+pricesdata.UpCost/100) * (1+pricesregionaldata.UpCost/100) * (1+(i.FirmCostCorr+i.PublicCostCorr)/100), 5),
         i.PublicCostCorr,
         iui.MaxSynonymCode,
@@ -1683,7 +1686,6 @@ WHERE   i.DisabledByAgency = 0
     AND if(iu.id is not null, iu.disabledbyagency = 0, 1)
     AND if(iu.id is not null AND ir.includetype IN (1), iu.invisibleonclient=0, 1)
     AND i.clientcode = ClientCodeP;
-
 END $$
 
 DELIMITER ;
@@ -1709,6 +1711,7 @@ ActivePrices
  CostCode int Unsigned,
  PriceSynonymCode int Unsigned,
  RegionCode BigInt Unsigned,
+ Fresh bool,
  Upcost decimal(7,5),
  PublicUpCost decimal(7,5),
  MaxSynonymCode Int Unsigned,
@@ -1720,7 +1723,6 @@ ActivePrices
  PositionCount int Unsigned,
  MinReq smallint Unsigned,
  CostCorrByClient bool,
-
  FirmCategory tinyint unsigned,
  MainFirm bool,
  unique using hash (PriceCode, RegionCode, CostCode),
@@ -1742,6 +1744,7 @@ INTO    ActivePrices
  CostCode,
  PriceSynonymCode,
  RegionCode,
+ Fresh,
  Upcost,
  PublicUpCost,
  MaxSynonymCode,
@@ -1762,6 +1765,7 @@ SELECT  FirmCode,
         CostCode,
         PriceSynonymCode,
         RegionCode,
+ Fresh,
         Upcost,
         PublicUpCost,
         MaxSynonymCode,
@@ -1980,3 +1984,797 @@ END $$
 
 DELIMITER ;
 
+
+
+DELIMITER $$
+
+CREATE PROCEDURE usersettings.PrgData1(IN ClientCodeParam INT UNSIGNED, IN FieldsTerminatedParam CHAR(1), IN LinesTerminatedParam CHAR(1), IN Cumulative BOOL)
+BEGIN
+DECLARE FirmSegmentParam bool;
+DECLARE CostsPasswordParam char(16);
+DECLARE FieldsTerminated, LinesTerminated char(1);
+Declare SClientCode int unsigned;
+Declare ClientRegionCode bigint unsigned;
+drop temporary table IF EXISTS MaxCodesSynFirmCr, MinCosts, ActivePrices, Core, tmpprd, MaxCodesSyn, ParentCodes;
+if length(FieldsTerminatedParam)<1 then
+set FieldsTerminated=Char(159);
+else
+set FieldsTerminated=FieldsTerminatedParam;
+end if;
+if length(LinesTerminatedParam)<1 then
+set LinesTerminated=Char(161);
+else
+set LinesTerminated=LinesTerminatedParam;
+end if;
+select FirmSegment into FirmSegmentParam from clientsdata where firmcode=ClientCodeParam;
+select BaseCostPassword
+        into CostsPasswordParam
+        from retclientsset where clientcode=ClientCodeParam;
+ SET @a:=concat(
+'SELECT  P.Id, P.CatalogId ',
+'FROM    ret_update_info r, ',
+'        Catalogs.Products P ',
+'WHERE   IF(', not Cumulative, ', (P.UpdateTime >= r.UpdateTime), 1) ',
+'    AND hidden       = 0 ',
+'    AND clientcode= ',ClientCodeParam ,
+' INTO OUTFILE ', '"results/Products', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Products', 0);
+ SET @a:=concat(
+'SELECT  C.Id            , ',
+'        CN.Id           , ',
+'        LEFT(name, 250) , ',
+'        LEFT(form, 250) , ',
+'        vitallyimportant, ',
+'        needcold        , ',
+'        fragile ',
+'FROM    Catalogs.Catalog C      , ',
+'        Catalogs.CatalogForms CF, ',
+'        Catalogs.CatalogNames CN, ',
+'        ret_update_info r ',
+'WHERE   C.NameId            =CN.Id ',
+'    AND C.FormId            =CF.Id ',
+'    AND hidden              =0 ',
+'    AND r.ClientCode        =',ClientCodeParam ,
+'    AND IF(', not Cumulative, ', (C.UpdateTime >= r.UpdateTime), 1) ',
+' INTO OUTFILE ', '"results/Catalog', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Catalog', 0);
+SET @a:=concat(
+'SELECT  regions.regioncode, ',
+'        region ',
+'FROM    farm.regions, ',
+'        clientsdata ',
+'WHERE   firmcode                           = ',ClientCodeParam ,
+'        and regions.regioncode & maskregion> 0 ',
+'UNION ',
+'        SELECT  regions.regioncode, ',
+'        region ',
+'FROM    farm.regions, ',
+'        clientsdata ',
+'WHERE   firmcode              = ',ClientCodeParam ,
+'        and regions.regioncode= clientsdata.regioncode ',
+'UNION ',
+'SELECT  distinct regions.regioncode, ',
+'        region ',
+'FROM    farm.regions, ',
+'        includeregulation, ',
+'        clientsdata ',
+'WHERE   includeclientcode     = ', ClientCodeParam ,
+'        and firmcode          = primaryclientcode ',
+'        and includetype        in (1, 2) ',
+'        and regions.regioncode & clientsdata.maskregion>0 ',
+'UNION ',
+'        SELECT  regions.regioncode, ',
+'        region ',
+'FROM    farm.regions, ',
+'        clientsdata, ',
+'        includeregulation ',
+'WHERE   primaryclientcode     = ',ClientCodeParam ,
+'        and firmcode          = includeclientcode ',
+'        and firmstatus        = 1 ',
+'        and includetype        = 0 ',
+'        and regions.regioncode= clientsdata.regioncode ',
+' INTO OUTFILE ', '"results/Regions', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Regions', 0);
+SET @a:=concat(
+'SELECT  C.Id ',
+'FROM    Catalogs.Catalog C, ',
+'        ret_update_info r ',
+'WHERE   C.UpdateTime > r.Updatetime ',
+'    AND hidden       = 1 ',
+'    AND NOT ', Cumulative,
+'    AND clientcode= ',ClientCodeParam ,
+' INTO OUTFILE ', '"results/CatDel', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'CatDel', 0);
+call GetPrices(ClientCodeParam);
+SET @a:=concat(
+'SELECT  firm.FirmCode, ',
+'        firm.FullName, ',
+'        firm.Fax, ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-", ',
+'        "-" ',
+'FROM    clientsdata as firm ',
+'WHERE   firmcode in ',
+'        (SELECT DISTINCT FirmCode ',
+'        FROM    Prices ',
+'        ) ',
+' INTO OUTFILE ', '"results/ClientsDataN', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'ClientsDataN', 0);
+SET @a:=concat(
+'SELECT  DISTINCT regionaldata.FirmCode, ',
+'        regionaldata.RegionCode, ',
+'        supportphone, ',
+'        left(adminmail, 50), ',
+'        ContactInfo, ',
+'        OperativeInfo ',
+'FROM    regionaldata, ',
+'        Prices ',
+'WHERE   regionaldata.firmcode      = Prices.firmcode ',
+'        and regionaldata.regioncode= Prices.regioncode ',
+' INTO OUTFILE ', '"results/RegionalData', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'RegionalData', 0);
+SET @a:=concat(
+'SELECT  PriceCode, ',
+'        RegionCode, ',
+'        Storage, ',
+'        PublicUpCost, ',
+'        MinReq, ',
+'        MainFirm, ',
+'        not disabledbyclient, ',
+'        CostCorrByClient, ',
+'        ControlMinReq ',
+'FROM    Prices ',
+' INTO OUTFILE ', '"results/PricesRegionalData', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'PricesRegionalData', 0);
+create temporary table tmpprd
+(
+FirmCode int unsigned,
+PriceCount int unsigned
+)engine=MEMORY;
+INSERT
+INTO    tmpprd
+SELECT  firmcode,
+        count(pricecode)
+FROM    Prices
+GROUP BY FirmCode,
+        RegionCode;
+SET @a:=concat(
+'SELECT  Prices.FirmCode, ',
+'        Prices.pricecode, ',
+'        concat(firm.shortname, if(PriceCount> 1 ',
+'        or ShowPriceName                    = 1, concat(" (", pricename, ")"), "")), ',
+'        if(AlowInt, 1, 0), ',
+'        " ", ',
+'        PriceDate, ',
+'        (Fresh                            = 1 and AlowInt= 0) ',
+'        or actual=0, ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "", ',
+'        "0" ',
+'FROM    clientsdata as firm, ',
+'        tmpprd, ',
+'        Prices ',
+'WHERE   tmpprd.firmcode             = firm.firmcode ',
+'        and firm.firmcode           = Prices.FirmCode ',
+' GROUP BY Prices.FirmCode, ',
+'        Prices.pricecode ',
+' INTO OUTFILE ', '"results/PricesData', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'PricesData', 0);
+ if not Cumulative then
+SET @a:=concat(
+'SELECT  FirmCr, ',
+'        CountryCr, ',
+'        FullName, ',
+'        Series, ',
+'        LetterNo, ',
+'        LetterDate, ',
+'        LaboratoryName, ',
+'        CauseRejects ',
+'FROM    addition.rejects, ',
+'        ret_update_info rui,  ',
+'        retclientsset rcs  ',
+'WHERE   accessTime      >= rui.RejectTime ',
+'        and alowrejection= 1 ',
+'        and rui.clientcode   = ',ClientCodeParam ,
+'        and rcs.clientcode   = ',ClientCodeParam ,
+' INTO OUTFILE ', '"results/Rejects', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Rejects', 0);
+end if;
+SET @a:=concat(
+'SELECT  clientsdata.firmcode, ',
+'        ShortName, ',
+'        RegionCode, ',
+'        OverCostPercent, ',
+'        DifferenceCalculation, ',
+'        MultiUserLevel, ',
+'        OrderRegionMask, ',
+'        "", ',
+'        CalculateLeader ',
+'FROM    retclientsset, ',
+'        clientsdata ',
+'WHERE   clientsdata.firmcode        = ',ClientCodeParam ,
+'        and retclientsset.clientcode= clientsdata.firmcode ',
+'UNION ',
+'SELECT  clientsdata.firmcode, ',
+'        ShortName, ',
+'        RegionCode, ',
+'        OverCostPercent, ',
+'        DifferenceCalculation, ',
+'        MultiUserLevel, ',
+'        OrderRegionMask, ',
+'        "", ',
+'        CalculateLeader ',
+'FROM    retclientsset, ',
+'        clientsdata, ',
+'        IncludeRegulation ',
+'WHERE   clientsdata.firmcode        = IncludeClientCode ',
+'        and retclientsset.clientcode= clientsdata.firmcode ',
+'        and firmstatus              = 1 ',
+'        and IncludeType             = 0 ',
+'        and Primaryclientcode       = ',ClientCodeParam ,
+' INTO OUTFILE ', '"results/Clients', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Clients', 0);
+call GetActivePrices(ClientCodeParam);
+SET @a:=concat('SELECT  o.ClientCode, ',
+'        ol.ProductId, ',
+'        round(avg(ol.Cost), 2) ',
+'FROM    orders.ordershead o, ',
+'        orders.orderslist ol, ',
+'        ret_update_info rcs ',
+'WHERE   o.ClientCode    = ', ClientCodeParam,
+'        and o.WriteTime > if(', Cumulative, ', curdate() - interval 1 month, rcs.UpdateTime) ',
+'        and ol.OrderID  = o.RowID ',
+'        and rcs.clientcode = o.ClientCode ',
+'GROUP BY o.ClientCode, ',
+'        ol.ProductId ',
+'UNION ALL ',
+'SELECT  cd.FirmCode, ',
+'        ol.ProductId, ',
+'        round(avg(ol.Cost), 2) ',
+'FROM    usersettings.IncludeRegulation ir, ',
+'        usersettings.clientsdata cd, ',
+'        orders.ordershead o, ',
+'        orders.orderslist ol, ',
+'        ret_update_info rcs ',
+'WHERE   ir.Primaryclientcode = ', ClientCodeParam,
+'        and cd.firmstatus    = 1 ',
+'        and includetype      = 0 ',
+'        and o.WriteTime > if(', Cumulative, ', curdate() - interval 1 month, rcs.UpdateTime) ',
+'        and cd.FirmCode      = ir.IncludeClientCode ',
+'        and o.ClientCode     = cd.FirmCode ',
+'        and rcs.clientcode   = o.ClientCode ',
+'        and ol.OrderID       = o.RowID ',
+'GROUP BY cd.FirmCode, ',
+'        ol.ProductId ',
+' INTO OUTFILE ', '"results/PriceAvg', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'PriceAvg', 0);
+create temporary table  MaxCodesSyn
+(
+PriceCode int unsigned primary key,
+Synonym int unsigned
+)engine=MEMORY;
+create temporary table  MaxCodesSynFirmCr
+(
+PriceCode int unsigned primary key,
+Synonym int unsigned
+)engine=MEMORY;
+INSERT
+INTO    MaxCodesSyn
+SELECT  Prices.pricecode,
+        max(synonym.synonymcode)
+        FROM  ActivePrices Prices,
+        farm.synonym
+WHERE   synonym.pricecode= PriceSynonymCode
+        and synonym.synonymcode> MaxSynonymCode
+GROUP BY 1;
+INSERT
+INTO    MaxCodesSynFirmCr
+SELECT  Prices.pricecode,
+        max(synonymfirmcr.synonymfirmcrcode)
+FROM    ActivePrices Prices,
+        farm.synonymfirmcr
+WHERE   synonymfirmcr.pricecode      = PriceSynonymCode
+        and synonymfirmcr.synonymfirmcrcode> MaxSynonymFirmCrCode
+GROUP BY 1;
+create temporary table  ParentCodes
+(
+PriceCode int unsigned ,
+MaxSynonymCode int unsigned,
+MaxSynonymFirmCrCode int unsigned,
+index using btree (PriceCode, MaxSynonymCode),
+index using btree (PriceCode, MaxSynonymFirmCrCode)
+)engine=MEMORY;
+INSERT
+INTO    ParentCodes
+SELECT  PriceSynonymCode,
+        max(if(cumulative, 0, MaxSynonymCode)),
+        max(if(cumulative, 0, MaxSynonymFirmCrCode))
+FROM    ActivePrices Prices
+WHERE   if(cumulative, 1, fresh)
+GROUP BY 1;
+SET @a:=concat(
+'SELECT synonymfirmcr.synonymfirmcrcode, ',
+'        left(Synonym, 250) ');
+SET @a:=concat(@a,
+'FROM    farm.synonymfirmcr,',
+'        ParentCodes ',
+'WHERE   synonymfirmcr.pricecode             = ParentCodes.PriceCode ',
+'        and synonymfirmcr.synonymfirmcrcode>MaxSynonymFirmCrCode ');
+if cumulative then
+SET @a:=concat(@a,
+'        union ',
+'SELECT  synonymfirmcrcode, ',
+'        left(synonym, 250)  ');
+SET @a:=concat(@a,
+'FROM    farm.synonymfirmcr ',
+'WHERE   synonymfirmcrcode=0 '
+);
+end if;
+  SET @a:=concat(@a, ' INTO OUTFILE ', '"results/SynonymFirmCr', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'SynonymFirmCr', 0);
+SET @a:=concat(
+'SELECT  synonym.synonymcode, ',
+'        left(synonym.synonym, 250)  ');
+SET @a:=concat(@a,
+'FROM    farm.synonym, ',
+'        ParentCodes ',
+'WHERE   synonym.pricecode       = ParentCodes.PriceCode ',
+'        and synonym.synonymcode> MaxSynonymCode ',
+' INTO OUTFILE ', '"results/Synonym', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'Synonym', 0);
+SET @a:=concat(
+'select currency, exchange ',
+'from farm.catalogcurrency  where currency="$" or currency="Eu" ',
+' INTO OUTFILE ', '"results/CatalogCurrency', ClientCodeParam, '.txt"',
+"FIELDS TERMINATED BY '", FieldsTerminated,
+"' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'CatalogCurrency', 0);
+if Cumulative then
+UPDATE ret_update_info
+        SET
+        ReclameTime      =default,
+        RejectTime       =default,
+        CalculateReject  =0,
+        RegistryTime     =default,
+        CalculateRegistry=0
+WHERE   clientcode       =ClientCodeParam;
+else
+UPDATE ret_update_info SET CalculateReject=1 WHERE clientcode=ClientCodeParam;
+end if;
+UPDATE intersection_update_info iui,
+        MaxCodesSynFirmCr,
+        ActivePrices Prices
+        SET UncMaxSynonymFirmCrCode    = MaxCodesSynFirmCr.synonym,
+        CalculateSynonymFirmCr         = 1
+WHERE   Prices.pricecode        = iui.pricecode
+        and MaxCodesSynFirmCr.pricecode= Prices.pricecode
+        and iui.clientcode    = ClientCodeParam;
+UPDATE intersection_update_info iui,
+        maxcodessyn,
+        ActivePrices Prices
+        SET UncMaxSynonymCode      = maxcodessyn.synonym,
+        CalculateSynonym           = 1
+WHERE   Prices.pricecode    = iui.pricecode
+        and maxcodessyn.pricecode  = Prices.pricecode
+        and iui.clientcode= ClientCodeParam;
+UPDATE intersection_update_info iui,
+        ActivePrices Prices
+        SET CalculateDate           = 1
+WHERE   Fresh
+        and Prices.pricecode = iui.pricecode
+        and Prices.RegionCode= iui.RegionCode
+        and iui.clientcode = ClientCodeParam;
+SELECT  s.OffersClientCode
+INTO    SClientCode
+FROM    retclientsset r,
+        OrderSendRules.smart_order_rules s
+WHERE   r.clientcode        =ClientCodeParam
+    AND s.id                =r.smartorderruleid
+    AND s.offersclientcode !=r.clientcode;
+if SClientCode is null then
+if (select sum(fresh)>0  from ActivePrices) or Cumulative  then
+call GetOffers(ClientCodeParam, not Cumulative);
+UPDATE  ActivePrices Prices,
+        Core
+        SET CryptCost          = replace(replace(replace(replace(replace(AES_ENCRYPT(Cost, CostsPasswordParam), char(37), '%25'), char(32), '%20'),
+         char(159), '%9F'), char(161), '%A1'), char(0), '%00')
+WHERE   Prices.PriceCode= Core.PriceCode
+        and if(Cumulative, 1, Fresh)
+        and Core.PriceCode!=2647
+        ;
+UPDATE Core
+        SET CryptCost=concat(left(CryptCost, 1), char(round((rand()*110)+32,0)), SUBSTRING(CryptCost,2,length(CryptCost)-4), char(round((rand()*110)+32,0)), right(CryptCost, 3))
+WHERE  length(CryptCost)>0
+       and Core.PriceCode!=2647;
+ 
+SET @a:=concat('SELECT MinCosts.ID, MinCosts.ProductId, MinCosts.RegionCode, if(PriceCode=2647, "", (99999900 ^ TRUNCATE((MinCost*100), 0))) FROM MinCosts',
+               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+SET @a:=concat('SELECT CT.PriceCode, CT.regioncode, CT.ProductId, Core.codefirmcr, Core.synonymcode, ',
+                'Core.SynonymFirmCrCode, Core.Code, ',
+                'Core.CodeCr, Core.unit, Core.volume , Core.Junk, Core.Await, Core.quantity, Core.note, Core.period, Core.doc,',
+                'ifnull(Core.RegistryCost, ""), Core.VitallyImportant, ifnull(Core.RequestRatio, ""), ',
+                'CT.CryptCost, ',
+                'CT.ID, ifnull(OrderCost, ""), ifnull(MinOrderCount, "") from Core CT, ActivePrices AT, farm.core0 Core ',
+                'where ct.pricecode=at.pricecode and ct.regioncode=at.regioncode ',
+                'and Core.id=CT.id ',
+                'and if(', Cumulative, ', 1, fresh) ',
+                ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+drop temporary table if exists Core, MinCosts;
+else
+SET @a:=concat('SELECT ""',
+               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+SET @a:=concat('SELECT "" ',
+                ' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY ''");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+end if;
+else
+SELECT  RegionCode
+INTO    ClientRegionCode
+FROM    ClientsData Cd
+WHERE   firmcode=ClientCodeParam;
+CALL GetActivePrices(SClientCode);
+DROP TEMPORARY TABLE IF EXISTS CoreT,
+        CoreTP;
+CREATE TEMPORARY TABLE CoreT(ProductId  INT unsigned, CodeFirmCr INT unsigned, UNIQUE MultiK(ProductId, CodeFirmCr))engine=MEMORY;
+CREATE TEMPORARY TABLE CoreTP(ProductId INT unsigned, UNIQUE MultiK(ProductId))engine                                     =MEMORY;
+INSERT
+INTO    CoreT
+SELECT DISTINCT core0.ProductId,
+        core0.codefirmcr
+FROM    farm.core0,
+        activeprices
+WHERE   core0.pricecode=if(CostType=1, activeprices.CostCode, activeprices.pricecode);
+INSERT
+INTO    CoreTP
+SELECT DISTINCT ProductId
+FROM    CoreT;
+SET @a:=concat(
+'SELECT  2647                , ',
+         ClientRegionCode,'  , ',
+'        A.ProductId         , ',
+'        A.CodeFirmCr        , ',
+'        S.SynonymCode       , ',
+'        SF.SynonymFirmCrCode, ',
+'        ""                  , ',
+'        ""                  , ',
+'        ""                  , ',
+'        ""                  , ',
+'        0                   , ',
+'        0                   , ',
+'        ""                  , ',
+'        ""                  , ',
+'        ""                  , ',
+'        ""                  , ',
+'        ""                  , ',
+'        0                   , ',
+'        ""                  , ',
+'        ""                  , ',
+'        A.Id                , ',
+'        ""                  , ',
+'        "" ',
+'FROM    Catalogs.Assortment A, ',
+'        farm.Synonym S       , ',
+'        farm.SynonymFirmCr SF, ',
+'        CoreT ',
+'WHERE   S.PriceCode     =2647 ',
+'    AND SF.PriceCode    =2647 ',
+'    AND S.ProductId     =A.ProductId ',
+'    AND SF.CodeFirmCr   =A.CodeFirmCr ',
+'    AND CoreT.ProductId =A.ProductId ',
+'    AND CoreT.CodeFirmCr=A.CodeFirmCr ',
+'    AND A.CodeFirmCr!=1 ',
+'UNION ',
+' ',
+'SELECT  2647         , ',
+    ClientRegionCode,', ',
+'        A.ProductId  , ',
+'        A.CodeFirmCr , ',
+'        S.SynonymCode, ',
+'        0            , ',
+'        ""           , ',
+'        ""           , ',
+'        ""           , ',
+'        ""           , ',
+'        0            , ',
+'        0            , ',
+'        ""           , ',
+'        ""           , ',
+'        ""           , ',
+'        ""           , ',
+'        ""           , ',
+'        0            , ',
+'        ""           , ',
+'        ""           , ',
+'        A.Id         , ',
+'        ""           , ',
+'        "" ',
+'FROM    Catalogs.Assortment A, ',
+'        farm.Synonym S       , ',
+'        CoreTP ',
+'WHERE   S.PriceCode     =2647 ',
+'    AND S.ProductId     =A.ProductId ',
+'    AND CoreTP.ProductId=A.ProductId ',
+'    AND A.CodeFirmCr    =1 ',
+' INTO OUTFILE ', '"results/core', ClientCodeParam, '.txt"',
+                 "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+SET @a:=concat(
+'SELECT  0        , ',
+'        ProductId, ',
+         ClientRegionCode,', ',
+'        "" ',
+'FROM    CoreTP ',
+               ' INTO OUTFILE ', '"results/MinPrices', ClientCodeParam, '.txt"',
+                "FIELDS TERMINATED BY '", FieldsTerminated,
+                "' OPTIONALLY ENCLOSED BY '' ESCAPED BY '' LINES TERMINATED BY '",
+                LinesTerminated, "'");
+PREPARE QueryTXT FROM @a;
+EXECUTE QueryTXT;
+insert into ready_client_files values(null, ClientCodeParam, 'MinPrices', 0);
+insert into ready_client_files values(null, ClientCodeParam, 'core', 0);
+end if;
+drop temporary table if exists Core, ParentCodes, MaxCodesSynFirmCr, MinCosts, Prices, ActivePrices, tmpprd, MaxCodesSyn, CoreT, CoreTP;
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS usersettings.GetShowStat;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE usersettings.GetShowStat(IN StartDateParam DATE, IN EndDateParam DATE, IN RegionMaskParam BIGINT UNSIGNED, IN UserNameParam VARCHAR(25))
+BEGIN
+Declare InProc,  NonProcOrdersCount mediumint unsigned;
+Declare DataSize, DocSize int unsigned;
+Declare MaxUpdateTime, MaxOrderTime, LastForm, LastDown varchar(20);
+Declare FormCount, DownCount varchar(50);
+Declare OrderSum decimal(12, 2);
+Declare  OrdersCount, ReGet, UpdatesAD, UpdatesErr, OrdersErr, OrdersAD, CumulativeUpdates, Updates  varchar(10);
+
+#SELECT  max(UpdateTime)
+#INTO    MaxUpdateTime
+#FROM    (usersettings.ret_update_info, usersettings.clientsdata, accessright.regionaladmins showright)
+#WHERE   clientsdata.firmcode                  = ret_update_info.clientcode
+#        AND RegionCode & showright.regionmask > 0
+#        AND RegionCode & RegionMaskParam      > 0
+#        AND UncommittedUpdateTime BETWEEN StartDateParam AND EndDateParam
+#        AND username = UserNameParam;
+
+SELECT  concat(count(DISTINCT oh.rowid), '(', count(DISTINCT oh.clientcode), ')'),
+        sum(cost*quantity),
+        count(DISTINCT if(processed = 0
+        AND if(SubmitOrders         = 1, Submited
+        AND not Deleted, 1), orderid, null)),
+        Max(WriteTime)
+INTO    OrdersCount,
+        OrderSum, 
+        NonProcOrdersCount, 
+        MaxOrderTime
+FROM    orders.ordershead oh,
+        orders.orderslist, 
+        usersettings.clientsdata cd, 
+        accessright.regionaladmins showright,
+        usersettings.retclientsset rcs
+WHERE   oh.rowid                              = orderid
+        AND cd.firmcode                       = oh.clientcode
+        AND cd.billingcode                    <> 921
+        AND rcs.clientcode                    = oh.clientcode
+        AND firmsegment                       = 0
+        AND serviceclient                     = 0 
+        AND showright.regionmask & maskregion > 0
+        AND oh.regioncode & RegionMaskParam   > 0
+        AND not Deleted
+        AND showright.username = UserNameParam
+        AND WriteTime BETWEEN StartDateParam AND EndDateParam;
+
+SELECT  sum(if(UpdateType in (1,2), resultsize, 0)),
+        sum(if(UpdateType in (8), resultsize, 0)),
+        sum(if(updatetype in (1,2), Commit=0, null)),
+        concat(Sum(UpdateType                  IN (5)) ,'(' ,count(DISTINCT if(UpdateType  IN (5) ,p.ClientCode ,null)) ,')') UpdatesAD ,
+        concat(sum(UpdateType                      = 2) ,'(' ,count(DISTINCT if(UpdateType = 2 ,p.clientcode ,null)) ,')') CumulativeUpdates              ,
+        concat(sum(UpdateType                      = 1) ,'(' ,count(DISTINCT if(UpdateType = 1 ,p.clientcode ,null)) ,')') Updates
+INTO    DataSize,
+        DocSize,
+        InProc,
+        UpdatesAD,
+        CumulativeUpdates,
+        Updates
+FROM    usersettings.clientsdata ,
+        accessright.regionaladmins showright    ,
+        logs.AnalitFUpdates p
+WHERE   firmcode                                   = clientcode
+        AND showright.regionmask & maskregion      > 0
+        AND maskregion  & RegionMaskParam          > 0
+        AND showright.username                     = UserNameParam
+         AND RequestTime BETWEEN StartDateParam AND EndDateParam;
+
+#SELECT  concat(count(if(resultid=2, pricecode, null)), '(', count(DISTINCT if(resultid=2, pricecode, null)), ')'),
+#        max(if(resultid=2, logtime, null))
+#into FormCount, LastForm
+#FROM    logs.formlogs
+#WHERE logtime BETWEEN StartDateParam AND EndDateParam;
+
+#SELECT  concat(count(if(resultcode=2, pricecode, null)), '(', count(DISTINCT if(resultcode=2, pricecode, null)), ')'),
+#max(if(resultcode=2, logtime, null))
+#into DownCount, LastDown
+#FROM    logs.downlogs
+#WHERE logtime BETWEEN StartDateParam AND EndDateParam;
+
+select
+ifnull(OrdersCount, '') OrdersCount,
+ifnull(OrderSum, 0) OrderSum,
+ifnull(NonProcOrdersCount, 0) NonProcOrdersCount,
+ifnull(MaxOrderTime, '0:0:0') MaxOrderTime,
+ifnull(InProc, 0) InProc,
+ifnull(MaxUpdateTime, '0:0:0') MaxUpdateTime,
+ifnull(ReGet, '') ReGet,
+ifnull(UpdatesAD, '') UpdatesAD,
+ifnull(UpdatesErr, '') UpdatesErr,
+ifnull(OrdersErr, '') OrdersErr,
+ifnull(OrdersAD, '') OrdersAD,
+ifnull(CumulativeUpdates, '') CumulativeUpdates,
+ifnull(Updates, '') Updates,
+0 NoForm,
+0 NoDown,
+ifnull(LastForm, '2000-01-01') LastForm,
+ifnull(LastDown, '2000-01-01') LastDown,
+0 QueueForm,
+ifnull(DownCount, '') DownCount,
+0 NoPriceCount,
+ifnull(FormCount, '') FormCount,
+ifnull(DataSize, 0) DataSize,
+ifnull(DocSize, 0) DocSize;
+END $$
+
+DELIMITER ;
