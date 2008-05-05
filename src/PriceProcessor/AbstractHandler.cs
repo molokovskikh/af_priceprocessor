@@ -120,8 +120,9 @@ namespace Inforoom.PriceProcessor
 					sc.Send(mm);
 					knowErrors.Add(Addition);
 				}
-				catch
+				catch(Exception ex)
 				{
+					SimpleLog.Log(this.GetType().Name + ".LoggingToService", "Не получилось отправить письмо с ошибкой: {0}", ex);
 				}
 		}
 	}

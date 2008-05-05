@@ -24,6 +24,12 @@ namespace Inforoom.Formalizer
 			}
 		}
 
+		protected static string GetDescription(PriceFields value)
+		{
+			object[] descriptions = value.GetType().GetField(value.ToString()).GetCustomAttributes(false);
+			return ((System.ComponentModel.DescriptionAttribute)descriptions[0]).Description;
+		}
+
 		public override void Open()	
 		{
 			StringBuilder sb = new StringBuilder();
@@ -32,7 +38,7 @@ namespace Inforoom.Formalizer
 			{
 				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)))
 					if (!dtPrice.Columns.Contains(GetFieldName(pf)))
-						sb.AppendFormat("{0} настроено на {1}\n", pf, GetFieldName(pf));
+						sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
 			}
 
 			if (sb.Length > 0)

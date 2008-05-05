@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Net.Mail;
 using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
+using System.ComponentModel;
 
 namespace Inforoom.Formalizer
 {
@@ -81,30 +82,54 @@ namespace Inforoom.Formalizer
 	//Все возможные поля прайса
 	public enum PriceFields : int 
 	{
+		[Description("Код")]
 		Code,
+		[Description("Код производителя")]
 		CodeCr,
+		[Description("Наименование 1")]
 		Name1,
+		[Description("Наименование 2")]
 		Name2,
+		[Description("Наименование 3")]
 		Name3,
+		[Description("Производитель")]
 		FirmCr,
-		CountryCr,
+		[Description("Единица измерения")]
 		Unit,
+		[Description("Цеховая упаковка")]
 		Volume,
+		[Description("Количество")]
 		Quantity,
+		[Description("Примечание")]
 		Note,
+		[Description("Срок годности")]
 		Period,
+		[Description("Документ")]
 		Doc,
+		//todo: надо пометить на удаление
+		[Description("Базовая цена")]
 		BaseCost,
+		[Description("Валюта")]
 		Currency,
+		[Description("Цена минимальная")]
 		MinBoundCost,
+		[Description("Срок")]
 		Junk,
+		[Description("Ожидается")]
 		Await,
+		[Description("Оригинальное наименование")]
 		OriginalName,
+		[Description("Жизненно важный")]
 		VitallyImportant,
+		[Description("Кратность")]
 		RequestRatio,
+		[Description("Реестровая цена")]
 		RegistryCost,
+		[Description("Цена максимальная")]
 		MaxBoundCost,
+		[Description("Минимальная сумма")]
 		OrderCost,
+		[Description("Минимальное количество")]
 		MinOrderCount
 	}
 
@@ -543,13 +568,21 @@ namespace Inforoom.Formalizer
 			object MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount);
 			if ((MinOrderCount is int) && ((int)MinOrderCount >= 0))
 				drCore["MinOrderCount"] = (int)MinOrderCount;
+
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
+			//если получилось преобразовать в дату, то сохраняем в формате даты
 			if (dt is DateTime)
 				st = ((DateTime)dt).ToString("dd'.'MM'.'yyyy");
 			else
-				st = null;
+			{
+				//Если не получилось преобразовать, то смотрим на "сырое" значение поле, если оно не пусто, то пишем в базу
+				st = GetFieldRawValue(PriceFields.Period);
+				if (String.IsNullOrEmpty(st))
+					st = null;
+			}
 			drCore["Period"] = st;
+
 			drCore["Doc"] = GetFieldValueObject(PriceFields.Doc);
 
 			drCore["Junk"] = Convert.ToByte(AJunk);
@@ -768,9 +801,9 @@ namespace Inforoom.Formalizer
 				if (!String.IsNullOrEmpty(lastCommand))
 					commandList.Add(lastCommand);
 
-				SynonymUpdateCommand = "update farm.Synonym set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+				SynonymUpdateCommand = "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
 
-				SynonymFirmCrUpdateCommand = "update farm.SynonymFirmCr set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";				
+				SynonymFirmCrUpdateCommand = "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";				
 
 				return commandList.ToArray();
 			}
@@ -975,15 +1008,13 @@ and a.ProductId is null";
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
 								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
 
-								//Временно комментируем обновление синонимов
-								//mcClear.CommandText = SynonymUpdateCommand;
-								//mcClear.Parameters.Clear();
-								//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
+								mcClear.CommandText = SynonymUpdateCommand;
+								mcClear.Parameters.Clear();
+								sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
 
-								//Временно комментируем обновление синонимов
-								//mcClear.CommandText = SynonymFirmCrUpdateCommand;
-								//mcClear.Parameters.Clear();
-								//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
+								mcClear.CommandText = SynonymFirmCrUpdateCommand;
+								mcClear.Parameters.Clear();
+								sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
 							}
 							else
 								sbLog.Append("InsToCoreAndCoreCosts=0  ");
@@ -1385,7 +1416,6 @@ and a.ProductId is null";
 
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
-				case (int)PriceFields.CountryCr:
 				case (int)PriceFields.Currency:
 				case (int)PriceFields.Doc:
 				case (int)PriceFields.FirmCr:
