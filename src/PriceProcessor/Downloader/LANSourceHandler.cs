@@ -23,30 +23,41 @@ namespace Inforoom.Downloader
             {
 				string PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
                 string[] ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
-				DateTime priceDateTime = GetPriceDateTime();
-                foreach (string fs in ff)
-                {
+
+				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
+				SortedList<DateTime, string> sortedFileList = new SortedList<DateTime, string>();
+
+				foreach (string fs in ff)
+				{
 					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);
-					if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
-                    {
-						priceDateTime = fileLastWriteTime;
-                        string NewFile = DownHandlerPath + Path.GetFileName(fs);
-                        try
-                        {
-                            //TODO: здесь надо Copy изменить на Move
-							if (File.Exists(NewFile))
-								File.Delete(NewFile);
-							File.Move(fs, NewFile);
-							CurrFileName = NewFile;
-                            CurrPriceDate = priceDateTime;
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-							Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
-                        }
-                    }
-                }
+					try
+					{
+						sortedFileList.Add(fileLastWriteTime, fs);
+					}
+					catch (ArgumentException)
+					{
+					}
+				}
+
+				//Если в списке есть файлы, то берем первый и скачиваем
+				if (sortedFileList.Count > 0)
+				{
+					string downloadedFileName = sortedFileList.Values[0];
+					DateTime downloadedLastWriteTime = sortedFileList.Keys[0];
+					string NewFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
+					try
+					{
+						if (File.Exists(NewFile))
+							File.Delete(NewFile);
+						File.Move(downloadedFileName, NewFile);
+						CurrFileName = NewFile;
+						CurrPriceDate = downloadedLastWriteTime;
+					}
+					catch (Exception ex)
+					{
+						Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+					}
+				}
             }
             catch(Exception exDir)
             {

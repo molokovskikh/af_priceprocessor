@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Inforoom.Formalizer;
@@ -20,7 +19,7 @@ namespace PriceProcessor.Test
 		public void GetEnumDescriptionTest()
 		{
 			Console.WriteLine("Description {0} : {1}", PriceFields.MaxBoundCost, GetDescription(PriceFields.MaxBoundCost));
-			//PriceFields
+			Assert.AreEqual("Цена максимальная", GetDescription(PriceFields.MaxBoundCost), "Полученное значение Description некорректно.");
 		}
 	}
 }
