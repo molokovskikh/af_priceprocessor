@@ -30,13 +30,14 @@ namespace Inforoom.Downloader
 				foreach (string fs in ff)
 				{
 					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);
-					try
-					{
-						sortedFileList.Add(fileLastWriteTime, fs);
-					}
-					catch (ArgumentException)
-					{
-					}
+					if (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
+						try
+						{
+							sortedFileList.Add(fileLastWriteTime, fs);
+						}
+						catch (ArgumentException)
+						{
+						}
 				}
 
 				//Если в списке есть файлы, то берем первый и скачиваем
