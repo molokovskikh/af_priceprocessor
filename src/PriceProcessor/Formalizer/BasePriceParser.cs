@@ -1110,7 +1110,9 @@ and a.ProductId is null";
 			}
 			finally
 			{
-				SimpleLog.Log( getParserID(), "Open time: {0}", DateTime.UtcNow.Subtract(tmOpen) );
+#if DEBUG
+				SimpleLog.Log(getParserID(), "Open time: {0}", DateTime.UtcNow.Subtract(tmOpen));
+#endif
 			}
 
 			try
@@ -1135,7 +1137,9 @@ and a.ProductId is null";
 					}
 					finally
 					{
-						SimpleLog.Log( getParserID(), "Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare) );
+#if DEBUG
+						SimpleLog.Log(getParserID(), "Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
+#endif
 					}
 
 

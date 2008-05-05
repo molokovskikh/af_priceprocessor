@@ -123,18 +123,19 @@ namespace Inforoom.Logging
 
 		public static void Log(string SubSystem, string Message)
 		{
-			try
-			{
-				if (Logging)
-					log.WriteLine("{0}\t\t{1,-20}\t\t\t{2}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), SubSystem, Message);
-			}
-			catch(Exception e)
-			{
-				if (!mess.Contains(e.Message))
+			if (!String.IsNullOrEmpty(Message))
+				try
 				{
-					SendError(e);
+					if (Logging)
+						log.WriteLine("{0}\t\t{1,-20}\t\t\t{2}", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff"), SubSystem, Message);
 				}
-			}
+				catch(Exception e)
+				{
+					if (!mess.Contains(e.Message))
+					{
+						SendError(e);
+					}
+				}
 		}
 
 		public static void Log(string SubSystem, string Message, params object[] args)
