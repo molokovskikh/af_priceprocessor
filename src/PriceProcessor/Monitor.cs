@@ -34,6 +34,8 @@ namespace Inforoom.PriceProcessor
 			  Settings.Default.RemotingServiceName,
 			  WellKnownObjectMode.Singleton);
 
+			RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+
 			alHandlers = new List<AbstractHandler>();
 
 			alHandlers.Add(new FormalizeHandler());
