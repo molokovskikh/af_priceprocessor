@@ -36,6 +36,19 @@ namespace Inforoom.Downloader
 			return Source.Replace("'", String.Empty).Trim();
 		}
 
+		protected bool IsMailAddress(string address)
+		{
+			try
+			{
+				System.Net.Mail.MailAddress mailAddress = new System.Net.Mail.MailAddress(address);
+				return true;
+			}
+			catch (FormatException)
+			{
+				return false;
+			}
+		}
+
         protected override void ProcessData()
         {
 			using (IMAP_Client c = new IMAP_Client())
@@ -348,7 +361,7 @@ namespace Inforoom.Downloader
 				{
 					drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
 						SourcesTable.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
-						SourcesTable.colEMailFrom, GetCorrectEmailAddress(mbFrom.EmailAddress)));
+						SourcesTable.colEMailFrom, mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS)
 					{
 						if ((WildcardsHelper.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
@@ -437,24 +450,43 @@ namespace Inforoom.Downloader
 			AddressList FromList = new AddressList();
 			bool SenderFound = false;
 
+			//адрес из поля Sender, может быть не установлен
+			string senderAddress = null;
+			//Если поле установлено и адрес не пустой
+			if ((m.MainEntity.Sender != null) && !String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress))
+			{ 
+				//получаем корректный адрес
+				senderAddress = GetCorrectEmailAddress(m.MainEntity.Sender.EmailAddress);
+				//Если адрес получился некорректным, то сбрасываем значение поля
+				if (!IsMailAddress(senderAddress))
+					senderAddress = null;
+			}
+
             //Иногда список адресов оказывается пуст - СПАМ
             if (m.MainEntity.From != null)
             {
                 foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
                 {
                     //Проверяем, что адрес что-то содержит
-                    if (!String.IsNullOrEmpty(a.EmailAddress))
+					if (!String.IsNullOrEmpty(a.EmailAddress))
                     {
-						FromList.Add(new MailboxAddress(a.EmailAddress));
-                        if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (String.Compare(a.EmailAddress, m.MainEntity.Sender.EmailAddress, true) == 0))
-                            SenderFound = true;
+						//получам корректный адрес
+						string correctAddress = GetCorrectEmailAddress(a.EmailAddress);
+						//Если после всех проверок адрес является EMail-адресом, то добавляем в список
+						if (IsMailAddress(correctAddress))
+						{
+							FromList.Add(new MailboxAddress(correctAddress));
+							if (!String.IsNullOrEmpty(senderAddress) && senderAddress.Equals(correctAddress, StringComparison.OrdinalIgnoreCase))
+								SenderFound = true;
+						}
                     }
                 }
             }
-			if ((m.MainEntity.Sender != null) && (!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) && (!SenderFound))
-				FromList.Add(new MailboxAddress(m.MainEntity.Sender.EmailAddress));
 
-            //Иногда список адресов оказывается пуст - СПАМ, в этом случае создаем пустую коллекцию, чтобы все было в порядке
+			if (!String.IsNullOrEmpty(senderAddress) && !SenderFound)
+				FromList.Add(new MailboxAddress(senderAddress));
+
+			//Иногда список адресов оказывается пуст - СПАМ, в этом случае создаем пустую коллекцию, чтобы все было в порядке
             if (m.MainEntity.To == null)
                 m.MainEntity.To = new AddressList();
 

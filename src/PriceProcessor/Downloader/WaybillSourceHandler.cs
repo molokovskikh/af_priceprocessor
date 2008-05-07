@@ -393,7 +393,7 @@ and st.SourceID = 1";
 			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 			{
 				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
-					WaybillSourcesTable.colEMailFrom, GetCorrectEmailAddress(mbFrom.EmailAddress)));
+					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
 				//Адрес отправителя должен быть только у одного поставщика, если получилось больше, то это ошибка
 				if (drLS.Length == 1)
 				{
