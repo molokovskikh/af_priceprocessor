@@ -106,11 +106,6 @@ namespace Inforoom.Formalizer
 		Period,
 		[Description("Документ")]
 		Doc,
-		//todo: надо пометить на удаление
-		[Description("Базовая цена")]
-		BaseCost,
-		[Description("Валюта")]
-		Currency,
 		[Description("Цена минимальная")]
 		MinBoundCost,
 		[Description("Срок")]
@@ -301,6 +296,9 @@ namespace Inforoom.Formalizer
 		//код ценовой колонки, может быть не установлен
 		public long?	costCode;
 
+		//список прайс-листов, на которых в тестовом режиме будет использоваться update
+		private List<long> priceCodesUseUpdate;
+
 		//Является ли обрабатываемый прайс-лист загруженным?
 		public bool downloaded = false;
 
@@ -359,6 +357,9 @@ namespace Inforoom.Formalizer
 			//TODO: Все необходимые проверки вынести в конструкторы, чтобы не пытаться открыть прайс-файл
 
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
+
+			priceCodesUseUpdate = new List<long>();
+			priceCodesUseUpdate.Add(5);
 
 			priceFileName = PriceFileName;
 			dtPrice = new DataTable();
@@ -626,7 +627,6 @@ namespace Inforoom.Formalizer
 			drZero["Note"] = GetFieldValueObject(PriceFields.Note);
 			drZero["Period"] = GetFieldValueObject(PriceFields.Period);
 			drZero["Doc"] = GetFieldValueObject(PriceFields.Doc);
-			drZero["Currency"] = GetFieldValueObject(PriceFields.Currency);
 
 			dtZero.Rows.Add(drZero);
 
@@ -661,8 +661,6 @@ namespace Inforoom.Formalizer
 				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
 			drUnrecExp["Junk"] = Convert.ToByte(AJunk);
 
-			drUnrecExp["Currency"] = GetFieldValue(PriceFields.Currency);
-			drUnrecExp["BaseCost"] = GetFieldValueObject(PriceFields.BaseCost);
 			drUnrecExp["AddDate"] = DateTime.Now;
 
 			drUnrecExp["Status"] = AStatus;
@@ -1420,7 +1418,6 @@ and a.ProductId is null";
 
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
-				case (int)PriceFields.Currency:
 				case (int)PriceFields.Doc:
 				case (int)PriceFields.FirmCr:
 				case (int)PriceFields.Name1:
@@ -1432,7 +1429,6 @@ and a.ProductId is null";
 				case (int)PriceFields.OriginalName:
 					return GetFieldValue(PF);
 
-				case (int)PriceFields.BaseCost:
 				case (int)PriceFields.MinBoundCost:
 				case (int)PriceFields.RegistryCost:
 				case (int)PriceFields.MaxBoundCost:

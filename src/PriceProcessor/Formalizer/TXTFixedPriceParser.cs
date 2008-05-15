@@ -77,7 +77,7 @@ namespace Inforoom.Formalizer
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 			{
 				TmpName = GetFieldName(pf);
-				if (PriceFields.OriginalName != pf && PriceFields.BaseCost != pf && null != TmpName)
+				if ((PriceFields.OriginalName != pf) && (null != TmpName))
 				{
 					//TODO: Поле может быть не заполненно
 					try
