@@ -262,6 +262,12 @@ namespace Inforoom.Formalizer
 		protected MySqlDataAdapter daCoreCosts;
 		protected DataTable dtCoreCosts;
 
+		protected MySqlDataAdapter daExistsCore;
+		protected DataTable dtExistsCore;
+
+		protected MySqlDataAdapter daExistsCoreCosts;
+		protected DataTable dtExistsCoreCosts;
+
 		protected DataSet dsMyDB;
 
 		protected string[] FieldNames;
@@ -298,6 +304,9 @@ namespace Inforoom.Formalizer
 
 		//список прайс-листов, на которых в тестовом режиме будет использоваться update
 		private List<long> priceCodesUseUpdate;
+
+		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
+		private List<string> primaryFields;
 
 		//Является ли обрабатываемый прайс-лист загруженным?
 		public bool downloaded = false;
@@ -359,7 +368,19 @@ namespace Inforoom.Formalizer
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
 
 			priceCodesUseUpdate = new List<long>();
-			priceCodesUseUpdate.Add(5);
+			//priceCodesUseUpdate.Add(5);
+
+			primaryFields = new List<string>();
+			primaryFields.Add("ProductId");
+			primaryFields.Add("CodeFirmCr");
+			primaryFields.Add("SynonymCode");
+			primaryFields.Add("SynonymFirmCrCode");
+			primaryFields.Add("Code");
+			primaryFields.Add("Junk");
+			primaryFields.Add("VitallyImportant");
+			primaryFields.Add("RequestRatio");
+			primaryFields.Add("OrderCost");
+			primaryFields.Add("MinOrderCount");
 
 			priceFileName = PriceFileName;
 			dtPrice = new DataTable();
@@ -748,6 +769,41 @@ namespace Inforoom.Formalizer
 			daCoreCosts = new MySqlDataAdapter("SELECT * FROM farm.CoreCosts LIMIT 0", MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
+
+//            string existsCoreSQL;
+//            if (costType == CostTypes.MultiColumn)
+//                existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
+//            else
+//                existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+
+//            daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
+//            daExistsCore.Fill(dsMyDB, "ExistsCore");
+//            dtExistsCore = dsMyDB.Tables["ExistsCore"];
+//            DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
+//            dcProcessed.AllowDBNull = false;
+//            dcProcessed.DefaultValue = false;
+//            dtExistsCore.Columns.Add(dcProcessed);
+
+//            string existsCoreCostsSQL;
+//            if (costType == CostTypes.MultiColumn)
+//                existsCoreCostsSQL = String.Format(@"
+//SELECT 
+//  CoreCosts.* 
+//FROM 
+//  farm.Core0, 
+//  farm.CoreCosts,
+//  usersettings.pricescosts
+//WHERE 
+//    Core0.PriceCode = {0} 
+//and pricescosts.PriceCode = {0}
+//and CoreCosts.Core_Id = Core0.id
+//and CoreCosts.PC_CostCode = pricescosts.CostCode 
+//order by Core0.Id", priceCode);
+//            else
+//                existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+//            daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
+//            daExistsCoreCosts.Fill(dsMyDB, "ExistsCoreCosts");
+//            dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
 		}
 
 		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
@@ -809,6 +865,21 @@ namespace Inforoom.Formalizer
 				return new string[] {};
 		}
 
+		private string[] GetSQLToUpdateCoreAndCoreCosts(out string SynonymUpdateCommand, out string SynonymFirmCrUpdateCommand)
+		{
+			SynonymUpdateCommand = null;
+			SynonymFirmCrUpdateCommand = null;
+
+			List<string> commandList = new List<string>();
+
+			//Если чего-либо формализовали, то делаем синхронизацию, иначе все позиции просто удалятся
+			if (dtCore.Rows.Count > 0)
+			{ 
+			}
+
+			return commandList.ToArray();
+		}
+
 		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
 		{
 			if ((coreCosts != null) && (coreCosts.Count > 0))
@@ -841,9 +912,9 @@ namespace Inforoom.Formalizer
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["PriceCode"], drCore["ProductId"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
 			sb.AppendFormat("{0}, ", drCore["Junk"]);
-			sb.AppendFormat("'{0}', ", (drCore["Await"] is DBNull) ? String.Empty : drCore["Await"].ToString());
+			sb.AppendFormat("'{0}', ", drCore["Await"]);
 			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", drCore["VitallyImportant"].ToString());
+			sb.AppendFormat("{0}, ", drCore["VitallyImportant"]);
 			sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
 			sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
@@ -910,7 +981,13 @@ namespace Inforoom.Formalizer
 				{
 					string SynonymUpdateCommand = null, SynonymFirmCrUpdateCommand = null;
 
-					string[] insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+					string[] insertCoreAndCoreCostsCommandList;
+
+					if (priceCodesUseUpdate.Contains(priceCode))
+						insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+					else
+						insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
 					int tryCount = 0;
@@ -932,9 +1009,12 @@ namespace Inforoom.Formalizer
 
 							mcClear.Parameters.Clear();
 
-							if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
+							//Производим данные действия, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
+							if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
 							{
-								mcClear.CommandText = String.Format(@"
+								if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
+								{
+									mcClear.CommandText = String.Format(@"
 delete
   farm.CoreCosts,
   farm.Core0
@@ -945,50 +1025,56 @@ where
     CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
-								sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-							}
-							else
-							{
-								if (priceType != Settings.Default.ASSORT_FLG)
-								{
-									//Удаляем цены из CoreCosts
-									System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
-									sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
-									bool FirstInsertCoreCosts = true;
-									foreach (CoreCost c in currentCoreCosts)
-									{
-										if (!FirstInsertCoreCosts)
-											sbDelCoreCosts.Append(", ");
-										FirstInsertCoreCosts = false;
-										sbDelCoreCosts.Append(c.costCode.ToString());
-									}
-									sbDelCoreCosts.Append(");");
-
-									if (currentCoreCosts.Count > 0)
-									{
-										//Производим удаление цен
-										mcClear.CommandText = sbDelCoreCosts.ToString();
-										sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
-									}
+									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
 								}
+								else
+								{
+									if (priceType != Settings.Default.ASSORT_FLG)
+									{
+										//Удаляем цены из CoreCosts
+										System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
+										sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
+										bool FirstInsertCoreCosts = true;
+										foreach (CoreCost c in currentCoreCosts)
+										{
+											if (!FirstInsertCoreCosts)
+												sbDelCoreCosts.Append(", ");
+											FirstInsertCoreCosts = false;
+											sbDelCoreCosts.Append(c.costCode.ToString());
+										}
+										sbDelCoreCosts.Append(");");
 
-								//Добавляем команду на удаление данных из Core
-								mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
-								sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
+										if (currentCoreCosts.Count > 0)
+										{
+											//Производим удаление цен
+											mcClear.CommandText = sbDelCoreCosts.ToString();
+											sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+										}
+									}
+
+									//Добавляем команду на удаление данных из Core
+									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
+									sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
+								}
+								
 							}
 
+							//выполняем команды с обновлением данных в Core и CoreCosts
 							if (insertCoreAndCoreCostsCommandList.Length > 0)
 							{
-								//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts command: {0}", insertCoreAndCoreCostsSQL);
-								int insertCoreCount = 0;
+								int applyPositionCount = 0;
 								foreach (string command in insertCoreAndCoreCostsCommandList)
 								{
 									mcClear.CommandText = command;
-									//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts command: {0}", mcClear.CommandText);
-									insertCoreCount += mcClear.ExecuteNonQuery();
-									//SimpleLog.Log(getParserID(), "INSERT Core and CoreCosts Count: {0}", insertCoreCount);
+									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts command: {0}", mcClear.CommandText);
+									applyPositionCount += mcClear.ExecuteNonQuery();
+									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts Count: {0}", applyPositionCount);
 								}
-								sbLog.AppendFormat("InsToCoreAndCoreCosts={0}  ", insertCoreCount);
+
+								if (priceCodesUseUpdate.Contains(priceCode))
+									sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0}  ", applyPositionCount);
+								else
+									sbLog.AppendFormat("InsertToCoreAndCoreCosts={0}  ", applyPositionCount);
 
 								mcClear.CommandText = @"
 insert into catalogs.assortment
@@ -1006,16 +1092,21 @@ and a.ProductId is null";
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
 								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
 
-								mcClear.CommandText = SynonymUpdateCommand;
-								mcClear.Parameters.Clear();
-								sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
+								//mcClear.CommandText = SynonymUpdateCommand;
+								//mcClear.Parameters.Clear();
+								//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
 
-								mcClear.CommandText = SynonymFirmCrUpdateCommand;
-								mcClear.Parameters.Clear();
-								sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
+								//mcClear.CommandText = SynonymFirmCrUpdateCommand;
+								//mcClear.Parameters.Clear();
+								//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
 							}
 							else
-								sbLog.Append("InsToCoreAndCoreCosts=0  ");
+							{
+								if (priceCodesUseUpdate.Contains(priceCode))
+									sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
+								else								
+									sbLog.Append("InsertToCoreAndCoreCosts=0  ");
+							}
 
 
 							mcClear.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
