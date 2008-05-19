@@ -158,7 +158,6 @@ namespace Inforoom.Formalizer
 		public static string colPriceItemId = "PriceItemId";
 		public static string colCostCode = "CostCode";
 		public static string colParentSynonym = "ParentSynonym";
-		public static string colCurrency = "Currency";
 		public static string colNameMask = "NameMask";
 		public static string colForbWords = "ForbWords";
 		public static string colSelfAwaitPos = "SelfAwaitPos";
@@ -268,6 +267,8 @@ namespace Inforoom.Formalizer
 		protected MySqlDataAdapter daExistsCoreCosts;
 		protected DataTable dtExistsCoreCosts;
 
+		protected DataRelation relationExistsCoreToCosts;
+
 		protected DataSet dsMyDB;
 
 		protected string[] FieldNames;
@@ -321,8 +322,6 @@ namespace Inforoom.Formalizer
 		protected long		prevRowCount;
 		//производить формализацию по коду
 		protected bool				formByCode;
-		//валюта прайса
-		protected string			priceCurrency;
 
 		//Маска, которая накладывается на имя позиции
 		protected string nameMask;
@@ -371,16 +370,8 @@ namespace Inforoom.Formalizer
 			//priceCodesUseUpdate.Add(5);
 
 			primaryFields = new List<string>();
-			primaryFields.Add("ProductId");
-			primaryFields.Add("CodeFirmCr");
-			primaryFields.Add("SynonymCode");
-			primaryFields.Add("SynonymFirmCrCode");
-			primaryFields.Add("Code");
-			primaryFields.Add("Junk");
-			primaryFields.Add("VitallyImportant");
-			primaryFields.Add("RequestRatio");
-			primaryFields.Add("OrderCost");
-			primaryFields.Add("MinOrderCount");
+			//foreach (string field in Settings.Default.CorePrimaryFields)
+			//    primaryFields.Add(field);
 
 			priceFileName = PriceFileName;
 			dtPrice = new DataTable();
@@ -399,7 +390,6 @@ namespace Inforoom.Formalizer
 			priceCode = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceCode]);
 			costCode = (mydr.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(mydr.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(mydr.Rows[0][FormRules.colParentSynonym]); 
-			priceCurrency = mydr.Rows[0][FormRules.colCurrency].ToString();
 			//todo: не помню зачем используется это поле, имеет true, если формализовали ценовую колонку много файлового прайс-листа
 			hasParentPrice = false;
 			costType = (CostTypes)Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
@@ -559,8 +549,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ASynonymFirmCrCode"></param>
 		/// <param name="ABaseCost"></param>
 		/// <param name="AJunk"></param>
-		/// <param name="ACurrency"></param>
-		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk, string ACurrency)
+		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk)
 		{
 			if (!AJunk)
 				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
@@ -610,7 +599,6 @@ namespace Inforoom.Formalizer
 			drCore["Junk"] = Convert.ToByte(AJunk);
 			drCore["Await"] = Convert.ToByte( (bool)GetFieldValueObject(PriceFields.Await) );
 
-			drCore["Currency"] = ACurrency;
 			drCore["MinBoundCost"] = GetFieldValueObject(PriceFields.MinBoundCost);
 
 
@@ -662,8 +650,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="AStatus"></param>
 		/// <param name="AJunk"></param>
-		/// <param name="ACurrency"></param>
-		public void InsertToUnrec(Int64 AProductId, Int64 ACodeFirmCr, int AStatus, bool AJunk, string ACurrency)
+		public void InsertToUnrec(Int64 AProductId, Int64 ACodeFirmCr, int AStatus, bool AJunk)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
 			drUnrecExp["PriceItemId"] = priceItemId;
@@ -688,7 +675,6 @@ namespace Inforoom.Formalizer
 			drUnrecExp["Already"] = AStatus;
 			drUnrecExp["TmpProductId"] = AProductId;
 			drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
-			drUnrecExp["TmpCurrency"] = ACurrency;
 
 			if (dtUnrecExp.Columns.Contains("HandMade"))
 				drUnrecExp["HandMade"] = 0;
@@ -804,6 +790,9 @@ namespace Inforoom.Formalizer
 //            daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
 //            daExistsCoreCosts.Fill(dsMyDB, "ExistsCoreCosts");
 //            dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
+
+//            relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
+//            dsMyDB.Relations.Add(relationExistsCoreToCosts);
 		}
 
 		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
@@ -874,10 +863,76 @@ namespace Inforoom.Formalizer
 
 			//Если чего-либо формализовали, то делаем синхронизацию, иначе все позиции просто удалятся
 			if (dtCore.Rows.Count > 0)
-			{ 
+			{
+				List<string> synonymCodes = new List<string>();
+				List<string> synonymFirmCrCodes = new List<string>();
+
+				string lastCommand = String.Empty;
+				System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+				//формализованная строка
+				DataRow drCore;
+
+				//найденная строка из существующего прайса
+				DataRow drExistsCore;
+
+				for (int i = 0; i < dtCore.Rows.Count; i++)
+				{
+					drCore = dtCore.Rows[i];
+
+					if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
+						synonymCodes.Add(drCore["SynonymCode"].ToString());
+
+					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
+
+					drExistsCore = FindPositionInExistsCore(drCore);
+
+					if (drExistsCore == null)
+						InsertCorePosition(drCore, sb);
+					else
+						UpdateCorePosition(drExistsCore, drCore, sb);
+
+					if (priceType != Settings.Default.ASSORT_FLG)
+						if (drExistsCore == null)
+							InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
+						else
+							UpdateCoreCosts(drExistsCore, drCore, sb, (ArrayList)CoreCosts[i]);
+
+					if ((i + 1) % Settings.Default.MaxPositionInsertToCore == 0)
+					{
+						lastCommand = sb.ToString();
+						if (!String.IsNullOrEmpty(lastCommand))
+							commandList.Add(lastCommand);
+						sb = new System.Text.StringBuilder();
+					}
+				}
+
+				lastCommand = sb.ToString();
+				if (!String.IsNullOrEmpty(lastCommand))
+					commandList.Add(lastCommand);
+
+				SynonymUpdateCommand = "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+
+				SynonymFirmCrUpdateCommand = "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
 			}
 
 			return commandList.ToArray();
+		}
+
+		private void UpdateCoreCosts(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb, ArrayList arrayList)
+		{
+			throw new NotImplementedException();
+		}
+
+		private void UpdateCorePosition(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb)
+		{
+			throw new NotImplementedException();
+		}
+
+		private DataRow FindPositionInExistsCore(DataRow drCore)
+		{
+			throw new NotImplementedException();
 		}
 
 		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
@@ -907,7 +962,7 @@ namespace Inforoom.Formalizer
 				"Period, Junk, Await, MinBoundCost, " +
 				"VitallyImportant, RequestRatio, RegistryCost, " +
 				"MaxBoundCost, OrderCost, MinOrderCount, " +
-				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Currency) values ");
+				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
 			sb.Append("(");
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["PriceCode"], drCore["ProductId"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
@@ -939,9 +994,6 @@ namespace Inforoom.Formalizer
 			sb.Append(", ");
 
 			AddTextParameter("Doc", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Currency", drCore, sb);
 
 			sb.AppendLine(");");
             sb.AppendLine("set @LastCoreID = last_insert_id();");
@@ -1237,7 +1289,7 @@ and a.ProductId is null";
 					{
 						UnrecExpStatus st;
 						decimal currBaseCost = -1m;
-						string PosName, Currency = String.Empty;
+						string PosName = String.Empty;
 						bool Junk = false;
 						int costCount;
 						Int64 ProductId = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
@@ -1294,16 +1346,15 @@ and a.ProductId is null";
 								if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
 									st = st | UnrecExpStatus.FIRM_FORM;
 
-								Currency = priceCurrency;
 								st = st | UnrecExpStatus.CURR_FORM;									
 
 								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk, Currency);
+									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk);
 								else
 									unformCount++;
 
 								if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-									InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk, Currency);
+									InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
 
 							}
 							else
