@@ -96,6 +96,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 			return pt.Find(delegate(PriceProcessThread thread) { return (thread.ProcessItem == item); });
 		}
 
+		private int GetDownloadedProcessCount()
+		{
+			List<PriceProcessThread> DownloadedProcessList = pt.FindAll(delegate(PriceProcessThread thread) { return (thread.ProcessItem.Downloaded); });
+			return DownloadedProcessList.Count;
+		}
 		/// <summary>
 		/// Работает ли определенная нитка?
 		/// </summary>
@@ -232,43 +237,58 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{ 
 			lock (pt)
 			{
-				int j = 0;
 				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, "PriceItemList.Count = {0}", PriceItemList.list.Count);
-				while ((pt.Count < Settings.Default.MaxWorkThread) && (j < PriceItemList.list.Count))
+
+				//Первым проходом запускаем только загруженные прайс-листы
+				ProcessItemList(PriceItemList.GetDownloadedItemList());
+
+				//Если все загруженные прайс-листы в работе и кол-во рабочих ниток меньше максимального кол-ва, то добавляем еще перепроведенные прайс-листы
+				if ((PriceItemList.GetDownloadedCount() == GetDownloadedProcessCount()) && (pt.Count < Settings.Default.MaxWorkThread))
+					ProcessItemList(PriceItemList.list);
+			}
+		}
+
+		private void ProcessItemList(List<PriceProcessItem> ProcessList)
+		{
+			int j = 0;
+			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < ProcessList.Count))
+			{
+				PriceProcessItem item = ProcessList[j];
+
+				//не запущен ли он уже в работу?
+				if (!PriceProcessExist(item))
 				{
-					PriceProcessItem item = PriceItemList.list[j];
-					//не запущен ли он уже в работу?
-					if (!PriceProcessExist(item))
+					//существует ли файл на диске?
+					if (File.Exists(item.FilePath))
 					{
-						//существует ли файл на диске?
-						if (File.Exists(item.FilePath))
+						//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
+						if (DateTime.UtcNow.Subtract(item.CreateTime).TotalSeconds > 5)
 						{
-							//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
-							if (DateTime.UtcNow.Subtract(item.CreateTime).TotalSeconds > 5)
+							SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Adding PriceProcessThread = {0}", item.FilePath);
+							FileHashItem hashItem;
+							if (htEMessages.Contains(item.FilePath))
+								hashItem = (FileHashItem)htEMessages[item.FilePath];
+							else
 							{
-								SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Adding PriceProcessThread = {0}", item.FilePath);
-								FileHashItem hashItem;
-								if (htEMessages.Contains(item.FilePath))
-									hashItem = (FileHashItem)htEMessages[item.FilePath];
-								else
-								{
-									hashItem = new FileHashItem();
-									htEMessages.Add(item.FilePath, hashItem);
-								}
-								pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
-								SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Added PriceProcessThread = {0}", item.FilePath);
-								j++;
+								hashItem = new FileHashItem();
+								htEMessages.Add(item.FilePath, hashItem);
 							}
-						}
-						else
-						{
-							//удаляем элемент из списка
-							PriceItemList.list.Remove(item);
+							pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
+							SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Added PriceProcessThread = {0}", item.FilePath);
+							j++;
 						}
 					}
 					else
-						j++;
+					{
+						//удаляем элемент из списка
+						ProcessList.Remove(item);
+						//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
+						if (ProcessList != PriceItemList.list)
+							PriceItemList.list.Remove(item);
+					}
 				}
+				else
+					j++;
 			}
 		}
 
@@ -279,7 +299,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			lock (pt)
 			{
-				string statisticMessage = String.Format("Кол-во работающих нитей {0} : ", pt.Count);
+				string statisticMessage = String.Empty;
 
 				for (int i = pt.Count - 1; i >= 0; i--)
 				{
@@ -303,7 +323,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 				}
 
-				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, statisticMessage);
+				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, String.Format("Кол-во работающих нитей {0} : {1}", pt.Count, statisticMessage));
 			}
 		}
 

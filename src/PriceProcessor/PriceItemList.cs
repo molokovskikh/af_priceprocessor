@@ -57,6 +57,16 @@ namespace Inforoom.PriceProcessor
 			return list.FindAll(delegate(PriceProcessItem item) { return (item.PriceItemId == PriceItemId); });
 		}
 
+		public static List<PriceProcessItem> GetDownloadedItemList()
+		{
+			return list.FindAll(delegate(PriceProcessItem item) { return (item.Downloaded); });
+		}
+
+		public static int GetDownloadedCount()
+		{ 
+			return GetDownloadedItemList().Count;
+		}
+
 		public static DateTime? GetFileTime(ulong PriceItemId)
 		{
 			PriceProcessItem findItem = list.Find(delegate(PriceProcessItem item) { return (item.Downloaded && (item.PriceItemId == PriceItemId)); });

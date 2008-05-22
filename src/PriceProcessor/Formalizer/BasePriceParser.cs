@@ -795,10 +795,21 @@ namespace Inforoom.Formalizer
 //            dsMyDB.Relations.Add(relationExistsCoreToCosts);
 		}
 
-		public int TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
+		public string StatCommand(MySqlCommand command)
 		{
+			DateTime startTime = DateTime.UtcNow;
+			int applyCount = command.ExecuteNonQuery();
+			TimeSpan workTime = DateTime.UtcNow.Subtract(startTime);
+			return String.Format("{0};{1}", applyCount, workTime);
+		}
+
+		public string TryUpdate(MySqlDataAdapter da, DataTable dt, MySqlTransaction tran)
+		{
+			DateTime startTime = DateTime.UtcNow;
 			da.SelectCommand.Transaction = tran;
-			return (da.Update(dt));
+			int applyCount = da.Update(dt);
+			TimeSpan workTime = DateTime.UtcNow.Subtract(startTime);
+			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
 		private string[] GetSQLToInsertCoreAndCoreCosts(out string SynonymUpdateCommand, out string SynonymFirmCrUpdateCommand)
@@ -1077,7 +1088,7 @@ where
     CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
-									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
 								}
 								else
 								{
@@ -1100,13 +1111,13 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 										{
 											//Производим удаление цен
 											mcClear.CommandText = sbDelCoreCosts.ToString();
-											sbLog.AppendFormat("DelFromCoreCosts={0}  ", mcClear.ExecuteNonQuery());
+											sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
 										}
 									}
 
 									//Добавляем команду на удаление данных из Core
 									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
-									sbLog.AppendFormat("DelFromCore={0}  ", mcClear.ExecuteNonQuery());
+									sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
 								}
 								
 							}
@@ -1114,6 +1125,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 							//выполняем команды с обновлением данных в Core и CoreCosts
 							if (insertCoreAndCoreCostsCommandList.Length > 0)
 							{
+								DateTime tmInsertCoreAndCoreCosts = DateTime.UtcNow;
 								int applyPositionCount = 0;
 								foreach (string command in insertCoreAndCoreCostsCommandList)
 								{
@@ -1123,10 +1135,12 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts Count: {0}", applyPositionCount);
 								}
 
+								TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);
+
 								if (priceCodesUseUpdate.Contains(priceCode))
-									sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0}  ", applyPositionCount);
+									sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 								else
-									sbLog.AppendFormat("InsertToCoreAndCoreCosts={0}  ", applyPositionCount);
+									sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 
 								mcClear.CommandText = @"
 insert into catalogs.assortment
@@ -1142,7 +1156,7 @@ and c.CodeFirmCr > 1
 and a.ProductId is null";
 								mcClear.Parameters.Clear();
 								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
-								sbLog.AppendFormat("UpdateAssortment={0}  ", mcClear.ExecuteNonQuery());
+								sbLog.AppendFormat("UpdateAssortment={0}  ", StatCommand(mcClear));
 
 								//mcClear.CommandText = SynonymUpdateCommand;
 								//mcClear.Parameters.Clear();
@@ -1162,10 +1176,10 @@ and a.ProductId is null";
 
 
 							mcClear.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
-							sbLog.AppendFormat("DelFromZero={0}  ", mcClear.ExecuteNonQuery());
+							sbLog.AppendFormat("DelFromZero={0}  ", StatCommand(mcClear));
 
 							mcClear.CommandText = String.Format("delete from farm.Forb where PriceItemId={0}", priceItemId);
-							sbLog.AppendFormat("DelFromForb={0}  ", mcClear.ExecuteNonQuery());
+							sbLog.AppendFormat("DelFromForb={0}  ", StatCommand(mcClear));
 
 							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), MyConn);
 							daBlockedPrice.SelectCommand.Transaction = myTrans;
@@ -1175,7 +1189,7 @@ and a.ProductId is null";
 							if ((dtBlockedPrice.Rows.Count == 0) )
 							{
 								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
-								sbLog.AppendFormat("DelFromUnrecExp={0}  ", mcClear.ExecuteNonQuery());
+								sbLog.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(mcClear));
 							}
 
 							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), myTrans));
@@ -1201,7 +1215,7 @@ and a.ProductId is null";
 									mcClear.CommandText += String.Format(
 										"update usersettings.intersection_update_info set lastsent = default where intersection_update_info.PriceCode = {0}", priceCode);
 							}
-							mcClear.ExecuteNonQuery();
+							sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
 							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
 							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Commit");
