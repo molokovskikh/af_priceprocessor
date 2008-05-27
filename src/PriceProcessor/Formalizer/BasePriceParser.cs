@@ -134,6 +134,27 @@ namespace Inforoom.Formalizer
 		MiltiFile = 1
 	}
 
+	//Статистические счетчики для формализации
+	public enum FormalizeStats : int
+	{ 
+		//найдены по первичным полям
+		FirstSearch,
+		//найдены по остальным полям
+		SecondSearch,
+		//кол-во обновленных записей
+		UpdateCount,
+		//кол-во вставленных записей
+		InsertCount,
+		//кол-во удаленных записей
+		DeleteCount,
+		//кол-во обновленных цен
+		UpdateCostCount,
+		//кол-во добавленных цен
+		InsertCostCount,
+		//кол-во удаленных цен, не считаются цены, которые были удалены из удаления позиции из Core
+		DeleteCostCount
+	}
+
 	[Flags]
 	public enum UnrecExpStatus : int 
 	{
@@ -309,6 +330,12 @@ namespace Inforoom.Formalizer
 		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
 		private List<string> primaryFields;
 
+		//Список полей из Core, по которых происходит вторичное сравнение
+		private List<string> compareFields;
+
+		private Dictionary<FormalizeStats, int> statCounters;
+
+
 		//Является ли обрабатываемый прайс-лист загруженным?
 		public bool downloaded = false;
 
@@ -367,11 +394,21 @@ namespace Inforoom.Formalizer
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
 
 			priceCodesUseUpdate = new List<long>();
-			//priceCodesUseUpdate.Add(5);
+#if TESTINGUPDATE
+			priceCodesUseUpdate.Add(5);
+			priceCodesUseUpdate.Add(3779);
+#endif
 
 			primaryFields = new List<string>();
-			//foreach (string field in Settings.Default.CorePrimaryFields)
-			//    primaryFields.Add(field);
+			compareFields = new List<string>();
+#if TESTINGUPDATE
+			foreach (string field in Settings.Default.CorePrimaryFields)
+				primaryFields.Add(field);
+#endif
+
+			statCounters = new Dictionary<FormalizeStats, int>();
+			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
+				statCounters.Add(statCounter, 0);
 
 			priceFileName = PriceFileName;
 			dtPrice = new DataTable();
@@ -756,43 +793,52 @@ namespace Inforoom.Formalizer
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 
-//            string existsCoreSQL;
-//            if (costType == CostTypes.MultiColumn)
-//                existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
-//            else
-//                existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+#if TESTINGUPDATE
+			string existsCoreSQL;
+			if (costType == CostTypes.MultiColumn)
+				existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
+			else
+				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
 
-//            daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
-//            daExistsCore.Fill(dsMyDB, "ExistsCore");
-//            dtExistsCore = dsMyDB.Tables["ExistsCore"];
-//            DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
-//            dcProcessed.AllowDBNull = false;
-//            dcProcessed.DefaultValue = false;
-//            dtExistsCore.Columns.Add(dcProcessed);
+			daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
+			daExistsCore.Fill(dsMyDB, "ExistsCore");
+			dtExistsCore = dsMyDB.Tables["ExistsCore"];
+			foreach (DataColumn column in dtExistsCore.Columns)
+				if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
+					compareFields.Add(column.ColumnName);
+			DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
+			dcProcessed.AllowDBNull = false;
+			dcProcessed.DefaultValue = false;
+			dtExistsCore.Columns.Add(dcProcessed);
 
-//            string existsCoreCostsSQL;
-//            if (costType == CostTypes.MultiColumn)
-//                existsCoreCostsSQL = String.Format(@"
-//SELECT 
-//  CoreCosts.* 
-//FROM 
-//  farm.Core0, 
-//  farm.CoreCosts,
-//  usersettings.pricescosts
-//WHERE 
-//    Core0.PriceCode = {0} 
-//and pricescosts.PriceCode = {0}
-//and CoreCosts.Core_Id = Core0.id
-//and CoreCosts.PC_CostCode = pricescosts.CostCode 
-//order by Core0.Id", priceCode);
-//            else
-//                existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
-//            daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
-//            daExistsCoreCosts.Fill(dsMyDB, "ExistsCoreCosts");
-//            dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
+			string existsCoreCostsSQL;
+			if (costType == CostTypes.MultiColumn)
+				existsCoreCostsSQL = String.Format(@"
+SELECT 
+  CoreCosts.* 
+FROM 
+  farm.Core0, 
+  farm.CoreCosts,
+  usersettings.pricescosts
+WHERE 
+    Core0.PriceCode = {0} 
+and pricescosts.PriceCode = {0}
+and CoreCosts.Core_Id = Core0.id
+and CoreCosts.PC_CostCode = pricescosts.CostCode 
+order by Core0.Id", priceCode);
+			else
+				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+			daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
+			daExistsCoreCosts.Fill(dsMyDB, "ExistsCoreCosts");
+			dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
 
-//            relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
-//            dsMyDB.Relations.Add(relationExistsCoreToCosts);
+			relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
+			dsMyDB.Relations.Add(relationExistsCoreToCosts);
+			DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
+			dcProcessedCost.AllowDBNull = false;
+			dcProcessedCost.DefaultValue = false;
+			dtExistsCoreCosts.Columns.Add(dcProcessedCost);
+#endif
 		}
 
 		public string StatCommand(MySqlCommand command)
@@ -900,9 +946,14 @@ namespace Inforoom.Formalizer
 					drExistsCore = FindPositionInExistsCore(drCore);
 
 					if (drExistsCore == null)
+					{
+						statCounters[FormalizeStats.InsertCount]++;
 						InsertCorePosition(drCore, sb);
+					}
 					else
+					{
 						UpdateCorePosition(drExistsCore, drCore, sb);
+					}
 
 					if (priceType != Settings.Default.ASSORT_FLG)
 						if (drExistsCore == null)
@@ -923,6 +974,63 @@ namespace Inforoom.Formalizer
 				if (!String.IsNullOrEmpty(lastCommand))
 					commandList.Add(lastCommand);
 
+				List<string> deleteCore = new List<string>();
+				foreach (DataRow deleted in dtExistsCore.Rows)
+					if (!(bool)deleted["Processed"])
+					{
+						statCounters[FormalizeStats.DeleteCount]++;
+						deleteCore.Add(deleted["Id"].ToString());
+					}
+				if (deleteCore.Count > 0)
+				{
+					List<string> costsList = new List<string>();
+					foreach (CoreCost c in currentCoreCosts)
+						costsList.Add(c.costCode.ToString());
+					/*
+										string deleteCoreCommand = String.Format(@"
+					delete
+					from
+					  farm.CoreCosts
+					where
+					  CoreCosts.Core_Id in ({0})
+					and CoreCosts.PC_CostCode in ({1});
+					delete
+					from
+					  farm.Core0
+					delete
+					  farm.Core0,
+					  farm.CoreCosts
+					from
+					  farm.Core0,
+					  farm.CoreCosts
+					where
+						Core0.Id in ({0})
+					and Core0.PriceCode = {1}
+					and CoreCosts.Core_Id = Core0.Id
+					and CoreCosts.PC_CostCode in ({2});", String.Join(", ", deleteCore.ToArray()), priceCode, String.Join(", ", costsList.ToArray()));
+ 
+					 */
+					string deleteCoreCommand = String.Format(@"
+delete
+from
+  farm.CoreCosts
+where
+  CoreCosts.Core_Id in ({0})
+and CoreCosts.PC_CostCode in ({1});
+delete
+from
+  farm.Core0
+where
+  Core0.Id in ({0});", 
+						String.Join(", ", deleteCore.ToArray()), String.Join(", ", costsList.ToArray()));
+					commandList.Insert(0, deleteCoreCommand);
+				}
+
+				List<string> statCounterValues = new List<string>();
+				foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
+					statCounterValues.Add(String.Format("{0} = {1}", statCounter, statCounters[statCounter]));
+				SimpleLog.Log(getParserID(), "Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+
 				SynonymUpdateCommand = "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
 
 				SynonymFirmCrUpdateCommand = "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
@@ -931,19 +1039,145 @@ namespace Inforoom.Formalizer
 			return commandList.ToArray();
 		}
 
-		private void UpdateCoreCosts(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb, ArrayList arrayList)
+		private void UpdateCoreCosts(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb, ArrayList costs)
 		{
-			throw new NotImplementedException();
+			DataRow[] drExistsCosts = drExistsCore.GetChildRows(relationExistsCoreToCosts);
+			DataRow drCurrent;
+
+			foreach (CoreCost c in costs)
+				//Если значение формализованной цены больше нуля, то будет ее обновлять или вставлять, иначе существующая должна быть удалена
+				if (c.cost > 0)
+				{
+					//Попытка поиска цены в списке
+					drCurrent = null;
+					foreach (DataRow find in drExistsCosts)
+						if (Convert.ToUInt64(find["PC_CostCode"]) == Convert.ToUInt64(c.costCode))
+						{
+							drCurrent = find;
+							break;
+						}
+
+					//Если цена не найдена, то производим вставку
+					if (drCurrent == null)
+					{
+						statCounters[FormalizeStats.InsertCostCount]++;
+						sb.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ({0}, {1}, {2});\r\n",
+							drExistsCore["Id"], c.costCode, c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat));
+					}
+					else
+					{
+						//Если цена найдена и значение цены другое, то обновляем цену в таблице
+						drCurrent["Processed"] = true;
+						if (c.cost.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
+						{
+							statCounters[FormalizeStats.UpdateCostCount]++;
+							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
+								c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
+						}
+					}
+				}
+
+			List<string> deleteCosts = new List<string>();
+			foreach (DataRow deleted in drExistsCosts)
+				if (!(bool)deleted["Processed"])
+				{
+					statCounters[FormalizeStats.DeleteCostCount]++;
+					deleteCosts.Add(deleted["PC_CostCode"].ToString());
+				}
+			if (deleteCosts.Count > 0)
+				sb.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});\r\n", drExistsCore["Id"], String.Join(", ", deleteCosts.ToArray()));
 		}
 
 		private void UpdateCorePosition(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb)
 		{
-			throw new NotImplementedException();
+			drExistsCore["Processed"] = true;
+			List<string> updateFieldsScript = new List<string>();
+			foreach (string compareField in compareFields)
+			{
+				object NewValue;
+				if (drCore.Table.Columns[compareField].DataType == typeof(string))
+				{
+					if (drCore[compareField] is DBNull)
+						NewValue = String.Empty;
+					else
+						NewValue = drCore[compareField];
+				}
+				else
+					NewValue = drCore[compareField];
+				if (!NewValue.Equals(drExistsCore[compareField]))
+					if (drCore.Table.Columns[compareField].DataType == typeof(string))
+					{
+						if (drCore[compareField] is DBNull)
+							updateFieldsScript.Add(compareField + " = ''");
+						else
+							updateFieldsScript.Add(String.Format("{0} = '{1}'", compareField, StringToMySqlString(drCore[compareField].ToString())));
+					}
+					else
+						if (drCore[compareField] is DBNull)
+							updateFieldsScript.Add(compareField + " = null");
+						else
+							if (drCore.Table.Columns[compareField].DataType == typeof(decimal))
+								updateFieldsScript.Add(String.Format("{0} = {1}", compareField, drCore[compareField]));
+							else
+								updateFieldsScript.Add(String.Format("{0} = {1}", compareField, Convert.ToDecimal(drCore[compareField]).ToString(CultureInfo.InvariantCulture.NumberFormat)));
+			}
+
+			if (updateFieldsScript.Count > 0)
+			{
+				statCounters[FormalizeStats.UpdateCount]++;
+				sb.AppendFormat("update farm.Core0 set {0} where Id = {1};\r\n", String.Join(", ", updateFieldsScript.ToArray()), drExistsCore["Id"]);
+			}
 		}
 
 		private DataRow FindPositionInExistsCore(DataRow drCore)
 		{
-			throw new NotImplementedException();
+			List<string> filter = new List<string>();
+			foreach (string primaryField in primaryFields)
+			{
+				if (drCore.Table.Columns[primaryField].DataType == typeof(string))
+				{
+					if (drCore[primaryField] is DBNull)
+						filter.Add(String.Format("({0} = '')", primaryField));
+					else
+						filter.Add(String.Format("({0} = '{1}')", primaryField, drCore[primaryField]));
+				}
+				else
+					if (drCore[primaryField] is DBNull)
+						filter.Add(String.Format("({0} is null)", primaryField));
+					else
+						filter.Add(String.Format("({0} = {1})", primaryField, drCore[primaryField]));
+			}
+			filter.Add("(Processed = false)");
+			string filterString = String.Join(" and ", filter.ToArray());
+			DataRow[] drsExists = dtExistsCore.Select(filterString);
+			if (drsExists.Length == 0)
+				return null;
+			else
+				if (drsExists.Length == 1)
+				{
+					statCounters[FormalizeStats.FirstSearch]++;
+					return drsExists[0];
+				}
+				else
+				{
+					int maxMatchesNumber = 0, currentMatchesNumber;
+					DataRow maxMatchesNumberRow = null;
+					foreach (DataRow drExists in drsExists)
+					{
+						currentMatchesNumber = 0;
+						foreach (string compareField in compareFields)
+							if (drCore[compareField].Equals(drExists[compareField]))
+								currentMatchesNumber++;
+						if (currentMatchesNumber > maxMatchesNumber)
+						{
+							maxMatchesNumber = currentMatchesNumber;
+							maxMatchesNumberRow = drExists;
+						}
+					}
+					statCounters[FormalizeStats.SecondSearch]++;
+					return maxMatchesNumberRow;
+				}
+
 		}
 
 		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
@@ -1015,14 +1249,16 @@ namespace Inforoom.Formalizer
 			if (dr[ParamName] is DBNull)
 				sb.Append("''");
 			else
-			{
-				string s = dr[ParamName].ToString();
-				s = s.Replace("\\", "\\\\");
-				s = s.Replace("\'", "\\\'");
-				s = s.Replace("\"", "\\\"");
-				s = s.Replace("`", "\\`");
-				sb.AppendFormat("'{0}'", s);
-			}
+				sb.AppendFormat("'{0}'", StringToMySqlString(dr[ParamName].ToString()));
+		}
+
+		private static string StringToMySqlString(string s)
+		{
+			s = s.Replace("\\", "\\\\");
+			s = s.Replace("\'", "\\\'");
+			s = s.Replace("\"", "\\\"");
+			s = s.Replace("`", "\\`");
+			return s;
 		}
 
 		/// <summary>
