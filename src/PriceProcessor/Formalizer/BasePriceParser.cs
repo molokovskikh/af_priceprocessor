@@ -963,6 +963,7 @@ order by Core0.Id", priceCode);
 					}
 
 					if (priceType != Settings.Default.ASSORT_FLG)
+					{
 						if (drExistsCore == null)
 						{
 							statCounters[FormalizeStats.CommandCount]++;
@@ -970,6 +971,10 @@ order by Core0.Id", priceCode);
 						}
 						else
 							UpdateCoreCosts(drExistsCore, drCore, sb, (ArrayList)CoreCosts[i]);
+					}
+
+					if (drExistsCore != null)
+						drExistsCore.Delete();
 
 					if (statCounters[FormalizeStats.CommandCount] >= 300)
 					{
@@ -998,7 +1003,7 @@ order by Core0.Id", priceCode);
 
 				List<string> deleteCore = new List<string>();
 				foreach (DataRow deleted in dtExistsCore.Rows)
-					if (!(bool)deleted["Processed"])
+					if ((deleted.RowState != DataRowState.Deleted) && !(bool)deleted["Processed"])
 					{
 						statCounters[FormalizeStats.DeleteCount]++;
 						deleteCore.Add(deleted["Id"].ToString());
@@ -1088,11 +1093,14 @@ where
 
 			List<string> deleteCosts = new List<string>();
 			foreach (DataRow deleted in drExistsCosts)
+			{
 				if (!(bool)deleted["Processed"])
 				{
 					statCounters[FormalizeStats.DeleteCostCount]++;
 					deleteCosts.Add(deleted["PC_CostCode"].ToString());
 				}
+				deleted.Delete();
+			}
 			if (deleteCosts.Count > 0)
 			{
 				statCounters[FormalizeStats.CommandCount]++;
