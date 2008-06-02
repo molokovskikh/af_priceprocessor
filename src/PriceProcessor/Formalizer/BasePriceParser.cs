@@ -154,7 +154,9 @@ namespace Inforoom.Formalizer
 		//кол-во удаленных цен, не считаются цены, которые были удалены из удаления позиции из Core
 		DeleteCostCount,
 		//общее кол-во SQL-команд при обновлении прайс-листа
-		CommandCount
+		CommandCount,
+		//Среднее время поиска в миллисекундах записи в существующем прайсе
+		AvgSearchTime
 	}
 
 	[Flags]
@@ -980,14 +982,9 @@ order by Core0.Id", priceCode);
 						sb = new System.Text.StringBuilder();
 						statCounters[FormalizeStats.CommandCount] = 0;
 					}
-					//if ((i + 1) % Settings.Default.MaxPositionInsertToCore == 0)
-					//{
-					//    lastCommand = sb.ToString();
-					//    if (!String.IsNullOrEmpty(lastCommand))
-					//        commandList.Add(lastCommand);
-					//    sb = new System.Text.StringBuilder();
-					//}
 				}
+
+				statCounters[FormalizeStats.AvgSearchTime] = statCounters[FormalizeStats.AvgSearchTime] / dtCore.Rows.Count;
 
 				lastCommand = sb.ToString();
 				if (!String.IsNullOrEmpty(lastCommand))
@@ -1147,6 +1144,7 @@ where
 
 		private DataRow FindPositionInExistsCore(DataRow drCore)
 		{
+			DateTime dtSearchTime = DateTime.UtcNow;
 			List<string> filter = new List<string>();
 			foreach (string primaryField in primaryFields)
 			{
@@ -1166,6 +1164,8 @@ where
 			filter.Add("(Processed = false)");
 			string filterString = String.Join(" and ", filter.ToArray());
 			DataRow[] drsExists = dtExistsCore.Select(filterString);
+			TimeSpan tsSearchTime = DateTime.UtcNow.Subtract(dtSearchTime);
+			statCounters[FormalizeStats.AvgSearchTime] += Convert.ToInt32(tsSearchTime.TotalMilliseconds);
 			if (drsExists.Length == 0)
 				return null;
 			else
