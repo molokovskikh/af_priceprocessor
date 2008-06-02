@@ -152,7 +152,9 @@ namespace Inforoom.Formalizer
 		//кол-во добавленных цен
 		InsertCostCount,
 		//кол-во удаленных цен, не считаются цены, которые были удалены из удаления позиции из Core
-		DeleteCostCount
+		DeleteCostCount,
+		//общее кол-во SQL-команд при обновлении прайс-листа
+		CommandCount
 	}
 
 	[Flags]
@@ -933,6 +935,8 @@ order by Core0.Id", priceCode);
 				//найденная строка из существующего прайса
 				DataRow drExistsCore;
 
+				int AllCommandCount = 0;
+
 				for (int i = 0; i < dtCore.Rows.Count; i++)
 				{
 					drCore = dtCore.Rows[i];
@@ -948,6 +952,7 @@ order by Core0.Id", priceCode);
 					if (drExistsCore == null)
 					{
 						statCounters[FormalizeStats.InsertCount]++;
+						statCounters[FormalizeStats.CommandCount]++;						
 						InsertCorePosition(drCore, sb);
 					}
 					else
@@ -957,22 +962,42 @@ order by Core0.Id", priceCode);
 
 					if (priceType != Settings.Default.ASSORT_FLG)
 						if (drExistsCore == null)
+						{
+							statCounters[FormalizeStats.CommandCount]++;
 							InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
+						}
 						else
 							UpdateCoreCosts(drExistsCore, drCore, sb, (ArrayList)CoreCosts[i]);
 
-					if ((i + 1) % Settings.Default.MaxPositionInsertToCore == 0)
+					if (statCounters[FormalizeStats.CommandCount] >= 300)
 					{
+						SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
+						AllCommandCount += statCounters[FormalizeStats.CommandCount];
 						lastCommand = sb.ToString();
+						//SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
 						if (!String.IsNullOrEmpty(lastCommand))
 							commandList.Add(lastCommand);
 						sb = new System.Text.StringBuilder();
+						statCounters[FormalizeStats.CommandCount] = 0;
 					}
+					//if ((i + 1) % Settings.Default.MaxPositionInsertToCore == 0)
+					//{
+					//    lastCommand = sb.ToString();
+					//    if (!String.IsNullOrEmpty(lastCommand))
+					//        commandList.Add(lastCommand);
+					//    sb = new System.Text.StringBuilder();
+					//}
 				}
 
 				lastCommand = sb.ToString();
 				if (!String.IsNullOrEmpty(lastCommand))
+				{
+					SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
+					//SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
 					commandList.Add(lastCommand);
+					AllCommandCount += statCounters[FormalizeStats.CommandCount];
+					statCounters[FormalizeStats.CommandCount] = AllCommandCount;
+				}
 
 				List<string> deleteCore = new List<string>();
 				foreach (DataRow deleted in dtExistsCore.Rows)
@@ -986,44 +1011,29 @@ order by Core0.Id", priceCode);
 					List<string> costsList = new List<string>();
 					foreach (CoreCost c in currentCoreCosts)
 						costsList.Add(c.costCode.ToString());
-					/*
-										string deleteCoreCommand = String.Format(@"
-					delete
-					from
-					  farm.CoreCosts
-					where
-					  CoreCosts.Core_Id in ({0})
-					and CoreCosts.PC_CostCode in ({1});
-					delete
-					from
-					  farm.Core0
-					delete
-					  farm.Core0,
-					  farm.CoreCosts
-					from
-					  farm.Core0,
-					  farm.CoreCosts
-					where
-						Core0.Id in ({0})
-					and Core0.PriceCode = {1}
-					and CoreCosts.Core_Id = Core0.Id
-					and CoreCosts.PC_CostCode in ({2});", String.Join(", ", deleteCore.ToArray()), priceCode, String.Join(", ", costsList.ToArray()));
- 
-					 */
-					string deleteCoreCommand = String.Format(@"
+
+					string costCodeFilter = String.Join(", ", costsList.ToArray());
+
+					List<string> deleteCommandList = new List<string>();
+					foreach(string coreId in deleteCore)
+						deleteCommandList.Add(String.Format(@"
 delete
 from
   farm.CoreCosts
 where
-  CoreCosts.Core_Id in ({0})
-and CoreCosts.PC_CostCode in ({1});
+  CoreCosts.Core_Id = {0}
+and CoreCosts.PC_CostCode in ({1});",
+									coreId, costCodeFilter));
+
+					deleteCommandList.Add(String.Format(@"
 delete
 from
   farm.Core0
 where
-  Core0.Id in ({0});", 
-						String.Join(", ", deleteCore.ToArray()), String.Join(", ", costsList.ToArray()));
-					commandList.Insert(0, deleteCoreCommand);
+  Core0.Id in ({0});",
+						String.Join(", ", deleteCore.ToArray())));
+
+					commandList.InsertRange(0, deleteCommandList);
 				}
 
 				List<string> statCounterValues = new List<string>();
@@ -1061,6 +1071,7 @@ where
 					if (drCurrent == null)
 					{
 						statCounters[FormalizeStats.InsertCostCount]++;
+						statCounters[FormalizeStats.CommandCount]++;
 						sb.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ({0}, {1}, {2});\r\n",
 							drExistsCore["Id"], c.costCode, c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat));
 					}
@@ -1071,6 +1082,7 @@ where
 						if (c.cost.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
 							statCounters[FormalizeStats.UpdateCostCount]++;
+							statCounters[FormalizeStats.CommandCount]++;
 							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
 								c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
 						}
@@ -1085,7 +1097,10 @@ where
 					deleteCosts.Add(deleted["PC_CostCode"].ToString());
 				}
 			if (deleteCosts.Count > 0)
+			{
+				statCounters[FormalizeStats.CommandCount]++;
 				sb.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});\r\n", drExistsCore["Id"], String.Join(", ", deleteCosts.ToArray()));
+			}
 		}
 
 		private void UpdateCorePosition(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb)
@@ -1117,14 +1132,15 @@ where
 							updateFieldsScript.Add(compareField + " = null");
 						else
 							if (drCore.Table.Columns[compareField].DataType == typeof(decimal))
-								updateFieldsScript.Add(String.Format("{0} = {1}", compareField, drCore[compareField]));
-							else
 								updateFieldsScript.Add(String.Format("{0} = {1}", compareField, Convert.ToDecimal(drCore[compareField]).ToString(CultureInfo.InvariantCulture.NumberFormat)));
+							else
+								updateFieldsScript.Add(String.Format("{0} = {1}", compareField, drCore[compareField]));
 			}
 
 			if (updateFieldsScript.Count > 0)
 			{
 				statCounters[FormalizeStats.UpdateCount]++;
+				statCounters[FormalizeStats.CommandCount]++;
 				sb.AppendFormat("update farm.Core0 set {0} where Id = {1};\r\n", String.Join(", ", updateFieldsScript.ToArray()), drExistsCore["Id"]);
 			}
 		}
@@ -1368,7 +1384,9 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 									mcClear.CommandText = command;
 									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts command: {0}", mcClear.CommandText);
 									applyPositionCount += mcClear.ExecuteNonQuery();
-									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts Count: {0}", applyPositionCount);
+#if DEBUG
+									SimpleLog.Log(getParserID(), "Apply Core and CoreCosts Count: {0}", applyPositionCount);
+#endif
 								}
 
 								TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);

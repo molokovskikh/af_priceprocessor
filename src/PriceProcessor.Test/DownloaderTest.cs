@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
+using NUnit.Framework.SyntaxHelpers;
 
 
 namespace PriceProcessor.Test
@@ -54,6 +55,29 @@ namespace PriceProcessor.Test
 			StringBuilder sbNew = new StringBuilder();
 			sbNew.AppendFormat("this is test{0}\r\n", String.Empty);
 			sbNew.AppendFormat("this is test 2{0}\r\n", String.Empty);
+		}
+
+		[Test]
+		public void ListAddRangeTest()
+		{
+			List<string> all = new List<string>();
+			all.Add("1");
+			all.Add("2");
+			all.Add("3");
+			List<string> added = new List<string>();
+			added.Add("6");
+			added.Add("7");
+			added.Add("8");
+			all.InsertRange(0, added);
+			List<string> compare = new List<string>();
+			compare.Add("6");
+			compare.Add("7");
+			compare.Add("8");
+			compare.Add("1");
+			compare.Add("2");
+			compare.Add("3");
+
+			Assert.That(all, Is.EquivalentTo(compare));
 		}
 	}
 }
