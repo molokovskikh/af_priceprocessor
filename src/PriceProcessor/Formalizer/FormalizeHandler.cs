@@ -68,6 +68,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= FSEHOnCreate;
+			tWork.Abort();
 
 			Thread.Sleep(600);
 
