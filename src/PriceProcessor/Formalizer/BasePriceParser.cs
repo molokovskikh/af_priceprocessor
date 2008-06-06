@@ -10,6 +10,7 @@ using System.Net.Mail;
 using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Inforoom.Formalizer
 {
@@ -798,6 +799,7 @@ namespace Inforoom.Formalizer
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 
 #if TESTINGUPDATE
+			Stopwatch LoadExistsWatch = Stopwatch.StartNew();
 			string existsCoreSQL;
 			if (costType == CostTypes.MultiColumn)
 				existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
@@ -810,10 +812,13 @@ namespace Inforoom.Formalizer
 			foreach (DataColumn column in dtExistsCore.Columns)
 				if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
 					compareFields.Add(column.ColumnName);
-			DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
-			dcProcessed.AllowDBNull = false;
-			dcProcessed.DefaultValue = false;
-			dtExistsCore.Columns.Add(dcProcessed);
+
+			//Stopwatch AddProcessedToCoreWatch = Stopwatch.StartNew();
+			//DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
+			//dcProcessed.AllowDBNull = false;
+			//dcProcessed.DefaultValue = false;
+			//dtExistsCore.Columns.Add(dcProcessed);
+			//AddProcessedToCoreWatch.Stop();
 
 			string existsCoreCostsSQL;
 			if (costType == CostTypes.MultiColumn)
@@ -833,15 +838,27 @@ order by Core0.Id", priceCode);
 			else
 				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
 			daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
-			daExistsCoreCosts.Fill(dsMyDB, "ExistsCoreCosts");
-			dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
+			dtExistsCoreCosts = dtCoreCosts.Clone();
+			dtExistsCoreCosts.TableName = "ExistsCoreCosts";
+			dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
+			dsMyDB.Tables.Add(dtExistsCoreCosts);
+			daExistsCoreCosts.Fill(dtExistsCoreCosts);
+			//dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
 
+			Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
 			relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
 			dsMyDB.Relations.Add(relationExistsCoreToCosts);
-			DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
-			dcProcessedCost.AllowDBNull = false;
-			dcProcessedCost.DefaultValue = false;
-			dtExistsCoreCosts.Columns.Add(dcProcessedCost);
+
+			//DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
+			//dcProcessedCost.AllowDBNull = false;
+			//dcProcessedCost.DefaultValue = false;
+			//dtExistsCoreCosts.Columns.Add(dcProcessedCost);
+
+			ModifyCoreCostsWatch.Stop();
+			LoadExistsWatch.Stop();
+			SimpleLog.Log(getParserID(), "Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
+			//SimpleLog.Log(getParserID(), "Добавить Processed в Core : {0}", AddProcessedToCoreWatch.Elapsed);
+			SimpleLog.Log(getParserID(), "Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
 #endif
 		}
 
@@ -1003,7 +1020,7 @@ order by Core0.Id", priceCode);
 
 				List<string> deleteCore = new List<string>();
 				foreach (DataRow deleted in dtExistsCore.Rows)
-					if ((deleted.RowState != DataRowState.Deleted) && !(bool)deleted["Processed"])
+					if ((deleted.RowState != DataRowState.Deleted)) // && !(bool)deleted["Processed"]
 					{
 						statCounters[FormalizeStats.DeleteCount]++;
 						deleteCore.Add(deleted["Id"].ToString());
@@ -1063,7 +1080,7 @@ where
 					//Попытка поиска цены в списке
 					drCurrent = null;
 					foreach (DataRow find in drExistsCosts)
-						if (Convert.ToUInt64(find["PC_CostCode"]) == Convert.ToUInt64(c.costCode))
+						if ((long)find["PC_CostCode"] == c.costCode)
 						{
 							drCurrent = find;
 							break;
@@ -1080,7 +1097,7 @@ where
 					else
 					{
 						//Если цена найдена и значение цены другое, то обновляем цену в таблице
-						drCurrent["Processed"] = true;
+						//drCurrent["Processed"] = true;
 						if (c.cost.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
 							statCounters[FormalizeStats.UpdateCostCount]++;
@@ -1094,7 +1111,7 @@ where
 			List<string> deleteCosts = new List<string>();
 			foreach (DataRow deleted in drExistsCosts)
 			{
-				if (!(bool)deleted["Processed"])
+				if (deleted.RowState != DataRowState.Deleted) //!(bool)deleted["Processed"]
 				{
 					statCounters[FormalizeStats.DeleteCostCount]++;
 					deleteCosts.Add(deleted["PC_CostCode"].ToString());
@@ -1110,7 +1127,7 @@ where
 
 		private void UpdateCorePosition(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb)
 		{
-			drExistsCore["Processed"] = true;
+			//drExistsCore["Processed"] = true;
 			List<string> updateFieldsScript = new List<string>();
 			foreach (string compareField in compareFields)
 			{
@@ -1169,7 +1186,7 @@ where
 					else
 						filter.Add(String.Format("({0} = {1})", primaryField, drCore[primaryField]));
 			}
-			filter.Add("(Processed = false)");
+			//filter.Add("(Processed = false)");
 			string filterString = String.Join(" and ", filter.ToArray());
 			DataRow[] drsExists = dtExistsCore.Select(filterString);
 			TimeSpan tsSearchTime = DateTime.UtcNow.Subtract(dtSearchTime);
@@ -1307,7 +1324,12 @@ where
 					string[] insertCoreAndCoreCostsCommandList;
 
 					if (priceCodesUseUpdate.Contains(priceCode))
+					{
+						Stopwatch GetSQLWatch = Stopwatch.StartNew();
 						insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+						GetSQLWatch.Stop();
+						SimpleLog.Log(getParserID(), "Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
+					}
 					else
 						insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
 
