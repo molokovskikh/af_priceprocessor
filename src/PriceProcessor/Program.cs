@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ServiceProcess;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Inforoom.PriceProcessor
 {
@@ -15,6 +16,9 @@ namespace Inforoom.PriceProcessor
 #if DEBUG
 			Monitor monitor = new Monitor();
 			monitor.Start();
+			MessageBox.Show("Для остановки нажмите Ok...", "PriceProcessor");
+			monitor.Stop();
+			monitor = null;
 #else
 			ServiceBase[] ServicesToRun;
 			ServicesToRun = new ServiceBase[] 
