@@ -265,7 +265,6 @@
   &lt;string&gt;Code&lt;/string&gt;
   &lt;string&gt;Junk&lt;/string&gt;
   &lt;string&gt;Period&lt;/string&gt;
-  &lt;string&gt;VitallyImportant&lt;/string&gt;
   &lt;string&gt;RequestRatio&lt;/string&gt;
   &lt;string&gt;OrderCost&lt;/string&gt;
   &lt;string&gt;MinOrderCount&lt;/string&gt;

@@ -690,7 +690,6 @@ namespace Inforoom.PriceProcessor.Properties {
   <string>Code</string>
   <string>Junk</string>
   <string>Period</string>
-  <string>VitallyImportant</string>
   <string>RequestRatio</string>
   <string>OrderCost</string>
   <string>MinOrderCount</string>

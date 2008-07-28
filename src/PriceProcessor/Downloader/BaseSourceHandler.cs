@@ -229,8 +229,8 @@ and pd.AgencyEnabled= 1",
 					"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
                      cWork);
                 cmdUpdatePriceDate.Parameters.Add("?FirmCode", MySqlDbType.Int64);
-                cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.Datetime);
-				cmdUpdatePriceDate.Parameters.Add("?NowDate", MySqlDbType.Datetime);
+                cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.DateTime);
+				cmdUpdatePriceDate.Parameters.Add("?NowDate", MySqlDbType.DateTime);
 				cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
                 daFillSources = new MySqlDataAdapter(cmdFillSources);
             }
