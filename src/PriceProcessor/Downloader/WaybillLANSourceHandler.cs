@@ -17,10 +17,14 @@ namespace Inforoom.Downloader
 {
 	class WaybillLANSourceHandler : BaseSourceHandler
 	{
+		private InboundDocumentType[] _documentTypes;
+		private InboundDocumentType _currentType = null;
+
 		public WaybillLANSourceHandler()
 			: base()
 		{
 			this.sourceType = "WAYBILLLAN";
+			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
 		}
 
 		protected override string GetSQLSources()
@@ -52,69 +56,89 @@ and st.SourceID = 4";
 				drLanSource = null;
 				try
 				{
+					_currentType = null; 
+
 					drLanSource = dtSources.Rows[0];
 
 					documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
 
-					//Получаем список файлов из папки
-					files = GetFileFromSource(documentReader);
 
-					foreach (string SourceFileName in files)
-					{
-						GetCurrentFile(SourceFileName);
-
-						if (!String.IsNullOrEmpty(CurrFileName))
+					foreach(InboundDocumentType document in _documentTypes)
+						try
 						{
-							bool CorrectArchive = true;
-							//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-							if (ArchiveHelper.IsArchive(CurrFileName))
+							_currentType = document;
+
+							//Получаем список файлов из папки
+							files = GetFileFromSource(documentReader);
+
+							foreach (string SourceFileName in files)
 							{
-								if (ArchiveHelper.TestArchive(CurrFileName))
+								GetCurrentFile(SourceFileName);
+
+								if (!String.IsNullOrEmpty(CurrFileName))
 								{
-									try
+									bool CorrectArchive = true;
+									//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+									if (ArchiveHelper.IsArchive(CurrFileName))
 									{
-										ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+										if (ArchiveHelper.TestArchive(CurrFileName))
+										{
+											try
+											{
+												ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+											}
+											catch (ArchiveHelper.ArchiveException)
+											{
+												CorrectArchive = false;
+											}
+										}
+										else
+											CorrectArchive = false;
 									}
-									catch (ArchiveHelper.ArchiveException)
+
+									if (CorrectArchive)
 									{
-										CorrectArchive = false;
+										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
+										{
+											MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.DocumentFailMail,
+												String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
+												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
+													drLanSource[WaybillSourcesTable.colFirmCode],
+													drLanSource[SourcesTable.colShortName],
+													_currentType.GetType().Name,
+													DateTime.Now,
+													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."));
+											if (!String.IsNullOrEmpty(CurrFileName))
+												mm.Attachments.Add(new Attachment(CurrFileName));
+											SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+											sc.Send(mm);
+										}
+										//После обработки файла удаляем его из папки
+										if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
+											File.Delete(SourceFileName);
 									}
+									else
+									{
+										WriteLog(document.TypeID, Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+										//Распаковать файл не удалось, поэтому удаляем его из папки
+										if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
+											File.Delete(SourceFileName);
+									}
+									DeleteCurrFile();
 								}
-								else
-									CorrectArchive = false;
+
 							}
 
-							if (CorrectArchive)
-							{
-								if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
-								{
-									MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.DocumentFailMail,
-										String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
-										String.Format("Код поставщика : {0}\nФирма: {1}\nДата: {2}\nПричина: {3}",
-											drLanSource[WaybillSourcesTable.colFirmCode], 
-											drLanSource[SourcesTable.colShortName], 
-											DateTime.Now,
-											"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."));
-									if (!String.IsNullOrEmpty(CurrFileName))
-										mm.Attachments.Add(new Attachment(CurrFileName));
-									SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-									sc.Send(mm);
-								}
-								//После обработки файла удаляем его из папки
-								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-									File.Delete(SourceFileName);
-							}
-							else
-							{
-								WriteLog(Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
-								//Распаковать файл не удалось, поэтому удаляем его из папки
-								if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-									File.Delete(SourceFileName);
-							}
-							DeleteCurrFile();
+						}
+						catch (Exception typeException)
+						{
+							//Обрабатываем ошибку в случае обработки одного из типов документов
+							string Error = String.Empty;
+							Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], document.GetType().Name);
+							Error += Environment.NewLine + Environment.NewLine + typeException.ToString();
+							LoggingToService(Error);
 						}
 
-					}
 
 					drLanSource.Delete();
 					dtSources.AcceptChanges();
@@ -144,7 +168,7 @@ and st.SourceID = 4";
 			string PricePath = String.Empty;
 			try
 			{
-				PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+				PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentType.FolderName;
 				string[] ff = Directory.GetFiles(PricePath);
 
 				//Отсекаем файлы с некорректным расширением
@@ -207,7 +231,7 @@ and st.SourceID = 4";
 			catch (Exception exDivide)
 			{
 				processed = false;
-				WriteLog(Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
+				WriteLog(_currentType.TypeID, Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
 				return processed;
 			}
 
@@ -228,11 +252,12 @@ and st.SourceID = 4";
 				new ExecuteArgs(),
 				delegate(ExecuteArgs args)
 				{
-					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, 1, ?Addition); select last_insert_id();", cWork);
+					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", cWork);
 					cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 					cmdInsert.Parameters.AddWithValue("?ClientCode", DBNull.Value);
 					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
 					cmdInsert.Parameters.AddWithValue("?Addition", DBNull.Value);
+					cmdInsert.Parameters.AddWithValue("?DocumentType", _currentType.TypeID);
 
 					List<ulong> listClients = null;
 					string AptekaClientDirectory;
@@ -291,7 +316,7 @@ and st.SourceID = 4";
 								cmdInsert.ExecuteNonQuery();
 								continue;
 							}
-							AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + "Waybills";
+							AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentType.FolderName;
 							OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 							OutFileName = String.Empty;
 
@@ -335,16 +360,17 @@ and st.SourceID = 4";
 				});
 		}
 
-		private void WriteLog(int? logFirmCode, int? logClientCode, string logFileName, string logAddition)
+		private void WriteLog(int? DocumentType, int? logFirmCode, int? logClientCode, string logFileName, string logAddition)
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, 1)", args.DataAdapter.SelectCommand.Connection);
+				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
 				cmdInsert.Parameters.AddWithValue("?FirmCode", logFirmCode);
 				cmdInsert.Parameters.AddWithValue("?ClientCode", logClientCode);
 				cmdInsert.Parameters.AddWithValue("?FileName", logFileName);
 				cmdInsert.Parameters.AddWithValue("?Addition", logAddition);
+				cmdInsert.Parameters.AddWithValue("?DocumentType", DocumentType);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;
