@@ -75,8 +75,6 @@ namespace Inforoom.Downloader
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
                                 {
 									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
-									//todo: это надо включить
-                                    //UpdateDB(CurrPriceCode, CurrPriceDate);
                                 }
                                 else
                                 {
@@ -161,7 +159,6 @@ namespace Inforoom.Downloader
 					catch (Exception ex)
 					{
 						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
-						//Logging(CurrPriceCode, String.Format("Не удалось перенести файл '{0}' в каталог '{1}'", ExtrFile, NormalName));
 						SimpleLog.Log(this.GetType().Name + CurrPriceItemId.ToString(), String.Format("Не удалось перенести файл '{0}' в каталог '{1}': {2} ", ExtrFileName, NormalName, ex));
 					}
 				}

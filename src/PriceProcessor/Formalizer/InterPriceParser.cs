@@ -83,7 +83,6 @@ and r.RegionCode = cd.RegionCode",
 		{
 			string res = null;
 
-			//TODO: Проверить, правильно ли формируется оригинальное имя
 			//Специальным образом обрабатываем наименование товара, если имя содержится в нескольких полях
 			if ((PriceFields.Name1 == PF) || (PriceFields.OriginalName == PF)) 
 			{

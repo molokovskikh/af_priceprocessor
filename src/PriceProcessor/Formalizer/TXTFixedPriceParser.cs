@@ -79,7 +79,7 @@ namespace Inforoom.Formalizer
 				TmpName = GetFieldName(pf);
 				if ((PriceFields.OriginalName != pf) && (null != TmpName))
 				{
-					//TODO: Поле может быть не заполненно
+					//TODO: Поле может быть не заполненно, т.е. одно из полей может иметь значение NULL или пустая строка (String.Empty)
 					try
 					{
 						TxtBegin = Convert.ToInt32(mydr.Rows[0]["Txt" + TmpName + "Begin"]);

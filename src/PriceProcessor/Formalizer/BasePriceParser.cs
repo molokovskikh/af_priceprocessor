@@ -368,8 +368,6 @@ namespace Inforoom.Formalizer
 		protected string vitallyImportantMask;
 		//Тип прайса : ассортиментный
 		protected int    priceType;
-		//Является ли текущий прайс ценовой колонкой прайса-родителя
-		protected bool hasParentPrice;
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
 
@@ -432,10 +430,7 @@ namespace Inforoom.Formalizer
 			priceCode = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceCode]);
 			costCode = (mydr.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(mydr.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(mydr.Rows[0][FormRules.colParentSynonym]); 
-			//todo: не помню зачем используется это поле, имеет true, если формализовали ценовую колонку много файлового прайс-листа
-			hasParentPrice = false;
 			costType = (CostTypes)Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
-
 
 			nameMask = mydr.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)mydr.Rows[0][FormRules.colNameMask];
 
@@ -591,7 +586,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ASynonymFirmCrCode"></param>
 		/// <param name="ABaseCost"></param>
 		/// <param name="AJunk"></param>
-		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, decimal ABaseCost, bool AJunk)
+		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, bool AJunk)
 		{
 			if (!AJunk)
 				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
@@ -1586,7 +1581,6 @@ and a.ProductId is null";
 					try
 					{
 						UnrecExpStatus st;
-						decimal currBaseCost = -1m;
 						string PosName = String.Empty;
 						bool Junk = false;
 						int costCount;
@@ -1613,9 +1607,6 @@ and a.ProductId is null";
 											InsertToZero();
 											continue;
 										}
-										else
-											//todo: По-моему, здесь это не имеет смысл
-											currBaseCost = (currentCoreCosts[priceCodeCostIndex] as CoreCost).cost;
 									}
 									else
 									{
@@ -1627,11 +1618,8 @@ and a.ProductId is null";
 											InsertToZero();
 											continue;
 										}
-										currBaseCost = (currentCoreCosts[0] as CoreCost).cost;
 									}
 								}
-								else
-									currBaseCost = -1m;
 
 								strCode = GetFieldValue(PriceFields.Code);
 								strName1 = GetFieldValue(PriceFields.Name1, true);
@@ -1647,7 +1635,7 @@ and a.ProductId is null";
 								st = st | UnrecExpStatus.CURR_FORM;									
 
 								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, currBaseCost, Junk);
+									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 								else
 									unformCount++;
 

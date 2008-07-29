@@ -18,7 +18,6 @@ namespace Inforoom.Formalizer
 		protected System.Int64 startLine;
 
 		//Кол-во пустых строк
-		//TODO: Корректно рассчитать кол-во пустых строк в файле, чтобы выставить окончание
 		protected int blackCount;
 
 		public ExcelPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
@@ -64,8 +63,7 @@ namespace Inforoom.Formalizer
 							throw new WarningFormalizeException(Settings.Default.FieldsNotExistsError, firmCode, priceCode, firmShortName, priceName);
 						string FieldNames = "F1";
 						int MaxColCount = (ColumnNames.Rows.Count >= 256) ? 255 : ColumnNames.Rows.Count;
-						//todo: Поставить проверку на максимальное кол-во столбцов
-						for(int i = 1;i<MaxColCount;i++)
+						for(int i = 1; i < MaxColCount; i++)
 						{
 							FieldNames = FieldNames + ", F" + Convert.ToString(i+1);
 						}
