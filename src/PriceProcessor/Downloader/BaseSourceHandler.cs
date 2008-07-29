@@ -193,6 +193,7 @@ FROM
 WHERE
     sourcetypes.Type = '{0}'
 and st.SourceTypeId = sourcetypes.Id
+and (length(st.PriceMask) > 0)
 and pi.SourceId = st.ID
 and pc.PriceItemId = pi.ID
 and PD.PriceCode = pc.PriceCode
@@ -386,11 +387,14 @@ and pd.AgencyEnabled= 1",
             ExtrFile = InFile;
             if (ArchiveHelper.IsArchive(InFile))
             {
-                ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
+				if ((drCurrent[SourcesTable.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTable.colExtrMask].ToString()))
+					ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
+				else
+					ExtrFile = String.Empty;
             }
-            if (ExtrFile == String.Empty)
+			if (String.IsNullOrEmpty(ExtrFile))
             {
-				Logging(CurrPriceItemId, "Не удалось найти файл '" + (string)drCurrent[SourcesTable.colExtrMask] + "' в архиве");
+				Logging(CurrPriceItemId, String.Format("Не удалось найти файл в архиве. Маска файла в архиве : '{0}'", drCurrent[SourcesTable.colExtrMask]));
                 return false;
             }
             else

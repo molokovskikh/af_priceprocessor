@@ -364,28 +364,31 @@ namespace Inforoom.Downloader
 						SourcesTable.colEMailFrom, mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS)
 					{
-						if ((WildcardsHelper.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-							(String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
+						if ((drS[SourcesTable.colPriceMask] is String) && !String.IsNullOrEmpty(drS[SourcesTable.colPriceMask].ToString()))
 						{
-							Matched = true;
-							SetCurrentPriceCode(drS);
-							if (CorrectArchive)
+							if ((WildcardsHelper.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
+								(String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
 							{
-								string ExtrFile = String.Empty;
-								if (ProcessPriceFile(CurrFileName, out ExtrFile))
+								SetCurrentPriceCode(drS);
+								if (CorrectArchive)
 								{
-									LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
+									string ExtrFile = String.Empty;
+									if (ProcessPriceFile(CurrFileName, out ExtrFile))
+									{
+										Matched = true;
+										LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
+									}
+									else
+									{
+										LogDownloaderPrice(m, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
+									}
 								}
 								else
 								{
-									LogDownloaderPrice(m, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
+									LogDownloaderPrice(m, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
 								}
+								drS.Delete();
 							}
-							else
-							{
-								LogDownloaderPrice(m, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
-							}
-							drS.Delete();
 						}
 					}
 					dtSources.AcceptChanges();
