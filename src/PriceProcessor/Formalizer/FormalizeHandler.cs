@@ -226,6 +226,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 								SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить дублирующий файл {0}: {1}", item.FilePath, ex));
 							}
 						}
+						//todo: здесь возможно не стоит удалять из очереди
 						PriceItemList.list.Remove(item);
 					}
 			}
