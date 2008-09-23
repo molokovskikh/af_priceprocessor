@@ -1356,7 +1356,7 @@ where
 								{
 									mcClear.CommandText = String.Format(@"
 delete
-  farm.CoreCosts
+  farm.Core0
 from
   farm.CoreCosts,
   farm.Core0
@@ -1364,9 +1364,7 @@ where
     CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
-									sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
-									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
-									sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
+									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
 								}
 								else
 								{
