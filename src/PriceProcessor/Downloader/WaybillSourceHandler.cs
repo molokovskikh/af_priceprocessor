@@ -455,7 +455,7 @@ and st.SourceID = 1";
 			cmdInsert.Parameters.AddWithValue("?MessageUID", currentUID);
 			cmdInsert.Parameters.AddWithValue("?DocumentType", currentType.TypeID);			
 
-			MySqlTransaction tran;
+			MySqlTransaction tran = null;
 
 			string AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
 			string OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
@@ -500,6 +500,12 @@ and st.SourceID = 1";
 				}
 				catch (MySqlException MySQLErr)
 				{
+					if (tran != null)
+					{
+						tran.Rollback();
+						tran = null;
+					}
+
 					if ((MySQLErr.Number == 1205) || (MySQLErr.Number == 1213) || (MySQLErr.Number == 1422))
 					{
 						SimpleLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
@@ -511,7 +517,12 @@ and st.SourceID = 1";
 						throw;
 				}
 				catch 
-				{ 
+				{
+					if (tran != null)
+					{
+						tran.Rollback();
+						tran = null;
+					}
 					if (!String.IsNullOrEmpty(OutFileName) && File.Exists(OutFileName))
 						try
 						{
