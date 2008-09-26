@@ -8,6 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Inforoom.PriceProcessor.Properties;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
+using Inforoom.Logging;
 
 namespace Inforoom.Downloader.DocumentReaders
 {
@@ -92,7 +93,18 @@ namespace Inforoom.Downloader.DocumentReaders
 					//Если нашли, то архивируем оба файла, если не нашли и файл создан давно, то архивируем один файл
 					if (originalDoubleName != default(string))
 					{
-						outputList.Add(ArhiveFiles(new string[] { inputList[0], originalDoubleName }));
+						//todo: filecopy здесь происходит копирование полученных файлов во временную папку для дальнейшего разбора ситуации, из-за предположения, что есть проблема с пропажей документов
+						string archiveFileName = ArhiveFiles(new string[] { inputList[0], originalDoubleName });
+						outputList.Add(archiveFileName);
+						try
+						{
+							File.Copy(archiveFileName, @"T:\temp\SiaMoscow\" + Path.GetFileName(archiveFileName));
+															
+						}
+						catch (Exception ex)
+						{
+							SimpleLog.Log("SIAMoscow_2788_Reader.UnionFiles", "Не удалось скопировать файл {0} во временную папку : {1}", Path.GetFileName(archiveFileName), ex);
+						}
 						File.Delete(inputList[0]);
 						File.Delete(originalDoubleName);
 						inputList.Remove(originalDoubleName);

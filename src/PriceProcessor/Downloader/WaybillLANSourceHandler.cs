@@ -12,6 +12,7 @@ using Inforoom.Downloader.Documents;
 using System.Net.Mail;
 using System.Reflection;
 using Inforoom.Common;
+using Inforoom.Logging;
 
 namespace Inforoom.Downloader
 {
@@ -330,14 +331,21 @@ and st.SourceID = 4";
 								+ Path.GetExtension(formatFile);
 							OutFileName = NormalizeFileName(OutFileName);
 
+							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
 							if (File.Exists(OutFileName))
 								try
 								{
+									SimpleLog.Log("MoveWaybill", "Попытка удалить файл {0}", OutFileName);
 									File.Delete(OutFileName);
+									SimpleLog.Log("MoveWaybill", "Удаление файла успешно {0}", OutFileName);
 								}
-								catch { }
+								catch (Exception ex)
+								{
+									SimpleLog.Log("MoveWaybill", "Ошибка при удалении файла {0} : {1}", OutFileName, ex);
+								}
 
 							File.Copy(formatFile, OutFileName);
+							SimpleLog.Log("MoveWaybill", "Файл {0} скопирован в документы клиента.", OutFileName);
 						}
 
 						if (File.Exists(formatFile))
