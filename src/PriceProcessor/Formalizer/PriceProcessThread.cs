@@ -624,7 +624,7 @@ namespace Inforoom.Formalizer
 				myconn.Open();
 			try
 			{
-				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata where FirmCode < 0 limit 1");
+				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata where limit 1");
 				if (!((dsClient.Tables.Count == 1) && (dsClient.Tables[0].Rows.Count == 1)))
 				{
 					//Попытка получить время создания connection
