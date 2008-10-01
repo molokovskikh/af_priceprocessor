@@ -8,6 +8,8 @@ using Inforoom.PriceProcessor.Properties;
 using System.Configuration;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
+using System.Data;
+using System.Reflection;
 
 
 namespace Inforoom.Formalizer
@@ -34,6 +36,9 @@ namespace Inforoom.Formalizer
 		//идентификатор нити
 		private static int GlobalPPTID = -1;
 		private int PPTID;
+
+		//Если установлено, то письмо в ErrorList о проблемах с connection отправлено
+		private static bool LetterAboutConnectionSended = false;
 
 		//Временный каталог для файла
 		private string TempPath;
@@ -471,6 +476,8 @@ namespace Inforoom.Formalizer
 					//Создаем директорию для временного файла и копируем туда файл
 					Directory.CreateDirectory(TempPath);
 
+					CheckConnection(myconn);
+
 					try
 					{
 						try
@@ -573,10 +580,13 @@ namespace Inforoom.Formalizer
 					try
 					{
 						myconn.Close();
+						//todo: возможно здесь не стоит вызывать Dispose
 						myconn.Dispose();
 					}
-					catch
-					{}
+					catch (Exception onCloseException)
+					{
+						InternalLog("Ошибка при закрытии соединения: {0}", onCloseException);
+					}
 				}
 
 			}
@@ -601,6 +611,90 @@ namespace Inforoom.Formalizer
 				}
 				InternalLog( "Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
 				FormalizeEnd = true;
+			}
+		}
+
+		/// <summary>
+		/// Проверка connection на попытку выборки из clientsdata. Если выборка не будет успешной, то генерируем ошибку.
+		/// </summary>
+		/// <param name="myconn"></param>
+		private void CheckConnection(MySqlConnection myconn)
+		{
+			if (myconn.State != ConnectionState.Open)
+				myconn.Open();
+			try
+			{
+				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata where FirmCode < 0 limit 1");
+				if (!((dsClient.Tables.Count == 1) && (dsClient.Tables[0].Rows.Count == 1)))
+				{
+					//Попытка получить время создания connection
+					DateTime? creationTime = null;
+					FieldInfo driverField = myconn.GetType().GetField("driver", BindingFlags.Instance | BindingFlags.NonPublic);
+					object driverInternal = driverField.GetValue(myconn);
+					if (driverInternal != null)
+					{
+						FieldInfo creationTimeField = driverInternal.GetType().GetField("creationTime", BindingFlags.Instance | BindingFlags.NonPublic);
+						creationTime = (DateTime?)creationTimeField.GetValue(driverInternal);
+					}
+
+					//Пытаемся получить InnoDBStatus
+					bool InnoDBByConnection = false;
+					string InnoDBStatus = String.Empty;
+					DataSet dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
+					if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1))
+					{
+						InnoDBStatus = dsStatus.Tables[0].Rows[0]["Status"].ToString();
+						InnoDBByConnection = true;
+					}
+					if (!InnoDBByConnection)
+					{
+						DataRow drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, "show engine innodb status");
+						if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
+							InnoDBStatus = drInnoDBStatus["Status"].ToString();
+					}
+
+					string techInfo = String.Format(@"
+ServerThreadId           = {0}
+CreationTime             = {1}
+InnoDBStatusByConnection = {2}
+InnoDB Status            =
+{3}",
+										myconn.ServerThread,
+										creationTime,
+										InnoDBByConnection,
+										InnoDBStatus);
+
+					InternalLog("При проверке соединения получили 0 записей : {0}", techInfo);
+
+					if (!LetterAboutConnectionSended)
+						try
+						{
+							MailMessage Message = new MailMessage(
+								Settings.Default.ServiceMail,
+								Settings.Default.ServiceMail, 
+								"!!! Необходимо перезапустить PriceProcessor", 
+								String.Format(@"
+Необходимо перезапустить PriceProcessor, т.к. в нитке формализации был получен connection, который не возвращает записей при выполнении команд.
+Техническая информация:
+{0}",
+									techInfo));
+							Message.BodyEncoding = System.Text.Encoding.UTF8;
+							SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+							Client.Send(Message);
+							LetterAboutConnectionSended = true;
+						}
+						catch (Exception onSend)
+						{
+							InternalLog("Ошибка при отправке письма с techInfo : {0}", onSend);
+						}
+
+					throw new Exception("При попытке выборки из clientsdata не получили записей. Перезапустите PriceProcessor.");
+				}
+
+			}
+			finally
+			{
+				myconn.Close();
 			}
 		}
 	}
