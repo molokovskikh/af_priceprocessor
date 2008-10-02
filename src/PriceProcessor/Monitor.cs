@@ -40,6 +40,7 @@ namespace Inforoom.PriceProcessor
 
 			alHandlers.Add(new FormalizeHandler());
 
+#if (!DEBUG)
 			alHandlers.Add(new LANSourceHandler());
 			alHandlers.Add(new FTPSourceHandler());
 			alHandlers.Add(new HTTPSourceHandler());
@@ -47,6 +48,7 @@ namespace Inforoom.PriceProcessor
 			alHandlers.Add(new WaybillSourceHandler());
 			alHandlers.Add(new WaybillLANSourceHandler());
 			alHandlers.Add(new ClearArchivedPriceSourceHandler());
+#endif
 
 			tMonitor = new Thread(new ThreadStart(MonitorWork));
 		}

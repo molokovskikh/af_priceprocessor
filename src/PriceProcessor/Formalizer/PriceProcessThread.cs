@@ -59,6 +59,8 @@ namespace Inforoom.Formalizer
 
 		//—обственно нитка
 		private Thread t;
+		//врем€ прерывани€ рабочей нитки 
+		private DateTime? _abortingTime = null;
 
 		//¬рем€ начала формализации
 		private DateTime tmFormalize;
@@ -111,6 +113,26 @@ namespace Inforoom.Formalizer
 			get
 			{
 				return t;
+			}
+		}
+
+		public bool IsAbortingLong
+		{
+			get
+			{
+				return ((t.ThreadState == ThreadState.AbortRequested) || (t.ThreadState == ThreadState.Aborted) && _abortingTime.HasValue && (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
+			}
+		}
+
+		/// <summary>
+		/// останавливаем рабочую нитку и выставл€ем врем€ останова, чтобы обрубить по таймауту
+		/// </summary>
+		public void AbortThread()
+		{
+			if (!_abortingTime.HasValue)
+			{
+				t.Abort();
+				_abortingTime = DateTime.UtcNow;
 			}
 		}
 
@@ -624,7 +646,7 @@ namespace Inforoom.Formalizer
 				myconn.Open();
 			try
 			{
-				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata where limit 1");
+				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata limit 1");
 				if (!((dsClient.Tables.Count == 1) && (dsClient.Tables[0].Rows.Count == 1)))
 				{
 					//ѕопытка получить врем€ создани€ connection

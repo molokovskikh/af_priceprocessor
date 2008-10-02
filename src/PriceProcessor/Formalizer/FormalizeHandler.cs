@@ -210,13 +210,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 						{
 							//если элемент найден, то останавливаем нитку, файл будет удалять нитка при останове
 							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку из-за дублирующего прайс-листа {0}", thread.TID));
-							thread.WorkThread.Abort();
+							thread.AbortThread();
 							SimpleLog.Log(this.GetType().Name, String.Format("Останов нитки успешно вызван {0}", thread.TID));
 						}
 						else
 						{
 							//если нет нитки на формализацию, то просто удаляем файл из папки
-							//todo: не понятно, что делать если здесь будет удаляться скаченый файл
 							try
 							{
 								FileHelper.FileDelete(item.FilePath);
@@ -226,7 +225,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 								SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить дублирующий файл {0}: {1}", item.FilePath, ex));
 							}
 						}
-						//todo: здесь возможно не стоит удалять из очереди
+						///Из очереди на обработку файл элемент удаляется сразу, а если была рабочая нитка, 
+						///то она удаляется в ProcessThreads, когда остановиться или ее останов принудительно прервут по таймауту
 						PriceItemList.list.Remove(item);
 					}
 			}
@@ -245,7 +245,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 				ProcessItemList(PriceItemList.GetDownloadedItemList());
 
 				//Если все загруженные прайс-листы в работе и кол-во рабочих ниток меньше максимального кол-ва, то добавляем еще перепроведенные прайс-листы
-				if ((PriceItemList.GetDownloadedCount() == GetDownloadedProcessCount()) && (pt.Count < Settings.Default.MaxWorkThread))
+				//Поставил <= потому, что могут быть загруженные прайс-листы, которые уже удалили из PriceItemList, но их рабочие нитки еще не остановлены и не удалены
+				if ((PriceItemList.GetDownloadedCount() <= GetDownloadedProcessCount()) && (pt.Count < Settings.Default.MaxWorkThread))
 					ProcessItemList(PriceItemList.list);
 			}
 		}
@@ -313,16 +314,25 @@ namespace Inforoom.PriceProcessor.Formalizer
 						pt.RemoveAt(i);
 					}
 					else
+						//Остановка нитки по сроку, если она работает дольше, чем можно
 						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.WorkThread.ThreadState != System.Threading.ThreadState.AbortRequested))
 						{
 							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}", p.TID, p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd, p.StartDate));
-							p.WorkThread.Abort();
+							p.AbortThread();
 							SimpleLog.Log(this.GetType().Name, String.Format("Останов нитки успешно вызван {0}", p.TID));
 						}
 						else
-						{
-							statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3}, ", Path.GetFileName(p.ProcessItem.FilePath), p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd, p.TID);
-						}
+							//Принудительно завершаем прерванную нитку, т.к. время останова превысило допустимый интервал ожидания
+							if (p.IsAbortingLong)
+							{
+								SimpleLog.Log(this.GetType().Name, "Принудительно завершаем прерванную нитку {0}.", p.TID);
+								DeleteProcessThread(p);
+								pt.RemoveAt(i);
+							}
+							else
+							{
+								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3}, ", Path.GetFileName(p.ProcessItem.FilePath), p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd, p.TID);
+							}
 				}
 
 				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, String.Format("Кол-во работающих нитей {0} : {1}", pt.Count, statisticMessage));
