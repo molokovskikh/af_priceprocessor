@@ -646,8 +646,8 @@ namespace Inforoom.Formalizer
 				myconn.Open();
 			try
 			{
-				DataSet dsClient = MySqlHelper.ExecuteDataset(myconn, "select * from usersettings.clientsdata limit 1");
-				if (!((dsClient.Tables.Count == 1) && (dsClient.Tables[0].Rows.Count == 1)))
+				DataSet dsNowTime = MySqlHelper.ExecuteDataset(myconn, "select now()");
+				if (!((dsNowTime.Tables.Count == 1) && (dsNowTime.Tables[0].Rows.Count == 1)))
 				{
 					//Попытка получить время создания connection
 					DateTime? creationTime = null;
