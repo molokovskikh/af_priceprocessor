@@ -586,7 +586,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ASynonymFirmCrCode"></param>
 		/// <param name="ABaseCost"></param>
 		/// <param name="AJunk"></param>
-		public void InsertToCore(Int64 AProductId, Int64 ACodeFirmCr, Int64 ASynonymCode, Int64 ASynonymFirmCrCode, bool AJunk)
+		public void InsertToCore(long? AProductId, long? ACodeFirmCr, long? ASynonymCode, long? ASynonymFirmCrCode, bool AJunk)
 		{
 			if (!AJunk)
 				AJunk = (bool)GetFieldValueObject(PriceFields.Junk);
@@ -595,9 +595,11 @@ namespace Inforoom.Formalizer
 
 			drCore["PriceCode"] = priceCode;
 			drCore["ProductId"] = AProductId;
-			drCore["CodeFirmCr"] = ACodeFirmCr;
+			if (ACodeFirmCr.HasValue)
+				drCore["CodeFirmCr"] = ACodeFirmCr;
 			drCore["SynonymCode"] = ASynonymCode;
-			drCore["SynonymFirmCrCode"] = ASynonymFirmCrCode;
+			if (ASynonymFirmCrCode.HasValue)
+				drCore["SynonymFirmCrCode"] = ASynonymFirmCrCode;
 			drCore["Code"] = GetFieldValue(PriceFields.Code);
 			drCore["CodeCr"] = GetFieldValue(PriceFields.CodeCr);
 			drCore["Unit"] = GetFieldValue(PriceFields.Unit);
@@ -687,7 +689,7 @@ namespace Inforoom.Formalizer
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="AStatus"></param>
 		/// <param name="AJunk"></param>
-		public void InsertToUnrec(Int64 AProductId, Int64 ACodeFirmCr, int AStatus, bool AJunk)
+		public void InsertToUnrec(long? AProductId, long? ACodeFirmCr, int AStatus, bool AJunk)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
 			drUnrecExp["PriceItemId"] = priceItemId;
@@ -710,8 +712,10 @@ namespace Inforoom.Formalizer
 
 			drUnrecExp["Status"] = AStatus;
 			drUnrecExp["Already"] = AStatus;
-			drUnrecExp["TmpProductId"] = AProductId;
-			drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
+			if (AProductId.HasValue)
+				drUnrecExp["TmpProductId"] = AProductId;
+			if (ACodeFirmCr.HasValue)
+				drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
 
 			if (dtUnrecExp.Columns.Contains("HandMade"))
 				drUnrecExp["HandMade"] = 0;
@@ -1245,7 +1249,12 @@ where
 				"MaxBoundCost, OrderCost, MinOrderCount, " +
 				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
 			sb.Append("(");
-			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ", drCore["PriceCode"], drCore["ProductId"], drCore["CodeFirmCr"], drCore["SynonymCode"], drCore["SynonymFirmCrCode"]);
+			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
+				drCore["PriceCode"],
+				drCore["ProductId"],
+				Convert.IsDBNull(drCore["CodeFirmCr"]) ? "null" : drCore["CodeFirmCr"].ToString(),
+				drCore["SynonymCode"],
+				Convert.IsDBNull(drCore["SynonymFirmCrCode"]) ? "null" : drCore["SynonymFirmCrCode"].ToString());
 			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
 			sb.AppendFormat("{0}, ", drCore["Junk"]);
 			sb.AppendFormat("'{0}', ", drCore["Await"]);
@@ -1583,7 +1592,7 @@ and a.ProductId is null";
 						string PosName = String.Empty;
 						bool Junk = false;
 						int costCount;
-						Int64 ProductId = -1, SynonymCode = -1, CodeFirmCr = -1, SynonymFirmCrCode = -1;
+						long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
 						string strCode, strName1, strOriginalName, strFirmCr;
 						do
 						{
@@ -1944,14 +1953,14 @@ and a.ProductId is null";
 			if (null != toughMask)
 			{
 				pv = toughMask.GetFieldValue(PriceFields.Period);
-				if (null != pv && String.Empty != pv)
+				if (!String.IsNullOrEmpty(pv))
 				{
 					res = toughDate.Analyze( pv );
 					if (!DateTime.MaxValue.Equals(res))
 						return res;
 				}
 			}
-			if (null != PeriodValue && String.Empty != PeriodValue)
+			if (!String.IsNullOrEmpty(PeriodValue))
 			{
 				res = toughDate.Analyze( PeriodValue );
 				if (DateTime.MaxValue.Equals(res))
@@ -2033,7 +2042,7 @@ and a.ProductId is null";
 		/// <param name="ASynonymCode"></param>
 		/// <param name="AJunk"></param>
 		/// <returns></returns>
-		public bool GetProductId(string ACode, string AName, string AOriginalName, out Int64 AProductId, out Int64 ASynonymCode, out bool AJunk)
+		public bool GetProductId(string ACode, string AName, string AOriginalName, out long? AProductId, out long? ASynonymCode, out bool AJunk)
 		{
 			DataRow[] dr = null;
 			if (formByCode)
@@ -2059,8 +2068,8 @@ and a.ProductId is null";
 			}
 			else
 			{
-				AProductId = 0;
-				ASynonymCode = 0;
+				AProductId = null;
+				ASynonymCode = null;
 				AJunk = false;
 				return false;
 			}
@@ -2074,7 +2083,7 @@ and a.ProductId is null";
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="ASynonymFirmCrCode"></param>
 		/// <returns></returns>
-		public bool GetCodeFirmCr(string FirmCr,out Int64 ACodeFirmCr, out Int64 ASynonymFirmCrCode)
+		public bool GetCodeFirmCr(string FirmCr, out long? ACodeFirmCr, out long? ASynonymFirmCrCode)
 		{
 			DataRow[] dr = null;
 			if (null != FirmCr)
@@ -2082,15 +2091,17 @@ and a.ProductId is null";
 
 			if ((null != dr) && (dr.Length > 0))
 			{
-				ACodeFirmCr = Convert.ToInt64(dr[0]["CodeFirmCr"]);
+				//Если значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
+				ACodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
 				ASynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
 				return true;
 			}
 			else
 			{
-				ACodeFirmCr = 1;
-				ASynonymFirmCrCode = 0;
-				return (null == FirmCr || String.Empty == FirmCr) ? true : false;
+ 				ACodeFirmCr = null;
+ 				ASynonymFirmCrCode = null;
+ 				//Если поле FirmCr не установлено, то считаем что позиция распознана по производителю
+ 				return (String.IsNullOrEmpty(FirmCr) ? true : false);
 			}
 		}
 
