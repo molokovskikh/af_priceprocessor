@@ -273,5 +273,11 @@
     <Setting Name="AbortingThreadTimeout" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">60</Value>
     </Setting>
+    <Setting Name="SyncPriceCodes" Type="System.Collections.Specialized.StringCollection" Scope="Application">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;string&gt;4596&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -397,17 +397,23 @@ namespace Inforoom.Formalizer
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
 
 			priceCodesUseUpdate = new List<long>();
+			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
+				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
 #if TESTINGUPDATE
-			priceCodesUseUpdate.Add(5);
-			priceCodesUseUpdate.Add(3779);
+			//Протек-15 (Акция_1) - Воронеж 
+			//priceCodesUseUpdate.Add(5);
+			//Катрен (Воронеж) -  Воронеж
+			//priceCodesUseUpdate.Add(3779);
+			//Протек-15 (Базовый_новый) - Воронеж 
+			//priceCodesUseUpdate.Add(4596);			
 #endif
 
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
-#if TESTINGUPDATE
 			foreach (string field in Settings.Default.CorePrimaryFields)
 				primaryFields.Add(field);
-#endif
+//#if TESTINGUPDATE
+//#endif
 
 			statCounters = new Dictionary<FormalizeStats, int>();
 			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
@@ -797,31 +803,32 @@ namespace Inforoom.Formalizer
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 
-#if TESTINGUPDATE
-			Stopwatch LoadExistsWatch = Stopwatch.StartNew();
-			string existsCoreSQL;
-			if (costType == CostTypes.MultiColumn)
-				existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
-			else
-				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+			if (priceCodesUseUpdate.Contains(priceCode))
+			{
+				Stopwatch LoadExistsWatch = Stopwatch.StartNew();
+				string existsCoreSQL;
+				if (costType == CostTypes.MultiColumn)
+					existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
+				else
+					existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
 
-			daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
-			daExistsCore.Fill(dsMyDB, "ExistsCore");
-			dtExistsCore = dsMyDB.Tables["ExistsCore"];
-			foreach (DataColumn column in dtExistsCore.Columns)
-				if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
-					compareFields.Add(column.ColumnName);
+				daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
+				daExistsCore.Fill(dsMyDB, "ExistsCore");
+				dtExistsCore = dsMyDB.Tables["ExistsCore"];
+				foreach (DataColumn column in dtExistsCore.Columns)
+					if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
+						compareFields.Add(column.ColumnName);
 
-			//Stopwatch AddProcessedToCoreWatch = Stopwatch.StartNew();
-			//DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
-			//dcProcessed.AllowDBNull = false;
-			//dcProcessed.DefaultValue = false;
-			//dtExistsCore.Columns.Add(dcProcessed);
-			//AddProcessedToCoreWatch.Stop();
+				//Stopwatch AddProcessedToCoreWatch = Stopwatch.StartNew();
+				//DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
+				//dcProcessed.AllowDBNull = false;
+				//dcProcessed.DefaultValue = false;
+				//dtExistsCore.Columns.Add(dcProcessed);
+				//AddProcessedToCoreWatch.Stop();
 
-			string existsCoreCostsSQL;
-			if (costType == CostTypes.MultiColumn)
-				existsCoreCostsSQL = String.Format(@"
+				string existsCoreCostsSQL;
+				if (costType == CostTypes.MultiColumn)
+					existsCoreCostsSQL = String.Format(@"
 SELECT 
   CoreCosts.* 
 FROM 
@@ -834,30 +841,33 @@ and pricescosts.PriceCode = {0}
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode 
 order by Core0.Id", priceCode);
-			else
-				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
-			daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
-			dtExistsCoreCosts = dtCoreCosts.Clone();
-			dtExistsCoreCosts.TableName = "ExistsCoreCosts";
-			dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
-			dsMyDB.Tables.Add(dtExistsCoreCosts);
-			daExistsCoreCosts.Fill(dtExistsCoreCosts);
-			//dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
+				else
+					existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+				daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
+				dtExistsCoreCosts = dtCoreCosts.Clone();
+				dtExistsCoreCosts.TableName = "ExistsCoreCosts";
+				dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
+				dsMyDB.Tables.Add(dtExistsCoreCosts);
+				daExistsCoreCosts.Fill(dtExistsCoreCosts);
+				//dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
 
-			Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
-			relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
-			dsMyDB.Relations.Add(relationExistsCoreToCosts);
+				Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
+				relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
+				dsMyDB.Relations.Add(relationExistsCoreToCosts);
 
-			//DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
-			//dcProcessedCost.AllowDBNull = false;
-			//dcProcessedCost.DefaultValue = false;
-			//dtExistsCoreCosts.Columns.Add(dcProcessedCost);
+				//DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
+				//dcProcessedCost.AllowDBNull = false;
+				//dcProcessedCost.DefaultValue = false;
+				//dtExistsCoreCosts.Columns.Add(dcProcessedCost);
 
-			ModifyCoreCostsWatch.Stop();
-			LoadExistsWatch.Stop();
-			SimpleLog.Log(getParserID(), "Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
-			//SimpleLog.Log(getParserID(), "Добавить Processed в Core : {0}", AddProcessedToCoreWatch.Elapsed);
-			SimpleLog.Log(getParserID(), "Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+				ModifyCoreCostsWatch.Stop();
+				LoadExistsWatch.Stop();
+				SimpleLog.Log(getParserID(), "Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
+				//SimpleLog.Log(getParserID(), "Добавить Processed в Core : {0}", AddProcessedToCoreWatch.Elapsed);
+				SimpleLog.Log(getParserID(), "Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+			}
+
+#if TESTINGUPDATE
 #endif
 		}
 
@@ -989,9 +999,12 @@ order by Core0.Id", priceCode);
 							UpdateCoreCosts(drExistsCore, drCore, sb, (ArrayList)CoreCosts[i]);
 					}
 
+					//Если мы нашли запись в существующем Core, то удаляем ее из кэша существующих предложений, 
+					//чтобы при следующем поиске она не учитывалась
 					if (drExistsCore != null)
 						drExistsCore.Delete();
 
+					//Производим отсечку по кол-во сформированных команд
 					if (statCounters[FormalizeStats.CommandCount] >= 300)
 					{
 						SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
@@ -1017,6 +1030,9 @@ order by Core0.Id", priceCode);
 					statCounters[FormalizeStats.CommandCount] = AllCommandCount;
 				}
 
+				//Производим поиск записей в кэше существующих предложений,
+				//которые не были помечены как удаленные, что говорит о том, 
+				//что эти записи не рассматривались при синхронизации, следовательно их нужно удалить
 				List<string> deleteCore = new List<string>();
 				foreach (DataRow deleted in dtExistsCore.Rows)
 					if ((deleted.RowState != DataRowState.Deleted)) // && !(bool)deleted["Processed"]
@@ -1026,12 +1042,15 @@ order by Core0.Id", priceCode);
 					}
 				if (deleteCore.Count > 0)
 				{
+					//Если есть записи, которые нужно удалить из Core, то сначала формируем
 					List<string> costsList = new List<string>();
 					foreach (CoreCost c in currentCoreCosts)
 						costsList.Add(c.costCode.ToString());
 
 					string costCodeFilter = String.Join(", ", costsList.ToArray());
 
+					//формируем команды на удаление из CoreCosts по указанному CoreId
+					//для позиций из Core, которые не нашли в формализованном прайс-листе
 					List<string> deleteCommandList = new List<string>();
 					foreach(string coreId in deleteCore)
 						deleteCommandList.Add(String.Format(@"
@@ -1043,6 +1062,8 @@ where
 and CoreCosts.PC_CostCode in ({1});",
 									coreId, costCodeFilter));
 
+					//формируем команду на удаление из Core по указанному CoreId
+					//для позиций, которые не нашли в формализованном прайс-листе
 					deleteCommandList.Add(String.Format(@"
 delete
 from
@@ -1051,6 +1072,8 @@ where
   Core0.Id in ({0});",
 						String.Join(", ", deleteCore.ToArray())));
 
+					//Добавляем данные команды в начало списка команд, 
+					//чтобы удаление из Core и CoreCosts выполнилось первым
 					commandList.InsertRange(0, deleteCommandList);
 				}
 
@@ -1079,7 +1102,7 @@ where
 					//Попытка поиска цены в списке
 					drCurrent = null;
 					foreach (DataRow find in drExistsCosts)
-						if ((long)find["PC_CostCode"] == c.costCode)
+						if ((find.RowState != DataRowState.Deleted) && (long)find["PC_CostCode"] == c.costCode)
 						{
 							drCurrent = find;
 							break;
@@ -1104,12 +1127,16 @@ where
 							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
 								c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
 						}
+						//Удаляем цену из кэша таблицы, чтобы при следующем поиске ее не рассматривать
+						drCurrent.Delete();
 					}
 				}
 
 			List<string> deleteCosts = new List<string>();
 			foreach (DataRow deleted in drExistsCosts)
 			{
+				//Пробегаемся по всем неудаленным ценам и считаем их ненайденными в формализованном прайс-листе,
+				//следовательно данную цену нужно удалить из CoreCosts
 				if (deleted.RowState != DataRowState.Deleted) //!(bool)deleted["Processed"]
 				{
 					statCounters[FormalizeStats.DeleteCostCount]++;
