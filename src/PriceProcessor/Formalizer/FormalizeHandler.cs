@@ -77,10 +77,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 			for (int i = pt.Count - 1; i >= 0; i--)
 			{
 				//Если нитка работает, то останавливаем ее
-				if ((pt[i] as PriceProcessThread).WorkThread.IsAlive)
+				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
 				{
 					SimpleLog.Log(this.GetType().Name, "Попытка останова нитки {0}", (pt[i] as PriceProcessThread).TID);
-					(pt[i] as PriceProcessThread).WorkThread.Abort();
+					(pt[i] as PriceProcessThread).AbortThread();
 					SimpleLog.Log(this.GetType().Name, "Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
 				}
 			}
@@ -308,16 +308,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 				{
 					PriceProcessThread p = (pt[i] as PriceProcessThread);
 					//Если нитка не работает, то удаляем ее
-					if (p.FormalizeEnd || !p.WorkThread.IsAlive)
+					if (p.FormalizeEnd || !p.ThreadIsAlive || (p.ThreadState == ThreadState.Stopped))
 					{
 						DeleteProcessThread(p);
 						pt.RemoveAt(i);
 					}
 					else
 						//Остановка нитки по сроку, если она работает дольше, чем можно
-						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.WorkThread.ThreadState != System.Threading.ThreadState.AbortRequested))
+						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.ThreadState != System.Threading.ThreadState.AbortRequested))
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}", p.TID, p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd, p.StartDate));
+							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.StartDate));
 							p.AbortThread();
 							SimpleLog.Log(this.GetType().Name, String.Format("Останов нитки успешно вызван {0}", p.TID));
 						}
@@ -331,7 +331,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 							}
 							else
 							{
-								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3}, ", Path.GetFileName(p.ProcessItem.FilePath), p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd, p.TID);
+								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3}, ", Path.GetFileName(p.ProcessItem.FilePath), p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.TID);
 							}
 				}
 
@@ -345,7 +345,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		/// <param name="p"></param>
 		private void DeleteProcessThread(PriceProcessThread p)
 		{
-			SimpleLog.Log(this.GetType().Name, String.Format("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}", p.TID, p.WorkThread.IsAlive, p.WorkThread.ThreadState, p.FormalizeEnd));
+			SimpleLog.Log(this.GetType().Name, String.Format("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd));
 			FileHashItem hi = (FileHashItem)htEMessages[p.ProcessItem.FilePath];
 			string prevErrorMessage = hi.ErrorMessage;
 			hi.ErrorMessage = p.CurrentErrorMessage;

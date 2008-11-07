@@ -1010,7 +1010,9 @@ order by Core0.Id", priceCode);
 						SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
 						AllCommandCount += statCounters[FormalizeStats.CommandCount];
 						lastCommand = sb.ToString();
-						//SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+#if SQLDUMP
+						SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+#endif
 						if (!String.IsNullOrEmpty(lastCommand))
 							commandList.Add(lastCommand);
 						sb = new System.Text.StringBuilder();
@@ -1024,7 +1026,9 @@ order by Core0.Id", priceCode);
 				if (!String.IsNullOrEmpty(lastCommand))
 				{
 					SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
-					//SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+#if SQLDUMP
+					SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+#endif
 					commandList.Add(lastCommand);
 					AllCommandCount += statCounters[FormalizeStats.CommandCount];
 					statCounters[FormalizeStats.CommandCount] = AllCommandCount;

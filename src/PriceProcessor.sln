@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor", "PriceProcessor\PriceProcessor.csproj", "{207B22E7-BF6C-489A-9D29-455E11D84EB8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{046F74A6-68A8-4E5E-A9AB-7332B631CFB1} = {046F74A6-68A8-4E5E-A9AB-7332B631CFB1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor.Test", "PriceProcessor.Test\PriceProcessor.Test.csproj", "{1E627B3F-1151-48EA-ABA7-DE10247FCB6C}"
 EndProject

@@ -54,11 +54,8 @@ namespace Inforoom.Formalizer
 		private MySqlConnection myconn;
 		private MySqlCommand mcLog = null;
 
-		//Событие, выполняемое в нити
-		private ThreadStart ts;
-
 		//Собственно нитка
-		private Thread t;
+		private Thread _thread;
 		//время прерывания рабочей нитки 
 		private DateTime? _abortingTime = null;
 
@@ -67,7 +64,7 @@ namespace Inforoom.Formalizer
 		//Время формализации в секундах
 		private System.Int64 formSecs;
 
-		public bool FormalizeEnd = false;
+		private bool _formalizeEnd = false;
 
 		//Результат формализации: Хорошо, Плохо
 		private bool formalizeOK = false;
@@ -86,10 +83,9 @@ namespace Inforoom.Formalizer
 			this.PPTID = ++GlobalPPTID;
 			this.prevErrorMessage = PrevErrorMessage;
 			this._processItem = item;
-			this.ts = new ThreadStart(ThreadWork);
-			this.t = new Thread(ts);
-			this.t.Name = String.Format("PPT{0}", PPTID);
-			this.t.Start();
+			this._thread = new Thread(new ThreadStart(ThreadWork));
+			this._thread.Name = String.Format("PPT{0}", PPTID);
+			this._thread.Start();
 		}
 
 		public bool FormalizeOK
@@ -99,7 +95,22 @@ namespace Inforoom.Formalizer
 				return formalizeOK;
 			}
 		}
-		//Показать время начала формализации
+
+		/// <summary>
+		/// Говорит о том, что формализация закончена. Корректно в том случае, если нитку не прибили сразу после запуска,
+		/// иначе надо смотреть на ThreadState
+		/// </summary>
+		public bool FormalizeEnd
+		{
+			get
+			{
+				return _formalizeEnd;
+			}
+		}
+
+		/// <summary>
+		/// время начала формализации
+		/// </summary>
 		public DateTime StartDate
 		{
 			get
@@ -108,11 +119,19 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		public Thread WorkThread
+		public bool ThreadIsAlive
 		{
 			get
 			{
-				return t;
+				return _thread.IsAlive;
+			}
+		}
+
+		public ThreadState ThreadState
+		{
+			get
+			{
+				return _thread.ThreadState;
 			}
 		}
 
@@ -120,7 +139,10 @@ namespace Inforoom.Formalizer
 		{
 			get
 			{
-				return ((t.ThreadState == ThreadState.AbortRequested) || (t.ThreadState == ThreadState.Aborted) && _abortingTime.HasValue && (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
+				return (
+					((_thread.ThreadState == ThreadState.AbortRequested) || (_thread.ThreadState == ThreadState.Aborted)) 
+					&& _abortingTime.HasValue 
+					&& (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
 			}
 		}
 
@@ -131,7 +153,7 @@ namespace Inforoom.Formalizer
 		{
 			if (!_abortingTime.HasValue)
 			{
-				t.Abort();
+				_thread.Abort();
 				_abortingTime = DateTime.UtcNow;
 			}
 		}
@@ -480,14 +502,15 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			string workStr = String.Empty;
-			//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-			string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
-			TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
-			//изменяем имя файла, что оно было без недопустимых символов ('_')
-			TempFileName = TempPath + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
-			InternalLog("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 			try
 			{
+				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
+				string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
+				TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
+				//изменяем имя файла, что оно было без недопустимых символов ('_')
+				TempFileName = TempPath + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
+				InternalLog("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
+
 				myconn = getConnection();
 				try
 				{
@@ -632,7 +655,7 @@ namespace Inforoom.Formalizer
 					InternalLog("Ошибка при удалении {0}", e);
 				}
 				InternalLog( "Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
-				FormalizeEnd = true;
+				_formalizeEnd = true;
 			}
 		}
 

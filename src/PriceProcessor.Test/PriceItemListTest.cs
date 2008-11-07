@@ -8,8 +8,15 @@ using NUnit.Framework.SyntaxHelpers;
 namespace PriceProcessor.Test
 {
 	[TestFixture]
-	public class PriceItemListTest
+	public class PriceItemListTest	
 	{
+
+		[SetUp]
+		public void Init()
+		{
+			PriceItemList.list.Clear();
+		}
+
 		[Test]
 		public void SortListTest()
 		{
