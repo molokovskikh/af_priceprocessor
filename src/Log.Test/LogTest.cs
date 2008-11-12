@@ -21,19 +21,19 @@ namespace Log.Test
 	public class LogTest
 	{
 
-		private const int _maxIteration = 50;
+		private const int _maxIteration = 5;
 		private const int _rowBorder = 100;
 
 		[Test(Description="проверка того, какая система логирования быстрее")]
 		public void SimpleLogVSlog4net()
 		{
-			Stopwatch _simpleLogWatch = Stopwatch.StartNew();
-			LogBySimpleLog();
-			_simpleLogWatch.Stop();
-
 			Stopwatch _log4netLogWatch = Stopwatch.StartNew();
 			LogBylog4net();
 			_log4netLogWatch.Stop();
+
+			Stopwatch _simpleLogWatch = Stopwatch.StartNew();
+			LogBySimpleLog();
+			_simpleLogWatch.Stop();
 
 			Console.WriteLine("_simpleLogWatch  = {0}", _simpleLogWatch.Elapsed);
 			Console.WriteLine("_log4netLogWatch = {0}", _log4netLogWatch.Elapsed);
@@ -54,9 +54,10 @@ namespace Log.Test
 		public void LogBySimpleLog()
 		{
 			DataTable dtPrice;
+			bool _needLog = Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]);
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				SimpleLog.Log(Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]), "LogBySimpleLog", "Итерация");
+				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация");
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -64,15 +65,20 @@ namespace Log.Test
 					rowIndex++;
 					double summ = Convert.ToDouble(dr["PRCL1"]) + Convert.ToDouble(dr["PRCL2"]);
 					if (rowIndex / _rowBorder == 0)
-						SimpleLog.Log(Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]), "LogBySimpleLog", "Прошли 100 элементов");
+						SimpleLog.Log(_needLog, "LogBySimpleLog", "Прошли 100 элементов");
 				}
 			}
 
-			CorrectSimpleLogSection();
+			//Stopwatch _correctLogWatch = Stopwatch.StartNew();
+			//CorrectSimpleLogSection();
+			//_correctLogWatch.Stop();
+			//Console.WriteLine("_correctLogWatch Simple = {0}", _correctLogWatch.Elapsed);
+
+			_needLog = Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]);
 
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				SimpleLog.Log(Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]), "LogBySimpleLog", "Итерация");
+				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация");
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -80,7 +86,7 @@ namespace Log.Test
 					rowIndex++;
 					double summ = Convert.ToDouble(dr["PRCL1"]) + Convert.ToDouble(dr["PRCL2"]);
 					if (rowIndex / _rowBorder == 0)
-						SimpleLog.Log(Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]), "LogBySimpleLog", "Прошли 100 элементов");
+						SimpleLog.Log(_needLog, "LogBySimpleLog", "Прошли 100 элементов");
 				}
 			}
 		}
@@ -114,7 +120,13 @@ namespace Log.Test
 				}
 			}
 
-			CorrectLog4NetSection();
+			log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
+			h.Root.Level = h.LevelMap["DEBUG"];
+
+			//Stopwatch _correctLogWatch = Stopwatch.StartNew();
+			//CorrectLog4NetSection();
+			//_correctLogWatch.Stop();
+			//Console.WriteLine("_correctLogWatch log4net = {0}", _correctLogWatch.Elapsed);
 
 			for (int i = 0; i < _maxIteration; i++)
 			{
