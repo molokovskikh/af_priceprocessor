@@ -810,6 +810,7 @@ namespace Inforoom.Formalizer
 			if (priceCodesUseUpdate.Contains(priceCode))
 			{
 				Stopwatch LoadExistsWatch = Stopwatch.StartNew();
+
 				string existsCoreSQL;
 				if (costType == CostTypes.MultiColumn)
 					existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
@@ -822,13 +823,6 @@ namespace Inforoom.Formalizer
 				foreach (DataColumn column in dtExistsCore.Columns)
 					if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
 						compareFields.Add(column.ColumnName);
-
-				//Stopwatch AddProcessedToCoreWatch = Stopwatch.StartNew();
-				//DataColumn dcProcessed = new DataColumn("Processed", typeof(bool));
-				//dcProcessed.AllowDBNull = false;
-				//dcProcessed.DefaultValue = false;
-				//dtExistsCore.Columns.Add(dcProcessed);
-				//AddProcessedToCoreWatch.Stop();
 
 				string existsCoreCostsSQL;
 				if (costType == CostTypes.MultiColumn)
@@ -858,16 +852,11 @@ order by Core0.Id", priceCode);
 				Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
 				relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
 				dsMyDB.Relations.Add(relationExistsCoreToCosts);
-
-				//DataColumn dcProcessedCost = new DataColumn("Processed", typeof(bool));
-				//dcProcessedCost.AllowDBNull = false;
-				//dcProcessedCost.DefaultValue = false;
-				//dtExistsCoreCosts.Columns.Add(dcProcessedCost);
-
 				ModifyCoreCostsWatch.Stop();
+
 				LoadExistsWatch.Stop();
+
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
-				//SimpleLog.Log(getParserID(), "Добавить Processed в Core : {0}", AddProcessedToCoreWatch.Elapsed);
 				_logger.InfoFormat("Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
 			}
 
@@ -1043,7 +1032,7 @@ order by Core0.Id", priceCode);
 				//что эти записи не рассматривались при синхронизации, следовательно их нужно удалить
 				List<string> deleteCore = new List<string>();
 				foreach (DataRow deleted in dtExistsCore.Rows)
-					if ((deleted.RowState != DataRowState.Deleted)) // && !(bool)deleted["Processed"]
+					if ((deleted.RowState != DataRowState.Deleted))
 					{
 						statCounters[FormalizeStats.DeleteCount]++;
 						deleteCore.Add(deleted["Id"].ToString());
@@ -1127,7 +1116,6 @@ where
 					else
 					{
 						//Если цена найдена и значение цены другое, то обновляем цену в таблице
-						//drCurrent["Processed"] = true;
 						if (c.cost.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
 							statCounters[FormalizeStats.UpdateCostCount]++;
@@ -1145,7 +1133,7 @@ where
 			{
 				//Пробегаемся по всем неудаленным ценам и считаем их ненайденными в формализованном прайс-листе,
 				//следовательно данную цену нужно удалить из CoreCosts
-				if (deleted.RowState != DataRowState.Deleted) //!(bool)deleted["Processed"]
+				if (deleted.RowState != DataRowState.Deleted)
 				{
 					statCounters[FormalizeStats.DeleteCostCount]++;
 					deleteCosts.Add(deleted["PC_CostCode"].ToString());
@@ -1161,7 +1149,6 @@ where
 
 		private void UpdateCorePosition(DataRow drExistsCore, DataRow drCore, System.Text.StringBuilder sb)
 		{
-			//drExistsCore["Processed"] = true;
 			List<string> updateFieldsScript = new List<string>();
 			foreach (string compareField in compareFields)
 			{
@@ -1220,7 +1207,6 @@ where
 					else
 						filter.Add(String.Format("({0} = {1})", primaryField, drCore[primaryField]));
 			}
-			//filter.Add("(Processed = false)");
 			string filterString = String.Join(" and ", filter.ToArray());
 			DataRow[] drsExists = dtExistsCore.Select(filterString);
 			TimeSpan tsSearchTime = DateTime.UtcNow.Subtract(dtSearchTime);
@@ -1597,7 +1583,9 @@ and a.ProductId is null";
 
 				try
 				{
+					_logger.Debug("попытка открыть соединение с базой");
 					MyConn.Open();
+					_logger.Debug("соединение с базой установлено");
 
 					try
 					{
