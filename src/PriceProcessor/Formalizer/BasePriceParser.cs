@@ -11,6 +11,7 @@ using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.ComponentModel;
 using System.Diagnostics;
+using log4net;
 
 namespace Inforoom.Formalizer
 {
@@ -380,8 +381,8 @@ namespace Inforoom.Formalizer
 
 		protected ArrayList currentCoreCosts = null;
 		protected ArrayList CoreCosts = null;
-		
 
+		private readonly ILog _logger;
 
 
 		/// <summary>
@@ -392,6 +393,8 @@ namespace Inforoom.Formalizer
 		/// <param name="mydr"></param>
 		public BasePriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr)
 		{
+			_logger = LogManager.GetLogger(this.GetType());
+			_logger.DebugFormat("Создали класс для обработки файла {0}", PriceFileName);
 			//TODO: Все необходимые проверки вынести в конструкторы, чтобы не пытаться открыть прайс-файл
 
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
@@ -484,6 +487,7 @@ namespace Inforoom.Formalizer
 			MySqlDataAdapter daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, MyConn );
 			DataTable dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
+			_logger.DebugFormat("Загрузили цены {0}.{1}", priceCode, costCode);
 
 			if ((0 == dtPricesCost.Rows.Count) && (Settings.Default.ASSORT_FLG != priceType))
 				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, firmCode, priceCode, firmShortName, priceName);
@@ -562,7 +566,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
-						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on InvalidComObjectException");
+						_logger.Error("Repeat Fill dtPrice on InvalidComObjectException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else
@@ -573,7 +577,7 @@ namespace Inforoom.Formalizer
 					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
-						SimpleLog.Log( getParserID(), "Repeat Fill dtPrice on NullReferenceException");
+						_logger.Error("Repeat Fill dtPrice on NullReferenceException");
 						System.Threading.Thread.Sleep(500);
 					}
 					else
@@ -862,9 +866,9 @@ order by Core0.Id", priceCode);
 
 				ModifyCoreCostsWatch.Stop();
 				LoadExistsWatch.Stop();
-				SimpleLog.Log(getParserID(), "Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
+				_logger.InfoFormat("Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
 				//SimpleLog.Log(getParserID(), "Добавить Processed в Core : {0}", AddProcessedToCoreWatch.Elapsed);
-				SimpleLog.Log(getParserID(), "Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+				_logger.InfoFormat("Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
 			}
 
 #if TESTINGUPDATE
@@ -1007,11 +1011,11 @@ order by Core0.Id", priceCode);
 					//Производим отсечку по кол-во сформированных команд
 					if (statCounters[FormalizeStats.CommandCount] >= 300)
 					{
-						SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
+						_logger.DebugFormat("Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
 						AllCommandCount += statCounters[FormalizeStats.CommandCount];
 						lastCommand = sb.ToString();
 #if SQLDUMP
-						SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+						_logger.DebugFormat("SQL-команда: {0}", lastCommand);
 #endif
 						if (!String.IsNullOrEmpty(lastCommand))
 							commandList.Add(lastCommand);
@@ -1025,9 +1029,9 @@ order by Core0.Id", priceCode);
 				lastCommand = sb.ToString();
 				if (!String.IsNullOrEmpty(lastCommand))
 				{
-					SimpleLog.Log(getParserID(), "Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
+					_logger.DebugFormat("Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
 #if SQLDUMP
-					SimpleLog.Log(getParserID(), "SQL-команда: {0}", lastCommand);
+					_logger.DebugFormat("SQL-команда: {0}", lastCommand);
 #endif
 					commandList.Add(lastCommand);
 					AllCommandCount += statCounters[FormalizeStats.CommandCount];
@@ -1084,7 +1088,7 @@ where
 				List<string> statCounterValues = new List<string>();
 				foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
 					statCounterValues.Add(String.Format("{0} = {1}", statCounter, statCounters[statCounter]));
-				SimpleLog.Log(getParserID(), "Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+				_logger.InfoFormat("Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
 
 				SynonymUpdateCommand = "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
 
@@ -1363,7 +1367,7 @@ where
 						Stopwatch GetSQLWatch = Stopwatch.StartNew();
 						insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
 						GetSQLWatch.Stop();
-						SimpleLog.Log(getParserID(), "Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
+						_logger.InfoFormat("Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
 					}
 					else
 						insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
@@ -1375,7 +1379,7 @@ where
 					System.Text.StringBuilder sbLog;
 					do
 					{
-						SimpleLog.Log( getParserID(), "FinalizePrice started.");
+						_logger.Info("FinalizePrice started.");
 						sbLog = new System.Text.StringBuilder();
 
 						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -1446,10 +1450,11 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 								foreach (string command in insertCoreAndCoreCostsCommandList)
 								{
 									mcClear.CommandText = command;
-									//SimpleLog.Log(getParserID(), "Apply Core and CoreCosts command: {0}", mcClear.CommandText);
+									//_logger.DebugFormat("Apply Core and CoreCosts command: {0}", mcClear.CommandText);
+
 									applyPositionCount += mcClear.ExecuteNonQuery();
 #if DEBUG
-									SimpleLog.Log(getParserID(), "Apply Core and CoreCosts Count: {0}", applyPositionCount);
+									_logger.DebugFormat("Apply Core and CoreCosts Count: {0}", applyPositionCount);
 #endif
 								}
 
@@ -1535,8 +1540,8 @@ and a.ProductId is null";
 							}
 							sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
-							SimpleLog.Log(getParserID(), "Statistica: {0}", sbLog.ToString());
-							SimpleLog.Log(getParserID(), "FinalizePrice started: {0}", "Commit");
+							_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
+							_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
 							myTrans.Commit();
 							res = true;					
 						}
@@ -1545,14 +1550,14 @@ and a.ProductId is null";
 							if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
 							{
 								tryCount++;
-								SimpleLog.Log( getParserID(), "Try transaction: tryCount = {0}", tryCount);
+								_logger.InfoFormat("Try transaction: tryCount = {0}", tryCount);
 								try
 								{ 
 									myTrans.Rollback();
 								}
 								catch(Exception ex)
 								{
-									SimpleLog.Log( getParserID(), "Error on rollback = {0}", ex);
+									_logger.Error("Error on rollback", ex);
 								}
 								System.Threading.Thread.Sleep(10000 + tryCount*1000);
 							}
@@ -1574,151 +1579,157 @@ and a.ProductId is null";
 		/// </summary>
 		public void Formalize()
 		{
-			DateTime tmOpen = DateTime.UtcNow;
+			log4net.NDC.Push(String.Format("{0}.{1}", priceCode, costCode));
+			_logger.Debug("начало Formalize");
 			try
 			{
-				Open();
-				if (null != toughMask)
-					toughMask.Analyze( GetFieldRawValue(PriceFields.Name1) );
-			}
-			finally
-			{
-#if DEBUG
-				SimpleLog.Log(getParserID(), "Open time: {0}", DateTime.UtcNow.Subtract(tmOpen));
-#endif
-			}
-
-			try
-			{
-                MyConn.Open();
+				DateTime tmOpen = DateTime.UtcNow;
+				try
+				{
+					Open();
+					if (null != toughMask)
+						toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
+				}
+				finally
+				{
+					_logger.InfoFormat("Open time: {0}", DateTime.UtcNow.Subtract(tmOpen));
+				}
 
 				try
 				{
-                    myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+					MyConn.Open();
 
-					DateTime tmPrepare = DateTime.UtcNow;
 					try
 					{
+						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+
+						DateTime tmPrepare = DateTime.UtcNow;
 						try
 						{
-                            Prepare();
-                        }
+							try
+							{
+								Prepare();
+							}
+							finally
+							{
+								myTrans.Commit();
+							}
+						}
 						finally
 						{
-                            myTrans.Commit();
-                        }
-					}
-					finally
-					{
-#if DEBUG
-						SimpleLog.Log(getParserID(), "Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
-#endif
-					}
+							_logger.InfoFormat("Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
+						}
 
 
-					DateTime tmFormalize = DateTime.UtcNow;
-					try
-					{
-						UnrecExpStatus st;
-						string PosName = String.Empty;
-						bool Junk = false;
-						int costCount;
-						long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
-						string strCode, strName1, strOriginalName, strFirmCr;
-						do
+						DateTime tmFormalize = DateTime.UtcNow;
+						try
 						{
-							st = UnrecExpStatus.NOT_FORM;
-							PosName = GetFieldValue(PriceFields.Name1, true);
-
-							if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
+							UnrecExpStatus st;
+							string PosName = String.Empty;
+							bool Junk = false;
+							int costCount;
+							long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
+							string strCode, strName1, strOriginalName, strFirmCr;
+							do
 							{
-								if (priceType != Settings.Default.ASSORT_FLG)
+								st = UnrecExpStatus.NOT_FORM;
+								PosName = GetFieldValue(PriceFields.Name1, true);
+
+								if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
 								{
-									costCount = ProcessCosts();
-									object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
-									//Производим проверку для мультиколоночных прайсов
-									if (costType == CostTypes.MultiColumn)
+									if (priceType != Settings.Default.ASSORT_FLG)
 									{
-										//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-										//или если количество определенно и оно равно 0
-										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+										costCount = ProcessCosts();
+										object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
+										//Производим проверку для мультиколоночных прайсов
+										if (costType == CostTypes.MultiColumn)
 										{
-											InsertToZero();
-											continue;
+											//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
+											//или если количество определенно и оно равно 0
+											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+											{
+												InsertToZero();
+												continue;
+											}
+										}
+										else
+										{
+											//Эта проверка для всех остальных
+											//Если кол-во ненулевых цен = 0
+											//или если количество определенно и оно равно 0
+											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+											{
+												InsertToZero();
+												continue;
+											}
 										}
 									}
+
+									strCode = GetFieldValue(PriceFields.Code);
+									strName1 = GetFieldValue(PriceFields.Name1, true);
+									strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
+
+									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
+										st = UnrecExpStatus.NAME_FORM;
+
+									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
+									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
+										st = st | UnrecExpStatus.FIRM_FORM;
+
+									st = st | UnrecExpStatus.CURR_FORM;
+
+									if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
+										InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 									else
-									{
-										//Эта проверка для всех остальных
-										//Если кол-во ненулевых цен = 0
-										//или если количество определенно и оно равно 0
-										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-										{
-											InsertToZero();
-											continue;
-										}
-									}
+										unformCount++;
+
+									if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
+										InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+
 								}
-
-								strCode = GetFieldValue(PriceFields.Code);
-								strName1 = GetFieldValue(PriceFields.Name1, true);
-								strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
-							
-								if (GetProductId( strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
-									st = UnrecExpStatus.NAME_FORM;
-
-								strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
-								if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
-									st = st | UnrecExpStatus.FIRM_FORM;
-
-								st = st | UnrecExpStatus.CURR_FORM;									
-
-								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 								else
-									unformCount++;
-
-								if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-									InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+									if ((null != PosName) && (String.Empty != PosName.Trim()))
+										InsertIntoForb(PosName);
 
 							}
-							else
-								if ((null != PosName) && (String.Empty != PosName.Trim()))
-									InsertIntoForb(PosName);
-
+							while (Next());
 						}
-						while(Next());
-					}
-					finally
-					{
-						SimpleLog.Log( getParserID(), "Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize) );
-					}
+						finally
+						{
+							_logger.InfoFormat("Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize));
+						}
 
-					DateTime tmFinalize = DateTime.UtcNow;
-					try
-					{
-						FinalizePrice();
-					}
-					finally
-					{
-						SimpleLog.Log( getParserID(), "FinalizePrice time: {0}", DateTime.UtcNow.Subtract(tmFinalize) );
-					}
-				}
-				catch
-				{
-					try
-					{
-						myTrans.Rollback();
+						DateTime tmFinalize = DateTime.UtcNow;
+						try
+						{
+							FinalizePrice();
+						}
+						finally
+						{
+							_logger.InfoFormat("FinalizePrice time: {0}", DateTime.UtcNow.Subtract(tmFinalize));
+						}
 					}
 					catch
 					{
+						try
+						{
+							myTrans.Rollback();
+						}
+						catch
+						{
+						}
+						throw;
 					}
-					throw;
+				}
+				finally
+				{
+					MyConn.Close();
 				}
 			}
 			finally
 			{
-				MyConn.Close();
+				_logger.Debug("конец Formalize");
+				log4net.NDC.Pop();
 			}
 		}
 
@@ -2275,32 +2286,5 @@ and a.ProductId is null";
 			return (cost < 0 || Math.Abs(Decimal.Zero-cost) < 0.01m);
 		}
 
-		public void SendMessageToOperator(string SubjectPrefix, string Message, long ClientCode, long PriceCode, string ClientName, string PriceName)
-		{
-			try
-			{
-				MailMessage mailMessage = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList,
-					String.Format("{0} {1}", SubjectPrefix, PriceCode),
-					null);
-				mailMessage.BodyEncoding = System.Text.Encoding.UTF8;
-				mailMessage.Body = String.Format(
-@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}
-Ошибка          : {4}",
-					ClientCode,
-					PriceCode,
-					String.Format("{0} ({1})", ClientName, PriceName),
-					DateTime.Now,
-					Message);
-				SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
-				Client.Send(mailMessage);
-			}
-			catch(Exception e)
-			{
-				SimpleLog.Log(getParserID(), "Error on SendMessageToOperator : {0}", e);
-			}
-		}
 	}
 }
