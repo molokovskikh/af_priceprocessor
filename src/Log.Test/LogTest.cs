@@ -21,23 +21,32 @@ namespace Log.Test
 	public class LogTest
 	{
 
-		private const int _maxIteration = 5;
+		private const int _maxIteration = 20;
 		private const int _rowBorder = 100;
 
 		[Test(Description="проверка того, какая система логирования быстрее")]
 		public void SimpleLogVSlog4net()
 		{
-			Stopwatch _log4netLogWatch = Stopwatch.StartNew();
-			LogBylog4net();
-			_log4netLogWatch.Stop();
+			//удаляем лог-файлы с предыдущего запуска
+			string[] _logFiles = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.log");
+			foreach (string logFile in _logFiles)
+				File.Delete(logFile);
+
+			//устанавливаем значение NullText для параметра %ndc и других
+			log4net.Util.SystemInfo.NullText = null;
 
 			Stopwatch _simpleLogWatch = Stopwatch.StartNew();
 			LogBySimpleLog();
 			_simpleLogWatch.Stop();
 
-			Console.WriteLine("_simpleLogWatch  = {0}", _simpleLogWatch.Elapsed);
-			Console.WriteLine("_log4netLogWatch = {0}", _log4netLogWatch.Elapsed);
-			Assert.That(_simpleLogWatch.Elapsed, Is.LessThan(_log4netLogWatch.Elapsed), "log4net работает быстрее");
+			Stopwatch _log4netLogWatch = Stopwatch.StartNew();
+			LogBylog4net();
+			_log4netLogWatch.Stop();
+
+			//Console.WriteLine("_simpleLogWatch  = {0}", _simpleLogWatch.Elapsed);
+			//Console.WriteLine("_log4netLogWatch = {0}", _log4netLogWatch.Elapsed);
+			//Все хорошо, если SimpleLog быстрее не более чем на 2 секунды
+			Assert.That(_log4netLogWatch.Elapsed.TotalSeconds - _simpleLogWatch.Elapsed.TotalSeconds < 2, "SimpleLog работает быстрее");
 		}
 
 		public void CorrectSimpleLogSection()
@@ -57,7 +66,7 @@ namespace Log.Test
 			bool _needLog = Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]);
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация");
+				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация {0}", i);
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -69,16 +78,13 @@ namespace Log.Test
 				}
 			}
 
-			//Stopwatch _correctLogWatch = Stopwatch.StartNew();
-			//CorrectSimpleLogSection();
-			//_correctLogWatch.Stop();
-			//Console.WriteLine("_correctLogWatch Simple = {0}", _correctLogWatch.Elapsed);
+			CorrectSimpleLogSection();
 
 			_needLog = Convert.ToBoolean(ConfigurationManager.AppSettings["LogDebug"]);
 
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация");
+				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация {0}", i);
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -108,7 +114,8 @@ namespace Log.Test
 			DataTable dtPrice;
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				_log.Debug("Итерация");
+				_log.DebugFormat("Итерация {0}", i);
+				log4net.NDC.Push(i.ToString());
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -118,19 +125,19 @@ namespace Log.Test
 					if (rowIndex / _rowBorder == 0)
 						_log.Debug("Прошли 100 элементов");
 				}
+				log4net.NDC.Pop();
 			}
 
-			log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
-			h.Root.Level = h.LevelMap["DEBUG"];
+			//Таким образом можно программно изменить уровень логирования для текущего логгера
+			//log4net.Repository.Hierarchy.Hierarchy h = (log4net.Repository.Hierarchy.Hierarchy)LogManager.GetRepository();
+			//h.Root.Level = h.LevelMap["DEBUG"];
 
-			//Stopwatch _correctLogWatch = Stopwatch.StartNew();
-			//CorrectLog4NetSection();
-			//_correctLogWatch.Stop();
-			//Console.WriteLine("_correctLogWatch log4net = {0}", _correctLogWatch.Elapsed);
+			CorrectLog4NetSection();
 
 			for (int i = 0; i < _maxIteration; i++)
 			{
-				_log.Debug("Итерация");
+				_log.DebugFormat("Итерация {0}", i); ;
+				log4net.NDC.Push(i.ToString());
 				dtPrice = DBF.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
@@ -140,6 +147,7 @@ namespace Log.Test
 					if (rowIndex / _rowBorder == 0)
 						_log.Debug("Прошли 100 элементов");
 				}
+				log4net.NDC.Pop();
 			}
 		}
 
