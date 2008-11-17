@@ -14,6 +14,7 @@ using Inforoom.Data;
 using System.Data;
 using System.IO;
 using System.Xml;
+using log4net.Core;
 
 namespace Log.Test
 {
@@ -206,13 +207,32 @@ namespace Log.Test
 		[Test(Description = "проверка того, что будет делать SMTPAppender, если не сможет отправить сообщение")]
 		public void SMTPAppenderTest()
 		{
-			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4netConsole.config"));
+			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net_SMTPAppenderTest.config"));
 			ILog _log = LogManager.GetLogger(typeof(LogTest));
 			_log.Info("это тест");
 			/*
 			 * Если стоит параметр     <lossy value="false" />, то будет отправлять письма до последнего.
 			 * В случае неудачи будет логировать куда настроено
 			 */
+		}
+
+		[Test(Description = "проверка SmtpAppender с фильтрами")]
+		public void SMTPAppederWithFilterTest()
+		{
+			log4net.Util.LogLog.InternalDebugging = true;
+			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net_SMTPAppederWithFilterTest.config"));
+			ILog _log = LogManager.GetLogger(typeof(LogTest));
+			_log.Info("это тест");
+			using (log4net.NDC.Push("smtp"))
+			{
+				_log.Error("это ошибка 1" );
+				_log.Fatal("это ошибка фатальная ошибка 1");
+				//LoggingEvent le = new LoggingEvent(typeof(LogTest), _log.Logger.Repository, _log.Logger.Name, Level.Fatal, "это ошибка фатальная ошибка 1", null);
+				//le.Properties["SMTP"] = "true";
+				//_log.Logger.Log(le);
+			}
+			_log.Error("это ошибка 2");
+			_log.Fatal("это ошибка фатальная ошибка 2");
 		}
 
 	}

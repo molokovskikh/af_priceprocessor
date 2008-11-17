@@ -54,6 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\PriceProcessor\Logging\MessageFilter.cs">
+      <Link>Logging\MessageFilter.cs</Link>
+    </Compile>
     <Compile Include="LogTest.cs" />
     <Compile Include="ParseDBF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -75,7 +78,10 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="log4netConsole.config">
+    <None Include="log4net_SMTPAppederWithFilterTest.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="log4net_SMTPAppenderTest.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
