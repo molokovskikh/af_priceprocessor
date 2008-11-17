@@ -21,12 +21,15 @@ namespace Log.Test
 	public class LogTest
 	{
 
-		private const int _maxIteration = 20;
+		private const int _maxIteration = 5;
 		private const int _rowBorder = 100;
 
 		[Test(Description="проверка того, какая система логирования быстрее")]
 		public void SimpleLogVSlog4net()
 		{
+			ResetSimpleLogSection();
+			ResetLog4NetSection();
+
 			//удаляем лог-файлы с предыдущего запуска
 			string[] _logFiles = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.log");
 			foreach (string logFile in _logFiles)
@@ -45,8 +48,19 @@ namespace Log.Test
 
 			//Console.WriteLine("_simpleLogWatch  = {0}", _simpleLogWatch.Elapsed);
 			//Console.WriteLine("_log4netLogWatch = {0}", _log4netLogWatch.Elapsed);
+
 			//Все хорошо, если SimpleLog быстрее не более чем на 2 секунды
 			Assert.That(_log4netLogWatch.Elapsed.TotalSeconds - _simpleLogWatch.Elapsed.TotalSeconds < 2, "SimpleLog работает быстрее");
+		}
+
+		public void ResetSimpleLogSection()
+		{
+			Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+			config.AppSettings.Settings["LogDebug"].Value = "false";
+			config.Save(ConfigurationSaveMode.Modified);
+
+			// Force a reload of the changed section.
+			ConfigurationManager.RefreshSection("appSettings");
 		}
 
 		public void CorrectSimpleLogSection()
@@ -95,6 +109,15 @@ namespace Log.Test
 						SimpleLog.Log(_needLog, "LogBySimpleLog", "Прошли 100 элементов");
 				}
 			}
+		}
+
+		public void ResetLog4NetSection()
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.Load(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net.config");
+			XmlNode level = doc.SelectSingleNode(@"/log4net/root/level");
+			level.Attributes["value"].Value = "FATAL";
+			doc.Save(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net.config");
 		}
 
 		public void CorrectLog4NetSection()
@@ -149,6 +172,47 @@ namespace Log.Test
 				}
 				log4net.NDC.Pop();
 			}
+		}
+
+		[Test(Description="проверка того, как будет отформатировано исключение с помощью Fatal и FatalFormat, и будет ли добалено innerException в вывод")]
+		public void innerExceptionLog()
+		{
+			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net.config"));
+			ILog _log = LogManager.GetLogger(typeof(LogTest));
+			try
+			{
+				testEx();
+			}
+			catch (Exception ex)
+			{
+				_log.Fatal("Error", ex);
+				_log.FatalFormat("Format Error = {0}", ex);
+			}
+		}
+
+		public void testEx()
+		{
+			try
+			{
+				int i = int.Parse("dsds");
+				Console.WriteLine("i = {0}", i);
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("Ошибка в testEx", ex);
+			}
+		}
+
+		[Test(Description = "проверка того, что будет делать SMTPAppender, если не сможет отправить сообщение")]
+		public void SMTPAppenderTest()
+		{
+			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4netConsole.config"));
+			ILog _log = LogManager.GetLogger(typeof(LogTest));
+			_log.Info("это тест");
+			/*
+			 * Если стоит параметр     <lossy value="false" />, то будет отправлять письма до последнего.
+			 * В случае неудачи будет логировать куда настроено
+			 */
 		}
 
 	}
