@@ -7,7 +7,6 @@ using System.Data.OleDb;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
-using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -382,7 +381,7 @@ namespace Inforoom.Formalizer
 		protected ArrayList currentCoreCosts = null;
 		protected ArrayList CoreCosts = null;
 
-		private readonly ILog _logger;
+		protected readonly ILog _logger;
 
 
 		/// <summary>
@@ -757,25 +756,30 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void Prepare()
 		{
+			_logger.Debug("начало Prepare");
 			daForbidden = new MySqlDataAdapter(
 				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", priceCode), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
+			_logger.Debug("загрузили Forbidden");
 
 			daSynonym = new MySqlDataAdapter(
 				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
+			_logger.Debug("загрузили Synonym");
 
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM farm.SynonymFirmCr WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
+			_logger.Debug("загрузили SynonymFirmCr");
 
 			daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
 			daCore.Fill(dsMyDB, "Core");
 			dtCore = dsMyDB.Tables["Core"];
+			_logger.Debug("загрузили Core");
 
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -785,6 +789,7 @@ namespace Inforoom.Formalizer
 			daUnrecExp.Fill(dsMyDB, "UnrecExp");
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
 			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
+			_logger.Debug("загрузили UnrecExp");
 
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Zero WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -793,6 +798,7 @@ namespace Inforoom.Formalizer
 			daZero.InsertCommand.CommandTimeout = 0;
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
+			_logger.Debug("загрузили Zero");
 
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Forb WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -802,10 +808,12 @@ namespace Inforoom.Formalizer
 			daForb.Fill(dsMyDB, "Forb");
 			dtForb = dsMyDB.Tables["Forb"];
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
+			_logger.Debug("загрузили Forb");
 
 			daCoreCosts = new MySqlDataAdapter("SELECT * FROM farm.CoreCosts LIMIT 0", MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
+			_logger.Debug("загрузили CoreCosts");
 
 			if (priceCodesUseUpdate.Contains(priceCode))
 			{
@@ -823,6 +831,7 @@ namespace Inforoom.Formalizer
 				foreach (DataColumn column in dtExistsCore.Columns)
 					if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
 						compareFields.Add(column.ColumnName);
+				_logger.Debug("загрузили ExistsCore");
 
 				string existsCoreCostsSQL;
 				if (costType == CostTypes.MultiColumn)
@@ -847,7 +856,7 @@ order by Core0.Id", priceCode);
 				dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
 				dsMyDB.Tables.Add(dtExistsCoreCosts);
 				daExistsCoreCosts.Fill(dtExistsCoreCosts);
-				//dtExistsCoreCosts = dsMyDB.Tables["ExistsCoreCosts"];
+				_logger.Debug("загрузили ExistsCoreCosts");
 
 				Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
 				relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
@@ -862,6 +871,7 @@ order by Core0.Id", priceCode);
 
 #if TESTINGUPDATE
 #endif
+			_logger.Debug("конец Prepare");
 		}
 
 		public string StatCommand(MySqlCommand command)
@@ -1589,7 +1599,9 @@ and a.ProductId is null";
 
 					try
 					{
+						_logger.Debug("попытка открыть транзакцию");
 						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+						_logger.Debug("транзакция открыта");
 
 						DateTime tmPrepare = DateTime.UtcNow;
 						try

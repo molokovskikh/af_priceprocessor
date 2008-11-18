@@ -8,7 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Inforoom.PriceProcessor.Properties;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
-using Inforoom.Logging;
+
 
 namespace Inforoom.Downloader.DocumentReaders
 {
@@ -103,7 +103,8 @@ namespace Inforoom.Downloader.DocumentReaders
 						}
 						catch (Exception ex)
 						{
-							SimpleLog.Log("SIAMoscow_2788_Reader.UnionFiles", "Не удалось скопировать файл {0} во временную папку : {1}", Path.GetFileName(archiveFileName), ex);
+							log4net.ILog _logger = log4net.LogManager.GetLogger(typeof(SIAMoscow_2788_Reader));
+							_logger.ErrorFormat("Не удалось скопировать файл {0} во временную папку\r\n{1}", Path.GetFileName(archiveFileName), ex);
 						}
 						File.Delete(inputList[0]);
 						File.Delete(originalDoubleName);

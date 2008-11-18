@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using Inforoom.Logging;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
 using System.Runtime.Remoting;
@@ -24,9 +23,12 @@ namespace Inforoom.PriceProcessor
 
 		private Thread tMonitor;
 
+		private readonly log4net.ILog _logger;
 
 		public Monitor()
 		{
+			_logger = log4net.LogManager.GetLogger(typeof(Monitor));
+
 			ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
 
 			RemotingConfiguration.RegisterWellKnownServiceType(
@@ -51,6 +53,7 @@ namespace Inforoom.PriceProcessor
 #endif
 
 			tMonitor = new Thread(new ThreadStart(MonitorWork));
+			tMonitor.Name = "MonitorThread";
 		}
 
 		//запускаем монитор с обработчиками
@@ -65,14 +68,14 @@ namespace Inforoom.PriceProcessor
                     }
                     catch(Exception exHan)
                     {
-                        SimpleLog.Log("Monitor.Start." + handler.GetType().Name, "Ошибка при старте обработчика : {0}", exHan);
+						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
                     }
                 tMonitor.Start();
-				SimpleLog.Log("Monitor", "PriceProcessor запущен.");
+				_logger.Info("PriceProcessor запущен.");
 			}
             catch (Exception ex)
             {
-                SimpleLog.Log("Monitor.Start", "Ошибка при старте монитора : {0}", ex);
+				_logger.Fatal("Ошибка при старте монитора", ex);
             }
 		}
 
@@ -91,14 +94,14 @@ namespace Inforoom.PriceProcessor
                     }
                     catch (Exception exHan)
                     {
-                        SimpleLog.Log("Monitor.Stop." + handler.GetType().Name, "Ошибка при останове обработчика : {0}", exHan);
+						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
                     }
             }
             catch (Exception ex)
             {
-                SimpleLog.Log("Monitor.Stop", "Ошибка при останове монитора : {0}", ex);
-            }
-			SimpleLog.Log("Monitor", "PriceProcessor остановлен.");
+				_logger.Fatal("Ошибка при останове монитора", ex);
+			}
+			_logger.Info("PriceProcessor остановлен.");
         }
 
 		private void MonitorWork()
@@ -116,7 +119,7 @@ namespace Inforoom.PriceProcessor
 				}
 				catch(Exception e)
 				{
-                    SimpleLog.Log("Monitor", "Ошибка в нитке : {0}", e);
+					_logger.Error("Ошибка в нитке", e);
 				}
 		}
 	}

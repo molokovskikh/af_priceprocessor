@@ -11,7 +11,6 @@ using MySql.Data.MySqlClient;
 using System.IO;
 using ExecuteTemplate;
 using Inforoom.Downloader.Documents;
-using Inforoom.Logging;
 using Inforoom.Common;
 
 
@@ -268,7 +267,7 @@ and st.SourceID = 1";
 			}
 			catch (Exception exMatch)
 			{
-				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
 
@@ -371,7 +370,7 @@ and st.SourceID = 1";
 			}
 			catch (Exception exMatch)
 			{
-				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
 
@@ -508,7 +507,7 @@ and st.SourceID = 1";
 
 					if ((MySQLErr.Number == 1205) || (MySQLErr.Number == 1213) || (MySQLErr.Number == 1422))
 					{
-						SimpleLog.Log(this.GetType().Name + ".ExecuteCommand", "Повтор : {0}", MySQLErr);
+						_logger.Error("ExecuteCommand.Повтор", MySQLErr);
 						Ping();
 						System.Threading.Thread.Sleep(5000);
 						Ping();

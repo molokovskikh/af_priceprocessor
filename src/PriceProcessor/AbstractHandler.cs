@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Inforoom.PriceProcessor.Properties;
-using Inforoom.Logging;
 using System.Threading;
 using System.Net.Mail;
 
@@ -27,8 +26,12 @@ namespace Inforoom.PriceProcessor
 		//Известные ошибки, которые не надо несколько раз отправлять
 		protected List<string> knowErrors;
 
+		protected readonly log4net.ILog _logger;
+
 		public AbstractHandler()
 		{
+			_logger = log4net.LogManager.GetLogger(this.GetType());
+
 			knowErrors = new List<string>();
 
 			tWork = new Thread(new ThreadStart(ThreadWork));
@@ -57,7 +60,7 @@ namespace Inforoom.PriceProcessor
 		//Перезапуск обработчика
 		public void RestartWork()
 		{
-			SimpleLog.Log(this.GetType().Name, "Перезапуск обработчика");
+			_logger.Info("Перезапуск обработчика");
 			try
 			{
 				StopWork();
@@ -65,7 +68,7 @@ namespace Inforoom.PriceProcessor
 			}
 			catch (Exception ex)
 			{
-				SimpleLog.Log(this.GetType().Name, "Ошибка при останове нитки обработчика : {0}", ex);
+				_logger.Error("Ошибка при останове нитки обработчика", ex);
 			}
 			tWork = new Thread(new ThreadStart(ThreadWork));
 			try
@@ -74,9 +77,9 @@ namespace Inforoom.PriceProcessor
 			}
 			catch (Exception ex)
 			{
-				SimpleLog.Log(this.GetType().Name, "Ошибка при запуске нитки обработчика : {0}", ex);
+				_logger.Error("Ошибка при запуске нитки обработчика", ex);
 			}
-			SimpleLog.Log(this.GetType().Name, "Перезапустили обработчик");
+			_logger.Info("Перезапустили обработчик");
 		}
 
 		//Нитка, в которой осуществляется работа обработчика источника
@@ -109,7 +112,7 @@ namespace Inforoom.PriceProcessor
 
 		protected void LoggingToService(string Addition)
 		{
-			SimpleLog.Log(this.GetType().Name + ".Error", Addition);
+			_logger.ErrorFormat("Ошибка в нитке обработчика: {0}", Addition);
 			if (!knowErrors.Contains(Addition))
 				try
 				{
@@ -122,7 +125,7 @@ namespace Inforoom.PriceProcessor
 				}
 				catch(Exception ex)
 				{
-					SimpleLog.Log(this.GetType().Name + ".LoggingToService", "Не получилось отправить письмо с ошибкой: {0}", ex);
+					_logger.Error("Не получилось отправить письмо с ошибкой", ex);
 				}
 		}
 	}

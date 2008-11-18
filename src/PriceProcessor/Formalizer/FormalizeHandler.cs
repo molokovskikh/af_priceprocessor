@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Net.Mail;
-using Inforoom.Logging;
 using System.IO;
 using Inforoom.Formalizer;
 using System.Collections;
@@ -72,16 +71,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			Thread.Sleep(600);
 
-			SimpleLog.Log(this.GetType().Name, "Попытка останова ниток");
+			_logger.Info("Попытка останова ниток");
 
 			for (int i = pt.Count - 1; i >= 0; i--)
 			{
 				//Если нитка работает, то останавливаем ее
 				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
 				{
-					SimpleLog.Log(this.GetType().Name, "Попытка останова нитки {0}", (pt[i] as PriceProcessThread).TID);
+					_logger.InfoFormat("Попытка останова нитки {0}", (pt[i] as PriceProcessThread).TID);
 					(pt[i] as PriceProcessThread).AbortThread();
-					SimpleLog.Log(this.GetType().Name, "Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
+					_logger.InfoFormat("Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
 				}
 			}
 
@@ -125,7 +124,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 			catch (Exception ex)
 			{
-				SimpleLog.Log(this.GetType().Name + "OnFileCreate", "{0}", ex);
+				_logger.Error("Ошибка на OnFileCreate", ex);
 			}
 		}
 
@@ -148,7 +147,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						catch (Exception ex)
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить файл для формализации {0}: {1}", priceFile, ex));
+							_logger.ErrorFormat("Не получилось удалить файл для формализации {0}\r\n{1}", priceFile, ex);
 						}
 					}
 				}
@@ -161,7 +160,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					}
 					catch (Exception ex)
 					{
-						SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить неизвестный файл {0}: {1}", priceFile, ex));
+						_logger.ErrorFormat("Не получилось удалить неизвестный файл {0}\r\n{1}", priceFile, ex);
 					}
 				}
 			}
@@ -209,9 +208,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 						if (thread != null)
 						{
 							//если элемент найден, то останавливаем нитку, файл будет удалять нитка при останове
-							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку из-за дублирующего прайс-листа {0}", thread.TID));
+							_logger.InfoFormat("Останавливаем нитку из-за дублирующего прайс-листа {0}", thread.TID);
 							thread.AbortThread();
-							SimpleLog.Log(this.GetType().Name, String.Format("Останов нитки успешно вызван {0}", thread.TID));
+							_logger.InfoFormat("Останов нитки успешно вызван {0}", thread.TID);
 						}
 						else
 						{
@@ -222,7 +221,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 							}
 							catch (Exception ex)
 							{
-								SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить дублирующий файл {0}: {1}", item.FilePath, ex));
+								_logger.ErrorFormat("Не получилось удалить дублирующий файл {0}\r\n{1}", item.FilePath, ex);
 							}
 						}
 						///Из очереди на обработку файл элемент удаляется сразу, а если была рабочая нитка, 
@@ -239,7 +238,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{ 
 			lock (pt)
 			{
-				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, "PriceItemList.Count = {0}", PriceItemList.list.Count);
+				if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
+					_logger.InfoFormat("PriceItemList.Count = {0}", PriceItemList.list.Count);
 
 				//Первым проходом запускаем только загруженные прайс-листы
 				ProcessItemList(PriceItemList.GetDownloadedItemList());
@@ -267,7 +267,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
 						if (DateTime.UtcNow.Subtract(item.CreateTime).TotalSeconds > 5)
 						{
-							SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Adding PriceProcessThread = {0}", item.FilePath);
+							_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
 							FileHashItem hashItem;
 							if (htEMessages.Contains(item.FilePath))
 								hashItem = (FileHashItem)htEMessages[item.FilePath];
@@ -277,7 +277,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 								htEMessages.Add(item.FilePath, hashItem);
 							}
 							pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
-							SimpleLog.Log(this.GetType().Name + ".AddPriceProcessThread", "Added PriceProcessThread = {0}", item.FilePath);
+							_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
+
 							j++;
 						}
 					}
@@ -317,25 +318,26 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//Остановка нитки по сроку, если она работает дольше, чем можно
 						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.ThreadState != System.Threading.ThreadState.AbortRequested))
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.StartDate));
+							_logger.InfoFormat("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.StartDate, p.ProcessState);
 							p.AbortThread();
-							SimpleLog.Log(this.GetType().Name, String.Format("Останов нитки успешно вызван {0}", p.TID));
+							_logger.InfoFormat("Останов нитки успешно вызван {0}", p.TID);
 						}
 						else
 							//Принудительно завершаем прерванную нитку, т.к. время останова превысило допустимый интервал ожидания
 							if (p.IsAbortingLong)
 							{
-								SimpleLog.Log(this.GetType().Name, "Принудительно завершаем прерванную нитку {0}.", p.TID);
+								_logger.InfoFormat("Принудительно завершаем прерванную нитку {0}.", p.TID);
 								DeleteProcessThread(p);
 								pt.RemoveAt(i);
 							}
 							else
 							{
-								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3}, ", Path.GetFileName(p.ProcessItem.FilePath), p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.TID);
+								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3} ProcessState={5}, ", Path.GetFileName(p.ProcessItem.FilePath), p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.TID, p.ProcessState);
 							}
 				}
 
-				SimpleLog.Log((DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs), this.GetType().Name, String.Format("Кол-во работающих нитей {0} : {1}", pt.Count, statisticMessage));
+				if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
+					_logger.InfoFormat("Кол-во работающих нитей {0} : {1}", pt.Count, statisticMessage);
 			}
 		}
 
@@ -345,7 +347,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		/// <param name="p"></param>
 		private void DeleteProcessThread(PriceProcessThread p)
 		{
-			SimpleLog.Log(this.GetType().Name, String.Format("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd));
+			_logger.InfoFormat("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  ProcessState = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.ProcessState);
 			FileHashItem hi = (FileHashItem)htEMessages[p.ProcessItem.FilePath];
 			string prevErrorMessage = hi.ErrorMessage;
 			hi.ErrorMessage = p.CurrentErrorMessage;
@@ -363,7 +365,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				catch (Exception e)
 				{
-					SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить файл {0} после успешной формализации: {1}", p.ProcessItem.FilePath, e));
+					_logger.ErrorFormat("Не получилось удалить файл {0} после успешной формализации\r\n{1}", p.ProcessItem.FilePath, e);
 				}
 			else
 			{
@@ -379,7 +381,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					}
 					catch (Exception e)
 					{
-						SimpleLog.Log(this.GetType().Name, String.Format("Не получилось удалить файл {0} после останова дублирующейся нитки: {1}", p.ProcessItem.FilePath, e));
+						_logger.ErrorFormat("Не получилось удалить файл {0} после останова дублирующейся нитки\r\n{1}", p.ProcessItem.FilePath, e);
 					}
 				}
 				else
@@ -389,14 +391,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 					//и отправляем уведомление
 					if ((hi.ErrorCount > Settings.Default.MaxErrorCount) && (!p.ProcessItem.Downloaded))
 					{
-						SimpleLog.Log(this.GetType().Name, "Удаляем файл из-за большого кол-ва ошибок: FileName:{0} ErrorCount:{1} Downloaded:{2} ErrorMessage:{3} PriceItemId:{4}", p.ProcessItem.FilePath, hi.ErrorCount, p.ProcessItem.Downloaded, hi.ErrorMessage, p.ProcessItem.PriceItemId);
+						_logger.InfoFormat("Удаляем файл из-за большого кол-ва ошибок: FileName:{0} ErrorCount:{1} Downloaded:{2} ErrorMessage:{3} PriceItemId:{4}", p.ProcessItem.FilePath, hi.ErrorCount, p.ProcessItem.Downloaded, hi.ErrorMessage, p.ProcessItem.PriceItemId);
 						try
 						{
 							PriceItemList.list.Remove(p.ProcessItem);
 						}
 						catch (Exception e)
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Не удалось удалить файл из списка {0}: {1}", p.ProcessItem.FilePath, e));
+							_logger.ErrorFormat("Не удалось удалить файл из списка {0}\r\n{1}", p.ProcessItem.FilePath, e);
 						}
 						try
 						{
@@ -406,7 +408,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						catch (Exception e)
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Не удалось переместить файл {0} в каталог {1}: {2}", p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, e));
+							_logger.ErrorFormat("Не удалось переместить файл {0} в каталог {1}\r\n{2}", p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, e);
 						}
 						try
 						{
@@ -418,7 +420,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						catch (Exception e)
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Не удалось отправить сообщение: {0}", e));
+							_logger.Error("Не удалось отправить сообщение", e);
 						}
 						htEMessages.Remove(p.ProcessItem.FilePath);
 					}
@@ -430,7 +432,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						catch (Exception e)
 						{
-							SimpleLog.Log(this.GetType().Name, String.Format("Не удалось переместить файл в конец списка {0}: {1}", p.ProcessItem.FilePath, e));
+							_logger.ErrorFormat("Не удалось переместить файл в конец списка {0}\r\n{1}", p.ProcessItem.FilePath, e);
 						}
 				}
 			}

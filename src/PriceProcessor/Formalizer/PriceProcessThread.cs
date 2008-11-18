@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 using System.Net.Mail;
 using MySql.Data.MySqlClient;
-using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 using System.Configuration;
 using Inforoom.Common;
@@ -28,15 +27,25 @@ namespace Inforoom.Formalizer
 		Error = 5
 	}
 
+	public enum PriceProcessState : int
+	{ 
+		None,
+		Begin,
+		GetConnection,
+		CreateTempDirectory,
+		CheckConnection,
+		CallValidate,
+		CallFormalize,
+		FinalCopy,
+		CloseConnection,
+		FinalizeThread
+	}
+
 	/// <summary>
-	/// Summary description for Class1.
+	/// Summary description for PriceProcessThread.
 	/// </summary>
 	public class PriceProcessThread
 	{
-		//идентификатор нити
-		private static int GlobalPPTID = -1;
-		private int PPTID;
-
 		//Если установлено, то письмо в ErrorList о проблемах с connection отправлено
 		private static bool LetterAboutConnectionSended = false;
 
@@ -72,19 +81,21 @@ namespace Inforoom.Formalizer
 		//предыдущее сообщение об ошибке
 		private string prevErrorMessage = String.Empty;
 		//текущее сообщение об ошибке
-		private string currentErrorMessage = String.Empty;
- 
+		private string currentErrorMessage = String.Empty; 
 
 		private BasePriceParser WorkPrice = null;
+
+		private readonly log4net.ILog _logger = log4net.LogManager.GetLogger(typeof(PriceProcessThread));
+
+		private PriceProcessState _processState = PriceProcessState.None;
 
 		public PriceProcessThread(PriceProcessItem item, string PrevErrorMessage)
 		{
 			this.tmFormalize = DateTime.UtcNow;
-			this.PPTID = ++GlobalPPTID;
 			this.prevErrorMessage = PrevErrorMessage;
 			this._processItem = item;
 			this._thread = new Thread(new ThreadStart(ThreadWork));
-			this._thread.Name = String.Format("PPT{0}", PPTID);
+			this._thread.Name = String.Format("PPT{0}", this._thread.ManagedThreadId);
 			this._thread.Start();
 		}
 
@@ -162,7 +173,7 @@ namespace Inforoom.Formalizer
 		{
 			get
 			{
-				return PPTID;
+				return _thread.ManagedThreadId;
 			}
 		}
 
@@ -185,18 +196,12 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		/// <summary>
-		/// Внутренее логирование
-		/// </summary>
-		/// <param name="Message"></param>
-		private void InternalLog(string Message)
+		public PriceProcessState ProcessState
 		{
-			SimpleLog.Log( String.Format("TID={0}", PPTID), Message);
-		}
-
-		private void InternalLog(string format, params object[] args)
-		{
-			InternalLog(String.Format(format, args));
+			get 
+			{
+				return _processState;
+			}
 		}
 
 		private MySqlConnection getConnection()
@@ -251,7 +256,7 @@ namespace Inforoom.Formalizer
 				}
 				catch(Exception e)
 				{
-					InternalLog("SuccesLog : {0}", e);
+					_logger.Error("Ошибка логирования в базу", e);
 				}
 			}
 
@@ -270,7 +275,7 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				InternalLog("ErrorLog.InternalMailSendBy : {0}", e);
+				_logger.Error("Ошибка при отправке письма", e);
 			}
 		}
 
@@ -344,7 +349,7 @@ namespace Inforoom.Formalizer
 			else
 				currentErrorMessage = ex.ToString();
 			Addition = currentErrorMessage;
-			InternalLog("Addition : {0}", Addition);
+			_logger.InfoFormat("Error Addition : {0}", Addition);
 
 			//Если предыдущее сообщение не отличается от текущего, то не логируем его
 			if (prevErrorMessage != currentErrorMessage)
@@ -396,7 +401,7 @@ namespace Inforoom.Formalizer
 					}
 					catch(Exception e)
 					{
-						InternalLog("ErrorLog : {0}", e);
+						_logger.Error("Ошибка логирования в базу", e);
 					}
 				}
 
@@ -410,7 +415,7 @@ namespace Inforoom.Formalizer
 		{
 			string messageBody = "", messageSubject = "";
 			currentErrorMessage = Addition;
-			InternalLog("Addition : {0}", Addition);
+			_logger.InfoFormat("Warning Addition : {0}", Addition);
 
 			if (prevErrorMessage != currentErrorMessage)
 			{
@@ -487,7 +492,7 @@ namespace Inforoom.Formalizer
 					}
 					catch(Exception ex)
 					{
-						InternalLog("WarningLog : {0}", ex);
+						_logger.Error("Ошибка логирования в базу", ex);
 					}
 				}
 
@@ -501,6 +506,7 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void ThreadWork()
 		{
+			_processState = PriceProcessState.Begin;
 			string workStr = String.Empty;
 			try
 			{
@@ -509,11 +515,13 @@ namespace Inforoom.Formalizer
 				TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')
 				TempFileName = TempPath + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
-				InternalLog("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
+				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 
+				_processState = PriceProcessState.GetConnection;
 				myconn = getConnection();
 				try
 				{
+					_processState = PriceProcessState.CreateTempDirectory;
 					//Создаем команду для логирования
 					mcLog = new MySqlCommand();
 					mcLog.Connection = myconn;
@@ -521,12 +529,14 @@ namespace Inforoom.Formalizer
 					//Создаем директорию для временного файла и копируем туда файл
 					Directory.CreateDirectory(TempPath);
 
+					_processState = PriceProcessState.CheckConnection;
 					CheckConnection(myconn);
 
 					try
 					{
 						try
 						{
+							_processState = PriceProcessState.CallValidate;
 							WorkPrice = PricesValidator.Validate(myconn, _processItem.FilePath, TempFileName, _processItem);
 						}
 						finally
@@ -542,6 +552,7 @@ namespace Inforoom.Formalizer
 
 						WorkPrice.downloaded = _processItem.Downloaded;
 
+						_processState = PriceProcessState.CallFormalize;
 						WorkPrice.Formalize();
 
 						formalizeOK = true;
@@ -553,6 +564,7 @@ namespace Inforoom.Formalizer
 						workStr = tsFormalize.ToString();
 					}
 
+					_processState = PriceProcessState.FinalCopy;
 					try
 					{
 						if (formalizeOK)
@@ -622,6 +634,7 @@ namespace Inforoom.Formalizer
 				}
 				finally
 				{
+					_processState = PriceProcessState.CloseConnection;
 					try
 					{
 						myconn.Close();
@@ -630,7 +643,7 @@ namespace Inforoom.Formalizer
 					}
 					catch (Exception onCloseException)
 					{
-						InternalLog("Ошибка при закрытии соединения: {0}", onCloseException);
+						_logger.Error("Ошибка при закрытии соединения", onCloseException);
 					}
 				}
 
@@ -639,12 +652,15 @@ namespace Inforoom.Formalizer
 			{
 				if (!(e is System.Threading.ThreadAbortException))
 				{
-					InternalLog(e.ToString());
+					_logger.Error("Необработанная ошибка в нитке", e);
 					InternalMailSendBy(Settings.Default.FarmSystemEmail, Settings.Default.ServiceMail, "ThreadWork Error", e.ToString());
 				}
+				else
+					_logger.Error("Ошибка ThreadAbortException", e);
 			}
 			finally
 			{
+				_processState = PriceProcessState.FinalizeThread;
 				GC.Collect();
 				try
 				{
@@ -652,9 +668,9 @@ namespace Inforoom.Formalizer
 				}
 				catch(Exception e)
 				{
-					InternalLog("Ошибка при удалении {0}", e);
+					_logger.Error("Ошибка при удалении", e);
 				}
-				InternalLog( "Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
+				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
 				_formalizeEnd = true;
 			}
 		}
@@ -709,7 +725,7 @@ InnoDB Status            =
 										InnoDBByConnection,
 										InnoDBStatus);
 
-					InternalLog("При проверке соединения получили 0 записей : {0}", techInfo);
+					_logger.InfoFormat("При проверке соединения получили 0 записей : {0}", techInfo);
 
 					if (!LetterAboutConnectionSended)
 						try
@@ -730,7 +746,7 @@ InnoDB Status            =
 						}
 						catch (Exception onSend)
 						{
-							InternalLog("Ошибка при отправке письма с techInfo : {0}", onSend);
+							_logger.Error("Ошибка при отправке письма с techInfo", onSend);
 						}
 
 					throw new Exception("При попытке выборки из clientsdata не получили записей. Перезапустите PriceProcessor.");

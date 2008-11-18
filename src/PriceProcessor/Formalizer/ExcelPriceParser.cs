@@ -2,7 +2,6 @@ using System;
 using System.Data;
 using System.Data.OleDb;
 using MySql.Data.MySqlClient;
-using Inforoom.Logging;
 using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
@@ -77,23 +76,23 @@ namespace Inforoom.Formalizer
 					}
 					res = true;
 				}
-				catch(System.Data.OleDb.OleDbException)
+				catch (System.Data.OleDb.OleDbException oleDbException)
 				{
 					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
-						SimpleLog.Log( getParserID(), "Repeat dbcMain.Open on OleDbException");
+						_logger.Error("Repeat dbcMain.Open on OleDbException", oleDbException);
 						System.Threading.Thread.Sleep(500);
 					}
 					else
 						throw;
 				}
-				catch(System.Runtime.InteropServices.InvalidComObjectException)
+				catch (System.Runtime.InteropServices.InvalidComObjectException invalidComObjectException)
 				{
 					if (tryCount < Settings.Default.MinRepeatTranCount)
 					{
 						tryCount++;
-						SimpleLog.Log( getParserID(), "Repeat dbcMain.Open on InvalidComObjectException");
+						_logger.Error("Repeat dbcMain.Open on InvalidComObjectException", invalidComObjectException);
 						System.Threading.Thread.Sleep(500);
 					}
 					else

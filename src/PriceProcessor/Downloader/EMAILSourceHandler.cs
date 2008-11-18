@@ -9,7 +9,6 @@ using Inforoom.PriceProcessor.Properties;
 using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
-using Inforoom.Logging;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 
@@ -98,7 +97,7 @@ namespace Inforoom.Downloader
 										ErrorMailSend(item.UID, ex.ToString(), ms);
 										errorUIDs.Add(item.UID);
 									}
-									SimpleLog.Log(this.GetType().Name, "On Parse : " + ex.ToString());
+									_logger.Error("On Parse", ex);
 								}
 
 								if (m != null)
@@ -119,7 +118,7 @@ namespace Inforoom.Downloader
 											ErrorMailSend(item.UID, ex.ToString(), ms);
 											errorUIDs.Add(item.UID);
 										}
-										SimpleLog.Log(this.GetType().Name, "On Process : " + ex.ToString());
+										_logger.Error("On Process", ex);
 									}
 								}
 
@@ -234,7 +233,7 @@ namespace Inforoom.Downloader
 			}
 			catch (Exception exMatch)
 			{
-				SimpleLog.Log(this.GetType().Name, "Не удалось отправить нераспознанное письмо : " + exMatch.ToString());
+				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
 
@@ -414,16 +413,20 @@ namespace Inforoom.Downloader
 						if (File.Exists(NormalName))
 							File.Delete(NormalName);
 						File.Copy(ExtrFileName, NormalName);
-						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Попытка добавить прайс-листа " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " в PriceItemList");
+						if (_logger.IsDebugEnabled)
+							using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+								_logger.DebugFormat("Попытка добавить прайс-лист {0} - {1} в PriceItemList", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
 						item.FileTime = DateTime.Now;
 						PriceItemList.AddItem(item);
-						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " скачан/распакован");
+						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 					}
 					catch (Exception ex)
 					{
 						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
-						SimpleLog.Log(this.GetType().Name + CurrPriceItemId.ToString(), String.Format("Не удалось перенести файл '{0}' в каталог '{1}': {2} ", ExtrFileName, NormalName, ex));
+						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+							_logger.ErrorFormat("Не удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
 					}
 				}
 			}

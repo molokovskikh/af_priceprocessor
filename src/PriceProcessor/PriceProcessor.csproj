@@ -39,10 +39,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ExecuteTemplate, Version=1.1.18.42433, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ExecuteTemplate\src\ExecuteTemplate\bin\Debug\ExecuteTemplate.dll</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -105,6 +101,7 @@
     <Compile Include="Formalizer\TXTFixedPriceParser.cs" />
     <Compile Include="Formalizer\TXTWinDelimiterPriceParser.cs" />
     <Compile Include="Formalizer\TXTWinFixedPriceParser.cs" />
+    <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="PriceItemList.cs" />
     <Compile Include="PriceProcessItem.cs" />
@@ -151,6 +148,9 @@
     <None Include="Formalizer\Resources\CommerceML.xsx">
       <DependentUpon>CommerceML.xsd</DependentUpon>
     </None>
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -163,6 +163,10 @@
     <ProjectReference Include="..\Common.Tools\src\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ExecuteTemplate\src\ExecuteTemplate\ExecuteTemplate.csproj">
+      <Project>{046F74A6-68A8-4E5E-A9AB-7332B631CFB1}</Project>
+      <Name>ExecuteTemplate</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

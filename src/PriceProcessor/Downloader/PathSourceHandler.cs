@@ -4,7 +4,6 @@ using System.Text;
 using System.Data;
 using System.IO;
 using Inforoom.Formalizer;
-using Inforoom.Logging;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
@@ -39,12 +38,10 @@ namespace Inforoom.Downloader
                 {
                     drLS = GetLikeSources();
 #if DEBUG
-                    if (drLS.Length < 1)
-                        SimpleLog.Log(this.GetType().Name, "!!!!!!!!!!!!!   drLS.Length < 1");
+					if (drLS.Length < 1)
+						_logger.Debug("!!!!!!!!!!!!!   drLS.Length < 1");
 #endif
                     GetFileFromSource();
-
-                    //SimpleLog.Log(SourceType == "LAN", this.GetType().Name, "ќбработали источник с кодом {0} файл '{1}'", dtSources.Rows[0][SourcesTable.colPriceCode], CurrFileName);
 
                     if (!String.IsNullOrEmpty(CurrFileName))
                     {
@@ -154,12 +151,14 @@ namespace Inforoom.Downloader
 						//устанавливаем врем€ загрузки файла
 						item.FileTime = CurrPriceDate;
 						PriceItemList.AddItem(item);
-						SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Price " + (string)drCurrent[SourcesTable.colShortName] + " - " + (string)drCurrent[SourcesTable.colPriceName] + " скачан/распакован");
+						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 					}
 					catch (Exception ex)
 					{
 						//todo: по идее здесь не должно возникнуть ошибок, но на вс€кий случай логируем, возможно надо включить логирование письмом
-						SimpleLog.Log(this.GetType().Name + CurrPriceItemId.ToString(), String.Format("Ќе удалось перенести файл '{0}' в каталог '{1}': {2} ", ExtrFileName, NormalName, ex));
+						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+							_logger.ErrorFormat("Ќе удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
 					}
 				}
 			}

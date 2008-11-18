@@ -8,7 +8,6 @@ using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using ExecuteTemplate;
-using Inforoom.Logging;
 using System.Configuration;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
@@ -237,7 +236,7 @@ and pd.AgencyEnabled= 1",
             }
             catch (Exception ex)
             {
-                SimpleLog.Log(this.GetType().Name + ".CreateWorkConnection", "{0}", ex);
+				_logger.Error("Ошибка на CreateWorkConnection", ex);
             }
         }
 
@@ -412,14 +411,19 @@ and pd.AgencyEnabled= 1",
             try
             {
 
-				//SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Попытка удалить файл : " + CurrFileName);
+				if (_logger.IsDebugEnabled)
+					using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						_logger.DebugFormat("Попытка удалить файл : {0}", CurrFileName);
 				if (File.Exists(CurrFileName))
 					File.Delete(CurrFileName);
-				//SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Файл удален : " + CurrFileName);
+				if (_logger.IsDebugEnabled)
+					using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						_logger.DebugFormat("Файл удален : {0}", CurrFileName);
 			}
             catch (Exception ex)
 			{
-				SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "Ошибка при удалении файла : " + CurrFileName + "  Ошибка : " + ex.ToString());
+				using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+					_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", CurrFileName, ex);
 			}
         }
 
@@ -479,7 +483,7 @@ and pd.AgencyEnabled= 1",
 			}
 			catch(Exception ex)
 			{
-				SimpleLog.Log( this.GetType().Name + ".CreateLogConnection", "{0}", ex);
+				_logger.Error("Ошибка на CreateLogConnection", ex);
 			}
 		}
 
@@ -496,9 +500,10 @@ and pd.AgencyEnabled= 1",
 		protected UInt64 Logging(ulong? CurrPriceItemId, string Addition, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
         {
 			if (CurrPriceItemId.HasValue)
-                SimpleLog.Log(this.GetType().Name + "." + CurrPriceItemId.ToString(), "{0}", Addition);
-            else
-                SimpleLog.Log(this.GetType().Name, "{0}", Addition);
+				using(log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+					_logger.InfoFormat("Logging.Addition : {0}", Addition);
+			else
+				_logger.InfoFormat("Logging.Addition : {0}", Addition);
 
             if (cLog.State != System.Data.ConnectionState.Open)
                 cLog.Open();
