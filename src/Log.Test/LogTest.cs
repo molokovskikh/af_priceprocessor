@@ -233,6 +233,15 @@ namespace Log.Test
 			}
 			_log.Error("это ошибка 2");
 			_log.Fatal("это ошибка фатальная ошибка 2");
+			try
+			{
+				int i = int.Parse("dsds");
+				Console.WriteLine("i = {0}", i);
+			}
+			catch(Exception exception)
+			{
+				_log.ErrorFormat("Ошибка при разборе строки {0}\r\n{1}", "dsds", exception);
+			}
 		}
 
 	}
