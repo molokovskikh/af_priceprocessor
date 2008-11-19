@@ -702,7 +702,7 @@ namespace Inforoom.Formalizer
 					bool InnoDBByConnection = false;
 					string InnoDBStatus = String.Empty;
 					DataSet dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
-					if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1))
+					if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1) && (dsStatus.Tables[0].Columns.Contains("Status")))
 					{
 						InnoDBStatus = dsStatus.Tables[0].Rows[0]["Status"].ToString();
 						InnoDBByConnection = true;

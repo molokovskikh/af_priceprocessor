@@ -26,6 +26,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		private Hashtable htEMessages;
 
+		/// <summary>
+		/// Время последней удачной формализации
+		/// </summary>
+		private DateTime? _lastFormalizationDate = null;
+
+		/// <summary>
+		/// Если установлен в true, то формализация не происходит и было отправлено уведомление об этом
+		/// </summary>
+		private bool _formalizationFail = false;
+
 		public FormalizeHandler()
 			: base()
 		{
@@ -176,12 +186,48 @@ namespace Inforoom.PriceProcessor.Formalizer
 				ProcessThreads();
 
 				AddPriceProcessThread();
+
+				CheckFormalizationFail();
 			}
 
 			//обновляем дату последнего отчета в лог
 			if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
 				lastStatisticReport = DateTime.Now;
 
+		}
+
+		private void CheckFormalizationFail()
+		{
+			//Если нет файлов на формализацию, то сбрасываем дату последней удачной формализации
+			if (PriceItemList.list.Count == 0)
+				_lastFormalizationDate = null;
+
+			if (!_formalizationFail && (PriceItemList.list.Count > 0)
+				&& _lastFormalizationDate.HasValue
+				&& (DateTime.UtcNow.Subtract(_lastFormalizationDate.Value).TotalMinutes > Settings.Default.MaxLiveTime))
+				try
+				{
+					string logMessage = String.Format(
+						"Время последней удачной формализации = {0}\r\nОчередь на формализацию = {1}", 
+						_lastFormalizationDate.Value.ToLocalTime(), 
+						PriceItemList.list.Count);
+
+					_logger.FatalFormat("Останов в нитках формализации.\r\n{0}", logMessage);
+
+					MailMessage Message = new MailMessage(
+						Settings.Default.FarmSystemEmail, 
+						Settings.Default.SMTPErrorList, 
+						"Останов в нитках формализации",
+						logMessage);
+					Message.BodyEncoding = System.Text.Encoding.UTF8;
+					SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+					Client.Send(Message);
+					_formalizationFail = true;
+				}
+				catch (Exception e)
+				{
+					_logger.Error("Не удалось отправить сообщение", e);
+				}
 		}
 
 		/// <summary>
@@ -277,6 +323,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 								htEMessages.Add(item.FilePath, hashItem);
 							}
 							pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
+							//если значение не было установлено, то скорей всего не было ниток на формализацию, 
+							//поэтому устанавливаем время последней удачной формализации как текущее время
+							if (!_lastFormalizationDate.HasValue)
+								_lastFormalizationDate = DateTime.UtcNow;
 							_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
 
 							j++;
@@ -332,7 +382,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 							}
 							else
 							{
-								statisticMessage += String.Format("{0} ID={4} IsAlive={1} ThreadState={2} FormalizeEnd={3} ProcessState={5}, ", Path.GetFileName(p.ProcessItem.FilePath), p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.TID, p.ProcessState);
+								statisticMessage += String.Format(
+									"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ", 
+									Path.GetFileName(p.ProcessItem.FilePath), 
+									p.TID, p.ThreadIsAlive, p.StartDate, p.ThreadState, p.FormalizeEnd, p.ProcessState);
 							}
 				}
 
@@ -356,6 +409,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 			if (p.FormalizeOK)
 				try
 				{
+					//устанавливаем время последней удачной формализации
+					_lastFormalizationDate = DateTime.UtcNow;
+					_formalizationFail = false;
 					//удаляем файл
 					FileHelper.FileDelete(p.ProcessItem.FilePath);
 					//удаляем информацию о последних ошибках
