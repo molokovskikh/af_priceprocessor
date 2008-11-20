@@ -8,6 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using Inforoom.PriceProcessor.Properties;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
+using Inforoom.Common;
 
 
 namespace Inforoom.Downloader.DocumentReaders
@@ -93,6 +94,8 @@ namespace Inforoom.Downloader.DocumentReaders
 					//Если нашли, то архивируем оба файла, если не нашли и файл создан давно, то архивируем один файл
 					if (originalDoubleName != default(string))
 					{
+						FileHelper.ClearReadOnly(inputList[0]);
+						FileHelper.ClearReadOnly(originalDoubleName);
 						//todo: filecopy здесь происходит копирование полученных файлов во временную папку для дальнейшего разбора ситуации, из-за предположения, что есть проблема с пропажей документов
 						string archiveFileName = ArhiveFiles(new string[] { inputList[0], originalDoubleName });
 						outputList.Add(archiveFileName);

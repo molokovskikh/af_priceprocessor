@@ -49,7 +49,11 @@ namespace Inforoom.Downloader
 					try
 					{
 						if (File.Exists(NewFile))
+						{
+							FileHelper.ClearReadOnly(NewFile);
 							File.Delete(NewFile);
+						}
+						FileHelper.ClearReadOnly(downloadedFileName);
 						File.Move(downloadedFileName, NewFile);
 						CurrFileName = NewFile;
 						CurrPriceDate = downloadedLastWriteTime;

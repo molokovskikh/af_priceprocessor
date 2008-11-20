@@ -202,6 +202,7 @@ and st.SourceID = 4";
 			{
 				if (File.Exists(NewFile))
 					File.Delete(NewFile);
+				FileHelper.ClearReadOnly(sourceFile);
 				File.Copy(sourceFile, NewFile);
 				CurrFileName = NewFile;
 			}

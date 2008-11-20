@@ -368,7 +368,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//Остановка нитки по сроку, если она работает дольше, чем можно
 						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.ThreadState != System.Threading.ThreadState.AbortRequested))
 						{
-							_logger.InfoFormat("Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.StartDate, p.ProcessState);
+							_logger.InfoFormat(System.Globalization.CultureInfo.CurrentCulture,
+								"Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}", 
+								p.TID, 
+								p.ThreadIsAlive, 
+								p.ThreadState, 
+								p.FormalizeEnd, 
+								p.StartDate.ToLocalTime(), 
+								p.ProcessState);
 							p.AbortThread();
 							_logger.InfoFormat("Останов нитки успешно вызван {0}", p.TID);
 						}
@@ -385,7 +392,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 								statisticMessage += String.Format(
 									"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ", 
 									Path.GetFileName(p.ProcessItem.FilePath), 
-									p.TID, p.ThreadIsAlive, p.StartDate, p.ThreadState, p.FormalizeEnd, p.ProcessState);
+									p.TID, 
+									p.ThreadIsAlive, 
+									p.StartDate.ToLocalTime(), 
+									p.ThreadState, 
+									p.FormalizeEnd, 
+									p.ProcessState);
 							}
 				}
 
