@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
+    <Compile Include="FileHelperTest.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />
