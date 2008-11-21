@@ -253,6 +253,16 @@ and st.SourceID = 4";
 				new ExecuteArgs(),
 				delegate(ExecuteArgs args)
 				{
+					//Пытаемся преобразовать имя файла 
+					string _convertedFileName = FileHelper.FileNameToWindows1251(Path.GetFileName(FileName));
+					if (!_convertedFileName.Equals(Path.GetFileName(FileName), StringComparison.CurrentCultureIgnoreCase))
+					{
+						//Если результат преобразования отличается от исходного имени, то переименовываем файл
+						_convertedFileName = Path.GetDirectoryName(FileName) + Path.DirectorySeparatorChar + _convertedFileName;
+						File.Move(FileName, _convertedFileName);
+						FileName = _convertedFileName;
+					}
+
 					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", cWork);
 					cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 					cmdInsert.Parameters.AddWithValue("?ClientCode", DBNull.Value);

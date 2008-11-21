@@ -230,7 +230,7 @@
       <Value Profile="(Default)">service@analit.net</Value>
     </Setting>
     <Setting Name="MaxWaybillAttachmentSize" Type="System.Int32" Scope="Application">
-      <Value Profile="(Default)">2</Value>
+      <Value Profile="(Default)">3072</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnMaxWaybillAttachment" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Размер документа (накладные, отказы) больше доспустимого значения</Value>
