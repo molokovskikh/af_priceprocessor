@@ -268,10 +268,11 @@ namespace Inforoom.Formalizer
 		{
 			try
 			{
-				MailMessage Message = new MailMessage(From, To, mSubject, mBody);
-				Message.BodyEncoding = System.Text.Encoding.UTF8;
-				SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
-				Client.Send(Message);
+				using (MailMessage Message = new MailMessage(From, To, mSubject, mBody))
+				{
+					SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+					Client.Send(Message);
+				}
 			}
 			catch(Exception e)
 			{
@@ -730,18 +731,19 @@ InnoDB Status            =
 					if (!LetterAboutConnectionSended)
 						try
 						{
-							MailMessage Message = new MailMessage(
+							using (MailMessage Message = new MailMessage(
 								Settings.Default.ServiceMail,
-								Settings.Default.ServiceMail, 
-								"!!! Необходимо перезапустить PriceProcessor", 
+								Settings.Default.ServiceMail,
+								"!!! Необходимо перезапустить PriceProcessor",
 								String.Format(@"
 Необходимо перезапустить PriceProcessor, т.к. в нитке формализации был получен connection, который не возвращает записей при выполнении команд.
 Техническая информация:
 {0}",
-									techInfo));
-							Message.BodyEncoding = System.Text.Encoding.UTF8;
-							SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
-							Client.Send(Message);
+									techInfo)))
+							{
+								SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+								Client.Send(Message);
+							}
 							LetterAboutConnectionSended = true;
 						}
 						catch (Exception onSend)

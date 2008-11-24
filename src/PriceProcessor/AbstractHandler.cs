@@ -116,11 +116,15 @@ namespace Inforoom.PriceProcessor
 			if (!knowErrors.Contains(Addition))
 				try
 				{
-					MailMessage mm = new MailMessage(Settings.Default.ServiceMail, Settings.Default.ServiceMail,
+					using (MailMessage mm = new MailMessage(
+						Settings.Default.ServiceMail, 
+						Settings.Default.ServiceMail,
 						"Ошибка в PriceProcessor",
-						String.Format("Обработчик : {0}\n{1}", this.GetType().Name, Addition));
-					SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-					sc.Send(mm);
+						String.Format("Обработчик : {0}\n{1}", this.GetType().Name, Addition)))
+					{
+						SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+						sc.Send(mm);
+					}
 					knowErrors.Add(Addition);
 				}
 				catch(Exception ex)

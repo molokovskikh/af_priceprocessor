@@ -72,9 +72,11 @@ and r.RegionCode = cd.RegionCode",
 				  drProvider["ShortFirmName"],
 				  sb.ToString());
 
-				MailMessage m = new MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body);
-				SmtpClient client = new SmtpClient(Settings.Default.SMTPHost);
-				client.Send(m);
+				using (MailMessage m = new MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body))
+				{
+					SmtpClient client = new SmtpClient(Settings.Default.SMTPHost);
+					client.Send(m);
+				}
 			}
 
 		}

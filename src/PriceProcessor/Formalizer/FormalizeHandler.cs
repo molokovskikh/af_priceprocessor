@@ -214,14 +214,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 					_logger.FatalFormat("Останов в нитках формализации.\r\n{0}", logMessage);
 
-					MailMessage Message = new MailMessage(
-						Settings.Default.FarmSystemEmail, 
-						Settings.Default.SMTPErrorList, 
+					using (MailMessage Message = new MailMessage(
+						Settings.Default.FarmSystemEmail,
+						Settings.Default.SMTPErrorList,
 						"Останов в нитках формализации",
-						logMessage);
-					Message.BodyEncoding = System.Text.Encoding.UTF8;
-					SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
-					Client.Send(Message);
+						logMessage))
+					{
+						SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+						Client.Send(Message);
+					}
 					_formalizationFail = true;
 				}
 				catch (Exception e)
@@ -480,11 +481,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						try
 						{
-							MailMessage Message = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, "Ошибка формализации",
-								String.Format(Settings.Default.MaxErrorsError, p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, Settings.Default.MaxErrorCount));
-							Message.BodyEncoding = System.Text.Encoding.UTF8;
-							SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
-							Client.Send(Message);
+							using (MailMessage Message = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, "Ошибка формализации",
+								String.Format(Settings.Default.MaxErrorsError, p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, Settings.Default.MaxErrorCount)))
+							{
+								SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+								Client.Send(Message);
+							}
 						}
 						catch (Exception e)
 						{

@@ -275,13 +275,17 @@ and pd.AgencyEnabled= 1",
 
         protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
-			MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPErrorList,
-                String.Format("Письмо с UID {0} не было обработано", UID),
-                String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage));
-            if (ms != null)
-                mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
-            SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-            sc.Send(mm);
+			using (MailMessage mm = new MailMessage(
+				Settings.Default.FarmSystemEmail, 
+				Settings.Default.SMTPErrorList,
+				String.Format("Письмо с UID {0} не было обработано", UID),
+				String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage)))
+			{
+				if (ms != null)
+					mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
+				SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+				sc.Send(mm);
+			}
         }
 
 		protected virtual string GetFailMail()
@@ -292,18 +296,22 @@ and pd.AgencyEnabled= 1",
         protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
         {
 			ms.Position = 0;
-			MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, GetFailMail(),
-                String.Format("{0} ( {1} )", FromAddress, SourceType),
-				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}", 
-                Subject, 
-                FromAddress, 
-                ToAddress, 
-                LetterDate,
-				cause,
-                AttachNames));
-            mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject ) + ".eml"));
-            SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-            sc.Send(mm);
+			using (MailMessage mm = new MailMessage(
+				Settings.Default.FarmSystemEmail, 
+				GetFailMail(),
+				String.Format("{0} ( {1} )", FromAddress, SourceType),
+				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}",
+					Subject,
+					FromAddress,
+					ToAddress,
+					LetterDate,
+					cause,
+					AttachNames)))
+			{
+				mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject) + ".eml"));
+				SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+				sc.Send(mm);
+			}
         }
 
         /// <summary>

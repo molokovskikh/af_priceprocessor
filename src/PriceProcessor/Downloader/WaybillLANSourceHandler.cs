@@ -100,18 +100,22 @@ and st.SourceID = 4";
 									{
 										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
 										{
-											MailMessage mm = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.DocumentFailMail,
+											using (MailMessage mm = new MailMessage(
+												Settings.Default.FarmSystemEmail, 
+												Settings.Default.DocumentFailMail,
 												String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
 												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
 													drLanSource[WaybillSourcesTable.colFirmCode],
 													drLanSource[SourcesTable.colShortName],
 													_currentType.GetType().Name,
 													DateTime.Now,
-													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."));
-											if (!String.IsNullOrEmpty(CurrFileName))
-												mm.Attachments.Add(new Attachment(CurrFileName));
-											SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
-											sc.Send(mm);
+													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs.")))
+											{
+												if (!String.IsNullOrEmpty(CurrFileName))
+													mm.Attachments.Add(new Attachment(CurrFileName));
+												SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+												sc.Send(mm);
+											}
 										}
 										//После обработки файла удаляем его из папки
 										if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
