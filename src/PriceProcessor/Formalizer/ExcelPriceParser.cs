@@ -30,6 +30,7 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			convertedToANSI = true;
+			OleDbConnection dbcMain = new OleDbConnection();
 			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Excel 5.0;HDR=No;IMEX=1\"", priceFileName);
 			bool res = false;
 			int tryCount = 0;

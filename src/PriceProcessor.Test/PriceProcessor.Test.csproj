@@ -60,6 +60,7 @@
       <HintPath>..\..\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
@@ -68,6 +69,7 @@
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="FileHelperTest.cs" />
+    <Compile Include="FormalizeHandlerFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />

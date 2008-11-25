@@ -55,18 +55,12 @@ namespace Inforoom.Formalizer
 
 			int MaxColCount = 0;
 			string TableName = System.IO.Path.GetFileName(priceFileName).Replace(".", "#");
-			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName));
-			dbcMain.Open();
-			try
+			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
 			{
+				dbcMain.Open();
 				DataTable ColumnNames = dbcMain.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
-					new object[] {null, null, TableName, null});
+					new object[] { null, null, TableName, null });
 				MaxColCount = (ColumnNames.Rows.Count >= 256) ? 255 : ColumnNames.Rows.Count;
-			}
-			finally
-			{
-				dbcMain.Close();
-				dbcMain.Dispose();
 			}
 
 			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
@@ -82,17 +76,13 @@ namespace Inforoom.Formalizer
 				}
 			}
 
-			dbcMain.ConnectionString = String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName));
-			dbcMain.Open();
-			try
+			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
 			{
-				OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain);
-				FillPrice(da);
-			}
-			finally
-			{
-				dbcMain.Close();
-				dbcMain.Dispose();
+				dbcMain.Open();
+				using (OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
+				{
+					FillPrice(da);
+				}
 			}
 
 			if (startLine > 0)

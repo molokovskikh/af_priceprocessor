@@ -255,8 +255,6 @@ namespace Inforoom.Formalizer
 	{
 		//таблица с прайсом
 		protected DataTable dtPrice;
-		//Соединение с 
-		protected OleDbConnection dbcMain;
 
 		//Соедиение с базой данных
 		protected MySqlConnection MyConn;
@@ -423,7 +421,6 @@ namespace Inforoom.Formalizer
 
 			priceFileName = PriceFileName;
 			dtPrice = new DataTable();
-			dbcMain = new OleDbConnection();
 			MyConn = conn;
 			dsMyDB = new DataSet();
 			currentCoreCosts = new ArrayList();
