@@ -151,13 +151,13 @@ namespace Inforoom.Downloader
 						//устанавливаем время загрузки файла
 						item.FileTime = CurrPriceDate;
 						PriceItemList.AddItem(item);
-						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
 							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 					}
 					catch (Exception ex)
 					{
 						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
-						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
 							_logger.ErrorFormat("Не удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
 					}
 				}

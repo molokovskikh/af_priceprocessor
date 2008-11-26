@@ -169,11 +169,11 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		public int TID
+		public string TID
 		{
 			get
 			{
-				return _thread.ManagedThreadId;
+				return _thread.Name;
 			}
 		}
 

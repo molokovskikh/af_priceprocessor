@@ -420,18 +420,15 @@ and pd.AgencyEnabled= 1",
             {
 
 				if (_logger.IsDebugEnabled)
-					using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
-						_logger.DebugFormat("Попытка удалить файл : {0}", CurrFileName);
+					_logger.DebugFormat("Попытка удалить файл : {0}", CurrFileName);
 				if (File.Exists(CurrFileName))
 					File.Delete(CurrFileName);
 				if (_logger.IsDebugEnabled)
-					using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
-						_logger.DebugFormat("Файл удален : {0}", CurrFileName);
+					_logger.DebugFormat("Файл удален : {0}", CurrFileName);
 			}
             catch (Exception ex)
 			{
-				using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
-					_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", CurrFileName, ex);
+				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", CurrFileName, ex);
 			}
         }
 
@@ -507,11 +504,12 @@ and pd.AgencyEnabled= 1",
 
 		protected UInt64 Logging(ulong? CurrPriceItemId, string Addition, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
         {
-			if (CurrPriceItemId.HasValue)
-				using(log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+			if (!String.IsNullOrEmpty(Addition))
+				if (CurrPriceItemId.HasValue)
+					using(log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						_logger.InfoFormat("Logging.Addition : {0}", Addition);
+				else
 					_logger.InfoFormat("Logging.Addition : {0}", Addition);
-			else
-				_logger.InfoFormat("Logging.Addition : {0}", Addition);
 
             if (cLog.State != System.Data.ConnectionState.Open)
                 cLog.Open();

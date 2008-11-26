@@ -414,18 +414,18 @@ namespace Inforoom.Downloader
 							File.Delete(NormalName);
 						File.Copy(ExtrFileName, NormalName);
 						if (_logger.IsDebugEnabled)
-							using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+							using (log4net.NDC.Push(CurrPriceItemId.ToString()))
 								_logger.DebugFormat("Попытка добавить прайс-лист {0} - {1} в PriceItemList", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
 						item.FileTime = DateTime.Now;
 						PriceItemList.AddItem(item);
-						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
 							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
 					}
 					catch (Exception ex)
 					{
 						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
-						using (log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
 							_logger.ErrorFormat("Не удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
 					}
 				}
