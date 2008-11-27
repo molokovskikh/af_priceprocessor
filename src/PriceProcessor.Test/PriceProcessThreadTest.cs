@@ -23,7 +23,7 @@ namespace PriceProcessor.Test
 			}
 			_priceProcessThread.AbortThread();
 			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
-			while (!_priceProcessThread.FormalizeEnd && (_priceProcessThread.ThreadState != ThreadState.Stopped))
+			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
 				Thread.Sleep(500);
 			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
 		}

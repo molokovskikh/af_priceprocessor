@@ -26,6 +26,11 @@ namespace Inforoom.PriceProcessor
 		//Известные ошибки, которые не надо несколько раз отправлять
 		protected List<string> knowErrors;
 
+		/// <summary>
+		/// кол-во милисекунд, которые выделяются на завершение нитки
+		/// </summary>
+		protected const int maxJoinTime = 180000; 
+
 		protected readonly log4net.ILog _logger;
 
 		public AbstractHandler()

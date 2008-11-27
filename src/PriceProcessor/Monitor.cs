@@ -65,7 +65,8 @@ namespace Inforoom.PriceProcessor
                     try
                     {
                         handler.StartWork();
-                    }
+						_logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
+					}
                     catch(Exception exHan)
                     {
 						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
@@ -90,8 +91,10 @@ namespace Inforoom.PriceProcessor
 				foreach (AbstractHandler handler in alHandlers)
                     try
                     {
-                        handler.StopWork();
-                    }
+						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
+						handler.StopWork();
+						_logger.InfoFormat("Обработчик {0} остановлен.", handler.GetType().Name);
+					}
                     catch (Exception exHan)
                     {
 						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);

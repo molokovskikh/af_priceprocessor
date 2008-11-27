@@ -169,6 +169,14 @@ namespace Inforoom.Formalizer
 			}
 		}
 
+		/// <summary>
+		/// вызываем метод Interrupt у нитки, если она находится в состоянии AbortRequested и WaitSleepJoin
+		/// </summary>
+		public void InterruptThread()
+		{
+			_thread.Interrupt();
+		}
+
 		public string TID
 		{
 			get
@@ -508,12 +516,13 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			_processState = PriceProcessState.Begin;
-			string workStr = String.Empty;
+			string _allWorkTimeString = String.Empty;
 			try
 			{
 				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
 				string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
-				TempPath = Path.GetTempPath() + Path.GetFileNameWithoutExtension(_processItem.FilePath) + "\\";
+				//Используем идентификатор нитки в качестве названия временной папки
+				TempPath = Path.GetTempPath() + TID + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')
 				TempFileName = TempPath + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
 				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
@@ -528,7 +537,15 @@ namespace Inforoom.Formalizer
 					mcLog.Connection = myconn;
 
 					//Создаем директорию для временного файла и копируем туда файл
-					Directory.CreateDirectory(TempPath);
+					if (!Directory.Exists(TempPath))
+						Directory.CreateDirectory(TempPath);
+					else
+					{
+						//удаляем предыдущие файлы из директории, если они не были удалены
+						string[] _tempFiles = Directory.GetFiles(TempPath);
+						foreach (string _tempDeleteFile in _tempFiles)
+							FileHelper.FileDelete(_tempDeleteFile);
+					}
 
 					_processState = PriceProcessState.CheckConnection;
 					CheckConnection(myconn);
@@ -562,7 +579,7 @@ namespace Inforoom.Formalizer
 					{
 						TimeSpan tsFormalize = DateTime.UtcNow.Subtract(tmFormalize);
 						formSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
-						workStr = tsFormalize.ToString();
+						_allWorkTimeString = tsFormalize.ToString();
 					}
 
 					_processState = PriceProcessState.FinalCopy;
@@ -662,16 +679,19 @@ namespace Inforoom.Formalizer
 			finally
 			{
 				_processState = PriceProcessState.FinalizeThread;
+				Thread.Sleep(10);
 				GC.Collect();
+				Thread.Sleep(100);
 				try
 				{
-					File.Delete(TempFileName);
+					if (File.Exists(TempFileName))
+						FileHelper.FileDelete(TempFileName);
 				}
 				catch(Exception e)
 				{
 					_logger.Error("Ошибка при удалении", e);
 				}
-				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, workStr);
+				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, _allWorkTimeString);
 				_formalizeEnd = true;
 			}
 		}

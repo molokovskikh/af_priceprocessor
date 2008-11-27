@@ -136,6 +136,8 @@ namespace Inforoom.Downloader
 		public override void StopWork()
 		{
 			tWork.Abort();
+			if (!tWork.Join(maxJoinTime))
+				_logger.ErrorFormat("–абоча€ нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 			if (cLog.State == System.Data.ConnectionState.Open)
 				try{ cLog.Close(); } catch{}
             if (cWork.State == System.Data.ConnectionState.Open)

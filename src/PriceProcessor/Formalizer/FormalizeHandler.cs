@@ -78,22 +78,57 @@ namespace Inforoom.PriceProcessor.Formalizer
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= FSEHOnCreate;
 			tWork.Abort();
+			if (!tWork.Join(maxJoinTime))
+				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 
 			Thread.Sleep(600);
 
 			_logger.Info("Попытка останова ниток");
 
+			//Сначала для всех ниток вызваем Abort,
 			for (int i = pt.Count - 1; i >= 0; i--)
-			{
 				//Если нитка работает, то останавливаем ее
 				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
 				{
-					_logger.InfoFormat("Попытка останова нитки {0}", (pt[i] as PriceProcessThread).TID);
 					(pt[i] as PriceProcessThread).AbortThread();
-					_logger.InfoFormat("Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
+					_logger.InfoFormat("Вызвали Abort() для нитки {0}", (pt[i] as PriceProcessThread).TID);
+				}
+
+			//а потом ждем их завершения
+			for (int i = pt.Count - 1; i >= 0; i--)
+			{
+				//Если нитка работает, то ожидаем ее останов
+				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
+				{
+					_logger.InfoFormat("Ожидаем останов нитки {0}", (pt[i] as PriceProcessThread).TID);
+					(pt[i] as PriceProcessThread).AbortThread();
+					int _currentWaitTime = 0;
+					while ((_currentWaitTime < maxJoinTime) && (((pt[i] as PriceProcessThread).ThreadState & ThreadState.Stopped) == 0))
+					{
+						if (((pt[i] as PriceProcessThread).ThreadState & ThreadState.WaitSleepJoin) > 0)
+							(pt[i] as PriceProcessThread).InterruptThread();
+						Thread.Sleep(1000);
+						_currentWaitTime += 1000;
+					}
+					if (((pt[i] as PriceProcessThread).ThreadState & ThreadState.Stopped) > 0)
+						_logger.InfoFormat("Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
+					else
+						_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", (pt[i] as PriceProcessThread).TID, maxJoinTime);
 				}
 			}
 
+			//удяляем пулл временных папок
+			string[] _poolDirectories = Directory.GetDirectories(Path.GetTempPath(), "PPT*");
+			foreach(string _deletingDirectory in _poolDirectories)
+				if (Directory.Exists(_deletingDirectory))
+					try
+					{
+						Directory.Delete(_deletingDirectory, true);
+					}
+					catch (Exception exception)
+					{
+						_logger.ErrorFormat("Не получилось удалить директорию {0}\r\n{1}", _deletingDirectory, exception);
+					}
 		}
 
 		/// <summary>
@@ -360,14 +395,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 				{
 					PriceProcessThread p = (pt[i] as PriceProcessThread);
 					//Если нитка не работает, то удаляем ее
-					if (p.FormalizeEnd || !p.ThreadIsAlive || (p.ThreadState == ThreadState.Stopped))
+					if (p.FormalizeEnd || !p.ThreadIsAlive || ((p.ThreadState & ThreadState.Stopped) > 0))
 					{
 						DeleteProcessThread(p);
 						pt.RemoveAt(i);
 					}
 					else
 						//Остановка нитки по сроку, если она работает дольше, чем можно
-						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && (p.ThreadState != System.Threading.ThreadState.AbortRequested))
+						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && ((p.ThreadState & System.Threading.ThreadState.AbortRequested) == 0))
 						{
 							_logger.InfoFormat(System.Globalization.CultureInfo.CurrentCulture,
 								"Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}", 
@@ -389,17 +424,23 @@ namespace Inforoom.PriceProcessor.Formalizer
 								pt.RemoveAt(i);
 							}
 							else
-							{
-								statisticMessage += String.Format(
-									"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ", 
-									Path.GetFileName(p.ProcessItem.FilePath), 
-									p.TID, 
-									p.ThreadIsAlive, 
-									p.StartDate.ToLocalTime(), 
-									p.ThreadState, 
-									p.FormalizeEnd, 
-									p.ProcessState);
-							}
+								if (((p.ThreadState & System.Threading.ThreadState.AbortRequested) > 0) && ((p.ThreadState & System.Threading.ThreadState.WaitSleepJoin) > 0))
+								{
+									_logger.InfoFormat("Вызвали прерывание для нитки {0}.", p.TID);
+									p.InterruptThread();
+								}
+								else
+								{
+									statisticMessage += String.Format(
+										"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ",
+										Path.GetFileName(p.ProcessItem.FilePath),
+										p.TID,
+										p.ThreadIsAlive,
+										p.StartDate.ToLocalTime(),
+										p.ThreadState,
+										p.FormalizeEnd,
+										p.ProcessState);
+								}
 				}
 
 				if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
