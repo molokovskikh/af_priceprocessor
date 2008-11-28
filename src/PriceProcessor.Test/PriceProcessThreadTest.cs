@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
+using log4net.Appender;
+using log4net.Config;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using System.Threading;
@@ -184,18 +186,18 @@ InnoDB Status            =
 						}
 						catch (Exception onTransaction)
 						{
+							_logger.Error("Ошибка в транзакции", onTransaction);
 							if (_brokenTransaction != null)
 								try
 								{
+									_logger.Info("Начало отката");
 									_brokenTransaction.Rollback();
+									_logger.Info("Откат завершен");
 								}
 								catch (Exception onRollback)
 								{
 									_logger.Error("Ошибка при откате", onRollback);
 								}
-
-							_logger.Error("Ошибка в транзакции", onTransaction);
-
 							throw;
 						}
 					}
@@ -219,11 +221,9 @@ InnoDB Status            =
 		[Test(Description = "в результате действий подвреждаем MySqlConnection, что в нем запросы перестают возвращать данные")]
 		public void CorruptConnectionTest()
 		{
-			log4net.Config.BasicConfigurator.Configure(
-				new log4net.Appender.FileAppender(
-					new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline"), 
-					"CorruptConnectionTest.log",
-					false));
+			BasicConfigurator.Configure(
+				new ConsoleAppender(
+					new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")));
 			ILog _logger = LogManager.GetLogger(typeof(PriceProcessThreadTest));
 
 			List<CorruptDBThread> _threads = new List<CorruptDBThread>();
