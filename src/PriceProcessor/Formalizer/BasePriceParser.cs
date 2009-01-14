@@ -1580,7 +1580,7 @@ and a.ProductId is null";
 				try
 				{
 					Open();
-					if (null != toughMask)
+					if ((dtPrice.Rows.Count > 0) && (null != toughMask))
 						toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
 				}
 				finally
@@ -1596,104 +1596,107 @@ and a.ProductId is null";
 
 					try
 					{
-						_logger.Debug("попытка открыть транзакцию");
-						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
-						_logger.Debug("транзакци€ открыта");
 
-						DateTime tmPrepare = DateTime.UtcNow;
-						try
+						if (dtPrice.Rows.Count > 0)
 						{
+							_logger.Debug("попытка открыть транзакцию");
+							myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+							_logger.Debug("транзакци€ открыта");
+
+							DateTime tmPrepare = DateTime.UtcNow;
 							try
 							{
-								Prepare();
+								try
+								{
+									Prepare();
+								}
+								finally
+								{
+									myTrans.Commit();
+								}
 							}
 							finally
 							{
-								myTrans.Commit();
+								_logger.InfoFormat("Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
 							}
-						}
-						finally
-						{
-							_logger.InfoFormat("Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
-						}
 
-
-						DateTime tmFormalize = DateTime.UtcNow;
-						try
-						{
-							UnrecExpStatus st;
-							string PosName = String.Empty;
-							bool Junk = false;
-							int costCount;
-							long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
-							string strCode, strName1, strOriginalName, strFirmCr;
-							do
+							DateTime tmFormalize = DateTime.UtcNow;
+							try
 							{
-								st = UnrecExpStatus.NOT_FORM;
-								PosName = GetFieldValue(PriceFields.Name1, true);
-
-								if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
+								UnrecExpStatus st;
+								string PosName = String.Empty;
+								bool Junk = false;
+								int costCount;
+								long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
+								string strCode, strName1, strOriginalName, strFirmCr;
+								do
 								{
-									if (priceType != Settings.Default.ASSORT_FLG)
+									st = UnrecExpStatus.NOT_FORM;
+									PosName = GetFieldValue(PriceFields.Name1, true);
+
+									if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
 									{
-										costCount = ProcessCosts();
-										object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
-										//ѕроизводим проверку дл€ мультиколоночных прайсов
-										if (costType == CostTypes.MultiColumn)
+										if (priceType != Settings.Default.ASSORT_FLG)
 										{
-											//≈сли кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-											//или если количество определенно и оно равно 0
-											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+											costCount = ProcessCosts();
+											object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
+											//ѕроизводим проверку дл€ мультиколоночных прайсов
+											if (costType == CostTypes.MultiColumn)
 											{
-												InsertToZero();
-												continue;
+												//≈сли кол-во ненулевых цен = 0, то тогда производим вставку в Zero
+												//или если количество определенно и оно равно 0
+												if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+												{
+													InsertToZero();
+													continue;
+												}
+											}
+											else
+											{
+												//Ёта проверка дл€ всех остальных
+												//≈сли кол-во ненулевых цен = 0
+												//или если количество определенно и оно равно 0
+												if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+												{
+													InsertToZero();
+													continue;
+												}
 											}
 										}
+
+										strCode = GetFieldValue(PriceFields.Code);
+										strName1 = GetFieldValue(PriceFields.Name1, true);
+										strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
+
+										if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
+											st = UnrecExpStatus.NAME_FORM;
+
+										strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
+										if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
+											st = st | UnrecExpStatus.FIRM_FORM;
+
+										st = st | UnrecExpStatus.CURR_FORM;
+
+										if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
+											InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 										else
-										{
-											//Ёта проверка дл€ всех остальных
-											//≈сли кол-во ненулевых цен = 0
-											//или если количество определенно и оно равно 0
-											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-											{
-												InsertToZero();
-												continue;
-											}
-										}
+											unformCount++;
+
+										if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
+											InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+
 									}
-
-									strCode = GetFieldValue(PriceFields.Code);
-									strName1 = GetFieldValue(PriceFields.Name1, true);
-									strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
-
-									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
-										st = UnrecExpStatus.NAME_FORM;
-
-									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
-									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
-										st = st | UnrecExpStatus.FIRM_FORM;
-
-									st = st | UnrecExpStatus.CURR_FORM;
-
-									if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-										InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 									else
-										unformCount++;
-
-									if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-										InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+										if ((null != PosName) && (String.Empty != PosName.Trim()))
+											InsertIntoForb(PosName);
 
 								}
-								else
-									if ((null != PosName) && (String.Empty != PosName.Trim()))
-										InsertIntoForb(PosName);
-
+								while (Next());
 							}
-							while (Next());
-						}
-						finally
-						{
-							_logger.InfoFormat("Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize));
+							finally
+							{
+								_logger.InfoFormat("Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize));
+							}
 						}
 
 						DateTime tmFinalize = DateTime.UtcNow;
