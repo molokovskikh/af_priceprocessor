@@ -78,7 +78,7 @@ and pd.PriceCode = pc.PriceCode",
 			var isSeasoned = DateTime.UtcNow.Subtract(CreateTime).TotalSeconds > 5;
 			if (!isSeasoned)
 				return false;
-			return !processList.Select(t => t.ProcessItem).All(IsSynonymEqual);
+			return !processList.Select(t => t.ProcessItem).Where(i => i != this).All(IsSynonymEqual);
 		}
 
 		public bool IsSynonymEqual(PriceProcessItem item)

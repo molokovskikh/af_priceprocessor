@@ -1,4 +1,6 @@
-﻿using Inforoom.PriceProcessor;
+﻿using System.Collections.Generic;
+using Inforoom.Formalizer;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 
@@ -21,6 +23,14 @@ namespace PriceProcessor.Test
 
 			Assert.That(new PriceProcessItem(false, 1, 1, 1, "", null)
 			            	.IsSynonymEqual(new PriceProcessItem(false, 2, 2, 2, "", null)), Is.False);
+		}
+
+		[Test]
+		public void IsReadyForProcessing()
+		{
+			var item = new PriceProcessItem(false, 1, 1, 1, "", 1);
+			var processing = new List<PriceProcessThread> { new PriceProcessThread(item, "") };
+			Assert.That(item.IsReadyForProcessing(processing), Is.False);
 		}
 	}
 }
