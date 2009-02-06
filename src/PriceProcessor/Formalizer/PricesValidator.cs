@@ -20,39 +20,7 @@ namespace Inforoom.Formalizer
 			Type[] types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, ParserClassName);
 			if (types.Length == 1)
 				return types[0];
-			else
-				return null;
-		}
-
-		public static void CheckPriceItemId(string FileName, out ulong? PriceCode, out ulong? CostCode, out ulong? PriceItemId)
-		{
-			DataRow drPriceItem = MySqlHelper.ExecuteDataRow(
-				ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
-				@"
-select
-  pc.PriceCode as PriceCode,
-  if(pd.CostType = 1, pc.CostCode, null) CostCode,
-  pc.PriceItemId
-from
-  usersettings.pricescosts pc,
-  usersettings.pricesdata pd
-where
-    pc.PriceItemId = ?FileName
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and pd.PriceCode = pc.PriceCode",
-				new MySqlParameter("?FileName", FileName));
-			if (drPriceItem != null)
-			{
-				PriceCode = Convert.ToUInt64(drPriceItem["PriceCode"]);
-				CostCode = (drPriceItem["CostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["CostCode"]);
-				PriceItemId = Convert.ToUInt64(drPriceItem["PriceItemId"]);
-			}
-			else
-			{
-				PriceCode = null;
-				CostCode = null;
-				PriceItemId = null;
-			}
+			return null;
 		}
 
 		/// <summary>
@@ -62,8 +30,8 @@ and pd.PriceCode = pc.PriceCode",
 		/// <returns></returns>
 		public static BasePriceParser Validate(MySqlConnection myconn, string FileName, string TempFileName, PriceProcessItem item)
 		{
-			string ShortFileName = Path.GetFileName(FileName);
-			string TestQuery = String.Format(
+			var ShortFileName = Path.GetFileName(FileName);
+			var TestQuery = String.Format(
 @"
 select
   pi.Id as PriceItemId,
@@ -102,13 +70,13 @@ and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
 and pricefmts.ID = PFR.PriceFormatId",
 							  item.PriceItemId);
 
-			DataTable dtFormRules = new DataTable("FromRules");
+			var dtFormRules = new DataTable("FromRules");
 			myconn.Open();
-			MySqlDataAdapter daFormRules = new MySqlDataAdapter(TestQuery, myconn);
+			var daFormRules = new MySqlDataAdapter(TestQuery, myconn);
 			daFormRules.Fill(dtFormRules);
 			if ( dtFormRules.Rows.Count > 0 )
 			{	
-				string CurrentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
+				var CurrentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
 
 				#region Копирование файла
 				//Здесь будем производить копирование файла
@@ -147,42 +115,34 @@ and pricefmts.ID = PFR.PriceFormatId",
 					//Проверяем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
 					if (!dtFormRules.Rows[0].IsNull(FormRules.colCostType) && Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType])))
 					{
-						Type parserClass = GetParserClassName(CurrentParserClassName);
+						var parserClass = GetParserClassName(CurrentParserClassName);
 
 						if (parserClass != null)
 						{
 							return (BasePriceParser)Activator.CreateInstance(parserClass, new object[] { FileName, myconn, dtFormRules });
 						}
-						else
-							throw new WarningFormalizeException(
-								String.Format(Settings.Default.UnknownPriceFMTError, CurrentParserClassName),
-								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
-								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-								(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-								(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
-
-					}
-					else
 						throw new WarningFormalizeException(
-							String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
+							String.Format(Settings.Default.UnknownPriceFMTError, CurrentParserClassName),
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 							(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
 							(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
-				}
-				else
-				{
+					}
 					throw new WarningFormalizeException(
-						Settings.Default.DisableByFirmStatusError,
+						String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
 						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
 						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 						(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
 						(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
 				}
-
+				throw new WarningFormalizeException(
+					Settings.Default.DisableByFirmStatusError,
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
+					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
+					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
 			}
-			else
-				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, ShortFileName));
+			throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, ShortFileName));
 		}
 	}
 }

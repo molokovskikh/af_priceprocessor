@@ -70,14 +70,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 			FSW.EnableRaisingEvents = true;
 
 			Ping();
-			tWork.Start();
+			base.StartWork();
 		}
 
 		public override void StopWork()
 		{
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= FSEHOnCreate;
-			tWork.Abort();
+
+			base.StopWork();
 
 			Thread.Sleep(600);
 
@@ -143,11 +144,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 			//Если файл имеет префикс "d", то значит он был закачан, поэтому он уже в очереди на обработку
 			if (!Path.GetFileName(priceFile).StartsWith("d", StringComparison.OrdinalIgnoreCase))
 			{
-				ulong? priceCode, costCode, priceItemId;
-				PricesValidator.CheckPriceItemId(Path.GetFileNameWithoutExtension(priceFile), out priceCode, out costCode, out priceItemId);
-				if (priceCode.HasValue)
+				var item = PriceProcessItem.TryToLoadPriceProcessItem(priceFile);
+				if (item != null)
 				{
-					PriceProcessItem item = new PriceProcessItem(false, priceCode.Value, costCode, priceItemId.Value, priceFile);
 					if (!PriceItemList.AddItem(item))
 					{
 						//todo: здесь не понятно, что надо делать, т.к. прайс-лист не добавили по причине скаченного нового. Сейчас удаляю
@@ -298,12 +297,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 		}
 
-		private void ProcessItemList(List<PriceProcessItem> ProcessList)
+		private void ProcessItemList(IList<PriceProcessItem> processList)
 		{
 			int j = 0;
-			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < ProcessList.Count))
+			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < processList.Count))
 			{
-				PriceProcessItem item = ProcessList[j];
+				PriceProcessItem item = processList[j];
 
 				//не запущен ли он уже в работу?
 				if (!PriceProcessExist(item))
@@ -312,7 +311,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					if (File.Exists(item.FilePath))
 					{
 						//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
-						if (DateTime.UtcNow.Subtract(item.CreateTime).TotalSeconds > 5)
+						if (item.IsReadyForProcessing(pt))
 						{
 							_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
 							FileHashItem hashItem;
@@ -336,9 +335,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 					else
 					{
 						//удаляем элемент из списка
-						ProcessList.Remove(item);
+						processList.Remove(item);
 						//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
-						if (ProcessList != PriceItemList.list)
+						if (processList != PriceItemList.list)
 							PriceItemList.list.Remove(item);
 					}
 				}

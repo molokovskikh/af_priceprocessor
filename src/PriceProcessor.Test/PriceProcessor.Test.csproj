@@ -72,6 +72,7 @@
     <Compile Include="FormalizeHandlerFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
+    <Compile Include="PriceProcessItemFixture.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />

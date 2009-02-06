@@ -18,12 +18,11 @@ namespace Inforoom.Downloader
 	class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private InboundDocumentType[] _documentTypes;
-		private InboundDocumentType _currentType = null;
+		private InboundDocumentType _currentType;
 
 		public WaybillLANSourceHandler()
-			: base()
 		{
-			this.sourceType = "WAYBILLLAN";
+			sourceType = "WAYBILLLAN";
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
 		}
 
@@ -106,7 +105,7 @@ and st.SourceID = 4";
 												String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
 												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
 													drLanSource[WaybillSourcesTable.colFirmCode],
-													drLanSource[SourcesTable.colShortName],
+													drLanSource[SourcesTableColumns.colShortName],
 													_currentType.GetType().Name,
 													DateTime.Now,
 													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs.")))

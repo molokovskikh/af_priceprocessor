@@ -4,6 +4,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.PriceProcessor
 {
@@ -24,6 +25,15 @@ namespace Inforoom.PriceProcessor
 			log4net.Util.SystemInfo.NullText = null;
 
 #if DEBUG
+			InitDirs(new[]
+			         	{
+			         		Settings.Default.BasePath,
+			         		Settings.Default.ErrorFilesPath,
+			         		Settings.Default.InboundPath,
+			         		Settings.Default.TempPath,
+			         		Settings.Default.HistoryPath
+			         	});
+
 			Monitor monitor = new Monitor();
 			monitor.Start();
 			MessageBox.Show("Для остановки нажмите Ok...", "PriceProcessor");
@@ -37,6 +47,15 @@ namespace Inforoom.PriceProcessor
 			};
 			ServiceBase.Run(ServicesToRun);
 #endif
+		}
+
+		public static void InitDirs(IEnumerable<string> dirs)
+		{
+			foreach (var dir in dirs)
+			{
+				if (!Directory.Exists(dir))
+					Directory.CreateDirectory(dir);
+			}
 		}
 	}
 }

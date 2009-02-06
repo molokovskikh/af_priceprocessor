@@ -29,6 +29,7 @@ SELECT
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) as DPriceName,
   pim.Id as DPriceItemId,
   pd.PriceCode as DPriceCode,
+  pd.ParentSynonym,
   if(pd.CostType = 1, pc.CostCode, null) DCostCode,
   st.Type as DSourceType,
   s.PricePath as DPricePath,
@@ -98,7 +99,9 @@ and logs.Rowid = ?DownLogId",
 							true, 
 							Convert.ToUInt64(drFocused["DPriceCode"].ToString()), 
 							(drFocused["DCostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
-							Convert.ToUInt64(drFocused["DPriceItemId"].ToString()), destinationFile);
+							Convert.ToUInt64(drFocused["DPriceItemId"].ToString()), 
+							destinationFile,
+							(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 						item.FileTime = DateTime.Now;
 						PriceItemList.AddItem(item);
 

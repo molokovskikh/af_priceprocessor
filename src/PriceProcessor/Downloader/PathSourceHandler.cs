@@ -1,26 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using System.IO;
-using Inforoom.Formalizer;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
 {
-    public abstract class PathSourceHandler : BaseSourceHandler
+    public abstract class PathSourceHandler : BasePriceSourceHandler
     {
-        public PathSourceHandler()
-            : base()
-        { 
-        }
-
-		protected DateTime GetPriceDateTime()
+    	protected DateTime GetPriceDateTime()
 		{
-			DateTime d = (dtSources.Rows[0][SourcesTable.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTable.colPriceDate];
-			PriceProcessItem item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]));
+			DateTime d = (dtSources.Rows[0][SourcesTableColumns.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTableColumns.colPriceDate];
+			PriceProcessItem item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]));
 			if (item != null)
 				d = item.FileTime.Value;
 			return d;
@@ -101,9 +92,9 @@ namespace Inforoom.Downloader
                         foreach (DataRow drS in drLS)
                         {
                             if (Error == String.Empty)
-                                Error += drS[SourcesTable.colPriceCode].ToString();
+                                Error += drS[SourcesTableColumns.colPriceCode].ToString();
                             else
-                                Error += ", " + drS[SourcesTable.colPriceCode].ToString();
+                                Error += ", " + drS[SourcesTableColumns.colPriceCode].ToString();
                             try
                             {
                                 drS.Delete();
@@ -114,7 +105,7 @@ namespace Inforoom.Downloader
                     }
                     else
                     {
-                        Error = String.Format("»сточник : {0}", dtSources.Rows[0][SourcesTable.colPriceCode]);
+                        Error = String.Format("»сточник : {0}", dtSources.Rows[0][SourcesTableColumns.colPriceCode]);
                         try
                         {
                             dtSources.Rows[0].Delete();
@@ -132,51 +123,25 @@ namespace Inforoom.Downloader
             }
         }
 
-		private void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		protected override void CopyToHistory(UInt64 PriceID)
 		{
-			ulong PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
-			if (PriceID != 0)
-			{
-				CopyToHistory(PriceID, CurrFileName);
-				//≈сли все сложилось, то копируем файл в Inbound
-				if (resultCode == DownPriceResultCode.SuccessDownload)
-				{
-					string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId.ToString() + "_" + PriceID.ToString() + GetExt();
-					try
-					{
-						if (File.Exists(NormalName))
-							File.Delete(NormalName);
-						File.Copy(ExtrFileName, NormalName);
-						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
-						//устанавливаем врем€ загрузки файла
-						item.FileTime = CurrPriceDate;
-						PriceItemList.AddItem(item);
-						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
-					}
-					catch (Exception ex)
-					{
-						//todo: по идее здесь не должно возникнуть ошибок, но на вс€кий случай логируем, возможно надо включить логирование письмом
-						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-							_logger.ErrorFormat("Ќе удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
-					}
-				}
-			}
-			else
-				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
-		}
-
-		void CopyToHistory(UInt64 PriceID, string SavedFile)
-		{
-			string HistoryFileName = DownHistoryPath + PriceID.ToString() + Path.GetExtension(SavedFile);
+			var HistoryFileName = DownHistoryPath + PriceID + Path.GetExtension(CurrFileName);
 			try
 			{
-				File.Copy(SavedFile, HistoryFileName);
+				File.Copy(CurrFileName, HistoryFileName);
 			}
 			catch { }
 		}
 
-        protected void CopyStreams(Stream input, Stream output)
+		protected override PriceProcessItem CreatePriceProcessItem(string normalName)
+		{
+			var item = base.CreatePriceProcessItem(normalName);
+			//устанавливаем врем€ загрузки файла
+			item.FileTime = CurrPriceDate;
+			return item;
+		}
+
+    	protected void CopyStreams(Stream input, Stream output)
         {
             const int size = 4096;
             byte[] bytes = new byte[4096];
