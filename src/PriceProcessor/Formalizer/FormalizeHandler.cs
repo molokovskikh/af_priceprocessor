@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Net.Mail;
@@ -69,7 +70,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 			FSW.Created += FSEHOnCreate;
 			FSW.EnableRaisingEvents = true;
 
-			Ping();
 			base.StartWork();
 		}
 
@@ -299,50 +299,42 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		private void ProcessItemList(IList<PriceProcessItem> processList)
 		{
+			processList
+				.Where(i => !File.Exists(i.FilePath))
+				.ToList()
+				.ForEach(i => {
+					//удаляем элемент из списка
+					processList.Remove(i);
+					//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
+					if (processList != PriceItemList.list)
+						PriceItemList.list.Remove(i);
+				});
+
 			int j = 0;
 			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < processList.Count))
 			{
 				PriceProcessItem item = processList[j];
-
-				//не запущен ли он уже в работу?
-				if (!PriceProcessExist(item))
+								
+				if (item.IsReadyForProcessing(pt))
 				{
-					//существует ли файл на диске?
-					if (File.Exists(item.FilePath))
-					{
-						//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
-						if (item.IsReadyForProcessing(pt))
-						{
-							_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
-							FileHashItem hashItem;
-							if (htEMessages.Contains(item.FilePath))
-								hashItem = (FileHashItem)htEMessages[item.FilePath];
-							else
-							{
-								hashItem = new FileHashItem();
-								htEMessages.Add(item.FilePath, hashItem);
-							}
-							pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
-							//если значение не было установлено, то скорей всего не было ниток на формализацию, 
-							//поэтому устанавливаем время последней удачной формализации как текущее время
-							if (!_lastFormalizationDate.HasValue)
-								_lastFormalizationDate = DateTime.UtcNow;
-							_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
-
-							j++;
-						}
-					}
+					_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
+					FileHashItem hashItem;
+					if (htEMessages.Contains(item.FilePath))
+						hashItem = (FileHashItem)htEMessages[item.FilePath];
 					else
 					{
-						//удаляем элемент из списка
-						processList.Remove(item);
-						//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
-						if (processList != PriceItemList.list)
-							PriceItemList.list.Remove(item);
+						hashItem = new FileHashItem();
+						htEMessages.Add(item.FilePath, hashItem);
 					}
+					pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
+					//если значение не было установлено, то скорей всего не было ниток на формализацию, 
+					//поэтому устанавливаем время последней удачной формализации как текущее время
+					if (!_lastFormalizationDate.HasValue)
+						_lastFormalizationDate = DateTime.UtcNow;
+					_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
 				}
-				else
-					j++;
+
+				j++;
 			}
 		}
 

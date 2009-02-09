@@ -181,7 +181,6 @@ namespace Inforoom.Downloader
 		//Запуск обработчика
 		public override void StartWork()
 		{
-            Ping();
 			CreateDirectoryPath();
             CreateLogConnection();
             CreateWorkConnection();

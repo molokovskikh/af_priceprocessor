@@ -46,7 +46,6 @@ namespace Inforoom.PriceProcessor
 
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
 		{
-			filename = Path.GetFileNameWithoutExtension(filename);
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
 				ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
 @"select
@@ -61,7 +60,7 @@ where
     pc.PriceItemId = ?FileName
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
 and pd.PriceCode = pc.PriceCode",
-				new MySqlParameter("?FileName", filename));
+				new MySqlParameter("?FileName", Path.GetFileNameWithoutExtension(filename)));
 			if (drPriceItem != null)
 			{
 				var priceCode = Convert.ToUInt64(drPriceItem["PriceCode"]);
@@ -75,9 +74,20 @@ and pd.PriceCode = pc.PriceCode",
 
 		public bool IsReadyForProcessing(IEnumerable<PriceProcessThread> processList)
 		{
+			//Если разница между временем создания элемента в PriceItemList и текущим временем больше 5 секунд, то берем файл в обработку
 			var isSeasoned = DateTime.UtcNow.Subtract(CreateTime).TotalSeconds > 5;
 			if (!isSeasoned)
 				return false;
+
+			if (processList.Count() == 0)
+				return true;
+
+			//не запущен ли он уже в работу?
+			var isProcessing = processList.Any(thread => thread.ProcessItem == this);
+			if (isProcessing)
+				return false;
+
+			//Не формализуется ли прайс-лист с такими же синонимами?
 			return !processList.Select(t => t.ProcessItem).Where(i => i != this).All(IsSynonymEqual);
 		}
 

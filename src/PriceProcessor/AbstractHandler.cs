@@ -51,6 +51,7 @@ namespace Inforoom.PriceProcessor
 		public virtual void StartWork()
 		{
 			tWork.Start();
+			Ping();
 		}
 
 		public virtual void StopWork()
