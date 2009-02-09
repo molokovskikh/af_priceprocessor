@@ -1379,36 +1379,29 @@ where
 
 						try
 						{
-							MySqlCommand mcClear = new MySqlCommand();
-							mcClear.Connection = MyConn;
-							mcClear.Transaction = myTrans;
-							mcClear.CommandTimeout = 0;
-
-							mcClear.Parameters.Clear();
+							var mcClear = new MySqlCommand
+							              	{
+							              		Connection = MyConn,
+							              		Transaction = myTrans,
+							              		CommandTimeout = 0
+							              	};
 
 							//Производим данные действия, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
 							if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
 							{
 								if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
 								{
-									mcClear.CommandText = String.Format(@"
-delete
-  farm.Core0
-from
-  farm.CoreCosts,
-  farm.Core0
-where
-    CoreCosts.Core_Id = Core0.Id
-and Core0.PriceCode = {0}
-and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
-									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
+									mcClear.CommandText = String.Format("delete from farm.CoreCosts where pc_costcode = {0}", costCode);
+									sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
+									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
+									sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
 								}
 								else
 								{
 									if (priceType != Settings.Default.ASSORT_FLG)
 									{
 										//Удаляем цены из CoreCosts
-										System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
+										var sbDelCoreCosts = new System.Text.StringBuilder();
 										sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
 										bool FirstInsertCoreCosts = true;
 										foreach (CoreCost c in currentCoreCosts)
