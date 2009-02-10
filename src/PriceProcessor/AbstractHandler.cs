@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Inforoom.PriceProcessor.Properties;
 using System.Threading;
 using System.Net.Mail;
@@ -11,7 +12,7 @@ namespace Inforoom.PriceProcessor
 		/// <summary>
 		/// Ссылка на рабочую нитку
 		/// </summary>
-		private Thread tWork;
+		protected Thread tWork;
 
 		/// <summary>
 		/// Время "застоя" нитки
@@ -29,11 +30,11 @@ namespace Inforoom.PriceProcessor
 
 		public AbstractHandler()
 		{
-			_logger = log4net.LogManager.GetLogger(GetType());
+			_logger = log4net.LogManager.GetLogger(this.GetType());
 
 			knowErrors = new List<string>();
 
-			tWork = new Thread(ThreadWork);
+			tWork = new Thread(new ThreadStart(ThreadWork));
 			SleepTime = Settings.Default.HandlerRequestInterval;
 		}
 
@@ -122,13 +123,13 @@ namespace Inforoom.PriceProcessor
 			if (!knowErrors.Contains(Addition))
 				try
 				{
-					using (var mm = new MailMessage(
+					using (MailMessage mm = new MailMessage(
 						Settings.Default.ServiceMail, 
 						Settings.Default.ServiceMail,
 						"Ошибка в PriceProcessor",
 						String.Format("Обработчик : {0}\n{1}", this.GetType().Name, Addition)))
 					{
-						var sc = new SmtpClient(Settings.Default.SMTPHost);
+						SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
 						sc.Send(mm);
 					}
 					knowErrors.Add(Addition);
