@@ -53,9 +53,16 @@ namespace Inforoom.PriceProcessor
 		}
 
 		//Запуск обработчика
-		public abstract void StartWork();
+		public virtual void StartWork()
+		{
+			tWork.Start();
+			Ping();
+		}
 
-		public abstract void StopWork();
+		public virtual void StopWork()
+		{
+			tWork.Abort();
+		}
 
 		protected virtual void Ping()
 		{

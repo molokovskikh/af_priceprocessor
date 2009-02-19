@@ -8,7 +8,7 @@ using NUnit.Framework.SyntaxHelpers;
 namespace PriceProcessor.Test
 {
 	[TestFixture]
-	public class PriceItemListTest	
+	public class PriceItemListTest
 	{
 
 		[SetUp]
@@ -20,10 +20,10 @@ namespace PriceProcessor.Test
 		[Test]
 		public void SortListTest()
 		{
-			PriceProcessItem a = new PriceProcessItem(true, 1, 1, 1, "test.txt");
+			PriceProcessItem a = new PriceProcessItem(true, 1, 1, 1, "test.txt", null);
 			a.FileTime = DateTime.Now.AddHours(-1);
 			PriceItemList.AddItem(a);
-			PriceProcessItem b = new PriceProcessItem(true, 1, 1, 1, "test.txt");
+			PriceProcessItem b = new PriceProcessItem(true, 1, 1, 1, "test.txt", null);
 			b.FileTime = DateTime.Now;
 			PriceItemList.AddItem(b);
 			PriceProcessItem c = PriceItemList.GetLastestDownloaded(1);
@@ -39,18 +39,18 @@ namespace PriceProcessor.Test
 		[Test]
 		public void FindAllInListTest()
 		{
-			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt");
+			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt", null);
 			item1.FileTime = DateTime.Now;
-			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt");
+			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt", null);
 			item2.FileTime = DateTime.Now;
-			PriceProcessItem item3 = new PriceProcessItem(true, 3, 3, 3, "test3.txt");
+			PriceProcessItem item3 = new PriceProcessItem(true, 3, 3, 3, "test3.txt", null);
 			item3.FileTime = DateTime.Now;
 			PriceItemList.AddItem(item1);
-			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt"));
+			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt", null));
 			PriceItemList.AddItem(item2);
-			PriceItemList.AddItem(new PriceProcessItem(false, 5, 5, 5, "test5.txt"));
+			PriceItemList.AddItem(new PriceProcessItem(false, 5, 5, 5, "test5.txt", null));
 			PriceItemList.AddItem(item3);
-			PriceItemList.AddItem(new PriceProcessItem(false, 6, 6, 6, "test6.txt"));
+			PriceItemList.AddItem(new PriceProcessItem(false, 6, 6, 6, "test6.txt", null));
 			List<PriceProcessItem> findAllDownloadedList = PriceItemList.GetDownloadedItemList();
 			Assert.AreEqual(item1, findAllDownloadedList[0], "Элемент с индексом 0 выбран некорректно.");
 			Assert.AreEqual(item2, findAllDownloadedList[1], "Элемент с индексом 1 выбран некорректно.");
@@ -60,12 +60,12 @@ namespace PriceProcessor.Test
 		[Test]
 		public void DeleteFormChildListTest()
 		{
-			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt");
+			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt", null);
 			item1.FileTime = DateTime.Now;
-			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt");
+			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt", null);
 			item2.FileTime = DateTime.Now;
 			PriceItemList.AddItem(item1);
-			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt"));
+			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt", null));
 			PriceItemList.AddItem(item2);
 			List<PriceProcessItem> findAllDownloadedList = PriceItemList.GetDownloadedItemList();
 			findAllDownloadedList.Remove(item1);
@@ -77,12 +77,12 @@ namespace PriceProcessor.Test
 		[Test]
 		public void CompareListsTest()
 		{
-			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt");
+			PriceProcessItem item1 = new PriceProcessItem(true, 1, 1, 1, "test1.txt", null);
 			item1.FileTime = DateTime.Now;
-			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt");
+			PriceProcessItem item2 = new PriceProcessItem(true, 2, 2, 2, "test2.txt", null);
 			item2.FileTime = DateTime.Now;
 			PriceItemList.AddItem(item1);
-			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt"));
+			PriceItemList.AddItem(new PriceProcessItem(false, 4, 4, 4, "test4.txt", null));
 			PriceItemList.AddItem(item2);
 			List<PriceProcessItem> findAllDownloadedList = PriceItemList.GetDownloadedItemList();
 			Assert.AreEqual(true, findAllDownloadedList != PriceItemList.list, "Список загруженных прайс-листов равен списку всех прайс-листов");

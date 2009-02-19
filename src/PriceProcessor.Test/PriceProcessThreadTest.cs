@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
 using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using System.Threading;
 using MySql.Data.MySqlClient;
 using System.Configuration;
@@ -22,8 +19,8 @@ namespace PriceProcessor.Test
 		[Test(Description = "тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
-			PriceProcessItem _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf");
-			PriceProcessThread _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
+			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
+			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
 			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive)
 			{
 				Thread.Sleep(500);

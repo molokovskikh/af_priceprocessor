@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Data;
 using Inforoom.PriceProcessor.Properties;
@@ -11,9 +10,8 @@ namespace Inforoom.Downloader
     public class LANSourceHandler : PathSourceHandler
     {
         public LANSourceHandler()
-            : base()
         {
-			this.sourceType = "LAN";
+			sourceType = "LAN";
 		}
 
         protected override void GetFileFromSource()
@@ -21,15 +19,15 @@ namespace Inforoom.Downloader
             CurrFileName = String.Empty;
             try
             {
-				string PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTable.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
-                string[] ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTable.colPriceMask].ToString());
+				var PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTableColumns.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
+                var ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTableColumns.colPriceMask].ToString());
 
 				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
-				SortedList<DateTime, string> sortedFileList = new SortedList<DateTime, string>();
+				var sortedFileList = new SortedList<DateTime, string>();
 
-				foreach (string fs in ff)
+				foreach (var fs in ff)
 				{
-					DateTime fileLastWriteTime = File.GetLastWriteTime(fs);
+					var fileLastWriteTime = File.GetLastWriteTime(fs);
 					if (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
 						try
 						{
@@ -60,27 +58,25 @@ namespace Inforoom.Downloader
 					}
 					catch (Exception ex)
 					{
-						Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+						Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
 					}
 				}
             }
             catch(Exception exDir)
             {
-				Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTable.colPriceItemId]), String.Format("Не удалось получить список файлов : {0}", exDir));
+				Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]), String.Format("Не удалось получить список файлов : {0}", exDir));
             }
         }
 
         protected override DataRow[] GetLikeSources()
         {
-			if (dtSources.Rows[0][SourcesTable.colPriceMask] is DBNull)
+        	if (dtSources.Rows[0][SourcesTableColumns.colPriceMask] is DBNull)
 				return dtSources.Select(String.Format("({0} = {1}) and ({2} is null)",
-					SourcesTable.colFirmCode, dtSources.Rows[0][SourcesTable.colFirmCode],
-					SourcesTable.colPriceMask));
-			else
-				return dtSources.Select(String.Format("({0} = {1}) and ({2} = '{3}')",
-					SourcesTable.colFirmCode, dtSources.Rows[0][SourcesTable.colFirmCode],
-					SourcesTable.colPriceMask, dtSources.Rows[0][SourcesTable.colPriceMask]));
+					SourcesTableColumns.colFirmCode, dtSources.Rows[0][SourcesTableColumns.colFirmCode],
+					SourcesTableColumns.colPriceMask));
+        	return dtSources.Select(String.Format("({0} = {1}) and ({2} = '{3}')",
+        	                                      SourcesTableColumns.colFirmCode, dtSources.Rows[0][SourcesTableColumns.colFirmCode],
+        	                                      SourcesTableColumns.colPriceMask, dtSources.Rows[0][SourcesTableColumns.colPriceMask]));
         }
-
     }
 }

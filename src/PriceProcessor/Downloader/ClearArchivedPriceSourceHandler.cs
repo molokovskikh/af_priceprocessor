@@ -1,41 +1,40 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using Inforoom.Common;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
-using System.Threading;
 
 namespace Inforoom.Downloader
 {
-	class ClearArchivedPriceSourceHandler : BaseSourceHandler
+	public class ClearArchivedPriceSourceHandler : AbstractHandler
 	{
 		//Время последнего сканирования каталога
 		private DateTime lastScan;
+		private readonly string _downHistoryPath = FileHelper.NormalizeDir(Settings.Default.HistoryPath);
 
 		public ClearArchivedPriceSourceHandler()
-            : base()
-        {
+		{
 			lastScan = DateTime.MinValue;
         }
 
 		protected override void ProcessData()
 		{
 			//Сканируем через некоторое время
-			if (DateTime.Now.Subtract(lastScan).TotalHours > Settings.Default.ClearScanInterval)
+			if (DateTime.Now.Subtract(lastScan).TotalHours <= Settings.Default.ClearScanInterval) 
+				return;
+
+			var archivedPrices = Directory.GetFiles(_downHistoryPath);
+
+			foreach (var priceFile in archivedPrices)
 			{
-				string[] archivedPrices = Directory.GetFiles(DownHistoryPath);
+				var fileLastWrite = File.GetLastWriteTime(priceFile);
 
-				foreach (string priceFile in archivedPrices)
-				{
-					DateTime fileLastWrite = File.GetLastWriteTime(priceFile);
-
-					//Если разность в днях больше чем в настройки, то файл удяляем
-					if (DateTime.Now.Subtract(fileLastWrite).TotalDays > Settings.Default.DepthOfStorageArchivePrices)
-						File.Delete(priceFile);
-				}
-
-				lastScan = DateTime.Now;
+				//Если разность в днях больше чем в настройки, то файл удяляем
+				if (DateTime.Now.Subtract(fileLastWrite).TotalDays > Settings.Default.DepthOfStorageArchivePrices)
+					File.Delete(priceFile);
 			}
+
+			lastScan = DateTime.Now;
 		}
 
 	}

@@ -1,6 +1,4 @@
 using System;
-using System.Threading;
-using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using System.IO;
@@ -15,7 +13,7 @@ using Inforoom.PriceProcessor;
 namespace Inforoom.Downloader
 {
     //Класс содержит название полей из таблицы Sources
-    public sealed class SourcesTable
+    public sealed class SourcesTableColumns
     {
         public static string colFirmCode = "FirmCode";
         public static string colPriceCode = "PriceCode";
@@ -24,7 +22,7 @@ namespace Inforoom.Downloader
 		public static string colShortName = "ShortName";
         public static string colPriceName = "PriceName";
         public static string colRegionName = "RegionName";
-
+		public const string ParentSynonym = "ParentSynonym";
 		public static string colFileExtention = "FileExtention";
 
 		public static string colPriceDate = "PriceDate";
@@ -64,6 +62,62 @@ namespace Inforoom.Downloader
 		ErrorDownload = 5
 	}
 
+
+	/// <summary>
+	/// Добавляет педоты для работы с PriceProcessItem
+	/// </summary>
+	public abstract class BasePriceSourceHandler : BaseSourceHandler
+	{
+		protected void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		{
+			var PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
+			if (PriceID == 0)
+				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
+
+			CopyToHistory(PriceID);
+
+			//Если все сложилось, то копируем файл в Inbound
+			if (resultCode == DownPriceResultCode.SuccessDownload)
+			{
+				string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId + "_" +
+									PriceID + GetExt();
+				try
+				{
+					if (File.Exists(NormalName))
+						File.Delete(NormalName);
+					File.Copy(ExtrFileName, NormalName);
+					var item = CreatePriceProcessItem(NormalName);
+					item.FileTime = DateTime.Now;
+					PriceItemList.AddItem(item);
+					using (log4net.NDC.Push(CurrPriceItemId.ToString()))
+						_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTableColumns.colShortName],
+										   drCurrent[SourcesTableColumns.colPriceName]);
+				}
+				catch (Exception ex)
+				{
+					//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
+					using (log4net.NDC.Push(CurrPriceItemId.ToString()))
+						_logger.ErrorFormat("Не удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
+				}
+			}
+		}
+
+		protected abstract void CopyToHistory(UInt64 PriceID);
+		protected virtual PriceProcessItem CreatePriceProcessItem(string normalName)
+		{
+			var item = new PriceProcessItem(true,
+			                                Convert.ToUInt64(CurrPriceCode),
+			                                CurrCostCode,
+			                                CurrPriceItemId,
+			                                normalName,
+			                                CurrParentSynonym)
+			           	{
+			           		FileTime = DateTime.Now
+			           	};
+			return item;
+		}
+	}
+
 	/// <summary>
 	/// Summary description for BaseSourceHandle.
 	/// </summary>
@@ -95,6 +149,7 @@ namespace Inforoom.Downloader
         protected ulong CurrPriceCode;
 		protected ulong? CurrCostCode;
 		protected ulong CurrPriceItemId;
+		protected ulong? CurrParentSynonym;
         /// <summary>
         /// текущая обрабатываема строка в таблице
         /// </summary>
@@ -118,29 +173,30 @@ namespace Inforoom.Downloader
 
         protected static string ExtrDirSuffix = "Extr";
 
-        public BaseSourceHandler() :base()
-		{
+        public BaseSourceHandler()
+        {
             SleepTime = Settings.Default.HandlerRequestInterval;
 		}
 
 		//Запуск обработчика
 		public override void StartWork()
 		{
-            Ping();
 			CreateDirectoryPath();
             CreateLogConnection();
             CreateWorkConnection();
-            tWork.Start();
+
+            base.StartWork();
         }
 
 		public override void StopWork()
 		{
-			tWork.Abort();
+			base.StopWork();
+
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 			if (cLog.State == System.Data.ConnectionState.Open)
 				try{ cLog.Close(); } catch{}
-            if (cWork.State == System.Data.ConnectionState.Open)
+            if (cWork.State == ConnectionState.Open)
                 try { cWork.Close(); }
                 catch { }
         }
@@ -157,7 +213,7 @@ namespace Inforoom.Downloader
         { 
             get
             {
-                return this.sourceType;
+                return sourceType;
             }
         }
 
@@ -170,6 +226,7 @@ SELECT
   cd.ShortName,
   pd.PriceCode,
   pd.PriceName,
+  pd.ParentSynonym,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   r.Region as RegionName,
   pi.PriceDate,
@@ -210,7 +267,7 @@ and pd.AgencyEnabled= 1",
 
 		protected void CreateDirectoryPath()
 		{
-			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + this.sourceType;
+			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + sourceType;
 			if (!Directory.Exists(DownHandlerPath))
 				Directory.CreateDirectory(DownHandlerPath);
 			DownHandlerPath += Path.DirectorySeparatorChar;
@@ -244,12 +301,10 @@ and pd.AgencyEnabled= 1",
 
         protected void FillSourcesTable()
         {
-			ConnectionState oldstate = cWork.State;
-			try
+        	try
 			{
 				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
-					delegate(ExecuteArgs args, MySqlException ex)
-					{
+					delegate {
 						Ping();
 					});
 			}
@@ -260,8 +315,7 @@ and pd.AgencyEnabled= 1",
 					try { cWork.Close(); } catch { }
 				cWork.Open();
 				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
-					delegate(ExecuteArgs args, MySqlException ex)
-					{
+					delegate {
 						Ping();
 					});
 			}
@@ -277,7 +331,7 @@ and pd.AgencyEnabled= 1",
 
         protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
-			using (MailMessage mm = new MailMessage(
+			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
 				Settings.Default.SMTPErrorList,
 				String.Format("Письмо с UID {0} не было обработано", UID),
@@ -285,7 +339,7 @@ and pd.AgencyEnabled= 1",
 			{
 				if (ms != null)
 					mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
-				SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
         }
@@ -298,7 +352,7 @@ and pd.AgencyEnabled= 1",
         protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
         {
 			ms.Position = 0;
-			using (MailMessage mm = new MailMessage(
+			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
 				GetFailMail(),
 				String.Format("{0} ( {1} )", FromAddress, SourceType),
@@ -311,7 +365,7 @@ and pd.AgencyEnabled= 1",
 					AttachNames)))
 			{
 				mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject) + ".eml"));
-				SmtpClient sc = new SmtpClient(Settings.Default.SMTPHost);
+				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
         }
@@ -323,7 +377,7 @@ and pd.AgencyEnabled= 1",
         /// <param name="UpDT"></param>
         protected void UpdateDB(int UpdatePriceCode, DateTime UpDT)
         {
-            if (cWork.State != System.Data.ConnectionState.Open)
+            if (cWork.State != ConnectionState.Open)
                 cWork.Open();
 
             cmdUpdatePriceDate.Parameters["?FirmCode"].Value = UpdatePriceCode;
@@ -335,9 +389,10 @@ and pd.AgencyEnabled= 1",
         protected void SetCurrentPriceCode(DataRow dr)
         {
             drCurrent = dr;
-            CurrPriceCode = Convert.ToUInt64(dr[SourcesTable.colPriceCode]);
-			CurrCostCode = (dr[SourcesTable.colCostCode] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTable.colPriceCode]);
-			CurrPriceItemId = Convert.ToUInt64(dr[SourcesTable.colPriceItemId]);
+            CurrPriceCode = Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
+			CurrCostCode = (dr[SourcesTableColumns.colCostCode] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
+			CurrPriceItemId = Convert.ToUInt64(dr[SourcesTableColumns.colPriceItemId]);
+			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
         }
 
         protected void ExtractFromArhive(string ArchName, string TempDir)
@@ -380,7 +435,7 @@ and pd.AgencyEnabled= 1",
 
         protected string GetExt()
         {
-			string FileExt = drCurrent[SourcesTable.colFileExtention].ToString();
+			string FileExt = drCurrent[SourcesTableColumns.colFileExtention].ToString();
 			if (String.IsNullOrEmpty(FileExt))
 				FileExt = ".err";
 			return FileExt;
@@ -396,18 +451,17 @@ and pd.AgencyEnabled= 1",
             ExtrFile = InFile;
             if (ArchiveHelper.IsArchive(InFile))
             {
-				if ((drCurrent[SourcesTable.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTable.colExtrMask].ToString()))
-					ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTable.colExtrMask]);
+				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
+					ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
 				else
 					ExtrFile = String.Empty;
             }
 			if (String.IsNullOrEmpty(ExtrFile))
             {
-				Logging(CurrPriceItemId, String.Format("Не удалось найти файл в архиве. Маска файла в архиве : '{0}'", drCurrent[SourcesTable.colExtrMask]));
+				Logging(CurrPriceItemId, String.Format("Не удалось найти файл в архиве. Маска файла в архиве : '{0}'", drCurrent[SourcesTableColumns.colExtrMask]));
                 return false;
             }
-            else
-				return true;
+        	return true;
         }
 
         protected void DeleteCurrFile()
@@ -438,8 +492,7 @@ and pd.AgencyEnabled= 1",
         {
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
 				new ExecuteArgs(),
-				delegate(ExecuteArgs args)
-				{
+				delegate {
 					cmd.ExecuteNonQuery();
 					return null;
 				},
@@ -448,8 +501,7 @@ and pd.AgencyEnabled= 1",
 				true,
 				null,
 				false,
-				delegate(ExecuteArgs args, MySqlException ex)
-				{
+				delegate {
 					Ping();
 				});
         }
@@ -458,8 +510,7 @@ and pd.AgencyEnabled= 1",
 		{
 			return MethodTemplate.ExecuteMethod<ExecuteArgs, UInt64>(
 				new ExecuteArgs(), 
-				delegate(ExecuteArgs args)
-				{
+				delegate {
 					return Convert.ToUInt64(cmd.ExecuteScalar());
 				}, 
 				0, 
@@ -467,8 +518,7 @@ and pd.AgencyEnabled= 1",
 				true, 
 				null, 
 				false, 
-				delegate(ExecuteArgs args, MySqlException ex)
-				{
+				delegate {
 					Ping();
 				});
 		}
@@ -513,7 +563,7 @@ and pd.AgencyEnabled= 1",
 				else
 					_logger.InfoFormat("Logging.Addition : {0}", Addition);
 
-            if (cLog.State != System.Data.ConnectionState.Open)
+            if (cLog.State != ConnectionState.Open)
                 cLog.Open();
 			cmdLog.Parameters["?PriceItemId"].Value = CurrPriceItemId;
             cmdLog.Parameters["?Addition"].Value = Addition;
@@ -545,10 +595,9 @@ and pd.AgencyEnabled= 1",
 
 			if (NeedLogging)
 				return ExecuteScalar(cmdLog);
-			else
-				return 0;
+			return 0;
         }
 
         #endregion
-    }
+	}
 }

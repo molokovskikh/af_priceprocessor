@@ -6,16 +6,14 @@ using System.Data;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
-using Inforoom.Formalizer;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
 using Inforoom.Common;
-using Inforoom.PriceProcessor;
 
 
 namespace Inforoom.Downloader
 {
-    public class EMAILSourceHandler : BaseSourceHandler
+	public class EMAILSourceHandler : BasePriceSourceHandler
     {
 		//Список ошибочных UID, по которым не надо еще раз отправлять письма
 		protected List<int> errorUIDs;
@@ -23,10 +21,11 @@ namespace Inforoom.Downloader
 		//UID текущего обрабатываемого письма
 		protected int currentUID;
 
+    	private Mime _message;
+
 		public EMAILSourceHandler()
-            : base()
-        {
-			this.sourceType = "EMAIL";
+		{
+			sourceType = "EMAIL";
 			errorUIDs = new List<int>();
 		}
 
@@ -39,7 +38,9 @@ namespace Inforoom.Downloader
 		{
 			try
 			{
-				System.Net.Mail.MailAddress mailAddress = new System.Net.Mail.MailAddress(address);
+#pragma warning disable 168
+				var mailAddress = new System.Net.Mail.MailAddress(address);
+#pragma warning restore 168
 				return true;
 			}
 			catch (FormatException)
@@ -50,7 +51,7 @@ namespace Inforoom.Downloader
 
         protected override void ProcessData()
         {
-			using (IMAP_Client c = new IMAP_Client())
+			using (var c = new IMAP_Client())
 			{
 				c.Connect(Settings.Default.IMAPHost, 143);
 				IMAPAuth(c);
@@ -64,8 +65,7 @@ namespace Inforoom.Downloader
 					{
 						Ping();
 						ProcessedUID = new List<string>();
-						items = null;
-						IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
+						var sequence_set = new IMAP_SequenceSet();
 						sequence_set.Parse("1:*", long.MaxValue);
 						items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
 						Ping();
@@ -74,14 +74,14 @@ namespace Inforoom.Downloader
 						{
 							foreach (IMAP_FetchItem item in items)
 							{
-								Mime m = null;
+								//Mime m = null;
 								IMAP_FetchItem[] OneItem = null;
 								try
 								{
-									IMAP_SequenceSet sequence_Mess = new IMAP_SequenceSet();
+									var sequence_Mess = new IMAP_SequenceSet();
 									sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
 									OneItem = c.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
-									m = Mime.Parse(OneItem[0].MessageData);
+									_message = Mime.Parse(OneItem[0].MessageData);
 									currentUID = item.UID;
 									ProcessedUID.Add(item.UID.ToString());
 									Ping();
@@ -90,7 +90,7 @@ namespace Inforoom.Downloader
 								{
 									if (!errorUIDs.Contains(item.UID))
 									{
-										m = null;
+										_message = null;
 										MemoryStream ms = null;
 										if ((OneItem != null) && (OneItem.Length > 0) && (OneItem[0].MessageData != null))
 											ms = new MemoryStream(OneItem[0].MessageData);
@@ -100,11 +100,11 @@ namespace Inforoom.Downloader
 									_logger.Error("On Parse", ex);
 								}
 
-								if (m != null)
+								if (_message != null)
 								{
 									try
 									{
-										ProcessMime(m);
+										ProcessMime(_message);
 									}
 									catch (Exception ex)
 									{
@@ -131,7 +131,7 @@ namespace Inforoom.Downloader
 						{
 							string uidseq = String.Empty;
 							uidseq = String.Join(",", ProcessedUID.ToArray());
-							IMAP_SequenceSet sequence_setDelete = new IMAP_SequenceSet();
+							var sequence_setDelete = new IMAP_SequenceSet();
 							sequence_setDelete.Parse(uidseq, long.MaxValue);
 							c.DeleteMessages(sequence_setDelete, true);
 						}
@@ -141,8 +141,7 @@ namespace Inforoom.Downloader
 				}
 				finally
 				{
-					try { c.Disconnect(); }
-					catch { }
+					_message = null;
 				}
 			}
         }
@@ -359,14 +358,14 @@ namespace Inforoom.Downloader
 				foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
 				{
 					drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-						SourcesTable.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
-						SourcesTable.colEMailFrom, mbFrom.EmailAddress));
+						SourcesTableColumns.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
+						SourcesTableColumns.colEMailFrom, mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS)
 					{
-						if ((drS[SourcesTable.colPriceMask] is String) && !String.IsNullOrEmpty(drS[SourcesTable.colPriceMask].ToString()))
+						if ((drS[SourcesTableColumns.colPriceMask] is String) && !String.IsNullOrEmpty(drS[SourcesTableColumns.colPriceMask].ToString()))
 						{
-							if ((WildcardsHelper.IsWildcards((string)drS[SourcesTable.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTable.colPriceMask], ShortFileName)) ||
-								(String.Compare(ShortFileName, (string)drS[SourcesTable.colPriceMask], true) == 0))
+							if ((WildcardsHelper.IsWildcards((string)drS[SourcesTableColumns.colPriceMask]) && WildcardsHelper.Matched((string)drS[SourcesTableColumns.colPriceMask], ShortFileName)) ||
+								(String.Compare(ShortFileName, (string)drS[SourcesTableColumns.colPriceMask], true) == 0))
 							{
 								SetCurrentPriceCode(drS);
 								if (CorrectArchive)
@@ -375,16 +374,16 @@ namespace Inforoom.Downloader
 									if (ProcessPriceFile(CurrFileName, out ExtrFile))
 									{
 										Matched = true;
-										LogDownloaderPrice(m, null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
+										LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
 									}
 									else
 									{
-										LogDownloaderPrice(m, "Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
+										LogDownloaderPrice("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
 									}
 								}
 								else
 								{
-									LogDownloaderPrice(m, "Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
+									LogDownloaderPrice("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
 								}
 								drS.Delete();
 							}
@@ -397,57 +396,20 @@ namespace Inforoom.Downloader
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 		}
 
-		private void LogDownloaderPrice(Mime Letter, string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		protected override void CopyToHistory(UInt64 PriceID)
 		{
-			ulong PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
-			if (PriceID != 0)
-			{
-				CopyToHistory(PriceID, Letter);
-
-				//Если все сложилось, то копируем файл в Inbound
-				if (resultCode == DownPriceResultCode.SuccessDownload)
-				{
-					string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId.ToString() + "_" + PriceID.ToString() + GetExt();
-					try
-					{
-						if (File.Exists(NormalName))
-							File.Delete(NormalName);
-						File.Copy(ExtrFileName, NormalName);
-						if (_logger.IsDebugEnabled)
-							using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-								_logger.DebugFormat("Попытка добавить прайс-лист {0} - {1} в PriceItemList", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
-						PriceProcessItem item = new PriceProcessItem(true, Convert.ToUInt64(CurrPriceCode), CurrCostCode, CurrPriceItemId, NormalName);
-						item.FileTime = DateTime.Now;
-						PriceItemList.AddItem(item);
-						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-							_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTable.colShortName], drCurrent[SourcesTable.colPriceName]);
-					}
-					catch (Exception ex)
-					{
-						//todo: по идее здесь не должно возникнуть ошибок, но на всякий случай логируем, возможно надо включить логирование письмом
-						using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-							_logger.ErrorFormat("Не удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
-					}
-				}
-			}
-			else
-				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
-		}
-
-		void CopyToHistory(UInt64 PriceID, Mime Letter)
-		{
-			string HistoryFileName = DownHistoryPath + PriceID.ToString() + ".eml";
-			string SavedFile = DownHandlerPath + PriceID.ToString() + ".eml";
+			string HistoryFileName = DownHistoryPath + PriceID + ".eml";
+			string SavedFile = DownHandlerPath + PriceID + ".eml";
 			try
 			{
-				Letter.ToFile(SavedFile);
+				_message.ToFile(SavedFile);
 				File.Copy(SavedFile, HistoryFileName);
 				File.Delete(SavedFile);
 			}
 			catch { }
 		}
 
-		protected AddressList GetAddressList(Mime m)
+    	protected AddressList GetAddressList(Mime m)
 		{
 			//Заполняем список адресов From
 			AddressList FromList = new AddressList();
@@ -513,8 +475,7 @@ namespace Inforoom.Downloader
 						return false;
 					}
 				}
-				else
-					return false;
+				return false;
 			}
 			return true;
 		}
