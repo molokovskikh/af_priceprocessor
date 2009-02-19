@@ -222,7 +222,7 @@ InnoDB Status            =
 		public void CorruptConnectionTest()
 		{
 			BasicConfigurator.Configure(
-				new ConsoleAppender(
+				new TraceAppender(
 					new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")));
 			ILog _logger = LogManager.GetLogger(typeof(PriceProcessThreadTest));
 
@@ -241,9 +241,10 @@ InnoDB Status            =
 				{ 
 					if (_threads[i].State == CorruptDBThreadState.Stopped)
 					{
+						string _deletedThreadName = _threads[i].Thread.Name;
 						_threads.RemoveAt(i);
 						_stopCount++;
-						_logger.InfoFormat("Удалили нитку {0}", _threads[i].Thread.Name);
+						_logger.InfoFormat("Удалили нитку {0}", _deletedThreadName);
 					}
 					else
 						if ((_threads[i].State == CorruptDBThreadState.InTransaction) &&
@@ -277,9 +278,10 @@ InnoDB Status            =
 				{
 					if (_threads[i].State == CorruptDBThreadState.Stopped)
 					{
+						string _deletedThreadName = _threads[i].Thread.Name;
 						_threads.RemoveAt(i);
 						_stopCount++;
-						_logger.InfoFormat("Удалили нитку {0}", _threads[i].Thread.Name);
+						_logger.InfoFormat("Удалили нитку {0}", _deletedThreadName);
 					}
 				}
 
