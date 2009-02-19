@@ -258,8 +258,6 @@ namespace Inforoom.Formalizer
 
 		//—оедиение с базой данных
 		protected MySqlConnection MyConn;
-		//“ранзакци€ к базе данных
-		protected MySqlTransaction myTrans;
 
 		//“аблица со списком запрещенных названий
 		protected MySqlDataAdapter daForbidden;
@@ -1375,13 +1373,14 @@ where
 						_logger.Info("FinalizePrice started.");
 						sbLog = new System.Text.StringBuilder();
 
-						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+						MySqlTransaction _finalizeTransaction = null;
+						_finalizeTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 
 						try
 						{
 							MySqlCommand mcClear = new MySqlCommand();
 							mcClear.Connection = MyConn;
-							mcClear.Transaction = myTrans;
+							mcClear.Transaction = _finalizeTransaction;
 							mcClear.CommandTimeout = 0;
 
 							mcClear.Parameters.Clear();
@@ -1432,7 +1431,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
 									sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
 								}
-								
+
 							}
 
 							//выполн€ем команды с обновлением данных в Core и CoreCosts
@@ -1486,7 +1485,7 @@ and a.ProductId is null";
 							{
 								if (priceCodesUseUpdate.Contains(priceCode))
 									sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
-								else								
+								else
 									sbLog.Append("InsertToCoreAndCoreCosts=0  ");
 							}
 
@@ -1498,19 +1497,19 @@ and a.ProductId is null";
 							sbLog.AppendFormat("DelFromForb={0}  ", StatCommand(mcClear));
 
 							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), MyConn);
-							daBlockedPrice.SelectCommand.Transaction = myTrans;
+							daBlockedPrice.SelectCommand.Transaction = _finalizeTransaction;
 							DataTable dtBlockedPrice = new DataTable();
 							daBlockedPrice.Fill(dtBlockedPrice);
 
-							if ((dtBlockedPrice.Rows.Count == 0) )
+							if ((dtBlockedPrice.Rows.Count == 0))
 							{
 								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
 								sbLog.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(mcClear));
 							}
 
-							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), myTrans));
-							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), myTrans));
-							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), myTrans));
+							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), _finalizeTransaction));
+							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), _finalizeTransaction));
+							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), _finalizeTransaction));
 
 							//ѕроизводим обновление PriceDate и LastFormalization в информации о формализации
 							//≈сли прайс-лист загружен, то обновл€ем поле PriceDate, если нет, то обновл€ем данные в intersection_update_info
@@ -1535,27 +1534,42 @@ and a.ProductId is null";
 
 							_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
 							_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
-							myTrans.Commit();
-							res = true;					
+							_finalizeTransaction.Commit();
+							res = true;
 						}
-						catch(MySqlException MyError)
+						catch (MySqlException MyError)
 						{
+							if (_finalizeTransaction != null)
+								try
+								{
+									_finalizeTransaction.Rollback();
+								}
+								catch (Exception ex)
+								{
+									_logger.Error("Error on rollback", ex);
+								}
+
 							if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
 							{
 								tryCount++;
 								_logger.InfoFormat("Try transaction: tryCount = {0}", tryCount);
-								try
-								{ 
-									myTrans.Rollback();
-								}
-								catch(Exception ex)
-								{
-									_logger.Error("Error on rollback", ex);
-								}
-								System.Threading.Thread.Sleep(10000 + tryCount*1000);
+								System.Threading.Thread.Sleep(10000 + tryCount * 1000);
 							}
 							else
 								throw;
+						}
+						catch (Exception)
+						{
+							if (_finalizeTransaction != null)
+								try
+								{
+									_finalizeTransaction.Rollback();
+								}
+								catch (Exception ex)
+								{
+									_logger.Error("Error on rollback (Exception)", ex);
+								}
+							throw;
 						}
 					}while(!res);
 
@@ -1594,128 +1608,114 @@ and a.ProductId is null";
 					MyConn.Open();
 					_logger.Debug("соединение с базой установлено");
 
+					_logger.Debug("попытка открыть транзакцию");
+					MySqlTransaction _prepareTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+					_logger.Debug("транзакци€ открыта");
+
+					DateTime tmPrepare = DateTime.UtcNow;
 					try
 					{
-						_logger.Debug("попытка открыть транзакцию");
-						myTrans = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
-						_logger.Debug("транзакци€ открыта");
-
-						DateTime tmPrepare = DateTime.UtcNow;
 						try
 						{
-							try
-							{
-								Prepare();
-							}
-							finally
-							{
-								myTrans.Commit();
-							}
+							Prepare();
 						}
 						finally
 						{
-							_logger.InfoFormat("Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
-						}
-
-
-						DateTime tmFormalize = DateTime.UtcNow;
-						try
-						{
-							UnrecExpStatus st;
-							string PosName = String.Empty;
-							bool Junk = false;
-							int costCount;
-							long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
-							string strCode, strName1, strOriginalName, strFirmCr;
-							do
-							{
-								st = UnrecExpStatus.NOT_FORM;
-								PosName = GetFieldValue(PriceFields.Name1, true);
-
-								if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
-								{
-									if (priceType != Settings.Default.ASSORT_FLG)
-									{
-										costCount = ProcessCosts();
-										object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
-										//ѕроизводим проверку дл€ мультиколоночных прайсов
-										if (costType == CostTypes.MultiColumn)
-										{
-											//≈сли кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-											//или если количество определенно и оно равно 0
-											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-											{
-												InsertToZero();
-												continue;
-											}
-										}
-										else
-										{
-											//Ёта проверка дл€ всех остальных
-											//≈сли кол-во ненулевых цен = 0
-											//или если количество определенно и оно равно 0
-											if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-											{
-												InsertToZero();
-												continue;
-											}
-										}
-									}
-
-									strCode = GetFieldValue(PriceFields.Code);
-									strName1 = GetFieldValue(PriceFields.Name1, true);
-									strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
-
-									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
-										st = UnrecExpStatus.NAME_FORM;
-
-									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
-									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
-										st = st | UnrecExpStatus.FIRM_FORM;
-
-									st = st | UnrecExpStatus.CURR_FORM;
-
-									if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
-										InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
-									else
-										unformCount++;
-
-									if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-										InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
-
-								}
-								else
-									if ((null != PosName) && (String.Empty != PosName.Trim()))
-										InsertIntoForb(PosName);
-
-							}
-							while (Next());
-						}
-						finally
-						{
-							_logger.InfoFormat("Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize));
-						}
-
-						DateTime tmFinalize = DateTime.UtcNow;
-						try
-						{
-							FinalizePrice();
-						}
-						finally
-						{
-							_logger.InfoFormat("FinalizePrice time: {0}", DateTime.UtcNow.Subtract(tmFinalize));
+							_prepareTransaction.Commit();
 						}
 					}
-					catch
+					finally
 					{
-						try
+						_logger.InfoFormat("Prepare time: {0}", DateTime.UtcNow.Subtract(tmPrepare));
+					}
+
+
+					DateTime tmFormalize = DateTime.UtcNow;
+					try
+					{
+						UnrecExpStatus st;
+						string PosName = String.Empty;
+						bool Junk = false;
+						int costCount;
+						long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
+						string strCode, strName1, strOriginalName, strFirmCr;
+						do
 						{
-							myTrans.Rollback();
+							st = UnrecExpStatus.NOT_FORM;
+							PosName = GetFieldValue(PriceFields.Name1, true);
+
+							if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
+							{
+								if (priceType != Settings.Default.ASSORT_FLG)
+								{
+									costCount = ProcessCosts();
+									object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
+									//ѕроизводим проверку дл€ мультиколоночных прайсов
+									if (costType == CostTypes.MultiColumn)
+									{
+										//≈сли кол-во ненулевых цен = 0, то тогда производим вставку в Zero
+										//или если количество определенно и оно равно 0
+										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+										{
+											InsertToZero();
+											continue;
+										}
+									}
+									else
+									{
+										//Ёта проверка дл€ всех остальных
+										//≈сли кол-во ненулевых цен = 0
+										//или если количество определенно и оно равно 0
+										if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
+										{
+											InsertToZero();
+											continue;
+										}
+									}
+								}
+
+								strCode = GetFieldValue(PriceFields.Code);
+								strName1 = GetFieldValue(PriceFields.Name1, true);
+								strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
+
+								if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
+									st = UnrecExpStatus.NAME_FORM;
+
+								strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
+								if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
+									st = st | UnrecExpStatus.FIRM_FORM;
+
+								st = st | UnrecExpStatus.CURR_FORM;
+
+								if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
+									InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
+								else
+									unformCount++;
+
+								if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
+									InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+
+							}
+							else
+								if ((null != PosName) && (String.Empty != PosName.Trim()))
+									InsertIntoForb(PosName);
+
 						}
-						catch
-						{
-						}
-						throw;
+						while (Next());
+					}
+					finally
+					{
+						_logger.InfoFormat("Formalize time: {0}", DateTime.UtcNow.Subtract(tmFormalize));
+					}
+
+					DateTime tmFinalize = DateTime.UtcNow;
+					try
+					{
+						FinalizePrice();
+					}
+					finally
+					{
+						_logger.InfoFormat("FinalizePrice time: {0}", DateTime.UtcNow.Subtract(tmFinalize));
 					}
 				}
 				finally

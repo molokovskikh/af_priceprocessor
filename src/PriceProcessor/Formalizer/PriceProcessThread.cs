@@ -670,14 +670,6 @@ namespace Inforoom.Formalizer
 					_processState = PriceProcessState.CloseConnection;
 					try
 					{
-						myconn.Close();
-					}
-					catch (Exception onCloseException)
-					{
-						_logger.Error("Ошибка при закрытии соединения", onCloseException);
-					}
-					try
-					{
 						_logConnection.Close();
 					}
 					catch (Exception onLogCloseException)
