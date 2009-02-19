@@ -32,6 +32,7 @@ namespace Inforoom.Formalizer
 		None,
 		Begin,
 		GetConnection,
+		GetLogConnection,
 		CreateTempDirectory,
 		CheckConnection,
 		CallValidate,
@@ -61,6 +62,7 @@ namespace Inforoom.Formalizer
 
 		//Соединение с базой
 		private MySqlConnection myconn;
+		private MySqlConnection _logConnection;
 		private MySqlCommand mcLog = null;
 
 		//Собственно нитка
@@ -237,12 +239,15 @@ namespace Inforoom.Formalizer
 				{
 					try
 					{
-						if (myconn.State == System.Data.ConnectionState.Open)
-							myconn.Close();
+						if (_logConnection.State == System.Data.ConnectionState.Open)
+							_logConnection.Close();
 					}
-					catch{}
+					catch(Exception onLogCloseException)
+					{
+						_logger.Error("Ошибка при закрытии лог-соединения", onLogCloseException);
+					}
 
-					myconn.Open();
+					_logConnection.Open();
 					try
 					{
 						mcLog.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs )";
@@ -259,7 +264,7 @@ namespace Inforoom.Formalizer
 					}
 					finally
 					{
-						myconn.Close();
+						_logConnection.Close();
 					}
 				}
 				catch(Exception e)
@@ -385,12 +390,15 @@ namespace Inforoom.Formalizer
 					{
 						try
 						{
-							if (myconn.State == System.Data.ConnectionState.Open)
-								myconn.Close();
+							if (_logConnection.State == System.Data.ConnectionState.Open)
+								_logConnection.Close();
 						}
-						catch{}
+						catch (Exception onLogCloseException)
+						{
+							_logger.Error("Ошибка при закрытии лог-соединения", onLogCloseException);
+						}
 
-						myconn.Open();
+						_logConnection.Open();
 						try
 						{
 
@@ -405,7 +413,7 @@ namespace Inforoom.Formalizer
 						}
 						finally
 						{
-							myconn.Close();
+							_logConnection.Close();
 						}
 					}
 					catch(Exception e)
@@ -455,12 +463,15 @@ namespace Inforoom.Formalizer
 					{
 						try
 						{
-							if (myconn.State == System.Data.ConnectionState.Open)
-								myconn.Close();
+							if (_logConnection.State == System.Data.ConnectionState.Open)
+								_logConnection.Close();
 						}
-						catch{}
+						catch (Exception onLogCloseException)
+						{
+							_logger.Error("Ошибка при закрытии лог-соединения", onLogCloseException);
+						}
 
-						myconn.Open();
+						_logConnection.Open();
 						try
 						{
 							if (-1 == e.priceCode)
@@ -496,7 +507,7 @@ namespace Inforoom.Formalizer
 						}
 						finally
 						{
-							myconn.Close();
+							_logConnection.Close();
 						}
 					}
 					catch(Exception ex)
@@ -529,12 +540,14 @@ namespace Inforoom.Formalizer
 
 				_processState = PriceProcessState.GetConnection;
 				myconn = getConnection();
+				_processState = PriceProcessState.GetLogConnection;
+				_logConnection = getConnection();
 				try
 				{
 					_processState = PriceProcessState.CreateTempDirectory;
 					//Создаем команду для логирования
 					mcLog = new MySqlCommand();
-					mcLog.Connection = myconn;
+					mcLog.Connection = _logConnection;
 
 					//Создаем директорию для временного файла и копируем туда файл
 					if (!Directory.Exists(TempPath))
@@ -564,8 +577,10 @@ namespace Inforoom.Formalizer
 								{
 									myconn.Close();
 								}
-								catch
-								{}
+								catch(Exception onWorkCloseConnection)
+								{
+									_logger.Error("Ошибка при закрытии рабочего соединения", onWorkCloseConnection);
+								}
 						}
 
 						WorkPrice.downloaded = _processItem.Downloaded;
@@ -656,12 +671,18 @@ namespace Inforoom.Formalizer
 					try
 					{
 						myconn.Close();
-						//todo: возможно здесь не стоит вызывать Dispose
-						myconn.Dispose();
 					}
 					catch (Exception onCloseException)
 					{
 						_logger.Error("Ошибка при закрытии соединения", onCloseException);
+					}
+					try
+					{
+						_logConnection.Close();
+					}
+					catch (Exception onLogCloseException)
+					{
+						_logger.Error("Ошибка при закрытии соединения", onLogCloseException);
 					}
 				}
 
