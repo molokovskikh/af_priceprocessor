@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractHandler.cs" />
+    <Compile Include="Downloader\BasePriceSourceHandler.cs" />
     <Compile Include="Downloader\BaseSourceHandler.cs" />
     <Compile Include="Downloader\ClearArchivedPriceSourceHandler.cs" />
     <Compile Include="Downloader\DocumentReaders\BaseDocumentReader.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Downloader\DocumentReaders\SIAMoscow_2788_Reader.cs" />
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
+    <Compile Include="Downloader\FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
     <Compile Include="Downloader\LANSourceHandler.cs" />
@@ -94,6 +96,8 @@
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
+    <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
+    <Compile Include="Formalizer\OleDbHelper.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
     <Compile Include="Formalizer\ToughDate.cs" />
@@ -104,6 +108,7 @@
     <Compile Include="Formalizer\TXTFixedPriceParser.cs" />
     <Compile Include="Formalizer\TXTWinDelimiterPriceParser.cs" />
     <Compile Include="Formalizer\TXTWinFixedPriceParser.cs" />
+    <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="PriceItemList.cs" />

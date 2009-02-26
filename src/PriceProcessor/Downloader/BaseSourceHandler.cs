@@ -6,7 +6,6 @@ using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using ExecuteTemplate;
-using System.Configuration;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 
@@ -64,61 +63,6 @@ namespace Inforoom.Downloader
 
 
 	/// <summary>
-	/// ƒобавл€ет педоты дл€ работы с PriceProcessItem
-	/// </summary>
-	public abstract class BasePriceSourceHandler : BaseSourceHandler
-	{
-		protected void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
-		{
-			var PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
-			if (PriceID == 0)
-				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
-
-			CopyToHistory(PriceID);
-
-			//≈сли все сложилось, то копируем файл в Inbound
-			if (resultCode == DownPriceResultCode.SuccessDownload)
-			{
-				string NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId + "_" +
-									PriceID + GetExt();
-				try
-				{
-					if (File.Exists(NormalName))
-						File.Delete(NormalName);
-					File.Copy(ExtrFileName, NormalName);
-					var item = CreatePriceProcessItem(NormalName);
-					item.FileTime = DateTime.Now;
-					PriceItemList.AddItem(item);
-					using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-						_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTableColumns.colShortName],
-										   drCurrent[SourcesTableColumns.colPriceName]);
-				}
-				catch (Exception ex)
-				{
-					//todo: по идее здесь не должно возникнуть ошибок, но на вс€кий случай логируем, возможно надо включить логирование письмом
-					using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-						_logger.ErrorFormat("Ќе удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
-				}
-			}
-		}
-
-		protected abstract void CopyToHistory(UInt64 PriceID);
-		protected virtual PriceProcessItem CreatePriceProcessItem(string normalName)
-		{
-			var item = new PriceProcessItem(true,
-			                                Convert.ToUInt64(CurrPriceCode),
-			                                CurrCostCode,
-			                                CurrPriceItemId,
-			                                normalName,
-			                                CurrParentSynonym)
-			           	{
-			           		FileTime = DateTime.Now
-			           	};
-			return item;
-		}
-	}
-
-	/// <summary>
 	/// Summary description for BaseSourceHandle.
 	/// </summary>
 	public abstract class BaseSourceHandler : AbstractHandler
@@ -128,9 +72,7 @@ namespace Inforoom.Downloader
         protected MySqlCommand cmdLog;
 
 		//—оединение дл€ работы
-		protected MySqlConnection cWork;
-        protected MySqlCommand cmdUpdatePriceDate;
-        protected MySqlCommand cmdFillSources;
+		protected MySqlConnection _workConnection;
         protected MySqlDataAdapter daFillSources;
 
         /// <summary>
@@ -194,17 +136,17 @@ namespace Inforoom.Downloader
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("–абоча€ нитка не остановилась за {0} миллисекунд.", maxJoinTime);
-			if (cLog.State == System.Data.ConnectionState.Open)
+			if (cLog.State == ConnectionState.Open)
 				try{ cLog.Close(); } catch{}
-            if (cWork.State == ConnectionState.Open)
-                try { cWork.Close(); }
+            if (_workConnection.State == ConnectionState.Open)
+                try { _workConnection.Close(); }
                 catch { }
         }
 
 		protected override void Ping()
 		{
 			base.Ping();	
-			try { cWork.Ping(); } catch{}
+			try { _workConnection.Ping(); } catch{}
 			try { cLog.Ping(); } catch { }
 		}
 
@@ -279,19 +221,11 @@ and pd.AgencyEnabled= 1",
 
         protected void CreateWorkConnection()
         {
-            cWork = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            _workConnection = new MySqlConnection(Literals.ConnectionString());
             try
             {
-                cWork.Open();
-                cmdUpdatePriceDate = new MySqlCommand(
-					"UPDATE farm.sources SET LastDateTime = ?NowDate, PriceDateTime = ?DT WHERE FirmCode = ?FirmCode;" +
-					"UPDATE usersettings.price_update_info SET DatePrevPrice = DateCurPrice, DateCurPrice = ?NowDate WHERE PriceCode = ?FirmCode;", 
-                     cWork);
-                cmdUpdatePriceDate.Parameters.Add("?FirmCode", MySqlDbType.Int64);
-                cmdUpdatePriceDate.Parameters.Add("?DT", MySqlDbType.Datetime);
-				cmdUpdatePriceDate.Parameters.Add("?NowDate", MySqlDbType.Datetime);
-				cmdFillSources = new MySqlCommand(GetSQLSources(), cWork);
-                daFillSources = new MySqlDataAdapter(cmdFillSources);
+                _workConnection.Open();
+                daFillSources = new MySqlDataAdapter(GetSQLSources(), _workConnection);
             }
             catch (Exception ex)
             {
@@ -303,7 +237,7 @@ and pd.AgencyEnabled= 1",
         {
         	try
 			{
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, null, false,
 					delegate {
 						Ping();
 					});
@@ -311,10 +245,10 @@ and pd.AgencyEnabled= 1",
 			catch
 			{
 				//≈сли здесь возникает ошибка, то мы пытаемс€ открыть соединение и сновы запрашивает таблицу с источниками
-				if (cWork.State != ConnectionState.Closed)
-					try { cWork.Close(); } catch { }
-				cWork.Open();
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, cWork, true, null, false,
+				if (_workConnection.State != ConnectionState.Closed)
+					try { _workConnection.Close(); } catch { }
+				_workConnection.Open();
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, null, false,
 					delegate {
 						Ping();
 					});
@@ -329,7 +263,7 @@ and pd.AgencyEnabled= 1",
 			return dtSources;
 		}
 
-        protected void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
+        protected static void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
         {
 			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
@@ -370,22 +304,6 @@ and pd.AgencyEnabled= 1",
 			}
         }
 
-        /// <summary>
-        /// ќбновить дату прайса в базе
-        /// </summary>
-        /// <param name="UpadatePriceCode"></param>
-        /// <param name="UpDT"></param>
-        protected void UpdateDB(int UpdatePriceCode, DateTime UpDT)
-        {
-            if (cWork.State != ConnectionState.Open)
-                cWork.Open();
-
-            cmdUpdatePriceDate.Parameters["?FirmCode"].Value = UpdatePriceCode;
-            cmdUpdatePriceDate.Parameters["?DT"].Value = UpDT;
-			cmdUpdatePriceDate.Parameters["?NowDate"].Value = DateTime.Now;
-			ExecuteCommand(cmdUpdatePriceDate);
-        }
-
         protected void SetCurrentPriceCode(DataRow dr)
         {
             drCurrent = dr;
@@ -395,45 +313,7 @@ and pd.AgencyEnabled= 1",
 			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
         }
 
-        protected void ExtractFromArhive(string ArchName, string TempDir)
-        {
-            if (Directory.Exists(TempDir))
-                Directory.Delete(TempDir, true);
-            Directory.CreateDirectory(TempDir);
-            ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
-        }
-
-        protected string FindFromArhive(string TempDir, string ExtrMask)
-        {
-            string[] ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, ExtrMask, SearchOption.AllDirectories);
-            if (ExtrFiles.Length > 0)
-                return ExtrFiles[0];
-            else
-                return String.Empty;
-        }
-
-        protected string NormalizeFileName(string InputFilename)
-        {
-            string PathPart = String.Empty;
-            foreach (Char ic in Path.GetInvalidPathChars())
-            {
-                InputFilename = InputFilename.Replace(ic.ToString(), "");
-            }
-            //ѕытаемс€ найти последний разделитель директории в пути
-            int EndDirPos = InputFilename.LastIndexOfAny(new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-            if (EndDirPos > -1)
-            {
-                PathPart = InputFilename.Substring(0, EndDirPos + 1);
-                InputFilename = InputFilename.Substring(EndDirPos + 1);
-            }
-            foreach (Char ic in Path.GetInvalidFileNameChars())
-            {
-                InputFilename = InputFilename.Replace(ic.ToString(), "");
-            }
-            return (PathPart + InputFilename);
-        }
-
-        protected string GetExt()
+		protected string GetExt()
         {
 			string FileExt = drCurrent[SourcesTableColumns.colFileExtention].ToString();
 			if (String.IsNullOrEmpty(FileExt))
@@ -441,18 +321,13 @@ and pd.AgencyEnabled= 1",
 			return FileExt;
         }
 
-		protected string GetSuccessAddition(string ArchName, string FileName)
-		{
-			return String.Format("{0} > {1}", Path.GetFileName(ArchName), Path.GetFileName(FileName));
-		}
-
-        protected bool ProcessPriceFile(string InFile, out string ExtrFile)
+		protected bool ProcessPriceFile(string InFile, out string ExtrFile)
         {
             ExtrFile = InFile;
             if (ArchiveHelper.IsArchive(InFile))
             {
 				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
-					ExtrFile = FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
+					ExtrFile = PriceProcessor.Downloader.FileHelper.FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
 				else
 					ExtrFile = String.Empty;
             }
@@ -526,7 +401,7 @@ and pd.AgencyEnabled= 1",
         #region Logging
         protected void CreateLogConnection()
 		{
-			cLog = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+			cLog = new MySqlConnection(Literals.ConnectionString());
 			try
 			{
 				cLog.Open();

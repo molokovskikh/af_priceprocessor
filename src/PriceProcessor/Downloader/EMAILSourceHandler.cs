@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
 using Inforoom.Common;
+using FileHelper=Inforoom.PriceProcessor.Downloader.FileHelper;
 
 
 namespace Inforoom.Downloader
@@ -311,7 +312,7 @@ namespace Inforoom.Downloader
                 {
                     try
                     {
-                        ExtractFromArhive(UUEFileName, UUEFileName + ExtrDirSuffix);
+                        FileHelper.ExtractFromArhive(UUEFileName, UUEFileName + ExtrDirSuffix);
                         string[] fileList = Directory.GetFiles(UUEFileName + ExtrDirSuffix);
                         if (fileList.Length > 0)
                         {
@@ -467,7 +468,7 @@ namespace Inforoom.Downloader
 				{
 					try
 					{
-                        ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+                        FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 						return true;
 					}
 					catch (ArchiveHelper.ArchiveException)
@@ -497,9 +498,9 @@ namespace Inforoom.Downloader
 			string ShortFileName = String.Empty;
 			//¬ некоторых случа€х ContentDisposition_FileName не заполнено, тогда смотрим на ContentType_Name
 			if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
-				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentDisposition_FileName));
+				ShortFileName = Path.GetFileName(FileHelper.NormalizeFileName(ent.ContentDisposition_FileName));
 			else
-				ShortFileName = Path.GetFileName(NormalizeFileName(ent.ContentType_Name));
+				ShortFileName = Path.GetFileName(FileHelper.NormalizeFileName(ent.ContentType_Name));
 			return ShortFileName;
 		}
 

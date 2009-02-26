@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.OleDb;
+using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 
@@ -68,8 +69,7 @@ namespace Inforoom.Formalizer
 							FieldNames = FieldNames + ", F" + Convert.ToString(i+1);
 						}
 						OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select {0} from [{1}]", FieldNames, Sheet), dbcMain);
-						//da.Fill(dtPrice);
-						FillPrice(da);
+						dtPrice = OleDbHelper.FillPrice(da);
 					}
 					finally
 					{

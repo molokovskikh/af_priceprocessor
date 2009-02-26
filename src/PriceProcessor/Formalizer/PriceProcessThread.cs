@@ -48,7 +48,7 @@ namespace Inforoom.Formalizer
 	public class PriceProcessThread
 	{
 		//Если установлено, то письмо в ErrorList о проблемах с connection отправлено
-		private static bool LetterAboutConnectionSended = false;
+		private static bool LetterAboutConnectionSended;
 
 		//Временный каталог для файла
 		private string TempPath;
@@ -58,34 +58,31 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Ссылка на обрабатываемый элемент
 		/// </summary>
-		private PriceProcessItem _processItem;
+		private readonly PriceProcessItem _processItem;
 
 		//Соединение с базой
 		private MySqlConnection myconn;
 		private MySqlConnection _logConnection;
-		private MySqlCommand mcLog = null;
+		private MySqlCommand mcLog;
 
 		//Собственно нитка
-		private Thread _thread;
+		private readonly Thread _thread;
 		//время прерывания рабочей нитки 
-		private DateTime? _abortingTime = null;
+		private DateTime? _abortingTime;
 
 		//Время начала формализации
-		private DateTime tmFormalize;
+		private readonly DateTime tmFormalize;
 		//Время формализации в секундах
-		private System.Int64 formSecs;
-
-		private bool _formalizeEnd = false;
+		private Int64 formSecs;
 
 		//Результат формализации: Хорошо, Плохо
-		private bool formalizeOK = false;
 
 		//предыдущее сообщение об ошибке
-		private string prevErrorMessage = String.Empty;
+		private readonly string prevErrorMessage = String.Empty;
 		//текущее сообщение об ошибке
 		private string currentErrorMessage = String.Empty; 
 
-		private BasePriceParser WorkPrice = null;
+		private BasePriceParser WorkPrice;
 
 		private readonly log4net.ILog _logger = log4net.LogManager.GetLogger(typeof(PriceProcessThread));
 
@@ -93,33 +90,21 @@ namespace Inforoom.Formalizer
 
 		public PriceProcessThread(PriceProcessItem item, string PrevErrorMessage)
 		{
-			this.tmFormalize = DateTime.UtcNow;
-			this.prevErrorMessage = PrevErrorMessage;
-			this._processItem = item;
-			this._thread = new Thread(new ThreadStart(ThreadWork));
-			this._thread.Name = String.Format("PPT{0}", this._thread.ManagedThreadId);
-			this._thread.Start();
+			tmFormalize = DateTime.UtcNow;
+			prevErrorMessage = PrevErrorMessage;
+			_processItem = item;
+			_thread = new Thread(ThreadWork);
+			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
+			_thread.Start();
 		}
 
-		public bool FormalizeOK
-		{
-			get
-			{
-				return formalizeOK;
-			}
-		}
+		public bool FormalizeOK { get; private set; }
 
 		/// <summary>
 		/// Говорит о том, что формализация закончена. Корректно в том случае, если нитку не прибили сразу после запуска,
 		/// иначе надо смотреть на ThreadState
 		/// </summary>
-		public bool FormalizeEnd
-		{
-			get
-			{
-				return _formalizeEnd;
-			}
-		}
+		public bool FormalizeEnd { get; private set; }
 
 		/// <summary>
 		/// время начала формализации
@@ -214,11 +199,6 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		private MySqlConnection getConnection()
-		{
-			return new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
-		}
-
 		private void SuccesLog(BasePriceParser p)
 		{
 			string messageBody = "", messageSubject = "";
@@ -239,7 +219,7 @@ namespace Inforoom.Formalizer
 				{
 					try
 					{
-						if (_logConnection.State == System.Data.ConnectionState.Open)
+						if (_logConnection.State == ConnectionState.Open)
 							_logConnection.Close();
 					}
 					catch(Exception onLogCloseException)
@@ -390,7 +370,7 @@ namespace Inforoom.Formalizer
 					{
 						try
 						{
-							if (_logConnection.State == System.Data.ConnectionState.Open)
+							if (_logConnection.State == ConnectionState.Open)
 								_logConnection.Close();
 						}
 						catch (Exception onLogCloseException)
@@ -531,17 +511,17 @@ namespace Inforoom.Formalizer
 			try
 			{
 				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-				string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
+				string outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
 				//Используем идентификатор нитки в качестве названия временной папки
 				TempPath = Path.GetTempPath() + TID + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')
-				TempFileName = TempPath + _processItem.PriceItemId.ToString() + Path.GetExtension(_processItem.FilePath);
+				TempFileName = TempPath + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
 				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 
 				_processState = PriceProcessState.GetConnection;
-				myconn = getConnection();
+				myconn = new MySqlConnection(Literals.ConnectionString());
 				_processState = PriceProcessState.GetLogConnection;
-				_logConnection = getConnection();
+				_logConnection = new MySqlConnection(Literals.ConnectionString());
 				try
 				{
 					_processState = PriceProcessState.CreateTempDirectory;
@@ -555,8 +535,8 @@ namespace Inforoom.Formalizer
 					else
 					{
 						//удаляем предыдущие файлы из директории, если они не были удалены
-						string[] _tempFiles = Directory.GetFiles(TempPath);
-						foreach (string _tempDeleteFile in _tempFiles)
+						var _tempFiles = Directory.GetFiles(TempPath);
+						foreach (var _tempDeleteFile in _tempFiles)
 							FileHelper.FileDelete(_tempDeleteFile);
 					}
 
@@ -572,7 +552,7 @@ namespace Inforoom.Formalizer
 						}
 						finally
 						{
-							if (myconn.State == System.Data.ConnectionState.Open)
+							if (myconn.State == ConnectionState.Open)
 								try
 								{
 									myconn.Close();
@@ -588,11 +568,11 @@ namespace Inforoom.Formalizer
 						_processState = PriceProcessState.CallFormalize;
 						WorkPrice.Formalize();
 
-						formalizeOK = true;
+						FormalizeOK = true;
 					}
 					finally
 					{
-						TimeSpan tsFormalize = DateTime.UtcNow.Subtract(tmFormalize);
+						var tsFormalize = DateTime.UtcNow.Subtract(tmFormalize);
 						formSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
 						_allWorkTimeString = tsFormalize.ToString();
 					}
@@ -600,11 +580,11 @@ namespace Inforoom.Formalizer
 					_processState = PriceProcessState.FinalCopy;
 					try
 					{
-						if (formalizeOK)
+						if (FormalizeOK)
 						{
 							//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
 							File.Copy(TempFileName, outPriceFileName, true);
-							DateTime ft = DateTime.UtcNow;
+							var ft = DateTime.UtcNow;
 							File.SetCreationTimeUtc(outPriceFileName, ft);
 							File.SetLastWriteTimeUtc(outPriceFileName, ft);
 							File.SetLastAccessTimeUtc(outPriceFileName, ft);
@@ -633,16 +613,16 @@ namespace Inforoom.Formalizer
 						else
 							//Копируем оригинальный файл в случае неизвестного файла
 							File.Copy(_processItem.FilePath, outPriceFileName, true);
-						DateTime ft = DateTime.UtcNow;
+						var ft = DateTime.UtcNow;
 						File.SetCreationTimeUtc(outPriceFileName, ft);
 						File.SetLastWriteTimeUtc(outPriceFileName, ft);
 						File.SetLastAccessTimeUtc(outPriceFileName, ft);
 						WarningLog(e, e.Message);
-						formalizeOK = true;
+						FormalizeOK = true;
 					}
 					catch(Exception ex)
 					{
-						formalizeOK = false;
+						FormalizeOK = false;
 						ErrodLog(WorkPrice, 
 							new FormalizeException(
 								String.Format(Settings.Default.FileCopyError, TempFileName, Settings.Default.BasePath, ex), 
@@ -654,13 +634,13 @@ namespace Inforoom.Formalizer
 				}
 				catch(FormalizeException e)
 				{
-					formalizeOK = false;
+					FormalizeOK = false;
 					ErrodLog(WorkPrice, e);
 				}
 				catch(Exception e)
 				{
-					formalizeOK = false;
-					if ( !(e is System.Threading.ThreadAbortException) )
+					FormalizeOK = false;
+					if ( !(e is ThreadAbortException) )
 						ErrodLog(WorkPrice, e);
 					else
 						ErrodLog(WorkPrice, new Exception(Settings.Default.ThreadAbortError));
@@ -681,7 +661,7 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				if (!(e is System.Threading.ThreadAbortException))
+				if (!(e is ThreadAbortException))
 				{
 					_logger.Error("Необработанная ошибка в нитке", e);
 					InternalMailSendBy(Settings.Default.FarmSystemEmail, Settings.Default.ServiceMail, "ThreadWork Error", e.ToString());
@@ -705,7 +685,7 @@ namespace Inforoom.Formalizer
 					_logger.Error("Ошибка при удалении", e);
 				}
 				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, _allWorkTimeString);
-				_formalizeEnd = true;
+				FormalizeEnd = true;
 			}
 		}
 
@@ -719,23 +699,23 @@ namespace Inforoom.Formalizer
 				myconn.Open();
 			try
 			{
-				DataSet dsNowTime = MySqlHelper.ExecuteDataset(myconn, "select now()");
+				var dsNowTime = MySqlHelper.ExecuteDataset(myconn, "select now()");
 				if (!((dsNowTime.Tables.Count == 1) && (dsNowTime.Tables[0].Rows.Count == 1)))
 				{
 					//Попытка получить время создания connection
 					DateTime? creationTime = null;
-					FieldInfo driverField = myconn.GetType().GetField("driver", BindingFlags.Instance | BindingFlags.NonPublic);
-					object driverInternal = driverField.GetValue(myconn);
+					var driverField = myconn.GetType().GetField("driver", BindingFlags.Instance | BindingFlags.NonPublic);
+					var driverInternal = driverField.GetValue(myconn);
 					if (driverInternal != null)
 					{
-						FieldInfo creationTimeField = driverInternal.GetType().GetField("creationTime", BindingFlags.Instance | BindingFlags.NonPublic);
+						var creationTimeField = driverInternal.GetType().GetField("creationTime", BindingFlags.Instance | BindingFlags.NonPublic);
 						creationTime = (DateTime?)creationTimeField.GetValue(driverInternal);
 					}
 
 					//Пытаемся получить InnoDBStatus
 					bool InnoDBByConnection = false;
 					string InnoDBStatus = String.Empty;
-					DataSet dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
+					var dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
 					if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1) && (dsStatus.Tables[0].Columns.Contains("Status")))
 					{
 						InnoDBStatus = dsStatus.Tables[0].Rows[0]["Status"].ToString();
@@ -743,7 +723,7 @@ namespace Inforoom.Formalizer
 					}
 					if (!InnoDBByConnection)
 					{
-						DataRow drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, "show engine innodb status");
+						var drInnoDBStatus = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), "show engine innodb status");
 						if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
 							InnoDBStatus = drInnoDBStatus["Status"].ToString();
 					}
@@ -764,7 +744,7 @@ InnoDB Status            =
 					if (!LetterAboutConnectionSended)
 						try
 						{
-							using (MailMessage Message = new MailMessage(
+							using (var Message = new MailMessage(
 								Settings.Default.ServiceMail,
 								Settings.Default.ServiceMail,
 								"!!! Необходимо перезапустить PriceProcessor",
@@ -774,7 +754,7 @@ InnoDB Status            =
 {0}",
 									techInfo)))
 							{
-								SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+								var Client = new SmtpClient(Settings.Default.SMTPHost);
 								Client.Send(Message);
 							}
 							LetterAboutConnectionSended = true;

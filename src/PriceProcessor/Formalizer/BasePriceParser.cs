@@ -3,10 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Data;
-using System.Data.OleDb;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
-using System.Net.Mail;
 using Inforoom.PriceProcessor.Properties;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -26,12 +24,13 @@ namespace Inforoom.Formalizer
 		public FormalizeException(string message) : base(message)
 		{}
 
-		public FormalizeException(string message, System.Int64 ClientCode, System.Int64 PriceCode, string ClientName, string PriceName) : base(message)
+		public FormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) 
+			: base(message)
 		{
-			this.clientCode = ClientCode;
-			this.priceCode = PriceCode;
-			this.clientName = ClientName;
-			this.priceName = PriceName;
+			clientCode = ClientCode;
+			priceCode = PriceCode;
+			clientName = ClientName;
+			priceName = PriceName;
 		}
 
 		public string FullName
@@ -50,7 +49,8 @@ namespace Inforoom.Formalizer
 		public WarningFormalizeException(string message) : base(message)
 		{}
 
-		public WarningFormalizeException(string message, System.Int64 ClientCode, System.Int64 PriceCode, string ClientName, string PriceName) : base(message, ClientCode, PriceCode, ClientName, PriceName)
+		public WarningFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) 
+			: base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{}
 	}
 
@@ -68,10 +68,11 @@ namespace Inforoom.Formalizer
 		public RollbackFormalizeException(string message) : base(message)
 		{}
 		
-		public RollbackFormalizeException(string message, System.Int64 ClientCode, System.Int64 PriceCode, string ClientName, string PriceName) : base(message, ClientCode, PriceCode, ClientName, PriceName)
+		public RollbackFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) : base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{}
 
-		public RollbackFormalizeException(string message, System.Int64 ClientCode, System.Int64 PriceCode, string ClientName, string PriceName, int FormCount, int ZeroCount, int UnformCount, int ForbCount) : base(message, ClientCode, PriceCode, ClientName, PriceName)
+		public RollbackFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName, int FormCount, int ZeroCount, int UnformCount, int ForbCount) 
+			: base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{
 			this.FormCount = FormCount;
 			this.ZeroCount = ZeroCount;
@@ -228,24 +229,6 @@ namespace Inforoom.Formalizer
 		}
 
 		#endregion
-	}
-
-	public class BaseCostFinder{
-		
-		public override bool Equals(object obj)
-		{
-			if (null != obj && obj is CoreCost)
-			{
-				return (obj as CoreCost).baseCost;
-			}
-			else
-				return base.Equals(obj);
-		}
-
-		public override int GetHashCode()
-		{
-			return base.GetHashCode ();
-		}
 	}
 
 	/// <summary>
@@ -542,43 +525,6 @@ namespace Inforoom.Formalizer
 		/// Производит специализированное открытие прайса в зависимости от типа
 		/// </summary>
 		public abstract void Open();
-
-		public void FillPrice(OleDbDataAdapter da)
-		{
-			bool res = false;
-			int tryCount = 0;
-			do
-			{
-				try
-				{
-					dtPrice.Clear();
-					da.Fill(dtPrice);
-					res = true;
-				}
-				catch(System.Runtime.InteropServices.InvalidComObjectException)
-				{
-					if (tryCount < Settings.Default.MinRepeatTranCount)
-					{
-						tryCount++;
-						_logger.Error("Repeat Fill dtPrice on InvalidComObjectException");
-						System.Threading.Thread.Sleep(500);
-					}
-					else
-						throw;
-				}
-				catch(NullReferenceException)
-				{
-					if (tryCount < Settings.Default.MinRepeatTranCount)
-					{
-						tryCount++;
-						_logger.Error("Repeat Fill dtPrice on NullReferenceException");
-						System.Threading.Thread.Sleep(500);
-					}
-					else
-						throw;
-				}
-			}while(!res);
-		}
 
 		/// <summary>
 		/// Производится вставка данных в таблицу Core
@@ -1349,7 +1295,8 @@ where
 				}
 				else
 				{
-					string SynonymUpdateCommand = null, SynonymFirmCrUpdateCommand = null;
+					string SynonymUpdateCommand = null;
+					string SynonymFirmCrUpdateCommand = null;
 
 					string[] insertCoreAndCoreCostsCommandList;
 

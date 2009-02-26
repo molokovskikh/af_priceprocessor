@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.OleDb;
+using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.Formalizer
@@ -17,12 +18,12 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			convertedToANSI = true;
-			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"dBase 5.0\"", System.IO.Path.GetDirectoryName(priceFileName))))
+			using (var dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"dBase 5.0\"", System.IO.Path.GetDirectoryName(priceFileName))))
 			{
 				dbcMain.Open();
-				using (OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from [{0}]", System.IO.Path.GetFileNameWithoutExtension(priceFileName)), dbcMain))
+				using (var da = new OleDbDataAdapter(String.Format("select * from [{0}]", System.IO.Path.GetFileNameWithoutExtension(priceFileName)), dbcMain))
 				{
-					FillPrice(da);
+					dtPrice = OleDbHelper.FillPrice(da);
 				}
 			}
 

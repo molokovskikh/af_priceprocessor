@@ -4,6 +4,7 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.Data;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
@@ -48,7 +49,7 @@ namespace Inforoom.Downloader
             Stream responseStream = response.GetResponseStream();
             using (FileStream fs = new FileStream(SaveFileName, FileMode.Create))
             {
-                CopyStreams(responseStream, fs);
+                FileHelper.CopyStreams(responseStream, fs);
                 fs.Close();
             }
             response.Close();

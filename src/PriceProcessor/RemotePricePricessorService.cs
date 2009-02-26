@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor
 		public void ResendPrice(ulong DownLogId)
 		{
 			DataRow drFocused = MySqlHelper.ExecuteDataRow(
-				ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+				Literals.ConnectionString(),
 				@"
 SELECT
   logs.RowID as DRowID,
@@ -95,14 +95,14 @@ and logs.Rowid = ?DownLogId",
 					if (!File.Exists(destinationFile))
 					{
 						File.Copy(sourceFile, destinationFile);
-						PriceProcessItem item = new PriceProcessItem(
+						var item = new PriceProcessItem(
 							true, 
 							Convert.ToUInt64(drFocused["DPriceCode"].ToString()), 
 							(drFocused["DCostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
 							Convert.ToUInt64(drFocused["DPriceItemId"].ToString()), 
 							destinationFile,
-							(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
-						item.FileTime = DateTime.Now;
+							(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()))
+						           	{FileTime = DateTime.Now};
 						PriceItemList.AddItem(item);
 
 						if (Directory.Exists(TempDirectory))

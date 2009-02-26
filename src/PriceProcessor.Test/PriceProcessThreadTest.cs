@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
 using log4net.Appender;
@@ -60,7 +61,7 @@ namespace PriceProcessor.Test
 
 			MySqlConnection GetConnection()
 			{
-				return new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+				return new MySqlConnection(Literals.ConnectionString());
 			}
 
 			public CorruptDBThread()
@@ -105,7 +106,7 @@ namespace PriceProcessor.Test
 						}
 						if (!InnoDBByConnection)
 						{
-							DataRow drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, "show engine innodb status");
+							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), "show engine innodb status");
 							if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
 								InnoDBStatus = drInnoDBStatus["Status"].ToString();
 						}

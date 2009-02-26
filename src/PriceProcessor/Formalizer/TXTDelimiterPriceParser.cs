@@ -3,6 +3,7 @@ using System.IO;
 using System.Data;
 using System.Text;
 using System.Data.OleDb;
+using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 
@@ -81,7 +82,7 @@ namespace Inforoom.Formalizer
 				dbcMain.Open();
 				using (OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
 				{
-					FillPrice(da);
+					dtPrice = OleDbHelper.FillPrice(da);
 				}
 			}
 

@@ -3,6 +3,7 @@ using System.Data;
 using System.IO;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
+using FileHelper=Inforoom.PriceProcessor.Downloader.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -10,8 +11,8 @@ namespace Inforoom.Downloader
     {
     	protected DateTime GetPriceDateTime()
 		{
-			DateTime d = (dtSources.Rows[0][SourcesTableColumns.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTableColumns.colPriceDate];
-			PriceProcessItem item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]));
+			var d = (dtSources.Rows[0][SourcesTableColumns.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTableColumns.colPriceDate];
+			var item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]));
 			if (item != null)
 				d = item.FileTime.Value;
 			return d;
@@ -44,7 +45,7 @@ namespace Inforoom.Downloader
                             {
                                 try
                                 {
-                                    ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+                                    FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
                                 }
                                 catch (ArchiveHelper.ArchiveException)
                                 {
@@ -54,12 +55,12 @@ namespace Inforoom.Downloader
                             else
                                 CorrectArchive = false;
                         }
-                        foreach (DataRow drS in drLS)
+                        foreach (var drS in drLS)
                         {
                             SetCurrentPriceCode(drS);
                             if (CorrectArchive)
                             {
-								string ExtrFile = String.Empty;
+								var ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
                                 {
 									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
@@ -79,22 +80,22 @@ namespace Inforoom.Downloader
                     }
                     else
                     {
-                        foreach (DataRow drDel in drLS)
+                        foreach (var drDel in drLS)
                             drDel.Delete();
                     }
                     dtSources.AcceptChanges();
                 }
                 catch(Exception ex)
                 {
-                    string Error = String.Empty;
+                    var Error = String.Empty;
                     if ((drLS != null) && (drLS.Length > 1))
                     {
-                        foreach (DataRow drS in drLS)
+                        foreach (var drS in drLS)
                         {
                             if (Error == String.Empty)
                                 Error += drS[SourcesTableColumns.colPriceCode].ToString();
                             else
-                                Error += ", " + drS[SourcesTableColumns.colPriceCode].ToString();
+                                Error += ", " + drS[SourcesTableColumns.colPriceCode];
                             try
                             {
                                 drS.Delete();
@@ -112,7 +113,7 @@ namespace Inforoom.Downloader
                         }
                         catch { }
                     }
-                    Error += Environment.NewLine + Environment.NewLine + ex.ToString();
+                    Error += Environment.NewLine + Environment.NewLine + ex;
                     LoggingToService(Error);
                     try
                     {
@@ -141,16 +142,7 @@ namespace Inforoom.Downloader
 			return item;
 		}
 
-    	protected void CopyStreams(Stream input, Stream output)
-        {
-            const int size = 4096;
-            byte[] bytes = new byte[4096];
-            int numBytes;
-            while ((numBytes = input.Read(bytes, 0, size)) > 0)
-                output.Write(bytes, 0, numBytes);
-        }
-
-        /// <summary>
+    	/// <summary>
         /// Получает файл из источника, взятого из таблицы первым
         /// </summary>
         protected abstract void GetFileFromSource();

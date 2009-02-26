@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
@@ -47,7 +46,7 @@ namespace Inforoom.PriceProcessor
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
 		{
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
-				ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+				Literals.ConnectionString(),
 @"select
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,

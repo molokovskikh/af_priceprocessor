@@ -13,39 +13,38 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	class FormalizeHandler : AbstractHandler
 	{
-		private FileSystemWatcher FSW;
-		private FileSystemEventHandler FSEHOnCreate;
+		private readonly FileSystemWatcher FSW;
+		private readonly FileSystemEventHandler FSEHOnCreate;
 
 		//список с рабочими нитками формализации
-		private List<PriceProcessThread> pt;
+		private readonly List<PriceProcessThread> pt;
 
 		//Время последнего статистического отчета 
 		private DateTime lastStatisticReport = DateTime.Now.AddDays(-1);
 
 		//Период статистического отчета в секундах
-		private int statisticPeriodPerSecs = 30;
+		private const int statisticPeriodPerSecs = 30;
 
 		private Hashtable htEMessages;
 
 		/// <summary>
 		/// Время последней удачной формализации
 		/// </summary>
-		private DateTime? _lastFormalizationDate = null;
+		private DateTime? _lastFormalizationDate;
 
 		/// <summary>
 		/// Если установлен в true, то формализация не происходит и было отправлено уведомление об этом
 		/// </summary>
-		private bool _formalizationFail = false;
+		private bool _formalizationFail;
 
 		public FormalizeHandler()
-			: base()
 		{
 			//Время паузы обработчика - 5 секунд
 			SleepTime = 5;
 
 			//Создали наблюдателя за файлами
 			FSW = new FileSystemWatcher(Settings.Default.InboundPath, "*.*");
-			FSEHOnCreate = new FileSystemEventHandler(OnFileCreate);
+			FSEHOnCreate = OnFileCreate;
 
 			pt = new List<PriceProcessThread>();
 		}
@@ -54,7 +53,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void StartWork()
 		{
 			//Получили список файдов и добавил его на обраобтку
-			foreach (string priceFile in Directory.GetFiles(Settings.Default.InboundPath))
+			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath))
 			{
 				AddPriceFileToList(priceFile);
 				//Если файл имеет префикс "d", то значит он был закачан в прошлый раз, поэтому сейчас с ним никак не удастся поработать
@@ -89,38 +88,39 @@ namespace Inforoom.PriceProcessor.Formalizer
 			//Сначала для всех ниток вызваем Abort,
 			for (int i = pt.Count - 1; i >= 0; i--)
 				//Если нитка работает, то останавливаем ее
-				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
+				if (pt[i].ThreadIsAlive)
 				{
-					(pt[i] as PriceProcessThread).AbortThread();
-					_logger.InfoFormat("Вызвали Abort() для нитки {0}", (pt[i] as PriceProcessThread).TID);
+					pt[i].AbortThread();
+					_logger.InfoFormat("Вызвали Abort() для нитки {0}", pt[i].TID);
 				}
 
 			//а потом ждем их завершения
 			for (int i = pt.Count - 1; i >= 0; i--)
 			{
+				
+				if (!pt[i].ThreadIsAlive) 
+					continue;
+
 				//Если нитка работает, то ожидаем ее останов
-				if ((pt[i] as PriceProcessThread).ThreadIsAlive)
+				_logger.InfoFormat("Ожидаем останов нитки {0}", pt[i].TID);
+				pt[i].AbortThread();
+				int _currentWaitTime = 0;
+				while ((_currentWaitTime < maxJoinTime) && ((pt[i].ThreadState & ThreadState.Stopped) == 0))
 				{
-					_logger.InfoFormat("Ожидаем останов нитки {0}", (pt[i] as PriceProcessThread).TID);
-					(pt[i] as PriceProcessThread).AbortThread();
-					int _currentWaitTime = 0;
-					while ((_currentWaitTime < maxJoinTime) && (((pt[i] as PriceProcessThread).ThreadState & ThreadState.Stopped) == 0))
-					{
-						if (((pt[i] as PriceProcessThread).ThreadState & ThreadState.WaitSleepJoin) > 0)
-							(pt[i] as PriceProcessThread).InterruptThread();
-						Thread.Sleep(1000);
-						_currentWaitTime += 1000;
-					}
-					if (((pt[i] as PriceProcessThread).ThreadState & ThreadState.Stopped) > 0)
-						_logger.InfoFormat("Останов нитки выполнен {0}", (pt[i] as PriceProcessThread).TID);
-					else
-						_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", (pt[i] as PriceProcessThread).TID, maxJoinTime);
+					if ((pt[i].ThreadState & ThreadState.WaitSleepJoin) > 0)
+						pt[i].InterruptThread();
+					Thread.Sleep(1000);
+					_currentWaitTime += 1000;
 				}
+				if ((pt[i].ThreadState & ThreadState.Stopped) > 0)
+					_logger.InfoFormat("Останов нитки выполнен {0}", pt[i].TID);
+				else
+					_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", pt[i].TID, maxJoinTime);
 			}
 
 			//удяляем пулл временных папок
-			string[] _poolDirectories = Directory.GetDirectories(Path.GetTempPath(), "PPT*");
-			foreach(string _deletingDirectory in _poolDirectories)
+			var _poolDirectories = Directory.GetDirectories(Path.GetTempPath(), "PPT*");
+			foreach(var _deletingDirectory in _poolDirectories)
 				if (Directory.Exists(_deletingDirectory))
 					try
 					{
@@ -139,22 +139,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 		/// <returns>Найденая нитка или null</returns>
 		private PriceProcessThread FindByProcessItem(PriceProcessItem item)
 		{
-			return pt.Find(delegate(PriceProcessThread thread) { return (thread.ProcessItem == item); });
+			return pt.Find(thread => (thread.ProcessItem == item));
 		}
 
 		private int GetDownloadedProcessCount()
 		{
-			List<PriceProcessThread> DownloadedProcessList = pt.FindAll(delegate(PriceProcessThread thread) { return (thread.ProcessItem.Downloaded); });
+			var DownloadedProcessList = pt.FindAll(thread => (thread.ProcessItem.Downloaded));
 			return DownloadedProcessList.Count;
-		}
-		/// <summary>
-		/// Работает ли определенная нитка?
-		/// </summary>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		private bool PriceProcessExist(PriceProcessItem item)
-		{
-			return (FindByProcessItem(item) != null);
 		}
 
 		/// <summary>
@@ -241,20 +232,20 @@ namespace Inforoom.PriceProcessor.Formalizer
 				&& (DateTime.UtcNow.Subtract(_lastFormalizationDate.Value).TotalMinutes > Settings.Default.MaxLiveTime))
 				try
 				{
-					string logMessage = String.Format(
+					var logMessage = String.Format(
 						"Время последней удачной формализации = {0}\r\nОчередь на формализацию = {1}", 
 						_lastFormalizationDate.Value.ToLocalTime(), 
 						PriceItemList.list.Count);
 
 					_logger.FatalFormat("Останов в нитках формализации.\r\n{0}", logMessage);
 
-					using (MailMessage Message = new MailMessage(
+					using (var Message = new MailMessage(
 						Settings.Default.FarmSystemEmail,
 						Settings.Default.SMTPErrorList,
 						"Останов в нитках формализации",
 						logMessage))
 					{
-						SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+						var Client = new SmtpClient(Settings.Default.SMTPHost);
 						Client.Send(Message);
 					}
 					_formalizationFail = true;
@@ -273,8 +264,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 			int i = PriceItemList.list.Count-1;
 			while(i > -1)
 			{
-				PriceProcessItem item = PriceItemList.list[i];
-				PriceProcessItem downloadedItem = PriceItemList.GetLastestDownloaded(item.PriceItemId);
+				var item = PriceItemList.list[i];
+				var downloadedItem = PriceItemList.GetLastestDownloaded(item.PriceItemId);
 				if (downloadedItem == null)
 					//если нет скаченных прайс-листов, то элемент оставляем
 					i--;
@@ -348,7 +339,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			int j = 0;
 			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < processList.Count))
 			{
-				PriceProcessItem item = processList[j];
+				var item = processList[j];
 								
 				if (item.IsReadyForProcessing(pt))
 				{
@@ -380,11 +371,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			lock (pt)
 			{
-				string statisticMessage = String.Empty;
+				var statisticMessage = String.Empty;
 
-				for (int i = pt.Count - 1; i >= 0; i--)
+				for (var i = pt.Count - 1; i >= 0; i--)
 				{
-					PriceProcessThread p = (pt[i] as PriceProcessThread);
+					var p = pt[i];
 					//Если нитка не работает, то удаляем ее
 					if (p.FormalizeEnd || !p.ThreadIsAlive || ((p.ThreadState & ThreadState.Stopped) > 0))
 					{
@@ -393,7 +384,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					}
 					else
 						//Остановка нитки по сроку, если она работает дольше, чем можно
-						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && ((p.ThreadState & System.Threading.ThreadState.AbortRequested) == 0))
+						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && ((p.ThreadState & ThreadState.AbortRequested) == 0))
 						{
 							_logger.InfoFormat(System.Globalization.CultureInfo.CurrentCulture,
 								"Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}", 
@@ -415,7 +406,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 								pt.RemoveAt(i);
 							}
 							else
-								if (((p.ThreadState & System.Threading.ThreadState.AbortRequested) > 0) && ((p.ThreadState & System.Threading.ThreadState.WaitSleepJoin) > 0))
+								if (((p.ThreadState & ThreadState.AbortRequested) > 0) && ((p.ThreadState & ThreadState.WaitSleepJoin) > 0))
 								{
 									_logger.InfoFormat("Вызвали прерывание для нитки {0}.", p.TID);
 									p.InterruptThread();
@@ -446,8 +437,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private void DeleteProcessThread(PriceProcessThread p)
 		{
 			_logger.InfoFormat("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  ProcessState = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.ProcessState);
-			FileHashItem hi = (FileHashItem)htEMessages[p.ProcessItem.FilePath];
-			string prevErrorMessage = hi.ErrorMessage;
+			var hi = (FileHashItem)htEMessages[p.ProcessItem.FilePath];
 			hi.ErrorMessage = p.CurrentErrorMessage;
 
 			//если формализация завершилась успешно
@@ -513,10 +503,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						try
 						{
-							using (MailMessage Message = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, "Ошибка формализации",
+							using (var Message = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, "Ошибка формализации",
 								String.Format(Settings.Default.MaxErrorsError, p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, Settings.Default.MaxErrorCount)))
 							{
-								SmtpClient Client = new SmtpClient(Settings.Default.SMTPHost);
+								var Client = new SmtpClient(Settings.Default.SMTPHost);
 								Client.Send(Message);
 							}
 						}

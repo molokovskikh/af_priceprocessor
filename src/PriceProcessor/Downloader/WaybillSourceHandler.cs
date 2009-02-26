@@ -103,12 +103,12 @@ namespace Inforoom.Downloader
 				new ExecuteArgs(), 
 				delegate(ExecuteArgs args)
 				{
-					object clientCode = MySqlHelper.ExecuteScalar(cWork, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode.ToString());
+					object clientCode = MySqlHelper.ExecuteScalar(_workConnection, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode.ToString());
 
 					return (clientCode != null);
 				},
 				false,
-				cWork,
+				_workConnection,
 				true,
 				null,
 				false,
@@ -314,11 +314,11 @@ and st.SourceID = 1";
 						delegate(ExecuteArgs args)
 						{
 							return MySqlHelper.ExecuteScalar(
-								cWork,
+								_workConnection,
 								String.Format("select w.FirmCode FROM documents.waybill_sources w WHERE w.EMailFrom like '%{0}%' and w.SourceID = 1", address.EmailAddress)); ;
 						},
 						null,
-						cWork,
+						_workConnection,
 						true,
 						null,
 						false,
@@ -458,7 +458,7 @@ and st.SourceID = 1";
 				FileName = _convertedFileName;
 			}
 
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", cWork);
+			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", _workConnection);
 			cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 			cmdInsert.Parameters.AddWithValue("?ClientCode", AptekaClientCode);
 			cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
@@ -476,15 +476,15 @@ and st.SourceID = 1";
 			{
 				try
 				{
-					if (cWork.State != ConnectionState.Open)
+					if (_workConnection.State != ConnectionState.Open)
 					{
-						cWork.Open();
+						_workConnection.Open();
 					}
 
 					if (!Directory.Exists(AptekaClientDirectory))
 						Directory.CreateDirectory(AptekaClientDirectory);
 
-					tran = cWork.BeginTransaction(IsolationLevel.RepeatableRead);
+					tran = _workConnection.BeginTransaction(IsolationLevel.RepeatableRead);
 
 					cmdInsert.Transaction = tran;
 
@@ -493,7 +493,7 @@ and st.SourceID = 1";
 						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
 						+ Path.GetExtension(FileName);
 
-					OutFileName = NormalizeFileName(OutFileName);
+					OutFileName = PriceProcessor.Downloader.FileHelper.NormalizeFileName(OutFileName);
 
 					if (File.Exists(OutFileName))
 						try
@@ -561,7 +561,7 @@ and st.SourceID = 1";
 				return null;
 			},
 				null,
-				cWork,
+				_workConnection,
 				true,
 				null,
 				false,

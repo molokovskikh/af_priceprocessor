@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using System.Text;
 using System.Net.Mail;
@@ -43,7 +44,7 @@ namespace Inforoom.Formalizer
 
 			if (sb.Length > 0)
 			{
-				DataRow drProvider = MySqlHelper.ExecuteDataRow(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, @"
+				DataRow drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
 select
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
   concat(cd.ShortName, ' - ', r.Region) ShortFirmName

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using Inforoom.Downloader;
@@ -8,7 +7,6 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Http;
 using Inforoom.PriceProcessor.Properties;
-using RemotePricePricessor;
 
 
 namespace Inforoom.PriceProcessor
@@ -18,12 +16,11 @@ namespace Inforoom.PriceProcessor
 	/// </summary>
 	public class Monitor
 	{
-		private List<AbstractHandler> alHandlers = null;
-		private bool Stopped = false;
-
-		private Thread tMonitor;
-
+		private readonly List<AbstractHandler> _handlers;
+		private readonly Thread tMonitor;
 		private readonly log4net.ILog _logger;
+
+		private bool Stopped;
 
 		public Monitor()
 		{
@@ -38,22 +35,21 @@ namespace Inforoom.PriceProcessor
 
 			RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
 
-			alHandlers = new List<AbstractHandler>();
-
-			alHandlers.Add(new FormalizeHandler());
-
+			_handlers = new List<AbstractHandler>
+			             	{
+			             		new FormalizeHandler(),
 #if (!DEBUG)
-			alHandlers.Add(new LANSourceHandler());
-			alHandlers.Add(new FTPSourceHandler());
-			alHandlers.Add(new HTTPSourceHandler());
-			alHandlers.Add(new EMAILSourceHandler());
-			alHandlers.Add(new WaybillSourceHandler());
-			alHandlers.Add(new WaybillLANSourceHandler());
-			alHandlers.Add(new ClearArchivedPriceSourceHandler());
+			             		new LANSourceHandler(),
+			             		new FTPSourceHandler(),
+			             		new HTTPSourceHandler(),
+			             		new EMAILSourceHandler(),
+			             		new WaybillSourceHandler(),
+			             		new WaybillLANSourceHandler(),
+			             		new ClearArchivedPriceSourceHandler()
 #endif
+			             	};
 
-			tMonitor = new Thread(new ThreadStart(MonitorWork));
-			tMonitor.Name = "MonitorThread";
+			tMonitor = new Thread(MonitorWork) {Name = "MonitorThread"};
 		}
 
 		//запускаем монитор с обработчиками
@@ -61,7 +57,7 @@ namespace Inforoom.PriceProcessor
 		{
             try
             {
-				foreach (AbstractHandler handler in alHandlers)
+				foreach (var handler in _handlers)
                     try
                     {
                         handler.StartWork();
@@ -86,9 +82,9 @@ namespace Inforoom.PriceProcessor
             try
             {
                 Stopped = true;
-                System.Threading.Thread.Sleep(3000);
+                Thread.Sleep(3000);
                 tMonitor.Abort();
-				foreach (AbstractHandler handler in alHandlers)
+				foreach (var handler in _handlers)
                     try
                     {
 						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
@@ -112,13 +108,13 @@ namespace Inforoom.PriceProcessor
 			while (!Stopped)
 				try
 				{
-					foreach(AbstractHandler handler in alHandlers)
+					foreach(var handler in _handlers)
 					{
 						if (!handler.Worked)
 							handler.RestartWork();
 					}
 
-					System.Threading.Thread.Sleep(500);
+					Thread.Sleep(500);
 				}
 				catch(Exception e)
 				{

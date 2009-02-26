@@ -84,7 +84,7 @@ and st.SourceID = 4";
 										{
 											try
 											{
-												ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+												PriceProcessor.Downloader.FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 											}
 											catch (ArchiveHelper.ArchiveException)
 											{
@@ -266,7 +266,7 @@ and st.SourceID = 4";
 						FileName = _convertedFileName;
 					}
 
-					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", cWork);
+					MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", _workConnection);
 					cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 					cmdInsert.Parameters.AddWithValue("?ClientCode", DBNull.Value);
 					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
@@ -284,7 +284,7 @@ and st.SourceID = 4";
 					try
 					{
 						//Пытаемся получить список клиентов для накладной
-						listClients = documentReader.GetClientCodes(cWork, Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]), ArchFileName, FileName);
+						listClients = documentReader.GetClientCodes(_workConnection, Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]), ArchFileName, FileName);
 					}
 					catch (Exception ex)
 					{
@@ -318,7 +318,7 @@ and st.SourceID = 4";
 							try
 							{
 								documentReader.ImportDocument(
-									cWork,
+									_workConnection,
 									Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]),
 									AptekaClientCode,
 									1,
@@ -342,7 +342,7 @@ and st.SourceID = 4";
 								+ drCurrent["ShortName"].ToString()
 								+ "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
 								+ Path.GetExtension(formatFile);
-							OutFileName = NormalizeFileName(OutFileName);
+							OutFileName = PriceProcessor.Downloader.FileHelper.NormalizeFileName(OutFileName);
 
 							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
 							if (File.Exists(OutFileName))
@@ -371,7 +371,7 @@ and st.SourceID = 4";
 					return true;
 				},
 				false,
-				cWork,
+				_workConnection,
 				true,
 				null,
 				false,
@@ -397,7 +397,7 @@ and st.SourceID = 4";
 				return null;
 			}, 
 				null,
-				cWork,
+				_workConnection,
 				true,
 				null,
 				false,
