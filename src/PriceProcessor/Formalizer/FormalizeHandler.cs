@@ -14,7 +14,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 	class FormalizeHandler : AbstractHandler
 	{
 		private readonly FileSystemWatcher FSW;
-		private readonly FileSystemEventHandler FSEHOnCreate;
 
 		//список с рабочими нитками формализации
 		private readonly List<PriceProcessThread> pt;
@@ -44,8 +43,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			//Создали наблюдателя за файлами
 			FSW = new FileSystemWatcher(Settings.Default.InboundPath, "*.*");
-			FSEHOnCreate = OnFileCreate;
-
 			pt = new List<PriceProcessThread>();
 		}
 
@@ -66,7 +63,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			htEMessages = new Hashtable();
 
-			FSW.Created += FSEHOnCreate;
+			FSW.Created += OnFileCreate;
 			FSW.EnableRaisingEvents = true;
 
 			base.StartWork();
@@ -75,7 +72,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void StopWork()
 		{
 			FSW.EnableRaisingEvents = false;
-			FSW.Created -= FSEHOnCreate;
+			FSW.Created -= OnFileCreate;
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 
