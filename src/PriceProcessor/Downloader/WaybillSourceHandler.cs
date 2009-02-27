@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
-using Inforoom.Formalizer;
-using LumiSoft.Net.IMAP;
 using MySql.Data.MySqlClient;
 using System.IO;
 using ExecuteTemplate;
@@ -20,19 +17,16 @@ namespace Inforoom.Downloader
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
 
-		private int? AptekaClientCode = null;
+		private int? AptekaClientCode;
 
-		private List<InboundDocumentType> types;
+		private readonly List<InboundDocumentType> types;
 
-		private InboundDocumentType currentType = null;
+		private InboundDocumentType currentType;
 
 		public WaybillSourceHandler()
-            : base()
-        {
-			this.sourceType = "WAYBILL";
-			types = new List<InboundDocumentType>();
-			types.Add(new WaybillType());
-			types.Add(new RejectType());
+		{
+			sourceType = "WAYBILL";
+			types = new List<InboundDocumentType> {new WaybillType(), new RejectType()};
 		}
 
 		protected override void IMAPAuth(IMAP_Client c)
@@ -78,7 +72,7 @@ namespace Inforoom.Downloader
 						if (m.Attachments.Length > 0)
 						{ 
 							bool attachmentsIsBigger = false;
-							foreach(MimeEntity attachment in m.Attachments)
+							foreach(var attachment in m.Attachments)
 								if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
 								{
 									attachmentsIsBigger = true;
@@ -99,11 +93,10 @@ namespace Inforoom.Downloader
 
 		private bool ClientExists(int CheckClientCode)
 		{
-			return ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, bool>(
+			return MethodTemplate.ExecuteMethod(
 				new ExecuteArgs(), 
-				delegate(ExecuteArgs args)
-				{
-					object clientCode = MySqlHelper.ExecuteScalar(_workConnection, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode.ToString());
+				delegate {
+					var clientCode = MySqlHelper.ExecuteScalar(_workConnection, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode);
 
 					return (clientCode != null);
 				},
@@ -112,8 +105,7 @@ namespace Inforoom.Downloader
 				true,
 				null,
 				false,
-				delegate(ExecuteArgs args, MySqlException ex)
-				{
+				delegate {
 					Ping();
 				});
 		}
@@ -124,9 +116,9 @@ namespace Inforoom.Downloader
 			InboundDocumentType testType = null;
 			int? testClientCode = null;
 
-			foreach (InboundDocumentType id in types)
+			foreach (var id in types)
 			{
-				int clientCode = 0;
+				int clientCode;
 				if (id.ParseEmail(Address, out clientCode))
 				{
 					testClientCode = clientCode;
@@ -154,12 +146,12 @@ namespace Inforoom.Downloader
 
 		private int CorrectClientAddress(AddressList addressList, ref string EmailList)
 		{
-			int? CurrentClientCode = null;
+			int? CurrentClientCode;
 			int ClientCodeCount = 0;
 
 			//ѕробегаемс€ по всем адресам TO и ищем адрес вида <\d+@waybills.analit.net> или <\d+@refused.analit.net>
 			//≈сли таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
-			foreach(MailboxAddress ma in  addressList.Mailboxes)
+			foreach(var ma in  addressList.Mailboxes)
 			{
 				CurrentClientCode = GetClientCode(GetCorrectEmailAddress(ma.EmailAddress));
 				if (CurrentClientCode.HasValue)
@@ -236,8 +228,8 @@ and st.SourceID = 1";
 		{
 			try
 			{
-				string cause = "ƒл€ данного E-mail не найден источник в таблице documents.waybill_sources";
-				MemoryStream ms = new MemoryStream(m.ToByteData());
+				const string cause = "ƒл€ данного E-mail не найден источник в таблице documents.waybill_sources";
+				var ms = new MemoryStream(m.ToByteData());
 				SendErrorLetterToProvider(
 					FromList, 
 					Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
@@ -275,22 +267,22 @@ and st.SourceID = 1";
 		{
 			try
 			{
-				AddressList _from = new AddressList();
+				var _from = new AddressList();
 				_from.Parse("farm@analit.net");
 
 				//Mime responseMime = Mime.CreateSimple(_from, FromList, causeSubject, causeBody, String.Empty);
-				Mime responseMime = new Mime();
+				var responseMime = new Mime();
 				responseMime.MainEntity.From = _from;
 				responseMime.MainEntity.To = FromList;
 				responseMime.MainEntity.Subject = causeSubject;
 				responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
 
-				MimeEntity testEntity  = responseMime.MainEntity.ChildEntities.Add();
+				var testEntity  = responseMime.MainEntity.ChildEntities.Add();
 				testEntity.ContentType = MediaType_enum.Text_plain;
 				testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
 				testEntity.DataText = causeBody;
 
-				MimeEntity attachEntity  = responseMime.MainEntity.ChildEntities.Add();
+				var attachEntity  = responseMime.MainEntity.ChildEntities.Add();
 				attachEntity.ContentType = MediaType_enum.Application_octet_stream;
 				attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
 				attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
@@ -309,10 +301,9 @@ and st.SourceID = 1";
 			{
 				foreach (MailboxAddress address in FromList)
 				{
-					object FirmCode = ExecuteTemplate.MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
+					var FirmCode = MethodTemplate.ExecuteMethod(
 						new ExecuteArgs(),
-						delegate(ExecuteArgs args)
-						{
+						delegate {
 							return MySqlHelper.ExecuteScalar(
 								_workConnection,
 								String.Format("select w.FirmCode FROM documents.waybill_sources w WHERE w.EMailFrom like '%{0}%' and w.SourceID = 1", address.EmailAddress)); ;
@@ -322,10 +313,7 @@ and st.SourceID = 1";
 						true,
 						null,
 						false,
-						delegate(ExecuteArgs args, MySqlException ex)
-						{
-							Ping();
-						});
+						(e, ex) => Ping());
 						
 					if (FirmCode != null)
 						return Convert.ToInt32(FirmCode);
@@ -347,7 +335,7 @@ and st.SourceID = 1";
 		{
 			try
 			{
-				MemoryStream ms = new MemoryStream(m.ToByteData());
+				var ms = new MemoryStream(m.ToByteData());
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
 				WriteLog(
 					(currentType != null) ? (int?)currentType.TypeID : null,
@@ -380,30 +368,27 @@ and st.SourceID = 1";
 			//ќдин из аттачментов письма совпал с источником, иначе - письмо не распознано
 			bool _Matched = false;
 
-			bool CorrectArchive = true;
-			string ShortFileName = string.Empty;
-
-			DataRow[] drLS = null;
+			DataRow[] drLS;
 
 			/*¬ накладных письма обрабатываютс€ немного по-другому: письма обрабатываютс€ относительно адреса отправител€
 			 * и если такой отправитель найден в истониках, то все вложени€ сохран€ютс€ относительно него.
 			 * ≈сли он не найден, то ничего не делаем.
 			 */
-			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+			foreach (var mbFrom in FromList.Mailboxes)
 			{
 				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
 				//јдрес отправител€ должен быть только у одного поставщика, если получилось больше, то это ошибка
 				if (drLS.Length == 1)
 				{
-					DataRow drS = drLS[0];
+					var drS = drLS[0];
 
-					foreach (MimeEntity ent in m.Attachments)
+					foreach (var ent in m.Attachments)
 					{
 						if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || !String.IsNullOrEmpty(ent.ContentType_Name))
 						{
-							ShortFileName = SaveAttachement(ent);
-							CorrectArchive = CheckFile();
+							SaveAttachement(ent);
+							var CorrectArchive = CheckFile();
 							_Matched = true;
 							if (CorrectArchive)
 							{
@@ -433,7 +418,7 @@ and st.SourceID = 1";
 		protected void ProcessWaybillFile(string InFile, DataRow drCurrent)
 		{
 			//ћассив файлов 
-			string[] Files = new string[] { InFile };
+			var Files = new[] { InFile };
 			if (ArchiveHelper.IsArchive(InFile))
 			{
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
@@ -458,7 +443,7 @@ and st.SourceID = 1";
 				FileName = _convertedFileName;
 			}
 
-			MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", _workConnection);
+			var cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType); select last_insert_id();", _workConnection);
 			cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
 			cmdInsert.Parameters.AddWithValue("?ClientCode", AptekaClientCode);
 			cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
@@ -467,9 +452,9 @@ and st.SourceID = 1";
 
 			MySqlTransaction tran = null;
 
-			string AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
-			string OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
-			string OutFileName = String.Empty;
+			var AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + currentType.FolderName;
+			var OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
+			var OutFileName = String.Empty;
 
 
 			do
@@ -488,8 +473,8 @@ and st.SourceID = 1";
 
 					cmdInsert.Transaction = tran;
 
-					OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar().ToString() + "_"
-						+ drCurrent[WaybillSourcesTable.colShortName].ToString()
+					OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar() + "_"
+						+ drCurrent[WaybillSourcesTable.colShortName]
 						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
 						+ Path.GetExtension(FileName);
 
@@ -531,7 +516,6 @@ and st.SourceID = 1";
 					if (tran != null)
 					{
 						tran.Rollback();
-						tran = null;
 					}
 					if (!String.IsNullOrEmpty(OutFileName) && File.Exists(OutFileName))
 						try
@@ -548,7 +532,7 @@ and st.SourceID = 1";
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				MySqlCommand cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
+				var cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
 
 				cmdInsert.Parameters.AddWithValue("?FirmCode", FirmCode);
 				cmdInsert.Parameters.AddWithValue("?ClientCode", ClientCode);
@@ -565,10 +549,7 @@ and st.SourceID = 1";
 				true,
 				null,
 				false,
-				delegate(ExecuteArgs args, MySqlException ex)
-				{
-					Ping();
-				});
+				(e, ex) => Ping());
 		}
 
 
