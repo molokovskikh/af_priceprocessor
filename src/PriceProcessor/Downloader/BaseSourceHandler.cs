@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using ExecuteTemplate;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
+using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -92,6 +93,7 @@ namespace Inforoom.Downloader
 		protected ulong? CurrCostCode;
 		protected ulong CurrPriceItemId;
 		protected ulong? CurrParentSynonym;
+		protected bool IsMyPrice;
         /// <summary>
         /// текущая обрабатываема строка в таблице
         /// </summary>
@@ -179,7 +181,9 @@ SELECT
   st.EMailTo, st.EMailFrom, 
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.HTTPLogin, st.HTTPPassword,
-  st.PriceMask, st.ExtrMask
+  st.PriceMask, st.ExtrMask,
+  pi.IsForSlave,
+  pi.LastDownload
 FROM   
   farm.sourcetypes,
   farm.Sources as st,
@@ -311,6 +315,7 @@ and pd.AgencyEnabled= 1",
 			CurrCostCode = (dr[SourcesTableColumns.colCostCode] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
 			CurrPriceItemId = Convert.ToUInt64(dr[SourcesTableColumns.colPriceItemId]);
 			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
+        	IsMyPrice = !Convert.ToBoolean(dr["IsForSlave"]);
         }
 
 		protected string GetExt()
@@ -327,7 +332,7 @@ and pd.AgencyEnabled= 1",
             if (ArchiveHelper.IsArchive(InFile))
             {
 				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
-					ExtrFile = PriceProcessor.Downloader.FileHelper.FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
+					ExtrFile = PriceProcessor.FileHelper.FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
 				else
 					ExtrFile = String.Empty;
             }
@@ -433,7 +438,7 @@ and pd.AgencyEnabled= 1",
         {
 			if (!String.IsNullOrEmpty(Addition))
 				if (CurrPriceItemId.HasValue)
-					using(log4net.NDC.Push("." + CurrPriceItemId.ToString()))
+					using(log4net.NDC.Push("." + CurrPriceItemId))
 						_logger.InfoFormat("Logging.Addition : {0}", Addition);
 				else
 					_logger.InfoFormat("Logging.Addition : {0}", Addition);

@@ -3,7 +3,7 @@ using System.Data;
 using System.IO;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
-using FileHelper=Inforoom.PriceProcessor.Downloader.FileHelper;
+using FileHelper=Inforoom.PriceProcessor.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -11,11 +11,10 @@ namespace Inforoom.Downloader
     {
     	protected DateTime GetPriceDateTime()
 		{
-			var d = (dtSources.Rows[0][SourcesTableColumns.colPriceDate] is DBNull) ? DateTime.MinValue : (DateTime)dtSources.Rows[0][SourcesTableColumns.colPriceDate];
-			var item = PriceItemList.GetLastestDownloaded(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]));
-			if (item != null)
-				d = item.FileTime.Value;
-			return d;
+			var row = dtSources.Rows[0];
+			if (row["LasrDownload"] is DBNull)
+				return DateTime.MinValue;
+    		return Convert.ToDateTime(row["LasrDownload"]);
 		}
 
         protected override void ProcessData()
@@ -96,30 +95,18 @@ namespace Inforoom.Downloader
                                 Error += drS[SourcesTableColumns.colPriceCode].ToString();
                             else
                                 Error += ", " + drS[SourcesTableColumns.colPriceCode];
-                            try
-                            {
-                                drS.Delete();
-                            }
-                            catch { }
+							FileHelper.Safe(() => drS.Delete());
                         }
                         Error = "Источники : " + Error;
                     }
                     else
                     {
                         Error = String.Format("Источник : {0}", dtSources.Rows[0][SourcesTableColumns.colPriceCode]);
-                        try
-                        {
-                            dtSources.Rows[0].Delete();
-                        }
-                        catch { }
+						FileHelper.Safe(() => dtSources.Rows[0].Delete());
                     }
                     Error += Environment.NewLine + Environment.NewLine + ex;
                     LoggingToService(Error);
-                    try
-                    {
-                        dtSources.AcceptChanges();
-                    }
-                    catch { }
+					FileHelper.Safe(() => dtSources.AcceptChanges());
                 }
             }
         }
@@ -127,11 +114,7 @@ namespace Inforoom.Downloader
 		protected override void CopyToHistory(UInt64 PriceID)
 		{
 			var HistoryFileName = DownHistoryPath + PriceID + Path.GetExtension(CurrFileName);
-			try
-			{
-				File.Copy(CurrFileName, HistoryFileName);
-			}
-			catch { }
+			FileHelper.Safe(() => File.Copy(CurrFileName, HistoryFileName));
 		}
 
 		protected override PriceProcessItem CreatePriceProcessItem(string normalName)

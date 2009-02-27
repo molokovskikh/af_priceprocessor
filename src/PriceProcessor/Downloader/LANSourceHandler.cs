@@ -41,9 +41,9 @@ namespace Inforoom.Downloader
 				//Если в списке есть файлы, то берем первый и скачиваем
 				if (sortedFileList.Count > 0)
 				{
-					string downloadedFileName = sortedFileList.Values[0];
-					DateTime downloadedLastWriteTime = sortedFileList.Keys[0];
-					string NewFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
+					var downloadedFileName = sortedFileList.Values[0];
+					var downloadedLastWriteTime = sortedFileList.Keys[0];
+					var NewFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
 					try
 					{
 						if (File.Exists(NewFile))

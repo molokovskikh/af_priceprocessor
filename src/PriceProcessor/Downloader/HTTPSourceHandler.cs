@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Net;
 using System.IO;
 using System.Data;
-using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
@@ -12,14 +10,13 @@ namespace Inforoom.Downloader
     public class HTTPSourceHandler : PathSourceHandler
     {
         public HTTPSourceHandler()
-            : base()
         {
-			this.sourceType = "HTTP";
+			sourceType = "HTTP";
 		}
 
-        protected DateTime GetFileDateTime(string HTTPFile, string HTTPUser, string HTTPPassword)
+        protected static DateTime GetFileDateTime(string HTTPFile, string HTTPUser, string HTTPPassword)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(HTTPFile);
+            var request = (HttpWebRequest)WebRequest.Create(HTTPFile);
             request.Method = WebRequestMethods.Http.Head;
 
             if (!String.IsNullOrEmpty(HTTPUser))
@@ -27,17 +24,17 @@ namespace Inforoom.Downloader
 
 			request.Proxy = null;
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            DateTime fdt = response.LastModified;
+            var response = (HttpWebResponse)request.GetResponse();
+            var fdt = response.LastModified;
 
             response.Close();
 
             return fdt;
         }
 
-        protected void GetFile(string HTTPFile, string SaveFileName, string HTTPUser, string HTTPPassword)
+        protected static void GetFile(string HTTPFile, string SaveFileName, string HTTPUser, string HTTPPassword)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(HTTPFile);
+            var request = (HttpWebRequest)WebRequest.Create(HTTPFile);
             request.Method = WebRequestMethods.Http.Get;
 
             if (!String.IsNullOrEmpty(HTTPUser))
@@ -45,9 +42,9 @@ namespace Inforoom.Downloader
 
             request.Proxy = null;
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream responseStream = response.GetResponseStream();
-            using (FileStream fs = new FileStream(SaveFileName, FileMode.Create))
+            var response = (HttpWebResponse)request.GetResponse();
+            var responseStream = response.GetResponseStream();
+            using (var fs = new FileStream(SaveFileName, FileMode.Create))
             {
                 FileHelper.CopyStreams(responseStream, fs);
                 fs.Close();
@@ -59,17 +56,17 @@ namespace Inforoom.Downloader
         protected override void GetFileFromSource()
         {
             CurrFileName = String.Empty;
-            string PricePath = dtSources.Rows[0][SourcesTableColumns.colPricePath].ToString().Trim();
+            var PricePath = dtSources.Rows[0][SourcesTableColumns.colPricePath].ToString().Trim();
             if (!PricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
                 PricePath = @"http://" + PricePath;
 
-            string HTTPFileName = (string)dtSources.Rows[0][SourcesTableColumns.colPriceMask];
-            string DownFileName = String.Empty;
+            var HTTPFileName = (string)dtSources.Rows[0][SourcesTableColumns.colPriceMask];
+            var DownFileName = String.Empty;
             try
             {
-				DateTime priceDateTime = GetPriceDateTime();
+				var priceDateTime = GetPriceDateTime();
 
-                DateTime fileLastWriteTime = GetFileDateTime(PricePath, dtSources.Rows[0][SourcesTableColumns.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTableColumns.colHTTPPassword].ToString());
+                var fileLastWriteTime = GetFileDateTime(PricePath, dtSources.Rows[0][SourcesTableColumns.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTableColumns.colHTTPPassword].ToString());
 
 				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                 {

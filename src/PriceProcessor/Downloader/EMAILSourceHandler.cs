@@ -9,7 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using System.Text.RegularExpressions;
 using Inforoom.Common;
-using FileHelper=Inforoom.PriceProcessor.Downloader.FileHelper;
+using FileHelper=Inforoom.PriceProcessor.FileHelper;
 
 
 namespace Inforoom.Downloader

@@ -32,6 +32,8 @@ namespace Inforoom.PriceProcessor
 
 		private ulong? ParentSynonym { get; set; }
 
+		public bool IsMyPrice { get; set; }
+
 		public PriceProcessItem(bool downloaded, ulong priceCode, ulong? costCode, ulong priceItemId, string filePath, ulong? parentSynonym)
 		{
 			Downloaded = downloaded;
@@ -41,34 +43,51 @@ namespace Inforoom.PriceProcessor
 			FilePath = filePath;
 			CreateTime = DateTime.UtcNow;
 			ParentSynonym = parentSynonym;
+			if (downloaded)
+				FileTime = DateTime.Now;
 		}
 
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
 		{
+			uint priceItemId;
+			var isDownloaded = IsDownloadedPrice(filename);
+			if (isDownloaded)
+				priceItemId = Convert.ToUInt32(Path.GetFileName(filename).Substring(1, Path.GetFileName(filename).IndexOf("_") - 1));
+			else
+				priceItemId = Convert.ToUInt32(Path.GetFileNameWithoutExtension(filename));
+
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
 				Literals.ConnectionString(),
 @"select
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   pc.PriceItemId,
-  pd.ParentSynonym
-from
-  usersettings.pricescosts pc,
-  usersettings.pricesdata pd
-where
-    pc.PriceItemId = ?FileName
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and pd.PriceCode = pc.PriceCode",
-				new MySqlParameter("?FileName", Path.GetFileNameWithoutExtension(filename)));
-			if (drPriceItem != null)
+  pd.ParentSynonym,
+  pi.IsForSlave
+from (usersettings.pricescosts pc, usersettings.pricesdata pd)
+	join usersettings.priceitems pi on pc.PriceItemId = pi.Id
+where pc.PriceItemId = ?PriceItemId
+	  and ((pd.CostType = 1) or (pc.BaseCost = 1))
+	  and pd.PriceCode = pc.PriceCode
+group by pi.Id",
+				new MySqlParameter("?PriceItemId", priceItemId));
+			if (drPriceItem == null)
+				return null;
+
+			var priceCode = Convert.ToUInt64(drPriceItem["PriceCode"]);
+			var costCode = (drPriceItem["CostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["CostCode"]);
+			var parentSynonym = (drPriceItem["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["ParentSynonym"]);
+			var item = new PriceProcessItem(isDownloaded, priceCode, costCode, priceItemId, filename, parentSynonym)
+			           	{
+			           		IsMyPrice = !Convert.ToBoolean(drPriceItem["IsForSlave"])
+			           	};
+
+			if (!item.IsMyPrice)
 			{
-				var priceCode = Convert.ToUInt64(drPriceItem["PriceCode"]);
-				var costCode = (drPriceItem["CostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["CostCode"]);
-				var priceItemId = Convert.ToUInt64(drPriceItem["PriceItemId"]);
-				var parentSynonym = (drPriceItem["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["ParentSynonym"]);
-				return new PriceProcessItem(false, priceCode, costCode, priceItemId, filename, parentSynonym);
+				item.CopyToSlaveInbound();
+				return null;
 			}
-			return null;
+			return item;
 		}
 
 		public bool IsReadyForProcessing(IEnumerable<PriceProcessThread> processList)
@@ -106,6 +125,47 @@ and pd.PriceCode = pc.PriceCode",
 				return true;
 
 			return false;
+		}
+
+		private void CopyToSlaveInbound()
+		{
+			CopyToSlaveInbound(FilePath);
+		}
+
+		private void CopyToSlaveInbound(string sourceFile)
+		{
+			var inboundPath = Path.Combine(@"\\fmsold\Prices\Inbound0\", Path.GetFileName(FilePath));
+			File.Copy(sourceFile, inboundPath);
+		}
+
+		public void CopyToInbound(string extrFileName)
+		{
+
+			MySqlUtils.InTransaction(
+				(c, t) => {
+					var command = new MySqlCommand(@"
+update usersettings.PriceItems 
+set LastDownload = now()
+where Id = ?Id", c, t);
+					command.Parameters.AddWithValue("?Id", PriceItemId);
+					command.ExecuteNonQuery();
+
+					if (!IsMyPrice)
+					{
+						CopyToSlaveInbound(extrFileName);
+						return;
+					}
+
+					if (File.Exists(FilePath))
+						File.Delete(FilePath);
+					File.Copy(extrFileName, FilePath);
+					PriceItemList.AddItem(this);
+				});
+		}
+
+		public static bool IsDownloadedPrice(string priceFile)
+		{
+			return Path.GetFileName(priceFile).StartsWith("d", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

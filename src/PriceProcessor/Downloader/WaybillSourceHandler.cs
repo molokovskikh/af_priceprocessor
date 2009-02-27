@@ -478,7 +478,7 @@ and st.SourceID = 1";
 						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
 						+ Path.GetExtension(FileName);
 
-					OutFileName = PriceProcessor.Downloader.FileHelper.NormalizeFileName(OutFileName);
+					OutFileName = PriceProcessor.FileHelper.NormalizeFileName(OutFileName);
 
 					if (File.Exists(OutFileName))
 						try

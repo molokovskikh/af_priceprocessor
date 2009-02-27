@@ -2,7 +2,7 @@
 using System.IO;
 using Inforoom.Common;
 
-namespace Inforoom.PriceProcessor.Downloader
+namespace Inforoom.PriceProcessor
 {
 	public class FileHelper
 	{
@@ -55,6 +55,15 @@ namespace Inforoom.PriceProcessor.Downloader
 			int numBytes;
 			while ((numBytes = input.Read(bytes, 0, size)) > 0)
 				output.Write(bytes, 0, numBytes);
+		}
+
+		public static void Safe(Action action)
+		{
+			try
+			{
+				action();
+			}
+			catch {}
 		}
 	}
 }

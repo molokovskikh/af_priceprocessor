@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
+using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {

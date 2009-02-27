@@ -83,7 +83,7 @@
     <Compile Include="Downloader\DocumentReaders\SIAMoscow_2788_Reader.cs" />
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
-    <Compile Include="Downloader\FileHelper.cs" />
+    <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
     <Compile Include="Downloader\LANSourceHandler.cs" />
@@ -111,6 +111,7 @@
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Monitor.cs" />
+    <Compile Include="MySqlUtils.cs" />
     <Compile Include="PriceItemList.cs" />
     <Compile Include="PriceProcessItem.cs" />
     <Compile Include="PriceProcessorResource.Designer.cs">

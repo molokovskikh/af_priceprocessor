@@ -79,7 +79,7 @@ and st.SourceID = 4";
 										{
 											try
 											{
-												PriceProcessor.Downloader.FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
+												PriceProcessor.FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 											}
 											catch (ArchiveHelper.ArchiveException)
 											{
@@ -330,7 +330,7 @@ and st.SourceID = 4";
 							                     + drCurrent["ShortName"]
 							                     + "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
 							                     + Path.GetExtension(formatFile);
-							OutFileName = PriceProcessor.Downloader.FileHelper.NormalizeFileName(OutFileName);
+							OutFileName = PriceProcessor.FileHelper.NormalizeFileName(OutFileName);
 
 							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
 							if (File.Exists(OutFileName))

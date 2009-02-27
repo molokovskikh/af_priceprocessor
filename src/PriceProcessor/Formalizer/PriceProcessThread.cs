@@ -9,6 +9,7 @@ using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using System.Data;
 using System.Reflection;
+using FileHelper=Inforoom.Common.FileHelper;
 
 
 namespace Inforoom.Formalizer

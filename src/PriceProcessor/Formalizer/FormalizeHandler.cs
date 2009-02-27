@@ -7,7 +7,6 @@ using System.IO;
 using Inforoom.Formalizer;
 using System.Collections;
 using Inforoom.PriceProcessor.Properties;
-using Inforoom.Common;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
@@ -51,15 +50,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			//Получили список файдов и добавил его на обраобтку
 			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath))
-			{
-				AddPriceFileToList(priceFile);
-				//Если файл имеет префикс "d", то значит он был закачан в прошлый раз, поэтому сейчас с ним никак не удастся поработать
-				if (Path.GetFileName(priceFile).StartsWith("d", StringComparison.OrdinalIgnoreCase))
-					try
-					{
-						FileHelper.FileDelete(priceFile);
-					} catch { }
-			}
+				AddPriceFileToList(priceFile, false);
 
 			htEMessages = new Hashtable();
 
@@ -154,7 +145,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			try
 			{
-				AddPriceFileToList(e.FullPath);
+				AddPriceFileToList(e.FullPath, true);
 			}
 			catch (Exception ex)
 			{
@@ -162,38 +153,38 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 		}
 
-		private void AddPriceFileToList(string priceFile)
+		private void AddPriceFileToList(string priceFile, bool ignoreDownloaded)
 		{
 			//Если файл имеет префикс "d", то значит он был закачан, поэтому он уже в очереди на обработку
-			if (!Path.GetFileName(priceFile).StartsWith("d", StringComparison.OrdinalIgnoreCase))
+			if (ignoreDownloaded && PriceProcessItem.IsDownloadedPrice(priceFile)) 
+				return;
+
+			var item = PriceProcessItem.TryToLoadPriceProcessItem(priceFile);
+			if (item != null)
 			{
-				var item = PriceProcessItem.TryToLoadPriceProcessItem(priceFile);
-				if (item != null)
+				if (!PriceItemList.AddItem(item))
 				{
-					if (!PriceItemList.AddItem(item))
-					{
-						//todo: здесь не понятно, что надо делать, т.к. прайс-лист не добавили по причине скаченного нового. Сейчас удаляю
-						try
-						{
-							FileHelper.FileDelete(priceFile);
-						}
-						catch (Exception ex)
-						{
-							_logger.ErrorFormat("Не получилось удалить файл для формализации {0}\r\n{1}", priceFile, ex);
-						}
-					}
-				}
-				else
-				{
-					LoggingToService(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(priceFile)));
+					//todo: здесь не понятно, что надо делать, т.к. прайс-лист не добавили по причине скаченного нового. Сейчас удаляю
 					try
 					{
-						FileHelper.FileDelete(priceFile);
+						Common.FileHelper.FileDelete(priceFile);
 					}
 					catch (Exception ex)
 					{
-						_logger.ErrorFormat("Не получилось удалить неизвестный файл {0}\r\n{1}", priceFile, ex);
+						_logger.ErrorFormat("Не получилось удалить файл для формализации {0}\r\n{1}", priceFile, ex);
 					}
+				}
+			}
+			else
+			{
+				LoggingToService(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(priceFile)));
+				try
+				{
+					Common.FileHelper.FileDelete(priceFile);
+				}
+				catch (Exception ex)
+				{
+					_logger.ErrorFormat("Не получилось удалить неизвестный файл {0}\r\n{1}", priceFile, ex);
 				}
 			}
 		}
@@ -273,7 +264,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					else
 					{
 						//ищем элемент в рабочих нитках
-						PriceProcessThread thread = FindByProcessItem(item);
+						var thread = FindByProcessItem(item);
 						if (thread != null)
 						{
 							//если элемент найден, то останавливаем нитку, файл будет удалять нитка при останове
@@ -286,7 +277,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 							//если нет нитки на формализацию, то просто удаляем файл из папки
 							try
 							{
-								FileHelper.FileDelete(item.FilePath);
+								Common.FileHelper.FileDelete(item.FilePath);
 							}
 							catch (Exception ex)
 							{
@@ -445,7 +436,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					_lastFormalizationDate = DateTime.UtcNow;
 					_formalizationFail = false;
 					//удаляем файл
-					FileHelper.FileDelete(p.ProcessItem.FilePath);
+					Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
 					//удаляем информацию о последних ошибках
 					htEMessages.Remove(p.ProcessItem.FilePath);
 					//удаляем из списка на обработку
@@ -463,7 +454,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					try
 					{
 						//удаляем файл
-						FileHelper.FileDelete(p.ProcessItem.FilePath);
+						Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
 						//удаляем информацию о последних ошибках
 						htEMessages.Remove(p.ProcessItem.FilePath);
 					}
@@ -490,9 +481,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						try
 						{
-							if (File.Exists(FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath)))
-								File.Delete(FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
-							File.Move(p.ProcessItem.FilePath, FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
+							if (File.Exists(Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath)))
+								File.Delete(Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
+							File.Move(p.ProcessItem.FilePath, Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
 						}
 						catch (Exception e)
 						{

@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
+using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -11,34 +11,35 @@ namespace Inforoom.Downloader
 	/// </summary>
 	public abstract class BasePriceSourceHandler : BaseSourceHandler
 	{
-		protected void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
+		protected void LogDownloaderPrice(string AdditionMessage, DownPriceResultCode resultCode, string ArchFileName, string extrFileName)
 		{
-			var PriceID = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(ExtrFileName)) ? null : Path.GetFileName(ExtrFileName));
-			if (PriceID == 0)
+			var downloadLogId = Logging(CurrPriceItemId, AdditionMessage, resultCode, ArchFileName, (String.IsNullOrEmpty(extrFileName)) ? null : Path.GetFileName(extrFileName));
+			if (downloadLogId == 0)
 				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
 
-			CopyToHistory(PriceID);
+			CopyToHistory(downloadLogId);
 
 			if (resultCode != DownPriceResultCode.SuccessDownload)
 				return;
 
 			//≈сли все сложилось, то копируем файл в Inbound
-			var NormalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId + "_" + PriceID + GetExt();
+			var normalName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId + "_" + downloadLogId + GetExt();
 			try
 			{
-				if (File.Exists(NormalName))
-					File.Delete(NormalName);
-				File.Copy(ExtrFileName, NormalName);
-				PriceItemList.AddItem(CreatePriceProcessItem(NormalName));
+				CreatePriceProcessItem(normalName).CopyToInbound(extrFileName);
 				using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-					_logger.InfoFormat("Price {0} - {1} скачан/распакован", drCurrent[SourcesTableColumns.colShortName],
-									   drCurrent[SourcesTableColumns.colPriceName]);
+					_logger.InfoFormat("Price {0} - {1} скачан/распакован",
+					                   drCurrent[SourcesTableColumns.colShortName],
+					                   drCurrent[SourcesTableColumns.colPriceName]);
 			}
 			catch (Exception ex)
 			{
 				//todo: по идее здесь не должно возникнуть ошибок, но на вс€кий случай логируем, возможно надо включить логирование письмом
 				using (log4net.NDC.Push(CurrPriceItemId.ToString()))
-					_logger.ErrorFormat("Ќе удалось перенести файл '{0}' в каталог '{1}'\r\n{2}", ExtrFileName, NormalName, ex);
+					_logger.ErrorFormat("Ќе удалось перенести файл '{0}' в каталог '{1}'\r\n{2}",
+					                    extrFileName,
+					                    normalName,
+					                    ex);
 			}
 		}
 
@@ -53,7 +54,7 @@ namespace Inforoom.Downloader
 			                                normalName,
 			                                CurrParentSynonym)
 			           	{
-			           		FileTime = DateTime.Now
+							IsMyPrice = IsMyPrice,
 			           	};
 			return item;
 		}
