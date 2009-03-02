@@ -81,12 +81,13 @@ group by pi.Id",
 			           	{
 			           		IsMyPrice = !Convert.ToBoolean(drPriceItem["IsForSlave"])
 			           	};
-
+#if !SLAVE
 			if (!item.IsMyPrice)
 			{
 				item.CopyToSlaveInbound();
 				return null;
 			}
+#endif
 			return item;
 		}
 

@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Linq;
+using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
 using System.IO;
+using RemotePricePricessor;
 
 namespace Inforoom.PriceProcessor
 {
-	public class RemotePricePricessorService : MarshalByRefObject, RemotePricePricessor.IRemotePriceProcessor
+	public class RemotePricePricessorService : MarshalByRefObject, IRemotePriceProcessor
 	{
-		public void ResendPrice(ulong DownLogId)
+		public void ResendPrice(ulong downlogId)
 		{
 			var drFocused = MySqlHelper.ExecuteDataRow(
 				Literals.ConnectionString(),
@@ -32,7 +35,7 @@ SELECT
   s.EmailTo as DEmailTo,
   s.EmailFrom as DEmailFrom,
   pricefmts.FileExtention as DFileExtention,
-  pi.IsForSalve
+  pim.IsForSlave
 FROM
   logs.downlogs as logs,
   usersettings.clientsdata cd,
@@ -57,18 +60,27 @@ and logs.ResultCode in (2, 3)
 and fr.Id = pim.FormRuleId
 and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId",
-						 new MySqlParameter("?DownLogId", DownLogId));
+						 new MySqlParameter("?DownLogId", downlogId));
 
-			var files = Directory.GetFiles(Path.GetFullPath(Settings.Default.HistoryPath), drFocused["DRowID"].ToString() + "*");
+			var files = Directory.GetFiles(Path.GetFullPath(Settings.Default.HistoryPath), drFocused["DRowID"] + "*");
 
-			if (Convert.ToBoolean(drFocused["IsForSalve"]))
+#if !SLAVE
+			if (Convert.ToBoolean(drFocused["IsForSlave"]))
 			{
-				Marshal(DownLogId);
+				GetSlave().ResendPrice(downlogId);
 				return;
 			}
+#endif
 
 			if (files.Length == 0)
-				throw new Exception("Данный прайс-лист в архиве отсутствует!");
+				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
+
+			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
+			{
+				using (var fs = new FileStream(files[0], FileMode.Open, FileAccess.Read, FileShare.Read))
+					SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, Environment.MachineName, "prices@analit.net", new[] { "prices@analit.net" }, fs);
+				return;
+			}
 
 			var sourceFile = String.Empty;
 			var TempDirectory = Path.GetTempPath();
@@ -95,10 +107,10 @@ and logs.Rowid = ?DownLogId",
 				return;
 
 			var PriceExtention = drFocused["DFileExtention"].ToString();
-			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + drFocused["DPriceItemId"] + "_" + DownLogId + PriceExtention;
+			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + drFocused["DPriceItemId"] + "_" + downlogId + PriceExtention;
 
 			if (File.Exists(destinationFile))
-				throw new Exception(String.Format("Данный прайс-лист находится в очереди на формализацию в папке {0}!",
+				throw new PriceProcessorException(String.Format("Данный прайс-лист находится в очереди на формализацию в папке {0}!",
 				                                  Settings.Default.InboundPath));
 
 			File.Copy(sourceFile, destinationFile);
@@ -115,10 +127,88 @@ and logs.Rowid = ?DownLogId",
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
 		}
 
-		private static void Marshal(ulong id)
+		public void RetransPrice(uint priceItemId)
 		{
-			var slave = (RemotePricePricessor.IRemotePriceProcessor)Activator.GetObject(typeof(RemotePricePricessor.IRemotePriceProcessor), "http://fmsold.adc.analit.net:888/RemotePriceProcessor");
-			slave.ResendPrice(id);
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+			                                     @"
+select p.FileExtention,
+	   pim.IsForSlave
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+where pim.Id = ?PriceItemId",
+			                                     new MySqlParameter("?PriceItemId", priceItemId));
+			var extention = row["FileExtention"];
+			var isForSlave = Convert.ToBoolean(row["IsForSlave"]);
+
+#if !SLAVE
+			if (isForSlave)
+			{
+				GetSlave().RetransPrice(priceItemId);
+				return;
+			}
+#endif
+
+			var sourceFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
+
+			if (File.Exists(sourceFile))
+			{
+				if (!File.Exists(destinationFile))
+				{
+					File.Move(sourceFile, destinationFile);
+					return;
+				}
+				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+			}
+			throw new PriceProcessorException("Данный прайс-лист находится в очереди на формализацию!");
+		}
+
+		public string[] ErrorFiles()
+		{
+#if SLAVE
+			return Directory.GetFiles(Settings.Default.ErrorFilesPath);
+#else
+			return GetSlave().ErrorFiles().Union(Directory.GetFiles(Settings.Default.ErrorFilesPath)).ToArray();
+#endif
+		}
+
+		public string[] InboundFiles()
+		{
+#if SLAVE
+			return Directory.GetFiles(Settings.Default.InboundPath);
+#else
+			return GetSlave().InboundFiles().Union(Directory.GetFiles(Settings.Default.InboundPath)).ToArray();
+#endif
+		}
+
+		public byte[] BaseFile(uint priceItemId)
+		{
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),@"
+select p.FileExtention,
+	   pim.IsForSlave
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+			var extention = row["FileExtention"];
+			var isForSlave = Convert.ToBoolean(row["IsForSlave"]);
+
+#if !SLAVE
+			if (isForSlave)
+				return GetSlave().BaseFile(priceItemId);
+#endif
+
+			var file = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			if (!File.Exists(file))
+				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+
+			return File.ReadAllBytes(file);
+		}
+
+		private static IRemotePriceProcessor GetSlave()
+		{
+			return (IRemotePriceProcessor)Activator.GetObject(typeof(IRemotePriceProcessor), "http://fmsold.adc.analit.net:888/RemotePriceProcessor");
 		}
 	}
 }

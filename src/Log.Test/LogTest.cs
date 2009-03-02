@@ -82,7 +82,7 @@ namespace Log.Test
 			for (int i = 0; i < _maxIteration; i++)
 			{
 				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация {0}", i);
-				dtPrice = DBF.Load("9.dbf");
+				dtPrice = Dbf.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
 				{
@@ -100,7 +100,7 @@ namespace Log.Test
 			for (int i = 0; i < _maxIteration; i++)
 			{
 				SimpleLog.Log(_needLog, "LogBySimpleLog", "Итерация {0}", i);
-				dtPrice = DBF.Load("9.dbf");
+				dtPrice = Dbf.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
 				{
@@ -140,7 +140,7 @@ namespace Log.Test
 			{
 				_log.DebugFormat("Итерация {0}", i);
 				log4net.NDC.Push(i.ToString());
-				dtPrice = DBF.Load("9.dbf");
+				dtPrice = Dbf.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
 				{
@@ -162,7 +162,7 @@ namespace Log.Test
 			{
 				_log.DebugFormat("Итерация {0}", i); ;
 				log4net.NDC.Push(i.ToString());
-				dtPrice = DBF.Load("9.dbf");
+				dtPrice = Dbf.Load("9.dbf");
 				int rowIndex = 0;
 				foreach (DataRow dr in dtPrice.Rows)
 				{

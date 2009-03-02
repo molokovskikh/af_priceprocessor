@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PriceProcessor.Test</RootNamespace>
     <AssemblyName>PriceProcessor.Test</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
@@ -61,15 +61,20 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Class1.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
+    <Compile Include="LanSourceHandlerFixture.cs" />
     <Compile Include="ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
@@ -79,6 +84,10 @@
     <Compile Include="SystemNetMailSmtpFixture.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common.Tools\src\Common.Tools\Common.Tools.csproj">
+      <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
+      <Name>Common.Tools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ExecuteTemplate\src\ExecuteTemplate\ExecuteTemplate.csproj">
       <Project>{046F74A6-68A8-4E5E-A9AB-7332B631CFB1}</Project>
       <Name>ExecuteTemplate</Name>

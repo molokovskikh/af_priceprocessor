@@ -12,9 +12,9 @@ namespace Inforoom.Downloader
     	protected DateTime GetPriceDateTime()
 		{
 			var row = dtSources.Rows[0];
-			if (row["LasrDownload"] is DBNull)
+			if (row["LastDownload"] is DBNull)
 				return DateTime.MinValue;
-    		return Convert.ToDateTime(row["LasrDownload"]);
+    		return Convert.ToDateTime(row["LastDownload"]);
 		}
 
         protected override void ProcessData()

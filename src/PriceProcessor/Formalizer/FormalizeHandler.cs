@@ -145,7 +145,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			try
 			{
+#if SLAVE
+				AddPriceFileToList(e.FullPath, false);
+#else
 				AddPriceFileToList(e.FullPath, true);
+#endif
 			}
 			catch (Exception ex)
 			{

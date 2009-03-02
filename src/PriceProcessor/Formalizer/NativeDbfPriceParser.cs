@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void Open()
 		{
 			CurrPos = 0;
-			dtPrice = DBF.Load(priceFileName);
+			dtPrice = Dbf.Load(priceFileName);
 			base.Open();
 		}
 	}

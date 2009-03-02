@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Inforoom.Data;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;
@@ -21,7 +22,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			public static string colBrecQ = "BrecQ";
 			public static string colMsgD = "MsgD";
 			public static string colMsgT = "MsgT";
-			public static string colCMN = "CMN";			
+			public static string colCMN = "CMN";
 			public static string colObtCod = "ObtCod";
 			public static string colInvNum = "InvNum";
 			public static string colInvDt = "InvDt";
@@ -76,20 +77,20 @@ namespace Inforoom.Downloader.DocumentReaders
 
 		public override string[] UnionFiles(string[] InputFiles)
 		{
-			List<string> inputList = new List<string>(InputFiles);
-			List<string> outputList = new List<string>();
+			var inputList = new List<string>(InputFiles);
+			var outputList = new List<string>();
 			while (inputList.Count > 0)
 			{
-				string shortName = Path.GetFileName(inputList[0]);
+				var shortName = Path.GetFileName(inputList[0]);
 				if (shortName.EndsWith(".dbf", StringComparison.OrdinalIgnoreCase) && (shortName.StartsWith("b_", StringComparison.OrdinalIgnoreCase) || shortName.StartsWith("h_", StringComparison.OrdinalIgnoreCase)))
 				{
-					string doubleName = Path.GetFileNameWithoutExtension(shortName).Substring(2);
+					var doubleName = Path.GetFileNameWithoutExtension(shortName).Substring(2);
 					if (shortName.StartsWith("b_", StringComparison.OrdinalIgnoreCase))
 						doubleName = "h_" + doubleName + ".dbf";
 					else
 						doubleName = "b_" + doubleName + ".dbf";
 					//Попытка найти пару к файлу
-					string originalDoubleName = inputList.Find(delegate(string s) { return s.Equals(Path.GetDirectoryName(inputList[0]) + Path.DirectorySeparatorChar + doubleName, StringComparison.OrdinalIgnoreCase); });
+					var originalDoubleName = inputList.Find(s => s.Equals(Path.GetDirectoryName(inputList[0]) + Path.DirectorySeparatorChar + doubleName, StringComparison.OrdinalIgnoreCase));
 
 					//Если нашли, то архивируем оба файла, если не нашли и файл создан давно, то архивируем один файл
 					if (originalDoubleName != default(string))
@@ -97,18 +98,8 @@ namespace Inforoom.Downloader.DocumentReaders
 						FileHelper.ClearReadOnly(inputList[0]);
 						FileHelper.ClearReadOnly(originalDoubleName);
 						//todo: filecopy здесь происходит копирование полученных файлов во временную папку для дальнейшего разбора ситуации, из-за предположения, что есть проблема с пропажей документов
-						string archiveFileName = ArhiveFiles(new string[] { inputList[0], originalDoubleName });
+						var archiveFileName = ArhiveFiles(new[] { inputList[0], originalDoubleName });
 						outputList.Add(archiveFileName);
-						try
-						{
-							File.Copy(archiveFileName, @"T:\temp\SiaMoscow\" + Path.GetFileName(archiveFileName));
-															
-						}
-						catch (Exception ex)
-						{
-							log4net.ILog _logger = log4net.LogManager.GetLogger(typeof(SIAMoscow_2788_Reader));
-							_logger.ErrorFormat("Не удалось скопировать файл {0} во временную папку\r\n{1}", Path.GetFileName(archiveFileName), ex);
-						}
 						File.Delete(inputList[0]);
 						File.Delete(originalDoubleName);
 						inputList.Remove(originalDoubleName);
@@ -118,7 +109,7 @@ namespace Inforoom.Downloader.DocumentReaders
 						//Ждали пару к файлу, но так и не дождались
 						if (DateTime.Now.Subtract(File.GetLastWriteTime(inputList[0])).TotalMinutes > 6 * Settings.Default.FileDownloadInterval)
 						{
-							outputList.Add(ArhiveFiles(new string[] { inputList[0]}));
+							outputList.Add(ArhiveFiles(new[] { inputList[0] }));
 							File.Delete(inputList[0]);
 						}
 					}
@@ -137,8 +128,7 @@ namespace Inforoom.Downloader.DocumentReaders
 
 		public override string[] DivideFiles(string ExtractDir, string[] InputFiles)
 		{
-			string FirmClientCode;
-			List<string> outputList = new List<string>();
+			var outputList = new List<string>();
 			if (InputFiles.Length != 2)
 				throw new Exception("Некорректный список документов : " + String.Join(", ", InputFiles));
 			string headerFile = String.Empty, bodyFile = String.Empty;
@@ -155,12 +145,12 @@ namespace Inforoom.Downloader.DocumentReaders
 			if (String.IsNullOrEmpty(bodyFile))
 				throw new Exception("Не найден файл содержимого документа : " + String.Join(", ", InputFiles));
 
-			FirmClientCode = Path.GetFileNameWithoutExtension(headerFile).Substring(2);
+			var FirmClientCode = Path.GetFileNameWithoutExtension(headerFile).Substring(2);
 
 			DataTable dtHeader, dtBody;
 			try
 			{
-				dtHeader = ReadDBF(headerFile);
+				dtHeader = Dbf.Load(headerFile);
 				dtHeader.TableName = "Header";
 			}
 			catch (Exception exDBF)
@@ -169,7 +159,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			}
 			try
 			{
-				dtBody = ReadDBF(bodyFile);
+				dtBody = Dbf.Load(bodyFile);
 				dtBody.TableName = "Body";
 			}
 			catch (Exception exDBF)
@@ -177,7 +167,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				throw new Exception("Невозможно открыть файл содержимого документа.", exDBF);
 			}
 
-			DataSet dsSource = new DataSet();
+			var dsSource = new DataSet();
 			DataSet dsStandaloneDocument;
 			dsSource.Tables.Add(dtHeader);
 			dsSource.Tables.Add(dtBody);
@@ -186,13 +176,13 @@ namespace Inforoom.Downloader.DocumentReaders
 				string DeliveryCode = drHeader[HeaderTable.colObtCod].ToString(),
 					OrderID = drHeader[HeaderTable.colCMN].ToString();
 
-				string documentFileName = ExtractDir + String.Format("{0}_{1}_{2}_{3}.xml", FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum].ToString());
+				var documentFileName = ExtractDir + String.Format("{0}_{1}_{2}_{3}.xml", FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum].ToString());
 
 				dsStandaloneDocument = dsSource.Clone();
-				DataRow drTemp = dsStandaloneDocument.Tables["Header"].NewRow();
+				var drTemp = dsStandaloneDocument.Tables["Header"].NewRow();
 				drTemp.ItemArray = drHeader.ItemArray;
 				dsStandaloneDocument.Tables["Header"].Rows.Add(drTemp);
-				foreach (DataRow drBody in dtBody.Select("MsgNum = " + drHeader[HeaderTable.colMsgNum].ToString()))
+				foreach (var drBody in dtBody.Select("MsgNum = " + drHeader[HeaderTable.colMsgNum]))
 				{
 					drTemp = dsStandaloneDocument.Tables["Body"].NewRow();
 					drTemp.ItemArray = drBody.ItemArray;
@@ -207,8 +197,8 @@ namespace Inforoom.Downloader.DocumentReaders
 
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			List<ulong> list = new List<ulong>();
-			string SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode and i.FirmClientCode2 = ?DeliveryCode " + Environment.NewLine + GetFilterSQLFooter();
+			var list = new List<ulong>();
+			var SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode and i.FirmClientCode2 = ?DeliveryCode " + Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
 			try
@@ -222,7 +212,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				throw new Exception("Не получилось сформировать FirmClientCode и FirmClientCode2 из документа.", ex);
 			}
 
-			DataSet ds = MySqlHelper.ExecuteDataset(
+			var ds = MySqlHelper.ExecuteDataset(
 				Connection,
 				SQL,
 				new MySqlParameter("?FirmCode", FirmCode),
@@ -239,61 +229,29 @@ namespace Inforoom.Downloader.DocumentReaders
 		}
 
 		//заархивировать файлы
-		string ArhiveFiles(string[] InputFiles)
+		private static string ArhiveFiles(string[] InputFiles)
 		{
-			string zipFileName = Path.GetDirectoryName(InputFiles[0]) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFiles[0]).Substring(2) + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".zip";
+			var zipFileName = Path.GetDirectoryName(InputFiles[0]) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFiles[0]).Substring(2) + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".zip";
 
-			ZipOutputStream s = new ZipOutputStream(File.Create(zipFileName));
-
-			s.SetLevel(5); // 0 - store only to 9 - means best compression
-
-			foreach (string file in InputFiles)
+			using (var s = new ZipOutputStream(File.Create(zipFileName)))
 			{
-				FileStream fs = File.OpenRead(file);
+				s.SetLevel(5); // 0 - store only to 9 - means best compression
 
-				byte[] buffer = new byte[fs.Length];
-				fs.Read(buffer, 0, buffer.Length);
-				fs.Close();
-				fs.Dispose();
-				fs = null;
+				foreach (var file in InputFiles)
+				{
+					var buffer = File.ReadAllBytes(file);
+					var entry = new ZipEntry(Path.GetFileName(file));
 
-				ZipEntry entry = new ZipEntry(Path.GetFileName( file ));
+					s.PutNextEntry(entry);
 
-				s.PutNextEntry(entry);
-
-				s.Write(buffer, 0, buffer.Length);
-
+					s.Write(buffer, 0, buffer.Length);
+				}
+				s.Finish();
 			}
 
-			s.Finish();
-			s.Close();
 
 			File.SetLastWriteTime(zipFileName, DateTime.Now.AddMinutes(-2 * Settings.Default.FileDownloadInterval));
-
 			return zipFileName;
-		}
-
-		DataTable ReadDBF(string InputFile)
-		{
-			OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"dBase 5.0\"", System.IO.Path.GetDirectoryName(InputFile)));
-			dbcMain.Open();
-			try
-			{
-				DataTable dtFile = new DataTable();
-				string newFileName = Path.GetDirectoryName(InputFile) + Path.DirectorySeparatorChar + "inp.dbf";
-				if (File.Exists(newFileName))
-					File.Delete(newFileName);
-				File.Copy(InputFile, newFileName);
-				OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from [{0}]", System.IO.Path.GetFileNameWithoutExtension(newFileName)), dbcMain);
-				da.Fill(dtFile);
-				return dtFile;
-			}
-			finally
-			{
-				dbcMain.Close();
-				dbcMain.Dispose();
-				dbcMain = null;
-			} 
 		}
 
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
@@ -302,23 +260,22 @@ namespace Inforoom.Downloader.DocumentReaders
 			if (File.Exists(outFile))
 				File.Delete(outFile);
 
-			DataSet dsDocument = new DataSet();
+			var dsDocument = new DataSet();
 			dsDocument.ReadXml(InputFile);
 			if (Convert.ToInt32(dsDocument.Tables["Header"].Rows[0][HeaderTable.colBrecQ]) != dsDocument.Tables["Body"].Rows.Count)
 				throw new Exception("Количество позиций в документе не соответствует значению в заголовке документа с " + HeaderTable.colMsgNum + " = " + dsDocument.Tables["Header"].Rows[0][HeaderTable.colMsgNum].ToString());
 
-			DataTable dtResult = GetResultTable();
-			DataRow drResult;
+			var dtResult = GetResultTable();
 
-			DataRow drHeader = dsDocument.Tables["Header"].Rows[0];
+			var drHeader = dsDocument.Tables["Header"].Rows[0];
 			foreach (DataRow drBody in dsDocument.Tables["Body"].Rows)
 			{
-				drResult = dtResult.NewRow();
-                drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
-                drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+				var drResult = dtResult.NewRow();
+				drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
+				drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
 				//Эти два поля не заполняются, т.к. СИА Москва не может их заполнить в реальном времени
-                //drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
-                //drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
+				//drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
+				//drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
 				drResult[ResultTable.colFirmName] = drSource[WaybillSourcesTable.colShortName];
 
 
@@ -337,17 +294,20 @@ namespace Inforoom.Downloader.DocumentReaders
 				drResult[ResultTable.colGCHDN] = drBody[BodyTable.colGCHDN];
 				drResult[ResultTable.colBarCode] = drBody[BodyTable.colBarCod];
 
-				dtResult.Rows.Add(drResult); 
+				dtResult.Rows.Add(drResult);
 			}
 
-			DataTableToDbf(outFile, dtResult, false);
+			using (var file = new StreamWriter(File.Create(outFile), Encoding.GetEncoding(866)))
+			{
+				Dbf.Save(dtResult, file);
+			}
 
 			return outFile;
 		}
 
-		DataTable GetResultTable()
+		private static DataTable GetResultTable()
 		{
-			DataTable dtResult = new DataTable("Result");
+			var dtResult = new DataTable("Result");
 			dtResult.Columns.Add(ResultTable.colDocumentID, typeof(string));
 			dtResult.Columns.Add(ResultTable.colDocumentDate, typeof(DateTime));
 			dtResult.Columns.Add(ResultTable.colBillingNumber, typeof(string));
@@ -380,95 +340,13 @@ namespace Inforoom.Downloader.DocumentReaders
 			return dtResult;
 		}
 
-		void DataTableToDbf(string fileName, DataTable dataTable, bool useFoxProFriver)
-		{
-
-			string tableName = Path.GetFileNameWithoutExtension(fileName);
-			string dbfPath = Path.GetDirectoryName(fileName);
-			string connectionString;
-
-			if (String.IsNullOrEmpty(dbfPath))
-				dbfPath = ".";
-
-			if (useFoxProFriver)
-				connectionString = "Provider=VFPOLEDB;Data Source={0};";
-			else
-				connectionString = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=dBase III";
-
-			using (OleDbConnection connection = new OleDbConnection(String.Format(connectionString, dbfPath)))
-			{
-				StringBuilder sqlBuilder = new StringBuilder();
-
-				if (useFoxProFriver)
-					sqlBuilder.AppendFormat("CREATE DBF {0} (", tableName);
-				else
-					sqlBuilder.AppendFormat("CREATE TABLE {0} (", tableName);
-
-				int i = 0;
-				foreach (DataColumn column in dataTable.Columns)
-				{
-					sqlBuilder.Append(String.Format("[{0}]", column.ColumnName));
-					if (column.DataType == typeof(int))
-						sqlBuilder.Append(" int");
-					else if (column.DataType == typeof(decimal))
-					{
-						sqlBuilder.Append(" numeric");
-						if (column.ExtendedProperties.ContainsKey("Precision"))
-						{
-							int scale = column.ExtendedProperties.ContainsKey("Scale") ? (int)column.ExtendedProperties["Scale"] : 0;
-							sqlBuilder.Append(String.Format("({0}, {1})",
-								column.ExtendedProperties["Precision"],
-								scale));
-						}
-					}
-					else if (column.DataType == typeof(double))
-						sqlBuilder.Append(" currency");
-					else if (column.DataType == typeof(float))
-						sqlBuilder.Append(" float");
-					else if (column.DataType == typeof(DateTime))
-						sqlBuilder.Append(" datetime");
-					else if (column.DataType == typeof(bool))
-						sqlBuilder.Append(" logical");
-					else if (column.DataType == typeof(string) && column.MaxLength > -1 && column.MaxLength <= 255)
-						sqlBuilder.Append(String.Format(" char({0})", column.MaxLength));
-					else if (column.DataType == typeof(string) && column.MaxLength == -1)
-						sqlBuilder.Append(" char(254)");
-					else
-						sqlBuilder.Append(" memo");
-
-					if (i != dataTable.Columns.Count - 1)
-						sqlBuilder.Append(",");
-					sqlBuilder.AppendLine();
-					i++;
-				}
-				sqlBuilder.Append(");");
-				OleDbCommand command = new OleDbCommand(sqlBuilder.ToString(), connection);
-				connection.Open();
-				command.ExecuteNonQuery();
-				OleDbDataAdapter adapter = new OleDbDataAdapter(String.Format("select * from [{0}]", tableName), connection);
-				OleDbCommandBuilder commandBuilder = new OleDbCommandBuilder(adapter);
-				commandBuilder.QuotePrefix = "[";
-				commandBuilder.QuoteSuffix = "]";
-				adapter.Update(dataTable);
-			}
-
-			if (!useFoxProFriver)
-			{
-				//это хак для того что бы обойти ограничение на 8 символов в имени файла
-				if (tableName.Length > 8)
-					File.Move(String.Format("{0}\\{1}.dbf", dbfPath, tableName.Substring(0, 8)), fileName);
-				else
-					File.Move(Path.ChangeExtension(fileName, "dbf"), fileName);
-			}
-		}
-
 		public override void ImportDocument(MySqlConnection Connection, ulong FirmCode, ulong ClientCode, int DocumentType, string CurrentFileName)
 		{
-			DataSet dsDocument = new DataSet();
+			var dsDocument = new DataSet();
 			dsDocument.ReadXml(CurrentFileName);
-			string ProviderDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
-			object DocumentHeaderId = MySqlHelper.ExecuteScalar(
-				Connection, 
+			var ProviderDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
+			var DocumentHeaderId = MySqlHelper.ExecuteScalar(
+				Connection,
 				"select id from documents.documentheaders where FirmCode = ?FirmCode and ClientCode = ?ClientCode and DocumentType = ?DocumentType and ProviderDocumentId = ?ProviderDocumentId",
 				new MySqlParameter("?FirmCode", FirmCode),
 				new MySqlParameter("?ClientCode", ClientCode),
