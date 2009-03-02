@@ -5,7 +5,6 @@ using System.Text;
 using System.Data.OleDb;
 using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
-using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
@@ -15,7 +14,7 @@ namespace Inforoom.Formalizer
 	public class TXTDelimiterPriceParser : InterPriceParser
 	{
 		//строка, с которой надо разбирать прайс
-		protected System.Int64 startLine;
+		protected Int64 startLine;
 		//Разделитель между полями
 		protected string delimiter;
 
@@ -32,7 +31,7 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			convertedToANSI = (FileEncoding == "OEM");
-			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
+			using(var w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
                 w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
 				w.WriteLine("CharacterSet=" + FileEncoding);
@@ -42,29 +41,29 @@ namespace Inforoom.Formalizer
 			}
 
 			string replaceFile;
-			using (StreamReader r = new StreamReader(priceFileName, Encoding.GetEncoding(1251)))
+			using (var r = new StreamReader(priceFileName, Encoding.GetEncoding(1251)))
 			{
 				replaceFile = r.ReadToEnd();
 			}
 
 			replaceFile = replaceFile.Replace("\"", "");
 
-			using (StreamWriter rw = new StreamWriter(priceFileName, false, Encoding.GetEncoding(1251)))
+			using (var rw = new StreamWriter(priceFileName, false, Encoding.GetEncoding(1251)))
 			{
 				rw.Write(replaceFile);
 			}
 
-			int MaxColCount = 0;
-			string TableName = System.IO.Path.GetFileName(priceFileName).Replace(".", "#");
-			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
+			int MaxColCount;
+			string TableName = Path.GetFileName(priceFileName).Replace(".", "#");
+			using (var dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
 			{
 				dbcMain.Open();
-				DataTable ColumnNames = dbcMain.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
+				var ColumnNames = dbcMain.GetOleDbSchemaTable(OleDbSchemaGuid.Columns,
 					new object[] { null, null, TableName, null });
 				MaxColCount = (ColumnNames.Rows.Count >= 256) ? 255 : ColumnNames.Rows.Count;
 			}
 
-			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
+			using(var w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
 				w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
 				w.WriteLine("CharacterSet=" + FileEncoding);
@@ -77,10 +76,10 @@ namespace Inforoom.Formalizer
 				}
 			}
 
-			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
+			using (var dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", Path.GetDirectoryName(priceFileName))))
 			{
 				dbcMain.Open();
-				using (OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
+				using (var da = new OleDbDataAdapter(String.Format("select * from {0}", Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
 				{
 					dtPrice = OleDbHelper.FillPrice(da);
 				}

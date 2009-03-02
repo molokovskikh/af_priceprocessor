@@ -41,7 +41,7 @@ namespace Inforoom.Formalizer
 	public class TXTFixedPriceParser : BasePriceParser
 	{
 		//строка, с которой надо разбирать прайс
-		protected System.Int64 startLine;
+		protected Int64 startLine;
 
 		private ArrayList fds;
 
@@ -51,7 +51,6 @@ namespace Inforoom.Formalizer
 		public TXTFixedPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
 		{
 			string TmpName;
-			int TmpIndex;
 
 			//Заполняем названия полей
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
@@ -60,6 +59,7 @@ namespace Inforoom.Formalizer
 					TmpName = "Name";
 				else
 					TmpName = pf.ToString();
+				int TmpIndex;
 				try
 				{
 					TmpIndex = mydr.Columns.IndexOf("Txt" + TmpName + "Begin");
@@ -74,7 +74,6 @@ namespace Inforoom.Formalizer
 
 			//Заполняем параметры определения полей: название поле, поле с позицией начала и поле с позицией конца
 			fds = new ArrayList();
-			int TxtBegin, TxtEnd;
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 			{
 				TmpName = GetFieldName(pf);
@@ -83,8 +82,8 @@ namespace Inforoom.Formalizer
 					//TODO: Поле может быть не заполненно, т.е. одно из полей может иметь значение NULL или пустая строка (String.Empty)
 					try
 					{
-						TxtBegin = Convert.ToInt32(mydr.Rows[0]["Txt" + TmpName + "Begin"]);
-						TxtEnd = Convert.ToInt32(mydr.Rows[0]["Txt" + TmpName + "End"]);
+						var TxtBegin = Convert.ToInt32(mydr.Rows[0]["Txt" + TmpName + "Begin"]);
+						var TxtEnd = Convert.ToInt32(mydr.Rows[0]["Txt" + TmpName + "End"]);
 						fds.Add(new TxtFieldDef(
 							TmpName, 
 							TxtBegin, 
@@ -98,7 +97,7 @@ namespace Inforoom.Formalizer
 
 			foreach(CoreCost cc in currentCoreCosts)
 			{
-				cc.fieldName = "Cost" + cc.costCode.ToString();
+				cc.fieldName = "Cost" + cc.costCode;
 				fds.Add(
 					new TxtFieldDef(
 						cc.fieldName,
@@ -120,7 +119,7 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			//Формируем Schema.ini для распознования
-			using(StreamWriter w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
+			using(var w = new StreamWriter(Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "Schema.ini", false, Encoding.GetEncoding(1251)))
 			{
 				w.WriteLine("[" + Path.GetFileName(priceFileName) + "]");
 				convertedToANSI = (FileEncoding == "OEM");
@@ -164,10 +163,10 @@ namespace Inforoom.Formalizer
 				}
 			}
 
-			using (OleDbConnection dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
+			using (var dbcMain = new OleDbConnection(String.Format("Provider=Microsoft.Jet.OLEDB.4.0;Data Source={0};Extended Properties=\"Text\"", System.IO.Path.GetDirectoryName(priceFileName))))
 			{
 				dbcMain.Open();
-				using (OleDbDataAdapter da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
+				using (var da = new OleDbDataAdapter(String.Format("select * from {0}", System.IO.Path.GetFileName(priceFileName).Replace(".", "#")), dbcMain))
 				{
 					dtPrice = OleDbHelper.FillPrice(da);
 				}
