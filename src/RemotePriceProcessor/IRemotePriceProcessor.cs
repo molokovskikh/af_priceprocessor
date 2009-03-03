@@ -19,6 +19,13 @@ namespace RemotePricePricessor
 		{}
 	}
 
+	[Serializable]
+	public class HistoryFile
+	{
+		public string Filename { get; set; }
+		public byte[] Bytes { get; set; }
+	}
+
 	/// <summary>
 	/// интерфейс для удаленного взаимодействия с PriceProcessor'ом
 	/// </summary>
@@ -36,5 +43,6 @@ namespace RemotePricePricessor
 		string[] InboundFiles();
 
 		byte[] BaseFile(uint priceItemId);
+		HistoryFile GetFileFormHistory(ulong downlogId);
 	}
 }

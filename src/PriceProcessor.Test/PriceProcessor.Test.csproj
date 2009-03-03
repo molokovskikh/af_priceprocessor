@@ -65,11 +65,11 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="FileHelperTest.cs" />
@@ -81,7 +81,9 @@
     <Compile Include="PriceProcessItemFixture.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemotePricePricessorServiceFixture.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
+    <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\src\Common.Tools\Common.Tools.csproj">
@@ -95,6 +97,10 @@
     <ProjectReference Include="..\PriceProcessor\PriceProcessor.csproj">
       <Project>{207B22E7-BF6C-489A-9D29-455E11D84EB8}</Project>
       <Name>PriceProcessor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemotePriceProcessor\RemotePriceProcessor.csproj">
+      <Project>{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}</Project>
+      <Name>RemotePriceProcessor</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

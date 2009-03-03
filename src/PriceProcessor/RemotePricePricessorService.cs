@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
+using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
-using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
 using System.IO;
 using RemotePricePricessor;
@@ -204,6 +204,23 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
 
 			return File.ReadAllBytes(file);
+		}
+
+		public HistoryFile GetFileFormHistory(ulong downlogId)
+		{
+			var files = Directory.GetFiles(Settings.Default.HistoryPath, downlogId + "*");
+			if (files.Length > 0)
+				return new HistoryFile
+				       	{
+				       		Filename = Path.GetFileName(files[0]),
+				       		Bytes = File.ReadAllBytes(files[0]),
+				       	};
+			
+#if SLAVE
+			throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+#else
+			return GetSlave().GetFileFormHistory(downlogId);
+#endif
 		}
 
 		private static IRemotePriceProcessor GetSlave()

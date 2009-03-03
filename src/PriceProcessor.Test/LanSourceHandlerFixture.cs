@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Common.Tools;
-using Inforoom.Downloader;
-using Inforoom.PriceProcessor;
-using MySql.Data.MySqlClient;
-using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
+﻿using NUnit.Framework;
 
 namespace PriceProcessor.Test
 {
@@ -18,16 +8,7 @@ namespace PriceProcessor.Test
 		[SetUp]
 		public void Setup()
 		{
-			InitDirs("FTPOptBox", "Inbound0");
-		}
-
-		private static void InitDirs(params string[] dirs)
-		{
-			dirs.Each(dir => {
-			          	if (Directory.Exists(dir))
-							Directory.Delete(dir, true);
-			          	Directory.CreateDirectory(dir);
-			          });
+			TestHelper.InitDirs("FTPOptBox", "Inbound0");
 		}
 
 		[Test]
