@@ -199,11 +199,15 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				return GetSlave().BaseFile(priceItemId);
 #endif
 
-			var file = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
-			if (!File.Exists(file))
-				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+			var baseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
 
-			return File.ReadAllBytes(file);
+			if (!File.Exists(baseFile) && !File.Exists(inboundFile))
+				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+			if (!File.Exists(baseFile) && File.Exists(inboundFile))
+				throw new PriceProcessorException("Данный прайс-лист находится в очереди на формализацию!");
+
+			return File.ReadAllBytes(baseFile);
 		}
 
 		public HistoryFile GetFileFormHistory(ulong downlogId)
