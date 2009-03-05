@@ -13,6 +13,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override void Open()
 		{
+			convertedToANSI = true;
 			CurrPos = 0;
 			dtPrice = Dbf.Load(priceFileName);
 			base.Open();
