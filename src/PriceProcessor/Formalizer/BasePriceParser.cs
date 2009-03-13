@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Data;
+using System.Text;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Properties;
@@ -860,7 +861,7 @@ order by Core0.Id", priceCode);
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 					if (priceType != Settings.Default.ASSORT_FLG)
-						InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
+						InsertCoreCosts(sb, (ArrayList)CoreCosts[i]);
 
 					if ((i+1) % Settings.Default.MaxPositionInsertToCore == 0)
 					{
@@ -937,7 +938,7 @@ order by Core0.Id", priceCode);
 						if (drExistsCore == null)
 						{
 							statCounters[FormalizeStats.CommandCount]++;
-							InsertCoreCosts(drCore, sb, (ArrayList)CoreCosts[i]);
+							InsertCoreCosts(sb, (ArrayList)CoreCosts[i]);
 						}
 						else
 							UpdateCoreCosts(drExistsCore, drCore, sb, (ArrayList)CoreCosts[i]);
@@ -1162,37 +1163,34 @@ where
 			DataRow[] drsExists = dtExistsCore.Select(filterString);
 			TimeSpan tsSearchTime = DateTime.UtcNow.Subtract(dtSearchTime);
 			statCounters[FormalizeStats.AvgSearchTime] += Convert.ToInt32(tsSearchTime.TotalMilliseconds);
+
 			if (drsExists.Length == 0)
 				return null;
-			else
-				if (drsExists.Length == 1)
-				{
-					statCounters[FormalizeStats.FirstSearch]++;
-					return drsExists[0];
-				}
-				else
-				{
-					int maxMatchesNumber = 0, currentMatchesNumber;
-					DataRow maxMatchesNumberRow = null;
-					foreach (DataRow drExists in drsExists)
-					{
-						currentMatchesNumber = 0;
-						foreach (string compareField in compareFields)
-							if (drCore[compareField].Equals(drExists[compareField]))
-								currentMatchesNumber++;
-						if (currentMatchesNumber > maxMatchesNumber)
-						{
-							maxMatchesNumber = currentMatchesNumber;
-							maxMatchesNumberRow = drExists;
-						}
-					}
-					statCounters[FormalizeStats.SecondSearch]++;
-					return maxMatchesNumberRow;
-				}
+			if (drsExists.Length == 1)
+			{
+				statCounters[FormalizeStats.FirstSearch]++;
+				return drsExists[0];
+			}
 
+			int maxMatchesNumber = 0, currentMatchesNumber;
+			DataRow maxMatchesNumberRow = null;
+			foreach (DataRow drExists in drsExists)
+			{
+				currentMatchesNumber = 0;
+				foreach (string compareField in compareFields)
+					if (drCore[compareField].Equals(drExists[compareField]))
+						currentMatchesNumber++;
+				if (currentMatchesNumber > maxMatchesNumber)
+				{
+					maxMatchesNumber = currentMatchesNumber;
+					maxMatchesNumberRow = drExists;
+				}
+			}
+			statCounters[FormalizeStats.SecondSearch]++;
+			return maxMatchesNumberRow;
 		}
 
-		private void InsertCoreCosts(DataRow drCore, System.Text.StringBuilder sb, ArrayList coreCosts)
+		private void InsertCoreCosts(StringBuilder sb, ArrayList coreCosts)
 		{
 			if ((coreCosts != null) && (coreCosts.Count > 0))
 			{
@@ -1713,8 +1711,7 @@ and a.ProductId is null";
 					toughMask.Analyze( GetFieldRawValue(PriceFields.Name1) );
 				return true;
 			}
-			else
-				return false;
+			return false;
 		}
 
 		/// <summary>
@@ -1816,8 +1813,7 @@ and a.ProductId is null";
 			string Value = GetFieldValue(PF);
 			if ((null != Value) && LowerCase)
 				return Value.ToLower();
-			else
-				return Value;
+			return Value;
 		}
 
 		/// <summary>
@@ -1830,17 +1826,16 @@ and a.ProductId is null";
 			switch((int)PF)
 			{
 				case (int)PriceFields.Await:
-					return GetAwaitValue();
+					return GetBoolValue(PriceFields.Await, awaitPos);
 
 				case (int)PriceFields.Junk:
 					return GetJunkValue();
 
 				case (int)PriceFields.VitallyImportant:
-					return GetVitallyImportantValue();
+					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask); ;
 
 				case (int)PriceFields.RequestRatio:
 					return ProcessInt(GetFieldRawValue(PF));
-					//return GetRequestRatioValue();
 
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
@@ -1881,17 +1876,18 @@ and a.ProductId is null";
 		public virtual object ProcessCost(string CostValue)
 		{
 			if (!String.IsNullOrEmpty(CostValue))
+			{
 				try
 				{
-					NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;			
+					NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
 					String res = String.Empty;
-					foreach(Char c in CostValue.ToCharArray())
+					foreach (Char c in CostValue.ToCharArray())
 					{
 						if (Char.IsDigit(c))
 							res = String.Concat(res, c);
 						else
 						{
-							if ( (!Char.IsWhiteSpace(c)) && (res != String.Empty) && (-1 == res.IndexOf(nfi.CurrencyDecimalSeparator)) )
+							if ((!Char.IsWhiteSpace(c)) && (res != String.Empty) && (-1 == res.IndexOf(nfi.CurrencyDecimalSeparator)))
 								res = String.Concat(res, nfi.CurrencyDecimalSeparator);
 						}
 					}
@@ -1903,8 +1899,8 @@ and a.ProductId is null";
 				{
 					return DBNull.Value;
 				}
-			else
-				return DBNull.Value;
+			}
+			return DBNull.Value;
 		}
 
 		/// <summary>
@@ -1959,8 +1955,7 @@ and a.ProductId is null";
 				}
 				return res;
 			}
-			else
-				return DBNull.Value;
+			return DBNull.Value;
 		}
 
 		/// <summary>
@@ -1977,8 +1972,7 @@ and a.ProductId is null";
 					Value = Value.Replace("  ", " ");
 				return Value;
 			}
-			else
-				return null;
+			return null;
 		}
 
 		/// <summary>
@@ -1990,7 +1984,6 @@ and a.ProductId is null";
 		{
 			if (null != Value)
 			{
-
 				if (String.Empty != forbWords)
 				{
 					foreach(string s in forbWordsList)
@@ -1999,15 +1992,11 @@ and a.ProductId is null";
 					}
 					if (String.Empty == Value)
 						return null;
-					else
-						return Value;		
+					return Value;
 				}
-				else
-					return Value;		
-
+				return Value;
 			}
-			else
-				return null;
+			return null;
 		}
 
 		/// <summary>
@@ -2056,14 +2045,11 @@ and a.ProductId is null";
 				AJunk = Convert.ToBoolean(dr[0]["Junk"]);
 				return true;
 			}
-			else
-			{
-				AProductId = null;
-				ASynonymCode = null;
-				AJunk = false;
-				return false;
-			}
 
+			AProductId = null;
+			ASynonymCode = null;
+			AJunk = false;
+			return false;
 		}
 
 		/// <summary>
@@ -2159,35 +2145,6 @@ and a.ProductId is null";
 
 			return JunkValue;
 		}
-
-
-		public bool GetAwaitValue()
-		{
-			return GetBoolValue(PriceFields.Await, awaitPos);
-		}
-
-		public bool GetVitallyImportantValue()
-		{
-			return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
-		}
-
-		//public object GetRequestRatioValue()
-		//{
-		//    try
-		//    {
-		//        string rr = GetFieldRawValue(PriceFields.RequestRatio);
-		//        if (rr != null)
-		//        {
-		//            int rrValue;
-		//            if (int.TryParse(rr, out rrValue))
-		//                return rrValue;
-		//        }
-		//    }
-		//    catch
-		//    {
-		//    }
-		//    return DBNull.Value;
-		//}
 
 		/// <summary>
 		/// Обрабатывает цены и возврашает кол-во не нулевых цен
