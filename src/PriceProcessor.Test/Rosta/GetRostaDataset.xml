@@ -1,0 +1,31 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <Table>
+    <SynonymCode>2391328</SynonymCode>
+    <PriceCode>216</PriceCode>
+    <Synonym>Атероблок капс 1328мг №64</Synonym>
+    <ProductId>53874</ProductId>
+    <Junk>false</Junk>
+  </Table>
+  <Table>
+    <SynonymCode>3716497</SynonymCode>
+    <PriceCode>216</PriceCode>
+    <Synonym>Атероблок капс. 1328мг ¦64 БАД  </Synonym>
+    <ProductId>53874</ProductId>
+    <Junk>false</Junk>
+  </Table>
+  <Table>
+    <SynonymCode>2240429</SynonymCode>
+    <PriceCode>216</PriceCode>
+    <Synonym>Атероблок капс. 1328мг №64 БАД</Synonym>
+    <ProductId>53874</ProductId>
+    <Junk>false</Junk>
+  </Table>
+  <Table>
+    <SynonymCode>3901240</SynonymCode>
+    <PriceCode>216</PriceCode>
+    <Synonym>Атероблок капс. 1328мг №64 БАД(11.08)  </Synonym>
+    <ProductId>53874</ProductId>
+    <Junk>false</Junk>
+  </Table>
+</NewDataSet>

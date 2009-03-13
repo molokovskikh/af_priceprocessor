@@ -15,59 +15,19 @@ namespace PriceProcessor.Test
 	public class ParseDbfFileFixture
 	{
 		[Test]
-		public void Pase_order_with_native_dbf_parser_should_be_same_as_oledb()
+		public void Parse_order_with_native_dbf_parser_should_be_same_as_oledb()
 		{
 			using (var connection = new MySqlConnection("server=testsql.analit.net;username=system; password=newpass; database=farm; pooling=true; Convert Zero Datetime=true;"))
 			{
 				connection.Open();
-				var adapter = new MySqlDataAdapter(String.Format(@"
-select
-  pi.Id as PriceItemId,
-  pi.RowCount,
-  pd.PriceCode,
-  PD.PriceName as SelfPriceName,
-  PD.PriceType,
-  pd.CostType,
-  if(pd.CostType = 1, pc.CostCode, null) CostCode,
-  CD.FirmCode,
-  CD.ShortName as FirmShortName,
-  CD.FirmStatus,
-  FR.JunkPos as SelfJunkPos,
-  FR.AwaitPos as SelfAwaitPos,
-  FR.VitallyImportantMask as SelfVitallyImportantMask,
-  ifnull(pd.ParentSynonym, pd.PriceCode) as ParentSynonym,
-  PFR.*,
-  pricefmts.FileExtention,
-  pricefmts.ParserClassName
-from
-  usersettings.PriceItems pi,
-  usersettings.pricescosts pc,
-  UserSettings.PricesData pd,
-  UserSettings.ClientsData cd,
-  Farm.formrules FR,
-  Farm.FormRules PFR,
-  farm.pricefmts 
-where
-    pi.Id = {0}
-and pc.PriceItemId = pi.Id
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and FR.Id = pi.FormRuleId
-and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
-and pricefmts.ID = PFR.PriceFormatId", "552"), connection);
-				var data = new DataSet();
-				adapter.Fill(data);
-				connection.Close();
-				var parser = new NativeDbfPriceParser(Path.GetFullPath(@".\Data\552.dbf"), connection, data.Tables[0]);
-				parser.Formalize();
+				TestHelper.Formilize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\552.dbf"), 552);
 
 				var result = new DataSet();
-				adapter.SelectCommand.CommandText = @"
+				var adapter = new MySqlDataAdapter(@"
 select *
 from farm.core0 c
   join corecosts cc on c.id = cc.Core_Id
-where pricecode = 3331";
+where pricecode = 3331", connection);
 				adapter.Fill(result);
 
 				var etalon = new DataSet();
@@ -88,14 +48,15 @@ where pricecode = 3331";
 				var etalonRow = etalon.Tables[0].Rows[i];
 				foreach (DataColumn column in result.Tables[0].Columns)
 				{
-					if (column.ColumnName == "Id" || column.ColumnName == "Core_Id")
+					//junk - определяется на основании текущей даты по этому со временем значение может измениться
+					if (column.ColumnName == "Id" || column.ColumnName == "Core_Id" || column.ColumnName == "Junk")
 						continue;
-					Assert.That(resultRow[column.ColumnName], Is.EqualTo(etalonRow[column.ColumnName]), "не сошлось значение в колонке {0}", column.ColumnName);
+					Assert.That(resultRow[column.ColumnName], Is.EqualTo(etalonRow[column.ColumnName]), "не сошлось значение в колонке {0}, строка {1}", column.ColumnName, i);
 				}
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void BuildEtalon()
 		{
 			using (var connection = new MySqlConnection("server=sql.analit.net;username=Kvasov; password=ghjgtkkth; database=farm; pooling=true; Convert Zero Datetime=true;"))

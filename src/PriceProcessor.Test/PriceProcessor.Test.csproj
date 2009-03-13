@@ -82,6 +82,7 @@
     <Compile Include="PriceProcessThreadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemotePricePricessorServiceFixture.cs" />
+    <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
@@ -110,10 +111,22 @@
     <None Include="Data\552.dbf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Data\781.dbf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Rosta\611.dbf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Rosta\611_original.dbf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\552.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Rosta\GetRostaDataset.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

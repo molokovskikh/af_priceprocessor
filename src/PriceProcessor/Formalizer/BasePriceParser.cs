@@ -1839,7 +1839,8 @@ and a.ProductId is null";
 					return GetVitallyImportantValue();
 
 				case (int)PriceFields.RequestRatio:
-					return GetRequestRatioValue();
+					return ProcessInt(GetFieldRawValue(PF));
+					//return GetRequestRatioValue();
 
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
@@ -1914,20 +1915,20 @@ and a.ProductId is null";
 		public virtual object ProcessInt(string IntValue)
 		{
 			if (!String.IsNullOrEmpty(IntValue))
+			{
 				try
 				{
-					object cost = ProcessCost(IntValue);
+					var cost = ProcessCost(IntValue);
 					if (cost is decimal)
-						return Convert.ToInt32( decimal.Truncate((decimal)cost) );
-					else
-						return cost;
+						return Convert.ToInt32(decimal.Truncate((decimal) cost));
+					return cost;
 				}
 				catch
 				{
 					return DBNull.Value;
 				}
-			else
-				return DBNull.Value;
+			}
+			return DBNull.Value;
 		}
 
 		/// <summary>
@@ -2170,23 +2171,23 @@ and a.ProductId is null";
 			return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
 		}
 
-		public object GetRequestRatioValue()
-		{
-			try
-			{
-				string rr = GetFieldRawValue(PriceFields.RequestRatio);
-				if (rr != null)
-				{
-					int rrValue;
-					if (int.TryParse(rr, out rrValue))
-						return rrValue;
-				}
-			}
-			catch
-			{
-			}
-			return DBNull.Value;
-		}
+		//public object GetRequestRatioValue()
+		//{
+		//    try
+		//    {
+		//        string rr = GetFieldRawValue(PriceFields.RequestRatio);
+		//        if (rr != null)
+		//        {
+		//            int rrValue;
+		//            if (int.TryParse(rr, out rrValue))
+		//                return rrValue;
+		//        }
+		//    }
+		//    catch
+		//    {
+		//    }
+		//    return DBNull.Value;
+		//}
 
 		/// <summary>
 		/// Обрабатывает цены и возврашает кол-во не нулевых цен
