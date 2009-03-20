@@ -208,7 +208,9 @@ namespace Inforoom.Formalizer
 		public string fieldName = String.Empty;
 		public int txtBegin = -1;
 		public int txtEnd = -1;
-		public decimal cost = 0m;
+		public decimal? cost = null;
+		//кол-во позиций с неустановленной ценой для данной ценовой колонки
+		public int undefinedCostCount = 0;
 
 		public CoreCost(System.Int64 ACostCode, string ACostName, bool ABaseCost, string AFieldName, int ATxtBegin, int ATxtEnd)
 		{
@@ -1046,7 +1048,7 @@ where
 
 			foreach (CoreCost c in costs)
 				//Если значение формализованной цены больше нуля, то будет ее обновлять или вставлять, иначе существующая должна быть удалена
-				if (c.cost > 0)
+				if (c.cost.HasValue && (c.cost > 0))
 				{
 					//Попытка поиска цены в списке
 					drCurrent = null;
@@ -1063,17 +1065,17 @@ where
 						statCounters[FormalizeStats.InsertCostCount]++;
 						statCounters[FormalizeStats.CommandCount]++;
 						sb.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ({0}, {1}, {2});\r\n",
-							drExistsCore["Id"], c.costCode, c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat));
+							drExistsCore["Id"], c.costCode, c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat));
 					}
 					else
 					{
 						//Если цена найдена и значение цены другое, то обновляем цену в таблице
-						if (c.cost.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
+						if (c.cost.Value.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
 							statCounters[FormalizeStats.UpdateCostCount]++;
 							statCounters[FormalizeStats.CommandCount]++;
 							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
-								c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
+								c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
 						}
 						//Удаляем цену из кэша таблицы, чтобы при следующем поиске ее не рассматривать
 						drCurrent.Delete();
@@ -1198,12 +1200,12 @@ where
 				bool FirstInsert = true;
 				foreach (CoreCost c in coreCosts)
 				{
-					if (c.cost > 0)
+					if (c.cost.HasValue && (c.cost > 0))
 					{
 						if (!FirstInsert)
 							sb.Append(", ");
 						FirstInsert = false;
-						sb.AppendFormat("(@LastCoreID, {0}, {1}) ", c.costCode, (c.cost > 0) ? c.cost.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
+						sb.AppendFormat("(@LastCoreID, {0}, {1}) ", c.costCode, (c.cost.HasValue && (c.cost > 0)) ? c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
 					}
 				}
 				sb.AppendLine(";");
@@ -1281,6 +1283,8 @@ where
 		/// </summary>
 		public void FinalizePrice()
 		{
+			ProcessUndefinedCost();
+
 			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, firmCode, priceCode, firmShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
@@ -1524,6 +1528,69 @@ and a.ProductId is null";
 				}
 			}
 
+		}
+
+		/// <summary>
+		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
+		/// </summary>
+		private void ProcessUndefinedCost()
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (CoreCost cost in currentCoreCosts)
+				if (cost.undefinedCostCount > formCount * 0.05)
+					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.costName, cost.undefinedCostCount);
+
+			if (stringBuilder.Length > 0)
+				SendAlertToUserFail(
+					stringBuilder,
+					"PriceProcessor: В файле имеются позиции с незаполненными ценами",
+					@"
+Здравствуйте!
+  В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
+  Список ценовых колонок:
+{2}
+
+С уважением,
+  PriceProcessor.");
+
+		}
+
+		protected void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body)
+		{
+			try
+			{
+				DataRow drProvider = MySqlHelper.ExecuteDataRow(Inforoom.PriceProcessor.Literals.ConnectionString(), @"
+select
+  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
+  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
+from
+usersettings.pricescosts pc,
+usersettings.pricesdata pd,
+usersettings.clientsdata cd,
+farm.regions r
+where
+    pc.PriceItemId = ?PriceItemId
+and pd.PriceCode = pc.PriceCode
+and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and cd.FirmCode = pd.FirmCode
+and r.RegionCode = cd.RegionCode",
+								 new MySqlParameter("?PriceItemId", priceItemId));
+				body = String.Format(
+					body,
+					drProvider["PriceName"],
+					drProvider["ShortFirmName"],
+					stringBuilder.ToString());
+
+				using (System.Net.Mail.MailMessage m = new System.Net.Mail.MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body))
+				{
+					System.Net.Mail.SmtpClient client = new System.Net.Mail.SmtpClient(Settings.Default.SMTPHost);
+					client.Send(m);
+				}
+			}
+			catch (Exception exception)
+			{
+				_logger.Error("Не получилось отправить сообщение о незаполненных ценах", exception);
+			}
 		}
 
 		/// <summary>
@@ -2156,7 +2223,7 @@ and a.ProductId is null";
 			object costValue;
 			foreach(CoreCost c in currentCoreCosts)
 			{
-				c.cost = -1;
+				c.cost = null;
 				try
 				{
 					costValue = dtPrice.Rows[CurrPos][c.fieldName].ToString();
@@ -2170,13 +2237,19 @@ and a.ProductId is null";
 					costValue = ProcessCost( (string)costValue );
 					if (!(costValue is DBNull))
 					{
-						if ( !checkZeroCost( (decimal)costValue ) )
+						if (!checkZeroCost((decimal)costValue))
 						{
 							c.cost = (decimal)costValue;
 							res++;
 						}
+						else
+							c.cost = 0;
 					}
 				}
+
+				//если неустановленная цена, то увеличиваем счетчик
+				if (!c.cost.HasValue)
+					c.undefinedCostCount++;
 			}
 			return res;
 		}

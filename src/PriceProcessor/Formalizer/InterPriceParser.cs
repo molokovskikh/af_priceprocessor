@@ -44,42 +44,17 @@ namespace Inforoom.Formalizer
 					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
 
 			if (sb.Length > 0)
-			{
-				DataRow drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
-select
-  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
-  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
-from
-usersettings.pricescosts pc,
-usersettings.pricesdata pd,
-usersettings.clientsdata cd,
-farm.regions r
-where
-    pc.PriceItemId = ?PriceItemId
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and r.RegionCode = cd.RegionCode",
-								 new MySqlParameter("?PriceItemId", priceItemId));
-				string subject = "PriceProcessor: В файле отсутствуют настроенные поля";
-				string body = String.Format(@"
+				SendAlertToUserFail(
+					sb,
+					"PriceProcessor: В файле отсутствуют настроенные поля",
+					@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
   Следующие поля отсутствуют:
 {2}
 
 С уважением,
-  PriceProcessor.",
-				  drProvider["PriceName"],
-				  drProvider["ShortFirmName"],
-				  sb.ToString());
-
-				using (MailMessage m = new MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body))
-				{
-					SmtpClient client = new SmtpClient(Settings.Default.SMTPHost);
-					client.Send(m);
-				}
-			}
+  PriceProcessor.");
 
 		}
 
