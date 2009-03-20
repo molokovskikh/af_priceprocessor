@@ -36,11 +36,12 @@ namespace Inforoom.Formalizer
 			StringBuilder sb = new StringBuilder();
 
 			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-			{
-				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)))
-					if (!dtPrice.Columns.Contains(GetFieldName(pf)))
-						sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
-			}
+				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
+					sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
+
+			foreach (CoreCost cost in currentCoreCosts)
+				if (!String.IsNullOrEmpty(cost.fieldName) && !dtPrice.Columns.Contains(cost.fieldName))
+					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
 
 			if (sb.Length > 0)
 			{
