@@ -64,10 +64,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= OnFileCreate;
-			if (!tWork.Join(maxJoinTime))
-				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 
 			base.StopWork();
+
+			if (!tWork.Join(maxJoinTime))
+				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 
 			Thread.Sleep(600);
 
