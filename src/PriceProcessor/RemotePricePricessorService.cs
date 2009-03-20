@@ -64,16 +64,16 @@ and logs.Rowid = ?DownLogId",
 
 			var files = Directory.GetFiles(Path.GetFullPath(Settings.Default.HistoryPath), drFocused["DRowID"] + "*");
 
-#if !SLAVE
-			if (Convert.ToBoolean(drFocused["IsForSlave"]))
+#if SLAVE
+			if (files.Length == 0)
+				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
+#else
+			if (files.Length == 0)
 			{
 				GetSlave().ResendPrice(downlogId);
 				return;
 			}
 #endif
-
-			if (files.Length == 0)
-				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
 
 			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
 			{
