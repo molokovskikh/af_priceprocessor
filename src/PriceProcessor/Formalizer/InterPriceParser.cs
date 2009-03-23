@@ -46,7 +46,7 @@ namespace Inforoom.Formalizer
 			if (sb.Length > 0)
 				SendAlertToUserFail(
 					sb,
-					"PriceProcessor: В файле отсутствуют настроенные поля",
+					"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
 					@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.

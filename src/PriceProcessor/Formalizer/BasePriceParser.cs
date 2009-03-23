@@ -1543,7 +1543,7 @@ and a.ProductId is null";
 			if (stringBuilder.Length > 0)
 				SendAlertToUserFail(
 					stringBuilder,
-					"PriceProcessor: В файле имеются позиции с незаполненными ценами",
+					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
 					@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
@@ -1575,11 +1575,14 @@ and ((pd.CostType = 1) or (pc.BaseCost = 1))
 and cd.FirmCode = pd.FirmCode
 and r.RegionCode = cd.RegionCode",
 								 new MySqlParameter("?PriceItemId", priceItemId));
+				subject = String.Format(subject, drProvider["PriceName"], drProvider["ShortFirmName"]);
 				body = String.Format(
 					body,
 					drProvider["PriceName"],
 					drProvider["ShortFirmName"],
 					stringBuilder.ToString());
+
+				_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
 
 				using (System.Net.Mail.MailMessage m = new System.Net.Mail.MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body))
 				{
@@ -1589,7 +1592,7 @@ and r.RegionCode = cd.RegionCode",
 			}
 			catch (Exception exception)
 			{
-				_logger.Error("Не получилось отправить сообщение о незаполненных ценах", exception);
+				_logger.Error("Не получилось отправить предупреждение о настройках формализации прайс-листа", exception);
 			}
 		}
 
