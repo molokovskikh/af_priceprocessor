@@ -1283,7 +1283,9 @@ where
 		/// </summary>
 		public void FinalizePrice()
 		{
-			ProcessUndefinedCost();
+			//ѕроверку и отправку уведомлений производим только дл€ загруженных прайс-листов
+			if (downloaded)
+				ProcessUndefinedCost();
 
 			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 			{

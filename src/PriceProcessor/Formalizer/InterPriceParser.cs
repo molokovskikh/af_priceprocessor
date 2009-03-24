@@ -33,21 +33,24 @@ namespace Inforoom.Formalizer
 
 		public override void Open()	
 		{
-			StringBuilder sb = new StringBuilder();
+			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
+			if (downloaded)
+			{
+				StringBuilder sb = new StringBuilder();
 
-			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
-					sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
+				foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
+					if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
+						sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
 
-			foreach (CoreCost cost in currentCoreCosts)
-				if (!String.IsNullOrEmpty(cost.fieldName) && !dtPrice.Columns.Contains(cost.fieldName))
-					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
+				foreach (CoreCost cost in currentCoreCosts)
+					if (!String.IsNullOrEmpty(cost.fieldName) && !dtPrice.Columns.Contains(cost.fieldName))
+						sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
 
-			if (sb.Length > 0)
-				SendAlertToUserFail(
-					sb,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
-					@"
+				if (sb.Length > 0)
+					SendAlertToUserFail(
+						sb,
+						"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
+						@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
   Следующие поля отсутствуют:
@@ -55,6 +58,7 @@ namespace Inforoom.Formalizer
 
 С уважением,
   PriceProcessor.");
+			}
 
 		}
 
