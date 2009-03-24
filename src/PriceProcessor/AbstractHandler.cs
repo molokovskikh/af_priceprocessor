@@ -28,7 +28,7 @@ namespace Inforoom.PriceProcessor
 		/// <summary>
 		/// кол-во милисекунд, которые выделяются на завершение нитки
 		/// </summary>
-		protected const int maxJoinTime = 180000; 
+		protected const int maxJoinTime = 5000; 
 
 		protected readonly log4net.ILog _logger;
 

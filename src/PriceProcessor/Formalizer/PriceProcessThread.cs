@@ -139,7 +139,7 @@ namespace Inforoom.Formalizer
 			get
 			{
 				return (
-					((_thread.ThreadState == ThreadState.AbortRequested) || (_thread.ThreadState == ThreadState.Aborted)) 
+					(((_thread.ThreadState & ThreadState.AbortRequested) > 0) || ((_thread.ThreadState & ThreadState.Aborted) > 0)) 
 					&& _abortingTime.HasValue 
 					&& (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
 			}
