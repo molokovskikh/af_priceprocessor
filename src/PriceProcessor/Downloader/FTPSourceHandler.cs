@@ -53,7 +53,18 @@ namespace Inforoom.Downloader
                             (String.Compare(ShortFileName, (string)dtSources.Rows[0][SourcesTableColumns.colPriceMask], true) == 0))
                         {
                             DateTime fileLastWriteTime = Convert.ToDateTime(drEnt["Date"]);
-							if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
+							if (
+								(
+								(fileLastWriteTime.CompareTo(priceDateTime) > 0) 
+								&& (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
+								)
+								||
+								(
+								(fileLastWriteTime.CompareTo(DateTime.Now) > 0)
+								&&
+								(fileLastWriteTime.Subtract(priceDateTime).TotalMinutes > 0)
+								)
+								)
                             {
 								priceDateTime = fileLastWriteTime;
                                 FTPFileName = ShortFileName;

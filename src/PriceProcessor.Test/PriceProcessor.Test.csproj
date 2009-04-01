@@ -74,6 +74,7 @@
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
+    <Compile Include="FTPSourceHandlerFixture.cs" />
     <Compile Include="LanSourceHandlerFixture.cs" />
     <Compile Include="ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />

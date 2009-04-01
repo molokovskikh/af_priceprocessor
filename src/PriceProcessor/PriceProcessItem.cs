@@ -63,7 +63,8 @@ namespace Inforoom.PriceProcessor
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   pc.PriceItemId,
   pd.ParentSynonym,
-  pi.IsForSlave
+  pi.IsForSlave,
+  pi.LastDownload
 from (usersettings.pricescosts pc, usersettings.pricesdata pd)
 	join usersettings.priceitems pi on pc.PriceItemId = pi.Id
 where pc.PriceItemId = ?PriceItemId
@@ -77,10 +78,15 @@ group by pi.Id",
 			var priceCode = Convert.ToUInt64(drPriceItem["PriceCode"]);
 			var costCode = (drPriceItem["CostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["CostCode"]);
 			var parentSynonym = (drPriceItem["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["ParentSynonym"]);
+			var lastDownload = (drPriceItem["LastDownload"] is DBNull) ? DateTime.MinValue : Convert.ToDateTime(drPriceItem["LastDownload"]);
 			var item = new PriceProcessItem(isDownloaded, priceCode, costCode, priceItemId, filename, parentSynonym)
 			           	{
 			           		IsMyPrice = !Convert.ToBoolean(drPriceItem["IsForSlave"])
 			           	};
+
+			if (isDownloaded)
+				item.FileTime = lastDownload;
+
 #if !SLAVE
 			if (!item.IsMyPrice)
 			{
@@ -146,9 +152,10 @@ group by pi.Id",
 				(c, t) => {
 					var command = new MySqlCommand(@"
 update usersettings.PriceItems 
-set LastDownload = now()
+set LastDownload = ?FileTime
 where Id = ?Id", c, t);
 					command.Parameters.AddWithValue("?Id", PriceItemId);
+					command.Parameters.AddWithValue("?FileTime", FileTime);
 					command.ExecuteNonQuery();
 
 					if (!IsMyPrice)
