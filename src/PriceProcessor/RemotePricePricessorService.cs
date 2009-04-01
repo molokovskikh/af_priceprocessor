@@ -14,8 +14,7 @@ namespace Inforoom.PriceProcessor
 		public void ResendPrice(ulong downlogId)
 		{
 			var drFocused = MySqlHelper.ExecuteDataRow(
-				Literals.ConnectionString(),
-				@"
+				Literals.ConnectionString(),@"
 SELECT
   logs.RowID as DRowID,
   logs.LogTime as DLogTime,
@@ -46,7 +45,7 @@ FROM
   farm.sources s,
   farm.Sourcetypes st,
   farm.formrules fr,
-  farm.pricefmts 
+  farm.pricefmts
 WHERE
     pim.Id = logs.PriceItemId
 and pc.PriceItemId = pim.Id
@@ -59,16 +58,12 @@ and st.Id = s.SourceTypeId
 and logs.ResultCode in (2, 3)
 and fr.Id = pim.FormRuleId
 and pricefmts.id = fr.PriceFormatId
-and logs.Rowid = ?DownLogId",
-						 new MySqlParameter("?DownLogId", downlogId));
+and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
-			var files = Directory.GetFiles(Path.GetFullPath(Settings.Default.HistoryPath), drFocused["DRowID"] + "*");
+			var filename = GetFileFromArhive(downlogId);
 
-#if SLAVE
-			if (files.Length == 0)
-				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
-#else
-			if (files.Length == 0)
+#if !SLAVE
+			if (Convert.ToBoolean(drFocused["IsForSlave"]))
 			{
 				GetSlave().ResendPrice(downlogId);
 				return;
@@ -77,7 +72,7 @@ and logs.Rowid = ?DownLogId",
 
 			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
 			{
-				using (var fs = new FileStream(files[0], FileMode.Open, FileAccess.Read, FileShare.Read))
+				using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
 					SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, Environment.MachineName, "prices@analit.net", new[] { "prices@analit.net" }, fs);
 				return;
 			}
@@ -86,12 +81,12 @@ and logs.Rowid = ?DownLogId",
 			var TempDirectory = Path.GetTempPath();
 			TempDirectory += drFocused["DArchFileName"].ToString();
 
-			if (ArchiveHelper.IsArchive(files[0]))
+			if (ArchiveHelper.IsArchive(filename))
 			{
 				if (Directory.Exists(TempDirectory))
 					Directory.Delete(TempDirectory, true);
 				Directory.CreateDirectory(TempDirectory);
-				ArchiveHelper.Extract(files[0], drFocused["DExtrFileName"].ToString(), TempDirectory);
+				ArchiveHelper.Extract(filename, drFocused["DExtrFileName"].ToString(), TempDirectory);
 				var extractFiles = Directory.GetFiles(TempDirectory, drFocused["DExtrFileName"].ToString());
 				if (extractFiles.Length > 0)
 					sourceFile = extractFiles[0];
@@ -100,7 +95,7 @@ and logs.Rowid = ?DownLogId",
 			}
 			else
 			{
-				sourceFile = files[0];
+				sourceFile = filename;
 			}
 
 			if (String.IsNullOrEmpty(sourceFile))
@@ -212,24 +207,26 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 
 		public HistoryFile GetFileFormHistory(ulong downlogId)
 		{
-			var files = Directory.GetFiles(Settings.Default.HistoryPath, downlogId + "*");
-			if (files.Length > 0)
-				return new HistoryFile
+			var filename = GetFileFromArhive(downlogId);
+			return new HistoryFile
 				       	{
-				       		Filename = Path.GetFileName(files[0]),
-				       		Bytes = File.ReadAllBytes(files[0]),
+							Filename = Path.GetFileName(filename),
+							Bytes = File.ReadAllBytes(filename),
 				       	};
-			
-#if SLAVE
-			throw new PriceProcessorException("Данный прайс-лист отсутствует!");
-#else
-			return GetSlave().GetFileFormHistory(downlogId);
-#endif
+		}
+
+		private static string GetFileFromArhive(ulong downlogId)
+		{
+			var files = Directory.GetFiles(Settings.Default.HistoryPath, downlogId + "*");
+			if (files.Length == 0)
+				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
+			return files[0];
 		}
 
 		private static IRemotePriceProcessor GetSlave()
 		{
-			return (IRemotePriceProcessor)Activator.GetObject(typeof(IRemotePriceProcessor), "http://fmsold.adc.analit.net:888/RemotePriceProcessor");
+			return (IRemotePriceProcessor) Activator.GetObject(typeof (IRemotePriceProcessor),
+			                                                   "http://fmsold.adc.analit.net:888/RemotePriceProcessor");
 		}
 	}
 }
