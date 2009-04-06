@@ -198,7 +198,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 #endif
 
 			var baseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
-			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			if (!File.Exists(baseFile) && !File.Exists(inboundFile))
 				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
