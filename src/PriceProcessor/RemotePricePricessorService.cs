@@ -109,6 +109,8 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				                                  Settings.Default.InboundPath));
 
 			File.Copy(sourceFile, destinationFile);
+
+#if !SLAVE
 			var item = new PriceProcessItem(
 				true,
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
@@ -117,6 +119,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				destinationFile,
 				(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?) Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
+#endif
 
 			if (Directory.Exists(TempDirectory))
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
