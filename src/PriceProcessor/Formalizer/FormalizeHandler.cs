@@ -471,9 +471,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 				else
 				{
 					hi.ErrorCount++;
-					//Если превысили лимит ошибок и прайс-лист был переподложен, то удаляем его из списка, помещаем в ErrorFilesPath 
+					//Если превысили лимит ошибок, то удаляем его из списка, помещаем в ErrorFilesPath 
 					//и отправляем уведомление
-					if ((hi.ErrorCount > Settings.Default.MaxErrorCount) && (!p.ProcessItem.Downloaded))
+					if (hi.ErrorCount > Settings.Default.MaxErrorCount)
 					{
 						_logger.InfoFormat("Удаляем файл из-за большого кол-ва ошибок: FileName:{0} ErrorCount:{1} Downloaded:{2} ErrorMessage:{3} PriceItemId:{4}", p.ProcessItem.FilePath, hi.ErrorCount, p.ProcessItem.Downloaded, hi.ErrorMessage, p.ProcessItem.PriceItemId);
 						try
