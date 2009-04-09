@@ -311,6 +311,9 @@ namespace Inforoom.Formalizer
 		//код ценовой колонки, может быть не установлен
 		public long?	costCode;
 
+		//список прайс-листов, на которых в тестовом режиме будет использоваться update
+		private List<long> priceCodesUseUpdate;
+
 		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
 		private List<string> primaryFields;
 
@@ -377,10 +380,24 @@ namespace Inforoom.Formalizer
 
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
 
+			priceCodesUseUpdate = new List<long>();
+			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
+				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
+#if TESTINGUPDATE
+			//Протек-15 (Акция_1) - Воронеж 
+			//priceCodesUseUpdate.Add(5);
+			//Катрен (Воронеж) -  Воронеж
+			//priceCodesUseUpdate.Add(3779);
+			//Протек-15 (Базовый_новый) - Воронеж 
+			//priceCodesUseUpdate.Add(4596);			
+#endif
+
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
 			foreach (string field in Settings.Default.CorePrimaryFields)
 				primaryFields.Add(field);
+//#if TESTINGUPDATE
+//#endif
 
 			statCounters = new Dictionary<FormalizeStats, int>();
 			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
@@ -742,25 +759,27 @@ namespace Inforoom.Formalizer
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 			_logger.Debug("загрузили CoreCosts");
 
-			Stopwatch LoadExistsWatch = Stopwatch.StartNew();
+			if (priceCodesUseUpdate.Contains(priceCode))
+			{
+				Stopwatch LoadExistsWatch = Stopwatch.StartNew();
 
-			string existsCoreSQL;
-			if (costType == CostTypes.MultiColumn)
-				existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
-			else
-				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+				string existsCoreSQL;
+				if (costType == CostTypes.MultiColumn)
+					existsCoreSQL = String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} order by Id", priceCode);
+				else
+					existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
 
-			daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
-			daExistsCore.Fill(dsMyDB, "ExistsCore");
-			dtExistsCore = dsMyDB.Tables["ExistsCore"];
-			foreach (DataColumn column in dtExistsCore.Columns)
-				if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
-					compareFields.Add(column.ColumnName);
-			_logger.Debug("загрузили ExistsCore");
+				daExistsCore = new MySqlDataAdapter(existsCoreSQL, MyConn);
+				daExistsCore.Fill(dsMyDB, "ExistsCore");
+				dtExistsCore = dsMyDB.Tables["ExistsCore"];
+				foreach (DataColumn column in dtExistsCore.Columns)
+					if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
+						compareFields.Add(column.ColumnName);
+				_logger.Debug("загрузили ExistsCore");
 
-			string existsCoreCostsSQL;
-			if (costType == CostTypes.MultiColumn)
-				existsCoreCostsSQL = String.Format(@"
+				string existsCoreCostsSQL;
+				if (costType == CostTypes.MultiColumn)
+					existsCoreCostsSQL = String.Format(@"
 SELECT 
   CoreCosts.* 
 FROM 
@@ -773,26 +792,29 @@ and pricescosts.PriceCode = {0}
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode 
 order by Core0.Id", priceCode);
-			else
-				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
-			daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
-			dtExistsCoreCosts = dtCoreCosts.Clone();
-			dtExistsCoreCosts.TableName = "ExistsCoreCosts";
-			dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
-			dsMyDB.Tables.Add(dtExistsCoreCosts);
-			daExistsCoreCosts.Fill(dtExistsCoreCosts);
-			_logger.Debug("загрузили ExistsCoreCosts");
+				else
+					existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
+				daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
+				dtExistsCoreCosts = dtCoreCosts.Clone();
+				dtExistsCoreCosts.TableName = "ExistsCoreCosts";
+				dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
+				dsMyDB.Tables.Add(dtExistsCoreCosts);
+				daExistsCoreCosts.Fill(dtExistsCoreCosts);
+				_logger.Debug("загрузили ExistsCoreCosts");
 
-			Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
-			relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
-			dsMyDB.Relations.Add(relationExistsCoreToCosts);
-			ModifyCoreCostsWatch.Stop();
+				Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
+				relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
+				dsMyDB.Relations.Add(relationExistsCoreToCosts);
+				ModifyCoreCostsWatch.Stop();
 
-			LoadExistsWatch.Stop();
+				LoadExistsWatch.Stop();
 
-			_logger.InfoFormat("Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
-			_logger.InfoFormat("Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+				_logger.InfoFormat("Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
+				_logger.InfoFormat("Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+			}
 
+#if TESTINGUPDATE
+#endif
 			_logger.Debug("конец Prepare");
 		}
 
@@ -811,6 +833,59 @@ order by Core0.Id", priceCode);
 			int applyCount = da.Update(dt);
 			TimeSpan workTime = DateTime.UtcNow.Subtract(startTime);
 			return String.Format("{0};{1}", applyCount, workTime);
+		}
+
+		private string[] GetSQLToInsertCoreAndCoreCosts(out string SynonymUpdateCommand, out string SynonymFirmCrUpdateCommand)
+		{
+			SynonymUpdateCommand = null;
+			SynonymFirmCrUpdateCommand = null;
+
+			if (dtCore.Rows.Count > 0)
+			{
+				List<string> commandList = new List<string>();
+
+				List<string> synonymCodes = new List<string>();
+				List<string> synonymFirmCrCodes = new List<string>();
+
+				string lastCommand = String.Empty;
+				System.Text.StringBuilder sb = new System.Text.StringBuilder();
+				DataRow drCore;
+
+				for(int i = 0; i < dtCore.Rows.Count; i++)
+				{
+					drCore = dtCore.Rows[i];
+					InsertCorePosition(drCore, sb);
+
+					if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
+						synonymCodes.Add(drCore["SynonymCode"].ToString());
+
+					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
+
+					if (priceType != Settings.Default.ASSORT_FLG)
+						InsertCoreCosts(sb, (ArrayList)CoreCosts[i]);
+
+					if ((i+1) % Settings.Default.MaxPositionInsertToCore == 0)
+					{
+						lastCommand = sb.ToString();
+						if (!String.IsNullOrEmpty(lastCommand))
+							commandList.Add(lastCommand);
+						sb = new System.Text.StringBuilder();
+					}
+				}
+
+				lastCommand = sb.ToString();
+				if (!String.IsNullOrEmpty(lastCommand))
+					commandList.Add(lastCommand);
+
+				SynonymUpdateCommand = "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+
+				SynonymFirmCrUpdateCommand = "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";				
+
+				return commandList.ToArray();
+			}
+			else
+				return new string[] {};
 		}
 
 		private string[] GetSQLToUpdateCoreAndCoreCosts(out string SynonymUpdateCommand, out string SynonymFirmCrUpdateCommand)
@@ -1229,10 +1304,15 @@ where
 
 					string[] insertCoreAndCoreCostsCommandList;
 
-					Stopwatch GetSQLWatch = Stopwatch.StartNew();
-					insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
-					GetSQLWatch.Stop();
-					_logger.InfoFormat("Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
+					if (priceCodesUseUpdate.Contains(priceCode))
+					{
+						Stopwatch GetSQLWatch = Stopwatch.StartNew();
+						insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+						GetSQLWatch.Stop();
+						_logger.InfoFormat("Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
+					}
+					else
+						insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
 
 					//Производим транзакцию с применением главного прайса и таблицы цен
 					bool res = false;
@@ -1256,8 +1336,8 @@ where
 
 							mcClear.Parameters.Clear();
 
-							//Очищаем прайс-листы, если не формализовали прайс-лист и надо его очистить
-							if (dtCore.Rows.Count == 0)
+							//Производим данные действия, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
+							if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
 							{
 								if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
 								{
@@ -1323,7 +1403,10 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 
 								TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);
 
-								sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
+								if (priceCodesUseUpdate.Contains(priceCode))
+									sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
+								else
+									sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 
 								mcClear.CommandText = @"
 insert into catalogs.assortment
@@ -1351,7 +1434,10 @@ and a.ProductId is null";
 							}
 							else
 							{
-								sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
+								if (priceCodesUseUpdate.Contains(priceCode))
+									sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
+								else
+									sbLog.Append("InsertToCoreAndCoreCosts=0  ");
 							}
 
 
