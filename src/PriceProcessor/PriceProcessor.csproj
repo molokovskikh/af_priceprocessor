@@ -107,6 +107,7 @@
     <Compile Include="Formalizer\OleDbHelper.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
+    <Compile Include="Formalizer\SudakovXMLParser.cs" />
     <Compile Include="Formalizer\ToughDate.cs" />
     <Compile Include="Formalizer\ToughMask.cs" />
     <Compile Include="Formalizer\TXTDelimiterPriceParser.cs" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Formalizer\Resources\PriceProtek.xsl" />
+    <Content Include="Formalizer\Resources\PriceSudakov.xsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\src\Common.Tools\Common.Tools.csproj">
