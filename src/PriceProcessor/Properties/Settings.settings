@@ -8,15 +8,6 @@
     <Setting Name="SMTPHost" Type="System.String" Scope="Application">
       <Value Profile="(Default)">mail.adc.analit.net</Value>
     </Setting>
-    <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
-    </Setting>
-    <Setting Name="InboundPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">D:\Temp\Inbound0</Value>
-    </Setting>
-    <Setting Name="TempPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">D:\Temp\DownTemp</Value>
-    </Setting>
     <Setting Name="HandlerRequestInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
     </Setting>
@@ -29,17 +20,11 @@
     <Setting Name="IMAPPass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">123</Value>
     </Setting>
-    <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
-    </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">prccopy@analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">123</Value>
-    </Setting>
-    <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\Temp\FTPOptBox</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNothingAttachs" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) не доставлены аптеке</Value>
@@ -47,23 +32,14 @@
     <Setting Name="ResponseDocSubjectTemplateOnMultiDomen" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
     </Setting>
-    <Setting Name="HistoryPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">D:\Temp\DownHistory</Value>
-    </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNonExistentClient" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
-    </Setting>
-    <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="FileDownloadInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnUnknownProvider" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) невозможно доставить аптеке</Value>
-    </Setting>
-    <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="DepthOfStorageArchivePrices" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">60</Value>
@@ -143,12 +119,6 @@
     <Setting Name="CheckZero" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="BasePath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">D:\Temp\Base</Value>
-    </Setting>
-    <Setting Name="ErrorFilesPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">D:\Temp\ErrorFiles</Value>
-    </Setting>
     <Setting Name="MaxErrorCount" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">2</Value>
     </Setting>
@@ -169,9 +139,6 @@
     </Setting>
     <Setting Name="FarmSystemEmail" Type="System.String" Scope="Application">
       <Value Profile="(Default)">farmsystem@analit.net</Value>
-    </Setting>
-    <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morozov@analit.net</Value>
     </Setting>
     <Setting Name="ResponseDocBodyTemplateOnNothingAttachs" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Добрый день.
@@ -226,9 +193,6 @@
 С уважением,
 АК "Инфорум".</Value>
     </Setting>
-    <Setting Name="ServiceMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">service@analit.net</Value>
-    </Setting>
     <Setting Name="MaxWaybillAttachmentSize" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">3072</Value>
     </Setting>
@@ -278,6 +242,42 @@
 &lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;string&gt;4596&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="InboundPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Inbound0</Value>
+    </Setting>
+    <Setting Name="TempPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">DownTemp</Value>
+    </Setting>
+    <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">FTPOptBox</Value>
+    </Setting>
+    <Setting Name="HistoryPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">DownHistory</Value>
+    </Setting>
+    <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="BasePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Base</Value>
+    </Setting>
+    <Setting Name="ErrorFilesPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ErrorFiles</Value>
+    </Setting>
+    <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="ServiceMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
     </Setting>
   </Settings>
 </SettingsFile>
