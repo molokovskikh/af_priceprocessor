@@ -33,8 +33,7 @@ SELECT
   s.PricePath as DPricePath,
   s.EmailTo as DEmailTo,
   s.EmailFrom as DEmailFrom,
-  pricefmts.FileExtention as DFileExtention,
-  pim.IsForSlave
+  pricefmts.FileExtention as DFileExtention
 FROM
   logs.downlogs as logs,
   usersettings.clientsdata cd,
@@ -61,14 +60,6 @@ and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 			var filename = GetFileFromArhive(downlogId);
-
-#if !SLAVE
-			if (Convert.ToBoolean(drFocused["IsForSlave"]))
-			{
-				GetSlave().ResendPrice(downlogId);
-				return;
-			}
-#endif
 
 			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
 			{
@@ -110,7 +101,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 			File.Copy(sourceFile, destinationFile);
 
-#if !SLAVE
 			var item = new PriceProcessItem(
 				true,
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
@@ -119,7 +109,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				destinationFile,
 				(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?) Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
-#endif
 
 			if (Directory.Exists(TempDirectory))
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
@@ -129,23 +118,12 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 			                                     @"
-select p.FileExtention,
-	   pim.IsForSlave
+select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId",
-			                                     new MySqlParameter("?PriceItemId", priceItemId));
+where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
-			var isForSlave = Convert.ToBoolean(row["IsForSlave"]);
-
-#if !SLAVE
-			if (isForSlave)
-			{
-				GetSlave().RetransPrice(priceItemId);
-				return;
-			}
-#endif
 
 			var sourceFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
@@ -164,38 +142,23 @@ where pim.Id = ?PriceItemId",
 
 		public string[] ErrorFiles()
 		{
-#if SLAVE
 			return Directory.GetFiles(Settings.Default.ErrorFilesPath);
-#else
-			return GetSlave().ErrorFiles().Union(Directory.GetFiles(Settings.Default.ErrorFilesPath)).ToArray();
-#endif
 		}
 
 		public string[] InboundFiles()
 		{
-#if SLAVE
 			return Directory.GetFiles(Settings.Default.InboundPath);
-#else
-			return GetSlave().InboundFiles().Union(Directory.GetFiles(Settings.Default.InboundPath)).ToArray();
-#endif
 		}
 
 		public byte[] BaseFile(uint priceItemId)
 		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),@"
-select p.FileExtention,
-	   pim.IsForSlave
+select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
-			var isForSlave = Convert.ToBoolean(row["IsForSlave"]);
-
-#if !SLAVE
-			if (isForSlave)
-				return GetSlave().BaseFile(priceItemId);
-#endif
 
 			var baseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
 			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
@@ -224,12 +187,6 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			if (files.Length == 0)
 				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
 			return files[0];
-		}
-
-		private static IRemotePriceProcessor GetSlave()
-		{
-			return (IRemotePriceProcessor) Activator.GetObject(typeof (IRemotePriceProcessor),
-			                                                   "http://fmsold.adc.analit.net:888/RemotePriceProcessor");
 		}
 	}
 }

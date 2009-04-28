@@ -7,7 +7,7 @@ using FileHelper=Inforoom.Common.FileHelper;
 namespace Inforoom.Downloader
 {
 	/// <summary>
-	/// Добавляет педоты для работы с PriceProcessItem
+	/// Добавляет медоты для работы с PriceProcessItem
 	/// </summary>
 	public abstract class BasePriceSourceHandler : BaseSourceHandler
 	{
@@ -52,10 +52,7 @@ namespace Inforoom.Downloader
 			                                CurrCostCode,
 			                                CurrPriceItemId,
 			                                normalName,
-			                                CurrParentSynonym)
-			           	{
-							IsMyPrice = IsMyPrice,
-			           	};
+			                                CurrParentSynonym);
 			return item;
 		}
 	}

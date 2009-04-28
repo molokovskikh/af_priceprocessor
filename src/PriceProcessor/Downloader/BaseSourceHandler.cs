@@ -93,7 +93,6 @@ namespace Inforoom.Downloader
 		protected ulong? CurrCostCode;
 		protected ulong CurrPriceItemId;
 		protected ulong? CurrParentSynonym;
-		protected bool IsMyPrice;
         /// <summary>
         /// текущая обрабатываема строка в таблице
         /// </summary>
@@ -182,7 +181,6 @@ SELECT
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask,
-  pi.IsForSlave,
   pi.LastDownload
 FROM   
   farm.sourcetypes,
@@ -315,7 +313,6 @@ and pd.AgencyEnabled= 1",
 			CurrCostCode = (dr[SourcesTableColumns.colCostCode] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
 			CurrPriceItemId = Convert.ToUInt64(dr[SourcesTableColumns.colPriceItemId]);
 			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
-        	IsMyPrice = !Convert.ToBoolean(dr["IsForSlave"]);
         }
 
 		protected string GetExt()

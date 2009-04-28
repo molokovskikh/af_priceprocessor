@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor
 			_handlers = new List<AbstractHandler>
 			             	{
 			             		new FormalizeHandler(),
-#if (!DEBUG && !SLAVE)
+#if (!DEBUG)
 			             		new LANSourceHandler(),
 			             		new FTPSourceHandler(),
 			             		new HTTPSourceHandler(),

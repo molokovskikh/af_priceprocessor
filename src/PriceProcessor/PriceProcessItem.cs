@@ -32,8 +32,6 @@ namespace Inforoom.PriceProcessor
 
 		private ulong? ParentSynonym { get; set; }
 
-		public bool IsMyPrice { get; set; }
-
 		public PriceProcessItem(bool downloaded, ulong priceCode, ulong? costCode, ulong priceItemId, string filePath, ulong? parentSynonym)
 		{
 			Downloaded = downloaded;
@@ -63,7 +61,6 @@ namespace Inforoom.PriceProcessor
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   pc.PriceItemId,
   pd.ParentSynonym,
-  pi.IsForSlave,
   pi.LastDownload
 from (usersettings.pricescosts pc, usersettings.pricesdata pd)
 	join usersettings.priceitems pi on pc.PriceItemId = pi.Id
@@ -79,21 +76,11 @@ group by pi.Id",
 			var costCode = (drPriceItem["CostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["CostCode"]);
 			var parentSynonym = (drPriceItem["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drPriceItem["ParentSynonym"]);
 			var lastDownload = (drPriceItem["LastDownload"] is DBNull) ? DateTime.MinValue : Convert.ToDateTime(drPriceItem["LastDownload"]);
-			var item = new PriceProcessItem(isDownloaded, priceCode, costCode, priceItemId, filename, parentSynonym)
-			           	{
-			           		IsMyPrice = !Convert.ToBoolean(drPriceItem["IsForSlave"])
-			           	};
+			var item = new PriceProcessItem(isDownloaded, priceCode, costCode, priceItemId, filename, parentSynonym);
 
 			if (isDownloaded)
 				item.FileTime = lastDownload;
 
-#if !SLAVE
-			if (!item.IsMyPrice)
-			{
-				item.CopyToSlaveInbound();
-				return null;
-			}
-#endif
 			return item;
 		}
 
@@ -134,20 +121,8 @@ group by pi.Id",
 			return false;
 		}
 
-		private void CopyToSlaveInbound()
-		{
-			CopyToSlaveInbound(FilePath);
-		}
-
-		private void CopyToSlaveInbound(string sourceFile)
-		{
-			var inboundPath = Path.Combine(@"\\fmsold\Prices\Inbound0\", Path.GetFileName(FilePath));
-			File.Copy(sourceFile, inboundPath);
-		}
-
 		public void CopyToInbound(string extrFileName)
 		{
-
 			MySqlUtils.InTransaction(
 				(c, t) => {
 					var command = new MySqlCommand(@"
@@ -157,12 +132,6 @@ where Id = ?Id", c, t);
 					command.Parameters.AddWithValue("?Id", PriceItemId);
 					command.Parameters.AddWithValue("?FileTime", FileTime);
 					command.ExecuteNonQuery();
-
-					if (!IsMyPrice)
-					{
-						CopyToSlaveInbound(extrFileName);
-						return;
-					}
 
 					if (File.Exists(FilePath))
 						File.Delete(FilePath);
