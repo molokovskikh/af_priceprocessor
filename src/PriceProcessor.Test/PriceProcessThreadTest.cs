@@ -220,8 +220,11 @@ InnoDB Status            =
 		public void CorruptConnectionTest()
 		{
 			BasicConfigurator.Configure(
-				new TraceAppender(
-					new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")));
+				new TraceAppender()
+					{
+						Layout = new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")
+					}
+			);
 			ILog _logger = LogManager.GetLogger(typeof(PriceProcessThreadTest));
 
 			List<CorruptDBThread> _threads = new List<CorruptDBThread>();
