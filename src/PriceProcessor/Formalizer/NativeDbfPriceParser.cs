@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Inforoom.Data;
+using Common.Tools;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
 

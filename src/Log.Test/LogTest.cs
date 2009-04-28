@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Common.Tools;
 using NUnit.Framework;
 using NUnit.Framework.SyntaxHelpers;
 using System.Threading;
@@ -10,7 +11,6 @@ using System.Diagnostics;
 using System.Configuration;
 using log4net.Config;
 using System.Reflection;
-using Inforoom.Data;
 using System.Data;
 using System.IO;
 using System.Xml;

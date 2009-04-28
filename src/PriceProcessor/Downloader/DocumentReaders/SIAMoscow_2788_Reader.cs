@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Inforoom.Data;
+using Common.Tools;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;

@@ -78,12 +78,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common.Tools\src\Common.Tools\Common.Tools.csproj">
-      <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
-      <Name>Common.Tools</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="708.dbf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -100,6 +94,12 @@
     <None Include="log4net_SMTPAppenderTest.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
+      <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
+      <Name>Common.Tools</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
