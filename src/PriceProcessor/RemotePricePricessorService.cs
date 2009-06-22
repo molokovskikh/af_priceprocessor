@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
@@ -150,7 +149,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return Directory.GetFiles(Settings.Default.InboundPath);
 		}
 
-		public byte[] BaseFile(uint priceItemId)
+		public Stream BaseFile(uint priceItemId)
 		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),@"
 select p.FileExtention
@@ -168,7 +167,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			if (!File.Exists(baseFile) && File.Exists(inboundFile))
 				throw new PriceProcessorException("Данный прайс-лист находится в очереди на формализацию!");
 
-			return File.ReadAllBytes(baseFile);
+			return File.OpenRead(baseFile);
 		}
 
 		public HistoryFile GetFileFormHistory(ulong downlogId)
@@ -177,7 +176,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return new HistoryFile
 				       	{
 							Filename = Path.GetFileName(filename),
-							Bytes = File.ReadAllBytes(filename),
+							FileStream = File.OpenRead(filename),
 				       	};
 		}
 

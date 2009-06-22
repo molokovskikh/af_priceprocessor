@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace RemotePricePricessor
@@ -23,7 +24,7 @@ namespace RemotePricePricessor
 	public class HistoryFile
 	{
 		public string Filename { get; set; }
-		public byte[] Bytes { get; set; }
+		public Stream FileStream { get; set; }
 	}
 
 	/// <summary>
@@ -42,7 +43,7 @@ namespace RemotePricePricessor
 		string[] ErrorFiles();
 		string[] InboundFiles();
 
-		byte[] BaseFile(uint priceItemId);
+		Stream BaseFile(uint priceItemId);
 		HistoryFile GetFileFormHistory(ulong downlogId);
 	}
 }
