@@ -953,7 +953,7 @@ order by Core0.Id", priceCode);
 						drExistsCore.Delete();
 
 					//Производим отсечку по кол-во сформированных команд
-					if (statCounters[FormalizeStats.CommandCount] >= 300)
+					if (statCounters[FormalizeStats.CommandCount] >= 150)
 					{
 						_logger.DebugFormat("Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
 						AllCommandCount += statCounters[FormalizeStats.CommandCount];

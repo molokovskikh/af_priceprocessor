@@ -7,6 +7,8 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Http;
 using Inforoom.PriceProcessor.Properties;
+using System.Collections;
+using System.Runtime.Remoting.Channels.Tcp;
 
 
 namespace Inforoom.PriceProcessor
@@ -26,14 +28,22 @@ namespace Inforoom.PriceProcessor
 		{
 			_logger = log4net.LogManager.GetLogger(typeof(Monitor));
 
-			ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
+			try
+			{
+				ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
+				ChannelServices.RegisterChannel(new TcpChannel(Settings.Default.RemotingPort + 1), false);
 
-			RemotingConfiguration.RegisterWellKnownServiceType(
-			  typeof(RemotePricePricessorService),
-			  Settings.Default.RemotingServiceName,
-			  WellKnownObjectMode.Singleton);
+				RemotingConfiguration.RegisterWellKnownServiceType(
+				  typeof(RemotePricePricessorService),
+				  Settings.Default.RemotingServiceName,
+				  WellKnownObjectMode.Singleton);
 
-			RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
+			}
+			catch (Exception exception)
+			{
+				_logger.Fatal("Ошибка при старте Remoting", exception);
+			}
 
 			_handlers = new List<AbstractHandler>
 			             	{
