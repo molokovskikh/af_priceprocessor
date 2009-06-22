@@ -32,7 +32,8 @@ Task @Build, [@Clean]:
 	MsBuild(projectFile,
 			Target : "build",
 			Parameters : { "OutDir" : buildTo,
-						   "Configuration" : "Release|x86" },
+						   "Configuration" : "Release",
+						   "Platform" : "x86"},
 			FrameworkVersion : "3.5").Execute()
 	Rm(["${buildTo}log4net.config", "${buildTo}PriceProcessor.exe.config"])
 	Cp("./PriceProcessor/app.release.config", "${buildTo}PriceProcessor.exe.config")
@@ -64,6 +65,7 @@ Task @deploy, [@Build]:
 			services = List[of ServiceController](ServiceController.GetServices(host))
 			orderProc = services.First({s| s.ServiceName == serviceName})
 			orderProc.Stop()
+			orderProc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20))
 			Cp(FileSet("*.*", BaseDirectory : buildTo), deployTo, true)
 			orderProc.Start()
 	ensure:
