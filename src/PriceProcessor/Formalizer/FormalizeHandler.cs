@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
-using System.Net.Mail;
 using System.IO;
 using Inforoom.Formalizer;
 using System.Collections;
@@ -23,7 +22,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		//Период статистического отчета в секундах
 		private const int statisticPeriodPerSecs = 30;
 
-		private Hashtable htEMessages;
+		private Hashtable _errorMessages;
 
 		/// <summary>
 		/// Время последней удачной формализации
@@ -52,7 +51,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath))
 				AddPriceFileToList(priceFile, false);
 
-			htEMessages = new Hashtable();
+			_errorMessages = new Hashtable();
 
 			FSW.Created += OnFileCreate;
 			FSW.EnableRaisingEvents = true;
@@ -219,30 +218,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 			if (!_formalizationFail && (PriceItemList.list.Count > 0)
 				&& _lastFormalizationDate.HasValue
 				&& (DateTime.UtcNow.Subtract(_lastFormalizationDate.Value).TotalMinutes > Settings.Default.MaxLiveTime))
-				try
-				{
-					var logMessage = String.Format(
-						"Время последней удачной формализации = {0}\r\nОчередь на формализацию = {1}", 
-						_lastFormalizationDate.Value.ToLocalTime(), 
-						PriceItemList.list.Count);
+			{
 
-					_logger.FatalFormat("Останов в нитках формализации.\r\n{0}", logMessage);
+				var logMessage = String.Format(
+					"Время последней удачной формализации = {0}\r\nОчередь на формализацию = {1}",
+					_lastFormalizationDate.Value.ToLocalTime(),
+					PriceItemList.list.Count);
 
-					using (var Message = new MailMessage(
-						Settings.Default.FarmSystemEmail,
-						Settings.Default.SMTPErrorList,
-						"Останов в нитках формализации",
-						logMessage))
-					{
-						var Client = new SmtpClient(Settings.Default.SMTPHost);
-						Client.Send(Message);
-					}
-					_formalizationFail = true;
-				}
-				catch (Exception e)
-				{
-					_logger.Error("Не удалось отправить сообщение", e);
-				}
+				_logger.FatalFormat("Останов в нитках формализации.\r\n{0}", logMessage);
+				Mailer.SendToWarningList("Останов в нитках формализации", logMessage);
+
+				_formalizationFail = true;
+			}
 		}
 
 		/// <summary>
@@ -334,12 +321,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 				{
 					_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
 					FileHashItem hashItem;
-					if (htEMessages.Contains(item.FilePath))
-						hashItem = (FileHashItem)htEMessages[item.FilePath];
+					if (_errorMessages.Contains(item.FilePath))
+						hashItem = (FileHashItem)_errorMessages[item.FilePath];
 					else
 					{
 						hashItem = new FileHashItem();
-						htEMessages.Add(item.FilePath, hashItem);
+						_errorMessages.Add(item.FilePath, hashItem);
 					}
 					pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
 					//если значение не было установлено, то скорей всего не было ниток на формализацию, 
@@ -426,7 +413,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private void DeleteProcessThread(PriceProcessThread p)
 		{
 			_logger.InfoFormat("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  ProcessState = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.ProcessState);
-			var hi = (FileHashItem)htEMessages[p.ProcessItem.FilePath];
+			var hi = (FileHashItem)_errorMessages[p.ProcessItem.FilePath];
 			hi.ErrorMessage = p.CurrentErrorMessage;
 
 			//если формализация завершилась успешно
@@ -439,7 +426,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					//удаляем файл
 					Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
 					//удаляем информацию о последних ошибках
-					htEMessages.Remove(p.ProcessItem.FilePath);
+					_errorMessages.Remove(p.ProcessItem.FilePath);
 					//удаляем из списка на обработку
 					PriceItemList.list.Remove(p.ProcessItem);
 				}
@@ -457,7 +444,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//удаляем файл
 						Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
 						//удаляем информацию о последних ошибках
-						htEMessages.Remove(p.ProcessItem.FilePath);
+						_errorMessages.Remove(p.ProcessItem.FilePath);
 					}
 					catch (Exception e)
 					{
@@ -490,20 +477,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 						{
 							_logger.ErrorFormat("Не удалось переместить файл {0} в каталог {1}\r\n{2}", p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, e);
 						}
-						try
-						{
-							using (var Message = new MailMessage(Settings.Default.FarmSystemEmail, Settings.Default.SMTPWarningList, "Ошибка формализации",
-								String.Format(Settings.Default.MaxErrorsError, p.ProcessItem.FilePath, Settings.Default.ErrorFilesPath, Settings.Default.MaxErrorCount)))
-							{
-								var Client = new SmtpClient(Settings.Default.SMTPHost);
-								Client.Send(Message);
-							}
-						}
-						catch (Exception e)
-						{
-							_logger.Error("Не удалось отправить сообщение", e);
-						}
-						htEMessages.Remove(p.ProcessItem.FilePath);
+						Mailer.SendToWarningList("Ошибка формализации",
+						                         String.Format(Settings.Default.MaxErrorsError,
+						                                       p.ProcessItem.FilePath,
+						                                       Settings.Default.ErrorFilesPath,
+						                                       Settings.Default.MaxErrorCount));
+
+						_errorMessages.Remove(p.ProcessItem.FilePath);
 					}
 					else
 						try

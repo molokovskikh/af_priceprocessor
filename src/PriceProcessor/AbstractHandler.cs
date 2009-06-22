@@ -121,27 +121,15 @@ namespace Inforoom.PriceProcessor
 		//Метод для обработки данных для каждого источника - свой
 		protected abstract void ProcessData();
 
-		protected void LoggingToService(string Addition)
+		protected void LoggingToService(string addition)
 		{
-			_logger.ErrorFormat("Ошибка в нитке обработчика: {0}", Addition);
-			if (!knowErrors.Contains(Addition))
-				try
-				{
-					using (var mm = new MailMessage(
-						Settings.Default.ServiceMail, 
-						Settings.Default.ServiceMail,
-						"Ошибка в PriceProcessor",
-						String.Format("Обработчик : {0}\n{1}", GetType().Name, Addition)))
-					{
-						var sc = new SmtpClient(Settings.Default.SMTPHost);
-						sc.Send(mm);
-					}
-					knowErrors.Add(Addition);
-				}
-				catch(Exception ex)
-				{
-					_logger.Error("Не получилось отправить письмо с ошибкой", ex);
-				}
+			_logger.ErrorFormat("Ошибка в нитке обработчика: {0}", addition);
+			if (knowErrors.Contains(addition))
+				return;
+
+			knowErrors.Add(addition);
+			Mailer.SendFormServiceToService("Ошибка в PriceProcessor",
+			                                String.Format("Обработчик : {0}\n{1}", GetType().Name, addition));
 		}
 	}
 }

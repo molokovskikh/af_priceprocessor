@@ -70,10 +70,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="RemotePriceProcessor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\RemotePriceProcessor.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -113,6 +109,7 @@
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
     <Compile Include="Formalizer\OleDbHelper.cs" />
+    <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
     <Compile Include="Formalizer\SudakovXMLParser.cs" />
@@ -126,6 +123,7 @@
     <Compile Include="Formalizer\TXTWinFixedPriceParser.cs" />
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
+    <Compile Include="Mailer.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="MySqlUtils.cs" />
     <Compile Include="PriceItemList.cs" />
@@ -194,6 +192,10 @@
     <ProjectReference Include="..\ExecuteTemplate\src\ExecuteTemplate\ExecuteTemplate.csproj">
       <Project>{046F74A6-68A8-4E5E-A9AB-7332B631CFB1}</Project>
       <Name>ExecuteTemplate</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemotePriceProcessor\RemotePriceProcessor.csproj">
+      <Project>{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}</Project>
+      <Name>RemotePriceProcessor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

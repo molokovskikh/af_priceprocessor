@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Data;
 using System.Text;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Properties;
@@ -1559,9 +1560,7 @@ and a.ProductId is null";
 
 		protected void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body)
 		{
-			try
-			{
-				DataRow drProvider = MySqlHelper.ExecuteDataRow(Inforoom.PriceProcessor.Literals.ConnectionString(), @"
+			var drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
 select
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
   concat(cd.ShortName, ' - ', r.Region) ShortFirmName
@@ -1582,20 +1581,10 @@ and r.RegionCode = cd.RegionCode",
 					body,
 					drProvider["PriceName"],
 					drProvider["ShortFirmName"],
-					stringBuilder.ToString());
+					stringBuilder);
 
-				_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
-
-				using (System.Net.Mail.MailMessage m = new System.Net.Mail.MailMessage(Settings.Default.ServiceMail, Settings.Default.SMTPUserFail, subject, body))
-				{
-					System.Net.Mail.SmtpClient client = new System.Net.Mail.SmtpClient(Settings.Default.SMTPHost);
-					client.Send(m);
-				}
-			}
-			catch (Exception exception)
-			{
-				_logger.Error("Не получилось отправить предупреждение о настройках формализации прайс-листа", exception);
-			}
+			_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
+			Mailer.SendUserFail(subject, body);
 		}
 
 		/// <summary>
