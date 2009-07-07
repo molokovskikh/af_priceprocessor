@@ -1475,13 +1475,15 @@ and a.ProductId is null";
 							{
 								mcClear.CommandText = String.Format(
 									"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
-								if (costCode.HasValue)
-									mcClear.CommandText += String.Format(
-										"update usersettings.intersection_update_info, usersettings.intersection set lastsent = default where intersection_update_info.id = intersection.id and intersection.PriceCode = {0} and intersection.CostCode = {1}", priceCode, costCode);
-								else
-									mcClear.CommandText += String.Format(
-										"update usersettings.intersection_update_info set lastsent = default where intersection_update_info.PriceCode = {0}", priceCode);
 							}
+							mcClear.CommandText += String.Format(@"
+UPDATE usersettings.AnalitFReplicationInfo A, usersettings.PricesData P
+SET
+  a.ForceReplication = 1
+where
+    p.PriceCode = {0}
+and a.FirmCode = p.FirmCode;", priceCode);
+
 							sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
 							_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
