@@ -181,6 +181,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Common.Tools\Common.Tools\7zip\7z.dll">
+      <Link>7zip\7z.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Common.Tools\Common.Tools\7zip\7z.exe">
+      <Link>7zip\7z.exe</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Formalizer\Resources\PriceProtek.xsl" />
     <Content Include="Formalizer\Resources\PriceSudakov.xsl" />
   </ItemGroup>
