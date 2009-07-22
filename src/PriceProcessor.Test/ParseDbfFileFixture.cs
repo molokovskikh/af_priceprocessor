@@ -7,7 +7,7 @@ using System.Text;
 using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
+using System.Configuration;
 
 namespace PriceProcessor.Test
 {
@@ -17,7 +17,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Parse_order_with_native_dbf_parser_should_be_same_as_oledb()
 		{
-			using (var connection = new MySqlConnection("server=testsql.analit.net;username=system; password=newpass; database=farm; pooling=true; Convert Zero Datetime=true;"))
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
 				TestHelper.Formilize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\552.dbf"), 552);
@@ -59,7 +59,7 @@ where pricecode = 3331", connection);
 		[Test, Ignore]
 		public void BuildEtalon()
 		{
-			using (var connection = new MySqlConnection("server=sql.analit.net;username=Kvasov; password=ghjgtkkth; database=farm; pooling=true; Convert Zero Datetime=true;"))
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
 				var adapter = new MySqlDataAdapter(@"

@@ -4,6 +4,7 @@ using System.IO;
 using Common.Tools;
 using Inforoom.Formalizer;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 
 namespace PriceProcessor.Test
 {
@@ -11,7 +12,7 @@ namespace PriceProcessor.Test
 	{
 		public static void Connection(Action<MySqlConnection> action)
 		{
-			using (var connection = new MySqlConnection("server=testsql.analit.net;username=system; password=newpass; database=farm; pooling=true; Convert Zero Datetime=true;"))
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
 				action(connection);
@@ -20,7 +21,7 @@ namespace PriceProcessor.Test
 
 		public static T Connection<T>(Func<MySqlConnection, T> action)
 		{
-			using (var connection = new MySqlConnection("server=testsql.analit.net;username=system; password=newpass; database=farm; pooling=true; Convert Zero Datetime=true;"))
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
 				return action(connection);
@@ -61,7 +62,7 @@ namespace PriceProcessor.Test
 
 		public static void Formilize<T>(string file, int priceItemId) where T : BasePriceParser
 		{
-			using (var connection = new MySqlConnection("server=testsql.analit.net;username=system; password=newpass; database=farm; pooling=true; Convert Zero Datetime=true;"))
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
 				var adapter = new MySqlDataAdapter(@"
