@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Common.Tools;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using System.Threading;
 using log4net;
 using System.Diagnostics;

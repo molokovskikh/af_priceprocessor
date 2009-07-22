@@ -86,6 +86,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArchiveHelperFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="FileHelperTest.cs" />
