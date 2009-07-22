@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace PriceProcessor.Test
 {

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using System.IO;
 using MySql.Data.MySqlClient;
 using System.Configuration;

@@ -2,7 +2,6 @@
 using System.IO;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 
 namespace PriceProcessor.Test
 {

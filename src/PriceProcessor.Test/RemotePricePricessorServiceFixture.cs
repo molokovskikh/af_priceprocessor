@@ -8,7 +8,6 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
-using NUnit.Framework.SyntaxHelpers;
 using RemotePricePricessor;
 
 namespace PriceProcessor.Test
