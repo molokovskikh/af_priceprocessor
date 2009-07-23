@@ -64,9 +64,10 @@ Task @deploy, [@Build]:
 		using WindowsIdentity.Impersonate(tokenHandle):
 			services = List[of ServiceController](ServiceController.GetServices(host))
 			orderProc = services.First({s| s.ServiceName == serviceName})
-			orderProc.Stop()
+			if orderProc.Status.Equals(ServiceControllerStatus.Running):
+				orderProc.Stop()
 			orderProc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20))
-			Cp(FileSet("*.*", BaseDirectory : buildTo), deployTo, true)
+			Cp(FileSet("**.*", BaseDirectory : buildTo), deployTo, true)
 			orderProc.Start()
 	ensure:
 		CloseHandle(tokenHandle);
