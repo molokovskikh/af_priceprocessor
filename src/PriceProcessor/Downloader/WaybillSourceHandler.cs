@@ -103,7 +103,6 @@ namespace Inforoom.Downloader
 				false,
 				_workConnection,
 				true,
-				null,
 				false,
 				delegate {
 					Ping();
@@ -311,7 +310,6 @@ and st.SourceID = 1";
 						null,
 						_workConnection,
 						true,
-						null,
 						false,
 						(e, ex) => Ping());
 						
@@ -547,7 +545,6 @@ and st.SourceID = 1";
 				null,
 				_workConnection,
 				true,
-				null,
 				false,
 				(e, ex) => Ping());
 		}

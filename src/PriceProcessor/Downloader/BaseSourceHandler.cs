@@ -239,7 +239,7 @@ and pd.AgencyEnabled= 1",
         {
         	try
 			{
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, null, false,
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, false,
 					delegate {
 						Ping();
 					});
@@ -250,7 +250,7 @@ and pd.AgencyEnabled= 1",
 				if (_workConnection.State != ConnectionState.Closed)
 					try { _workConnection.Close(); } catch { }
 				_workConnection.Open();
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, null, false,
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, false,
 					delegate {
 						Ping();
 					});
@@ -376,7 +376,6 @@ and pd.AgencyEnabled= 1",
 				null,
 				cmd.Connection,
 				true,
-				null,
 				false,
 				delegate {
 					Ping();
@@ -393,7 +392,6 @@ and pd.AgencyEnabled= 1",
 				0, 
 				cmd.Connection, 
 				true, 
-				null, 
 				false, 
 				delegate {
 					Ping();

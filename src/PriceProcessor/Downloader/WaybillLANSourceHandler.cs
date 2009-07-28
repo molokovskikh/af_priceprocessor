@@ -361,7 +361,6 @@ and st.SourceID = 4";
 				false,
 				_workConnection,
 				true,
-				null,
 				false,
 				(e, ex) => Ping());
 		}
@@ -384,7 +383,6 @@ and st.SourceID = 4";
 				null,
 				_workConnection,
 				true,
-				null,
 				false,
 				delegate {
 					Ping();
