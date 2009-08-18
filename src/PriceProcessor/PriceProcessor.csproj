@@ -54,6 +54,10 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExcelLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ExcelLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -108,6 +112,7 @@
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
+    <Compile Include="Formalizer\NativeExcelParser.cs" />
     <Compile Include="Formalizer\OleDbHelper.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
