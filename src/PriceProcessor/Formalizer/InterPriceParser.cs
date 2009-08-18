@@ -1,33 +1,24 @@
 using System;
 using System.Data;
-using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using System.Text;
-using System.Net.Mail;
-using Inforoom.PriceProcessor.Properties;
-using System.Configuration;
-
 
 namespace Inforoom.Formalizer
 {
-	/// <summary>
-	/// Summary description for InterPriceParser.
-	/// </summary>
 	public class InterPriceParser : BasePriceParser
 	{
-		public InterPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
+		public InterPriceParser(string priceFileName, MySqlConnection conn, DataTable mydr) : base(priceFileName, conn, mydr)
 		{
-			string TmpName;
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 			{
-				TmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf.ToString();
-				SetFieldName(pf, mydr.Rows[0][TmpName] is DBNull ? String.Empty : (string)mydr.Rows[0][TmpName]);
+				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
+				SetFieldName(pf, mydr.Rows[0][tmpName] is DBNull ? String.Empty : (string)mydr.Rows[0][tmpName]);
 			}
 		}
 
 		protected static string GetDescription(PriceFields value)
 		{
-			object[] descriptions = value.GetType().GetField(value.ToString()).GetCustomAttributes(false);
+			var descriptions = value.GetType().GetField(value.ToString()).GetCustomAttributes(false);
 			return ((System.ComponentModel.DescriptionAttribute)descriptions[0]).Description;
 		}
 
@@ -36,7 +27,7 @@ namespace Inforoom.Formalizer
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
 			if (downloaded)
 			{
-				StringBuilder sb = new StringBuilder();
+				var sb = new StringBuilder();
 
 				foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 					if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
@@ -64,7 +55,7 @@ namespace Inforoom.Formalizer
 
 		public override string GetFieldValue(PriceFields PF)
 		{
-			string res = null;
+			string res;
 
 			//Специальным образом обрабатываем наименование товара, если имя содержится в нескольких полях
 			if ((PriceFields.Name1 == PF) || (PriceFields.OriginalName == PF)) 
@@ -89,10 +80,7 @@ namespace Inforoom.Formalizer
 
 				return res;
 			}
-			else
-				return base.GetFieldValue(PF);
+			return base.GetFieldValue(PF);
 		}
-
-
 	}
 }
