@@ -1289,60 +1289,53 @@ where
 				ProcessUndefinedCost();
 
 			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
+				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, firmCode, priceCode, firmShortName, priceName, formCount, zeroCount, unformCount, forbCount);
+
+			if (formCount * 1.6 < prevRowCount)
+				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, firmCode, priceCode, firmShortName, priceName, formCount, zeroCount, unformCount, forbCount);
+
+			string SynonymUpdateCommand;
+			string SynonymFirmCrUpdateCommand;
+
+			string[] insertCoreAndCoreCostsCommandList;
+
+			if (priceCodesUseUpdate.Contains(priceCode))
 			{
-				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, firmCode, priceCode, firmShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
+				Stopwatch GetSQLWatch = Stopwatch.StartNew();
+				insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+				GetSQLWatch.Stop();
+				_logger.InfoFormat("ќбщее врем€ подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
 			}
 			else
+				insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
+
+			//ѕроизводим транзакцию с применением главного прайса и таблицы цен
+			bool res = false;
+			int tryCount = 0;
+			//ƒл€ логировани€ статистики
+			StringBuilder sbLog;
+			do
 			{
-				if (formCount * 1.6 < prevRowCount)
+				_logger.Info("FinalizePrice started.");
+				sbLog = new StringBuilder();
+
+				var finalizeTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+
+				try
 				{
-					throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, firmCode, priceCode, firmShortName, priceName, this.formCount, this.zeroCount, this.unformCount, this.forbCount);
-				}
-				else
-				{
-					string SynonymUpdateCommand = null;
-					string SynonymFirmCrUpdateCommand = null;
+					MySqlCommand mcClear = new MySqlCommand();
+					mcClear.Connection = MyConn;
+					mcClear.Transaction = finalizeTransaction;
+					mcClear.CommandTimeout = 0;
 
-					string[] insertCoreAndCoreCostsCommandList;
+					mcClear.Parameters.Clear();
 
-					if (priceCodesUseUpdate.Contains(priceCode))
+					//ѕроизводим данные действи€, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
+					if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
 					{
-						Stopwatch GetSQLWatch = Stopwatch.StartNew();
-						insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
-						GetSQLWatch.Stop();
-						_logger.InfoFormat("ќбщее врем€ подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
-					}
-					else
-						insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out SynonymUpdateCommand, out SynonymFirmCrUpdateCommand);
-
-					//ѕроизводим транзакцию с применением главного прайса и таблицы цен
-					bool res = false;
-					int tryCount = 0;
-					//ƒл€ логировани€ статистики
-					System.Text.StringBuilder sbLog;
-					do
-					{
-						_logger.Info("FinalizePrice started.");
-						sbLog = new System.Text.StringBuilder();
-
-						MySqlTransaction _finalizeTransaction = null;
-						_finalizeTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
-
-						try
+						if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
 						{
-							MySqlCommand mcClear = new MySqlCommand();
-							mcClear.Connection = MyConn;
-							mcClear.Transaction = _finalizeTransaction;
-							mcClear.CommandTimeout = 0;
-
-							mcClear.Parameters.Clear();
-
-							//ѕроизводим данные действи€, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
-							if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
-							{
-								if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
-								{
-									mcClear.CommandText = String.Format(@"
+							mcClear.CommandText = String.Format(@"
 delete
   farm.Core0
 from
@@ -1352,64 +1345,64 @@ where
     CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
-									sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
-								}
-								else
+							sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
+						}
+						else
+						{
+							if (priceType != Settings.Default.ASSORT_FLG)
+							{
+								//”дал€ем цены из CoreCosts
+								var sbDelCoreCosts = new StringBuilder();
+								sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
+								bool FirstInsertCoreCosts = true;
+								foreach (CoreCost c in currentCoreCosts)
 								{
-									if (priceType != Settings.Default.ASSORT_FLG)
-									{
-										//”дал€ем цены из CoreCosts
-										System.Text.StringBuilder sbDelCoreCosts = new System.Text.StringBuilder();
-										sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
-										bool FirstInsertCoreCosts = true;
-										foreach (CoreCost c in currentCoreCosts)
-										{
-											if (!FirstInsertCoreCosts)
-												sbDelCoreCosts.Append(", ");
-											FirstInsertCoreCosts = false;
-											sbDelCoreCosts.Append(c.costCode.ToString());
-										}
-										sbDelCoreCosts.Append(");");
-
-										if (currentCoreCosts.Count > 0)
-										{
-											//ѕроизводим удаление цен
-											mcClear.CommandText = sbDelCoreCosts.ToString();
-											sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
-										}
-									}
-
-									//ƒобавл€ем команду на удаление данных из Core
-									mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
-									sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
+									if (!FirstInsertCoreCosts)
+										sbDelCoreCosts.Append(", ");
+									FirstInsertCoreCosts = false;
+									sbDelCoreCosts.Append(c.costCode.ToString());
 								}
+								sbDelCoreCosts.Append(");");
 
+								if (currentCoreCosts.Count > 0)
+								{
+									//ѕроизводим удаление цен
+									mcClear.CommandText = sbDelCoreCosts.ToString();
+									sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
+								}
 							}
 
-							//выполн€ем команды с обновлением данных в Core и CoreCosts
-							if (insertCoreAndCoreCostsCommandList.Length > 0)
-							{
-								DateTime tmInsertCoreAndCoreCosts = DateTime.UtcNow;
-								int applyPositionCount = 0;
-								foreach (string command in insertCoreAndCoreCostsCommandList)
-								{
-									mcClear.CommandText = command;
-									//_logger.DebugFormat("Apply Core and CoreCosts command: {0}", mcClear.CommandText);
+							//ƒобавл€ем команду на удаление данных из Core
+							mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
+							sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
+						}
 
-									applyPositionCount += mcClear.ExecuteNonQuery();
+					}
+
+					//выполн€ем команды с обновлением данных в Core и CoreCosts
+					if (insertCoreAndCoreCostsCommandList.Length > 0)
+					{
+						DateTime tmInsertCoreAndCoreCosts = DateTime.UtcNow;
+						int applyPositionCount = 0;
+						foreach (string command in insertCoreAndCoreCostsCommandList)
+						{
+							mcClear.CommandText = command;
+							//_logger.DebugFormat("Apply Core and CoreCosts command: {0}", mcClear.CommandText);
+
+							applyPositionCount += mcClear.ExecuteNonQuery();
 #if DEBUG
-									_logger.DebugFormat("Apply Core and CoreCosts Count: {0}", applyPositionCount);
+							_logger.DebugFormat("Apply Core and CoreCosts Count: {0}", applyPositionCount);
 #endif
-								}
+						}
 
-								TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);
+						TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);
 
-								if (priceCodesUseUpdate.Contains(priceCode))
-									sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
-								else
-									sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
+						if (priceCodesUseUpdate.Contains(priceCode))
+							sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
+						else
+							sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 
-								mcClear.CommandText = @"
+						mcClear.CommandText = @"
 insert into catalogs.assortment
   (ProductId, CodeFirmCr)
 select
@@ -1421,62 +1414,62 @@ where
     c.PriceCode = ?PriceCode
 and c.CodeFirmCr > 1
 and a.ProductId is null";
-								mcClear.Parameters.Clear();
-								mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
-								sbLog.AppendFormat("UpdateAssortment={0}  ", StatCommand(mcClear));
+						mcClear.Parameters.Clear();
+						mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
+						sbLog.AppendFormat("UpdateAssortment={0}  ", StatCommand(mcClear));
 
-								//mcClear.CommandText = SynonymUpdateCommand;
-								//mcClear.Parameters.Clear();
-								//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
+						//mcClear.CommandText = SynonymUpdateCommand;
+						//mcClear.Parameters.Clear();
+						//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
 
-								//mcClear.CommandText = SynonymFirmCrUpdateCommand;
-								//mcClear.Parameters.Clear();
-								//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
-							}
-							else
-							{
-								if (priceCodesUseUpdate.Contains(priceCode))
-									sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
-								else
-									sbLog.Append("InsertToCoreAndCoreCosts=0  ");
-							}
+						//mcClear.CommandText = SynonymFirmCrUpdateCommand;
+						//mcClear.Parameters.Clear();
+						//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
+					}
+					else
+					{
+						if (priceCodesUseUpdate.Contains(priceCode))
+							sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
+						else
+							sbLog.Append("InsertToCoreAndCoreCosts=0  ");
+					}
 
 
-							mcClear.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
-							sbLog.AppendFormat("DelFromZero={0}  ", StatCommand(mcClear));
+					mcClear.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
+					sbLog.AppendFormat("DelFromZero={0}  ", StatCommand(mcClear));
 
-							mcClear.CommandText = String.Format("delete from farm.Forb where PriceItemId={0}", priceItemId);
-							sbLog.AppendFormat("DelFromForb={0}  ", StatCommand(mcClear));
+					mcClear.CommandText = String.Format("delete from farm.Forb where PriceItemId={0}", priceItemId);
+					sbLog.AppendFormat("DelFromForb={0}  ", StatCommand(mcClear));
 
-							MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), MyConn);
-							daBlockedPrice.SelectCommand.Transaction = _finalizeTransaction;
-							DataTable dtBlockedPrice = new DataTable();
-							daBlockedPrice.Fill(dtBlockedPrice);
+					MySqlDataAdapter daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), MyConn);
+					daBlockedPrice.SelectCommand.Transaction = finalizeTransaction;
+					DataTable dtBlockedPrice = new DataTable();
+					daBlockedPrice.Fill(dtBlockedPrice);
 
-							if ((dtBlockedPrice.Rows.Count == 0))
-							{
-								mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
-								sbLog.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(mcClear));
-							}
+					if ((dtBlockedPrice.Rows.Count == 0))
+					{
+						mcClear.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
+						sbLog.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(mcClear));
+					}
 
-							sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), _finalizeTransaction));
-							sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), _finalizeTransaction));
-							sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), _finalizeTransaction));
+					sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), finalizeTransaction));
+					sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), finalizeTransaction));
+					sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), finalizeTransaction));
 
-							//ѕроизводим обновление PriceDate и LastFormalization в информации о формализации
-							//≈сли прайс-лист загружен, то обновл€ем поле PriceDate, если нет, то обновл€ем данные в intersection_update_info
-							mcClear.Parameters.Clear();
-							if (downloaded)
-							{
-								mcClear.CommandText = String.Format(
-									"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
-							}
-							else
-							{
-								mcClear.CommandText = String.Format(
-									"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
-							}
-							mcClear.CommandText += String.Format(@"
+					//ѕроизводим обновление PriceDate и LastFormalization в информации о формализации
+					//≈сли прайс-лист загружен, то обновл€ем поле PriceDate, если нет, то обновл€ем данные в intersection_update_info
+					mcClear.Parameters.Clear();
+					if (downloaded)
+					{
+						mcClear.CommandText = String.Format(
+							"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+					}
+					else
+					{
+						mcClear.CommandText = String.Format(
+							"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", formCount, unformCount, priceItemId);
+					}
+					mcClear.CommandText += String.Format(@"
 UPDATE usersettings.AnalitFReplicationInfo A, usersettings.PricesData P
 SET
   a.ForceReplication = 1
@@ -1484,55 +1477,51 @@ where
     p.PriceCode = {0}
 and a.FirmCode = p.FirmCode;", priceCode);
 
-							sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
+					sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
-							_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
-							_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
-							_finalizeTransaction.Commit();
-							res = true;
-						}
-						catch (MySqlException MyError)
-						{
-							if (_finalizeTransaction != null)
-								try
-								{
-									_finalizeTransaction.Rollback();
-								}
-								catch (Exception ex)
-								{
-									_logger.Error("Error on rollback", ex);
-								}
-
-							if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
-							{
-								tryCount++;
-								_logger.InfoFormat("Try transaction: tryCount = {0}", tryCount);
-								System.Threading.Thread.Sleep(10000 + tryCount * 1000);
-							}
-							else
-								throw;
-						}
-						catch (Exception)
-						{
-							if (_finalizeTransaction != null)
-								try
-								{
-									_finalizeTransaction.Rollback();
-								}
-								catch (Exception ex)
-								{
-									_logger.Error("Error on rollback (Exception)", ex);
-								}
-							throw;
-						}
-					}while(!res);
-
-					if (tryCount > maxLockCount)
-						maxLockCount = tryCount;
-
+					_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
+					_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
+					finalizeTransaction.Commit();
+					res = true;
 				}
-			}
+				catch (MySqlException MyError)
+				{
+					if (finalizeTransaction != null)
+						try
+						{
+							finalizeTransaction.Rollback();
+						}
+						catch (Exception ex)
+						{
+							_logger.Error("Error on rollback", ex);
+						}
 
+					if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
+					{
+						tryCount++;
+						_logger.InfoFormat("Try transaction: tryCount = {0}", tryCount);
+						System.Threading.Thread.Sleep(10000 + tryCount * 1000);
+					}
+					else
+						throw;
+				}
+				catch (Exception)
+				{
+					if (finalizeTransaction != null)
+						try
+						{
+							finalizeTransaction.Rollback();
+						}
+						catch (Exception ex)
+						{
+							_logger.Error("Error on rollback (Exception)", ex);
+						}
+					throw;
+				}
+			}while(!res);
+
+			if (tryCount > maxLockCount)
+				maxLockCount = tryCount;
 		}
 
 		/// <summary>
