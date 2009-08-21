@@ -7,12 +7,12 @@ namespace Inforoom.Formalizer
 {
 	public class InterPriceParser : BasePriceParser
 	{
-		public InterPriceParser(string priceFileName, MySqlConnection conn, DataTable mydr) : base(priceFileName, conn, mydr)
+		public InterPriceParser(string priceFileName, MySqlConnection connection, DataTable data) : base(priceFileName, connection, data)
 		{
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 			{
 				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
-				SetFieldName(pf, mydr.Rows[0][tmpName] is DBNull ? String.Empty : (string)mydr.Rows[0][tmpName]);
+				SetFieldName(pf, data.Rows[0][tmpName] is DBNull ? String.Empty : (string)data.Rows[0][tmpName]);
 			}
 		}
 
@@ -22,7 +22,7 @@ namespace Inforoom.Formalizer
 			return ((System.ComponentModel.DescriptionAttribute)descriptions[0]).Description;
 		}
 
-		public override void Open()	
+		public override void Open()
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
 			if (downloaded)
@@ -53,14 +53,14 @@ namespace Inforoom.Formalizer
 
 		}
 
-		public override string GetFieldValue(PriceFields PF)
+		public override string GetFieldValue(PriceFields field)
 		{
 			string res;
 
 			//Специальным образом обрабатываем наименование товара, если имя содержится в нескольких полях
-			if ((PriceFields.Name1 == PF) || (PriceFields.OriginalName == PF)) 
+			if ((PriceFields.Name1 == field) || (PriceFields.OriginalName == field)) 
 			{
-				res = base.GetFieldValue(PF);
+				res = base.GetFieldValue(field);
 				try
 				{
 					if (dtPrice.Columns.IndexOf( GetFieldName(PriceFields.Name2) ) > -1)
@@ -80,7 +80,7 @@ namespace Inforoom.Formalizer
 
 				return res;
 			}
-			return base.GetFieldValue(PF);
+			return base.GetFieldValue(field);
 		}
 	}
 }
