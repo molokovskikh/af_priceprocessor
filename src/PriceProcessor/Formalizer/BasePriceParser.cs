@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Common.Tools;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -84,7 +86,7 @@ namespace Inforoom.Formalizer
 	}
 
 	//¬се возможные пол€ прайса
-	public enum PriceFields : int 
+	public enum PriceFields
 	{
 		[Description(" од")]
 		Code,
@@ -132,14 +134,14 @@ namespace Inforoom.Formalizer
 		MinOrderCount
 	}
 
-	public enum CostTypes : int
+	public enum CostTypes
 	{ 
 		MultiColumn = 0,
 		MiltiFile = 1
 	}
 
 	//—татистические счетчики дл€ формализации
-	public enum FormalizeStats : int
+	public enum FormalizeStats
 	{ 
 		//найдены по первичным пол€м
 		FirstSearch,
@@ -164,7 +166,7 @@ namespace Inforoom.Formalizer
 	}
 
 	[Flags]
-	public enum UnrecExpStatus : int 
+	public enum UnrecExpStatus
 	{
 		NOT_FORM	= 0,		// Ќеформализованный
 		NAME_FORM	= 1,		// ‘ормализованный по названию
@@ -200,20 +202,19 @@ namespace Inforoom.Formalizer
 		public static string colCostType = "CostType";
 	}
 
-	//
 	public class CoreCost : ICloneable
 	{
-		public System.Int64 costCode = -1;
-		public bool baseCost = false;
+		public Int64 costCode = -1;
+		public bool baseCost;
 		public string costName = String.Empty;
 		public string fieldName = String.Empty;
 		public int txtBegin = -1;
 		public int txtEnd = -1;
-		public decimal? cost = null;
+		public decimal? cost;
 		//кол-во позиций с неустановленной ценой дл€ данной ценовой колонки
-		public int undefinedCostCount = 0;
+		public int undefinedCostCount;
 
-		public CoreCost(System.Int64 ACostCode, string ACostName, bool ABaseCost, string AFieldName, int ATxtBegin, int ATxtEnd)
+		public CoreCost(Int64 ACostCode, string ACostName, bool ABaseCost, string AFieldName, int ATxtBegin, int ATxtEnd)
 		{
 			costCode = ACostCode;
 			baseCost = ABaseCost;
@@ -223,16 +224,12 @@ namespace Inforoom.Formalizer
 			txtEnd = ATxtEnd;
 		}
 
-		#region ICloneable Members
-
 		public object Clone()
 		{
-			CoreCost ccNew = new CoreCost(this.costCode, this.costName, this.baseCost, this.fieldName, this.txtBegin, this.txtEnd);
-			ccNew.cost = this.cost;
+			var ccNew = new CoreCost(costCode, costName, baseCost, fieldName, txtBegin, txtEnd);
+			ccNew.cost = cost;
 			return ccNew;
 		}
-
-		#endregion
 	}
 
 	/// <summary>
@@ -361,8 +358,8 @@ namespace Inforoom.Formalizer
 		protected ToughDate toughDate;
 		protected ToughMask toughMask;
 
-		protected ArrayList currentCoreCosts;
-		protected ArrayList CoreCosts;
+		protected List<CoreCost> currentCoreCosts;
+		protected List<List<CoreCost>> CoreCosts;
 
 		protected readonly ILog _logger;
 
@@ -370,10 +367,10 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		///  онструктор парсера
 		/// </summary>
-		public BasePriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr)
+		public BasePriceParser(string priceFileName, MySqlConnection connection, DataTable data)
 		{
-			_logger = LogManager.GetLogger(this.GetType());
-			_logger.DebugFormat("—оздали класс дл€ обработки файла {0}", PriceFileName);
+			_logger = LogManager.GetLogger(GetType());
+			_logger.DebugFormat("—оздали класс дл€ обработки файла {0}", priceFileName);
 			//TODO: ¬се необходимые проверки вынести в конструкторы, чтобы не пытатьс€ открыть прайс-файл
 
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно дл€ чтени€ файла, чтобы парсер был самодостаточным
@@ -401,28 +398,28 @@ namespace Inforoom.Formalizer
 			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
 				statCounters.Add(statCounter, 0);
 
-			priceFileName = PriceFileName;
+			this.priceFileName = priceFileName;
 			dtPrice = new DataTable();
-			MyConn = conn;
+			MyConn = connection;
 			dsMyDB = new DataSet();
-			currentCoreCosts = new ArrayList();
-			CoreCosts = new ArrayList();
+			currentCoreCosts = new List<CoreCost>();
+			CoreCosts = new List<List<CoreCost>>();
 			FieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
 			
-			priceName = mydr.Rows[0][FormRules.colSelfPriceName].ToString();
-			firmShortName = mydr.Rows[0][FormRules.colFirmShortName].ToString();
-			firmCode = Convert.ToInt64(mydr.Rows[0][FormRules.colFirmCode]); 
-			formByCode = Convert.ToBoolean(mydr.Rows[0][FormRules.colFormByCode]);
-			priceItemId = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceItemId]); 
-			priceCode = Convert.ToInt64(mydr.Rows[0][FormRules.colPriceCode]);
-			costCode = (mydr.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(mydr.Rows[0][FormRules.colCostCode]);
-			parentSynonym = Convert.ToInt64(mydr.Rows[0][FormRules.colParentSynonym]); 
-			costType = (CostTypes)Convert.ToInt32(mydr.Rows[0][FormRules.colCostType]);
+			priceName = data.Rows[0][FormRules.colSelfPriceName].ToString();
+			firmShortName = data.Rows[0][FormRules.colFirmShortName].ToString();
+			firmCode = Convert.ToInt64(data.Rows[0][FormRules.colFirmCode]); 
+			formByCode = Convert.ToBoolean(data.Rows[0][FormRules.colFormByCode]);
+			priceItemId = Convert.ToInt64(data.Rows[0][FormRules.colPriceItemId]); 
+			priceCode = Convert.ToInt64(data.Rows[0][FormRules.colPriceCode]);
+			costCode = (data.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(data.Rows[0][FormRules.colCostCode]);
+			parentSynonym = Convert.ToInt64(data.Rows[0][FormRules.colParentSynonym]); 
+			costType = (CostTypes)Convert.ToInt32(data.Rows[0][FormRules.colCostType]);
 
-			nameMask = mydr.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)mydr.Rows[0][FormRules.colNameMask];
+			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
 
 			//ѕроизводим попытку разобрать строку с "запрещенными выражени€ми"
-			forbWords = mydr.Rows[0][FormRules.colForbWords] is DBNull ? String.Empty : (string)mydr.Rows[0][FormRules.colForbWords];
+			forbWords = data.Rows[0][FormRules.colForbWords] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colForbWords];
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords)
 			{
@@ -446,11 +443,11 @@ namespace Inforoom.Formalizer
 					forbWordsList = null;
 			}
 
-			awaitPos = mydr.Rows[0][FormRules.colSelfAwaitPos].ToString();
-			junkPos  = mydr.Rows[0][FormRules.colSelfJunkPos].ToString();
-			vitallyImportantMask = mydr.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
-			prevRowCount = mydr.Rows[0][FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(mydr.Rows[0][FormRules.colPrevRowCount]);
-			priceType = Convert.ToInt32(mydr.Rows[0][FormRules.colPriceType]);
+			awaitPos = data.Rows[0][FormRules.colSelfAwaitPos].ToString();
+			junkPos  = data.Rows[0][FormRules.colSelfJunkPos].ToString();
+			vitallyImportantMask = data.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
+			prevRowCount = data.Rows[0][FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(data.Rows[0][FormRules.colPrevRowCount]);
+			priceType = Convert.ToInt32(data.Rows[0][FormRules.colPriceType]);
 
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
@@ -486,12 +483,12 @@ namespace Inforoom.Formalizer
 			{
 				if (1 == currentCoreCosts.Count)
 				{
-					if ( !(currentCoreCosts[0] as CoreCost).baseCost )
+					if (!currentCoreCosts[0].baseCost)
 						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, firmCode, priceCode, firmShortName, priceName);
 				}
 				else
 				{
-					var bc = Array.FindAll((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), delegate(CoreCost cc) { return cc.baseCost; });
+					var bc = currentCoreCosts.Where(c => c.baseCost).ToArray();
 					if (bc.Length == 0)
 						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, firmCode, priceCode, firmShortName, priceName);
 
@@ -507,10 +504,10 @@ namespace Inforoom.Formalizer
 					currentCoreCosts.Insert(0, bc[0]);
 				}
 
-				if (((this is TXTFixedPriceParser) && (((currentCoreCosts[0] as CoreCost).txtBegin == -1) || ((currentCoreCosts[0] as CoreCost).txtEnd == -1))) || (!(this is TXTFixedPriceParser) && (String.Empty == (currentCoreCosts[0] as CoreCost).fieldName)))
+				if (((this is TXTFixedPriceParser) && ((currentCoreCosts[0].txtBegin == -1) || (currentCoreCosts[0].txtEnd == -1))) || (!(this is TXTFixedPriceParser) && (String.Empty == currentCoreCosts[0].fieldName)))
 					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, firmCode, priceCode, firmShortName, priceName);
 
-				priceCodeCostIndex = Array.FindIndex((CoreCost[])currentCoreCosts.ToArray(typeof(CoreCost)), cc => cc.costCode == priceCode);
+				priceCodeCostIndex = currentCoreCosts.IndexOf(c => c.costCode == priceCode);
 				if (priceCodeCostIndex == -1)
 					priceCodeCostIndex = 0;
 			}
@@ -581,18 +578,8 @@ namespace Inforoom.Formalizer
 
 			dsMyDB.Tables["Core"].Rows.Add(drCore);
 			if (priceType != Settings.Default.ASSORT_FLG)
-				CoreCosts.Add(DeepCopy(currentCoreCosts));
+				CoreCosts.Add(currentCoreCosts.Select(c => (CoreCost)c.Clone()).ToList());
 			formCount++;
-		}
-
-		object DeepCopy(ArrayList al)
-		{
-			ArrayList alNew = new ArrayList();
-			for (int i = 0; i < al.Count; i++)
-			{
-				alNew.Add(((ICloneable)al[i]).Clone());
-			}
-			return alNew;
 		}
 
 		/// <summary>
@@ -841,7 +828,7 @@ order by Core0.Id", priceCode);
 					synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 				if (priceType != Settings.Default.ASSORT_FLG)
-					InsertCoreCosts(sb, (ArrayList)CoreCosts[i]);
+					InsertCoreCosts(sb, CoreCosts[i]);
 
 				if ((i+1) % Settings.Default.MaxPositionInsertToCore == 0)
 				{
@@ -915,10 +902,10 @@ order by Core0.Id", priceCode);
 					if (drExistsCore == null)
 					{
 						statCounters[FormalizeStats.CommandCount]++;
-						InsertCoreCosts(sb, (ArrayList)CoreCosts[i]);
+						InsertCoreCosts(sb, CoreCosts[i]);
 					}
 					else
-						UpdateCoreCosts(drExistsCore, sb, (ArrayList)CoreCosts[i]);
+						UpdateCoreCosts(drExistsCore, sb, CoreCosts[i]);
 				}
 
 				//≈сли мы нашли запись в существующем Core, то удал€ем ее из кэша существующих предложений, 
@@ -970,7 +957,7 @@ order by Core0.Id", priceCode);
 			{
 				//≈сли есть записи, которые нужно удалить из Core, то сначала формируем
 				var costsList = new List<string>();
-				foreach (CoreCost c in currentCoreCosts)
+				foreach (var c in currentCoreCosts)
 					costsList.Add(c.costCode.ToString());
 
 				var costCodeFilter = String.Join(", ", costsList.ToArray());
@@ -1015,7 +1002,7 @@ where
 			return commandList.ToArray();
 		}
 
-		private void UpdateCoreCosts(DataRow drExistsCore, StringBuilder sb, ArrayList costs)
+		private void UpdateCoreCosts(DataRow drExistsCore, StringBuilder sb, List<CoreCost> costs)
 		{
 			var drExistsCosts = drExistsCore.GetChildRows(relationExistsCoreToCosts);
 			DataRow drCurrent;
@@ -1150,12 +1137,12 @@ where
 				return drsExists[0];
 			}
 
-			int maxMatchesNumber = 0, currentMatchesNumber;
+			int maxMatchesNumber = 0;
 			DataRow maxMatchesNumberRow = null;
-			foreach (DataRow drExists in drsExists)
+			foreach (var drExists in drsExists)
 			{
-				currentMatchesNumber = 0;
-				foreach (string compareField in compareFields)
+				var currentMatchesNumber = 0;
+				foreach (var compareField in compareFields)
 					if (drCore[compareField].Equals(drExists[compareField]))
 						currentMatchesNumber++;
 				if (currentMatchesNumber > maxMatchesNumber)
@@ -1168,7 +1155,7 @@ where
 			return maxMatchesNumberRow;
 		}
 
-		private void InsertCoreCosts(StringBuilder sb, ArrayList coreCosts)
+		private void InsertCoreCosts(StringBuilder sb, List<CoreCost> coreCosts)
 		{
 			if ((coreCosts != null) && (coreCosts.Count > 0))
 			{
@@ -1330,7 +1317,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 								var sbDelCoreCosts = new StringBuilder();
 								sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
 								bool FirstInsertCoreCosts = true;
-								foreach (CoreCost c in currentCoreCosts)
+								foreach (var c in currentCoreCosts)
 								{
 									if (!FirstInsertCoreCosts)
 										sbDelCoreCosts.Append(", ");
@@ -1505,7 +1492,7 @@ and a.FirmCode = p.FirmCode;", priceCode);
 		private void ProcessUndefinedCost()
 		{
 			StringBuilder stringBuilder = new StringBuilder();
-			foreach (CoreCost cost in currentCoreCosts)
+			foreach (var cost in currentCoreCosts)
 				if (cost.undefinedCostCount > formCount * 0.05)
 					stringBuilder.AppendFormat("ценова€ колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.costName, cost.undefinedCostCount);
 
@@ -1607,15 +1594,14 @@ and r.RegionCode = cd.RegionCode",
 						DateTime tmFormalize = DateTime.UtcNow;
 						try
 						{
-							UnrecExpStatus st;
 							string PosName = String.Empty;
-							bool Junk = false;
+							bool Junk;
 							int costCount;
-							long? ProductId = null, SynonymCode = null, CodeFirmCr = null, SynonymFirmCrCode = null;
+							long? ProductId, SynonymCode, CodeFirmCr, SynonymFirmCrCode;
 							string strCode, strName1, strOriginalName, strFirmCr;
 							do
 							{
-								st = UnrecExpStatus.NOT_FORM;
+								var st = UnrecExpStatus.NOT_FORM;
 								PosName = GetFieldValue(PriceFields.Name1, true);
 
 								if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
@@ -2180,7 +2166,7 @@ and r.RegionCode = cd.RegionCode",
 		{
 			int res = 0;
 			object costValue;
-			foreach(CoreCost c in currentCoreCosts)
+			foreach(var c in currentCoreCosts)
 			{
 				c.cost = null;
 				try
