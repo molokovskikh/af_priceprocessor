@@ -12,7 +12,7 @@ namespace PriceProcessor.Test
 		public void Request_retio_should_be_readed_with_ignore_to_fraction_part()
 		{
 			TestHelper.Execute(@"update usersettings.PriceItems set RowCount = 5 where id = 781");
-			TestHelper.Formilize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\781.dbf"), 781);
+			TestHelper.Formalize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\781.dbf"));
 			var data = TestHelper.Fill(@"
 select * from farm.core0 c
 where pricecode = 4649;");

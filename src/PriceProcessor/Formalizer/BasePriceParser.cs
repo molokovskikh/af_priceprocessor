@@ -2142,12 +2142,12 @@ and r.RegionCode = cd.RegionCode",
 		/// <returns></returns>
 		public bool GetJunkValue()
 		{
-			bool JunkValue = false;
-			object t = GetFieldValueObject(PriceFields.Period);			
+			var JunkValue = false;
+			var t = GetFieldValueObject(PriceFields.Period);
 			if (t is DateTime)
 			{
-				DateTime dt = (DateTime)t;
-				TimeSpan ts = DateTime.Now.Subtract(dt);
+				var dt = (DateTime)t;
+				var ts = SystemTime.Now().Subtract(dt);
 				JunkValue = (Math.Abs(ts.Days) < 180);
 			}
 			if (!JunkValue)

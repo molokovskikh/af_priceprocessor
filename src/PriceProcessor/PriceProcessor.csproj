@@ -113,6 +113,7 @@
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
     <Compile Include="Formalizer\NativeExcelParser.cs" />
+    <Compile Include="Formalizer\NativeTextParser.cs" />
     <Compile Include="Formalizer\OleDbHelper.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />

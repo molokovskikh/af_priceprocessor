@@ -1,0 +1,703 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:MainDataTable="Table" msdata:UseCurrentLocale="true">
+      <xs:complexType>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="Table">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="Id" type="xs:unsignedLong" minOccurs="0" />
+                <xs:element name="PriceCode" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="ProductId" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="CodeFirmCr" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="CodeCountryCr" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="SynonymCode" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="SynonymFirmCrCode" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="Code" type="xs:string" minOccurs="0" />
+                <xs:element name="CodeCr" type="xs:string" minOccurs="0" />
+                <xs:element name="Unit" type="xs:string" minOccurs="0" />
+                <xs:element name="Volume" type="xs:string" minOccurs="0" />
+                <xs:element name="Quantity" type="xs:string" minOccurs="0" />
+                <xs:element name="Note" type="xs:string" minOccurs="0" />
+                <xs:element name="Period" type="xs:string" minOccurs="0" />
+                <xs:element name="Doc" type="xs:string" minOccurs="0" />
+                <xs:element name="Junk" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="Await" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="Currency" type="xs:string" minOccurs="0" />
+                <xs:element name="MinBoundCost" type="xs:decimal" minOccurs="0" />
+                <xs:element name="VitallyImportant" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="RequestRatio" type="xs:unsignedShort" minOccurs="0" />
+                <xs:element name="RegistryCost" type="xs:decimal" minOccurs="0" />
+                <xs:element name="MaxBoundCost" type="xs:decimal" minOccurs="0" />
+                <xs:element name="OrderCost" type="xs:decimal" minOccurs="0" />
+                <xs:element name="MinOrderCount" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="Cost" type="xs:decimal" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <Table>
+    <Id>1873764274</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20</ProductId>
+    <CodeFirmCr>253</CodeFirmCr>
+    <SynonymCode>1283919</SynonymCode>
+    <SynonymFirmCrCode>451023</SynonymFirmCrCode>
+    <Code>7608</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>350</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>5.910000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764275</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>1044</ProductId>
+    <CodeFirmCr>1195</CodeFirmCr>
+    <SynonymCode>1660321</SynonymCode>
+    <SynonymFirmCrCode>37460</SynonymFirmCrCode>
+    <Code>14924</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>40</Volume>
+    <Quantity>24</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>43.030000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764276</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>1553</ProductId>
+    <CodeFirmCr>1351</CodeFirmCr>
+    <SynonymCode>1943485</SynonymCode>
+    <SynonymFirmCrCode>36960</SynonymFirmCrCode>
+    <Code>11829</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>150</Volume>
+    <Quantity>46</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>17.480000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764277</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>2084</ProductId>
+    <CodeFirmCr>2151</CodeFirmCr>
+    <SynonymCode>1172379</SynonymCode>
+    <SynonymFirmCrCode>238901</SynonymFirmCrCode>
+    <Code>20990</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>100</Volume>
+    <Quantity>3</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>96.160000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764278</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>70695</ProductId>
+    <CodeFirmCr>1791</CodeFirmCr>
+    <SynonymCode>3731483</SynonymCode>
+    <SynonymFirmCrCode>171774</SynonymFirmCrCode>
+    <Code>21865</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>288</Volume>
+    <Quantity>2</Quantity>
+    <Note />
+    <Period>01.07.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>12.380000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764279</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>39040</ProductId>
+    <CodeFirmCr>1311</CodeFirmCr>
+    <SynonymCode>1272568</SynonymCode>
+    <SynonymFirmCrCode>141269</SynonymFirmCrCode>
+    <Code>23050</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>300</Volume>
+    <Quantity>8</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>4.460000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764280</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>8658</ProductId>
+    <CodeFirmCr>1142</CodeFirmCr>
+    <SynonymCode>1401090</SynonymCode>
+    <SynonymFirmCrCode>178268</SynonymFirmCrCode>
+    <Code>5788</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>50</Volume>
+    <Quantity>5</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>86.900000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764281</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>9128</ProductId>
+    <CodeFirmCr>1316</CodeFirmCr>
+    <SynonymCode>1660172</SynonymCode>
+    <SynonymFirmCrCode>37101</SynonymFirmCrCode>
+    <Code>14710</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>250</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>7.050000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764282</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>10343</ProductId>
+    <CodeFirmCr>1316</CodeFirmCr>
+    <SynonymCode>1006423</SynonymCode>
+    <SynonymFirmCrCode>37101</SynonymFirmCrCode>
+    <Code>15775</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>250</Volume>
+    <Quantity>2</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>8.140000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764283</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>36434</ProductId>
+    <CodeFirmCr>975</CodeFirmCr>
+    <SynonymCode>1385073</SynonymCode>
+    <SynonymFirmCrCode>239663</SynonymFirmCrCode>
+    <Code>13821</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>60</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.07.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>99.380000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764284</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>10594</ProductId>
+    <CodeFirmCr>975</CodeFirmCr>
+    <SynonymCode>1385074</SynonymCode>
+    <SynonymFirmCrCode>239663</SynonymFirmCrCode>
+    <Code>13818</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>60</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>99.800000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764285</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>14544</ProductId>
+    <CodeFirmCr>6368</CodeFirmCr>
+    <SynonymCode>584428</SynonymCode>
+    <SynonymFirmCrCode>451132</SynonymFirmCrCode>
+    <Code>14732</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>100</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>41.460000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764286</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>105080</ProductId>
+    <CodeFirmCr>1396</CodeFirmCr>
+    <SynonymCode>4410624</SynonymCode>
+    <SynonymFirmCrCode>36994</SynonymFirmCrCode>
+    <Code>25457</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>3600</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>1.080000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764287</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>43519</ProductId>
+    <CodeFirmCr>3011</CodeFirmCr>
+    <SynonymCode>1773048</SynonymCode>
+    <SynonymFirmCrCode>238909</SynonymFirmCrCode>
+    <Code>25555</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>150</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>27.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>243.910000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764288</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>9153</ProductId>
+    <CodeFirmCr>3170</CodeFirmCr>
+    <SynonymCode>1721798</SynonymCode>
+    <SynonymFirmCrCode>239012</SynonymFirmCrCode>
+    <Code>15242</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>42</Volume>
+    <Quantity>4</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>48.580000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764289</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20146</ProductId>
+    <CodeFirmCr>2236</CodeFirmCr>
+    <SynonymCode>576660</SynonymCode>
+    <SynonymFirmCrCode>207634</SynonymFirmCrCode>
+    <Code>4892</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>600</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.07.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>3.370000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764290</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20393</ProductId>
+    <CodeFirmCr>1534</CodeFirmCr>
+    <SynonymCode>1660155</SynonymCode>
+    <SynonymFirmCrCode>36688</SynonymFirmCrCode>
+    <Code>7272</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>55</Volume>
+    <Quantity>11</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>23.380000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764291</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20866</ProductId>
+    <CodeFirmCr>2142</CodeFirmCr>
+    <SynonymCode>1288665</SynonymCode>
+    <SynonymFirmCrCode>177908</SynonymFirmCrCode>
+    <Code>22825</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>90</Volume>
+    <Quantity>18</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>6.930000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764292</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20865</ProductId>
+    <CodeFirmCr>2142</CodeFirmCr>
+    <SynonymCode>1278983</SynonymCode>
+    <SynonymFirmCrCode>177908</SynonymFirmCrCode>
+    <Code>22823</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>90</Volume>
+    <Quantity>17</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>6.930000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764293</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>20872</ProductId>
+    <CodeFirmCr>1950</CodeFirmCr>
+    <SynonymCode>1321145</SynonymCode>
+    <SynonymFirmCrCode>175152</SynonymFirmCrCode>
+    <Code>23790</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>90</Volume>
+    <Quantity>4</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>12.500000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764294</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>21459</ProductId>
+    <CodeFirmCr>896</CodeFirmCr>
+    <SynonymCode>1658921</SynonymCode>
+    <SynonymFirmCrCode>183646</SynonymFirmCrCode>
+    <Code>8767</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>50</Volume>
+    <Quantity>13</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>33.540000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764295</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>42789</ProductId>
+    <CodeFirmCr>5478</CodeFirmCr>
+    <SynonymCode>1366665</SynonymCode>
+    <SynonymFirmCrCode>481215</SynonymFirmCrCode>
+    <Code>23136</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>240</Volume>
+    <Quantity>3</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>36.880000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764296</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>26627</ProductId>
+    <CodeFirmCr>571</CodeFirmCr>
+    <SynonymCode>586191</SynonymCode>
+    <SynonymFirmCrCode>37138</SynonymFirmCrCode>
+    <Code>16789</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>100</Volume>
+    <Quantity>2</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>293.640000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764297</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>42530</ProductId>
+    <CodeFirmCr>1059</CodeFirmCr>
+    <SynonymCode>1364993</SynonymCode>
+    <SynonymFirmCrCode>37140</SynonymFirmCrCode>
+    <Code>24277</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>28</Volume>
+    <Quantity>9</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>56.890000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764298</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>42219</ProductId>
+    <CodeFirmCr>1151</CodeFirmCr>
+    <SynonymCode>1294832</SynonymCode>
+    <SynonymFirmCrCode>36898</SynonymFirmCrCode>
+    <Code>23052</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>126</Volume>
+    <Quantity>3</Quantity>
+    <Note />
+    <Period>01.08.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>15.910000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764299</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>42252</ProductId>
+    <CodeFirmCr>1151</CodeFirmCr>
+    <SynonymCode>1280869</SynonymCode>
+    <SynonymFirmCrCode>36898</SynonymFirmCrCode>
+    <Code>23051</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>66</Volume>
+    <Quantity>5</Quantity>
+    <Note />
+    <Period>01.08.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>10.310000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764300</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>31007</ProductId>
+    <CodeFirmCr>242</CodeFirmCr>
+    <SynonymCode>580613</SynonymCode>
+    <SynonymFirmCrCode>37507</SynonymFirmCrCode>
+    <Code>9457</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>240</Volume>
+    <Quantity>4</Quantity>
+    <Note />
+    <Period>01.10.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>233.220000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764301</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>31047</ProductId>
+    <CodeFirmCr>1316</CodeFirmCr>
+    <SynonymCode>1659822</SynonymCode>
+    <SynonymFirmCrCode>37101</SynonymFirmCrCode>
+    <Code>13165</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>250</Volume>
+    <Quantity>8</Quantity>
+    <Note />
+    <Period>01.11.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>5.270000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764302</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>32391</ProductId>
+    <CodeFirmCr>1038</CodeFirmCr>
+    <SynonymCode>1720818</SynonymCode>
+    <SynonymFirmCrCode>36953</SynonymFirmCrCode>
+    <Code>15128</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>200</Volume>
+    <Quantity>3</Quantity>
+    <Note />
+    <Period>01.05.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>28.080000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764303</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>32662</ProductId>
+    <CodeFirmCr>242</CodeFirmCr>
+    <SynonymCode>579352</SynonymCode>
+    <SynonymFirmCrCode>37507</SynonymFirmCrCode>
+    <Code>2981</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>48</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.08.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>24.680000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764304</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>32725</ProductId>
+    <CodeFirmCr>1324</CodeFirmCr>
+    <SynonymCode>1396412</SynonymCode>
+    <SynonymFirmCrCode>37053</SynonymFirmCrCode>
+    <Code>13094</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>160</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.09.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>61.380000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764305</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>34532</ProductId>
+    <CodeFirmCr>1653</CodeFirmCr>
+    <SynonymCode>577298</SynonymCode>
+    <SynonymFirmCrCode>36826</SynonymFirmCrCode>
+    <Code>5592</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>50</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.08.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>22.060000</Cost>
+  </Table>
+  <Table>
+    <Id>1873764306</Id>
+    <PriceCode>2227</PriceCode>
+    <ProductId>35011</ProductId>
+    <CodeFirmCr>2249</CodeFirmCr>
+    <SynonymCode>1124314</SynonymCode>
+    <SynonymFirmCrCode>239098</SynonymFirmCrCode>
+    <Code>15026</Code>
+    <CodeCr />
+    <Unit />
+    <Volume>200</Volume>
+    <Quantity>1</Quantity>
+    <Note />
+    <Period>01.08.2006</Period>
+    <Doc />
+    <Junk>0</Junk>
+    <Await>0</Await>
+    <VitallyImportant>0</VitallyImportant>
+    <Cost>52.880000</Cost>
+  </Table>
+</NewDataSet>

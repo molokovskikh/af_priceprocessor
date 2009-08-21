@@ -1,0 +1,143 @@
+<?xml version="1.0" standalone="yes"?>
+<NewDataSet>
+  <xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:MainDataTable="Table" msdata:UseCurrentLocale="true">
+      <xs:complexType>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="Table">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="PriceItemId" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="RowCount" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="PriceCode" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="SelfPriceName" type="xs:string" minOccurs="0" />
+                <xs:element name="PriceType" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="CostType" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="CostCode" type="xs:int" minOccurs="0" />
+                <xs:element name="FirmCode" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FirmShortName" type="xs:string" minOccurs="0" />
+                <xs:element name="FirmStatus" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="SelfJunkPos" type="xs:string" minOccurs="0" />
+                <xs:element name="SelfAwaitPos" type="xs:string" minOccurs="0" />
+                <xs:element name="SelfVitallyImportantMask" type="xs:string" minOccurs="0" />
+                <xs:element name="ParentSynonym" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="Id" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="PriceFormatId" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="MaxOld" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="Delimiter" type="xs:string" minOccurs="0" />
+                <xs:element name="ParentFormRules" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FormByCode" type="xs:unsignedByte" minOccurs="0" />
+                <xs:element name="NameMask" type="xs:string" minOccurs="0" />
+                <xs:element name="ForbWords" type="xs:string" minOccurs="0" />
+                <xs:element name="JunkPos" type="xs:string" minOccurs="0" />
+                <xs:element name="AwaitPos" type="xs:string" minOccurs="0" />
+                <xs:element name="StartLine" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="ListName" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtCodeBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCodeEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCodeCrBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCodeCrEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtNameBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtNameEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtFirmCrBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtFirmCrEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCountryCrBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCountryCrEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtBaseCostBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtBaseCostEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtMinBoundCostBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtMinBoundCostEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCurrencyBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtCurrencyEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtUnitBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtUnitEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtVolumeBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtVolumeEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtQuantityBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtQuantityEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtNoteBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtNoteEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtPeriodBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtPeriodEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtDocBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtDocEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtJunkBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtJunkEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtAwaitBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtAwaitEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FCode" type="xs:string" minOccurs="0" />
+                <xs:element name="FCodeCr" type="xs:string" minOccurs="0" />
+                <xs:element name="FName1" type="xs:string" minOccurs="0" />
+                <xs:element name="FName2" type="xs:string" minOccurs="0" />
+                <xs:element name="FName3" type="xs:string" minOccurs="0" />
+                <xs:element name="FFirmCr" type="xs:string" minOccurs="0" />
+                <xs:element name="FCountryCr" type="xs:string" minOccurs="0" />
+                <xs:element name="FBaseCost" type="xs:string" minOccurs="0" />
+                <xs:element name="FMinBoundCost" type="xs:string" minOccurs="0" />
+                <xs:element name="FCurrency" type="xs:string" minOccurs="0" />
+                <xs:element name="FUnit" type="xs:string" minOccurs="0" />
+                <xs:element name="FVolume" type="xs:string" minOccurs="0" />
+                <xs:element name="FQuantity" type="xs:string" minOccurs="0" />
+                <xs:element name="FNote" type="xs:string" minOccurs="0" />
+                <xs:element name="FPeriod" type="xs:string" minOccurs="0" />
+                <xs:element name="FDoc" type="xs:string" minOccurs="0" />
+                <xs:element name="FJunk" type="xs:string" minOccurs="0" />
+                <xs:element name="FAwait" type="xs:string" minOccurs="0" />
+                <xs:element name="Memo" type="xs:string" minOccurs="0" />
+                <xs:element name="Currency" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtVitallyImportantBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtVitallyImportantEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FVitallyImportant" type="xs:string" minOccurs="0" />
+                <xs:element name="VitallyImportantMask" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtRequestRatioBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtRequestRatioEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FRequestRatio" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtRegistryCostBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtRegistryCostEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FRegistryCost" type="xs:string" minOccurs="0" />
+                <xs:element name="FMaxBoundCost" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtMaxBoundCostBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtMaxBoundCostEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FOrderCost" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtOrderCostBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtOrderCostEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FMinOrderCount" type="xs:string" minOccurs="0" />
+                <xs:element name="TxtMinOrderCountBegin" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="TxtMinOrderCountEnd" type="xs:unsignedInt" minOccurs="0" />
+                <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
+                <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <Table>
+    <PriceItemId>362</PriceItemId>
+    <RowCount>836</RowCount>
+    <PriceCode>2265</PriceCode>
+    <SelfPriceName>Базовый</SelfPriceName>
+    <PriceType>0</PriceType>
+    <CostType>0</CostType>
+    <FirmCode>2758</FirmCode>
+    <FirmShortName>Рафэл</FirmShortName>
+    <FirmStatus>1</FirmStatus>
+    <ParentSynonym>2265</ParentSynonym>
+    <Id>2265</Id>
+    <PriceFormatId>2</PriceFormatId>
+    <MaxOld>7</MaxOld>
+    <Delimiter>|</Delimiter>
+    <FormByCode>0</FormByCode>
+    <TxtNameBegin>1</TxtNameBegin>
+    <TxtNameEnd>200</TxtNameEnd>
+    <FCode>F1</FCode>
+    <FName1>F2</FName1>
+    <FFirmCr>F5</FFirmCr>
+    <FBaseCost>F3</FBaseCost>
+    <FQuantity>F4</FQuantity>
+    <Currency>руб.</Currency>
+    <FileExtention>.txt</FileExtention>
+    <ParserClassName>TXTDosDelimiterPriceParser</ParserClassName>
+  </Table>
+</NewDataSet>

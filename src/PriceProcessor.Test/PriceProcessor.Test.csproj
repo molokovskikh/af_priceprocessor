@@ -55,6 +55,10 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ExcelLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\ExcelLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -89,6 +93,7 @@
     <Compile Include="ArchiveHelperFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
+    <Compile Include="ExcelFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
     <Compile Include="FTPSourceHandlerFixture.cs" />
@@ -103,15 +108,12 @@
     <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />
+    <Compile Include="TextFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ExecuteTemplate\src\ExecuteTemplate\ExecuteTemplate.csproj">
-      <Project>{046F74A6-68A8-4E5E-A9AB-7332B631CFB1}</Project>
-      <Name>ExecuteTemplate</Name>
     </ProjectReference>
     <ProjectReference Include="..\PriceProcessor\PriceProcessor.csproj">
       <Project>{207B22E7-BF6C-489A-9D29-455E11D84EB8}</Project>
@@ -140,9 +142,27 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Data\104-etalon.xml" />
+    <Content Include="Data\104-rules.xml" />
+    <Content Include="Data\104.txt" />
+    <Content Include="Data\138-etalon.xml" />
+    <Content Include="Data\138-rules.xml" />
+    <Content Include="Data\138.txt" />
+    <Content Include="Data\217-etalon.xml" />
+    <Content Include="Data\217-rules.xml" />
+    <Content Include="Data\217.txt" />
+    <Content Include="Data\348-etalon.xml" />
+    <Content Include="Data\348-rules.xml" />
+    <Content Include="Data\348.txt" />
+    <Content Include="Data\362-etalon.xml" />
+    <Content Include="Data\362-rules.xml" />
+    <Content Include="Data\362.txt" />
     <Content Include="Data\552.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\688-etalon.xml" />
+    <Content Include="Data\688-rules.xml" />
+    <Content Include="Data\688.txt" />
     <Content Include="Rosta\GetRostaDataset.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

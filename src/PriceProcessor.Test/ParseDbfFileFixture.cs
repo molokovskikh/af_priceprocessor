@@ -20,7 +20,7 @@ namespace PriceProcessor.Test
 			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
 				connection.Open();
-				TestHelper.Formilize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\552.dbf"), 552);
+				TestHelper.Formalize<NativeDbfPriceParser>(Path.GetFullPath(@".\Data\552.dbf"), 552);
 
 				var result = new DataSet();
 				var adapter = new MySqlDataAdapter(@"
@@ -71,7 +71,7 @@ where pricecode = 3331", connection);
 				adapter.Fill(data);
 				using (var file = File.Create("552.xml"))
 				{
-					data.WriteXml(file, XmlWriteMode.WriteSchema);					
+					data.WriteXml(file, XmlWriteMode.WriteSchema);
 				}
 			}
 		}
