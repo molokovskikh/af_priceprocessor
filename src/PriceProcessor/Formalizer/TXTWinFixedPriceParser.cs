@@ -3,7 +3,7 @@ using System.Data;
 
 namespace Inforoom.Formalizer
 {
-	class TXTWinFixedPriceParser : TXTFixedPriceParser
+	public class TXTWinFixedPriceParser : TXTFixedPriceParser
 	{
 		public TXTWinFixedPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr)
 			: base(PriceFileName, conn, mydr)

@@ -11,27 +11,29 @@ using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
 {
-
-	public class TxtFieldDef : IComparer
+	public class TxtFieldDef : IComparer, IComparable<TxtFieldDef>
 	{
-		public string fieldName;
-		public int posBegin;
-		public int posEnd;
+		public string FieldName { get; private set;}
+		public int Begin { get; private set;}
+		public int End { get; private set;}
 
-		public TxtFieldDef()
+		public TxtFieldDef(string fieldName, int posBegin, int posEnd)
 		{
+			FieldName = fieldName;
+			Begin = posBegin;
+			End = posEnd;
 		}
 
-		public TxtFieldDef(string AFieldName, int AposBegin, int AposEnd)
-		{
-			fieldName = AFieldName;
-			posBegin = AposBegin;
-			posEnd = AposEnd;
-		}
+		public TxtFieldDef() {}
 
 		int IComparer.Compare( Object x, Object y )  
 		{
-			return ( ((TxtFieldDef)x).posBegin - ((TxtFieldDef)y).posBegin );
+			return ( ((TxtFieldDef)x).Begin - ((TxtFieldDef)y).Begin );
+		}
+
+		public int CompareTo(TxtFieldDef other)
+		{
+			return Begin - other.Begin;
 		}
 	}
 
@@ -131,16 +133,16 @@ namespace Inforoom.Formalizer
 				int j = 1;
 				TxtFieldDef prevTFD, currTFD = (TxtFieldDef)fds[0];
 
-				if ( 1 == currTFD.posBegin )
+				if ( 1 == currTFD.Begin )
 				{
-					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.fieldName, currTFD.posEnd) );
+					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.FieldName, currTFD.End) );
 					j++;
 				}
 				else
 				{
-					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, "x", currTFD.posBegin-1) );
+					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, "x", currTFD.Begin-1) );
 					j++;
-					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.fieldName, currTFD.posEnd - currTFD.posBegin + 1) );
+					w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.FieldName, currTFD.End - currTFD.Begin + 1) );
 					j++;
 				}
 
@@ -148,16 +150,16 @@ namespace Inforoom.Formalizer
 				{
 					prevTFD = (TxtFieldDef)fds[i-1];
 					currTFD = (TxtFieldDef)fds[i];
-					if (currTFD.posBegin == prevTFD.posEnd + 1)
+					if (currTFD.Begin == prevTFD.End + 1)
 					{
-						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.fieldName, currTFD.posEnd - currTFD.posBegin + 1) );
+						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.FieldName, currTFD.End - currTFD.Begin + 1) );
 						j++;
 					}
 					else
 					{
-						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, "x", currTFD.posBegin - prevTFD.posEnd - 1) );
+						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, "x", currTFD.Begin - prevTFD.End - 1) );
 						j++;
-						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.fieldName, currTFD.posEnd - currTFD.posBegin + 1) );
+						w.WriteLine( String.Format("Col{0}={1} Text Width {2}", j, currTFD.FieldName, currTFD.End - currTFD.Begin + 1) );
 						j++;
 					}
 				}
