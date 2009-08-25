@@ -148,6 +148,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void Slice(DataTable table, string line, DataRow row)
 		{
+			line = line.Replace("\"", "");
 			var values = line.Split(new [] { _delimiter }, StringSplitOptions.None);
 
 			if (table.Columns.Count < values.Length)
