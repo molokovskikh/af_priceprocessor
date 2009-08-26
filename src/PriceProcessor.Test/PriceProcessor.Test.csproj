@@ -148,6 +148,9 @@
     <Content Include="Data\138-etalon.xml" />
     <Content Include="Data\138-rules.xml" />
     <Content Include="Data\138.txt" />
+    <Content Include="Data\203-etalon.xml" />
+    <Content Include="Data\203-rules.xml" />
+    <Content Include="Data\203.txt" />
     <Content Include="Data\217-etalon.xml" />
     <Content Include="Data\217-rules.xml" />
     <Content Include="Data\217.txt" />
