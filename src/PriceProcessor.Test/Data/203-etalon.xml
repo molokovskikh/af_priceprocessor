@@ -11,7 +11,6 @@
                 <xs:element name="PriceCode" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="ProductId" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="CodeFirmCr" type="xs:unsignedInt" minOccurs="0" />
-                <xs:element name="CodeCountryCr" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="SynonymCode" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="SynonymFirmCrCode" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="Code" type="xs:string" minOccurs="0" />
@@ -24,7 +23,6 @@
                 <xs:element name="Doc" type="xs:string" minOccurs="0" />
                 <xs:element name="Junk" type="xs:unsignedByte" minOccurs="0" />
                 <xs:element name="Await" type="xs:unsignedByte" minOccurs="0" />
-                <xs:element name="Currency" type="xs:string" minOccurs="0" />
                 <xs:element name="MinBoundCost" type="xs:decimal" minOccurs="0" />
                 <xs:element name="VitallyImportant" type="xs:unsignedByte" minOccurs="0" />
                 <xs:element name="RequestRatio" type="xs:unsignedShort" minOccurs="0" />

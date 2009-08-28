@@ -82,6 +82,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			var sliceRules = new List<TxtFieldDef>();
 			foreach(PriceFields field in Enum.GetValues(typeof(PriceFields)))
 			{
+				_parser.SetFieldName(field, null);
 				if (field == PriceFields.OriginalName || field == PriceFields.Name2 || field == PriceFields.Name3)
 					continue;
 
@@ -91,11 +92,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 				else
 					name = field.ToString();
 
-				_parser.SetFieldName(field, name);
 				var begin = table.Rows[0]["Txt" + name + "Begin"];
 				var end = table.Rows[0]["Txt" + name + "End"];
 				if (begin == DBNull.Value || end == DBNull.Value)
 					continue;
+
+				_parser.SetFieldName(field, name);
 				sliceRules.Add(new TxtFieldDef(name, Convert.ToInt32(begin), Convert.ToInt32(end)));
 			}
 
