@@ -1,0 +1,20 @@
+import file from Deploy.bake
+import file from WindowsServiceSupport.bake
+import System
+import System.Linq.Enumerable from System.Core
+import System.IO
+import System.ServiceProcess
+import System.ComponentModel
+import System.Security.Principal
+import System.Runtime.InteropServices
+
+Global(
+	project : "PriceProcessor",
+	server : "fms.adc.analit.net",
+	humanReadableName : "Служба обработки прайс-листов",
+	editor : "vim"
+)
+
+Task @default, [@BuildService]
+
+Task @deploy, [@DeployService, @SendDeployNotification]
