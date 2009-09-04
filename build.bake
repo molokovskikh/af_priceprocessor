@@ -12,6 +12,8 @@ Global(
 	project : "PriceProcessor",
 	server : "fms.adc.analit.net",
 	humanReadableName : "Служба обработки прайс-листов",
+	platform : "x86",
+	serviceName : "PriceProcessorService",
 	editor : "vim"
 )
 
