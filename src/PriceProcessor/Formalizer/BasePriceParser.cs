@@ -1363,30 +1363,6 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 							sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 						else
 							sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
-
-						mcClear.CommandText = @"
-insert into catalogs.assortment
-  (ProductId, CodeFirmCr)
-select
-  distinct c.ProductId, c.CodeFirmCr
-from
-  farm.core0 c
-  left join catalogs.assortment a on a.ProductId = c.ProductId and a.CodeFirmCr = c.CodeFirmCr
-where
-    c.PriceCode = ?PriceCode
-and c.CodeFirmCr > 1
-and a.ProductId is null";
-						mcClear.Parameters.Clear();
-						mcClear.Parameters.AddWithValue("?PriceCode", priceCode);
-						sbLog.AppendFormat("UpdateAssortment={0}  ", StatCommand(mcClear));
-
-						//mcClear.CommandText = SynonymUpdateCommand;
-						//mcClear.Parameters.Clear();
-						//sbLog.AppendFormat("UpdateSynonymCode={0}  ", mcClear.ExecuteNonQuery());
-
-						//mcClear.CommandText = SynonymFirmCrUpdateCommand;
-						//mcClear.Parameters.Clear();
-						//sbLog.AppendFormat("UpdateSynonymFirmCrCode={0}  ", mcClear.ExecuteNonQuery());
 					}
 					else
 					{
