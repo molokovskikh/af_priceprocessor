@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -59,6 +60,32 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 	}
 
+	public class TxtFieldDef : IComparer, IComparable<TxtFieldDef>
+	{
+		public string FieldName { get; private set;}
+		public int Begin { get; private set;}
+		public int End { get; private set;}
+
+		public TxtFieldDef(string fieldName, int posBegin, int posEnd)
+		{
+			FieldName = fieldName;
+			Begin = posBegin;
+			End = posEnd;
+		}
+
+		public TxtFieldDef() {}
+
+		public int Compare( Object x, Object y )
+		{
+			return ( ((TxtFieldDef)x).Begin - ((TxtFieldDef)y).Begin );
+		}
+
+		public int CompareTo(TxtFieldDef other)
+		{
+			return Begin - other.Begin;
+		}
+	}
+
 	public interface ISlicer
 	{
 		void Slice(DataTable table, string line, DataRow row);
@@ -115,7 +142,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			if (sliceRules.Count < 1)
 				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, _parser.firmCode, _parser.priceCode, _parser.firmShortName, _parser.priceName);
-			
+
 			return sliceRules;
 		}
 

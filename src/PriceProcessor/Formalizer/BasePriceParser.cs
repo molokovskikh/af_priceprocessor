@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Data;
 using System.Text;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Properties;
@@ -504,7 +505,10 @@ namespace Inforoom.Formalizer
 					currentCoreCosts.Insert(0, bc[0]);
 				}
 
-				if (((this is TXTFixedPriceParser) && ((currentCoreCosts[0].txtBegin == -1) || (currentCoreCosts[0].txtEnd == -1))) || (!(this is TXTFixedPriceParser) && (String.Empty == currentCoreCosts[0].fieldName)))
+				if ((this is FixedNativeTextParser1251 || this is FixedNativeTextParser866) && (currentCoreCosts[0].txtBegin == -1 || currentCoreCosts[0].txtEnd == -1))
+					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, firmCode, priceCode, firmShortName, priceName);
+
+				if (!(this is FixedNativeTextParser1251 || this is FixedNativeTextParser866) && (String.Empty == currentCoreCosts[0].fieldName))
 					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, firmCode, priceCode, firmShortName, priceName);
 
 				priceCodeCostIndex = currentCoreCosts.IndexOf(c => c.costCode == priceCode);

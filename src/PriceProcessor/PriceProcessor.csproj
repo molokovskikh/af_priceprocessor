@@ -121,12 +121,6 @@
     <Compile Include="Formalizer\SudakovXMLParser.cs" />
     <Compile Include="Formalizer\ToughDate.cs" />
     <Compile Include="Formalizer\ToughMask.cs" />
-    <Compile Include="Formalizer\TXTDelimiterPriceParser.cs" />
-    <Compile Include="Formalizer\TXTDosDelimiterPriceParser.cs" />
-    <Compile Include="Formalizer\TXTDosFixedPriceParser.cs" />
-    <Compile Include="Formalizer\TXTFixedPriceParser.cs" />
-    <Compile Include="Formalizer\TXTWinDelimiterPriceParser.cs" />
-    <Compile Include="Formalizer\TXTWinFixedPriceParser.cs" />
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Mailer.cs" />
