@@ -44,11 +44,21 @@ namespace PriceProcessor.Test
 		public static void Execute(string commandText)
 		{
 			With.Connection(c => {
-			                	var command = c.CreateCommand();
-			                	command.CommandText = commandText;
-								command.ExecuteNonQuery();
-			                });
+				var command = c.CreateCommand();
+				command.CommandText = commandText;
+				command.ExecuteNonQuery();
+			});
 		}
+
+		public static void Execute(string commandText, params object[] parameters)
+		{
+			With.Connection(c => {
+				var command = c.CreateCommand();
+				command.CommandText = String.Format(commandText, parameters);
+				command.ExecuteNonQuery();
+			});
+		}
+
 
 		public static DataSet Fill(string commandText)
 		{

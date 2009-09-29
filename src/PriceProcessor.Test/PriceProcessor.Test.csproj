@@ -109,6 +109,7 @@
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="TextFixture.cs" />
+    <Compile Include="UpdateCoreTimestampsFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
@@ -166,6 +167,9 @@
     <Content Include="Data\688-etalon.xml" />
     <Content Include="Data\688-rules.xml" />
     <Content Include="Data\688.txt" />
+    <Content Include="Data\UpdateCoreTimeStamp-update-quantity.txt" />
+    <Content Include="Data\UpdateCoreTimeStamp-update.txt" />
+    <Content Include="Data\UpdateCoreTimeStamp.txt" />
     <Content Include="Rosta\GetRostaDataset.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

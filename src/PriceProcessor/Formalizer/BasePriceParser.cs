@@ -1084,6 +1084,9 @@ where
 
 				if (!NewValue.Equals(drExistsCore[compareField]))
 				{
+					if (compareField.ToLower() == "updatetime" || compareField.ToLower() == "quantityupdate")
+						continue;
+
 					if (drCore.Table.Columns[compareField].DataType == typeof (string))
 					{
 						if (drCore[compareField] is DBNull)
@@ -1098,6 +1101,11 @@ where
 						updateFieldsScript.Add(String.Format("{0} = {1}", compareField, Convert.ToDecimal(drCore[compareField]).ToString(CultureInfo.InvariantCulture.NumberFormat)));
 					else
 						updateFieldsScript.Add(String.Format("{0} = {1}", compareField, drCore[compareField]));
+
+					if (compareField.ToLower() == "quantity")
+						updateFieldsScript.Add("QuantityUpdate = now()");
+					else
+						updateFieldsScript.Add("UpdateTime = now()");
 				}
 			}
 
