@@ -1,12 +1,6 @@
 ﻿import file from Deploy.bake
 import file from WindowsServiceSupport.bake
-import System
-import System.Linq.Enumerable from System.Core
-import System.IO
-import System.ServiceProcess
-import System.ComponentModel
-import System.Security.Principal
-import System.Runtime.InteropServices
+import file from Lib.bake
 
 Global(
 	project : "PriceProcessor",
@@ -14,7 +8,10 @@ Global(
 	humanReadableName : "Служба обработки прайс-листов",
 	platform : "x86",
 	serviceName : "PriceProcessorService",
-	editor : "vim"
+
+	editor : "vim",
+
+	libs : ("Common.Tools", "ExecuteTemplate")
 )
 
 Task @default, [@BuildService]
