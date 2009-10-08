@@ -1,0 +1,13 @@
+/bin
+/obj
+/*.suo
+/*.user
+/*.resharperoptions
+/*.resharper
+/Ankh.*
+/Thumbs.db
+/*.scc
+/*.vspscc
+/*.log
+/_ReSharper.*
+/*.Publish.xml
