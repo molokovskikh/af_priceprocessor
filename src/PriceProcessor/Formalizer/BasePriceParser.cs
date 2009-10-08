@@ -637,9 +637,9 @@ namespace Inforoom.Formalizer
 			drUnrecExp["Status"] = AStatus;
 			drUnrecExp["Already"] = AStatus;
 			if (AProductId.HasValue)
-				drUnrecExp["TmpProductId"] = AProductId;
+				drUnrecExp["PriorProductId"] = AProductId;
 			if (ACodeFirmCr.HasValue)
-				drUnrecExp["TmpCodeFirmCr"] = ACodeFirmCr;
+				drUnrecExp["PriorProducerId"] = ACodeFirmCr;
 
 			if (dtUnrecExp.Columns.Contains("HandMade"))
 				drUnrecExp["HandMade"] = 0;
