@@ -169,13 +169,14 @@ namespace Inforoom.Formalizer
 	[Flags]
 	public enum UnrecExpStatus
 	{
-		NOT_FORM	= 0,		// Неформализованный
-		NAME_FORM	= 1,		// Формализованный по названию
-		FIRM_FORM	= 2,		// Формализованный по производителю
-		CURR_FORM	= 4,		// Формализованный по валюте
-		FULL_FORM	= 7,		// Полностью формализован
-		MARK_FORB	= 8,		// Помеченый как запрещенное
-		MARK_DEL	= 16		// Помеченый как удаленный
+		NotForm	       = 0, // Неформализованный
+		NameForm	   = 1, // Формализованный по названию
+		FirmForm	   = 2, // Формализованный по производителю
+		AssortmentForm = 4, // Формализованный по ассортименту
+		FullForm	   = 7, // Полностью формализован по наименованию, производителю и ассортименту
+		MarkForb	   = 8, // Помеченый как запрещенное
+		MarkExclude	   = 16,// Помеченый как исключение
+		ExcludeForm    = 19 // Формализован по наименованию, производителю и как исключение
 	}
 
 	//Класс содержит название полей из таблицы FormRules
@@ -253,6 +254,17 @@ namespace Inforoom.Formalizer
 		//Таблица со списоком синонимов производителей
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
+		//Таблица с ассортиментом
+		protected MySqlDataAdapter daAssortment;
+		protected DataTable dtAssortment;
+		//Таблица с исключениями
+		protected MySqlDataAdapter daExcludes;
+		protected DataTable dtExcludes;
+
+		Stopwatch assortmentSearchWatch;
+		int assortmentSearchCount;
+		Stopwatch excludesSearchWatch;
+		int excludesSearchCount;
 
 		protected MySqlDataAdapter daCore;
 		protected DataTable dtCore;
@@ -613,7 +625,7 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Вставка в нераспознанные позиции
 		/// </summary>
-		public void InsertToUnrec(long? AProductId, long? ACodeFirmCr, int AStatus, bool AJunk)
+		public void InsertToUnrec(long? AProductId, long? ACodeFirmCr, int AStatus, bool AJunk, long? ASynonymCode, long? ASynonymFirmCrCode)
 		{
 			DataRow drUnrecExp = dsMyDB.Tables["UnrecExp"].NewRow();
 			drUnrecExp["PriceItemId"] = priceItemId;
@@ -636,10 +648,15 @@ namespace Inforoom.Formalizer
 
 			drUnrecExp["Status"] = AStatus;
 			drUnrecExp["Already"] = AStatus;
+
 			if (AProductId.HasValue)
 				drUnrecExp["PriorProductId"] = AProductId;
 			if (ACodeFirmCr.HasValue)
 				drUnrecExp["PriorProducerId"] = ACodeFirmCr;
+			if (ASynonymCode.HasValue)
+				drUnrecExp["ProductSynonymId"] = ASynonymCode;
+			if (ASynonymFirmCrCode.HasValue)
+				drUnrecExp["ProducerSynonymId"] = ASynonymFirmCrCode;
 
 			if (dtUnrecExp.Columns.Contains("HandMade"))
 				drUnrecExp["HandMade"] = 0;
@@ -683,6 +700,27 @@ namespace Inforoom.Formalizer
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
+
+			daAssortment = new MySqlDataAdapter("SELECT Id, ProductId, ProducerId FROM catalogs.Assortment ", MyConn);
+			daAssortment.Fill(dsMyDB, "Assortment");
+			dtAssortment = dsMyDB.Tables["Assortment"];
+			_logger.Debug("загрузили Assortment");
+			dtAssortment.PrimaryKey = new DataColumn[] { dtAssortment.Columns["Id"], dtAssortment.Columns["ProductId"], dtAssortment.Columns["ProducerId"] };
+			_logger.Debug("построили индекс по Assortment");
+
+			daExcludes = new MySqlDataAdapter(
+				String.Format("SELECT Id, ProductId, ProducerSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
+			daExcludes.Fill(dsMyDB, "Excludes");
+			dtExcludes = dsMyDB.Tables["Excludes"];
+			_logger.Debug("загрузили Excludes");
+			dtExcludes.PrimaryKey = new DataColumn[] { dtExcludes.Columns["Id"], dtExcludes.Columns["ProductId"], dtExcludes.Columns["ProducerSynonymId"] };
+			_logger.Debug("построили индекс по Excludes");
+
+			assortmentSearchWatch = new Stopwatch();
+			assortmentSearchCount = 0;
+			excludesSearchWatch = new Stopwatch();
+			excludesSearchCount = 0;
+
 
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM farm.SynonymFirmCr WHERE PriceCode={0}", parentSynonym), MyConn);
@@ -1430,6 +1468,12 @@ and a.FirmCode = p.FirmCode;", priceCode);
 					sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
 					_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
+					_logger.DebugFormat(
+						"Statistica search: assortment = {0} excludes = {1}  during assortment = {2} during excludes = {3}", 
+						assortmentSearchWatch.ElapsedMilliseconds / assortmentSearchCount,
+						excludesSearchWatch.ElapsedMilliseconds / excludesSearchCount,
+						assortmentSearchWatch.ElapsedMilliseconds,
+						excludesSearchWatch.ElapsedMilliseconds);
 					_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
 					finalizeTransaction.Commit();
 					res = true;
@@ -1589,7 +1633,7 @@ and r.RegionCode = cd.RegionCode",
 							string strCode, strName1, strOriginalName, strFirmCr;
 							do
 							{
-								var st = UnrecExpStatus.NOT_FORM;
+								var st = UnrecExpStatus.NotForm;
 								PosName = GetFieldValue(PriceFields.Name1, true);
 
 								if ((null != PosName) && (String.Empty != PosName.Trim()) && (!IsForbidden(PosName)))
@@ -1627,21 +1671,44 @@ and r.RegionCode = cd.RegionCode",
 									strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
 
 									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
-										st = UnrecExpStatus.NAME_FORM;
+										st = UnrecExpStatus.NameForm;
 
 									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
 									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
-										st = st | UnrecExpStatus.FIRM_FORM;
+										st = st | UnrecExpStatus.FirmForm;
 
-									st = st | UnrecExpStatus.CURR_FORM;
+									//Если не получили CodeFirmCr, то считаем, 
+									//что позиция формализована по ассортименту, т.к. производитель не опознан и проверить по ассортименту нельзя
+									/*
+									Возможны ситуации:
+									  UnrecExpStatus.NameForm UnrecExpStatus.FirmForm UnrecExpStatus.AssortmentForm
+									  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
+									*/
+									if (!CodeFirmCr.HasValue)
+										st = st | UnrecExpStatus.AssortmentForm;
+									else
+										if (ProductId.HasValue && CodeFirmCr.HasValue)
+										{
+											//проверям ассортимент
+											var assortmentStatus = GetAssortmentStatus(ProductId, CodeFirmCr, SynonymFirmCrCode);
+											if (assortmentStatus != UnrecExpStatus.NotForm)
+											{
+												st = st | assortmentStatus;
+												//Если получили исключение, то сбрасываем CodeFirmCr
+												if (assortmentStatus == UnrecExpStatus.MarkExclude)
+													CodeFirmCr = null;
+											}
 
-									if (((st & UnrecExpStatus.NAME_FORM) == UnrecExpStatus.NAME_FORM) && ((st & UnrecExpStatus.CURR_FORM) == UnrecExpStatus.CURR_FORM))
+										}
+
+									if (((st & UnrecExpStatus.NameForm) == UnrecExpStatus.NameForm) && 
+										(((st & UnrecExpStatus.AssortmentForm) == UnrecExpStatus.AssortmentForm) || ((st & UnrecExpStatus.MarkExclude) == UnrecExpStatus.MarkExclude)) )
 										InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
 									else
 										unformCount++;
 
-									if ((st & UnrecExpStatus.FULL_FORM) != UnrecExpStatus.FULL_FORM)
-										InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk);
+									if (((st & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm) && ((st & UnrecExpStatus.ExcludeForm) != UnrecExpStatus.ExcludeForm))
+										InsertToUnrec(ProductId, CodeFirmCr, (int)st, Junk, SynonymCode, SynonymFirmCrCode);
 
 								}
 								else
@@ -2052,6 +2119,41 @@ and r.RegionCode = cd.RegionCode",
 			return false;
 		}
 
+		public UnrecExpStatus GetAssortmentStatus(long? ProductId, long? CodeFirmCr, long? SynonymFirmCrCode)
+		{
+			DataRow[] dr = null;
+
+			assortmentSearchWatch.Start();
+			try
+			{
+				dr = dtAssortment.Select(String.Format("ProductId = {0} and ProducerId = {1}", ProductId, CodeFirmCr));
+				assortmentSearchCount++;
+			}
+			finally
+			{
+				assortmentSearchWatch.Stop();
+			}
+
+			if ((dr != null) && (dr.Length == 1))
+				return UnrecExpStatus.AssortmentForm;
+			else
+			{
+				excludesSearchWatch.Start();
+				try
+				{
+					dr = dtExcludes.Select(String.Format("ProductId = {0} and ProducerSynonymId = {1}", ProductId, SynonymFirmCrCode));
+					excludesSearchCount++;
+				}
+				finally
+				{
+					excludesSearchWatch.Stop();
+				}
+				if ((dr != null) && (dr.Length == 1))
+					return UnrecExpStatus.MarkExclude;
+			}
+			return UnrecExpStatus.NotForm;
+		}
+
 		/// <summary>
 		/// Смогли ли мы распознать производителя по названию?
 		/// </summary>
@@ -2062,7 +2164,7 @@ and r.RegionCode = cd.RegionCode",
 		public bool GetCodeFirmCr(string FirmCr, out long? ACodeFirmCr, out long? ASynonymFirmCrCode)
 		{
 			DataRow[] dr = null;
-			if (null != FirmCr)
+			if (!String.IsNullOrEmpty(FirmCr))
 				dr = dsMyDB.Tables["SynonymFirmCr"].Select(String.Format("Synonym = '{0}'", FirmCr.Replace("'", "''")));
 
 			if ((null != dr) && (dr.Length > 0))
