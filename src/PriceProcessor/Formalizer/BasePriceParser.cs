@@ -1469,9 +1469,9 @@ and a.FirmCode = p.FirmCode;", priceCode);
 
 					_logger.InfoFormat("Statistica: {0}", sbLog.ToString());
 					_logger.DebugFormat(
-						"Statistica search: assortment = {0} excludes = {1}  during assortment = {2} during excludes = {3}", 
-						assortmentSearchWatch.ElapsedMilliseconds / assortmentSearchCount,
-						excludesSearchWatch.ElapsedMilliseconds / excludesSearchCount,
+						"Statistica search: assortment = {0} excludes = {1}  during assortment = {2} during excludes = {3}",
+						(assortmentSearchCount > 0) ? assortmentSearchWatch.ElapsedMilliseconds / assortmentSearchCount : 0,
+						(excludesSearchCount > 0) ? excludesSearchWatch.ElapsedMilliseconds / excludesSearchCount : 0,
 						assortmentSearchWatch.ElapsedMilliseconds,
 						excludesSearchWatch.ElapsedMilliseconds);
 					_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
