@@ -14,6 +14,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.ComponentModel;
 using System.Diagnostics;
 using log4net;
+using System.Configuration;
 
 namespace Inforoom.Formalizer
 {
@@ -260,6 +261,7 @@ namespace Inforoom.Formalizer
 		//“аблица с исключени€ми
 		protected MySqlDataAdapter daExcludes;
 		protected DataTable dtExcludes;
+		protected MySqlCommandBuilder cbExcludes;
 
 		Stopwatch assortmentSearchWatch;
 		int assortmentSearchCount;
@@ -696,7 +698,7 @@ namespace Inforoom.Formalizer
 			_logger.Debug("загрузили Forbidden");
 
 			daSynonym = new MySqlDataAdapter(
-				String.Format("SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
+				String.Format(@"SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
@@ -709,11 +711,14 @@ namespace Inforoom.Formalizer
 			_logger.Debug("построили индекс по Assortment");
 
 			daExcludes = new MySqlDataAdapter(
-				String.Format("SELECT Id, ProductId, ProducerSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
+				String.Format("SELECT Id, ProductId, ProducerSynonymId, PriceCode FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
+			cbExcludes = new MySqlCommandBuilder(daExcludes);
+			daExcludes.InsertCommand = cbExcludes.GetInsertCommand();
+			daExcludes.InsertCommand.CommandTimeout = 0;
 			daExcludes.Fill(dsMyDB, "Excludes");
 			dtExcludes = dsMyDB.Tables["Excludes"];
 			_logger.Debug("загрузили Excludes");
-			dtExcludes.PrimaryKey = new DataColumn[] { dtExcludes.Columns["Id"], dtExcludes.Columns["ProductId"], dtExcludes.Columns["ProducerSynonymId"] };
+			dtExcludes.Constraints.Add("ProducerSynonymKey", new DataColumn[] { dtExcludes.Columns["ProductId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
 			_logger.Debug("построили индекс по Excludes");
 
 			assortmentSearchWatch = new Stopwatch();
@@ -723,9 +728,22 @@ namespace Inforoom.Formalizer
 
 
 			daSynonymFirmCr = new MySqlDataAdapter(
-				String.Format("SELECT SynonymFirmCrCode, CodeFirmCr, LOWER(Synonym) AS Synonym FROM farm.SynonymFirmCr WHERE PriceCode={0}", parentSynonym), MyConn);
+				String.Format(@"
+SELECT
+  SynonymFirmCrCode,
+  CodeFirmCr,
+  LOWER(Synonym) AS Synonym,
+  (aps.ProducerSynonymId is not null) as IsAutomatic
+FROM
+  farm.SynonymFirmCr
+  left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
+WHERE SynonymFirmCr.PriceCode={0}
+"
+				, 
+				parentSynonym), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
+			dtSynonymFirmCr.PrimaryKey = new DataColumn[] { dtSynonymFirmCr.Columns["SynonymFirmCrCode"] };
 			_logger.Debug("загрузили SynonymFirmCr");
 
 			daCore = new MySqlDataAdapter(
@@ -1442,6 +1460,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 
 					sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), finalizeTransaction));
+					sbLog.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateUnrecExp={0}  ", TryUpdate(daUnrecExp, dtUnrecExp.Copy(), finalizeTransaction));
 
 					//ѕроизводим обновление PriceDate и LastFormalization в информации о формализации
@@ -1631,6 +1650,7 @@ and r.RegionCode = cd.RegionCode",
 							int costCount;
 							long? ProductId, SynonymCode, CodeFirmCr, SynonymFirmCrCode;
 							string strCode, strName1, strOriginalName, strFirmCr;
+							bool IsAutomatic;
 							do
 							{
 								var st = UnrecExpStatus.NotForm;
@@ -1674,7 +1694,7 @@ and r.RegionCode = cd.RegionCode",
 										st = UnrecExpStatus.NameForm;
 
 									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
-									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode))
+									if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode, out IsAutomatic))
 										st = st | UnrecExpStatus.FirmForm;
 
 									//≈сли не получили CodeFirmCr, то считаем, 
@@ -1685,25 +1705,34 @@ and r.RegionCode = cd.RegionCode",
 									  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
 									*/
 									if (!CodeFirmCr.HasValue)
-										st = st | UnrecExpStatus.AssortmentForm;
+									{
+										//≈сли CodeFirmCr не выставлено, но позици€ распознана по производителю, 
+										//то считаем, что формализовано по ассортименту
+										if ((st & UnrecExpStatus.FirmForm) == UnrecExpStatus.FirmForm)
+											st = st | UnrecExpStatus.AssortmentForm;
+									}
 									else
 										if (ProductId.HasValue && CodeFirmCr.HasValue)
 										{
 											//провер€м ассортимент
 											var assortmentStatus = GetAssortmentStatus(ProductId, CodeFirmCr, SynonymFirmCrCode);
-											if (assortmentStatus != UnrecExpStatus.NotForm)
-											{
-												st = st | assortmentStatus;
-												//≈сли получили исключение, то сбрасываем CodeFirmCr
-												if (assortmentStatus == UnrecExpStatus.MarkExclude)
-													CodeFirmCr = null;
-											}
-
+											st = st | assortmentStatus;
+											//≈сли получили исключение, то сбрасываем CodeFirmCr
+											if (assortmentStatus == UnrecExpStatus.MarkExclude)
+												CodeFirmCr = null;
 										}
 
-									if (((st & UnrecExpStatus.NameForm) == UnrecExpStatus.NameForm) && 
-										(((st & UnrecExpStatus.AssortmentForm) == UnrecExpStatus.AssortmentForm) || ((st & UnrecExpStatus.MarkExclude) == UnrecExpStatus.MarkExclude)) )
+									//ѕолучаетс€, что если формализовали по наименованию, то это позици€ будет отображена клиенту 
+									if (((st & UnrecExpStatus.NameForm) == UnrecExpStatus.NameForm))
+									{
+										if (!(
+											((st & UnrecExpStatus.FirmForm) != UnrecExpStatus.FirmForm) || 
+											((st & UnrecExpStatus.AssortmentForm) == UnrecExpStatus.AssortmentForm) || 
+											((st & UnrecExpStatus.MarkExclude) == UnrecExpStatus.MarkExclude)))
+											_logger.DebugFormat("Ќе получили необходимое условие, статус: {0}", st);
+
 										InsertToCore(ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, Junk);
+									}
 									else
 										unformCount++;
 
@@ -2148,10 +2177,22 @@ and r.RegionCode = cd.RegionCode",
 				{
 					excludesSearchWatch.Stop();
 				}
-				if ((dr != null) && (dr.Length == 1))
-					return UnrecExpStatus.MarkExclude;
+				//≈сли мы ничего не нашли, то добавл€ем в исключение
+				if ((dr == null) || (dr.Length == 0))
+					try
+					{
+						var drExclude = dtExcludes.NewRow();
+						drExclude["PriceCode"] = parentSynonym;
+						drExclude["ProductId"] = ProductId;
+						drExclude["ProducerSynonymId"] = SynonymFirmCrCode;
+						dtExcludes.Rows.Add(drExclude);
+					}
+					catch (ConstraintException)
+					{
+					}
+				return UnrecExpStatus.MarkExclude;
+
 			}
-			return UnrecExpStatus.NotForm;
 		}
 
 		/// <summary>
@@ -2161,25 +2202,80 @@ and r.RegionCode = cd.RegionCode",
 		/// <param name="ACodeFirmCr"></param>
 		/// <param name="ASynonymFirmCrCode"></param>
 		/// <returns></returns>
-		public bool GetCodeFirmCr(string FirmCr, out long? ACodeFirmCr, out long? ASynonymFirmCrCode)
+		public bool GetCodeFirmCr(string FirmCr, out long? ACodeFirmCr, out long? ASynonymFirmCrCode, out bool AIsAutomatic)
 		{
-			DataRow[] dr = null;
-			if (!String.IsNullOrEmpty(FirmCr))
-				dr = dsMyDB.Tables["SynonymFirmCr"].Select(String.Format("Synonym = '{0}'", FirmCr.Replace("'", "''")));
-
-			if ((null != dr) && (dr.Length > 0))
+			AIsAutomatic = false;
+			if (String.IsNullOrEmpty(FirmCr))
 			{
-				//≈сли значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
-				ACodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
-				ASynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
+				//≈сли в производителе ничего не написано, то устанавливаем все в null, и говорим, что распознано по производителю
+				ACodeFirmCr = null;
+				ASynonymFirmCrCode = null;
 				return true;
 			}
 			else
 			{
- 				ACodeFirmCr = null;
- 				ASynonymFirmCrCode = null;
- 				//≈сли поле FirmCr не установлено, то считаем что позици€ распознана по производителю
- 				return (String.IsNullOrEmpty(FirmCr) ? true : false);
+				DataRow[] dr = dsMyDB.Tables["SynonymFirmCr"].Select(String.Format("Synonym = '{0}'", FirmCr.Replace("'", "''")));
+				if ((null != dr) && (dr.Length > 0))
+				{
+					//≈сли значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
+					ACodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
+					ASynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
+					AIsAutomatic = Convert.ToBoolean(dr[0]["IsAutomatic"]);
+				}
+				else
+				{
+					ACodeFirmCr = null;
+					AIsAutomatic = true;
+					ASynonymFirmCrCode = InsertSynonymFirm(parentSynonym, GetFieldValue(PriceFields.FirmCr, false));
+				}
+				return !AIsAutomatic;
+			}
+		}
+
+		private long InsertSynonymFirm(long parentSynonym, string FirmCr)
+		{
+			long? synonymFirmCrCode = null;
+			using (var insertConnection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			{
+				insertConnection.Open();
+				var transaction = insertConnection.BeginTransaction();
+				try
+				{
+					var commad = new MySqlCommand(@"
+insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?Synonym);
+set @LastSynonymFirmCrCode = last_insert_id();
+insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);
+select @LastSynonymFirmCrCode;
+",  
+						insertConnection, transaction);
+					commad.Parameters.AddWithValue("?PriceCode", parentSynonym);
+					commad.Parameters.AddWithValue("?Synonym", FirmCr.Trim());
+					synonymFirmCrCode = Convert.ToInt64(commad.ExecuteScalar());
+					var drInsert = dsMyDB.Tables["SynonymFirmCr"].NewRow();
+					drInsert["CodeFirmCr"] = DBNull.Value;
+					drInsert["IsAutomatic"] = 1;
+					drInsert["Synonym"] = FirmCr.ToLower();
+					drInsert["SynonymFirmCrCode"] = synonymFirmCrCode;
+					dsMyDB.Tables["SynonymFirmCr"].Rows.Add(drInsert);
+					drInsert.AcceptChanges();
+					transaction.Commit();
+					return synonymFirmCrCode.Value;
+				}
+				catch
+				{
+					//удал€ем, если что-то не получилось
+					if (synonymFirmCrCode.HasValue)
+					{
+						var drDeleted = dsMyDB.Tables["SynonymFirmCr"].Rows.Find(synonymFirmCrCode);
+						if (drDeleted != null)
+						{
+							drDeleted.Delete();
+							dsMyDB.Tables["SynonymFirmCr"].AcceptChanges();
+						}
+					}
+					transaction.Rollback();
+					throw;
+				}
 			}
 		}
 

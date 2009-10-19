@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveHelperFixture.cs" />
+    <Compile Include="AssortmentFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="EMAILSourceHandlerTest.cs" />
     <Compile Include="ExcelFixture.cs" />
@@ -164,6 +165,8 @@
     <Content Include="Data\552.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\688-assortment-rules.xml" />
+    <Content Include="Data\688-assortment.txt" />
     <Content Include="Data\688-etalon.xml" />
     <Content Include="Data\688-rules.xml" />
     <Content Include="Data\688.txt" />
