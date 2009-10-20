@@ -1706,9 +1706,9 @@ and r.RegionCode = cd.RegionCode",
 									*/
 									if (!CodeFirmCr.HasValue)
 									{
-										//Если CodeFirmCr не выставлено, но позиция распознана по производителю, 
+										//Если CodeFirmCr не выставлено, но позиция распознана по производителю и наименованию, 
 										//то считаем, что формализовано по ассортименту
-										if ((st & UnrecExpStatus.FirmForm) == UnrecExpStatus.FirmForm)
+										if (((st & UnrecExpStatus.FirmForm) == UnrecExpStatus.FirmForm) && ((st & UnrecExpStatus.NameForm) == UnrecExpStatus.NameForm))
 											st = st | UnrecExpStatus.AssortmentForm;
 									}
 									else
