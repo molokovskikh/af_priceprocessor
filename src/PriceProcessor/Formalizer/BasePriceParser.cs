@@ -698,27 +698,42 @@ namespace Inforoom.Formalizer
 			_logger.Debug("загрузили Forbidden");
 
 			daSynonym = new MySqlDataAdapter(
-				String.Format(@"SELECT SynonymCode, LOWER(Synonym) AS Synonym, ProductId, Junk FROM farm.Synonym WHERE PriceCode={0}", parentSynonym), MyConn);
+				String.Format(@"
+SELECT 
+  Synonym.SynonymCode, 
+  LOWER(Synonym.Synonym) AS Synonym, 
+  Synonym.ProductId, 
+  Synonym.Junk,
+  products.CatalogId
+FROM 
+  farm.Synonym, 
+  catalogs.products 
+WHERE 
+    (Synonym.PriceCode={0}) 
+and (products.Id = Synonym.ProductId)
+"
+				, 
+				parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
 
-			daAssortment = new MySqlDataAdapter("SELECT Id, ProductId, ProducerId FROM catalogs.Assortment ", MyConn);
+			daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId FROM catalogs.Assortment ", MyConn);
 			daAssortment.Fill(dsMyDB, "Assortment");
 			dtAssortment = dsMyDB.Tables["Assortment"];
 			_logger.Debug("загрузили Assortment");
-			dtAssortment.PrimaryKey = new DataColumn[] { dtAssortment.Columns["Id"], dtAssortment.Columns["ProductId"], dtAssortment.Columns["ProducerId"] };
+			dtAssortment.PrimaryKey = new DataColumn[] { dtAssortment.Columns["Id"], dtAssortment.Columns["CatalogId"], dtAssortment.Columns["ProducerId"] };
 			_logger.Debug("построили индекс по Assortment");
 
 			daExcludes = new MySqlDataAdapter(
-				String.Format("SELECT Id, ProductId, ProducerSynonymId, PriceCode FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
+				String.Format("SELECT Id, CatalogId, ProducerSynonymId, PriceCode FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
 			cbExcludes = new MySqlCommandBuilder(daExcludes);
 			daExcludes.InsertCommand = cbExcludes.GetInsertCommand();
 			daExcludes.InsertCommand.CommandTimeout = 0;
 			daExcludes.Fill(dsMyDB, "Excludes");
 			dtExcludes = dsMyDB.Tables["Excludes"];
 			_logger.Debug("загрузили Excludes");
-			dtExcludes.Constraints.Add("ProducerSynonymKey", new DataColumn[] { dtExcludes.Columns["ProductId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
+			dtExcludes.Constraints.Add("ProducerSynonymKey", new DataColumn[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
 			_logger.Debug("построили индекс по Excludes");
 
 			assortmentSearchWatch = new Stopwatch();
@@ -1648,7 +1663,7 @@ and r.RegionCode = cd.RegionCode",
 							string PosName = String.Empty;
 							bool Junk;
 							int costCount;
-							long? ProductId, SynonymCode, CodeFirmCr, SynonymFirmCrCode;
+							long? ProductId, CatalogId, SynonymCode, CodeFirmCr, SynonymFirmCrCode;
 							string strCode, strName1, strOriginalName, strFirmCr;
 							bool IsAutomatic;
 							do
@@ -1690,7 +1705,7 @@ and r.RegionCode = cd.RegionCode",
 									strName1 = GetFieldValue(PriceFields.Name1, true);
 									strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
 
-									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk))
+									if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk, out CatalogId))
 										st = UnrecExpStatus.NameForm;
 
 									strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
@@ -1715,7 +1730,7 @@ and r.RegionCode = cd.RegionCode",
 										if (ProductId.HasValue && CodeFirmCr.HasValue)
 										{
 											//проверям ассортимент
-											var assortmentStatus = GetAssortmentStatus(ProductId, CodeFirmCr, SynonymFirmCrCode);
+											var assortmentStatus = GetAssortmentStatus(CatalogId, CodeFirmCr, SynonymFirmCrCode);
 											st = st | assortmentStatus;
 											//Если получили исключение, то сбрасываем CodeFirmCr
 											if (assortmentStatus == UnrecExpStatus.MarkExclude)
@@ -2117,7 +2132,7 @@ and r.RegionCode = cd.RegionCode",
 		/// <param name="ASynonymCode"></param>
 		/// <param name="AJunk"></param>
 		/// <returns></returns>
-		public bool GetProductId(string ACode, string AName, string AOriginalName, out long? AProductId, out long? ASynonymCode, out bool AJunk)
+		public bool GetProductId(string ACode, string AName, string AOriginalName, out long? AProductId, out long? ASynonymCode, out bool AJunk, out long? ACatalogId)
 		{
 			DataRow[] dr = null;
 			if (formByCode)
@@ -2137,25 +2152,27 @@ and r.RegionCode = cd.RegionCode",
 			if ((null != dr) && (dr.Length > 0))
 			{
 				AProductId = Convert.ToInt64(dr[0]["ProductId"]);
+				ACatalogId = Convert.ToInt64(dr[0]["CatalogId"]);
 				ASynonymCode = Convert.ToInt64(dr[0]["SynonymCode"]);
 				AJunk = Convert.ToBoolean(dr[0]["Junk"]);
 				return true;
 			}
 
 			AProductId = null;
+			ACatalogId = null;
 			ASynonymCode = null;
 			AJunk = false;
 			return false;
 		}
 
-		public UnrecExpStatus GetAssortmentStatus(long? ProductId, long? CodeFirmCr, long? SynonymFirmCrCode)
+		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? CodeFirmCr, long? SynonymFirmCrCode)
 		{
 			DataRow[] dr = null;
 
 			assortmentSearchWatch.Start();
 			try
 			{
-				dr = dtAssortment.Select(String.Format("ProductId = {0} and ProducerId = {1}", ProductId, CodeFirmCr));
+				dr = dtAssortment.Select(String.Format("CatalogId = {0} and ProducerId = {1}", CatalogId, CodeFirmCr));
 				assortmentSearchCount++;
 			}
 			finally
@@ -2170,7 +2187,7 @@ and r.RegionCode = cd.RegionCode",
 				excludesSearchWatch.Start();
 				try
 				{
-					dr = dtExcludes.Select(String.Format("ProductId = {0} and ProducerSynonymId = {1}", ProductId, SynonymFirmCrCode));
+					dr = dtExcludes.Select(String.Format("CatalogId = {0} and ProducerSynonymId = {1}", CatalogId, SynonymFirmCrCode));
 					excludesSearchCount++;
 				}
 				finally
@@ -2183,7 +2200,7 @@ and r.RegionCode = cd.RegionCode",
 					{
 						var drExclude = dtExcludes.NewRow();
 						drExclude["PriceCode"] = parentSynonym;
-						drExclude["ProductId"] = ProductId;
+						drExclude["CatalogId"] = CatalogId;
 						drExclude["ProducerSynonymId"] = SynonymFirmCrCode;
 						dtExcludes.Rows.Add(drExclude);
 					}

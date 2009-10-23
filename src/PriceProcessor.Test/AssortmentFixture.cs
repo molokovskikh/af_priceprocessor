@@ -22,14 +22,16 @@ namespace PriceProcessor.Test
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
 
 			var priceCode = 5;
-			var excludeProductId = 109824;
+			var excludeCatalogId = 87471;
 
-			TestHelper.Execute(String.Format("delete from farm.SynonymFirmCr where (PriceCode = {0}) and (CodeFirmCr is null) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
+			TestHelper.Execute(String.Format("delete from farm.Synonym where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "ОСТРОВИДКИ ПЛЮС С ЛЮТЕИНОМ КАПС. 710МГ №50 (БАД) super  "));
+
+			TestHelper.Execute(String.Format("delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
 			var producerSynonyms = TestHelper.Fill(String.Format("select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(0), "имеются синонимы производителей для 'Фармстандарт (ICN) Лексредства г.Курск super'");
 
-			TestHelper.Execute(String.Format("delete from farm.Excludes where (PriceCode = {0}) and (ProductId = {1})", priceCode, excludeProductId));
-			var excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (ProductId = {1})", priceCode, excludeProductId));
+			TestHelper.Execute(String.Format("delete from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
+			var excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0), "имеются неизвестные исключения");
 
 			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
@@ -41,8 +43,8 @@ namespace PriceProcessor.Test
 			var automaticSynonyms = TestHelper.Fill(String.Format("select * from farm.automaticProducerSynonyms where ProducerSynonymId = {0}", createdProducerSynonym));
 			Assert.That(automaticSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "не были созданы автоматические синонимы");
 
-			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (ProductId = {1})", priceCode, excludeProductId));
-			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1), "ожидалось исключение для ProductId = {0}", excludeProductId);
+			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
+			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1), "ожидалось исключение для CatalogId = {0}", excludeCatalogId);
 
 			var unrexExp = TestHelper.Fill(String.Format("select * from farm.UnrecExp where (PriceItemId = {0})", priceItemId));
 			var unrexExpTable = unrexExp.Tables[0];
