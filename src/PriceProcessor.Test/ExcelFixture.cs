@@ -9,10 +9,10 @@ using NUnit.Framework;
 
 namespace PriceProcessor.Test
 {
-	[TestFixture]
+	[TestFixture, Ignore("только для отладки Романом")]
 	public class ExcelFixture
 	{
-		[Test]
+		[Test, Ignore("не работает, т.к. нужны были для проверки формализации новых форматов и сравнения со старыми")]
 		public void Try_to_formalize()
 		{
 			var ids = new[]

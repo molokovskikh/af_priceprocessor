@@ -9,6 +9,8 @@ using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using RemotePricePricessor;
+using System.Runtime.Serialization.Formatters;
+using System.Collections;
 
 namespace PriceProcessor.Test
 {
@@ -17,10 +19,19 @@ namespace PriceProcessor.Test
 	{
 		private IRemotePriceProcessor priceProcessor;
 
-		[SetUp]
+		[TestFixtureSetUp]
 		public void Setup()
 		{
-			ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
+			//var http = new HttpChannel(Settings.Default.RemotingPort);
+			var provider = new SoapServerFormatterSinkProvider();
+			provider.TypeFilterLevel = TypeFilterLevel.Full;
+
+			IDictionary props = new Hashtable();
+			props["port"] = Settings.Default.RemotingPort;
+			props["typeFilterLevel"] = TypeFilterLevel.Full;
+
+			var channel = new HttpChannel(props, null, provider);
+			ChannelServices.RegisterChannel(channel, false);
 			RemotingConfiguration.RegisterWellKnownServiceType(
 				typeof(RemotePricePricessorService),
 				Settings.Default.RemotingServiceName,
@@ -66,6 +77,45 @@ limit 1", c);
 			var fileStream = priceProcessor.BaseFile(Convert.ToUInt32(Path.GetFileNameWithoutExtension(filename)));
 			Assert.That(new StreamReader(fileStream).ReadToEnd(), Is.EqualTo("тестовый прайс"));
 		}
+
+		[Test]
+		public void Put_file_to_base()
+		{
+			string filename = null;
+			With.Connection(c =>
+			{
+				var command = new MySqlCommand(@"
+select cast(concat(pim.Id, p.FileExtention) as CHAR)
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+order by pim.Id desc
+limit 1", c);
+				filename = command.ExecuteScalar().ToString();
+			});
+
+			var priceItemId = Convert.ToUInt32(Path.GetFileNameWithoutExtension(filename));
+			filename = Path.Combine(Settings.Default.BasePath, filename);
+
+			if (File.Exists(filename))
+				File.Delete(filename);
+
+			var tempFile = Path.GetTempFileName();
+			File.WriteAllText(tempFile, "тестовый прайс");
+
+			using (var sendStream = File.OpenRead(tempFile))
+			{
+				sendStream.Position = sendStream.Length - 2;
+				priceProcessor.PutFileToBase(priceItemId, sendStream);
+			}
+
+			Assert.IsTrue(File.Exists(filename), "Файл не существует в Base");
+			Assert.That(File.ReadAllText(filename), Is.EqualTo("тестовый прайс"), "Файл в Base отличается содержимым");			
+
+			if (File.Exists(tempFile))
+				File.Delete(tempFile);
+		}
+
 	}
 }
 

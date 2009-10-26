@@ -45,5 +45,7 @@ namespace RemotePricePricessor
 
 		Stream BaseFile(uint priceItemId);
 		HistoryFile GetFileFormHistory(ulong downlogId);
+
+		void PutFileToBase(uint priceItemId, Stream file);
 	}
 }

@@ -9,6 +9,7 @@ using System.Runtime.Remoting.Channels.Http;
 using Inforoom.PriceProcessor.Properties;
 using System.Collections;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Serialization.Formatters;
 
 
 namespace Inforoom.PriceProcessor
@@ -31,7 +32,19 @@ namespace Inforoom.PriceProcessor
 			try
 			{
 				ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
-				ChannelServices.RegisterChannel(new TcpChannel(Settings.Default.RemotingPort + 1), false);
+
+				//Создаем провайдер, чтобы не было нарушения безопасности
+				var provider = new BinaryServerFormatterSinkProvider();
+				provider.TypeFilterLevel = TypeFilterLevel.Full;
+				//Устанавливаем свойства провайдера
+				IDictionary props = new Hashtable();
+				props["port"] = Settings.Default.RemotingPort + 1;
+				//Без установки этого свойства тоже работает, но в примерах оно тоже установлено
+				props["typeFilterLevel"] = "Full";
+
+				var tcpChannel = new TcpChannel(props, null, provider);
+				ChannelServices.RegisterChannel(tcpChannel, false);
+
 
 				RemotingConfiguration.RegisterWellKnownServiceType(
 				  typeof(RemotePricePricessorService),

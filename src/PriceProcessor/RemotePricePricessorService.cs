@@ -5,6 +5,7 @@ using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
 using RemotePricePricessor;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor
 {
@@ -186,6 +187,37 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			if (files.Length == 0)
 				throw new PriceProcessorException("Данный прайс-лист в архиве отсутствует!");
 			return files[0];
+		}
+
+		public void PutFileToBase(uint priceItemId, Stream file)
+		{
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
+select p.FileExtention
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+			var extention = row["FileExtention"];
+
+			var newBaseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+
+			if (File.Exists(newBaseFile))
+				try
+				{
+					File.Delete(newBaseFile);
+				}
+				catch (Exception exception)
+				{					
+					throw new PriceProcessorException(
+						String.Format("Невозможно удалить из Base старый файл {0}!", Path.GetFileName(newBaseFile)), 
+						exception);
+				}
+
+			file.Position = 0;
+			using (var fileStream = File.Create(newBaseFile))
+			{
+				file.Copy(fileStream);
+			}
 		}
 	}
 }
