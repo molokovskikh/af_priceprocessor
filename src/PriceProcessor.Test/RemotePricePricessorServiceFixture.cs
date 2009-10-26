@@ -30,16 +30,12 @@ namespace PriceProcessor.Test
 			props["port"] = Settings.Default.RemotingPort;
 			props["typeFilterLevel"] = TypeFilterLevel.Full;
 
-			var channel = new HttpChannel(props, null, null);
-			//channel.ChannelSinkChain
+			var channel = new HttpChannel(props, null, provider);
 			ChannelServices.RegisterChannel(channel, false);
 			RemotingConfiguration.RegisterWellKnownServiceType(
 				typeof(RemotePricePricessorService),
 				Settings.Default.RemotingServiceName,
 				WellKnownObjectMode.Singleton);
-
-			//WellKnownClientTypeEntry c = new WellKnownClientTypeEntry();
-			//RemotingConfiguration.RegisterWellKnownClientType()
 
 			RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
 
