@@ -4,12 +4,14 @@ using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
-using RemotePricePricessor;
+using RemotePriceProcessor;
 using Common.Tools;
+using System.ServiceModel;
+using System.Runtime.Serialization;
 
 namespace Inforoom.PriceProcessor
 {
-	public class RemotePricePricessorService : MarshalByRefObject, IRemotePriceProcessor
+	public class RemotePriceProcessorService : MarshalByRefObject, IRemotePriceProcessor
 	{
 		public void ResendPrice(ulong downlogId)
 		{
@@ -189,8 +191,11 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return files[0];
 		}
 
-		public void PutFileToBase(uint priceItemId, Stream file)
+        public void PutFileToBase(FilePriceInfo filePriceInfo)
 		{
+            uint priceItemId = filePriceInfo.PriceItemId;
+            Stream file = filePriceInfo.Stream;
+
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
 select p.FileExtention
 from  usersettings.PriceItems pim
@@ -213,7 +218,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 						exception);
 				}
 
-			file.Position = 0;
+			//file.Position = 0;
 			using (var fileStream = File.Create(newBaseFile))
 			{
 				file.Copy(fileStream);
