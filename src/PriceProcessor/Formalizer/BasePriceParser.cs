@@ -2238,14 +2238,15 @@ and r.RegionCode = cd.RegionCode",
 					ACodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
 					ASynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
 					AIsAutomatic = Convert.ToBoolean(dr[0]["IsAutomatic"]);
+					return !AIsAutomatic;
 				}
 				else
 				{
 					ACodeFirmCr = null;
-					AIsAutomatic = true;
-					ASynonymFirmCrCode = InsertSynonymFirm(parentSynonym, GetFieldValue(PriceFields.FirmCr, false));
+					ASynonymFirmCrCode = null;
+					return false;
+					//ASynonymFirmCrCode = InsertSynonymFirm(parentSynonym, GetFieldValue(PriceFields.FirmCr, false));
 				}
-				return !AIsAutomatic;
 			}
 		}
 

@@ -3,5 +3,5 @@ using log4net.Config;
 
 [assembly: AssemblyTitle("PriceProcessor")]
 [assembly: AssemblyProduct("PriceProcessor")]
-[assembly: AssemblyVersion("1.1.50.83")]
+[assembly: AssemblyVersion("1.1.51.84")]
 [assembly: XmlConfigurator(Watch = true)]
