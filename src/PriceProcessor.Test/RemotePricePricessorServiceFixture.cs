@@ -8,7 +8,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
-using RemotePricePricessor;
+using RemotePriceProcessor;
 using System.Runtime.Serialization.Formatters;
 using System.Collections;
 
@@ -33,7 +33,7 @@ namespace PriceProcessor.Test
 			var channel = new HttpChannel(props, null, provider);
 			ChannelServices.RegisterChannel(channel, false);
 			RemotingConfiguration.RegisterWellKnownServiceType(
-				typeof(RemotePricePricessorService),
+				typeof(RemotePriceProcessorService),
 				Settings.Default.RemotingServiceName,
 				WellKnownObjectMode.Singleton);
 
@@ -106,7 +106,10 @@ limit 1", c);
 			using (var sendStream = File.OpenRead(tempFile))
 			{
 				sendStream.Position = sendStream.Length - 2;
-				priceProcessor.PutFileToBase(priceItemId, sendStream);
+                FilePriceInfo filePriceInfo = new FilePriceInfo();
+                filePriceInfo.PriceItemId = priceItemId;
+                filePriceInfo.Stream = sendStream;
+				priceProcessor.PutFileToBase(filePriceInfo);
 			}
 
 			Assert.IsTrue(File.Exists(filename), "Файл не существует в Base");
