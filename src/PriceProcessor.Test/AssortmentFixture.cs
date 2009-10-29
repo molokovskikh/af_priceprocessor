@@ -6,6 +6,8 @@ using System.Data;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
+using log4net;
+using MySql.Data.MySqlClient;
 
 namespace PriceProcessor.Test
 {
@@ -24,50 +26,136 @@ namespace PriceProcessor.Test
 			var priceCode = 5;
 			var excludeCatalogId = 87471;
 
-			TestHelper.Execute(String.Format("delete from farm.Synonym where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "ОСТРОВИДКИ ПЛЮС С ЛЮТЕИНОМ КАПС. 710МГ №50 (БАД) super  "));
+			//удаляем синоним наименования
+			TestHelper.Execute(
+				String.Format(
+					"delete from farm.Synonym where (PriceCode = {0}) and (Synonym = '{1}')", 
+					priceCode, 
+					"ОСТРОВИДКИ ПЛЮС С ЛЮТЕИНОМ КАПС. 710МГ №50 (БАД) super  "));
 
-			TestHelper.Execute(String.Format("delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
-			var producerSynonyms = TestHelper.Fill(String.Format("select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
+			//удаляем синоним производителя 'Фармстандарт (ICN) Лексредства г.Курск super'
+			TestHelper.Execute(
+				String.Format(
+					"delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
+					priceCode, 
+					"Фармстандарт (ICN) Лексредства г.Курск super"));
+			var producerSynonyms = TestHelper.Fill(
+				String.Format(
+					"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
+					priceCode, 
+					"Фармстандарт (ICN) Лексредства г.Курск super"));
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(0), "имеются синонимы производителей для 'Фармстандарт (ICN) Лексредства г.Курск super'");
 
-			TestHelper.Execute(String.Format("delete from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
-			var excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
+			//Добавляем синоним производителя
+			//Фармстандарт (ICN) Лексредства г.Курск super-puper
+			TestHelper.Execute(
+				String.Format(
+					"delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+					priceCode,
+					"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
+			TestHelper.Execute(
+				String.Format(
+					"insert into farm.SynonymFirmCr (PriceCode, Synonym) values ({0}, '{1}')",
+					priceCode,
+					"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
+			producerSynonyms = TestHelper.Fill(
+							String.Format(
+								"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+								priceCode,
+								"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
+			var automaticPuperId = Convert.ToInt64(producerSynonyms.Tables[0].Rows[0]["SynonymFirmCrCode"]);
+			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "нет синонима производителя для 'Фармстандарт (ICN) Лексредства г.Курск super-puper'");
+			TestHelper.Execute(
+				String.Format(
+					"insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values ({0})",
+					automaticPuperId));
+
+			//удаляем исключения
+			TestHelper.Execute(
+				String.Format(
+					"delete from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", 
+					priceCode, 
+					excludeCatalogId));
+			var excludes = TestHelper.Fill(
+				String.Format(
+					"select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", 
+					priceCode, 
+					excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0), "имеются неизвестные исключения");
 
+			//Формализация прайс-листа
 			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
 
-			producerSynonyms = TestHelper.Fill(String.Format("select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", priceCode, "Фармстандарт (ICN) Лексредства г.Курск super"));
-			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "ожидался синоним производителя для 'Фармстандарт (ICN) Лексредства г.Курск super'");
-			var createdProducerSynonym = Convert.ToInt64(producerSynonyms.Tables[0].Rows[0]["SynonymFirmCrCode"]);
+			var cost = TestHelper.Fill(String.Format(
+				"select * from usersettings.pricescosts pc where pc.PriceItemId = {0}",
+				priceItemId));
+			var costCode = Convert.ToInt64(cost.Tables[0].Rows[0]["CostCode"]);
+			var corePriceCode = Convert.ToInt64(cost.Tables[0].Rows[0]["PriceCode"]);
+			var core = TestHelper.Fill(String.Format(
+				"select * from farm.Core0 c, farm.CoreCosts cc where (c.PriceCode = {0}) and (cc.Core_id = c.Id) and (cc.PC_CostCode = {1})",
+				corePriceCode,
+				costCode));
+			Assert.That(core.Tables[0].Rows.Count, Is.EqualTo(18), "не совпадает кол-во предложений в Core");
 
-			var automaticSynonyms = TestHelper.Fill(String.Format("select * from farm.automaticProducerSynonyms where ProducerSynonymId = {0}", createdProducerSynonym));
-			Assert.That(automaticSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "не были созданы автоматические синонимы");
+			producerSynonyms = TestHelper.Fill(String.Format(
+				"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
+				priceCode, 
+				"Фармстандарт (ICN) Лексредства г.Курск super"));
+			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "синоним производителя для 'Фармстандарт (ICN) Лексредства г.Курск super' не создан");
 
 			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1), "ожидалось исключение для CatalogId = {0}", excludeCatalogId);
 
+			/*
 			var unrexExp = TestHelper.Fill(String.Format("select * from farm.UnrecExp where (PriceItemId = {0})", priceItemId));
-			var unrexExpTable = unrexExp.Tables[0];
-			Assert.That(unrexExpTable.Rows.Count, Is.EqualTo(3), "не совпадает кол-во нераспознанных выражений");
-			var drs = unrexExpTable.Select("ProducerSynonymId = " + createdProducerSynonym);
-			Assert.That(drs.Length, Is.EqualTo(2), "не совпадает кол-во нераспознанных выражений с автоматически созданным синонимом");
-			drs = unrexExpTable.Select("ProductSynonymId is null");
-			Assert.That(drs.Length, Is.EqualTo(2), "не совпадает кол-во нераспознанных выражений по наименованию");
-			drs = unrexExpTable.Select("ProducerSynonymId is null");
-			Assert.That(drs.Length, Is.EqualTo(0), "не ожидались выражения без синонимов производителей");
 
+			var unrexExpTable = unrexExp.Tables[0];
+			Assert.That(unrexExpTable.Rows.Count, Is.EqualTo(5), "не совпадает кол-во нераспознанных выражений");
+
+			var drs = unrexExpTable.Select("ProducerSynonymId = " + automaticPuperId);
+			Assert.That(drs.Length, Is.EqualTo(2), "не совпадает кол-во нераспознанных выражений с автоматически созданным синонимом");
+
+			drs = unrexExpTable.Select("ProductSynonymId is null");
+			Assert.That(drs.Length, Is.EqualTo(3), "не совпадает кол-во нераспознанных выражений по наименованию");
+
+			drs = unrexExpTable.Select("ProducerSynonymId is null");
+			Assert.That(drs.Length, Is.EqualTo(2), "не кол-во нераспознанных выражений без синонимов производителей");
+			 */ 
+
+
+			/*
+			//Проверка установленных статусов
+
+			//Если сопоставлено по производителю с известным ProducerId
 			testUnrecExpPosition(
 				unrexExpTable, 
 				"(PriorProductId is null) and (PriorProducerId is not null) and (ProductSynonymId is null) and (ProducerSynonymId is not null)", 
 				2);
+
+			//Сопосталевно по наименованию, но получен новый производитель
+			testUnrecExpPosition(
+				unrexExpTable,
+				"(PriorProductId is not null) and (PriorProducerId is null) and (ProductSynonymId is not null) and (ProducerSynonymId is null)",
+				1);
+
+			//Несопоставлено по наименованию и производителю
+			testUnrecExpPosition(
+				unrexExpTable,
+				"(PriorProductId is null) and (PriorProducerId is null) and (ProductSynonymId is null) and (ProducerSynonymId is null)",
+				0);
+
+			//Сопосталевно по наименованию, но сопоставлено с автоматическим синонимом производителя
 			testUnrecExpPosition(
 				unrexExpTable,
 				"(PriorProductId is not null) and (PriorProducerId is null) and (ProductSynonymId is not null) and (ProducerSynonymId is not null)",
 				1);
+
+			//Несопоставлено по наименованию и сопоставлено с автоматическим синонимом производителя
 			testUnrecExpPosition(
 				unrexExpTable,
 				"(PriorProductId is null) and (PriorProducerId is null) and (ProductSynonymId is null) and (ProducerSynonymId is not null)",
 				0);
+			 */ 
 		}
 
 		private void testUnrecExpPosition(DataTable unrecExp, string filter, int status)		

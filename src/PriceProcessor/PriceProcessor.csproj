@@ -109,6 +109,7 @@
     <Compile Include="Formalizer\CommerceMLParser.cs" />
     <Compile Include="Formalizer\DBFPriceParser.cs" />
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
+    <Compile Include="Formalizer\FormalizationPosition.cs" />
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
