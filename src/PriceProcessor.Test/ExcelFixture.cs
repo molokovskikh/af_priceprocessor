@@ -69,7 +69,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void test()
 		{
-			var format = "[Белый][<1] ММ.ГГ; ММ.ГГ";
+			//var format = "[Белый][<1] ММ.ГГ; ММ.ГГ";
 			//Assert.That(NativeExcelParser.IsADateFormat(format), Is.True);
 
 			Console.WriteLine(Regex.Replace("[Белый][<1] ММ.ГГ; ММ.ГГ", @"\[\w+\]", ""));
