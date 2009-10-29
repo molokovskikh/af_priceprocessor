@@ -9,7 +9,7 @@ Global(
 	platform : "x86",
 	serviceName : "PriceProcessorService",
 
-	editor : "vim",
+	editor : "vim-nox",
 
 	libs : ("Common.Tools", "ExecuteTemplate")
 )
