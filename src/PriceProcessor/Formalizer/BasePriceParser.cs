@@ -767,6 +767,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
 insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?OriginalSynonym);
 set @LastSynonymFirmCrCode = last_insert_id();
+insert farm.UsedSynonymFirmCrLogs (SynonymFirmCrCode) values (@LastSynonymFirmCrCode);
 insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);
 select @LastSynonymFirmCrCode;");
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?PriceCode", MySqlDbType.Int64);
