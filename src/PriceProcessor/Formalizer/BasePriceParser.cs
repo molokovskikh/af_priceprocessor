@@ -928,7 +928,8 @@ order by Core0.Id", priceCode);
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
 				else
 					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
+						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 				InsertCorePosition(drCore, sb, drNewProducerSynonym);
@@ -1015,7 +1016,8 @@ order by Core0.Id", priceCode);
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
 				else
 					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
+						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 				if (drNewProducerSynonym != null)
@@ -1516,8 +1518,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 
 						mcClear.CommandText = updateUsedSynonymLogs;
 						mcClear.Parameters.Clear();
-						_logger.DebugFormat("UpdateSynonymLogs command: {0}", mcClear.CommandText);
-						//sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
+						sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
 					}
 					else
 					{
