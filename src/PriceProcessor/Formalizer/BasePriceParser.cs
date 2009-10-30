@@ -951,8 +951,10 @@ order by Core0.Id", priceCode);
 				commandList.Add(lastCommand);
 
 			updateUsedSynonymLogs = 
-				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");" +
-				"update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
+				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+			if (synonymFirmCrCodes.Count > 0)
+				updateUsedSynonymLogs += 
+					"update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
 
 			return commandList.ToArray();
 		}
@@ -1135,8 +1137,9 @@ where
 			_logger.InfoFormat("Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
 
 			updateUsedSynonymLogs =
-				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");" +
-				"update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
+				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
+			if (synonymFirmCrCodes.Count > 0)
+				updateUsedSynonymLogs += "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
 
 			return commandList.ToArray();
 		}
