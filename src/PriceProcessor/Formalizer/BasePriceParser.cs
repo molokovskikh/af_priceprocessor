@@ -898,12 +898,17 @@ order by Core0.Id", priceCode);
 			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
-		private string[] GetSQLToInsertCoreAndCoreCosts()
+		private string[] GetSQLToInsertCoreAndCoreCosts(out string updateUsedSynonymLogs)
 		{
+			updateUsedSynonymLogs = null;
+
 			if (dtCore.Rows.Count == 0)
 				return new string[] {};
 
 			var commandList = new List<string>();
+
+			var synonymCodes = new List<string>();
+			var synonymFirmCrCodes = new List<string>();
 
 			string lastCommand;
 			var sb = new StringBuilder();
@@ -914,8 +919,16 @@ order by Core0.Id", priceCode);
 
 				DataRow drNewProducerSynonym = null;
 
+				//ƒобавл€ем в список используемых синонимов
+				if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
+					synonymCodes.Add(drCore["SynonymCode"].ToString());
+
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
+				else
+					//≈сли синоним не вновь созданный, то добавл€ем в список используемых синонимов производителей
+					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 				InsertCorePosition(drCore, sb, drNewProducerSynonym);
 
@@ -934,6 +947,10 @@ order by Core0.Id", priceCode);
 			lastCommand = sb.ToString();
 			if (!String.IsNullOrEmpty(lastCommand))
 				commandList.Add(lastCommand);
+
+			updateUsedSynonymLogs = 
+				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");" +
+				"update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
 
 			return commandList.ToArray();
 		}
@@ -960,9 +977,14 @@ order by Core0.Id", priceCode);
 			return null;
 		}
 
-		private string[] GetSQLToUpdateCoreAndCoreCosts()
+		private string[] GetSQLToUpdateCoreAndCoreCosts(out string updateUsedSynonymLogs)
 		{
+			updateUsedSynonymLogs = null;
+
 			var commandList = new List<string>();
+
+			var synonymCodes = new List<string>();
+			var synonymFirmCrCodes = new List<string>();
 
 			//≈сли чего-либо формализовали, то делаем синхронизацию, иначе все позиции просто удал€тс€
 			if (dtCore.Rows.Count == 0)
@@ -984,8 +1006,16 @@ order by Core0.Id", priceCode);
 
 				DataRow drNewProducerSynonym = null;
 
+				//ƒобавл€ем в список используемых синонимов
+				if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
+					synonymCodes.Add(drCore["SynonymCode"].ToString());
+
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
+				else
+					//≈сли синоним не вновь созданный, то добавл€ем в список используемых синонимов производителей
+					if (!synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
 				if (drNewProducerSynonym != null)
 					drExistsCore = null;
@@ -1100,6 +1130,10 @@ where
 			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
 				statCounterValues.Add(String.Format("{0} = {1}", statCounter, statCounters[statCounter]));
 			_logger.InfoFormat("—татистика обновлени€ прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+
+			updateUsedSynonymLogs =
+				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");" +
+				"update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", synonymFirmCrCodes.ToArray()) + ");";
 
 			return commandList.ToArray();
 		}
@@ -1386,15 +1420,17 @@ where
 
 				InsertNewProducerSynonyms(finalizeTransaction);
 
+				string updateUsedSynonymLogs;
+
 				if (priceCodesUseUpdate.Contains(priceCode))
 				{
 					Stopwatch GetSQLWatch = Stopwatch.StartNew();
-					insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts();
+					insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out updateUsedSynonymLogs);
 					GetSQLWatch.Stop();
 					_logger.InfoFormat("ќбщее врем€ подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
 				}
 				else
-					insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts();
+					insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out updateUsedSynonymLogs);
 
 				try
 				{
@@ -1476,6 +1512,10 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 							sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 						else
 							sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
+
+						mcClear.CommandText = updateUsedSynonymLogs;
+						mcClear.Parameters.Clear();
+						sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
 					}
 					else
 					{
