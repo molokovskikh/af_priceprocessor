@@ -1516,7 +1516,8 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 
 						mcClear.CommandText = updateUsedSynonymLogs;
 						mcClear.Parameters.Clear();
-						sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
+						_logger.DebugFormat("UpdateSynonymLogs command: {0}", mcClear.CommandText);
+						//sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
 					}
 					else
 					{
