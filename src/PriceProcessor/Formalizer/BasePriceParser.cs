@@ -8,6 +8,7 @@ using System.Data;
 using System.Text;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Helpers;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Properties;
@@ -18,7 +19,6 @@ using System.Configuration;
 
 namespace Inforoom.Formalizer
 {
-
 	//Исключение, которое генерируется парсерами во время работы
 	public class FormalizeException : Exception
 	{
@@ -394,21 +394,11 @@ namespace Inforoom.Formalizer
 			priceCodesUseUpdate = new List<long>();
 			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
 				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
-#if TESTINGUPDATE
-			//Протек-15 (Акция_1) - Воронеж 
-			//priceCodesUseUpdate.Add(5);
-			//Катрен (Воронеж) -  Воронеж
-			//priceCodesUseUpdate.Add(3779);
-			//Протек-15 (Базовый_новый) - Воронеж 
-			//priceCodesUseUpdate.Add(4596);			
-#endif
 
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
 			foreach (string field in Settings.Default.CorePrimaryFields)
 				primaryFields.Add(field);
-//#if TESTINGUPDATE
-//#endif
 
 			statCounters = new Dictionary<FormalizeStats, int>();
 			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
@@ -725,11 +715,14 @@ and (products.Id = Synonym.ProductId)
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
 
-			daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId FROM catalogs.Assortment ", MyConn);
+			daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", MyConn);
+			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
+			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
+			daAssortment.InsertCommand.CommandTimeout = 0;
 			daAssortment.Fill(dsMyDB, "Assortment");
 			dtAssortment = dsMyDB.Tables["Assortment"];
 			_logger.Debug("загрузили Assortment");
-			dtAssortment.PrimaryKey = new DataColumn[] { dtAssortment.Columns["Id"], dtAssortment.Columns["CatalogId"], dtAssortment.Columns["ProducerId"] };
+			dtAssortment.PrimaryKey = new[] { dtAssortment.Columns["CatalogId"], dtAssortment.Columns["ProducerId"] };
 			_logger.Debug("построили индекс по Assortment");
 
 			daExcludes = new MySqlDataAdapter(
@@ -740,7 +733,7 @@ and (products.Id = Synonym.ProductId)
 			daExcludes.Fill(dsMyDB, "Excludes");
 			dtExcludes = dsMyDB.Tables["Excludes"];
 			_logger.Debug("загрузили Excludes");
-			dtExcludes.Constraints.Add("ProducerSynonymKey", new DataColumn[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
+			dtExcludes.Constraints.Add("ProducerSynonymKey", new[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
 			_logger.Debug("построили индекс по Excludes");
 
 			assortmentSearchWatch = new Stopwatch();
@@ -926,13 +919,11 @@ order by Core0.Id", priceCode);
 
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
-				else
-					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
-						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
-						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
+				//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
+				else if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) && !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
+					synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
-				InsertCorePosition(drCore, sb, drNewProducerSynonym);
+				SqlBuilder.InsertCorePosition(drCore, sb, drNewProducerSynonym);
 
 				if (priceType != Settings.Default.ASSORT_FLG)
 					InsertCoreCosts(sb, CoreCosts[i]);
@@ -1031,7 +1022,7 @@ order by Core0.Id", priceCode);
 				{
 					statCounters[FormalizeStats.InsertCount]++;
 					statCounters[FormalizeStats.CommandCount]++;
-					InsertCorePosition(drCore, sb, drNewProducerSynonym);
+					SqlBuilder.InsertCorePosition(drCore, sb, drNewProducerSynonym);
 				}
 				else
 				{
@@ -1231,7 +1222,7 @@ where
 							updateFieldsScript.Add(compareField + " = ''");
 						else
 							updateFieldsScript.Add(String.Format("{0} = '{1}'", compareField,
-							                                     StringToMySqlString(drCore[compareField].ToString())));
+							                                     SqlBuilder.StringToMySqlString(drCore[compareField].ToString())));
 					}
 					else if (drCore[compareField] is DBNull)
 						updateFieldsScript.Add(compareField + " = null");
@@ -1305,7 +1296,7 @@ where
 			return maxMatchesNumberRow;
 		}
 
-		private void InsertCoreCosts(StringBuilder sb, List<CoreCost> coreCosts)
+		private static void InsertCoreCosts(StringBuilder sb, List<CoreCost> coreCosts)
 		{
 			if ((coreCosts != null) && (coreCosts.Count > 0))
 			{
@@ -1323,76 +1314,6 @@ where
 				}
 				sb.AppendLine(";");
 			}
-		}
-
-		private void InsertCorePosition(DataRow drCore, StringBuilder sb, DataRow drNewProducerSynonym)
-		{
-			var producerSynonymId = drCore["SynonymFirmCrCode"];
-			if (drNewProducerSynonym != null)
-				producerSynonymId = drNewProducerSynonym["SynonymFirmCrCode"];
-
-			sb.AppendLine("insert into farm.Core0 (" +
-				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
-				"Period, Junk, Await, MinBoundCost, " +
-				"VitallyImportant, RequestRatio, RegistryCost, " +
-				"MaxBoundCost, OrderCost, MinOrderCount, " +
-				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
-			sb.Append("(");
-			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
-				drCore["PriceCode"],
-				drCore["ProductId"],
-				Convert.IsDBNull(drCore["CodeFirmCr"]) ? "null" : drCore["CodeFirmCr"].ToString(),
-				drCore["SynonymCode"],
-				Convert.IsDBNull(producerSynonymId) ? "null" : producerSynonymId.ToString());
-			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
-			sb.AppendFormat("{0}, ", drCore["Junk"]);
-			sb.AppendFormat("'{0}', ", drCore["Await"]);
-			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", drCore["VitallyImportant"]);
-			sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
-			sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
-			AddTextParameter("Code", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("CodeCr", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Unit", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Volume", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Quantity", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Note", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Doc", drCore, sb);
-
-			sb.AppendLine(");");
-            sb.AppendLine("set @LastCoreID = last_insert_id();");
-		}
-
-		public void AddTextParameter(string ParamName, DataRow dr, StringBuilder sb)
-		{
-			if (dr[ParamName] is DBNull)
-				sb.Append("''");
-			else
-				sb.AppendFormat("'{0}'", StringToMySqlString(dr[ParamName].ToString()));
-		}
-
-		private static string StringToMySqlString(string s)
-		{
-			s = s.Replace("\\", "\\\\");
-			s = s.Replace("\'", "\\\'");
-			s = s.Replace("\"", "\\\"");
-			s = s.Replace("`", "\\`");
-			return s;
 		}
 
 		/// <summary>
@@ -1554,6 +1475,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 					sbLog.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(finalizeTransaction));
 					//Исключения обновляем после нераспознанных, т.к. все может измениться
 					sbLog.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), finalizeTransaction));
+					sbLog.AppendFormat("UpdateAssortment={0}", TryUpdate(daAssortment, dtAssortment.Copy(), finalizeTransaction));
 
 					//Производим обновление PriceDate и LastFormalization в информации о формализации
 					//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
@@ -1720,9 +1642,9 @@ and a.FirmCode = p.FirmCode;", priceCode);
 		private void InsertNewProducerSynonyms(MySqlTransaction finalizeTransaction)
 		{
 			daSynonymFirmCr.InsertCommand.Connection = MyConn;
-			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;				 
+			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
 
-			dtNewSynonymFirmCr = null;
+			//dtNewSynonymFirmCr = null;
 			dtSynonymFirmCr.DefaultView.RowFilter = "InternalProducerSynonymId is not null";
 			dtNewSynonymFirmCr = dtSynonymFirmCr.DefaultView.ToTable();
 
@@ -2352,28 +2274,14 @@ and r.RegionCode = cd.RegionCode",
 			return null;
 		}
 
-		/// <summary>
-		/// Содержится ли название в таблице запрещенных слов
-		/// </summary>
-		/// <param name="PosName"></param>
-		/// <returns></returns>
+		//Содержится ли название в таблице запрещенных слов
 		public bool IsForbidden(string PosName)
 		{
 			DataRow[] dr = dtForbidden.Select(String.Format("Forbidden = '{0}'", PosName.Replace("'", "''")));
 			return dr.Length > 0;
 		}
 
-		/// <summary>
-		/// Смогли ли мы распознать позицию по коду, имени и оригинальному названию?
-		/// </summary>
-		/// <param name="ACode"></param>
-		/// <param name="AName"></param>
-		/// <param name="AOriginalName"></param>
-		/// <param name="AProductId"></param>
-		/// <param name="AShortCode"></param>
-		/// <param name="ASynonymCode"></param>
-		/// <param name="AJunk"></param>
-		/// <returns></returns>
+		//Смогли ли мы распознать позицию по коду, имени и оригинальному названию?
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow[] dr = null;
@@ -2412,7 +2320,7 @@ and r.RegionCode = cd.RegionCode",
 
 		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId)
 		{
-			DataRow[] dr = null;
+			DataRow[] dr;
 
 			assortmentSearchWatch.Start();
 			try
@@ -2428,47 +2336,61 @@ and r.RegionCode = cd.RegionCode",
 				assortmentSearchWatch.Stop();
 			}
 
-			if ((dr != null) && (dr.Length == 1))
+			if (dr != null && dr.Length == 1)
 				return UnrecExpStatus.AssortmentForm;
+
+			excludesSearchWatch.Start();
+			try
+			{
+				dr = dtExcludes.Select(
+					String.Format("CatalogId = {0} and ProducerSynonymId = {1}",
+						CatalogId,
+						ProducerSynonymId));
+				excludesSearchCount++;
+			}
+			finally
+			{
+				excludesSearchWatch.Stop();
+			}
+
+			//Если мы ничего не нашли, то добавляем в исключение
+			if (dr == null || dr.Length == 0)
+				CreateExcludeOrAssortment(CatalogId, ProducerId, ProducerSynonymId);
+
+			return UnrecExpStatus.MarkExclude;
+		}
+
+		private void CreateExcludeOrAssortment(long? catalogId, long? producerId, long? producerSynonymId)
+		{
+			if (CanCreateAssortment(catalogId))
+			{
+				var assortment = dtAssortment.NewRow();
+				assortment["CatalogId"] = catalogId;
+				assortment["ProducerId"] = producerId;
+				dtAssortment.Rows.Add(assortment);
+			}
 			else
 			{
-				excludesSearchWatch.Start();
 				try
 				{
-					dr = dtExcludes.Select(
-						String.Format("CatalogId = {0} and ProducerSynonymId = {1}",
-							CatalogId,
-							ProducerSynonymId));
-					excludesSearchCount++;
+					var drExclude = dtExcludes.NewRow();
+					drExclude["PriceCode"] = parentSynonym;
+					drExclude["CatalogId"] = catalogId;
+					drExclude["ProducerSynonymId"] = producerSynonymId;
+					dtExcludes.Rows.Add(drExclude);
 				}
-				finally
+				catch (ConstraintException)
 				{
-					excludesSearchWatch.Stop();
 				}
-				//Если мы ничего не нашли, то добавляем в исключение
-				if ((dr == null) || (dr.Length == 0))
-					try
-					{
-						var drExclude = dtExcludes.NewRow();
-						drExclude["PriceCode"] = parentSynonym;
-						drExclude["CatalogId"] = CatalogId;
-						drExclude["ProducerSynonymId"] = ProducerSynonymId;
-						dtExcludes.Rows.Add(drExclude);
-					}
-					catch (ConstraintException)
-					{
-					}
-				return UnrecExpStatus.MarkExclude;
 			}
 		}
 
-		/// <summary>
-		/// Смогли ли мы распознать производителя по названию?
-		/// </summary>
-		/// <param name="FirmCr"></param>
-		/// <param name="ACodeFirmCr"></param>
-		/// <param name="ASynonymFirmCrCode"></param>
-		/// <returns></returns>
+		private bool CanCreateAssortment(long? catalogId)
+		{
+			return !dtAssortment.Select("CatalogId = " + catalogId).Any(r => Convert.ToBoolean(r["Checked"]));
+		}
+
+		//Смогли ли мы распознать производителя по названию?
 		public void GetCodeFirmCr(FormalizationPosition position)
 		{
 			if (String.IsNullOrEmpty(position.FirmCr))
@@ -2500,21 +2422,21 @@ and r.RegionCode = cd.RegionCode",
 					if (position.IsSet(UnrecExpStatus.NameForm))
 					{
 						position.IsAutomaticProducerSynonym = true;
-						position.InternalProducerSynonymId = InsertSynonymFirm(parentSynonym, GetFieldValue(PriceFields.FirmCr, false));
+						position.InternalProducerSynonymId = InsertSynonymFirm(GetFieldValue(PriceFields.FirmCr, false));
 					}
 				}
 
 			}
 		}
 
-		private long InsertSynonymFirm(long parentSynonym, string FirmCr)
+		private long InsertSynonymFirm(string firmCr)
 		{
 			var drInsert = dtSynonymFirmCr.NewRow();
 			drInsert["CodeFirmCr"] = DBNull.Value;
 			drInsert["SynonymFirmCrCode"] = DBNull.Value;
 			drInsert["IsAutomatic"] = 1;
-			drInsert["Synonym"] = FirmCr.ToLower();
-			drInsert["OriginalSynonym"] = FirmCr.Trim();
+			drInsert["Synonym"] = firmCr.ToLower();
+			drInsert["OriginalSynonym"] = firmCr.Trim();
 			dtSynonymFirmCr.Rows.Add(drInsert);
 			return (long)drInsert["InternalProducerSynonymId"];
 /*

@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Data;
-using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
-using log4net;
-using MySql.Data.MySqlClient;
 
 namespace PriceProcessor.Test
 {
@@ -43,7 +37,7 @@ namespace PriceProcessor.Test
 				String.Format(
 					"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
 					priceCode, 
-					"Фармстандарт (ICN) Лексредства г.Курск super"));
+					"#"));
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(0), "имеются синонимы производителей для 'Фармстандарт (ICN) Лексредства г.Курск super'");
 
 			//Добавляем синоним производителя
@@ -70,6 +64,7 @@ namespace PriceProcessor.Test
 					"insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values ({0})",
 					automaticPuperId));
 
+			TestHelper.Execute("delete from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", excludeCatalogId, 402);
 			//удаляем исключения
 			TestHelper.Execute(
 				String.Format(
@@ -82,6 +77,7 @@ namespace PriceProcessor.Test
 					priceCode, 
 					excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0), "имеются неизвестные исключения");
+			TestHelper.Execute("update Catalogs.Assortment set checked = 1 where CatalogId = {0} ", excludeCatalogId);
 
 			//Формализация прайс-листа
 			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
@@ -105,64 +101,43 @@ namespace PriceProcessor.Test
 
 			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", priceCode, excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1), "ожидалось исключение для CatalogId = {0}", excludeCatalogId);
-
-			/*
-			var unrexExp = TestHelper.Fill(String.Format("select * from farm.UnrecExp where (PriceItemId = {0})", priceItemId));
-
-			var unrexExpTable = unrexExp.Tables[0];
-			Assert.That(unrexExpTable.Rows.Count, Is.EqualTo(5), "не совпадает кол-во нераспознанных выражений");
-
-			var drs = unrexExpTable.Select("ProducerSynonymId = " + automaticPuperId);
-			Assert.That(drs.Length, Is.EqualTo(2), "не совпадает кол-во нераспознанных выражений с автоматически созданным синонимом");
-
-			drs = unrexExpTable.Select("ProductSynonymId is null");
-			Assert.That(drs.Length, Is.EqualTo(3), "не совпадает кол-во нераспознанных выражений по наименованию");
-
-			drs = unrexExpTable.Select("ProducerSynonymId is null");
-			Assert.That(drs.Length, Is.EqualTo(2), "не кол-во нераспознанных выражений без синонимов производителей");
-			 */ 
-
-
-			/*
-			//Проверка установленных статусов
-
-			//Если сопоставлено по производителю с известным ProducerId
-			testUnrecExpPosition(
-				unrexExpTable, 
-				"(PriorProductId is null) and (PriorProducerId is not null) and (ProductSynonymId is null) and (ProducerSynonymId is not null)", 
-				2);
-
-			//Сопосталевно по наименованию, но получен новый производитель
-			testUnrecExpPosition(
-				unrexExpTable,
-				"(PriorProductId is not null) and (PriorProducerId is null) and (ProductSynonymId is not null) and (ProducerSynonymId is null)",
-				1);
-
-			//Несопоставлено по наименованию и производителю
-			testUnrecExpPosition(
-				unrexExpTable,
-				"(PriorProductId is null) and (PriorProducerId is null) and (ProductSynonymId is null) and (ProducerSynonymId is null)",
-				0);
-
-			//Сопосталевно по наименованию, но сопоставлено с автоматическим синонимом производителя
-			testUnrecExpPosition(
-				unrexExpTable,
-				"(PriorProductId is not null) and (PriorProducerId is null) and (ProductSynonymId is not null) and (ProducerSynonymId is not null)",
-				1);
-
-			//Несопоставлено по наименованию и сопоставлено с автоматическим синонимом производителя
-			testUnrecExpPosition(
-				unrexExpTable,
-				"(PriorProductId is null) and (PriorProducerId is null) and (ProductSynonymId is null) and (ProducerSynonymId is not null)",
-				0);
-			 */ 
 		}
 
-		private void testUnrecExpPosition(DataTable unrecExp, string filter, int status)		
+		[Test]
+		public void Create_new_assortment_if_product_not_checked()
 		{
-			var drs = unrecExp.Select(filter);
-			Assert.That(drs.Length, Is.EqualTo(1), "не совпадает кол-во ожидаемых выражений");
-			Assert.That(Convert.ToInt32(drs[0]["Status"]), Is.EqualTo(status), "неожидаемое значение статуса");
+			var catalogId = 13468;
+			var producerId = 1492;
+
+			var file = @"..\..\Data\688-create-net-assortment.txt";
+			var priceItemId = 688;
+			var priceCode = 5;
+
+			var rules = new DataTable();
+			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
+
+			TestHelper.Execute(@"
+delete from farm.Excludes
+where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId, producerId);
+			TestHelper.Execute("delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
+			TestHelper.Execute(@"
+delete from farm.Synonym where pricecode = {0} and synonym like '{1}';
+insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});",
+				priceCode, 
+				"5 дней ванна д/ног смягчающая №10 пак. 25г  ",
+				13468);
+			TestHelper.Execute(@"
+delete from farm.SynonymFirmCr where priceCode = {0} and synonym like '{1}';
+insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});",
+				priceCode, 
+				"Санкт-Петербургская ф.ф.",
+				producerId);
+
+			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			var assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(1));
+			Assert.That(assortment.Tables[0].Rows[0]["ProducerId"], Is.EqualTo(producerId));
+			Assert.That(assortment.Tables[0].Rows[0]["CatalogId"], Is.EqualTo(catalogId));
 		}
 	}
 }
