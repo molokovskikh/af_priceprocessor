@@ -2357,7 +2357,7 @@ and r.RegionCode = cd.RegionCode",
 			}
 			else
 			{
-				DataRow[] dr = dtSynonymFirmCr.Select(String.Format("Synonym = '{0}'", position.FirmCr.Replace("'", "''")));
+				var dr = dtSynonymFirmCr.Select(String.Format("Synonym = '{0}'", position.FirmCr.Replace("'", "''")));
 				if ((null != dr) && (dr.Length > 0))
 				{
 					//≈сли значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
@@ -2394,60 +2394,14 @@ and r.RegionCode = cd.RegionCode",
 			drInsert["OriginalSynonym"] = firmCr.Trim();
 			dtSynonymFirmCr.Rows.Add(drInsert);
 			return (long)drInsert["InternalProducerSynonymId"];
-/*
-
-			long? synonymFirmCrCode = null;
-			using (var insertConnection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
-			{
-				insertConnection.Open();
-				var transaction = insertConnection.BeginTransaction();
-				try
-				{
-					var commad = new MySqlCommand(@"
-insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?Synonym);
-set @LastSynonymFirmCrCode = last_insert_id();
-insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);
-select @LastSynonymFirmCrCode;
-",  
-						insertConnection, transaction);
-					commad.Parameters.AddWithValue("?PriceCode", parentSynonym);
-					commad.Parameters.AddWithValue("?Synonym", FirmCr.Trim());
-					synonymFirmCrCode = Convert.ToInt64(commad.ExecuteScalar());
-					var drInsert = dtSynonymFirmCr.NewRow();
-					drInsert["CodeFirmCr"] = DBNull.Value;
-					drInsert["IsAutomatic"] = 1;
-					drInsert["Synonym"] = FirmCr.ToLower();
-					drInsert["SynonymFirmCrCode"] = synonymFirmCrCode;
-					dtSynonymFirmCr.Rows.Add(drInsert);
-					drInsert.AcceptChanges();
-					transaction.Commit();
-					return synonymFirmCrCode.Value;
-				}
-				catch
-				{
-					//удал€ем, если что-то не получилось
-					if (synonymFirmCrCode.HasValue)
-					{
-						var drDeleted = dtSynonymFirmCr.Rows.Find(synonymFirmCrCode);
-						if (drDeleted != null)
-						{
-							drDeleted.Delete();
-							dtSynonymFirmCr.AcceptChanges();
-						}
-					}
-					transaction.Rollback();
-					throw;
-				}
-			}
- */ 
 		}
 
 		protected bool GetBoolValue(PriceFields priceField, string mask)
 		{
 			bool value = false;
 
-			string[] trueValues = new string[] { "истина", "true"};
-			string[] falseValues = new string[] { "ложь", "false" };
+			var trueValues = new[] { "истина", "true"};
+			var falseValues = new[] { "ложь", "false" };
 
 			string[] selectedValues = null;
 
