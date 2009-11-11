@@ -1871,29 +1871,15 @@ and r.RegionCode = cd.RegionCode",
 					}
 
 					var st = UnrecExpStatus.NotForm;
-					var position = new FormalizationPosition()
-					{ 
+					var position = new FormalizationPosition {
 						PositionName = PosName,
 						Code = GetFieldValue(PriceFields.Code),
 						OriginalName = GetFieldValue(PriceFields.OriginalName, true),
 						FirmCr = GetFieldValue(PriceFields.FirmCr, true)
 					};
 
-					strCode = GetFieldValue(PriceFields.Code);
-					strName1 = GetFieldValue(PriceFields.Name1, true);
-					strOriginalName = GetFieldValue(PriceFields.OriginalName, true);
-
 					GetProductId(position);
-
-					//if (GetProductId(strCode, strName1, strOriginalName, out ProductId, out  SynonymCode, out Junk, out CatalogId))
-					//    st = UnrecExpStatus.NameForm;
-
-					strFirmCr = GetFieldValue(PriceFields.FirmCr, true);
-
 					GetCodeFirmCr(position);
-
-					//if (GetCodeFirmCr(strFirmCr, out CodeFirmCr, out SynonymFirmCrCode, out IsAutomatic, position))
-					//    st = st | UnrecExpStatus.FirmForm;
 
 					//Если не получили CodeFirmCr, то считаем, 
 					//что позиция формализована по ассортименту, т.к. производитель не опознан и проверить по ассортименту нельзя
@@ -1909,10 +1895,9 @@ and r.RegionCode = cd.RegionCode",
 						if (position.IsSet(UnrecExpStatus.NameForm) && position.IsSet(UnrecExpStatus.FirmForm))
 							position.AddStatus(UnrecExpStatus.AssortmentForm);
 					}
-					else
-						if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
-							//проверям ассортимент
-							GetAssortmentStatus(position);
+					//проверям ассортимент
+					else if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
+						GetAssortmentStatus(position);
 
 					//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту 
 					if (position.IsSet(UnrecExpStatus.NameForm))
