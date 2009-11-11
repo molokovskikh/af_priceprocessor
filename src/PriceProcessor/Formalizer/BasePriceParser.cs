@@ -596,6 +596,24 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
+		/// Вставка в таблицу запрещенных предложений
+		/// </summary>
+		/// <param name="PosName"></param>
+		public void InsertIntoForb(string PosName)
+		{
+			DataRow newRow = dtForb.NewRow();
+			newRow["PriceItemId"] = priceItemId;
+			newRow["Forb"] = PosName;
+			try
+			{
+				dtForb.Rows.Add(newRow);
+				forbCount++;
+			}
+			catch(ConstraintException)
+			{}
+		}
+
+		/// <summary>
 		/// Вставка записи в Zero
 		/// </summary>
 		public void InsertToZero()
@@ -662,24 +680,6 @@ namespace Inforoom.Formalizer
 
 			dtUnrecExp.Rows.Add(drUnrecExp);
 			unrecCount++;
-		}
-
-		/// <summary>
-		/// Вставка в таблицу запрещенных предложений
-		/// </summary>
-		/// <param name="PosName"></param>
-		public void InsertIntoForb(string PosName)
-		{
-			DataRow newRow = dtForb.NewRow();
-			newRow["PriceItemId"] = priceItemId;
-			newRow["Forb"] = PosName;
-			try
-			{
-				dtForb.Rows.Add(newRow);
-				forbCount++;
-			}
-			catch(ConstraintException)
-			{}
 		}
 
 		/// <summary>
@@ -1834,101 +1834,71 @@ and r.RegionCode = cd.RegionCode",
 
 		private void InternalFormalize()
 		{
-			int costCount;
-			string strCode, strName1, strOriginalName, strFirmCr;
 			do
 			{
-				var PosName = GetFieldValue(PriceFields.Name1, true);
+				var posName = GetFieldValue(PriceFields.Name1, true);
 
-				if (!String.IsNullOrEmpty(PosName) && !IsForbidden(PosName))
+				if (String.IsNullOrEmpty(posName))
+					continue;
+
+				if (IsForbidden(posName))
 				{
-					if (priceType != Settings.Default.ASSORT_FLG)
+					InsertIntoForb(posName);
+					continue;
+				}
+
+				if (priceType != Settings.Default.ASSORT_FLG)
+				{
+					var costCount = ProcessCosts();
+					var currentQuantity = GetFieldValueObject(PriceFields.Quantity);
+
+					//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
+					//или если количество определенно и оно равно 0
+					if (0 == costCount || (currentQuantity is int && (int)currentQuantity == 0))
 					{
-						costCount = ProcessCosts();
-						object currentQuantity = GetFieldValueObject(PriceFields.Quantity);
-						//Производим проверку для мультиколоночных прайсов
-						if (costType == CostTypes.MultiColumn)
-						{
-							//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-							//или если количество определенно и оно равно 0
-							if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-							{
-								InsertToZero();
-								continue;
-							}
-						}
-						else
-						{
-							//Эта проверка для всех остальных
-							//Если кол-во ненулевых цен = 0
-							//или если количество определенно и оно равно 0
-							if ((0 == costCount) || ((currentQuantity is int) && ((int)currentQuantity == 0)))
-							{
-								InsertToZero();
-								continue;
-							}
-						}
+						InsertToZero();
+						continue;
 					}
+				}
 
-					var st = UnrecExpStatus.NotForm;
-					var position = new FormalizationPosition {
-						PositionName = PosName,
-						Code = GetFieldValue(PriceFields.Code),
-						OriginalName = GetFieldValue(PriceFields.OriginalName, true),
-						FirmCr = GetFieldValue(PriceFields.FirmCr, true)
-					};
+				var position = new FormalizationPosition {
+					PositionName = posName,
+					Code = GetFieldValue(PriceFields.Code),
+					OriginalName = GetFieldValue(PriceFields.OriginalName, true),
+					FirmCr = GetFieldValue(PriceFields.FirmCr, true)
+				};
 
-					GetProductId(position);
-					GetCodeFirmCr(position);
+				GetProductId(position);
+				GetCodeFirmCr(position);
 
-					//Если не получили CodeFirmCr, то считаем, 
-					//что позиция формализована по ассортименту, т.к. производитель не опознан и проверить по ассортименту нельзя
-					/*
-					Возможны ситуации:
-					  UnrecExpStatus.NameForm UnrecExpStatus.FirmForm UnrecExpStatus.AssortmentForm
-					  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
-					*/
-					if (!position.CodeFirmCr.HasValue)
-					{
-						//Если CodeFirmCr не выставлено, но позиция распознана по производителю и наименованию, 
-						//то считаем, что формализовано по ассортименту
-						if (position.IsSet(UnrecExpStatus.NameForm) && position.IsSet(UnrecExpStatus.FirmForm))
-							position.AddStatus(UnrecExpStatus.AssortmentForm);
-					}
-					//проверям ассортимент
-					else if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
-						GetAssortmentStatus(position);
+				//Если не получили CodeFirmCr, то считаем, 
+				//что позиция формализована по ассортименту, т.к. производитель не опознан и проверить по ассортименту нельзя
+				/*
+				Возможны ситуации:
+				  UnrecExpStatus.NameForm UnrecExpStatus.FirmForm UnrecExpStatus.AssortmentForm
+				  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
+				*/
+				//проверям ассортимент
+				if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
+					GetAssortmentStatus(position);
 
-					//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту 
-					if (position.IsSet(UnrecExpStatus.NameForm))
-					{
-						if (
-							!
-							(
-							position.IsNotSet(UnrecExpStatus.FirmForm) ||
-							position.IsSet(UnrecExpStatus.AssortmentForm) ||
-							position.IsSet(UnrecExpStatus.MarkExclude)
-							)
-						)
-							_logger.DebugFormat("Не получили необходимое условие, статус: {0}", st);
+				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
+				if (position.IsSet(UnrecExpStatus.NameForm))
+				{
+					if (!position.IsHealth())
+						throw new Exception(String.Format("Не верное состояние формализуемой позиции {0}, программист допустил ошибку", position.PositionName));
 
-						InsertToCore(position);
-					}
-					else
-						unformCount++;
-
-					if (position.IsNotSet(UnrecExpStatus.FullForm) && position.IsNotSet(UnrecExpStatus.ExcludeForm))
-						InsertToUnrec(position);
-
+					InsertToCore(position);
 				}
 				else
-					if (!String.IsNullOrEmpty(PosName))
-						InsertIntoForb(PosName);
+					unformCount++;
+
+				if (position.IsNotSet(UnrecExpStatus.FullForm) && position.IsNotSet(UnrecExpStatus.ExcludeForm))
+					InsertToUnrec(position);
 
 			}
 			while (Next());
 		}
-
 
 		/// <summary>
 		/// Установить название поля, которое будет считано из набора данных
