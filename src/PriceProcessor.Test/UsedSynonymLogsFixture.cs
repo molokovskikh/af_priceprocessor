@@ -100,7 +100,7 @@ and (usl.LastUsed > ?updateDate)",
 		[Test(Description = "обработка прайс-листа с несуществующим производителем")]
 		public void empty_list_with_producersynonym()
 		{
-			FormalizePrice("empty_list_with_producersynonym", 14, 0);		
+			FormalizePrice("empty_list_with_producersynonym", 14, 0);
 		}
 	}
 }

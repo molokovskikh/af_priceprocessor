@@ -122,13 +122,15 @@ where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId, producerId);
 			TestHelper.Execute("delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
 			TestHelper.Execute(@"
 delete from farm.Synonym where pricecode = {0} and synonym like '{1}';
-insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});",
+insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});
+insert into farm.UsedSynonymLogs(SynonymCode) Values(last_insert_id());",
 				priceCode, 
 				"5 дней ванна д/ног смягчающая №10 пак. 25г  ",
 				13468);
 			TestHelper.Execute(@"
 delete from farm.SynonymFirmCr where priceCode = {0} and synonym like '{1}';
-insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});",
+insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});
+insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id());",
 				priceCode, 
 				"Санкт-Петербургская ф.ф.",
 				producerId);

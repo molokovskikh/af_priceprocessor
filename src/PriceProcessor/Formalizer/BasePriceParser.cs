@@ -143,28 +143,37 @@ namespace Inforoom.Formalizer
 	}
 
 	//Статистические счетчики для формализации
-	public enum FormalizeStats
-	{ 
+	public class FormalizeStats
+	{
 		//найдены по первичным полям
-		FirstSearch,
+		public int FirstSearch;
 		//найдены по остальным полям
-		SecondSearch,
+		public int SecondSearch;
 		//кол-во обновленных записей
-		UpdateCount,
+		public int UpdateCount;
 		//кол-во вставленных записей
-		InsertCount,
+		public int InsertCount;
 		//кол-во удаленных записей
-		DeleteCount,
+		public int DeleteCount;
 		//кол-во обновленных цен
-		UpdateCostCount,
+		public int UpdateCostCount;
 		//кол-во добавленных цен
-		InsertCostCount,
+		public int InsertCostCount;
 		//кол-во удаленных цен, не считаются цены, которые были удалены из удаления позиции из Core
-		DeleteCostCount,
+		public int DeleteCostCount;
 		//общее кол-во SQL-команд при обновлении прайс-листа
-		CommandCount,
+		public int CommandCount;
 		//Среднее время поиска в миллисекундах записи в существующем прайсе
-		AvgSearchTime
+		public int AvgSearchTime;
+
+		public int ProducerSynonymCreatedCount;
+
+		public int ProducerSynonymUsedExistCount;
+
+		public bool CanCreateProducerSynonyms()
+		{
+			return ProducerSynonymCreatedCount == 0 || ProducerSynonymCreatedCount < ProducerSynonymUsedExistCount || (ProducerSynonymUsedExistCount / ProducerSynonymCreatedCount * 100 > 20);
+		}
 	}
 
 	[Flags]
@@ -334,8 +343,7 @@ namespace Inforoom.Formalizer
 		//Список полей из Core, по которых происходит вторичное сравнение
 		private List<string> compareFields;
 
-		private Dictionary<FormalizeStats, int> statCounters;
-
+		private FormalizeStats _stats = new FormalizeStats();
 
 		//Является ли обрабатываемый прайс-лист загруженным?
 		public bool downloaded;
@@ -399,10 +407,6 @@ namespace Inforoom.Formalizer
 			compareFields = new List<string>();
 			foreach (string field in Settings.Default.CorePrimaryFields)
 				primaryFields.Add(field);
-
-			statCounters = new Dictionary<FormalizeStats, int>();
-			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
-				statCounters.Add(statCounter, 0);
 
 			this.priceFileName = priceFileName;
 			dtPrice = new DataTable();
@@ -1020,8 +1024,8 @@ order by Core0.Id", priceCode);
 
 				if (drExistsCore == null)
 				{
-					statCounters[FormalizeStats.InsertCount]++;
-					statCounters[FormalizeStats.CommandCount]++;
+					_stats.InsertCount++;
+					_stats.CommandCount++;
 					SqlBuilder.InsertCorePosition(drCore, sb, drNewProducerSynonym);
 				}
 				else
@@ -1033,7 +1037,7 @@ order by Core0.Id", priceCode);
 				{
 					if (drExistsCore == null)
 					{
-						statCounters[FormalizeStats.CommandCount]++;
+						_stats.CommandCount++;
 						InsertCoreCosts(sb, CoreCosts[i]);
 					}
 					else
@@ -1046,10 +1050,10 @@ order by Core0.Id", priceCode);
 					drExistsCore.Delete();
 
 				//Производим отсечку по кол-во сформированных команд
-				if (statCounters[FormalizeStats.CommandCount] >= 200)
+				if (_stats.CommandCount >= 200)
 				{
-					_logger.DebugFormat("Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
-					AllCommandCount += statCounters[FormalizeStats.CommandCount];
+					_logger.DebugFormat("Отсечка: {0}", _stats.CommandCount);
+					AllCommandCount += _stats.CommandCount;
 					lastCommand = sb.ToString();
 #if SQLDUMP
 						_logger.DebugFormat("SQL-команда: {0}", lastCommand);
@@ -1057,22 +1061,22 @@ order by Core0.Id", priceCode);
 					if (!String.IsNullOrEmpty(lastCommand))
 						commandList.Add(lastCommand);
 					sb = new StringBuilder();
-					statCounters[FormalizeStats.CommandCount] = 0;
+					_stats.CommandCount = 0;
 				}
 			}
 
-			statCounters[FormalizeStats.AvgSearchTime] = statCounters[FormalizeStats.AvgSearchTime] / dtCore.Rows.Count;
+			_stats.AvgSearchTime = _stats.AvgSearchTime / dtCore.Rows.Count;
 
 			lastCommand = sb.ToString();
 			if (!String.IsNullOrEmpty(lastCommand))
 			{
-				_logger.DebugFormat("Отсечка: {0}", statCounters[FormalizeStats.CommandCount]);
+				_logger.DebugFormat("Отсечка: {0}", _stats.CommandCount);
 #if SQLDUMP
 					_logger.DebugFormat("SQL-команда: {0}", lastCommand);
 #endif
 				commandList.Add(lastCommand);
-				AllCommandCount += statCounters[FormalizeStats.CommandCount];
-				statCounters[FormalizeStats.CommandCount] = AllCommandCount;
+				AllCommandCount += _stats.CommandCount;
+				_stats.CommandCount = AllCommandCount;
 			}
 
 			//Производим поиск записей в кэше существующих предложений,
@@ -1082,7 +1086,7 @@ order by Core0.Id", priceCode);
 			foreach (DataRow deleted in dtExistsCore.Rows)
 				if ((deleted.RowState != DataRowState.Deleted))
 				{
-					statCounters[FormalizeStats.DeleteCount]++;
+					_stats.DeleteCount++;
 					deleteCore.Add(deleted["Id"].ToString());
 				}
 			if (deleteCore.Count > 0)
@@ -1123,8 +1127,8 @@ where
 			}
 
 			var statCounterValues = new List<string>();
-			foreach (FormalizeStats statCounter in Enum.GetValues(typeof(FormalizeStats)))
-				statCounterValues.Add(String.Format("{0} = {1}", statCounter, statCounters[statCounter]));
+			foreach (var field in typeof(FormalizeStats).GetFields())
+				statCounterValues.Add(String.Format("{0} = {1}", field.Name, field.GetValue(_stats)));
 			_logger.InfoFormat("Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
 
 			updateUsedSynonymLogs =
@@ -1156,8 +1160,8 @@ where
 					//Если цена не найдена, то производим вставку
 					if (drCurrent == null)
 					{
-						statCounters[FormalizeStats.InsertCostCount]++;
-						statCounters[FormalizeStats.CommandCount]++;
+						_stats.InsertCostCount++;
+						_stats.CommandCount++;
 						sb.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ({0}, {1}, {2});\r\n",
 							drExistsCore["Id"], c.costCode, c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat));
 					}
@@ -1166,8 +1170,8 @@ where
 						//Если цена найдена и значение цены другое, то обновляем цену в таблице
 						if (c.cost.Value.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
-							statCounters[FormalizeStats.UpdateCostCount]++;
-							statCounters[FormalizeStats.CommandCount]++;
+							_stats.UpdateCostCount++;
+							_stats.CommandCount++;
 							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
 								c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
 						}
@@ -1183,14 +1187,14 @@ where
 				//следовательно данную цену нужно удалить из CoreCosts
 				if (deleted.RowState != DataRowState.Deleted)
 				{
-					statCounters[FormalizeStats.DeleteCostCount]++;
+					_stats.DeleteCostCount++;
 					deleteCosts.Add(deleted["PC_CostCode"].ToString());
 				}
 				deleted.Delete();
 			}
 			if (deleteCosts.Count > 0)
 			{
-				statCounters[FormalizeStats.CommandCount]++;
+				_stats.CommandCount++;
 				sb.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});\r\n", drExistsCore["Id"], String.Join(", ", deleteCosts.ToArray()));
 			}
 		}
@@ -1240,8 +1244,8 @@ where
 
 			if (updateFieldsScript.Count > 0)
 			{
-				statCounters[FormalizeStats.UpdateCount]++;
-				statCounters[FormalizeStats.CommandCount]++;
+				_stats.UpdateCount++;
+				_stats.CommandCount++;
 				sb.AppendFormat("update farm.Core0 set {0} where Id = {1};\r\n", String.Join(", ", updateFieldsScript.ToArray()), drExistsCore["Id"]);
 			}
 		}
@@ -1268,13 +1272,13 @@ where
 			var filterString = String.Join(" and ", filter.ToArray());
 			var drsExists = dtExistsCore.Select(filterString);
 			var tsSearchTime = DateTime.UtcNow.Subtract(dtSearchTime);
-			statCounters[FormalizeStats.AvgSearchTime] += Convert.ToInt32(tsSearchTime.TotalMilliseconds);
+			_stats.AvgSearchTime += Convert.ToInt32(tsSearchTime.TotalMilliseconds);
 
 			if (drsExists.Length == 0)
 				return null;
 			if (drsExists.Length == 1)
 			{
-				statCounters[FormalizeStats.FirstSearch]++;
+				_stats.FirstSearch++;
 				return drsExists[0];
 			}
 
@@ -1292,7 +1296,7 @@ where
 					maxMatchesNumberRow = drExists;
 				}
 			}
-			statCounters[FormalizeStats.SecondSearch]++;
+			_stats.SecondSearch++;
 			return maxMatchesNumberRow;
 		}
 
@@ -1644,9 +1648,12 @@ and a.FirmCode = p.FirmCode;", priceCode);
 			daSynonymFirmCr.InsertCommand.Connection = MyConn;
 			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
 
-			//dtNewSynonymFirmCr = null;
+			dtNewSynonymFirmCr = null;
 			dtSynonymFirmCr.DefaultView.RowFilter = "InternalProducerSynonymId is not null";
 			dtNewSynonymFirmCr = dtSynonymFirmCr.DefaultView.ToTable();
+
+			if (!_stats.CanCreateProducerSynonyms())
+				return;
 
 			foreach (DataRow drNewProducerSynonym in dtNewSynonymFirmCr.Rows)
 			{
@@ -2350,10 +2357,8 @@ and r.RegionCode = cd.RegionCode",
 		{
 			if (String.IsNullOrEmpty(position.FirmCr))
 			{
-				position.AddStatus(UnrecExpStatus.FirmForm);
 				//Если в производителе ничего не написано, то устанавливаем все в null, и говорим, что распознано по производителю
-				//ACodeFirmCr = null;
-				//ASynonymFirmCrCode = null;
+				position.AddStatus(UnrecExpStatus.FirmForm);
 			}
 			else
 			{
@@ -2364,7 +2369,10 @@ and r.RegionCode = cd.RegionCode",
 					position.CodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
 					position.IsAutomaticProducerSynonym = Convert.ToBoolean(dr[0]["IsAutomatic"]);
 					if (Convert.IsDBNull(dr[0]["InternalProducerSynonymId"]))
+					{
+						_stats.ProducerSynonymUsedExistCount++;
 						position.SynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
+					}
 					else
 						position.InternalProducerSynonymId = Convert.ToInt64(dr[0]["InternalProducerSynonymId"]);
 
@@ -2393,6 +2401,7 @@ and r.RegionCode = cd.RegionCode",
 			drInsert["Synonym"] = firmCr.ToLower();
 			drInsert["OriginalSynonym"] = firmCr.Trim();
 			dtSynonymFirmCr.Rows.Add(drInsert);
+			_stats.ProducerSynonymCreatedCount++;
 			return (long)drInsert["InternalProducerSynonymId"];
 		}
 

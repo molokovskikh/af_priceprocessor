@@ -107,6 +107,7 @@
     <Compile Include="PriceItemListTest.cs" />
     <Compile Include="PriceProcessItemFixture.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />
+    <Compile Include="ProducerSynonymFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemotePricePricessorServiceFixture.cs" />
     <Compile Include="SiaPriceFixture.cs" />
@@ -177,6 +178,7 @@
     <Content Include="Data\688-assortment.txt" />
     <Content Include="Data\688-etalon.xml" />
     <Content Include="Data\688-rules.xml" />
+    <Content Include="Data\688-wrong-column-for-producers.txt" />
     <Content Include="Data\688.txt" />
     <Content Include="Data\UpdateCoreTimeStamp-update-quantity.txt" />
     <Content Include="Data\UpdateCoreTimeStamp-update.txt" />
