@@ -2329,6 +2329,7 @@ and r.RegionCode = cd.RegionCode",
 				var assortment = dtAssortment.NewRow();
 				assortment["CatalogId"] = catalogId;
 				assortment["ProducerId"] = producerId;
+				assortment["Checked"] = false;
 				dtAssortment.Rows.Add(assortment);
 			}
 			else
