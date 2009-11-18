@@ -117,7 +117,6 @@
     <Compile Include="TextFixture.cs" />
     <Compile Include="UpdateCoreTimestampsFixture.cs" />
     <Compile Include="UsedSynonymLogsFixture.cs" />
-    <Compile Include="WaybillClientExistsFixture.cs" />
     <Compile Include="WCFTest.cs" />
   </ItemGroup>
   <ItemGroup>

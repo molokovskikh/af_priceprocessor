@@ -91,29 +91,22 @@ namespace Inforoom.Downloader
 			return res;
 		}
 
-		private bool ClientExists(int checkClientCode)
+		private bool ClientExists(int CheckClientCode)
 		{
-			var queryGetClientCode = String.Format(@"
-SELECT cd.FirmCode 
-FROM usersettings.ClientsData cd
-WHERE cd.FirmType = 1 AND FirmCode = {0}
-UNION
-SELECT Addr.Id
-FROM Future.Addresses Addr
-WHERE Addr.Id = {0} OR Addr.LegacyId = {0}
-", checkClientCode);
-
 			return MethodTemplate.ExecuteMethod(
 				new ExecuteArgs(), 
 				delegate {
-					var clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCode);
+					var clientCode = MySqlHelper.ExecuteScalar(_workConnection, "select FirmCode from usersettings.clientsdata where FirmType = 1 and FirmCode = " + CheckClientCode);
+
 					return (clientCode != null);
 				},
 				false,
 				_workConnection,
 				true,
 				false,
-				delegate { Ping(); });
+				delegate {
+					Ping();
+				});
 		}
 
 		private int? GetClientCode(string Address)
