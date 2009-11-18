@@ -85,5 +85,8 @@ namespace RemotePriceProcessor
 
 		[OperationContract]
 		void PutFileToBase(FilePriceInfo filePriceInfo);
+
+		[OperationContract]
+		void RetransErrorPrice(uint priceItemId);
 	}
 }

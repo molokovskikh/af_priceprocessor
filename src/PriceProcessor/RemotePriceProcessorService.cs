@@ -13,6 +13,12 @@ namespace Inforoom.PriceProcessor
 {
 	public class RemotePriceProcessorService : MarshalByRefObject, IRemotePriceProcessor
 	{
+		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
+
+		private const string MessagePriceNotFoundInArchive = "Данный прайс-лист в архиве отсутствует";
+
+		private const string MessagePriceNotFound = "Данный прайс-лист отсутствует";
+
 		public void ResendPrice(ulong downlogId)
 		{
 			var drFocused = MySqlHelper.ExecuteDataRow(
@@ -118,8 +124,13 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 		public void RetransPrice(uint priceItemId)
 		{
+			RetransPrice(priceItemId, Settings.Default.BasePath);
+		}
+
+		private void RetransPrice(uint priceItemId, string sourceDir)
+		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-			                                     @"
+@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -127,7 +138,7 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
-			var sourceFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			if (File.Exists(sourceFile))
@@ -137,9 +148,14 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					File.Move(sourceFile, destinationFile);
 					return;
 				}
-				throw new PriceProcessorException("Данный прайс-лист отсутствует!");
+				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 			}
-			throw new PriceProcessorException("Данный прайс-лист находится в очереди на формализацию!");
+			throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
+		}
+
+		public void RetransErrorPrice(uint priceItemId)
+		{
+			RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
 		}
 
 		public string[] ErrorFiles()

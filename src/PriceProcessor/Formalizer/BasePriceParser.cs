@@ -19,7 +19,7 @@ using System.Configuration;
 
 namespace Inforoom.Formalizer
 {
-	//»сключение, которое генерируетс€ парсерами во врем€ работы
+	// »сключение, которое генерируетс€ парсерами во врем€ работы
 	public class FormalizeException : Exception
 	{
 		public readonly long clientCode = -1;
@@ -30,7 +30,8 @@ namespace Inforoom.Formalizer
 		public FormalizeException(string message) : base(message)
 		{}
 
-		public FormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) 
+		public FormalizeException(string message, Int64 ClientCode, 
+			Int64 PriceCode, string ClientName, string PriceName) 
 			: base(message)
 		{
 			clientCode = ClientCode;
@@ -48,14 +49,15 @@ namespace Inforoom.Formalizer
 		}
 	}
 
-	//»сключение, которые требуют вмешательства людей, но не €вл€ютс€ критическими
+	// »сключение, которые требуют вмешательства людей, но не €вл€ютс€ критическими
 	public class WarningFormalizeException : FormalizeException
 	{
 
 		public WarningFormalizeException(string message) : base(message)
 		{}
 
-		public WarningFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) 
+		public WarningFormalizeException(string message, Int64 ClientCode, 
+			Int64 PriceCode, string ClientName, string PriceName)
 			: base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{}
 	}
@@ -74,10 +76,14 @@ namespace Inforoom.Formalizer
 		public RollbackFormalizeException(string message) : base(message)
 		{}
 		
-		public RollbackFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName) : base(message, ClientCode, PriceCode, ClientName, PriceName)
+		public RollbackFormalizeException(string message, Int64 ClientCode, 
+			Int64 PriceCode, string ClientName, string PriceName)
+			: base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{}
 
-		public RollbackFormalizeException(string message, Int64 ClientCode, Int64 PriceCode, string ClientName, string PriceName, int FormCount, int ZeroCount, int UnformCount, int ForbCount) 
+		public RollbackFormalizeException(string message, Int64 ClientCode, 
+			Int64 PriceCode, string ClientName, string PriceName, 
+			int FormCount, int ZeroCount, int UnformCount, int ForbCount) 
 			: base(message, ClientCode, PriceCode, ClientName, PriceName)
 		{
 			this.FormCount = FormCount;
@@ -226,7 +232,8 @@ namespace Inforoom.Formalizer
 		//кол-во позиций с неустановленной ценой дл€ данной ценовой колонки
 		public int undefinedCostCount;
 
-		public CoreCost(Int64 ACostCode, string ACostName, bool ABaseCost, string AFieldName, int ATxtBegin, int ATxtEnd)
+		public CoreCost(Int64 ACostCode, string ACostName, bool ABaseCost, 
+			string AFieldName, int ATxtBegin, int ATxtEnd)
 		{
 			costCode = ACostCode;
 			baseCost = ABaseCost;

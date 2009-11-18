@@ -171,6 +171,11 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 		public void RetransPrice(uint priceItemId)
 		{
+			RetransPrice(priceItemId, Settings.Default.BasePath);		
+		}
+
+		private void RetransPrice(uint priceItemId, string sourceDir)
+		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
 select p.FileExtention
@@ -180,7 +185,7 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
-			var sourceFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			if (File.Exists(sourceFile))
@@ -192,7 +197,12 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				}
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 			}
-			throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
+			throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));		
+		}
+
+		public void RetransErrorPrice(uint priceItemId)
+		{
+            RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
 		}
 
 		public string[] ErrorFiles()
