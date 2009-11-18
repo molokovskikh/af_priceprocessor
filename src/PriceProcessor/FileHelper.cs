@@ -35,7 +35,8 @@ namespace Inforoom.PriceProcessor
 				InputFilename = InputFilename.Replace(ic.ToString(), "");
 			}
 			//Пытаемся найти последний разделитель директории в пути
-			var EndDirPos = InputFilename.LastIndexOfAny(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+			var EndDirPos = InputFilename.LastIndexOfAny(
+				new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar } );
 			if (EndDirPos > -1)
 			{
 				PathPart = InputFilename.Substring(0, EndDirPos + 1);

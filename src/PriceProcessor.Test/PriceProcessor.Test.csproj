@@ -108,6 +108,7 @@
     <Compile Include="PriceProcessItemFixture.cs" />
     <Compile Include="PriceProcessThreadTest.cs" />
     <Compile Include="ProducerSynonymFixture.cs" />
+    <Compile Include="PriceResendFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemotePricePricessorServiceFixture.cs" />
     <Compile Include="SiaPriceFixture.cs" />

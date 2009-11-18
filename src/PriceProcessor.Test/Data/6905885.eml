@@ -1,0 +1,31 @@
+Return-Path: <djudman@gmail.com>
+Received: from ?91.209.124.53? ([91.209.124.53])
+        by mx.google.com with ESMTPS id 16sm400214fxm.12.2009.11.17.10.11.01
+        (version=TLSv1/SSLv3 cipher=RC4-MD5);
+        Tue, 17 Nov 2009 10:11:02 -0800 (PST)
+Message-ID: <4B02E734.2080907@gmail.com>
+Date: Tue, 17 Nov 2009 21:11:00 +0300
+From: Dorofeev Dmitry <djudman@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: djudman@gmail.com
+Subject: price
+Content-Type: multipart/mixed;
+ boundary="------------070003060302090609030903"
+
+This is a multi-part message in MIME format.
+--------------070003060302090609030903
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+--------------070003060302090609030903
+Content-Type: text/plain;
+ name="prs.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="prs.txt"
+
+VEVTVA==
+--------------070003060302090609030903--

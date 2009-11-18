@@ -239,21 +239,20 @@ and pd.AgencyEnabled= 1",
         {
         	try
 			{
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, false,
-					delegate {
-						Ping();
-					});
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(
+					new ExecuteArgs(), GetSourcesTable, null, 
+					_workConnection, true, false, delegate { Ping(); });
 			}
 			catch
 			{
-				//Если здесь возникает ошибка, то мы пытаемся открыть соединение и сновы запрашивает таблицу с источниками
+				// Если здесь возникает ошибка, то мы пытаемся открыть соединение и 
+				// снова запрашивает таблицу с источниками
 				if (_workConnection.State != ConnectionState.Closed)
 					try { _workConnection.Close(); } catch { }
 				_workConnection.Open();
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(new ExecuteArgs(), GetSourcesTable, null, _workConnection, true, false,
-					delegate {
-						Ping();
-					});
+				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(
+					new ExecuteArgs(), GetSourcesTable, null,
+					_workConnection, true, false, delegate { Ping(); });
 			}
 		}
 
@@ -328,14 +327,20 @@ and pd.AgencyEnabled= 1",
             ExtrFile = InFile;
             if (ArchiveHelper.IsArchive(InFile))
             {
-				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) && !String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
-					ExtrFile = PriceProcessor.FileHelper.FindFromArhive(InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
+				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) &&
+					!String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
+				{
+					ExtrFile = PriceProcessor.FileHelper.FindFromArhive(
+						InFile + ExtrDirSuffix, (string) drCurrent[SourcesTableColumns.colExtrMask]);
+				}
 				else
 					ExtrFile = String.Empty;
             }
 			if (String.IsNullOrEmpty(ExtrFile))
             {
-				Logging(CurrPriceItemId, String.Format("Не удалось найти файл в архиве. Маска файла в архиве : '{0}'", drCurrent[SourcesTableColumns.colExtrMask]));
+				Logging(CurrPriceItemId, String.Format(
+					"Не удалось найти файл в архиве. Маска файла в архиве : '{0}'",
+					drCurrent[SourcesTableColumns.colExtrMask]));
                 return false;
             }
         	return true;

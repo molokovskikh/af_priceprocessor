@@ -1,22 +1,28 @@
 ﻿using System;
 using Inforoom.PriceProcessor.Properties;
-using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
 using RemotePriceProcessor;
 using Common.Tools;
 using System.ServiceModel;
-using System.Runtime.Serialization;
+using LumiSoft.Net.Mime;
+using log4net;
 
 namespace Inforoom.PriceProcessor
 {
 	public class WCFPriceProcessorService : MarshalByRefObject, IRemotePriceProcessor
     {
+		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
+
+		private const string MessagePriceNotFoundInArchive = "Данный прайс-лист в архиве отсутствует";
+
+		private const string MessagePriceNotFound = "Данный прайс-лист отсутствует";
+
 		public void ResendPrice(ulong downlogId)
 		{
-			var drFocused = MySqlHelper.ExecuteDataRow(
-				Literals.ConnectionString(), @"
+			var drFocused = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+@"
 SELECT
   logs.RowID as DRowID,
   logs.LogTime as DLogTime,
@@ -62,31 +68,70 @@ and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 			var filename = GetFileFromArhive(downlogId);
-
-			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
+			var archFileName = drFocused["DArchFileName"].ToString();
+			var externalFileName = drFocused["DExtrFileName"].ToString();
+			if (drFocused["DSourceType"].ToString().Equals("EMAIL",
+				StringComparison.OrdinalIgnoreCase))
 			{
-				using (var fs = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
-					SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, Environment.MachineName, "prices@analit.net", new[] { "prices@analit.net" }, fs);
-				return;
+				// Если файл пришел по e-mail, то это должен быть файл *.eml, открываем его на чтение
+				using (var fs = new FileStream(filename, FileMode.Open, 
+					FileAccess.Read, FileShare.Read))
+				{
+					var logger = LogManager.GetLogger(GetType());
+					try
+					{
+						Mime message = Mime.Parse(fs);
+						var attachFileName = String.Empty;
+						message = UueHelper.ExtractFromUue(message, Path.GetTempPath());
+						foreach (var entity in message.Attachments)
+						{
+							// Получаем имя файла вложения
+							attachFileName = entity.ContentDisposition_FileName.ToLower();
+							
+							if (String.IsNullOrEmpty(attachFileName))
+								attachFileName = entity.ContentType_Name;
+
+							if (attachFileName == archFileName.ToLower() ||
+								attachFileName == externalFileName.ToLower())
+							{
+								// Сохраняем вложенный файл
+								filename = Path.GetTempPath() + attachFileName;
+								entity.DataToFile(filename);
+								break;
+							}
+							else
+								throw new Exception();
+						}
+					}
+					catch (Exception ex)
+					{
+						logger.ErrorFormat(
+							"Возникла ошибка при попытке перепровести прайс. Не удалось обработать файл {0}. Файл должен быть письмом (*.eml)\n{1}",
+							filename, ex);
+						string errorMessage = String.Format(
+							"Не удалось перепровести прайс. Ошибка при обработке файла {0}",
+							filename);
+						throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
+					}
+				}
 			}
-
 			var sourceFile = String.Empty;
-			var TempDirectory = Path.GetTempPath();
-			TempDirectory += drFocused["DArchFileName"].ToString();
-
+			var TempDirectory = Path.GetTempPath() + 
+				Path.GetFileNameWithoutExtension(archFileName);
 			if (ArchiveHelper.IsArchive(filename))
 			{
 				if (Directory.Exists(TempDirectory))
 					Directory.Delete(TempDirectory, true);
 				Directory.CreateDirectory(TempDirectory);
-				ArchiveHelper.Extract(filename, drFocused["DExtrFileName"].ToString(), TempDirectory);
-				var extractFiles = Directory.GetFiles(TempDirectory, drFocused["DExtrFileName"].ToString());
-				if (extractFiles.Length > 0)
-					sourceFile = extractFiles[0];
+				ArchiveHelper.Extract(filename, externalFileName, TempDirectory);
+				var files = Directory.GetFiles(TempDirectory, externalFileName);
+				string path = String.Empty;
+				if (files.Length > 0)
+					sourceFile = files[0];
 				else
 				{
 					string errorMessage = String.Format(
-						"Невозможно найти файл {0} в распакованном архиве!", drFocused["DExtrFileName"]);
+						"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 				}
 			}
@@ -99,25 +144,25 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				return;
 
 			var PriceExtention = drFocused["DFileExtention"].ToString();
-			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + drFocused["DPriceItemId"] + "_" + downlogId + PriceExtention;
+			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + 
+				"d" + drFocused["DPriceItemId"] + "_" + downlogId + PriceExtention;
 
 			if (File.Exists(destinationFile))
 			{
-				string errorMessage = String.Format(
-					"Данный прайс-лист находится в очереди на формализацию в папке {0}!",
-					Settings.Default.InboundPath);
-				throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
+				throw new FaultException<string>(MessagePriceInQueue, 
+					new FaultReason(MessagePriceInQueue));
 			}
 
 			File.Copy(sourceFile, destinationFile);
 
-			var item = new PriceProcessItem(
-				true,
+			var item = new PriceProcessItem(true, 
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
-				(drFocused["DCostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
+				(drFocused["DCostCode"] is DBNull) ? null : 
+					(ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
 				Convert.ToUInt64(drFocused["DPriceItemId"].ToString()),
 				destinationFile,
-				(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
+				(drFocused["ParentSynonym"] is DBNull) ? null : 
+					(ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
 
 			if (Directory.Exists(TempDirectory))
@@ -127,7 +172,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 		public void RetransPrice(uint priceItemId)
 		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-												 @"
+@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -145,11 +190,9 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					File.Move(sourceFile, destinationFile);
 					return;
 				}
-				throw new FaultException<string>("Данный прайс-лист отсутствует!",
-					new FaultReason("Данный прайс-лист отсутствует!"));
+				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 			}
-			throw new FaultException<string>("Данный прайс-лист находится в очереди на формализацию!",
-				new FaultReason("Данный прайс-лист находится в очереди на формализацию!"));
+			throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 		}
 
 		public string[] ErrorFiles()
@@ -164,7 +207,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 
 		public Stream BaseFile(uint priceItemId)
 		{
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -176,17 +220,18 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			if (!File.Exists(baseFile) && !File.Exists(inboundFile))
-				throw new FaultException<string>("Данный прайс-лист отсутствует!", 
-					new FaultReason("Данный прайс-лист отсутствует!"));
+				throw new FaultException<string>(MessagePriceNotFound, 
+					new FaultReason(MessagePriceNotFound));
 			if (!File.Exists(baseFile) && File.Exists(inboundFile))
-				throw new FaultException<string>("Данный прайс-лист находится в очереди на формализацию!",
-					new FaultReason("Данный прайс-лист находится в очереди на формализацию!"));
+				throw new FaultException<string>(MessagePriceInQueue, 
+					new FaultReason(MessagePriceInQueue));
 
 			return File.OpenRead(baseFile);
 		}
 
-		public HistoryFile GetFileFormHistory(ulong downlogId)
+		public HistoryFile GetFileFormHistory(WcfCallParameter downlog)
 		{
+			ulong downlogId = Convert.ToUInt64(downlog.Value);
 			var filename = GetFileFromArhive(downlogId);
 			return new HistoryFile
 			{
@@ -199,8 +244,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 		{
 			var files = Directory.GetFiles(Settings.Default.HistoryPath, downlogId + "*");
 			if (files.Length == 0)
-				throw new FaultException<string>("Данный прайс-лист в архиве отсутствует!",
-					new FaultReason("Данный прайс-лист в архиве отсутствует!"));
+				throw new FaultException<string>(MessagePriceNotFoundInArchive,
+					new FaultReason(MessagePriceNotFoundInArchive));
 			return files[0];
 		}
 
@@ -209,7 +254,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			uint priceItemId = filePriceInfo.PriceItemId;
 			Stream file = filePriceInfo.Stream;
 
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId

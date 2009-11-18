@@ -50,7 +50,7 @@ namespace PriceProcessor.Test
 		{
 			var file = Path.Combine(Settings.Default.HistoryPath, "1.txt");
 			File.AppendAllText(file, "тест");
-			var history = priceProcessor.GetFileFormHistory(1);
+			var history = priceProcessor.GetFileFormHistory(new WcfCallParameter { Value = 1 });
 
 			Assert.That(history.Filename, Is.EqualTo("1.txt"));
 			Assert.That(new StreamReader(history.FileStream).ReadToEnd(), Is.EqualTo("тест"));

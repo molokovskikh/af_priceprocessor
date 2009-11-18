@@ -21,10 +21,19 @@ namespace RemotePriceProcessor
 		{}
 	}
 
-	[Serializable]
+	[MessageContract]
+	public class WcfCallParameter
+	{
+		[MessageHeader]
+		public object Value { get; set; }
+	}
+
+	[MessageContract]
 	public class HistoryFile
 	{
+		[MessageHeader]
 		public string Filename { get; set; }
+		[MessageBodyMember]
 		public Stream FileStream { get; set; }
 	}
 
@@ -72,7 +81,7 @@ namespace RemotePriceProcessor
 		Stream BaseFile(uint priceItemId);
 
 		[OperationContract]
-		HistoryFile GetFileFormHistory(ulong downlogId);
+		HistoryFile GetFileFormHistory(WcfCallParameter downlogId);
 
 		[OperationContract]
 		void PutFileToBase(FilePriceInfo filePriceInfo);

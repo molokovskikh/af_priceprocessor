@@ -173,8 +173,9 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return File.OpenRead(baseFile);
 		}
 
-		public HistoryFile GetFileFormHistory(ulong downlogId)
+		public HistoryFile GetFileFormHistory(WcfCallParameter downlog)
 		{
+			ulong downlogId = Convert.ToUInt64(downlog.Value);
 			var filename = GetFileFromArhive(downlogId);
 			return new HistoryFile
 				       	{
