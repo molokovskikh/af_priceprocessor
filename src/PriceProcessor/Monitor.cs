@@ -8,9 +8,11 @@ using System.Net;
 using System.Text;
 using System.Net.Security;
 using RemotePriceProcessor;
+#if (!DEBUG)
 using Inforoom.Downloader;
 using System.Collections;
 using System.Runtime.Serialization.Formatters;
+#endif
 
 namespace Inforoom.PriceProcessor
 {
