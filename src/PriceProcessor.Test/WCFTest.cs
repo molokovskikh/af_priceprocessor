@@ -22,7 +22,7 @@ namespace PriceProcessor.Test
         public void Test()
         {
             StringBuilder sbUrlService = new StringBuilder();
-            _serviceHost = new ServiceHost(typeof(RemotePriceProcessorService));
+            _serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
                 .Append(Settings.Default.WCFServicePort).Append("/")

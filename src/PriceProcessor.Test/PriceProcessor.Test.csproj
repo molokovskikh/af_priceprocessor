@@ -85,7 +85,6 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.ServiceModel">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -110,7 +109,6 @@
     <Compile Include="ProducerSynonymFixture.cs" />
     <Compile Include="PriceResendFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RemotePricePricessorServiceFixture.cs" />
     <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />

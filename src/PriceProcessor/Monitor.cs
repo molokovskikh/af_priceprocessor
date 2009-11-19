@@ -1,22 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting.Channels.Http;
 using Inforoom.PriceProcessor.Properties;
-using System.Collections;
-using System.Runtime.Remoting.Channels.Tcp;
-using System.Runtime.Serialization.Formatters;
 using System.ServiceModel;
 using System.Net;
 using System.Text;
 using System.Net.Security;
 using RemotePriceProcessor;
-using System.Text.RegularExpressions;
-
 
 namespace Inforoom.PriceProcessor
 {
@@ -36,35 +27,7 @@ namespace Inforoom.PriceProcessor
 
 		public Monitor()
 		{
-			_logger = log4net.LogManager.GetLogger(typeof(Monitor));
-
-			try
-			{
-				ChannelServices.RegisterChannel(new HttpChannel(Settings.Default.RemotingPort), false);
-
-				//—оздаем провайдер, чтобы не было нарушени€ безопасности
-				var provider = new BinaryServerFormatterSinkProvider();
-				provider.TypeFilterLevel = TypeFilterLevel.Full;
-				//”станавливаем свойства провайдера
-				IDictionary props = new Hashtable();
-				props["port"] = Settings.Default.RemotingPort + 1;
-				//Ѕез установки этого свойства тоже работает, но в примерах оно тоже установлено
-				props["typeFilterLevel"] = "Full";
-
-				var tcpChannel = new TcpChannel(props, null, provider);
-				ChannelServices.RegisterChannel(tcpChannel, false);
-
-				RemotingConfiguration.RegisterWellKnownServiceType(
-				  typeof(RemotePriceProcessorService),
-				  Settings.Default.RemotingServiceName,
-				  WellKnownObjectMode.Singleton);
-
-				RemotingConfiguration.CustomErrorsMode = CustomErrorsModes.Off;
-			}
-			catch (Exception exception)
-			{
-				_logger.Fatal("ќшибка при старте Remoting", exception);
-			}
+			_logger = log4net.LogManager.GetLogger(typeof(Monitor));			
 
 			_handlers = new List<AbstractHandler>
 			             	{

@@ -85,7 +85,6 @@
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -163,7 +162,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RemotePriceProcessorService.cs" />
     <Compile Include="UueHelper.cs" />
     <Compile Include="WCFPriceProcessorService.cs" />
   </ItemGroup>
