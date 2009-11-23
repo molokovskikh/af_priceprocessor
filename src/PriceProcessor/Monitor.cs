@@ -105,7 +105,7 @@ namespace Inforoom.PriceProcessor
 				binding.MaxBufferSize = 524288;    // 0.5 Ìב 
 				_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding,
 					sbUrlService.ToString());
-				_serviceHost.Open();
+				_serviceHost.Open(); 
 
                 foreach (var handler in _handlers)
                     try

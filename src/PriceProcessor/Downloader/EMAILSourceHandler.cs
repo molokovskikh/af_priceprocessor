@@ -70,7 +70,6 @@ namespace Inforoom.Downloader
 						sequence_set.Parse("1:*", long.MaxValue);
 						items = c.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
 						Ping();
-
 						if ((items != null) && (items.Length > 0))
 						{
 							foreach (IMAP_FetchItem item in items)
@@ -126,7 +125,7 @@ namespace Inforoom.Downloader
 							}//foreach (IMAP_FetchItem) 
 
 						}//(items != null) && (items.Length > 0)
-
+						
 						//Производим удаление писем
 						if ((items != null) && (items.Length > 0) && (ProcessedUID.Count > 0))
 						{
@@ -155,7 +154,7 @@ namespace Inforoom.Downloader
         private void ProcessMime(Mime m)
         {
             AddressList FromList = GetAddressList(m);
-
+			
             string ShortFileName = string.Empty;
 
             // Название аттачментов

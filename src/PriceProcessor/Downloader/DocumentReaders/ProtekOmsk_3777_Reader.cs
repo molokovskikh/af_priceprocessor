@@ -14,32 +14,33 @@ namespace Inforoom.Downloader.DocumentReaders
 			excludeExtentions = new string[] { };
 		}
 
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
-			List<ulong> list = new List<ulong>();
-			string SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode" + Environment.NewLine + GetFilterSQLFooter();
+			var list = new List<ulong>();
+			string SQL = GetFilterSQLHeader() + Environment.NewLine + SqlGetClientAddressId(true, false, true) + 
+				Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode;
 			try
 			{
-				FirmClientCode = Path.GetFileName(CurrentFileName).Split('_')[0];
+				FirmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
 			}
 			catch(Exception ex)
 			{
-				throw new Exception("Не получилось сформировать FirmClientCode из имени накладной.", ex);
+				throw new Exception("Не получилось сформировать SupplierDeliveryId(FirmClientCode2) из имени накладной.", ex);
 			}
 
-			DataSet ds = MySqlHelper.ExecuteDataset(
-				Connection, 
+			var ds = MySqlHelper.ExecuteDataset(
+				connection, 
 				SQL, 
-				new MySqlParameter("?FirmCode", FirmCode), 
-				new MySqlParameter("?FirmClientCode", FirmClientCode));
+				new MySqlParameter("?SupplierId", supplierId), 
+				new MySqlParameter("?SupplierDeliveryId", FirmClientCode));
 
 			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["ClientCode"]));
+				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с FirmClientCode = " + FirmClientCode + ".");
+				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + ".");
 
 			return list;
 		}
