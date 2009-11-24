@@ -180,6 +180,30 @@ namespace Inforoom.Formalizer
 		{
 			return ProducerSynonymCreatedCount == 0 || ProducerSynonymCreatedCount < ProducerSynonymUsedExistCount || (ProducerSynonymUsedExistCount / ProducerSynonymCreatedCount * 100 > 20);
 		}
+
+		//—бросить счетчики, которые используютс€ в статистике подготовки SQL-команд с update'ми
+		public void ResetCountersForUpdate()
+		{ 
+			FirstSearch = 0;
+			SecondSearch = 0;
+			UpdateCount = 0;
+			InsertCount = 0;
+			DeleteCount = 0;
+			UpdateCostCount = 0;
+			InsertCostCount = 0;
+			DeleteCostCount = 0;
+			CommandCount = 0;
+			AvgSearchTime = 0;
+		}
+
+		//
+		public string GetStatUpdateMessage()
+		{
+			var statCounterValues = new List<string>();
+			foreach (var field in typeof(FormalizeStats).GetFields())
+				statCounterValues.Add(String.Format("{0} = {1}", field.Name, field.GetValue(this)));
+			return String.Format("—татистика обновлени€ прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+		}
 	}
 
 	[Flags]
@@ -407,8 +431,8 @@ namespace Inforoom.Formalizer
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно дл€ чтени€ файла, чтобы парсер был самодостаточным
 
 			priceCodesUseUpdate = new List<long>();
-			//foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
-			//    priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
+			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
+				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
 
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
@@ -1133,10 +1157,7 @@ where
 				commandList.InsertRange(0, deleteCommandList);
 			}
 
-			var statCounterValues = new List<string>();
-			foreach (var field in typeof(FormalizeStats).GetFields())
-				statCounterValues.Add(String.Format("{0} = {1}", field.Name, field.GetValue(_stats)));
-			_logger.InfoFormat("—татистика обновлени€ прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+			_logger.InfoFormat(_stats.GetStatUpdateMessage());
 
 			updateUsedSynonymLogs =
 				"update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", synonymCodes.ToArray()) + ");";
@@ -1518,6 +1539,44 @@ and a.FirmCode = p.FirmCode;", priceCode);
 						(excludesSearchCount > 0) ? excludesSearchWatch.ElapsedMilliseconds / excludesSearchCount : 0,
 						assortmentSearchWatch.ElapsedMilliseconds,
 						excludesSearchWatch.ElapsedMilliseconds);
+
+					//ѕроизводим проверку, что в Core существует такое же кол-во позиций, что и в переменной formCount
+					int existsCoreCount;
+					if (costType == CostTypes.MiltiFile)
+					{
+						mcClear.CommandText = String.Format(@"
+select
+  count(*)
+from
+  farm.CoreCosts,
+  farm.Core0
+where
+    CoreCosts.Core_Id = Core0.Id
+and Core0.PriceCode = {0}
+and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
+						existsCoreCount = Convert.ToInt32(mcClear.ExecuteScalar());
+					}
+					else
+					{
+						mcClear.CommandText = String.Format(@"
+select
+  count(*)
+from
+  farm.Core0
+where
+  Core0.PriceCode = {0};", priceCode);
+						existsCoreCount = Convert.ToInt32(mcClear.ExecuteScalar());
+					}
+					if (existsCoreCount != formCount)
+						throw new FormalizeException(
+							String.Format(
+								"ѕри сохранении прайс-листа в базу данных реальное количество позиций в Core " +
+								"не соответствует количеству формализованных позиций.  ол-во в Core: {0}  " + 
+								" ол-во формализованных позиций: {1}",
+								existsCoreCount,
+								formCount),
+							firmCode, priceCode, firmShortName, priceName);
+
 					_logger.InfoFormat("FinalizePrice started: {0}", "Commit");
 					finalizeTransaction.Commit();
 					res = true;
@@ -1537,7 +1596,14 @@ and a.FirmCode = p.FirmCode;", priceCode);
 					if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number)))
 					{
 						tryCount++;
-						_logger.InfoFormat("Try transaction: tryCount = {0}", tryCount);
+						_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, MyError.Number, MyError.Message);
+						//ѕроизводим откат в счетчиках и в Core, CoreCosts, чтобы при перезапуске транзакции было с чем синхронизировать
+						if (priceCodesUseUpdate.Contains(priceCode))
+						{
+								_stats.ResetCountersForUpdate();
+								dtExistsCore.RejectChanges();
+								dtExistsCoreCosts.RejectChanges();
+						}
 						System.Threading.Thread.Sleep(10000 + tryCount * 1000);
 					}
 					else
