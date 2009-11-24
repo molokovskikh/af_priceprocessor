@@ -407,8 +407,8 @@ namespace Inforoom.Formalizer
 			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
 
 			priceCodesUseUpdate = new List<long>();
-			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
-				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
+			//foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
+			//    priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
 
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
