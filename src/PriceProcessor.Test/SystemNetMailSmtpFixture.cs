@@ -9,6 +9,8 @@ using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
 using System.Collections;
 using System.ServiceProcess;
+using System.Net;
+using System.Reflection;
 
 namespace PriceProcessor.Test
 {
@@ -102,8 +104,23 @@ namespace PriceProcessor.Test
 						"Тестовое тело сообщения SmtpWithAttachLockedFile");
 					mailMessage.Attachments.Add(new Attachment(fileName));
 					sc = new SmtpClient("mail.adc.analit.net");
+					/*
+					 * Проблема с задержкой при отправке писем с помощью SmtpClient не лечится ничем, кроме таймаута
+					 * Если SmtpClient создается только в тесте, то настройки ServicePoint, которые закомментированны ниже
+					 * помогают решить проблему. Если перед тестом происходит создание SmtpClient без изменения настроек,
+					 * то изменение настроект в тесте не решает проблему.
+					 * Настройки:
+					 * sc.DeliveryMethod = SmtpDeliveryMethod.Network;
+					 * sc.ServicePoint.MaxIdleTime = 1000;
+					 * sc.ServicePoint.ConnectionLimit = 1;
+					 * sc.ServicePoint.UseNagleAlgorithm = true;
+					 * Источники:
+					 * http://stackoverflow.com/questions/930236/net-best-method-to-send-email-system-net-mail-has-issues
+					 * http://social.msdn.microsoft.com/Forums/en-US/netfxnetcom/thread/6ce868ba-220f-4ff1-b755-ad9eb2e2b13d
+					 * http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=146711
+					 */
 					sc.Send(mailMessage);
-
+					
 					try
 					{
 						File.Delete(fileName);
@@ -138,7 +155,8 @@ namespace PriceProcessor.Test
 
 					File.Delete(fileName);
 
-					Thread.Sleep(5000);
+					//Ждем две минуты, чтобы отработал pooling SmtpClient и письма все были отправлены.
+					Thread.Sleep(120000);
 
 					imapClient.SelectFolder("INBOX");
 
@@ -146,6 +164,7 @@ namespace PriceProcessor.Test
 					newSet.Parse("1:*");
 					items = imapClient.FetchMessages(newSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
 
+					//Если следующий ассерт будет срабатывать, то надо увеличить время ожидания перед запросом списка писем (несколько строчек выше)
 					Assert.That((items != null) && (items.Length == 2), "После теста в папке нет писем");
 					Assert.That(items[0].Envelope.Subject.EndsWith("file1.txt"), "Первое письмо не было доставлено");
 					Assert.That(items[1].Envelope.Subject.EndsWith("file2.txt"), "Второе письмо не было доставлено");
