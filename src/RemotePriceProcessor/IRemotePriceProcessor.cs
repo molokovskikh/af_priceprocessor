@@ -78,10 +78,16 @@ namespace RemotePriceProcessor
 		string[] InboundFiles();
 
 		[OperationContract]
+		string[] InboundPriceItemIds();
+
+		[OperationContract]
 		Stream BaseFile(uint priceItemId);
 
 		[OperationContract]
 		HistoryFile GetFileFormHistory(WcfCallParameter downlogId);
+
+		[OperationContract]
+		void PutFileToInbound(FilePriceInfo filePriceInfo);
 
 		[OperationContract]
 		void PutFileToBase(FilePriceInfo filePriceInfo);

@@ -188,16 +188,16 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
-			if (File.Exists(sourceFile))
-			{
-				if (!File.Exists(destinationFile))
-				{
-					File.Move(sourceFile, destinationFile);
-					return;
-				}
+			if ((!File.Exists(sourceFile)) && (File.Exists(destinationFile)))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
-			}
-			throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));		
+
+			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
+				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
+
+			if (File.Exists(sourceFile))
+				File.Move(sourceFile, destinationFile);
+			else
+				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));		
 		}
 
 		public void RetransErrorPrice(uint priceItemId)
@@ -210,9 +210,13 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return Directory.GetFiles(Settings.Default.ErrorFilesPath);
 		}
 
-		public string[] InboundFiles()
+		public string[] InboundPriceItemIds()
 		{
-			return Directory.GetFiles(Settings.Default.InboundPath);
+			var count = PriceItemList.list.Count;
+			var priceItemIdList = new string[count];
+			for (var index = 0; index < count; index++)
+				 priceItemIdList[index] = Convert.ToString(PriceItemList.list[index].PriceItemId);
+			return priceItemIdList;
 		}
 
 		public Stream BaseFile(uint priceItemId)
@@ -259,6 +263,42 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			return files[0];
 		}
 
+		public void PutFileToInbound(FilePriceInfo filePriceInfo)
+		{
+			var priceItemId = filePriceInfo.PriceItemId;
+			var file = filePriceInfo.Stream;
+
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+@"
+select p.FileExtention
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+			var extention = row["FileExtention"];
+
+			// Удаляем из Base файлы с таким же именем (расширения могут отличаться)
+			var oldBaseFilePattern = priceItemId.ToString() + ".*";
+			SearchAndDeleteFilesFromDirectory(Settings.Default.BasePath, oldBaseFilePattern);
+
+			// На всякий случай ищем файлы с такими же именами в Inbound0, если есть, удаляем их
+			SearchAndDeleteFilesFromDirectory(Settings.Default.InboundPath, oldBaseFilePattern);
+			
+			// Получаем полный путь к новому файлу
+			var newFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
+
+			// Сохраняем новый файл
+			using (var fileStream = File.Create(newFile))
+			{
+				file.Copy(fileStream);
+			}
+		}
+
+		public string[] InboundFiles()
+		{
+			return Directory.GetFiles(Settings.Default.InboundPath);
+		}
+
 		public void PutFileToBase(FilePriceInfo filePriceInfo)
 		{
 			uint priceItemId = filePriceInfo.PriceItemId;
@@ -291,6 +331,24 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			{
 				file.Copy(fileStream);
 			}
+		}
+
+		private static void SearchAndDeleteFilesFromDirectory(string directoryName, string fileNamePattern)
+		{
+			var directoryPath = Path.GetFullPath(directoryName);
+			var files = Directory.GetFiles(directoryPath, fileNamePattern);
+			foreach (var fileName in files)
+			{
+				try
+				{
+					File.Delete(fileName);
+				}
+				catch (Exception)
+				{
+					var errorMessage = String.Format(@"Невозможно удалить из {0} старый файл", directoryName);
+					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
+				}
+			}			
 		}
     }
 }
