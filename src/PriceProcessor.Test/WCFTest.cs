@@ -39,6 +39,7 @@ namespace PriceProcessor.Test
             _serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding,
                 sbUrlService.ToString());
             _serviceHost.Open();
+			_serviceHost.Close();
         }
     }
 }

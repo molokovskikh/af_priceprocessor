@@ -169,13 +169,22 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
 		}
 
-		public void RetransPrice(uint priceItemId)
+		public void RetransPrice(/*uint*/WcfCallParameter priceItemId)
 		{
 			RetransPrice(priceItemId, Settings.Default.BasePath);		
 		}
 
-		private void RetransPrice(uint priceItemId, string sourceDir)
+		private void RetransPrice(WcfCallParameter paramPriceItemId/*uint priceItemId*/, string sourceDir)
 		{
+			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
+			var logInformation = paramPriceItemId.LogInformation;
+			ILog logger = null;
+			if (logInformation != null)
+				logger = log4net.LogManager.GetLogger(GetType());
+			if (logger != null)
+				logger.InfoFormat("Попытка переподложить прайс.\nКомпьютер: {0}\nПользователь: {1}\n",
+				                  logInformation.ComputerName, logInformation.UserName);
+
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
 select p.FileExtention
@@ -185,22 +194,33 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
+			if (logger != null)
+				logger.InfoFormat("PriceItemId = {0}. Расширение в базе для файла: {1}", priceItemId, extention);
+
 			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
-			if ((!File.Exists(sourceFile)) && (File.Exists(destinationFile)))
+			if (logger != null)
+				logger.InfoFormat("\nОткуда: {0}\nКуда: {1}", sourceFile, destinationFile);
+
+			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 
 			if (File.Exists(sourceFile))
+			{
 				File.Move(sourceFile, destinationFile);
+
+				if (logger != null)
+					logger.InfoFormat("Прайс-лист успешно переподложен");
+			}
 			else
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));		
 		}
 
-		public void RetransErrorPrice(uint priceItemId)
+		public void RetransErrorPrice(/*uint priceItemId*/WcfCallParameter priceItemId)
 		{
             RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
 		}
@@ -262,7 +282,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					new FaultReason(MessagePriceNotFoundInArchive));
 			return files[0];
 		}
-
+		/*
 		public void PutFileToInbound(FilePriceInfo filePriceInfo)
 		{
 			var priceItemId = filePriceInfo.PriceItemId;
@@ -293,6 +313,61 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				file.Copy(fileStream);
 			}
 		}
+		*/
+		public void PutFileToInbound(FilePriceInfo filePriceInfo)
+		{
+			var logInformation = filePriceInfo.LogInformation;
+			ILog logger = null;
+			if (logInformation != null)
+                logger = log4net.LogManager.GetLogger(GetType());
+			if (logger != null)
+				logger.InfoFormat("Попытка положить прайс в Inbound.\nКомпьютер: {1}\nПользователь: {2}\n",
+					logInformation.ComputerName, logInformation.UserName);
+
+			var priceItemId = filePriceInfo.PriceItemId;
+			var file = filePriceInfo.Stream;
+
+			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+@"
+select p.FileExtention
+from  usersettings.PriceItems pim
+  join farm.formrules f on f.Id = pim.FormRuleId
+  join farm.pricefmts p on p.ID = f.PriceFormatId
+where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+			var extention = row["FileExtention"];
+
+			if (logger != null)
+				logger.InfoFormat("PriceItemId = {0}. Расширение для файла в базе в текущий момент: {1}", priceItemId, extention);
+
+			// Удаляем из Base файлы с таким же именем (расширения могут отличаться)
+			var oldBaseFilePattern = priceItemId.ToString() + ".*";
+
+			if (logger != null)
+				logger.InfoFormat("Пробуем удалить старые файлы, находящиеся в Base. Шаблон имени файла: {0}", oldBaseFilePattern);
+
+			SearchAndDeleteFilesFromDirectory(Settings.Default.BasePath, oldBaseFilePattern);
+
+			if (logger != null)
+				logger.InfoFormat("Пробуем удалить старые файлы, находящиеся в Inbound. Шаблон имени файла: {0}", oldBaseFilePattern);
+
+			// На всякий случай ищем файлы с такими же именами в Inbound0, если есть, удаляем их
+			SearchAndDeleteFilesFromDirectory(Settings.Default.InboundPath, oldBaseFilePattern);
+
+			// Получаем полный путь к новому файлу
+			var newFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
+
+			if (logger != null)
+				logger.InfoFormat("Пробуем сохранить новый файл: {0}", newFile);
+
+			// Сохраняем новый файл
+			using (var fileStream = File.Create(newFile))
+			{
+				file.Copy(fileStream);
+			}
+
+			if (logger != null)
+				logger.Info("Прайс положен в Inbound");
+		}
 
 		public string[] InboundFiles()
 		{
@@ -301,6 +376,14 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 
 		public void PutFileToBase(FilePriceInfo filePriceInfo)
 		{
+			var logInformation = filePriceInfo.LogInformation;
+			ILog logger = null;
+			if (logInformation != null)
+				logger = log4net.LogManager.GetLogger(GetType());
+			if (logger != null)
+				logger.InfoFormat("Попытка положить прайс в Base.\nКомпьютер: {1}\nПользователь: {2}\n",
+					logInformation.ComputerName, logInformation.UserName);
+
 			uint priceItemId = filePriceInfo.PriceItemId;
 			Stream file = filePriceInfo.Stream;
 
@@ -313,11 +396,16 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
+			if (logger != null)
+				logger.InfoFormat("PriceItemId = {0}. Расширение для файла в базе в текущий момент: {1}", priceItemId, extention);
+
 			var newBaseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
 
 			if (File.Exists(newBaseFile))
 				try
 				{
+					if (logger != null)
+						logger.InfoFormat("Пробуем удалить старый файл, находящийся в Base: {0}", newBaseFile);
 					File.Delete(newBaseFile);
 				}
 				catch (Exception)
@@ -327,10 +415,16 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 				}
 
+			if (logger != null)
+				logger.InfoFormat("Пробуем сохранить новый файл: {0}", newBaseFile);
+
 			using (var fileStream = File.Create(newBaseFile))
 			{
 				file.Copy(fileStream);
 			}
+
+			if (logger != null)
+				logger.Info("Прайс положен в Base");
 		}
 
 		private static void SearchAndDeleteFilesFromDirectory(string directoryName, string fileNamePattern)

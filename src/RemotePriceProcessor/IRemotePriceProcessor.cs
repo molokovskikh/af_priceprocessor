@@ -26,6 +26,19 @@ namespace RemotePriceProcessor
 	{
 		[MessageHeader]
 		public object Value { get; set; }
+
+		[MessageHeader]
+		public LogInformation LogInformation { get; set; }
+	}
+
+	/// <summary>
+	/// Класс, содержащий данные для логирования действий пользователя
+	/// </summary>	
+	public class LogInformation
+	{
+		public string ComputerName { get; set; }
+
+		public string UserName { get; set; }
 	}
 
 	[MessageContract]
@@ -42,6 +55,9 @@ namespace RemotePriceProcessor
 	{
 		[MessageHeader]
 		public uint PriceItemId;
+
+		[MessageHeader]
+		public LogInformation LogInformation;
 
 		[MessageBodyMember]
 		public Stream Stream;
@@ -68,8 +84,10 @@ namespace RemotePriceProcessor
 		[OperationContract]
 		void ResendPrice(ulong downlogId);
 
+//		[OperationContract]
+//		void RetransPrice(uint priceItemId);
 		[OperationContract]
-		void RetransPrice(uint priceItemId);
+		void RetransPrice(WcfCallParameter downlogId);
 
 		[OperationContract]
 		string[] ErrorFiles();
@@ -92,7 +110,9 @@ namespace RemotePriceProcessor
 		[OperationContract]
 		void PutFileToBase(FilePriceInfo filePriceInfo);
 
+//		[OperationContract]
+//		void RetransErrorPrice(uint priceItemId);
 		[OperationContract]
-		void RetransErrorPrice(uint priceItemId);
+		void RetransErrorPrice(WcfCallParameter priceItemId);
 	}
 }
