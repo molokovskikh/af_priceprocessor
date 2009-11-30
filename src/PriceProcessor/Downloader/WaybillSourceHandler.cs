@@ -662,31 +662,5 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType
 				false,
 				(e, ex) => Ping());
 		}
-
-		/// <summary>
-		/// Проверяет, существует ли для данного клиента адрес (запись в таблице future.Addresses)
-		/// </summary>
-		/// <param name="clientCode">Код клиента (аптеки)</param>
-		private bool HasAddress(uint? clientCode)
-		{
-			if (clientCode.HasValue)
-			{
-				var queryGetCountAddresses = String.Format(@"
-SELECT COUNT(Addr.Id)
-FROM future.Addresses Addr
-WHERE Id = {0} OR LegacyId = {0}", clientCode);
-				var countAddresses = 0;
-				try
-				{
-					countAddresses = Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, queryGetCountAddresses));
-				}
-				catch (Exception)
-				{
-					return false;
-				}
-				return (countAddresses > 0);                
-			}
-			return false;
-		}
 	}
 }
