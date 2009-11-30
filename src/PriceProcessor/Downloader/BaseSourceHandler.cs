@@ -1,4 +1,5 @@
 using System;
+using Inforoom.Downloader.Documents;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using System.IO;
@@ -479,5 +480,69 @@ and pd.AgencyEnabled= 1",
         }
 
         #endregion
+
+		/// <summary>
+		/// Выдает код клиента из таблицы future.Addresses по
+		/// Id или LegacyId
+		/// </summary>
+		/// <param name="addressId">Id или LegacyId в таблице Addresses
+		/// Если будет передан LegacyId, то в эту переменную запишется Addresses.Id</param>
+		/// <returns></returns>
+		protected int? GetClientIdByAddress(ref int? addressId)
+		{
+			if (addressId == null)
+				return null;
+			var queryGetClientCodeByLegacyId = String.Format(@"
+SELECT Addr.ClientId
+FROM future.Addresses Addr
+WHERE Addr.LegacyId = {0}", addressId);
+
+			var queryGetClientCodeByAddressId = String.Format(@"
+SELECT Addr.ClientId
+FROM future.Addresses Addr
+WHERE Addr.Id = {0}", addressId);
+
+			var queryGetAddressIdByLegacyId = String.Format(@"
+SELECT Addr.Id
+FROM future.Addresses Addr
+WHERE Addr.LegacyId = {0}", addressId);
+
+			// Пытаемся выбрать код клиента по Addresses.LegacyId
+			var clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCodeByLegacyId);
+			if ((clientCode == null) || (clientCode is DBNull))
+			{
+				// Если не выбрали по LegacyId, пытаемся выбрать по Addresses.Id
+				clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCodeByAddressId);
+				// Если ничего не выбрали, возвращаем null
+				if ((clientCode == null) || (clientCode is DBNull))
+					return null;
+			}
+			else
+				// Если выбрали код клиента по LegacyID, выбираем код адреса по LegacyId
+				addressId = Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, queryGetAddressIdByLegacyId));
+			return Convert.ToInt32(clientCode);
+		}
+
+		/// <summary>
+		/// Сохраняет накладную (или отказ) в локальную директорию
+		/// </summary>
+		/// <param name="clientAddressId">Идентификатор адреса клиента</param>
+		/// <param name="documentType">Тип документа (накладная или отказ)</param>
+		/// <param name="filePath">Путь к файлу накладной (или отказа)</param>
+		protected void SaveWaybill(int? clientAddressId, InboundDocumentType documentType, string filePath)
+		{
+			if (_logger.IsDebugEnabled)
+			{
+				var localDir = FileHelper.NormalizeDir(Settings.Default.DownWaybillsPath) +
+					clientAddressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar +
+					documentType.FolderName + Path.DirectorySeparatorChar;
+				// Если директории нет, создаем её
+				if (!Directory.Exists(localDir))
+					Directory.CreateDirectory(localDir);
+				var destinationFileName = localDir + Path.GetFileName(filePath);
+				// Сохраняем копию накладной в локальной папке
+				File.Copy(filePath, destinationFileName);
+			}
+		}
 	}
 }
