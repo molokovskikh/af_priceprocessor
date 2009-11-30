@@ -26,10 +26,10 @@ namespace Inforoom.Downloader
 		private InboundDocumentType _currentDocumentType;
 
 		// Email, из которого будут браться накладные и отказы
-		private string _imapUser = Settings.Default.IMAPUser;
+		private string _imapUser = Settings.Default.WaybillIMAPUser;
 
 		// Пароль для указанного email-а
-		private string _imapPassword = Settings.Default.IMAPPass;
+		private string _imapPassword = Settings.Default.WaybillIMAPPass;
 
 		public WaybillSourceHandler()
 		{
@@ -42,7 +42,7 @@ namespace Inforoom.Downloader
 		public WaybillSourceHandler(string imapUser, string imapPassword)
 			: this()
 		{
-			if (!(String.IsNullOrEmpty(imapUser)) && (imapPassword != null))
+			if (!String.IsNullOrEmpty(imapUser) && !String.IsNullOrEmpty(imapPassword))
 			{
 				_imapUser = imapUser;
 				_imapPassword = imapPassword;
