@@ -14,6 +14,18 @@
     <Setting Name="HandlerTimeout" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
     </Setting>
+    <Setting Name="IMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">prccopy@analit.net</Value>
+    </Setting>
+    <Setting Name="IMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">123</Value>
+    </Setting>
+    <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">prccopy@analit.net</Value>
+    </Setting>
+    <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">123</Value>
+    </Setting>
     <Setting Name="ResponseDocSubjectTemplateOnNothingAttachs" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Документы (накладные, отказы) не доставлены аптеке</Value>
     </Setting>
@@ -231,11 +243,17 @@
   &lt;string&gt;4596&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
+    <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
     <Setting Name="InboundPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Inbound0</Value>
     </Setting>
     <Setting Name="TempPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownTemp</Value>
+    </Setting>
+    <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
     </Setting>
     <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">FTPOptBox</Value>
@@ -243,56 +261,29 @@
     <Setting Name="HistoryPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownHistory</Value>
     </Setting>
+    <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
     <Setting Name="BasePath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Base</Value>
     </Setting>
     <Setting Name="ErrorFilesPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">ErrorFiles</Value>
     </Setting>
+    <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
+    <Setting Name="ServiceMail" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">s.morozov@analit.net</Value>
+    </Setting>
     <Setting Name="WCFServicePort" Type="System.String" Scope="Application">
       <Value Profile="(Default)">900</Value>
     </Setting>
-    <Setting Name="TestIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morfemus</Value>
-    </Setting>
-    <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="SMTPErrorList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="DocumentFailMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="UnrecLetterMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="SMTPWarningList" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="ServiceMail" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
     <Setting Name="WCFServiceName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">RemotePriceProcessorService</Value>
-    </Setting>
-    <Setting Name="DownWaybillsPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">DownWaybills</Value>
-    </Setting>
-    <Setting Name="TestIMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
-    <Setting Name="IMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prccopy@analit.net</Value>
-    </Setting>
-    <Setting Name="IMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
-    </Setting>
-    <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prcopy@analit.net</Value>
-    </Setting>
-    <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
+      <Value Profile="(Default)">RemotePriceProcessor</Value>
     </Setting>
   </Settings>
 </SettingsFile>

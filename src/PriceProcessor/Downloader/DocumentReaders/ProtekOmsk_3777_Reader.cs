@@ -14,35 +14,32 @@ namespace Inforoom.Downloader.DocumentReaders
 			excludeExtentions = new string[] { };
 		}
 
-		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			var list = new List<ulong>();
-			string SQL = GetFilterSQLHeader() + Environment.NewLine + 
-				" and (i.FirmClientCode = ?SupplierId) " + 
-				SqlGetClientAddressId(true, false, true) + 
-				Environment.NewLine + GetFilterSQLFooter();
+			List<ulong> list = new List<ulong>();
+			string SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode" + Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode;
 			try
 			{
-				FirmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
+				FirmClientCode = Path.GetFileName(CurrentFileName).Split('_')[0];
 			}
 			catch(Exception ex)
 			{
-				throw new Exception("Не получилось сформировать SupplierDeliveryId(FirmClientCode2) из имени накладной.", ex);
+				throw new Exception("Не получилось сформировать FirmClientCode из имени накладной.", ex);
 			}
 
-			var ds = MySqlHelper.ExecuteDataset(
-				connection, 
+			DataSet ds = MySqlHelper.ExecuteDataset(
+				Connection, 
 				SQL, 
-				new MySqlParameter("?SupplierId", supplierId), 
-				new MySqlParameter("?SupplierDeliveryId", FirmClientCode));
+				new MySqlParameter("?FirmCode", FirmCode), 
+				new MySqlParameter("?FirmClientCode", FirmClientCode));
 
 			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
+				list.Add(Convert.ToUInt64(drApteka["ClientCode"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + ".");
+				throw new Exception("Не удалось найти клиентов с FirmClientCode = " + FirmClientCode + ".");
 
 			return list;
 		}

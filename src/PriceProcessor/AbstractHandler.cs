@@ -102,7 +102,7 @@ namespace Inforoom.PriceProcessor
 				{
 					ProcessData();
 				}
-				catch (ThreadAbortException exc)
+				catch (ThreadAbortException)
 				{ }
 				catch (Exception ex)
 				{

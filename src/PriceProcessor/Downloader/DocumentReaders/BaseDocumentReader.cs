@@ -35,57 +35,28 @@ namespace Inforoom.Downloader.DocumentReaders
 
 		protected string GetFilterSQLHeader()
 		{
-			return
-				@"
-SELECT
-	i.ClientCode AS AddressId,
-	i.FirmClientCode AS SupplierClientId,
-	i.FirmClientCode2 AS SupplierDeliveryId,
-	i.FirmClientCode3 AS SupplierPaymentId
+			return @"SELECT
+  cd.firmcode as ClientCode,
+  IncludeRegulation.IncludeType,
+  i.FirmClientCode,
+  i.FirmClientCode2,
+  i.FirmClientCode3
 FROM
-	usersettings.Intersection i,
-	usersettings.PricesData pd
+  (usersettings.clientsdata as cd,
+   usersettings.intersection i,
+   usersettings.pricesdata pd)
+   LEFT JOIN usersettings.includeregulation
+        ON includeclientcode= cd.firmcode
 WHERE
-	i.PriceCode = pd.PriceCode
-	AND pd.FirmCode = ?SupplierId";
+  i.clientCode = cd.FirmCode
+  and i.PriceCode = pd.PriceCode
+  and pd.FirmCode = ?FirmCode
+  and if(IncludeRegulation.PrimaryClientCode is null, 1, IncludeRegulation.IncludeType <>2)";
 		}
 
 		protected string GetFilterSQLFooter()
 		{
-			return @"
-GROUP BY AddressId";
-		}
-
-		protected string SqlGetClientAddressId(bool useUnion, bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
-		{
-			var sqlSupplierClientId = String.Empty;
-			var sqlSupplierDeliveryId = String.Empty;
-			var sqlUnion = String.Empty;
-			if (useUnion)
-				sqlUnion = " UNION ";
-			if (filterBySupplierClientId)
-				sqlSupplierClientId = " AND Inter.SupplierClientId = ?SupplierClientId ";
-			if (filterBySupplierDeliveryId)
-				sqlSupplierDeliveryId = " AND AddrInter.SupplierDeliveryId = ?SupplierDeliveryId ";
-			var sqlQuery = sqlUnion + @"
-SELECT
-	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) AS AddressId,
-	Inter.SupplierClientId,
-	AddrInter.SupplierDeliveryId,
-	Inter.SupplierPaymentId
-FROM
-	future.Addresses Addr,
-	future.Intersection Inter,
-	future.AddressIntersection AddrInter,
-	usersettings.PricesData pd
-WHERE
-	Inter.PriceId = pd.PriceCode
-AND pd.FirmCode = ?SupplierId
-" + sqlSupplierClientId + sqlSupplierDeliveryId + 
-@"
-AND Addr.Id = AddrInter.AddressId";
-
-			return sqlQuery;
+			return "group by cd.firmcode";
 		}
 
 		public string[] ExcludeExtentions

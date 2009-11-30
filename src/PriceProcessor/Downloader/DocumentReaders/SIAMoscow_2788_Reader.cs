@@ -176,8 +176,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				string DeliveryCode = drHeader[HeaderTable.colObtCod].ToString(),
 					OrderID = drHeader[HeaderTable.colCMN].ToString();
 
-				var documentFileName = ExtractDir + String.Format("{0}_{1}_{2}_{3}.xml", 
-					FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum].ToString());
+				var documentFileName = ExtractDir + String.Format("{0}_{1}_{2}_{3}.xml", FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum].ToString());
 
 				dsStandaloneDocument = dsSource.Clone();
 				var drTemp = dsStandaloneDocument.Tables["Header"].NewRow();
@@ -199,10 +198,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			var list = new List<ulong>();
-			var SQL = GetFilterSQLHeader() + Environment.NewLine + 
-				" and (i.FirmClientCode = ?SupplierId) and (i.FirmClientCode2 = ?SupplierDeliveryId) " +
-				SqlGetClientAddressId(true, true, true) +
-				Environment.NewLine + GetFilterSQLFooter();
+			var SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode and i.FirmClientCode2 = ?DeliveryCode " + Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
 			try
@@ -213,22 +209,21 @@ namespace Inforoom.Downloader.DocumentReaders
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
+				throw new Exception("Не получилось сформировать FirmClientCode и FirmClientCode2 из документа.", ex);
 			}
 
 			var ds = MySqlHelper.ExecuteDataset(
 				Connection,
 				SQL,
-				new MySqlParameter("?SupplierId", FirmCode),
-				new MySqlParameter("?SupplierClientId", FirmClientCode),
-				new MySqlParameter("?SupplierDeliveryId", DeliveryCode));
+				new MySqlParameter("?FirmCode", FirmCode),
+				new MySqlParameter("?FirmClientCode", FirmClientCode),
+				new MySqlParameter("?DeliveryCode", DeliveryCode));
 
 			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
+				list.Add(Convert.ToUInt64(drApteka["ClientCode"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + 
-					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
+				throw new Exception("Не удалось найти клиентов с FirmClientCode = " + FirmClientCode + " и FirmClientCode2 = " + DeliveryCode + ".");
 
 			return list;
 		}
@@ -351,16 +346,8 @@ namespace Inforoom.Downloader.DocumentReaders
 			dsDocument.ReadXml(CurrentFileName);
 			var ProviderDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
 			var DocumentHeaderId = MySqlHelper.ExecuteScalar(
-				Connection, @"
-SELECT 
-	id 
-FROM 
-	documents.documentheaders 
-WHERE 
-	FirmCode = ?FirmCode 
-	AND ClientCode = ?ClientCode 
-	AND DocumentType = ?DocumentType 
-	AND ProviderDocumentId = ?ProviderDocumentId",
+				Connection,
+				"select id from documents.documentheaders where FirmCode = ?FirmCode and ClientCode = ?ClientCode and DocumentType = ?DocumentType and ProviderDocumentId = ?ProviderDocumentId",
 				new MySqlParameter("?FirmCode", FirmCode),
 				new MySqlParameter("?ClientCode", ClientCode),
 				new MySqlParameter("?DocumentType", DocumentType),
@@ -368,9 +355,8 @@ WHERE
 			if (DocumentHeaderId == null)
 			{
 				MySqlHelper.ExecuteNonQuery(
-					Connection, @"
-INSERT INTO documents.documentheaders (FirmCode, ClientCode, DocumentType, ProviderDocumentId) 
-VALUES (?FirmCode, ?ClientCode, ?DocumentType, ?ProviderDocumentId)",
+					Connection,
+					"insert into documents.documentheaders (FirmCode, ClientCode, DocumentType, ProviderDocumentId) values (?FirmCode, ?ClientCode, ?DocumentType, ?ProviderDocumentId)",
 					new MySqlParameter("?FirmCode", FirmCode),
 					new MySqlParameter("?ClientCode", ClientCode),
 					new MySqlParameter("?DocumentType", DocumentType),

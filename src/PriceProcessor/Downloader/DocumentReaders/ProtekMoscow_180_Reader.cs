@@ -15,32 +15,31 @@ namespace Inforoom.Downloader.DocumentReaders
 			excludeExtentions = new string[] { ".fls" };
 		}
 
-		public override string[] DivideFiles(string extractDir, string[] inputFiles)
+		public override string[] DivideFiles(string ExtractDir, string[] InputFiles)
 		{
-			var outFiles = new List<string>();
+			List<string> outFiles = new List<string>();
 			string shortFileName;
-			int fileID;
-
-			foreach (var fileName in inputFiles)
+			int FileID ;
+			foreach (string fileName in InputFiles)
 			{
-				shortFileName = extractDir + Path.GetFileNameWithoutExtension(fileName) + ".";
-				fileID = 0;
+				shortFileName = ExtractDir + Path.GetFileNameWithoutExtension(fileName) + ".";
+				FileID = 0;
 
 				//Прочитали исходный XML c документами
-				var xml = new XmlDocument();
+				XmlDocument xml = new XmlDocument();
 				xml.Load(fileName);
 
 				//Рассматриваем элементы типа "Документ"
 				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Документ"))
 				{
 					//Формируем новое имя файла
-					string newFileName = shortFileName + fileID.ToString() + ".xml";
+					string newFileName = shortFileName + FileID.ToString() + ".xml";
 					while (File.Exists(newFileName))
 					{
-						fileID++;
-						newFileName = shortFileName + fileID.ToString() + ".xml";
+						FileID++;
+						newFileName = shortFileName + FileID.ToString() + ".xml";
 					}
-					fileID++;
+					FileID++;
 
 					XmlDocument newXml = new XmlDocument();
 					
@@ -64,47 +63,45 @@ namespace Inforoom.Downloader.DocumentReaders
 					newXml.Save(newFileName);
 					outFiles.Add(newFileName);
 				}
+
 				//Разделили файла не несколько файлов и удалили исходный файл
 				File.Delete(fileName);
 			}
+
 			return outFiles.ToArray();
 		}
 
-		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			var list = new List<ulong>();
-			string SQL = GetFilterSQLHeader() + Environment.NewLine + 
-				" and (i.FirmClientCode = ?SupplierClientId) and (i.FirmClientCode2 = ?SupplierDeliveryId) " +
-				SqlGetClientAddressId(true, true, true) +
-				Environment.NewLine + GetFilterSQLFooter();
+			List<ulong> list = new List<ulong>();
+			string SQL = GetFilterSQLHeader() + Environment.NewLine + "and i.FirmClientCode = ?FirmClientCode and i.FirmClientCode2 = ?DeliveryCode " + Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
 			try
 			{
-				var dsWaybill = new DataSet();
-				dsWaybill.ReadXml(currentFileName);
+				DataSet dsWaybill = new DataSet();
+				dsWaybill.ReadXml(CurrentFileName);
 				DataTable dtCounteragent = dsWaybill.Tables["Контрагент"];
 				FirmClientCode = dtCounteragent.Select("Роль = 'Плательщик'")[0]["Ид"].ToString();
 				DeliveryCode = dtCounteragent.Select("Роль = 'Получатель'")[0]["Ид"].ToString();
 			}
 			catch (Exception ex)
 			{
-				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
+				throw new Exception("Не получилось сформировать FirmClientCode и FirmClientCode2 из документа.", ex);
 			}
 
 			DataSet ds = MySqlHelper.ExecuteDataset(
-				connection,
+				Connection,
 				SQL,
-				new MySqlParameter("?SupplierId", supplierId),
-				new MySqlParameter("?SupplierClientId", FirmClientCode),
-				new MySqlParameter("?SupplierDeliveryId", DeliveryCode));
+				new MySqlParameter("?FirmCode", FirmCode),
+				new MySqlParameter("?FirmClientCode", FirmClientCode),
+				new MySqlParameter("?DeliveryCode", DeliveryCode));
 
 			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
+				list.Add(Convert.ToUInt64(drApteka["ClientCode"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + 
-					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
+				throw new Exception("Не удалось найти клиентов с FirmClientCode = " + FirmClientCode + " и FirmClientCode2 = " + DeliveryCode + ".");
 
 			return list;
 		}
