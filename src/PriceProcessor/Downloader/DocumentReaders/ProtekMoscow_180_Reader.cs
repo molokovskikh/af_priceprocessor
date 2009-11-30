@@ -74,7 +74,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var list = new List<ulong>();
 			string SQL = GetFilterSQLHeader() + Environment.NewLine + 
-				@"and i.FirmClientCode = ?SupplierClientId and i.FirmClientCode2 = ?SupplierDeliveryId" +
+				@" and (i.FirmClientCode = ?SupplierClientId) and (i.FirmClientCode2 = ?SupplierDeliveryId) " +
 				SqlGetClientAddressId(true, true, true) +
 				Environment.NewLine + GetFilterSQLFooter();
 
