@@ -140,6 +140,7 @@ and cd.FirmCode = pd.FirmCode
 and FR.Id = pi.FormRuleId
 and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
 and pricefmts.ID = PFR.PriceFormatId", c);
+
 				adapter.SelectCommand.Parameters.AddWithValue("?PriceItemId", priceItemId);
 				var data = new DataSet();
 				adapter.Fill(data);

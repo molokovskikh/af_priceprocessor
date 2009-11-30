@@ -56,25 +56,16 @@ namespace Inforoom.PriceProcessor
 		{
             try
             {
-				StringBuilder sbUrlService = new StringBuilder();
+				var sbUrlService = new StringBuilder();
 				_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
 				sbUrlService.Append(_strProtocol)
 					.Append(Dns.GetHostName()).Append(":")
 					.Append(Settings.Default.WCFServicePort).Append("/")
 					.Append(Settings.Default.WCFServiceName);
-				NetTcpBinding binding = new NetTcpBinding();
-				binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-				binding.Security.Mode = SecurityMode.None;
-				// Ипользуется потоковая передача данных в обе стороны 
-				binding.TransferMode = TransferMode.Streamed;
-				// Максимальный размер принятых данных
-				binding.MaxReceivedMessageSize = Int32.MaxValue;
-				// Максимальный размер одного пакета
-				binding.MaxBufferSize = 524288;    // 0.5 Мб 
-				_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding,
-					sbUrlService.ToString());
-				_serviceHost.Open();
 
+            	_serviceHost = PriceProcessorWcfHelper.StartService(typeof (IRemotePriceProcessor),
+            	                                                    typeof (WCFPriceProcessorService),
+            	                                                    sbUrlService.ToString());
                 foreach (var handler in _handlers)
                     try
                     {
@@ -99,14 +90,7 @@ namespace Inforoom.PriceProcessor
 		{
             try
             {
-				try
-				{
-					_serviceHost.Close();
-				}
-				catch (Exception e)
-				{
-					_logger.Error("Ошибка остановки WCF службы", e);
-				}
+				PriceProcessorWcfHelper.StopService(_serviceHost);
                 Stopped = true;
                 Thread.Sleep(3000);
                 tMonitor.Abort();
