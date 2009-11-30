@@ -16,7 +16,7 @@ namespace Inforoom.Downloader
 	class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
-		private InboundDocumentType _currentType;
+		private InboundDocumentType _currentDocumentType;
 
 		public WaybillLANSourceHandler()
 		{
@@ -24,6 +24,7 @@ namespace Inforoom.Downloader
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
 		}
 
+		// Выбирает данные о включенных поставщиках, накладные от которых обрабатываются особым образом
 		protected override string GetSQLSources()
 		{
 			return @"
@@ -33,7 +34,7 @@ SELECT
   st.EMailFrom,
   st.ReaderClassName
 FROM
-  usersettings.ClientsData             as cd
+  usersettings.ClientsData AS cd
   INNER JOIN Documents.Waybill_Sources AS st ON CD.FirmCode = st.FirmCode
 WHERE
 cd.FirmStatus   = 1
@@ -44,30 +45,30 @@ and st.SourceID = 4";
 		{
 			//набор строк похожих источников
 			DataRow drLanSource;
+			// Заполняем таблицу с данными о поставщиках.
 			FillSourcesTable();
 
 			while (dtSources.Rows.Count > 0)
 			{
 				try
 				{
-					_currentType = null; 
-
+					_currentDocumentType = null; 
+					// Берем нулевую строку (с данными о поставщике)
 					drLanSource = dtSources.Rows[0];
 
 					var documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
 
-
-					foreach(var document in _documentTypes)
+					foreach(var documentType in _documentTypes)
 						try
 						{
-							_currentType = document;
+							_currentDocumentType = documentType;
 
-							//Получаем список файлов из папки
+							// Получаем список файлов из папки
 							var files = GetFileFromSource(documentReader);
 
-							foreach (var SourceFileName in files)
+							foreach (var sourceFileName in files)
 							{
-								GetCurrentFile(SourceFileName);
+								GetCurrentFile(sourceFileName);
 
 								if (!String.IsNullOrEmpty(CurrFileName))
 								{
@@ -101,7 +102,7 @@ and st.SourceID = 4";
 												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
 													drLanSource[WaybillSourcesTable.colFirmCode],
 													drLanSource[SourcesTableColumns.colShortName],
-													_currentType.GetType().Name,
+													_currentDocumentType.GetType().Name,
 													DateTime.Now,
 													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs.")))
 											{
@@ -112,15 +113,17 @@ and st.SourceID = 4";
 											}
 										}
 										//После обработки файла удаляем его из папки
-										if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-											File.Delete(SourceFileName);
+										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
+											File.Delete(sourceFileName);
 									}
 									else
 									{
-										WriteLog(document.TypeID, Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+										var supplierId = Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
+										WriteLog(documentType.TypeID, supplierId, null, Path.GetFileName(CurrFileName), 
+											String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
 										//Распаковать файл не удалось, поэтому удаляем его из папки
-										if (!String.IsNullOrEmpty(SourceFileName) && File.Exists(SourceFileName))
-											File.Delete(SourceFileName);
+										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
+											File.Delete(sourceFileName);
 									}
 									DeleteCurrFile();
 								}
@@ -131,7 +134,7 @@ and st.SourceID = 4";
 						catch (Exception typeException)
 						{
 							//Обрабатываем ошибку в случае обработки одного из типов документов
-							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], document.GetType().Name);
+							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
 							LoggingToService(Error);
 						}
@@ -161,32 +164,37 @@ and st.SourceID = 4";
 
 		protected string[] GetFileFromSource(BaseDocumentReader documentReader)
 		{
-			var PricePath = String.Empty;
+			var pricePath = String.Empty;
 			try
 			{
-				PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentType.FolderName;
-				var ff = Directory.GetFiles(PricePath);
-
-				//Отсекаем файлы с некорректным расширением
+				// Путь к папке, из которой нужно забирать накладную
+				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
+				pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + 
+					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + 
+					Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
+				// Получаем все файлы из этой папки
+				var ff = Directory.GetFiles(pricePath);
+				// Отсекаем файлы с некорректным расширением
 				var newFiles = new List<string>();
 				foreach (var newFileName in ff)
 				{
 					if (Array.Exists(documentReader.ExcludeExtentions,
-					                 s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase)))
+						s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase)))
 					{
+						// Если есть файл с некорректным разрешением, удаляем его
 						if (File.Exists(newFileName))
 							File.Delete(newFileName);
 					}
 					else
 						if (DateTime.Now.Subtract(File.GetLastWriteTime(newFileName)).TotalMinutes > Settings.Default.FileDownloadInterval)
-							newFiles.Add(newFileName);				
+							newFiles.Add(newFileName);
 				}
-
 				return documentReader.UnionFiles(newFiles.ToArray());
 			}
 			catch (Exception exDir)
 			{
-				LoggingToService(String.Format("Не удалось получить список файлов для папки {0}: {1}", PricePath, exDir));
+				LoggingToService(String.Format("Не удалось получить список файлов для папки {0}: {1}", 
+					pricePath, exDir));
 				return new string[] { };
 			}
 		}
@@ -215,6 +223,7 @@ and st.SourceID = 4";
 			var Files = new[] { InFile };
 			if (ArchiveHelper.IsArchive(InFile))
 			{
+				// Получаем файлы, распакованные из архива
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
 			}
 
@@ -227,7 +236,9 @@ and st.SourceID = 4";
 			}
 			catch (Exception exDivide)
 			{
-				WriteLog(_currentType.TypeID, Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]), null, Path.GetFileName(CurrFileName), String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
+				var supplierId = Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
+				WriteLog(_currentDocumentType.TypeID, supplierId, null, Path.GetFileName(CurrFileName), 
+					String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
 				return false;
 			}
 
@@ -258,21 +269,25 @@ and st.SourceID = 4";
 						FileName = _convertedFileName;
 					}
 
-					var cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, DocumentType, Addition) values (?FirmCode, ?ClientCode, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", _workConnection);
-					cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
-					cmdInsert.Parameters.AddWithValue("?ClientCode", DBNull.Value);
+					var cmdInsert = new MySqlCommand(@"
+INSERT INTO logs.document_logs (FirmCode, ClientCode, AddressId, FileName, DocumentType, Addition) 
+VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", _workConnection);
+					cmdInsert.Parameters.AddWithValue("?SupplierId", drCurrent[WaybillSourcesTable.colFirmCode]);
+					cmdInsert.Parameters.AddWithValue("?ClientId", DBNull.Value);
+					cmdInsert.Parameters.AddWithValue("?AddressId", DBNull.Value);
 					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
 					cmdInsert.Parameters.AddWithValue("?Addition", DBNull.Value);
-					cmdInsert.Parameters.AddWithValue("?DocumentType", _currentType.TypeID);
+					cmdInsert.Parameters.AddWithValue("?DocumentType", _currentDocumentType.TypeID);
 
-					List<ulong> listClients;
+					List<ulong> listAddresses;
 
 					cmdInsert.Transaction = args.DataAdapter.SelectCommand.Transaction;
 
 					try
 					{
 						//Пытаемся получить список клиентов для накладной
-						listClients = documentReader.GetClientCodes(_workConnection, Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]), ArchFileName, FileName);
+						var supplierId = Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]);
+						listAddresses = documentReader.GetClientCodes(_workConnection, supplierId, ArchFileName, FileName);
 					}
 					catch (Exception ex)
 					{
@@ -282,7 +297,7 @@ and st.SourceID = 4";
 						return false;
 					}
 
-					if (listClients != null)
+					if (listAddresses != null)
 					{
 						string formatFile;
 						try
@@ -293,15 +308,31 @@ and st.SourceID = 4";
 						catch (Exception ex)
 						{
 							//Логируем и выходим
-							cmdInsert.Parameters["?ClientCode"].Value = listClients[0];
+							var addressId = (int?)(listAddresses[0]);
+							var clientId = GetClientIdByAddress(ref addressId);
+							if (clientId == null)
+							{
+								clientId = addressId;
+								addressId = null;
+							}
+							cmdInsert.Parameters["?ClientId"].Value = clientId;
+							cmdInsert.Parameters["?AddressId"].Value = addressId;
 							cmdInsert.Parameters["?Addition"].Value = "Не удалось отформатировать документ.\nОшибка: " + ex;
 							cmdInsert.ExecuteNonQuery();
 							return false;
 						}
 
-						foreach (var AptekaClientCode in listClients)
+						foreach (var addressId in listAddresses)
 						{
-							cmdInsert.Parameters["?ClientCode"].Value = AptekaClientCode;
+							var clientAddressId = (int?)addressId;
+							var clientId = GetClientIdByAddress(ref clientAddressId);
+							if (clientId == null)
+							{
+								clientId = clientAddressId;
+								clientAddressId = null;
+							}
+							cmdInsert.Parameters["?ClientCode"].Value = clientId;
+							cmdInsert.Parameters["?AddressId"].Value = clientAddressId;
 							cmdInsert.Parameters["?Addition"].Value = DBNull.Value;
 
 							try
@@ -309,7 +340,7 @@ and st.SourceID = 4";
 								documentReader.ImportDocument(
 									_workConnection,
 									Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]),
-									AptekaClientCode,
+									(ulong)clientAddressId,
 									1,
 									FileName);
 							}
@@ -319,34 +350,37 @@ and st.SourceID = 4";
 								cmdInsert.ExecuteNonQuery();
 								continue;
 							}
-							var AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + AptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentType.FolderName;
-							var OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
+							// Директория, куда будут складываться накладные и отказы для конкретного адреса
+							var aptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + 
+								clientAddressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
+							var outFileNameTemplate = aptekaClientDirectory + Path.DirectorySeparatorChar;
 
-							if (!Directory.Exists(AptekaClientDirectory))
-								Directory.CreateDirectory(AptekaClientDirectory);
+							if (!Directory.Exists(aptekaClientDirectory))
+								Directory.CreateDirectory(aptekaClientDirectory);
 
-
-							var OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar() + "_"
+							var outFileName = outFileNameTemplate + cmdInsert.ExecuteScalar() + "_"
 							                     + drCurrent["ShortName"]
 							                     + "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
 							                     + Path.GetExtension(formatFile);
-							OutFileName = PriceProcessor.FileHelper.NormalizeFileName(OutFileName);
+							outFileName = PriceProcessor.FileHelper.NormalizeFileName(outFileName);
 
 							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
-							if (File.Exists(OutFileName))
+							if (File.Exists(outFileName))
 								try
 								{
-									_logger.DebugFormat("MoveWaybill.Попытка удалить файл {0}", OutFileName);
-									File.Delete(OutFileName);
-									_logger.DebugFormat("MoveWaybill.Удаление файла успешно {0}", OutFileName);
+									_logger.DebugFormat("MoveWaybill.Попытка удалить файл {0}", outFileName);
+									File.Delete(outFileName);
+									_logger.DebugFormat("MoveWaybill.Удаление файла успешно {0}", outFileName);
 								}
 								catch (Exception ex)
 								{
-									_logger.ErrorFormat("MoveWaybill.Ошибка при удалении файла {0}\r\n{1}", OutFileName, ex);
+									_logger.ErrorFormat("MoveWaybill.Ошибка при удалении файла {0}\r\n{1}", outFileName, ex);
 								}
 
-							File.Copy(formatFile, OutFileName);
-							_logger.InfoFormat("Файл {0} скопирован в документы клиента.", OutFileName);
+							File.Copy(formatFile, outFileName);
+							_logger.InfoFormat("Файл {0} скопирован в документы клиента.", outFileName);
+							// Сохраняем накладную в локальной папке
+							SaveWaybill(clientAddressId, _currentDocumentType, outFileName);
 						}
 
 						if (File.Exists(formatFile))
@@ -365,17 +399,27 @@ and st.SourceID = 4";
 				(e, ex) => Ping());
 		}
 
-		private void WriteLog(int? DocumentType, int? logFirmCode, int? logClientCode, string logFileName, string logAddition)
+		private void WriteLog(int? documentType, int? logSupplierId, int? logAddressId, string logFileName, string logAddition)
 		{
 			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
 			{
-				var cmdInsert = new MySqlCommand("insert into logs.document_logs (FirmCode, ClientCode, FileName, Addition, DocumentType) values (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
+				var cmdInsert = new MySqlCommand(@"
+INSERT INTO logs.document_logs (FirmCode, ClientCode, AddressId, FileName, Addition, DocumentType) 
+VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?Addition, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
+				// Получаем идентификатор клиента по идентификатору адреса
+				var logClientId = GetClientIdByAddress(ref logAddressId);
+				if (logClientId == null)
+				{
+					logClientId = logAddressId;
+					logAddressId = null;
+				}
 
-				cmdInsert.Parameters.AddWithValue("?FirmCode", logFirmCode);
-				cmdInsert.Parameters.AddWithValue("?ClientCode", logClientCode);
+				cmdInsert.Parameters.AddWithValue("?SupplierId", logSupplierId);
+				cmdInsert.Parameters.AddWithValue("?ClientId", logClientId);
 				cmdInsert.Parameters.AddWithValue("?FileName", logFileName);
 				cmdInsert.Parameters.AddWithValue("?Addition", logAddition);
-				cmdInsert.Parameters.AddWithValue("?DocumentType", DocumentType);
+				cmdInsert.Parameters.AddWithValue("?DocumentType", documentType);
+				cmdInsert.Parameters.AddWithValue("?AddressId", logAddressId);
 				cmdInsert.ExecuteNonQuery();
 
 				return null;
@@ -390,18 +434,19 @@ and st.SourceID = 4";
 
 		}
 
-		private static BaseDocumentReader GetDocumentReader(string ReaderClassName)
+		private static BaseDocumentReader GetDocumentReader(string readerClassName)
 		{ 
 			Type result = null;
-			var types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, ReaderClassName);
+			var types = Assembly.GetExecutingAssembly()
+								.GetModules()[0]
+								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
 			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", ReaderClassName));
+				throw new Exception(String.Format("Найдено более одного типа с именем {0}", readerClassName));
 			if (types.Length == 1)
 				result = types[0];
 			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", ReaderClassName));
+				throw new Exception(String.Format("Класс {0} не найден", readerClassName));
 			return (BaseDocumentReader)Activator.CreateInstance(result);
 		}
-
 	}
 }
