@@ -14,13 +14,13 @@ namespace Inforoom.Downloader
 			sourceType = "LAN";
 		}
 
-        protected override void GetFileFromSource()
+        protected override void GetFileFromSource(PriceSource source)
         {
             CurrFileName = String.Empty;
-            try
+        	try
             {
-				var PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + dtSources.Rows[0][SourcesTableColumns.colFirmCode].ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
-                var ff = Directory.GetFiles(PricePath, dtSources.Rows[0][SourcesTableColumns.colPriceMask].ToString());
+				var PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + source.FirmCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
+                var ff = Directory.GetFiles(PricePath, source.PriceMask);
 
 				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
 				var sortedFileList = new SortedList<DateTime, string>();
@@ -58,25 +58,25 @@ namespace Inforoom.Downloader
 					}
 					catch (Exception ex)
 					{
-						Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]), String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+						Logging(source.PriceItemId, String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
 					}
 				}
             }
             catch(Exception exDir)
             {
-				Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]), String.Format("Не удалось получить список файлов : {0}", exDir));
+				Logging(source.PriceItemId, String.Format("Не удалось получить список файлов : {0}", exDir));
             }
         }
 
-        protected override DataRow[] GetLikeSources()
+        protected override DataRow[] GetLikeSources(PriceSource source)
         {
-        	if (dtSources.Rows[0][SourcesTableColumns.colPriceMask] is DBNull)
+        	if (String.IsNullOrEmpty(source.PriceMask))
 				return dtSources.Select(String.Format("({0} = {1}) and ({2} is null)",
-					SourcesTableColumns.colFirmCode, dtSources.Rows[0][SourcesTableColumns.colFirmCode],
+					SourcesTableColumns.colFirmCode, source.FirmCode,
 					SourcesTableColumns.colPriceMask));
         	return dtSources.Select(String.Format("({0} = {1}) and ({2} = '{3}')",
-        	                                      SourcesTableColumns.colFirmCode, dtSources.Rows[0][SourcesTableColumns.colFirmCode],
-        	                                      SourcesTableColumns.colPriceMask, dtSources.Rows[0][SourcesTableColumns.colPriceMask]));
+        	                                      SourcesTableColumns.colFirmCode, source.FirmCode,
+        	                                      SourcesTableColumns.colPriceMask, source.PriceMask));
         }
     }
 }

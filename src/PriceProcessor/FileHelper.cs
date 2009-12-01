@@ -22,6 +22,14 @@ namespace Inforoom.PriceProcessor
 			ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
 		}
 
+		public static void ExtractFromArhive(string ArchName, string TempDir, string password)
+		{
+			if (Directory.Exists(TempDir))
+				Directory.Delete(TempDir, true);
+			Directory.CreateDirectory(TempDir);
+			ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar, password);
+		}
+
 		public static string GetSuccessAddition(string ArchName, string FileName)
 		{
 			return String.Format("{0} > {1}", Path.GetFileName(ArchName), Path.GetFileName(FileName));

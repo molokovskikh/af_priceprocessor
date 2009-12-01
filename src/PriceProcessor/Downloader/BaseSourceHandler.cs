@@ -180,6 +180,7 @@ SELECT
   st.PricePath,  
   st.EMailTo, st.EMailFrom, 
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
+  st.ArchivePassword,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask,
   pi.LastDownload

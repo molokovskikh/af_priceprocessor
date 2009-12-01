@@ -53,44 +53,42 @@ namespace Inforoom.Downloader
         }
 
 
-        protected override void GetFileFromSource()
+        protected override void GetFileFromSource(PriceSource source)
         {
             CurrFileName = String.Empty;
-            var PricePath = dtSources.Rows[0][SourcesTableColumns.colPricePath].ToString().Trim();
-            if (!PricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
-                PricePath = @"http://" + PricePath;
+        	var pricePath = source.PricePath;
+            if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
+                pricePath = @"http://" + pricePath;
 
-            var HTTPFileName = (string)dtSources.Rows[0][SourcesTableColumns.colPriceMask];
-            var DownFileName = String.Empty;
+            var httpFileName = source.PriceMask;
             try
             {
-				var priceDateTime = GetPriceDateTime();
+				var priceDateTime = source.PriceDateTime;
 
-                var fileLastWriteTime = GetFileDateTime(PricePath, dtSources.Rows[0][SourcesTableColumns.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTableColumns.colHTTPPassword].ToString());
+                var fileLastWriteTime = GetFileDateTime(pricePath, source.HttpLogin, source.HttpPassword);
 
 				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
                 {
-                    DownFileName = DownHandlerPath + HTTPFileName;
-                    GetFile(PricePath, DownFileName, dtSources.Rows[0][SourcesTableColumns.colHTTPLogin].ToString(), dtSources.Rows[0][SourcesTableColumns.colHTTPPassword].ToString());
-                    CurrFileName = DownFileName;
+                    var downFileName = DownHandlerPath + httpFileName;
+                    GetFile(pricePath, downFileName, source.HttpLogin, source.HttpPassword);
+                    CurrFileName = downFileName;
                     CurrPriceDate = fileLastWriteTime;
                 }
 
             }
             catch (Exception ex)
             {
-                Logging(Convert.ToUInt64(dtSources.Rows[0][SourcesTableColumns.colPriceItemId]), ex.ToString());
+                Logging(source.PriceItemId, ex.ToString());
             }
         }
 
-        protected override DataRow[] GetLikeSources()
+        protected override DataRow[] GetLikeSources(PriceSource source)
         {
-            return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
-                SourcesTableColumns.colPricePath, dtSources.Rows[0][SourcesTableColumns.colPricePath],
-                SourcesTableColumns.colPriceMask, dtSources.Rows[0][SourcesTableColumns.colPriceMask],
-                SourcesTableColumns.colHTTPLogin, dtSources.Rows[0][SourcesTableColumns.colHTTPLogin],
-                SourcesTableColumns.colHTTPPassword, dtSources.Rows[0][SourcesTableColumns.colHTTPPassword]));
+        	return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
+        				SourcesTableColumns.colPricePath, source.PricePath,
+        				SourcesTableColumns.colPriceMask, source.PriceMask,
+        				SourcesTableColumns.colHTTPLogin, source.HttpLogin,
+        				SourcesTableColumns.colHTTPPassword, source.HttpPassword));
         }
-
     }
 }

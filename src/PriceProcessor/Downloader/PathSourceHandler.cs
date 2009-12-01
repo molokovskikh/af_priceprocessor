@@ -7,16 +7,52 @@ using FileHelper=Inforoom.PriceProcessor.FileHelper;
 
 namespace Inforoom.Downloader
 {
-    public abstract class PathSourceHandler : BasePriceSourceHandler
-    {
-    	protected DateTime GetPriceDateTime()
+	public class PriceSource
+	{
+		public PriceSource(DataRow currentSource)
 		{
-			var row = dtSources.Rows[0];
-			if (row["LastDownload"] is DBNull)
-				return DateTime.MinValue;
-    		return Convert.ToDateTime(row["LastDownload"]);
+			PriceItemId = Convert.ToUInt32(currentSource[SourcesTableColumns.colPriceItemId]);
+			PricePath = currentSource[SourcesTableColumns.colPricePath].ToString().Trim();
+			PriceMask = (string)currentSource[SourcesTableColumns.colPriceMask];
+
+			HttpLogin = currentSource[SourcesTableColumns.colHTTPLogin].ToString();
+			HttpPassword = currentSource[SourcesTableColumns.colHTTPPassword].ToString();
+
+			FtpDir = (string) currentSource[SourcesTableColumns.colFTPDir];
+			FtpLogin = currentSource[SourcesTableColumns.colFTPLogin].ToString();
+			FtpPassword = currentSource[SourcesTableColumns.colFTPPassword].ToString();
+			FtpPassiveMode = Convert.ToByte(currentSource[SourcesTableColumns.colFTPPassiveMode]) == 1;
+
+			FirmCode = currentSource[SourcesTableColumns.colFirmCode];
+
+			ArchivePassword = currentSource["ArchivePassword"].ToString();
+
+			if (currentSource["LastDownload"] is DBNull)
+				PriceDateTime = DateTime.MinValue;
+			else 
+				PriceDateTime = Convert.ToDateTime(currentSource["LastDownload"]);
 		}
 
+		public uint PriceItemId { get; set; }
+		public string PricePath { get; set; }
+		public string PriceMask { get; set; }
+
+		public string HttpLogin { get; set; }
+		public string HttpPassword { get; set; }
+
+		public string FtpDir { get; set; }
+		public string FtpLogin { get; set; }
+		public string FtpPassword { get; set; }
+		public bool FtpPassiveMode { get; set; }
+
+		public object FirmCode { get; set; }
+
+		public DateTime PriceDateTime { get; set; }
+		public string ArchivePassword { get; set; }
+	}
+
+    public abstract class PathSourceHandler : BasePriceSourceHandler
+    {
         protected override void ProcessData()
         {
             //набор строк похожих источников
@@ -25,49 +61,30 @@ namespace Inforoom.Downloader
             while (dtSources.Rows.Count > 0)
             {
                 drLS = null;
-                try
+            	var currentSource = dtSources.Rows[0];
+            	var priceSource = new PriceSource(currentSource);
+            	try
                 {
-                    drLS = GetLikeSources();
+                    drLS = GetLikeSources(priceSource);
 #if DEBUG
 					if (drLS.Length < 1)
 						_logger.Debug("!!!!!!!!!!!!!   drLS.Length < 1");
 #endif
-                    GetFileFromSource();
+                    GetFileFromSource(priceSource);
 
                     if (!String.IsNullOrEmpty(CurrFileName))
                     {
-                        bool CorrectArchive = true;
-                        //Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-                        if (ArchiveHelper.IsArchive(CurrFileName))
-                        {
-                            if (ArchiveHelper.TestArchive(CurrFileName))
-                            {
-                                try
-                                {
-                                    FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
-                                }
-                                catch (ArchiveHelper.ArchiveException)
-                                {
-                                    CorrectArchive = false;
-                                }
-                            }
-                            else
-                                CorrectArchive = false;
-                        }
-                        foreach (var drS in drLS)
+                        var correctArchive = ProcessArchiveIfNeeded(priceSource);
+                    	foreach (var drS in drLS)
                         {
                             SetCurrentPriceCode(drS);
-                            if (CorrectArchive)
+                            if (correctArchive)
                             {
 								var ExtrFile = String.Empty;
 								if (ProcessPriceFile(CurrFileName, out ExtrFile))
-                                {
 									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
-                                }
                                 else
-                                {
 									LogDownloaderPrice("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
-                                }
                             }
                             else
                             {
@@ -101,8 +118,8 @@ namespace Inforoom.Downloader
                     }
                     else
                     {
-                        Error = String.Format("Источник : {0}", dtSources.Rows[0][SourcesTableColumns.colPriceCode]);
-						FileHelper.Safe(() => dtSources.Rows[0].Delete());
+                        Error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
+						FileHelper.Safe(currentSource.Delete);
                     }
                     Error += Environment.NewLine + Environment.NewLine + ex;
                     LoggingToService(Error);
@@ -111,7 +128,30 @@ namespace Inforoom.Downloader
             }
         }
 
-		protected override void CopyToHistory(UInt64 PriceID)
+    	private bool ProcessArchiveIfNeeded(PriceSource priceSource)
+    	{
+    		bool CorrectArchive = true;
+    		//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+    		if (ArchiveHelper.IsArchive(CurrFileName))
+    		{
+    			if (ArchiveHelper.TestArchive(CurrFileName))
+    			{
+    				try
+    				{
+    					FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix, priceSource.ArchivePassword);
+    				}
+    				catch (ArchiveHelper.ArchiveException)
+    				{
+    					CorrectArchive = false;
+    				}
+    			}
+    			else
+    				CorrectArchive = false;
+    		}
+    		return CorrectArchive;
+    	}
+
+    	protected override void CopyToHistory(UInt64 PriceID)
 		{
 			var HistoryFileName = DownHistoryPath + PriceID + Path.GetExtension(CurrFileName);
 			FileHelper.Safe(() => File.Copy(CurrFileName, HistoryFileName));
@@ -128,12 +168,12 @@ namespace Inforoom.Downloader
     	/// <summary>
         /// Получает файл из источника, взятого из таблицы первым
         /// </summary>
-        protected abstract void GetFileFromSource();
+        protected abstract void GetFileFromSource(PriceSource row);
 
         /// <summary>
         /// Получить прайс-листы, у которых истоники совпадают с первым в списке
         /// </summary>
         /// <returns></returns>
-        protected abstract DataRow[] GetLikeSources();
+        protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
     }
 }
