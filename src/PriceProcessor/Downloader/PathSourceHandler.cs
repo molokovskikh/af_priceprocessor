@@ -13,12 +13,12 @@ namespace Inforoom.Downloader
 		{
 			PriceItemId = Convert.ToUInt32(currentSource[SourcesTableColumns.colPriceItemId]);
 			PricePath = currentSource[SourcesTableColumns.colPricePath].ToString().Trim();
-			PriceMask = (string)currentSource[SourcesTableColumns.colPriceMask];
+			PriceMask = currentSource[SourcesTableColumns.colPriceMask].ToString();
 
 			HttpLogin = currentSource[SourcesTableColumns.colHTTPLogin].ToString();
 			HttpPassword = currentSource[SourcesTableColumns.colHTTPPassword].ToString();
 
-			FtpDir = (string) currentSource[SourcesTableColumns.colFTPDir];
+			FtpDir = currentSource[SourcesTableColumns.colFTPDir].ToString();
 			FtpLogin = currentSource[SourcesTableColumns.colFTPLogin].ToString();
 			FtpPassword = currentSource[SourcesTableColumns.colFTPPassword].ToString();
 			FtpPassiveMode = Convert.ToByte(currentSource[SourcesTableColumns.colFTPPassiveMode]) == 1;
