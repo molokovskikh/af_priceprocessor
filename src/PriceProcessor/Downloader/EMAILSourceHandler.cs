@@ -401,6 +401,9 @@ namespace Inforoom.Downloader
 		{
 			var fileName = CurrFileName;
 			var tempExtractDir = CurrFileName + ExtrDirSuffix;
+
+			var dataRow = dtSources.Rows[0];
+			var priceSource = new PriceSource(dataRow);
 			//явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
 			if (ArchiveHelper.IsArchive(fileName))
 			{
@@ -408,7 +411,7 @@ namespace Inforoom.Downloader
 				{
 					try
 					{
-						FileHelper.ExtractFromArhive(fileName, tempExtractDir);
+						FileHelper.ExtractFromArhive(fileName, tempExtractDir, priceSource.ArchivePassword);
 						return true;
 					}
 					catch (ArchiveHelper.ArchiveException)

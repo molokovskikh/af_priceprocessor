@@ -130,7 +130,7 @@ WHERE RowId = ?DownlogId
 
 			var queryInsert = @"
 INSERT INTO farm.sources
-VALUES(?SourceId, ?SourceTypeId, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL)
+VALUES(?SourceId, ?SourceTypeId, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL)
 ";
 			var queryUpdate = @"
 UPDATE farm.sources
