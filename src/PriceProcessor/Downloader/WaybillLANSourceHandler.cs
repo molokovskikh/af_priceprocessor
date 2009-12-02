@@ -331,7 +331,7 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 								clientId = clientAddressId;
 								clientAddressId = null;
 							}
-							cmdInsert.Parameters["?ClientCode"].Value = clientId;
+							cmdInsert.Parameters["?ClientId"].Value = clientId;
 							cmdInsert.Parameters["?AddressId"].Value = clientAddressId;
 							cmdInsert.Parameters["?Addition"].Value = DBNull.Value;
 
