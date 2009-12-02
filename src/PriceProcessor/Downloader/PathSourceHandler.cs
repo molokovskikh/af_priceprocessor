@@ -134,7 +134,7 @@ namespace Inforoom.Downloader
     		//явл€етс€ ли скачанный файл корректным, если нет, то обрабатывать не будем
     		if (ArchiveHelper.IsArchive(CurrFileName))
     		{
-    			if (ArchiveHelper.TestArchive(CurrFileName))
+    			if (ArchiveHelper.TestArchive(CurrFileName, priceSource.ArchivePassword))
     			{
     				try
     				{
