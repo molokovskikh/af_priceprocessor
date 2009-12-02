@@ -13,7 +13,7 @@ using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
-	class WaybillLANSourceHandler : BaseSourceHandler
+	public class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
 		private InboundDocumentType _currentDocumentType;
@@ -334,6 +334,9 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 							cmdInsert.Parameters["?ClientId"].Value = clientId;
 							cmdInsert.Parameters["?AddressId"].Value = clientAddressId;
 							cmdInsert.Parameters["?Addition"].Value = DBNull.Value;
+
+							if (clientAddressId == null)
+								clientAddressId = clientId;
 
 							try
 							{
