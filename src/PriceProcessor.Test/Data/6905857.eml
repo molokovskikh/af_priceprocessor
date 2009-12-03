@@ -1,33 +1,33 @@
 Return-Path: <djudman@gmail.com>
 Received: from ?91.209.124.53? ([91.209.124.53])
-        by mx.google.com with ESMTPS id 15sm1179821fxm.6.2009.11.17.04.14.52
+        by mx.google.com with ESMTPS id 16sm127367fxm.0.2009.12.01.09.16.10
         (version=TLSv1/SSLv3 cipher=RC4-MD5);
-        Tue, 17 Nov 2009 04:14:53 -0800 (PST)
-Message-ID: <4B0293BC.1040400@gmail.com>
-Date: Tue, 17 Nov 2009 15:14:52 +0300
+        Tue, 01 Dec 2009 09:16:10 -0800 (PST)
+Message-ID: <4B154F59.8040606@gmail.com>
+Date: Tue, 01 Dec 2009 20:16:09 +0300
 From: Dorofeev Dmitry <djudman@gmail.com>
 User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
 To: djudman@gmail.com
-Subject: email
+Subject: mail
 Content-Type: multipart/mixed;
- boundary="------------080504000300030707060502"
+ boundary="------------030506090903050306030908"
 
 This is a multi-part message in MIME format.
---------------080504000300030707060502
+--------------030506090903050306030908
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
---------------080504000300030707060502
+--------------030506090903050306030908
 Content-Type: application/x-zip-compressed;
  name="price.zip"
 Content-Transfer-Encoding: base64
 Content-Disposition: inline;
  filename="price.zip"
 
-UEsDBBQAAAAAAIp2cTvSY0iIAwAAAAMAAAAJAAAAcHJpY2UudHh0MTIzUEsBAgAAFAAAAAAA
-inZxO9JjSIgDAAAAAwAAAAkAAAAAAAAAAQAgAAAAAAAAAHByaWNlLnR4dFBLBQYAAAAAAQAB
-ADcAAAAqAAAAAAA=
---------------080504000300030707060502--
+UEsDBAoAAQAAAOqhgTu9ScJAKwAAAB8AAAAJAAAAcHJpY2UudHh0nrCcQ/jW4rBHWBLVJrKf
+u4TKNhZRzvxVmZN9/QeMPygQJ/kEJViGnbfd0FBLAQIUAAoAAQAAAOqhgTu9ScJAKwAAAB8A
+AAAJAAAAAAAAAAAAIAAAAAAAAABwcmljZS50eHRQSwUGAAAAAAEAAQA3AAAAUgAAAAAA
+--------------030506090903050306030908--

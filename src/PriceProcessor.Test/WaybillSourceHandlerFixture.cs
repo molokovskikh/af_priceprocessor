@@ -19,7 +19,7 @@ namespace PriceProcessor.Test
 	{
 		private string _imapServer = Settings.Default.IMAPHost;
 
-		private int _imapServerPort = 143;
+		private int _imapServerPort = Convert.ToInt32(Settings.Default.IMAPPort);
 
 		private string _imapUser = Settings.Default.TestIMAPUser;
 
@@ -54,8 +54,9 @@ namespace PriceProcessor.Test
 		public void InitTest()
 		{
 			DeleteFolders();
-			// Удаляем все сообщения из папки Inbox
-			DeleteAllMessages();
+			// Удаляем все сообщения из папки Test
+			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
+			                           Settings.Default.IMAPSourceFolder);
 			// Формируем в папке Inbox письма с накладными
 			CreateDocumentsInMailbox();
 			// Настраиваем поставщиков в таблицах usersettings.ClientsData и documents.waybill_sources
@@ -152,74 +153,10 @@ WHERE cd.FirmCode = ?FirmCode
 						else
 							// Отправляем отказ
 							to = String.Format("{0}@{1}", _clientsCodes[i,j], _rejectType.Domen);
-						StoreMessageToMailbox(to, _suppliersEmails[i], attachFileName);
+						TestHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
+						                                              Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder, to,
+						                                              _suppliersEmails[i], attachFileName);
 						countSendedAttaches++;
-					}
-				}
-			}
-		}
-
-		// Кладет сообщение с вложением-накладной (или отказом) в папку Inbox
-		private void StoreMessageToMailbox(string to, string from, string attachFilePath)
-		{
-			var templateMessageText = @"To: {0}
-From: {1}
-Subject: TestWaybillSourceHandler
-Content-Type: multipart/mixed;
- boundary=""------------060602000201050608050809""
-
-This is a multi-part message in MIME format.
---------------060602000201050608050809
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-
-
-
---------------060602000201050608050809
-Content-Type: application/octet-stream;
- name=""{2}""
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename=""{2}""
-
-{3}
---------------060602000201050608050809--
-
-";
-			using (var fileStream = File.OpenRead(attachFilePath))
-			{
-				var fileBytes = new byte[fileStream.Length];
-				fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
-				var messageText = String.Format(templateMessageText, to, from,
-				                                Path.GetFileName(attachFilePath), Convert.ToBase64String(fileBytes));
-				byte[] messageBytes = new UTF8Encoding().GetBytes(messageText);
-				using (var imapClient = new IMAP_Client())
-				{
-					imapClient.Connect(_imapServer, _imapServerPort);
-					imapClient.Authenticate(_imapUser, _imapPassword);
-					imapClient.StoreMessage("Inbox", messageBytes);
-				}
-			}
-		}
-
-		// Удаляет все сообщения из Inbox
-		private void DeleteAllMessages()
-		{
-			using (var imapClient = new IMAP_Client())
-			{
-				imapClient.Connect(_imapServer, _imapServerPort);
-				imapClient.Authenticate(_imapUser, _imapPassword);
-				imapClient.SelectFolder("INBOX");
-				var sequenceSet = new IMAP_SequenceSet();
-				sequenceSet.Parse("1:*", long.MaxValue);
-				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
-				if ((items != null) && (items.Length > 0))
-				{
-					foreach (IMAP_FetchItem item in items)
-					{
-						var sequenceMessages = new IMAP_SequenceSet();
-						sequenceMessages.Parse(item.UID.ToString(), long.MaxValue);
-						imapClient.DeleteMessages(sequenceMessages, true);
 					}
 				}
 			}

@@ -52,11 +52,12 @@ namespace Inforoom.Downloader
 
         protected override void ProcessData()
         {
+        	string imapSourceFolder = Settings.Default.IMAPSourceFolder;
 			using (var c = new IMAP_Client())
 			{
 				c.Connect(Settings.Default.IMAPHost, 143);
 				IMAPAuth(c);
-				c.SelectFolder("INBOX");
+				c.SelectFolder(imapSourceFolder);
 
 				try
 				{
@@ -230,17 +231,15 @@ namespace Inforoom.Downloader
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			bool _Matched = false;
 
-			bool CorrectArchive = true;
-			string ShortFileName = string.Empty;
+			var attachmentFileName = string.Empty;
 
 			foreach (MimeEntity ent in m.Attachments)
 			{
 				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || 
 					!String.IsNullOrEmpty(ent.ContentType_Name))
 				{
-					ShortFileName = SaveAttachement(ent);
-					CorrectArchive = CheckFile();
-					UnPack(m, ref _Matched, FromList, ShortFileName, CorrectArchive);
+					attachmentFileName = SaveAttachement(ent);
+					UnPack(m, ref _Matched, FromList, attachmentFileName);
 					DeleteCurrFile();
 				}
 			}
@@ -265,17 +264,11 @@ namespace Inforoom.Downloader
 			}
 			return m.Attachments.Length > 0;
 		}
-		
+
 		/// <summary>
 		/// Происходит разбор собственно вложения и сверка его с источниками
 		/// </summary>
-		/// <param name="m"></param>
-		/// <param name="Matched"></param>
-		/// <param name="FromList"></param>
-		/// <param name="ShortFileName"></param>
-		/// <param name="CorrectArchive"></param>
-		protected virtual void UnPack(Mime m, ref bool Matched, AddressList FromList, 
-			string ShortFileName, bool CorrectArchive)
+		private void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName)
 		{
 			DataRow[] drLS = null;
 
@@ -298,6 +291,10 @@ namespace Inforoom.Downloader
 								(String.Compare(ShortFileName, (string)drS[SourcesTableColumns.colPriceMask], true) == 0))
 							{
 								SetCurrentPriceCode(drS);
+
+								// Пробуем разархивировать
+								var CorrectArchive = CheckFile(drS["ArchivePassword"].ToString());
+
 								if (CorrectArchive)
 								{
 									string ExtrFile = String.Empty;
@@ -399,16 +396,22 @@ namespace Inforoom.Downloader
 
 		protected bool CheckFile()
 		{
+			return CheckFile(null);
+		}
+
+		private bool CheckFile(string archivePassword)
+		{
 			var fileName = CurrFileName;
 			var tempExtractDir = CurrFileName + ExtrDirSuffix;
+
 			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
 			if (ArchiveHelper.IsArchive(fileName))
 			{
-				if (ArchiveHelper.TestArchive(fileName))
+				if (ArchiveHelper.TestArchive(fileName, archivePassword))
 				{
 					try
 					{
-						FileHelper.ExtractFromArhive(fileName, tempExtractDir);
+						FileHelper.ExtractFromArhive(fileName, tempExtractDir, archivePassword);
 						return true;
 					}
 					catch (ArchiveHelper.ArchiveException)
@@ -418,19 +421,19 @@ namespace Inforoom.Downloader
 				}
 				return false;
 			}
-			return true;
+			return true;			
 		}
 
 		protected string SaveAttachement(MimeEntity ent)
 		{
-			string ShortFileName = GetShortFileNameFromAttachement(ent);
-			CurrFileName = DownHandlerPath + ShortFileName;
-			using (FileStream fs = new FileStream(CurrFileName, FileMode.Create))
+			var attachmentFileName = GetShortFileNameFromAttachement(ent);
+			CurrFileName = DownHandlerPath + attachmentFileName;
+			using (var fs = new FileStream(CurrFileName, FileMode.Create))
 			{
 				ent.DataToStream(fs);
 				fs.Close();
 			}
-			return ShortFileName;			 
+			return attachmentFileName;			 
 		}
 
 		protected string GetShortFileNameFromAttachement(MimeEntity ent)

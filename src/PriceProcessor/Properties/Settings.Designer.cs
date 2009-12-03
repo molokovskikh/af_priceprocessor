@@ -641,15 +641,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("morfemus")]
-        public string TestIMAPPass {
-            get {
-                return ((string)(this["TestIMAPPass"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("d.dorofeev@analit.net")]
         public string SMTPUserFail {
             get {
@@ -762,6 +753,33 @@ namespace Inforoom.PriceProcessor.Properties {
         public string WaybillIMAPPass {
             get {
                 return ((string)(this["WaybillIMAPPass"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Test")]
+        public string IMAPSourceFolder {
+            get {
+                return ((string)(this["IMAPSourceFolder"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("newPass1")]
+        public string TestIMAPPass {
+            get {
+                return ((string)(this["TestIMAPPass"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("143")]
+        public string IMAPPort {
+            get {
+                return ((string)(this["IMAPPort"]));
             }
         }
     }

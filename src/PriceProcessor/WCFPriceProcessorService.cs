@@ -41,6 +41,7 @@ SELECT
   s.PricePath as DPricePath,
   s.EmailTo as DEmailTo,
   s.EmailFrom as DEmailFrom,
+  s.ArchivePassword,
   pricefmts.FileExtention as DFileExtention
 FROM
   logs.downlogs as logs,
@@ -123,7 +124,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				if (Directory.Exists(TempDirectory))
 					Directory.Delete(TempDirectory, true);
 				Directory.CreateDirectory(TempDirectory);
-				ArchiveHelper.Extract(filename, externalFileName, TempDirectory);
+				ArchiveHelper.Extract(filename, externalFileName, TempDirectory, drFocused["ArchivePassword"].ToString());
 				var files = Directory.GetFiles(TempDirectory, externalFileName);
 				string path = String.Empty;
 				if (files.Length > 0)

@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Data;
 using System.IO;
+using System.Text;
 using Common.Tools;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Properties;
+using LumiSoft.Net.IMAP;
+using LumiSoft.Net.IMAP.Client;
 using MySql.Data.MySqlClient;
 using System.Configuration;
 using NUnit.Framework;
@@ -207,6 +212,119 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 					            "Колонка {0}. Строка результата {1}. Строка эталона {2}.", column.ColumnName, resultRow["Id"], etalonRow["Id"]);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Кладет сообщение с файлом-вложением в IMAP папку.
+		/// Ящик, пароль и название IMAP папки берутся из конфигурационного файла.
+		/// </summary>
+		/// <param name="to">Адрес, который будет помещен в поле TO</param>
+		/// <param name="from">Адрес, который будет помещен в поле FROM</param>
+		/// <param name="attachFilePath">Путь к файлу, который будет помещен во вложение к этому письму</param>
+		public static void StoreMessageWithAttachToImapFolder(string mailbox, string password, string folder, 
+			string to, string from, string attachFilePath)
+		{
+			var templateMessageText = @"To: {0}
+From: {1}
+Subject: TestWaybillSourceHandler
+Content-Type: multipart/mixed;
+ boundary=""------------060602000201050608050809""
+
+This is a multi-part message in MIME format.
+--------------060602000201050608050809
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+--------------060602000201050608050809
+Content-Type: application/octet-stream;
+ name=""{2}""
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename=""{2}""
+
+{3}
+--------------060602000201050608050809--
+
+";
+			using (var fileStream = File.OpenRead(attachFilePath))
+			{
+				var fileBytes = new byte[fileStream.Length];
+				fileStream.Read(fileBytes, 0, (int)(fileStream.Length));
+				var messageText = String.Format(templateMessageText, to, from,
+												Path.GetFileName(attachFilePath), Convert.ToBase64String(fileBytes));
+				byte[] messageBytes = new UTF8Encoding().GetBytes(messageText);
+				using (var imapClient = new IMAP_Client())
+				{
+					imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
+					imapClient.Authenticate(mailbox, password);
+					imapClient.StoreMessage(folder, messageBytes);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Удаляет все сообщения из IMAP папки
+		/// </summary>
+		public static void ClearImapFolder(string mailbox, string password, string folder)
+		{
+			using (var imapClient = new IMAP_Client())
+			{
+				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
+				imapClient.Authenticate(mailbox, password);
+				imapClient.SelectFolder(folder);
+				var sequenceSet = new IMAP_SequenceSet();
+				sequenceSet.Parse("1:*", long.MaxValue);
+				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
+				if ((items != null) && (items.Length > 0))
+				{
+					foreach (var item in items)
+					{
+						var sequenceMessages = new IMAP_SequenceSet();
+						sequenceMessages.Parse(item.UID.ToString(), long.MaxValue);
+						imapClient.DeleteMessages(sequenceMessages, true);
+					}
+				}
+			}
+		}
+
+		public static void InsertOrUpdateTable(string queryInsert, string queryUpdate, params MySqlParameter[] parameters)
+		{
+			// Пробуем вставить строку в таблицу
+			try
+			{
+				With.Connection(connection =>
+				{
+					MySqlHelper.ExecuteNonQuery(connection, queryInsert, parameters);
+				});
+			}
+			catch (Exception)
+			{
+				// Если не получилось вставить строку, пробуем обновить ее
+				With.Connection(connection =>
+				{
+					MySqlHelper.ExecuteNonQuery(connection, queryUpdate, parameters);
+				});
+			}
+		}
+
+		public static void RecreateDirectories()
+		{
+			if (Directory.Exists(Settings.Default.InboundPath))
+				Directory.Delete(Settings.Default.InboundPath, true);
+			if (Directory.Exists(Settings.Default.HistoryPath))
+				Directory.Delete(Settings.Default.HistoryPath, true);
+			if (Directory.Exists(Settings.Default.TempPath))
+				Directory.Delete(Settings.Default.TempPath, true);
+			Program.InitDirs(new[]
+				         	{
+				         		Settings.Default.BasePath,
+				         		Settings.Default.ErrorFilesPath,
+				         		Settings.Default.InboundPath,
+				         		Settings.Default.TempPath,
+				         		Settings.Default.HistoryPath
+				         	});
 		}
 	}
 }

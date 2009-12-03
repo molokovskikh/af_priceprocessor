@@ -252,9 +252,6 @@
     <Setting Name="WCFServicePort" Type="System.String" Scope="Application">
       <Value Profile="(Default)">900</Value>
     </Setting>
-    <Setting Name="TestIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">morfemus</Value>
-    </Setting>
     <Setting Name="SMTPUserFail" Type="System.String" Scope="Application">
       <Value Profile="(Default)">d.dorofeev@analit.net</Value>
     </Setting>
@@ -293,6 +290,15 @@
     </Setting>
     <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">123</Value>
+    </Setting>
+    <Setting Name="IMAPSourceFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Test</Value>
+    </Setting>
+    <Setting Name="TestIMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">newPass1</Value>
+    </Setting>
+    <Setting Name="IMAPPort" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">143</Value>
     </Setting>
   </Settings>
 </SettingsFile>

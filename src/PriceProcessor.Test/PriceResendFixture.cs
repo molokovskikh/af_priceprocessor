@@ -18,21 +18,23 @@ namespace PriceProcessor.Test
 		private ServiceHost _serviceHost;
 
 		// Массив идентификаторов RowId из таблицы logs.downlogs
-		private static ulong[] DownlogIds = new ulong[4] { 6905857, 6905845, 6905885, 6906022 };
+		private static ulong[] DownlogIds = new ulong[5] { 6905857, 6905845, 6905885, 6906022, 6906021 };
 
 		// Массив идентификаторов PriceItemId из таблицы logs.downlogs
-		private static ulong[] PriceItemIds = new ulong[4] { 1006, 969, 648, 747 };
+		private static ulong[] PriceItemIds = new ulong[5] { 1006, 969, 648, 747, 748 };
 
-		private static ulong[] SourceIds = new ulong[4] { 4950, 4951, 4952, 4953 };
+		private static ulong[] SourceIds = new ulong[5] { 4950, 4951, 4952, 4953, 4952 };
 
-		private static ulong[] SourceTypeIds = new ulong[4] { 1, 3, 1, 4 }; 
+		private static ulong[] SourceTypeIds = new ulong[5] { 1, 3, 1, 4, 3 }; 
 
 		// Массив имен файлов (для каждого идентификатора должно быть имя на той же позиции в массиве)
-		private static string[] FileNames = new string[4] { "6905857.eml", "6905845.zip", "6905885.eml", "6906022.xls" };
+		private static string[] FileNames = new string[5] { "6905857.eml", "6905845.zip", "6905885.eml", "6906022.xls", "6906021.exe" };
 
-		private static string[] ArchFileNames = new string[4] { "price.zip", "price2.zip", "prs.txt", "price4.xls" };
+		private static string[] ArchFileNames = new string[5] { "price.zip", "price2.zip", "prs.txt", "price4.xls", "price.exe" };
 
-		private static string[] ExtrFileNames = new string[4] { "price.txt", "price-15.09.2009.xls", "prs.txt", "price4.xls" };
+		private static string[] ExtrFileNames = new string[5] { "price.txt", "price-15.09.2009.xls", "prs.txt", "price4.xls", "price.txt" };
+
+		private static string[] ArchivePasswords = new string[5] { "123", "", "", "", "rar1" };
 
 		[TestFixtureSetUp, Description("Создание нужных папок, проверка, что папки с нужными файлами существуют")]
 		public void InitFixture()
@@ -42,40 +44,9 @@ namespace PriceProcessor.Test
 			PrepareSourcesTable();
 		}
 
-		private void PrepareTable(string queryInsert, string queryUpdate, params MySqlParameter[] parameters)
-		{
-			// Пробуем вставить строку в таблицу
-			try
-			{
-				With.Connection(connection => {
-					MySqlHelper.ExecuteNonQuery(connection, queryInsert, parameters);
-				});
-			}
-			catch (Exception)
-			{
-				// Если не получилось вставить строку, пробуем обновить ее
-				With.Connection(connection => {
-					MySqlHelper.ExecuteNonQuery(connection, queryUpdate, parameters);
-				});
-			}			
-		}
-
 		private void PrepareDirectories()
 		{
-			// Удаляем папку Inbound со всеми файлами в ней,
-			// чтобы не возникала ошибка о том, что прайс находится на формализации
-			if (Directory.Exists(Settings.Default.InboundPath))
-				Directory.Delete(Settings.Default.InboundPath, true);
-			if (Directory.Exists(Settings.Default.HistoryPath))
-				Directory.Delete(Settings.Default.HistoryPath, true);
-			Program.InitDirs(new[]
-				         	{
-				         		Settings.Default.BasePath,
-				         		Settings.Default.ErrorFilesPath,
-				         		Settings.Default.InboundPath,
-				         		Settings.Default.TempPath,
-				         		Settings.Default.HistoryPath
-				         	});
+			TestHelper.RecreateDirectories();
 			var directory = Path.GetFullPath(@"..\..\Data");
 			if (Directory.Exists(directory))
 			{
@@ -111,7 +82,6 @@ UPDATE logs.downlogs
 SET PriceItemId = ?PriceItemId, ArchFileName = ?ArchFileName, ExtrFileName = ?ExtrFileName
 WHERE RowId = ?DownlogId
 ";
-			var indexPriceItemId = 0;
 			for (var index = 0; index < DownlogIds.Length; index++)
 			{
 				var paramDownlogId = new MySqlParameter("?DownlogId", DownlogIds[index]);
@@ -119,7 +89,8 @@ WHERE RowId = ?DownlogId
 				var paramArchFileName = new MySqlParameter("?ArchFileName", ArchFileNames[index]);
 				var paramExtrFileName = new MySqlParameter("?ExtrFileName", ExtrFileNames[index]);
 
-				PrepareTable(queryInsert, queryUpdate, paramDownlogId, paramPriceItemId, paramArchFileName, paramExtrFileName);
+				TestHelper.InsertOrUpdateTable(queryInsert, queryUpdate, paramDownlogId, paramPriceItemId, paramArchFileName,
+				                               paramExtrFileName);
 			}
 		}
 
@@ -130,19 +101,20 @@ WHERE RowId = ?DownlogId
 
 			var queryInsert = @"
 INSERT INTO farm.sources
-VALUES(?SourceId, ?SourceTypeId, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL)
+VALUES(?SourceId, ?SourceTypeId, NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, ?ArchivePassword, NULL, NULL)
 ";
 			var queryUpdate = @"
 UPDATE farm.sources
-SET SourceTypeId = ?SourceTypeId
+SET SourceTypeId = ?SourceTypeId, ArchivePassword = ?ArchivePassword
 WHERE Id = ?SourceId
 ";
             for (var index = 0; index < SourceIds.Length; index++)
             {
             	var paramSourceId = new MySqlParameter("?SourceId", SourceIds[index]);
             	var paramSourceTypeId = new MySqlParameter("?SourceTypeId", SourceTypeIds[index]);
+            	var paramArchivePassword = new MySqlParameter("?ArchivePassword", ArchivePasswords[index]);
 
-				PrepareTable(queryInsert, queryUpdate, paramSourceId, paramSourceTypeId);
+				TestHelper.InsertOrUpdateTable(queryInsert, queryUpdate, paramSourceId, paramSourceTypeId, paramArchivePassword);
             }
 		}
 
@@ -163,7 +135,7 @@ WHERE Id = ?PriceItemId
 				var paramPriceItemId = new MySqlParameter("?PriceItemId", PriceItemIds[index]);
 				var paramSourceId = new MySqlParameter("?SourceId", SourceIds[index]);
 
-				PrepareTable(queryInsert, queryUpdate, paramPriceItemId, paramSourceId);
+				TestHelper.InsertOrUpdateTable(queryInsert, queryUpdate, paramPriceItemId, paramSourceId);
 			}
 		}
 
@@ -175,7 +147,6 @@ SELECT d.PriceItemId
 FROM logs.downlogs d
 WHERE RowId = ?downlogId
 ";
-			int index = 0;
 			var priceInQuery = false;
 			StartWcfPriceProcessor();
 			foreach (var downlogId in DownlogIds)
@@ -234,7 +205,7 @@ WHERE RowId = ?downlogId
 				((ICommunicationObject)priceProcessor).Close();
 				success = true;
 			}
-			catch (FaultException faultEx)
+			catch (FaultException)
 			{
 				if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
 					((ICommunicationObject)priceProcessor).Abort();
