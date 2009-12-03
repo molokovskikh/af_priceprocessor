@@ -722,24 +722,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("prccopy@analit.net")]
-        public string IMAPUser {
-            get {
-                return ((string)(this["IMAPUser"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("123")]
-        public string IMAPPass {
-            get {
-                return ((string)(this["IMAPPass"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("prcopy@analit.net")]
         public string WaybillIMAPUser {
             get {
@@ -780,6 +762,33 @@ namespace Inforoom.PriceProcessor.Properties {
         public string IMAPPort {
             get {
                 return ((string)(this["IMAPPort"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("..\\..\\Data\\")]
+        public string TestDataDirectory {
+            get {
+                return ((string)(this["TestDataDirectory"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("d.dorofeev@analit.net")]
+        public string IMAPUser {
+            get {
+                return ((string)(this["IMAPUser"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("newPass1")]
+        public string IMAPPass {
+            get {
+                return ((string)(this["IMAPPass"]));
             }
         }
     }

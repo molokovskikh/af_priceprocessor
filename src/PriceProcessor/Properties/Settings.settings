@@ -279,12 +279,6 @@
     <Setting Name="TestIMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">d.dorofeev@analit.net</Value>
     </Setting>
-    <Setting Name="IMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">prccopy@analit.net</Value>
-    </Setting>
-    <Setting Name="IMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">123</Value>
-    </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">prcopy@analit.net</Value>
     </Setting>
@@ -299,6 +293,15 @@
     </Setting>
     <Setting Name="IMAPPort" Type="System.String" Scope="Application">
       <Value Profile="(Default)">143</Value>
+    </Setting>
+    <Setting Name="TestDataDirectory" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">..\..\Data\</Value>
+    </Setting>
+    <Setting Name="IMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
+    </Setting>
+    <Setting Name="IMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">newPass1</Value>
     </Setting>
   </Settings>
 </SettingsFile>
