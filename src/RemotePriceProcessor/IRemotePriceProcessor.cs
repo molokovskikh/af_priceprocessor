@@ -82,10 +82,8 @@ namespace RemotePriceProcessor
 		/// </summary>
 		/// <param name="downlogId">Id из таблицы logs.downlogs</param>
 		[OperationContract]
-		void ResendPrice(ulong downlogId);
+		void ResendPrice(WcfCallParameter paramDownlogId);
 
-//		[OperationContract]
-//		void RetransPrice(uint priceItemId);
 		[OperationContract]
 		void RetransPrice(WcfCallParameter downlogId);
 
@@ -110,8 +108,6 @@ namespace RemotePriceProcessor
 		[OperationContract]
 		void PutFileToBase(FilePriceInfo filePriceInfo);
 
-//		[OperationContract]
-//		void RetransErrorPrice(uint priceItemId);
 		[OperationContract]
 		void RetransErrorPrice(WcfCallParameter priceItemId);
 	}

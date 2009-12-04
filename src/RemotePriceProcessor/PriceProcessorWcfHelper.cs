@@ -71,8 +71,16 @@ namespace RemotePriceProcessor
 			LastErrorMessage = String.Empty;
 			try
 			{
+				var parameter = new WcfCallParameter() {
+					Value = downlogId,
+					LogInformation = new LogInformation()
+					{
+						ComputerName = Environment.MachineName,
+						UserName = Environment.UserName
+					}
+				};
 				_clientProxy = _channelFactory.CreateChannel();
-				_clientProxy.ResendPrice(downlogId);
+				_clientProxy.ResendPrice(parameter);
 				((ICommunicationObject)_clientProxy).Close();
 			}
 			catch (FaultException faultException)

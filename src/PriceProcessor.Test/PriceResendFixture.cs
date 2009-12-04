@@ -201,7 +201,14 @@ WHERE RowId = ?downlogId
 			var success = false;
 			try
 			{
-				priceProcessor.ResendPrice(downlogId);
+				var paramDownlogId = new WcfCallParameter() {
+                    Value = downlogId,
+                    LogInformation = new LogInformation() {
+                        ComputerName = Environment.MachineName,
+                        UserName = Environment.UserName
+                    }
+                };
+				priceProcessor.ResendPrice(paramDownlogId);
 				((ICommunicationObject)priceProcessor).Close();
 				success = true;
 			}

@@ -1,4 +1,5 @@
 ﻿using System;
+using ExecuteTemplate;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
@@ -19,8 +20,9 @@ namespace Inforoom.PriceProcessor
 
 		private const string MessagePriceNotFound = "Данный прайс-лист отсутствует";
 
-		public void ResendPrice(ulong downlogId)
+		public void ResendPrice(WcfCallParameter paramDownlogId)
 		{
+			var downlogId = Convert.ToUInt64(paramDownlogId.Value);
 			var drFocused = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
 SELECT
@@ -67,7 +69,7 @@ and logs.ResultCode in (2, 3)
 and fr.Id = pim.FormRuleId
 and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
-
+			
 			var filename = GetFileFromArhive(downlogId);
 			var archFileName = drFocused["DArchFileName"].ToString();
 			var externalFileName = drFocused["DExtrFileName"].ToString();
@@ -165,6 +167,13 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				(drFocused["ParentSynonym"] is DBNull) ? null : 
 					(ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
+
+			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
+			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
+			destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId + PriceExtention;
+			if (File.Exists(destinationFile))
+				File.Delete(destinationFile);
+			File.Copy(sourceFile, destinationFile);
 
 			if (Directory.Exists(TempDirectory))
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
@@ -283,38 +292,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					new FaultReason(MessagePriceNotFoundInArchive));
 			return files[0];
 		}
-		/*
-		public void PutFileToInbound(FilePriceInfo filePriceInfo)
-		{
-			var priceItemId = filePriceInfo.PriceItemId;
-			var file = filePriceInfo.Stream;
-
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
-select p.FileExtention
-from  usersettings.PriceItems pim
-  join farm.formrules f on f.Id = pim.FormRuleId
-  join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
-			var extention = row["FileExtention"];
-
-			// Удаляем из Base файлы с таким же именем (расширения могут отличаться)
-			var oldBaseFilePattern = priceItemId.ToString() + ".*";
-			SearchAndDeleteFilesFromDirectory(Settings.Default.BasePath, oldBaseFilePattern);
-
-			// На всякий случай ищем файлы с такими же именами в Inbound0, если есть, удаляем их
-			SearchAndDeleteFilesFromDirectory(Settings.Default.InboundPath, oldBaseFilePattern);
-			
-			// Получаем полный путь к новому файлу
-			var newFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
-
-			// Сохраняем новый файл
-			using (var fileStream = File.Create(newFile))
-			{
-				file.Copy(fileStream);
-			}
-		}
-		*/
+		
 		public void PutFileToInbound(FilePriceInfo filePriceInfo)
 		{
 			var logInformation = filePriceInfo.LogInformation;
@@ -445,5 +423,36 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				}
 			}			
 		}
+
+		/// <summary>
+		/// Добавляет для перепосылаемого прайса запись в таблицу logs.downlogs.
+		/// </summary>
+		/// <returns>RowId новой записи</returns>
+		private static ulong LogResendPriceAsDownload(ulong priceItemId, string archiveFileName, string extractFileName, LogInformation logInformation)
+		{
+			const int resultCode = 2;
+			var addition = String.Format("Прайс перепослан. Компьютер: {0}; Оператор: {1}", logInformation.ComputerName, logInformation.UserName);
+
+			var query = String.Format(@"
+INSERT INTO logs.downlogs (LogTime, Host, PriceItemId, Addition, ResultCode, ArchFileName, ExtrFileName)
+VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert_id()
+", Environment.MachineName, priceItemId, addition, resultCode, archiveFileName, extractFileName);
+
+			using (var connectionLog = new MySqlConnection(Literals.ConnectionString()))
+			{
+				try
+				{
+					connectionLog.Open();
+					var commandLog = new MySqlCommand(query, connectionLog);
+					var id = Convert.ToUInt64(commandLog.ExecuteScalar());
+					return id;
+				}
+				catch (Exception)
+				{
+					return 0;
+				}
+			}
+		}
+
     }
 }
