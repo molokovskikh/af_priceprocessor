@@ -81,6 +81,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -110,6 +111,7 @@
     <Compile Include="ProducerSynonymFixture.cs" />
     <Compile Include="PriceResendFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />
