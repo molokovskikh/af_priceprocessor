@@ -1,5 +1,6 @@
 using System;
 using Inforoom.Downloader.Documents;
+using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using System.IO;
@@ -116,10 +117,12 @@ namespace Inforoom.Downloader
         protected DateTime CurrPriceDate;
 
         protected static string ExtrDirSuffix = "Extr";
+		private ILog _log;
 
         public BaseSourceHandler()
         {
             SleepTime = Settings.Default.HandlerRequestInterval;
+			_log = LogManager.GetLogger(GetType());
 		}
 
 		//Запуск обработчика
@@ -244,6 +247,9 @@ and pd.AgencyEnabled= 1",
 				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(
 					new ExecuteArgs(), GetSourcesTable, null, 
 					_workConnection, true, false, delegate { Ping(); });
+
+				if (_log.IsDebugEnabled)
+					_log.DebugFormat("Для обработчика {0} {1}", sourceType, dtSources != null ? "загружено источников " + dtSources.Rows.Count : "источники не загружены");
 			}
 			catch
 			{
