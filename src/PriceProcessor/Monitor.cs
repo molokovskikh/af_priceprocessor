@@ -90,7 +90,6 @@ namespace Inforoom.PriceProcessor
 		{
             try
             {
-				PriceProcessorWcfHelper.StopService(_serviceHost);
                 Stopped = true;
                 Thread.Sleep(3000);
                 tMonitor.Abort();
@@ -105,7 +104,8 @@ namespace Inforoom.PriceProcessor
                     {
 						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
                     }
-            }
+				PriceProcessorWcfHelper.StopService(_serviceHost);
+			}
             catch (Exception ex)
             {
 				_logger.Fatal("Ошибка при останове монитора", ex);
