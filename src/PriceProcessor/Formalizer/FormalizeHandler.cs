@@ -9,7 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
-	class FormalizeHandler : AbstractHandler
+	public class FormalizeHandler : AbstractHandler
 	{
 		private readonly FileSystemWatcher FSW;
 
