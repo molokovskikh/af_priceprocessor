@@ -171,8 +171,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
 			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
 			destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId + PriceExtention;
-			if (File.Exists(destinationFile))
-				File.Delete(destinationFile);
 			File.Copy(sourceFile, destinationFile);
 
 			if (Directory.Exists(TempDirectory))
@@ -447,12 +445,12 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 					var id = Convert.ToUInt64(commandLog.ExecuteScalar());
 					return id;
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
+					Mailer.SendFormServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
 					return 0;
 				}
 			}
 		}
-
     }
 }
