@@ -2,14 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
+using Common.Tools;
+using Common.Tools.Calendar;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
+using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using System.Threading;
 using System.IO;
+using Test.Support;
 
 namespace PriceProcessor.Test
 {
@@ -81,6 +87,92 @@ namespace PriceProcessor.Test
 				}
 			}
 			Assert.IsTrue(priceItemInQueue, "Ошибка обработки файла. Файл не поставлен в очередь на формализацию");
+		}
+
+		[Test]
+		public void Delete_broken_message()
+		{
+			Setup.Initialize("DB");
+
+			using (new TransactionScope())
+			{
+				TestPriceSource.Queryable.Where(s => s.EmailFrom == "naturpr@kursknet.ru" && s.EmailTo == "prices@kursk.analit.net")
+					.Each(s => s.Delete());
+			}
+
+			var begin = DateTime.Now;
+			File.Copy(@"..\..\Data\EmailSourceHandlerTest\app.config", "PriceProcessor.Test.config", true);
+			Settings.Default.Reload();
+
+			var goodPriceItem = CreatePriceWithSource("naturpr@kursknet.ru", "prices@kursk.analit.net", "Прайс-лист.rar", "Прайс-лист.xls");
+			var badPriceItem = CreatePriceWithSource("order.moron@gmail.com", "prices@volgograd.analit.net", "price.zip", "price.dbf");
+
+			Send(@"..\..\Data\EmailSourceHandlerTest\Bad.eml");
+			Send(@"..\..\Data\EmailSourceHandlerTest\Good.eml");
+
+			var handler = new EMAILSourceHandler();
+			handler.StartWork();
+			Thread.Sleep(50.Second());
+			handler.StopWork();
+
+			using (new SessionScope())
+			{
+				var logs = PriceDownloadLog.Queryable.Where(l => l.LogTime > begin).ToList();
+
+				Assert.That(logs.Count, Is.EqualTo(1));
+
+				var log = logs[0];
+				Assert.That(log.PriceItemId, Is.EqualTo(goodPriceItem.Id));
+				Assert.That(log.ResultCode, Is.EqualTo(2));
+				Assert.That(log.Addition, Is.Null);
+			}
+		}
+
+		private TestPriceItem CreatePriceWithSource(string fromMail, string toMail, string priceMask, string extrMask)
+		{
+			var price = new TestPrice {
+				CostType = 1,
+				FirmCode = 1179
+			};
+			price.Save();
+
+			var source = new TestPriceSource {
+				SourceTypeId = 1,
+				EmailTo = toMail,
+				EmailFrom = fromMail,
+				PriceMask = priceMask,
+				ExtrMask = extrMask
+			};
+			source.Save();
+
+			var format = new TestFormat {
+				PriceFormatId = 3
+			};
+			format.Save();
+
+			var priceItem = new TestPriceItem {
+				Source = source,
+				Format = format,
+			};
+			priceItem.Save();
+
+			var cost = new TestPriceCost {
+				BaseCost = true,
+				Price = price,
+				PriceItem = priceItem,
+			};
+			cost.Save();
+			return priceItem;
+		}
+
+		public void Send(string email)
+		{
+			SmtpClientEx.QuickSendSmartHost("mail.adc.analit.net",
+				25,
+				Environment.MachineName,
+				"service@analit.net", 
+				new[] {"KvasovTest@analit.net"},
+				File.OpenRead(email));
 		}
 
 		private List<ulong> GetPriceItemIdsBySourceId(ulong sourceId)
