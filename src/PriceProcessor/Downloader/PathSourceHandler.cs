@@ -9,6 +9,9 @@ namespace Inforoom.Downloader
 {
 	public class PriceSource
 	{
+		public PriceSource()
+		{}
+
 		public PriceSource(DataRow currentSource)
 		{
 			PriceItemId = Convert.ToUInt32(currentSource[SourcesTableColumns.colPriceItemId]);
