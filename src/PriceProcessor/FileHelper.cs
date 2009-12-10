@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 using Inforoom.Common;
+using log4net;
 
 namespace Inforoom.PriceProcessor
 {
 	public class FileHelper
 	{
+		private static ILog _log = LogManager.GetLogger(typeof (FileHelper));
+
 		public static string FindFromArhive(string TempDir, string ExtrMask)
 		{
 			var ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, ExtrMask, SearchOption.AllDirectories);
@@ -72,7 +75,10 @@ namespace Inforoom.PriceProcessor
 			{
 				action();
 			}
-			catch {}
+			catch(Exception e)
+			{
+				_log.Error("Ошибка на которую можно забить", e);
+			}
 		}
 	}
 }
