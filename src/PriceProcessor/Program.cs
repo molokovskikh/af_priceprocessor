@@ -22,14 +22,13 @@ namespace Inforoom.PriceProcessor
 			{
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG
-				InitDirs(new[]
-				         	{
-				         		Settings.Default.BasePath,
-				         		Settings.Default.ErrorFilesPath,
-				         		Settings.Default.InboundPath,
-				         		Settings.Default.TempPath,
-				         		Settings.Default.HistoryPath
-				         	});
+				InitDirs(new[] {
+					Settings.Default.BasePath,
+					Settings.Default.ErrorFilesPath,
+					Settings.Default.InboundPath,
+					Settings.Default.TempPath,
+					Settings.Default.HistoryPath
+				});
 
 				var monitor = new Monitor();
 				monitor.Start();
