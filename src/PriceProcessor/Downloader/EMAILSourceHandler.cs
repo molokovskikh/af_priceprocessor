@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Data;
 using System.Linq;
+using Inforoom.PriceProcessor.Downloader;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
@@ -185,13 +186,13 @@ namespace Inforoom.Downloader
 						25,
 						Environment.MachineName,
 						Settings.Default.ServiceMail,
-						new string[] { Settings.Default.UnrecLetterMail },
+						new[] { Settings.Default.UnrecLetterMail },
 						ms);
 				}
 				catch { }
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
-				Logging(String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
+				DownloadLogEntity.Log(String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
 					cause, m.MainEntity.Subject, FromList.ToAddressListString()));
 			}
 			catch (Exception exMatch)
@@ -215,7 +216,7 @@ namespace Inforoom.Downloader
 				{
 					attachmentFileName = SaveAttachement(ent);
 					UnPack(m, ref _Matched, FromList, attachmentFileName);
-					DeleteCurrFile();
+					Cleanup();
 				}
 			}
 
@@ -245,13 +246,13 @@ namespace Inforoom.Downloader
 		/// </summary>
 		private void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName)
 		{
-			DataRow[] drLS = null;
+			DataRow[] drLS;
 
 			//Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
-			foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+			foreach (var mbFrom in FromList.Mailboxes)
 			{
 				//Раньше не проверялся весь список TO, теперь это делается
-				foreach (MailboxAddress mba in m.MainEntity.To.Mailboxes)
+				foreach (var mba in m.MainEntity.To.Mailboxes)
 				{
 					drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
 						SourcesTableColumns.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
@@ -276,23 +277,20 @@ namespace Inforoom.Downloader
 									if (ProcessPriceFile(CurrFileName, out ExtrFile))
 									{
 										Matched = true;
-										LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, 
-											Path.GetFileName(CurrFileName), ExtrFile);
+										LogDownloadedPrice(Path.GetFileName(CurrFileName), ExtrFile);
 									}
 									else
 									{
-										LogDownloaderPrice("Не удалось обработать файл '" + 
+										LogDownloaderFail("Не удалось обработать файл '" + 
 											Path.GetFileName(CurrFileName) + "'", 
-											DownPriceResultCode.ErrorProcess, 
-											Path.GetFileName(CurrFileName), null);
+											Path.GetFileName(CurrFileName));
 									}
 								}
 								else
 								{
-									LogDownloaderPrice("Не удалось распаковать файл '" + 
+									LogDownloaderFail("Не удалось распаковать файл '" + 
 										Path.GetFileName(CurrFileName) + "'", 
-										DownPriceResultCode.ErrorProcess, 
-										Path.GetFileName(CurrFileName), null);
+										Path.GetFileName(CurrFileName));
 								}
 								drS.Delete();
 							}

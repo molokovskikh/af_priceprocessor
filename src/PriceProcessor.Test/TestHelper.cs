@@ -40,10 +40,13 @@ namespace PriceProcessor.Test
 		public static void InitDirs(params string[] dirs)
 		{
 			dirs.Each(dir => {
-			          	if (Directory.Exists(dir))
-			          		Directory.Delete(dir, true);
-			          	Directory.CreateDirectory(dir);
-			          });
+				if (Directory.Exists(dir))
+				{
+					Directory.GetFiles(dir).Each(File.Delete);
+					Directory.Delete(dir, true);
+				}
+				Directory.CreateDirectory(dir);
+			});
 		}
 
 		public static void Execute(string commandText)

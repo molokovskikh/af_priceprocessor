@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Data;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
 
@@ -9,6 +10,8 @@ namespace Inforoom.Downloader
 {
 	public class LANSourceHandler : PathSourceHandler
 	{
+		private string _downloadedFile;
+
 		public LANSourceHandler()
 		{
 			sourceType = "LAN";
@@ -16,49 +19,54 @@ namespace Inforoom.Downloader
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
-			CurrFileName = String.Empty;
+			var pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + source.FirmCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
+			var files = Directory.GetFiles(pricePath, source.PriceMask);
+
+			//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
+			var sortedFileList = new SortedList<DateTime, string>();
+
+			foreach (var file in files)
+			{
+				var fileLastWriteTime = File.GetLastWriteTime(file);
+				if (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
+					sortedFileList.Add(fileLastWriteTime, file);
+			}
+
+			//Если в списке есть файлы, то берем первый и скачиваем
+			if (sortedFileList.Count == 0)
+				return;
+
+			var downloadedFileName = sortedFileList.Values[0];
+			var downloadedLastWriteTime = sortedFileList.Keys[0];
+			var newFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
 			try
 			{
-				var PricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + source.FirmCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar;
-				var files = Directory.GetFiles(PricePath, source.PriceMask);
-
-				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
-				var sortedFileList = new SortedList<DateTime, string>();
-
-				foreach (var file in files)
+				if (File.Exists(newFile))
 				{
-					var fileLastWriteTime = File.GetLastWriteTime(file);
-					if (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
-						sortedFileList.Add(fileLastWriteTime, file);
+					FileHelper.ClearReadOnly(newFile);
+					File.Delete(newFile);
 				}
-
-				//Если в списке есть файлы, то берем первый и скачиваем
-				if (sortedFileList.Count > 0)
-				{
-					var downloadedFileName = sortedFileList.Values[0];
-					var downloadedLastWriteTime = sortedFileList.Keys[0];
-					var newFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
-					try
-					{
-						if (File.Exists(newFile))
-						{
-							FileHelper.ClearReadOnly(newFile);
-							File.Delete(newFile);
-						}
-						FileHelper.ClearReadOnly(downloadedFileName);
-						File.Move(downloadedFileName, newFile);
-						CurrFileName = newFile;
-						CurrPriceDate = downloadedLastWriteTime;
-					}
-					catch (Exception ex)
-					{
-						Logging(source.PriceItemId, String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
-					}
-				}
+				FileHelper.ClearReadOnly(downloadedFileName);
+				_downloadedFile = downloadedFileName;
+				File.Copy(downloadedFileName, newFile);
+				CurrFileName = newFile;
+				CurrPriceDate = downloadedLastWriteTime;
 			}
-			catch(Exception exDir)
+			catch (Exception ex)
 			{
-				Logging(source.PriceItemId, String.Format("Не удалось получить список файлов : {0}", exDir));
+				DownloadLogEntity.Log(source.PriceItemId, String.Format("Не удалось скопировать файл {0} : {1}", System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+			}
+		}
+
+		protected override void FileProcessed()
+		{
+			try
+			{
+				File.Delete(_downloadedFile);
+			}
+			catch (Exception e)
+			{
+				_log.Error(String.Format("Ошибка при удалении файла {0}", _downloadedFile), e);
 			}
 		}
 

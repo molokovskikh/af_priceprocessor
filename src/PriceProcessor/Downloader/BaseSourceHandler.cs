@@ -1,5 +1,6 @@
 using System;
 using Inforoom.Downloader.Documents;
+using Inforoom.PriceProcessor.Downloader;
 using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
@@ -64,16 +65,8 @@ namespace Inforoom.Downloader
 		ErrorDownload = 5
 	}
 
-
-	/// <summary>
-	/// Summary description for BaseSourceHandle.
-	/// </summary>
 	public abstract class BaseSourceHandler : AbstractHandler
 	{
-		//Соединение для логирования
-		protected MySqlConnection cLog;
-        protected MySqlCommand cmdLog;
-
 		//Соединение для работы
 		protected MySqlConnection _workConnection;
         protected MySqlDataAdapter daFillSources;
@@ -117,7 +110,7 @@ namespace Inforoom.Downloader
         protected DateTime CurrPriceDate;
 
         protected static string ExtrDirSuffix = "Extr";
-		private ILog _log;
+		protected ILog _log;
 
         public BaseSourceHandler()
         {
@@ -129,7 +122,6 @@ namespace Inforoom.Downloader
 		public override void StartWork()
 		{
 			CreateDirectoryPath();
-            CreateLogConnection();
             CreateWorkConnection();
 
             base.StartWork();
@@ -141,8 +133,6 @@ namespace Inforoom.Downloader
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
-			if (cLog.State == ConnectionState.Open)
-				try{ cLog.Close(); } catch{}
             if (_workConnection.State == ConnectionState.Open)
                 try { _workConnection.Close(); }
                 catch { }
@@ -152,7 +142,6 @@ namespace Inforoom.Downloader
 		{
 			base.Ping();	
 			try { _workConnection.Ping(); } catch{}
-			try { cLog.Ping(); } catch { }
 		}
 
         //Типа источника
@@ -313,28 +302,20 @@ and pd.AgencyEnabled= 1",
 			}
         }
 
-        protected void SetCurrentPriceCode(DataRow dr)
-        {
-            drCurrent = dr;
-            CurrPriceCode = Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
+		protected void SetCurrentPriceCode(DataRow dr)
+		{
+			drCurrent = dr;
+			CurrPriceCode = Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
 			CurrCostCode = (dr[SourcesTableColumns.colCostCode] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.colPriceCode]);
 			CurrPriceItemId = Convert.ToUInt64(dr[SourcesTableColumns.colPriceItemId]);
 			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
-        }
-
-		protected string GetExt()
-        {
-			string FileExt = drCurrent[SourcesTableColumns.colFileExtention].ToString();
-			if (String.IsNullOrEmpty(FileExt))
-				FileExt = ".err";
-			return FileExt;
-        }
+		}
 
 		protected bool ProcessPriceFile(string InFile, out string ExtrFile)
-        {
-            ExtrFile = InFile;
-            if (ArchiveHelper.IsArchive(InFile))
-            {
+		{
+			ExtrFile = InFile;
+			if (ArchiveHelper.IsArchive(InFile))
+			{
 				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) &&
 					!String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
 				{
@@ -343,27 +324,30 @@ and pd.AgencyEnabled= 1",
 				}
 				else
 					ExtrFile = String.Empty;
-            }
+			}
 			if (String.IsNullOrEmpty(ExtrFile))
-            {
-				Logging(CurrPriceItemId, String.Format(
+			{
+				DownloadLogEntity.Log(CurrPriceItemId, String.Format(
 					"Не удалось найти файл в архиве. Маска файла в архиве : '{0}'",
 					drCurrent[SourcesTableColumns.colExtrMask]));
-                return false;
-            }
-        	return true;
-        }
+				return false;
+			}
+			return true;
+		}
 
-        protected void DeleteCurrFile()
-        {
-            try
-            {
-                if (Directory.Exists(CurrFileName + ExtrDirSuffix))
-                    Directory.Delete(CurrFileName + ExtrDirSuffix, true);
-            }
-            catch { }
-            try
-            {
+		protected void Cleanup()
+		{
+			try
+			{
+				if (Directory.Exists(CurrFileName + ExtrDirSuffix))
+					Directory.Delete(CurrFileName + ExtrDirSuffix, true);
+			}
+			catch (Exception e)
+			{
+				_logger.Error(String.Format("Ошибка при удалении директории {0}", CurrFileName + ExtrDirSuffix), e);
+			}
+			try
+			{
 
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("Попытка удалить файл : {0}", CurrFileName);
@@ -372,121 +356,11 @@ and pd.AgencyEnabled= 1",
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("Файл удален : {0}", CurrFileName);
 			}
-            catch (Exception ex)
+			catch (Exception ex)
 			{
 				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", CurrFileName, ex);
 			}
-        }
-
-        protected void ExecuteCommand(MySqlCommand cmd)
-        {
-			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(
-				new ExecuteArgs(),
-				delegate {
-					cmd.ExecuteNonQuery();
-					return null;
-				},
-				null,
-				cmd.Connection,
-				true,
-				false,
-				delegate {
-					Ping();
-				});
-        }
-
-		protected UInt64 ExecuteScalar(MySqlCommand cmd)
-		{
-			return MethodTemplate.ExecuteMethod<ExecuteArgs, UInt64>(
-				new ExecuteArgs(), 
-				delegate {
-					return Convert.ToUInt64(cmd.ExecuteScalar());
-				}, 
-				0, 
-				cmd.Connection, 
-				true, 
-				false, 
-				delegate {
-					Ping();
-				});
 		}
-
-        #region Logging
-        protected void CreateLogConnection()
-		{
-			cLog = new MySqlConnection(Literals.ConnectionString());
-			try
-			{
-				cLog.Open();
-				cmdLog = new MySqlCommand("insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ResultCode, ArchFileName, ExtrFileName) VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()", cLog);
-				cmdLog.Parameters.AddWithValue("?Host", Environment.MachineName);
-				cmdLog.Parameters.Add("?PriceItemId", MySqlDbType.UInt64);
-                cmdLog.Parameters.Add("?Addition", MySqlDbType.VarString);
-				cmdLog.Parameters.Add("?ResultCode", MySqlDbType.Byte);
-				cmdLog.Parameters.Add("?ArchFileName", MySqlDbType.VarString);
-				cmdLog.Parameters.Add("?ExtrFileName", MySqlDbType.VarString);
-			}
-			catch(Exception ex)
-			{
-				_logger.Error("Ошибка на CreateLogConnection", ex);
-			}
-		}
-
-        protected void Logging(string Addition)
-        {
-            Logging(null, Addition, DownPriceResultCode.ErrorDownload, null, null);
-        }
-
-		protected void Logging(ulong? CurrPriceItemId, string Addition)
-		{
-			Logging(CurrPriceItemId, Addition, DownPriceResultCode.ErrorDownload, null, null);
-		}
-
-		protected UInt64 Logging(ulong? CurrPriceItemId, string Addition, DownPriceResultCode resultCode, string ArchFileName, string ExtrFileName)
-        {
-			if (!String.IsNullOrEmpty(Addition))
-				if (CurrPriceItemId.HasValue)
-					using(log4net.NDC.Push("." + CurrPriceItemId))
-						_logger.InfoFormat("Logging.Addition : {0}", Addition);
-				else
-					_logger.InfoFormat("Logging.Addition : {0}", Addition);
-
-            if (cLog.State != ConnectionState.Open)
-                cLog.Open();
-			cmdLog.Parameters["?PriceItemId"].Value = CurrPriceItemId;
-            cmdLog.Parameters["?Addition"].Value = Addition;
-			cmdLog.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
-			cmdLog.Parameters["?ArchFileName"].Value = ArchFileName;
-			cmdLog.Parameters["?ExtrFileName"].Value = ExtrFileName;
-
-			bool NeedLogging = true;
-			//Если это успешная загрузка, то сбрасываем все ошибки
-			//Если это ошибка, то если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
-			ulong tmpCurrPriceItemId = (CurrPriceItemId.HasValue) ? CurrPriceItemId.Value : 0;
-			if (resultCode == DownPriceResultCode.ErrorDownload)
-			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
-				{
-					if (ErrorPriceLogging.ErrorMessages[tmpCurrPriceItemId] == Addition)
-						NeedLogging = false;
-					else
-						ErrorPriceLogging.ErrorMessages[tmpCurrPriceItemId] = Addition;
-				}
-				else
-					ErrorPriceLogging.ErrorMessages.Add(tmpCurrPriceItemId, Addition);
-			}
-			else
-			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
-					ErrorPriceLogging.ErrorMessages.Remove(tmpCurrPriceItemId);
-			}
-
-			if (NeedLogging)
-				return ExecuteScalar(cmdLog);
-			return 0;
-        }
-
-        #endregion
 
 		/// <summary>
 		/// Выдает код клиента из таблицы future.Addresses по

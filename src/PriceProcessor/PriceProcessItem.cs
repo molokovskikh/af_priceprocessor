@@ -121,23 +121,20 @@ group by pi.Id",
 			return false;
 		}
 
-		public void CopyToInbound(string extrFileName)
+		public void CopyToInbound(string extrFileName, MySqlConnection connection, MySqlTransaction transaction)
 		{
-			MySqlUtils.InTransaction(
-				(c, t) => {
-					var command = new MySqlCommand(@"
+			var command = new MySqlCommand(@"
 update usersettings.PriceItems 
 set LastDownload = ?FileTime
-where Id = ?Id", c, t);
-					command.Parameters.AddWithValue("?Id", PriceItemId);
-					command.Parameters.AddWithValue("?FileTime", FileTime);
-					command.ExecuteNonQuery();
+where Id = ?Id", connection, transaction);
+			command.Parameters.AddWithValue("?Id", PriceItemId);
+			command.Parameters.AddWithValue("?FileTime", FileTime);
+			command.ExecuteNonQuery();
 
-					if (File.Exists(FilePath))
-						File.Delete(FilePath);
-					File.Copy(extrFileName, FilePath);
-					PriceItemList.AddItem(this);
-				});
+			if (File.Exists(FilePath))
+				File.Delete(FilePath);
+			File.Copy(extrFileName, FilePath);
+			PriceItemList.AddItem(this);
 		}
 
 		public static bool IsDownloadedPrice(string priceFile)

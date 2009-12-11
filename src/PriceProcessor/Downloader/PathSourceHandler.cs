@@ -1,12 +1,25 @@
 using System;
 using System.Data;
 using System.IO;
+using System.Linq;
+using Common.Tools;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Downloader;
 using FileHelper=Inforoom.PriceProcessor.FileHelper;
 
 namespace Inforoom.Downloader
 {
+	public class PricePreprocessingException : Exception
+	{
+		public PricePreprocessingException(string message, string fileName) : base(message)
+		{
+			FileName = fileName;
+		}
+
+		public string FileName { get; set; }
+	}
+
 	public class PriceSource
 	{
 		public PriceSource()
@@ -56,80 +69,91 @@ namespace Inforoom.Downloader
 
     public abstract class PathSourceHandler : BasePriceSourceHandler
     {
-        protected override void ProcessData()
-        {
-            //набор строк похожих источников
-            DataRow[] drLS;
-            FillSourcesTable();
-            while (dtSources.Rows.Count > 0)
-            {
-                drLS = null;
-            	var currentSource = dtSources.Rows[0];
-            	var priceSource = new PriceSource(currentSource);
-            	try
-                {
-                    drLS = GetLikeSources(priceSource);
-#if DEBUG
-					if (drLS.Length < 1)
-						_logger.Debug("!!!!!!!!!!!!!   drLS.Length < 1");
-#endif
-                    GetFileFromSource(priceSource);
+		protected override void ProcessData()
+		{
+			//набор строк похожих источников
+			DataRow[] drLS;
+			FillSourcesTable();
+			while (dtSources.Rows.Count > 0)
+			{
+				drLS = null;
+				var currentSource = dtSources.Rows[0];
+				var priceSource = new PriceSource(currentSource);
+				try
+				{
+					drLS = GetLikeSources(priceSource);
 
-                    if (!String.IsNullOrEmpty(CurrFileName))
-                    {
-                        var correctArchive = ProcessArchiveIfNeeded(priceSource);
-                    	foreach (var drS in drLS)
-                        {
-                            SetCurrentPriceCode(drS);
-                            if (correctArchive)
-                            {
-								var ExtrFile = String.Empty;
-								if (ProcessPriceFile(CurrFileName, out ExtrFile))
-									LogDownloaderPrice(null, DownPriceResultCode.SuccessDownload, Path.GetFileName(CurrFileName), ExtrFile);
-                                else
-									LogDownloaderPrice("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
-                            }
-                            else
-                            {
-								LogDownloaderPrice("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", DownPriceResultCode.ErrorProcess, Path.GetFileName(CurrFileName), null);
-                            }
-                            drS.Delete();
-                        }
-                        DeleteCurrFile();
-                    }
-                    else
-                    {
-                        foreach (var drDel in drLS)
-                            drDel.Delete();
-                    }
-                    dtSources.AcceptChanges();
-                }
-                catch(Exception ex)
-                {
-                    var Error = String.Empty;
-                    if ((drLS != null) && (drLS.Length > 1))
-                    {
-                        foreach (var drS in drLS)
-                        {
-                            if (Error == String.Empty)
-                                Error += drS[SourcesTableColumns.colPriceCode].ToString();
-                            else
-                                Error += ", " + drS[SourcesTableColumns.colPriceCode];
-							FileHelper.Safe(() => drS.Delete());
-                        }
-                        Error = "Источники : " + Error;
-                    }
-                    else
-                    {
-                        Error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
+					try
+					{
+						CurrFileName = String.Empty;
+						GetFileFromSource(priceSource);
+					}
+					catch (Exception e)
+					{
+						DownloadLogEntity.Log(priceSource.PriceItemId, e.ToString());
+					}
+
+					if (!String.IsNullOrEmpty(CurrFileName))
+					{
+						var correctArchive = ProcessArchiveIfNeeded(priceSource);
+						foreach (var drS in drLS)
+						{
+							SetCurrentPriceCode(drS);
+							string extractFile = null;
+							try
+							{
+								if (!correctArchive)
+									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
+
+								if (!ProcessPriceFile(CurrFileName, out extractFile))
+									throw new PricePreprocessingException("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
+
+								LogDownloadedPrice(Path.GetFileName(CurrFileName), extractFile);
+								FileProcessed();
+							}
+							catch(PricePreprocessingException e)
+							{
+								LogDownloaderFail(e.Message, e.FileName);
+								FileProcessed();
+							}
+							catch(Exception e)
+							{
+								LogDownloaderFail(e.Message, extractFile);
+							}
+							finally
+							{
+								drS.Delete();
+							}
+						}
+						Cleanup();
+					}
+					else
+					{
+						foreach (var drDel in drLS)
+							drDel.Delete();
+					}
+					dtSources.AcceptChanges();
+				}
+				catch(Exception ex)
+				{
+					var error = String.Empty;
+					if (drLS != null && drLS.Length > 1)
+					{
+						error +=String.Join(", ", drLS.Select(r => r[SourcesTableColumns.colPriceCode].ToString()).ToArray());
+						drLS.Each(r => FileHelper.Safe(r.Delete));
+						error = "Источники : " + error;
+					}
+					else
+					{
+						error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
 						FileHelper.Safe(currentSource.Delete);
-                    }
-                    Error += Environment.NewLine + Environment.NewLine + ex;
-                    LoggingToService(Error);
+					}
+					error += Environment.NewLine + Environment.NewLine + ex;
+					LoggingToService(error);
 					FileHelper.Safe(() => dtSources.AcceptChanges());
-                }
-            }
-        }
+				}
+			}
+		}
 
     	private bool ProcessArchiveIfNeeded(PriceSource priceSource)
     	{
@@ -154,9 +178,9 @@ namespace Inforoom.Downloader
     		return CorrectArchive;
     	}
 
-    	protected override void CopyToHistory(UInt64 PriceID)
+		protected override void CopyToHistory(UInt64 downloadLogId)
 		{
-			var HistoryFileName = DownHistoryPath + PriceID + Path.GetExtension(CurrFileName);
+			var HistoryFileName = DownHistoryPath + downloadLogId + Path.GetExtension(CurrFileName);
 			FileHelper.Safe(() => File.Copy(CurrFileName, HistoryFileName));
 		}
 
@@ -168,15 +192,16 @@ namespace Inforoom.Downloader
 			return item;
 		}
 
-    	/// <summary>
-        /// Получает файл из источника, взятого из таблицы первым
-        /// </summary>
-        protected abstract void GetFileFromSource(PriceSource row);
+		/// <summary>
+		/// Получает файл из источника, взятого из таблицы первым
+		/// </summary>
+		protected abstract void GetFileFromSource(PriceSource row);
 
-        /// <summary>
-        /// Получить прайс-листы, у которых истоники совпадают с первым в списке
-        /// </summary>
-        /// <returns></returns>
-        protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
-    }
+		/// <summary>
+		/// Получить прайс-листы, у которых истоники совпадают с первым в списке
+		/// </summary>
+		protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
+
+		protected virtual void FileProcessed() { }
+	}
 }

@@ -475,7 +475,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 									_aptekaClientCode, Path.GetFileName(CurrFileName), 
 									"Не удалось распаковать файл", currentUID);
 							}
-							DeleteCurrFile();
+							Cleanup();
 						}
 					}
 

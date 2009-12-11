@@ -14,13 +14,13 @@ namespace Inforoom.Downloader
 			sourceType = "HTTP";
 		}
 
-        protected static DateTime GetFileDateTime(string HTTPFile, string HTTPUser, string HTTPPassword)
+        protected static DateTime GetFileDateTime(string httpFile, string httpUser, string httpPassword)
         {
-            var request = (HttpWebRequest)WebRequest.Create(HTTPFile);
+            var request = (HttpWebRequest)WebRequest.Create(httpFile);
             request.Method = WebRequestMethods.Http.Head;
 
-            if (!String.IsNullOrEmpty(HTTPUser))
-                request.Credentials = new NetworkCredential(HTTPUser, HTTPPassword);
+            if (!String.IsNullOrEmpty(httpUser))
+                request.Credentials = new NetworkCredential(httpUser, httpPassword);
 
 			request.Proxy = null;
 
@@ -32,19 +32,19 @@ namespace Inforoom.Downloader
             return fdt;
         }
 
-        protected static void GetFile(string HTTPFile, string SaveFileName, string HTTPUser, string HTTPPassword)
+        protected static void GetFile(string httpFile, string saveFileName, string httpUser, string httpPassword)
         {
-            var request = (HttpWebRequest)WebRequest.Create(HTTPFile);
+            var request = (HttpWebRequest)WebRequest.Create(httpFile);
             request.Method = WebRequestMethods.Http.Get;
 
-            if (!String.IsNullOrEmpty(HTTPUser))
-                request.Credentials = new NetworkCredential(HTTPUser, HTTPPassword);
+            if (!String.IsNullOrEmpty(httpUser))
+                request.Credentials = new NetworkCredential(httpUser, httpPassword);
 
             request.Proxy = null;
 
             var response = (HttpWebResponse)request.GetResponse();
             var responseStream = response.GetResponseStream();
-            using (var fs = new FileStream(SaveFileName, FileMode.Create))
+            using (var fs = new FileStream(saveFileName, FileMode.Create))
             {
                 FileHelper.CopyStreams(responseStream, fs);
                 fs.Close();
@@ -55,30 +55,21 @@ namespace Inforoom.Downloader
 
         protected override void GetFileFromSource(PriceSource source)
         {
-            CurrFileName = String.Empty;
         	var pricePath = source.PricePath;
             if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
                 pricePath = @"http://" + pricePath;
 
             var httpFileName = source.PriceMask;
-            try
+			var priceDateTime = source.PriceDateTime;
+
+            var fileLastWriteTime = GetFileDateTime(pricePath, source.HttpLogin, source.HttpPassword);
+
+			if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
             {
-				var priceDateTime = source.PriceDateTime;
-
-                var fileLastWriteTime = GetFileDateTime(pricePath, source.HttpLogin, source.HttpPassword);
-
-				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
-                {
-                    var downFileName = DownHandlerPath + httpFileName;
-                    GetFile(pricePath, downFileName, source.HttpLogin, source.HttpPassword);
-                    CurrFileName = downFileName;
-                    CurrPriceDate = fileLastWriteTime;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logging(source.PriceItemId, ex.ToString());
+                var downFileName = DownHandlerPath + httpFileName;
+                GetFile(pricePath, downFileName, source.HttpLogin, source.HttpPassword);
+                CurrFileName = downFileName;
+                CurrPriceDate = fileLastWriteTime;
             }
         }
 

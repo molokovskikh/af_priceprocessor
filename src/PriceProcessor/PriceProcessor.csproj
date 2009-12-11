@@ -105,6 +105,7 @@
     <Compile Include="Downloader\DocumentReaders\ProtekOmsk_3777_Reader.cs" />
     <Compile Include="Downloader\DocumentReaders\SIAMoscow_2788_Reader.cs" />
     <Compile Include="Downloader\DocumentTypes.cs" />
+    <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />

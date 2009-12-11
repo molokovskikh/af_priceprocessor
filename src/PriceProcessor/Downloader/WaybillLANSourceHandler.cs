@@ -125,7 +125,7 @@ and st.SourceID = 4";
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
 									}
-									DeleteCurrFile();
+									Cleanup();
 								}
 
 							}

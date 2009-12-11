@@ -109,12 +109,14 @@
     <Compile Include="AssortmentFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
-    <Compile Include="EMAILSourceHandlerTest.cs" />
+    <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="ExcelFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
-    <Compile Include="FTPSourceHandlerFixture.cs" />
-    <Compile Include="LanSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\HandlersSetup.cs" />
     <Compile Include="ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
@@ -205,6 +207,9 @@
     <Content Include="Data\688.txt" />
     <None Include="Data\EmailSourceHandlerTest\app.config" />
     <None Include="Data\EmailSourceHandlerTest\Bad.eml" />
+    <None Include="Data\HandlersTests\552.zip" />
+    <None Include="Data\StressTest\517.dbf" />
+    <None Include="Data\StressTest\599.dbf" />
     <Content Include="Data\UpdateCoreTimeStamp-update-quantity.txt" />
     <Content Include="Data\UpdateCoreTimeStamp-update.txt" />
     <Content Include="Data\UpdateCoreTimeStamp.txt" />
