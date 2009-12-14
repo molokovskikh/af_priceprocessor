@@ -761,7 +761,7 @@ and (products.Id = Synonym.ProductId)
 			_logger.Debug("построили индекс по Assortment");
 
 			daExcludes = new MySqlDataAdapter(
-				String.Format("SELECT Id, CatalogId, ProducerSynonymId, PriceCode FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
+				String.Format("SELECT Id, CatalogId, ProducerSynonymId, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
 			cbExcludes = new MySqlCommandBuilder(daExcludes);
 			daExcludes.InsertCommand = cbExcludes.GetInsertCommand();
 			daExcludes.InsertCommand.CommandTimeout = 0;
@@ -1000,7 +1000,8 @@ order by Core0.Id", priceCode);
 				var status = GetAssortmentStatus(
 					Convert.ToInt64(drCore["CatalogId"]),
 					Convert.ToInt64(drNewSynonym["CodeFirmCr"]),
-					Convert.ToInt64(drNewSynonym["SynonymFirmCrCode"]));
+					Convert.ToInt64(drNewSynonym["SynonymFirmCrCode"]),
+					Convert.ToInt64(drCore["SynonymCode"]));
 				if (status == UnrecExpStatus.AssortmentForm)
 					drCore["CodeFirmCr"] = drNewSynonym["CodeFirmCr"];
 			}
@@ -1686,7 +1687,10 @@ where
 												MyConn,
 												"select CatalogId from catalogs.products p where Id = ?Productid",
 												new MySqlParameter("?Productid", drUnrecExp["PriorProductId"])));
-											var status = GetAssortmentStatus(CatalogId, Convert.ToInt64(drUnrecExp["PriorProducerId"]), Convert.ToInt64(drUnrecExp["ProducerSynonymId"]));
+											long? synonymId = null;
+											if (!Convert.IsDBNull(drUnrecExp["ProductSynonymId"]))
+												synonymId = Convert.ToInt64(drUnrecExp["ProductSynonymId"]);
+											var status = GetAssortmentStatus(CatalogId, Convert.ToInt64(drUnrecExp["PriorProducerId"]), Convert.ToInt64(drUnrecExp["ProducerSynonymId"]), synonymId);
 											drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
 											drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
 											continue;
@@ -2346,14 +2350,14 @@ and r.RegionCode = cd.RegionCode",
 
 		public void GetAssortmentStatus(FormalizationPosition position)
 		{
-			var assortmentStatus = GetAssortmentStatus(position.CatalogId, position.CodeFirmCr, position.SynonymFirmCrCode);
+			var assortmentStatus = GetAssortmentStatus(position.CatalogId, position.CodeFirmCr, position.SynonymFirmCrCode, position.SynonymCode);
 			//Если получили исключение, то сбрасываем CodeFirmCr
 			if (assortmentStatus == UnrecExpStatus.MarkExclude)
 				position.CodeFirmCr = null;
 			position.AddStatus(assortmentStatus);
 		}
 
-		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId)
+		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId, long? synonymId)
 		{
 			DataRow[] dr;
 
@@ -2390,12 +2394,12 @@ and r.RegionCode = cd.RegionCode",
 
 			//Если мы ничего не нашли, то добавляем в исключение
 			if (dr == null || dr.Length == 0)
-				CreateExcludeOrAssortment(CatalogId, ProducerId, ProducerSynonymId);
+				CreateExcludeOrAssortment(CatalogId, ProducerId, ProducerSynonymId, synonymId);
 
 			return UnrecExpStatus.MarkExclude;
 		}
 
-		private void CreateExcludeOrAssortment(long? catalogId, long? producerId, long? producerSynonymId)
+		private void CreateExcludeOrAssortment(long? catalogId, long? producerId, long? producerSynonymId, long? synonymId)
 		{
 			if (CanCreateAssortment(catalogId))
 			{
@@ -2413,6 +2417,7 @@ and r.RegionCode = cd.RegionCode",
 					drExclude["PriceCode"] = parentSynonym;
 					drExclude["CatalogId"] = catalogId;
 					drExclude["ProducerSynonymId"] = producerSynonymId;
+					drExclude["OriginalSynonymId"] = synonymId;
 					dtExcludes.Rows.Add(drExclude);
 				}
 				catch (ConstraintException)
