@@ -2401,7 +2401,7 @@ and r.RegionCode = cd.RegionCode",
 
 		private void CreateExcludeOrAssortment(long? catalogId, long? producerId, long? producerSynonymId, long? synonymId)
 		{
-			if (CanCreateAssortment(catalogId))
+			if (CanCreateAssortment(catalogId, producerId))
 			{
 				var assortment = dtAssortment.NewRow();
 				assortment["CatalogId"] = catalogId;
@@ -2426,9 +2426,14 @@ and r.RegionCode = cd.RegionCode",
 			}
 		}
 
-		private bool CanCreateAssortment(long? catalogId)
+		private bool CanCreateAssortment(long? catalogId, long? producerId)
 		{
-			return !dtAssortment.Select("CatalogId = " + catalogId).Any(r => Convert.ToBoolean(r["Checked"]));
+			var query = String.Format(@"
+select count(*) FROM catalogs.Assortment A
+  join catalogs.Producers P on P.Id = {1}
+where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producerId);
+			var count = Convert.ToInt32(MySqlHelper.ExecuteScalar(MyConn, query));
+			return (count == 0);
 		}
 
 		//—могли ли мы распознать производител€ по названию?

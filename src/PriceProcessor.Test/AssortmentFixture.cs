@@ -2,6 +2,7 @@
 using System.Data;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
+using Test.Support;
 
 namespace PriceProcessor.Test
 {
@@ -140,6 +141,72 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(1));
 			Assert.That(assortment.Tables[0].Rows[0]["ProducerId"], Is.EqualTo(producerId));
 			Assert.That(assortment.Tables[0].Rows[0]["CatalogId"], Is.EqualTo(catalogId));
+		}
+
+		private void PrepareTablesCreateAssortmentOrExcludesEntry(int priceCode, int catalogId, int producerId)
+		{
+			TestHelper.Execute(@"
+delete from farm.Excludes
+where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId);
+			TestHelper.Execute(@"delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
+
+			TestHelper.Execute(@"
+delete from farm.Synonym where pricecode = {0} and synonym like '{1}';
+insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});
+insert into farm.UsedSynonymLogs(SynonymCode) Values(last_insert_id());",
+				priceCode,
+				"5 дней ванна д/ног смягчающая №10 пак. 25г  ",
+				catalogId);
+			TestHelper.Execute(@"
+delete from farm.SynonymFirmCr where priceCode = {0} and synonym like '{1}';
+insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});
+insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id());",
+				priceCode,
+				"Санкт-Петербургская ф.ф.",
+				producerId);
+			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);
+		}
+
+		[Test]
+		public void Test_create_assortment_or_excludes_entry()
+		{
+			var catalogId = 13468;
+			var producerId = 1492;
+			var notCheckedProducerId = 3;
+			var file = @"..\..\Data\688-create-net-assortment.txt";
+			var priceItemId = 688;
+			var priceCode = 5;
+			var rules = new DataTable();
+			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
+
+			// Каталожная запись не проверена, производитель проверен. Должны вставить в исключения
+			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
+			TestHelper.Execute(@"update catalogs.producers set Checked = 1 where Id = {0}", producerId);
+			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			var assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));
+			var excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
+			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
+
+			// Каталожная запись не проверена, производитель не проверен. Должны вставить в ассортимент
+			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
+			TestHelper.Execute(@"update catalogs.producers set Checked = 0 where Id = {0}", producerId);
+			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(1));
+			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
+			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0));
+
+			// Каталожная запись проверена, производитель не проверен. Должны вставить в исключения
+			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
+			TestHelper.Execute(@"
+delete from catalogs.assortment where id = {1} or (CatalogId = {0} and ProducerId = {1});
+insert into catalogs.assortment values({1}, {0}, {1}, 1)", catalogId, notCheckedProducerId);
+			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));
+			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
+			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));			
 		}
 	}
 }
