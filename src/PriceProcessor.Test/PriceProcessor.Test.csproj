@@ -117,6 +117,7 @@
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
     <Compile Include="Handlers\HandlersSetup.cs" />
+    <Compile Include="HTTPSourceHandlerFixture.cs" />
     <Compile Include="ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />

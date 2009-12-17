@@ -25,7 +25,7 @@ namespace Inforoom.Downloader
 			request.Proxy = null;
 
             var response = (HttpWebResponse)request.GetResponse();
-            var fdt = response.LastModified;
+			var fdt = response.LastModified;
 
             response.Close();
 
@@ -53,27 +53,35 @@ namespace Inforoom.Downloader
         }
 
 
-        protected override void GetFileFromSource(PriceSource source)
-        {
-        	var pricePath = source.PricePath;
-            if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
-                pricePath = @"http://" + pricePath;
+		protected override void GetFileFromSource(PriceSource source)
+		{
+			var pricePath = source.PricePath;
+			if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
+				pricePath = @"http://" + pricePath;
 
-            var httpFileName = source.PriceMask;
+			var httpFileName = source.PriceMask;
 			var priceDateTime = source.PriceDateTime;
 
-            var fileLastWriteTime = GetFileDateTime(pricePath, source.HttpLogin, source.HttpPassword);
+			if (pricePath[pricePath.Length - 1].ToString() != "/")
+				pricePath += "/";
+			var httpUrl = pricePath + httpFileName;
+			var fileLastWriteTime = GetFileDateTime(httpUrl, source.HttpLogin, source.HttpPassword);
+			var downloadInterval = Settings.Default.FileDownloadInterval;
+#if DEBUG
+			downloadInterval = -1;
+			fileLastWriteTime = DateTime.Now;
+#endif
+			if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) &&
+			    (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > downloadInterval))
+			{
+				var downFileName = DownHandlerPath + httpFileName;
+				GetFile(httpUrl, downFileName, source.HttpLogin, source.HttpPassword);
+				CurrFileName = downFileName;
+				CurrPriceDate = fileLastWriteTime;
+			}
+		}
 
-			if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) && (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
-            {
-                var downFileName = DownHandlerPath + httpFileName;
-                GetFile(pricePath, downFileName, source.HttpLogin, source.HttpPassword);
-                CurrFileName = downFileName;
-                CurrPriceDate = fileLastWriteTime;
-            }
-        }
-
-        protected override DataRow[] GetLikeSources(PriceSource source)
+    	protected override DataRow[] GetLikeSources(PriceSource source)
         {
         	return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
         				SourcesTableColumns.colPricePath, source.PricePath,
