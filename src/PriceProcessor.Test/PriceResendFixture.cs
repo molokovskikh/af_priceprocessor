@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor;
 using System.Net.Security;
 using RemotePriceProcessor;
 using MySql.Data.MySqlClient;
+using Test.Support;
 
 namespace PriceProcessor.Test
 {
@@ -16,6 +17,8 @@ namespace PriceProcessor.Test
 	public class PriceResendFixture
 	{
 		private ServiceHost _serviceHost;
+
+		private static readonly string DataDirectory = @"..\..\Data";
 
 		// Массив идентификаторов RowId из таблицы logs.downlogs
 		private static ulong[] DownlogIds = new ulong[5] { 6905857, 6905845, 6905885, 6906022, 6906021 };
@@ -35,14 +38,6 @@ namespace PriceProcessor.Test
 		private static string[] ExtrFileNames = new string[5] { "price.txt", "price-15.09.2009.xls", "prs.txt", "price4.xls", "price.txt" };
 
 		private static string[] ArchivePasswords = new string[5] { "123", "", "", "", "rar1" };
-
-		[TestFixtureSetUp, Description("Создание нужных папок, проверка, что папки с нужными файлами существуют")]
-		public void InitFixture()
-		{
-			PrepareDirectories();
-			PrepareDownlogsTable();
-			PrepareSourcesTable();
-		}
 
 		private void PrepareDirectories()
 		{
@@ -142,6 +137,10 @@ WHERE Id = ?PriceItemId
 		[Test, Description("Тест для перепосылки прайса")]
 		public void TestResendPrice()
 		{
+			PrepareDirectories();
+			PrepareDownlogsTable();
+			PrepareSourcesTable();
+
 			const string queryGetPriceItemIdByDownlogId = @"
 SELECT d.PriceItemId
 FROM logs.downlogs d
@@ -253,6 +252,55 @@ WHERE RowId = ?downlogId
 			}
 			catch (Exception)
 			{}
+		}
+
+
+		[Test, Description("Тест для перепосылки прайса, находящегося в папке и в архиве (когда разархивируем, получим папку, в которой лежит прайс)")]
+		public void Resend_archive_with_files_in_folder()
+		{
+			var archiveFileName = @"price_in_dir.zip";
+			var externalFileName = @"price.txt";
+			Setup.Initialize("DB");
+
+			var priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
+			var downloadLog = new PriceDownloadLog() {
+                Addition = String.Empty,
+                ArchFileName = archiveFileName,
+                ExtrFileName = externalFileName,
+                Host = Environment.MachineName,
+				LogTime = DateTime.Now,
+                PriceItemId = priceItem.Id,
+                ResultCode = 2
+			};
+			downloadLog.Create();
+			downloadLog.Save();
+			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + archiveFileName;
+			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
+			                    Path.GetExtension(archiveFileName);
+			try
+			{
+				TestHelper.RecreateDirectories();
+				File.Copy(priceSrcPath, priceDestPath, true);
+			}
+			catch (Exception e)
+			{
+				Assert.Fail(e.Message);
+			}
+			StartWcfPriceProcessor();
+			WcfCallResendPrice(downloadLog.Id);
+
+			// Смотрим, есть ли только что проведенный priceItemId в очереди на формализацию
+			var priceInQuery = false;
+			foreach (var item in PriceItemList.list)
+				if (item.PriceItemId == priceItem.Id)
+				{
+					priceInQuery = true;
+					break;
+				}
+			// Если прайса в очереди нет, ошибка
+			if (!priceInQuery)
+				Assert.Fail("Прайса нет в очереди на формализацию");
+			StopWcfPriceProcessor();
 		}
 	}
 }
