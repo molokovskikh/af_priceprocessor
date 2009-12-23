@@ -127,7 +127,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 					Directory.Delete(TempDirectory, true);
 				Directory.CreateDirectory(TempDirectory);
 				ArchiveHelper.Extract(filename, externalFileName, TempDirectory, drFocused["ArchivePassword"].ToString());
-				var files = Directory.GetFiles(TempDirectory, externalFileName);
+				var files = Directory.GetFiles(TempDirectory, externalFileName, SearchOption.AllDirectories);
 				string path = String.Empty;
 				if (files.Length > 0)
 					sourceFile = files[0];
