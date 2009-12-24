@@ -6,15 +6,13 @@ using MySql.Data.MySqlClient;
 
 namespace Inforoom.Formalizer
 {
-	/// <summary>
-	/// Summary description for DBFPriceParser.
-	/// </summary>
 	public class DBFPriceParser : InterPriceParser
 	{
-		public DBFPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) : base(PriceFileName, conn, mydr)
+		public DBFPriceParser(string priceFileName, MySqlConnection conn, DataTable mydr) : base(priceFileName, conn, mydr)
 		{
 			conn.Close();
 		}
+
 		public override void Open()
 		{
 			convertedToANSI = true;
