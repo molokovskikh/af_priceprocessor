@@ -302,5 +302,45 @@ WHERE RowId = ?downlogId
 				Assert.Fail("Прайса нет в очереди на формализацию");
 			StopWcfPriceProcessor();
 		}
+
+		[Test, Description("Тест для перепосылки прайс-листа, который проверяет, правильный ли файл скопирован в DownHistory")]
+		public void Test_copy_source_file_resend_price()
+		{
+			var sourceFileName = "6905885.eml";
+			var archFileName = "prs.txt";
+			var externalFileName = archFileName;
+			var email = "test@test.test";
+			Setup.Initialize("DB");
+			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
+			var downloadLog = new PriceDownloadLog() {
+				Addition = String.Empty,
+				ArchFileName = archFileName,
+				ExtrFileName = externalFileName,
+				Host = Environment.MachineName,
+				LogTime = DateTime.Now,
+				PriceItemId = priceItem.Id,
+				ResultCode = 2
+			};
+			downloadLog.Create();
+			downloadLog.Save();
+			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + sourceFileName;
+			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
+								Path.GetExtension(sourceFileName);
+			try
+			{
+				TestHelper.RecreateDirectories();
+				File.Copy(priceSrcPath, priceDestPath, true);
+			}
+			catch (Exception e)
+			{
+				Assert.Fail(e.Message);
+			}
+			StartWcfPriceProcessor();
+			WcfCallResendPrice(downloadLog.Id);
+
+			var files = Directory.GetFiles(Settings.Default.HistoryPath);
+			Assert.That(files.Length, Is.EqualTo(2));
+			Assert.That(Path.GetExtension(files[0]), Is.EqualTo(Path.GetExtension(files[1])));
+		}
 	}
 }
