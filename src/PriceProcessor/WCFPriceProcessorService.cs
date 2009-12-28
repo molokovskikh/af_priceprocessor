@@ -71,6 +71,7 @@ and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			
 			var filename = GetFileFromArhive(downlogId);
+			var sourceArchiveFileName = filename;
 			var archFileName = drFocused["DArchFileName"].ToString();
 			var externalFileName = drFocused["DExtrFileName"].ToString();
 			if (drFocused["DSourceType"].ToString().Equals("EMAIL",
@@ -169,9 +170,12 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
 			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
-			destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId + PriceExtention;
-			File.Copy(sourceFile, destinationFile);
-
+			if (downlogId > 0)
+			{
+				destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId +
+					Path.GetExtension(sourceArchiveFileName);
+				File.Copy(sourceArchiveFileName, destinationFile);
+			}
 			if (Directory.Exists(TempDirectory))
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
 		}
