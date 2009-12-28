@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor
 			     body);
 		}
 
-		public static void SendFormServiceToService(string subject, string body)
+		public static void SendFromServiceToService(string subject, string body)
 		{
 			Send(Settings.Default.ServiceMail,
 			     Settings.Default.ServiceMail,

@@ -128,7 +128,7 @@ namespace Inforoom.PriceProcessor
 				return;
 
 			knowErrors.Add(addition);
-			Mailer.SendFormServiceToService("Ошибка в PriceProcessor",
+			Mailer.SendFromServiceToService("Ошибка в PriceProcessor",
 			                                String.Format("Обработчик : {0}\n{1}", GetType().Name, addition));
 		}
 	}

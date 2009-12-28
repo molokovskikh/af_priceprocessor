@@ -111,9 +111,8 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 						logger.ErrorFormat(
 							"Возникла ошибка при попытке перепровести прайс. Не удалось обработать файл {0}. Файл должен быть письмом (*.eml)\n{1}",
 							filename, ex);
-						string errorMessage = String.Format(
-							"Не удалось перепровести прайс. Ошибка при обработке файла {0}",
-							filename);
+						string errorMessage = String.Format("Не удалось перепровести прайс.");
+						Mailer.SendFromServiceToService("Ошибка при перепосылке прайс-листа", String.Format("Имя файла: {0}\n{1}", filename, ex.ToString()));
 						throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 					}
 				}
@@ -447,7 +446,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 				catch (Exception ex)
 				{
-					Mailer.SendFormServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
+					Mailer.SendFromServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
 					return 0;
 				}
 			}
