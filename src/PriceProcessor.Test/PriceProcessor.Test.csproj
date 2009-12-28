@@ -107,6 +107,7 @@
   <ItemGroup>
     <Compile Include="ArchiveHelperFixture.cs" />
     <Compile Include="AssortmentFixture.cs" />
+    <Compile Include="BasePriceParserFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
