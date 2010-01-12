@@ -90,10 +90,10 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 						foreach (var entity in message.Attachments)
 						{
 							// Получаем имя файла вложения
-							attachFileName = entity.ContentDisposition_FileName.ToLower();
-							
-							if (String.IsNullOrEmpty(attachFileName))
-								attachFileName = entity.ContentType_Name;
+							if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName))
+								attachFileName = entity.ContentDisposition_FileName.ToLower();
+							else
+								attachFileName = entity.ContentType_Name.ToLower();
 
 							if (attachFileName == archFileName.ToLower() ||
 								attachFileName == externalFileName.ToLower())
