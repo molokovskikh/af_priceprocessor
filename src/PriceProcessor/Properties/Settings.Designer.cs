@@ -713,15 +713,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("d.dorofeev@analit.net")]
-        public string TestIMAPUser {
-            get {
-                return ((string)(this["TestIMAPUser"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("prcopy@analit.net")]
         public string WaybillIMAPUser {
             get {
@@ -735,24 +726,6 @@ namespace Inforoom.PriceProcessor.Properties {
         public string WaybillIMAPPass {
             get {
                 return ((string)(this["WaybillIMAPPass"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Test")]
-        public string IMAPSourceFolder {
-            get {
-                return ((string)(this["IMAPSourceFolder"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("newPass1")]
-        public string TestIMAPPass {
-            get {
-                return ((string)(this["TestIMAPPass"]));
             }
         }
         
@@ -785,7 +758,34 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("newPass1")]
+        [global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
+        public string TestIMAPUser {
+            get {
+                return ((string)(this["TestIMAPUser"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("12345678")]
+        public string TestIMAPPass {
+            get {
+                return ((string)(this["TestIMAPPass"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("INBOX")]
+        public string IMAPSourceFolder {
+            get {
+                return ((string)(this["IMAPSourceFolder"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("newPass2")]
         public string IMAPPass {
             get {
                 return ((string)(this["IMAPPass"]));

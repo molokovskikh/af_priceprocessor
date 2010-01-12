@@ -307,8 +307,8 @@ WHERE RowId = ?downlogId
 		public void Test_copy_source_file_resend_price()
 		{
 			var sourceFileName = "6905885.eml";
-			var archFileName = "prs.txt";
-			var externalFileName = archFileName;
+			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
+			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
 			Setup.Initialize("DB");
 			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);

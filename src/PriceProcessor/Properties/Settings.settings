@@ -276,20 +276,11 @@
     <Setting Name="DownWaybillsPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownWaybills</Value>
     </Setting>
-    <Setting Name="TestIMAPUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">d.dorofeev@analit.net</Value>
-    </Setting>
     <Setting Name="WaybillIMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">prcopy@analit.net</Value>
     </Setting>
     <Setting Name="WaybillIMAPPass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">123</Value>
-    </Setting>
-    <Setting Name="IMAPSourceFolder" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Test</Value>
-    </Setting>
-    <Setting Name="TestIMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">newPass1</Value>
     </Setting>
     <Setting Name="IMAPPort" Type="System.String" Scope="Application">
       <Value Profile="(Default)">143</Value>
@@ -300,8 +291,17 @@
     <Setting Name="IMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">d.dorofeev@analit.net</Value>
     </Setting>
+    <Setting Name="TestIMAPUser" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">KvasovTest@analit.net</Value>
+    </Setting>
+    <Setting Name="TestIMAPPass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">12345678</Value>
+    </Setting>
+    <Setting Name="IMAPSourceFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">INBOX</Value>
+    </Setting>
     <Setting Name="IMAPPass" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">newPass1</Value>
+      <Value Profile="(Default)">newPass2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

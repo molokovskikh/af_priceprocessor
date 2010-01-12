@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Data;
 using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
@@ -140,27 +142,22 @@ namespace Inforoom.Downloader
             string AttachNames = String.Empty;
 			string _causeSubject = String.Empty, _causeBody = String.Empty, _systemError = String.Empty;
 
-			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
-
-			// ‘ормируем список приложений, чтобы использовать 
-			// его при отчете о нераспознанном письме
-			foreach (var ent in m.Attachments)
-				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) ||
-					!String.IsNullOrEmpty(ent.ContentType_Name))
-				{
-					AttachNames += "\"" + GetShortFileNameFromAttachement(ent) +
-						"\"" + Environment.NewLine;
-				}
-
-        	if (CheckMime(m, ref _causeSubject, ref _causeBody, ref _systemError))
-			{
-				// ≈сли в письме есть вложени€
-				FillSourcesTable();
-				if (!ProcessAttachs(m, FromList, ref _causeSubject, ref _causeBody))
-					ErrorOnProcessAttachs(m, FromList, AttachNames, _causeSubject, _causeBody);
-			}
-			else
-				ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody, _systemError);
+			m = UueHelper.ExtractFromUue(m, DownHandlerPath);			
+        	try
+        	{
+        		if (!CheckMime(m, ref _causeSubject, ref _causeBody, ref _systemError))
+        			throw new EMailSourceHandlerException();
+        		FillSourcesTable();
+        		if (!ProcessAttachs(m, FromList, ref _causeSubject, ref _causeBody))
+        			throw new EMailSourceHandlerException();
+        	}
+        	catch (EMailSourceHandlerException)
+        	{
+				// ‘ормируем список приложений, чтобы использовать 
+				// его при отчете о нераспознанном письме
+        		m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
+        		ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody, _systemError);
+        	}
         }
 
 		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
@@ -209,15 +206,12 @@ namespace Inforoom.Downloader
 
 			var attachmentFileName = string.Empty;
 
-			foreach (MimeEntity ent in m.Attachments)
+			var attachments = m.GetValidAttachements();
+			foreach (var entity in attachments)
 			{
-				if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName) || 
-					!String.IsNullOrEmpty(ent.ContentType_Name))
-				{
-					attachmentFileName = SaveAttachement(ent);
-					UnPack(m, ref _Matched, FromList, attachmentFileName);
-					Cleanup();
-				}
+				attachmentFileName = SaveAttachement(entity);
+				UnPack(m, ref _Matched, FromList, attachmentFileName);
+				Cleanup();
 			}
 
 			if (!_Matched)
@@ -409,9 +403,10 @@ namespace Inforoom.Downloader
 			return attachmentFileName;
 		}
 
-		protected string GetShortFileNameFromAttachement(MimeEntity ent)
+		protected static string GetShortFileNameFromAttachement(MimeEntity ent)
 		{
 			var shortFileName = String.Empty;
+
 			// ¬ некоторых случа€х ContentDisposition_FileName не заполнено,
 			// тогда смотрим на ContentType_Name
 			if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
@@ -424,4 +419,35 @@ namespace Inforoom.Downloader
 		}
 
     }
+
+	public static class MimeEntityExtentions
+	{
+		public static IEnumerable<MimeEntity> GetValidAttachements(this Mime mime)
+		{
+			return mime.Attachments.Where(m => !String.IsNullOrEmpty(m.GetFilename()));
+		}
+
+		public static IEnumerable<string> GetAttachmentFilenames(this Mime mime)
+		{
+			var result = new List<string>();
+			var attachments = mime.GetValidAttachements();
+			foreach (var entity in attachments)
+				result.Add(entity.GetFilename());
+			return result;
+		}
+
+		public static string GetFilename(this MimeEntity entity)
+		{
+			if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName))
+				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentDisposition_FileName));
+			else if (!String.IsNullOrEmpty(entity.ContentType_Name))
+				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType_Name));
+			return null;
+		}
+	}
+
+	public class EMailSourceHandlerException : Exception
+	{
+		
+	}
 }
