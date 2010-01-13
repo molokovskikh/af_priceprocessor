@@ -155,7 +155,7 @@ namespace Inforoom.Downloader
         	{
 				// Формируем список приложений, чтобы использовать 
 				// его при отчете о нераспознанном письме
-        		m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
+        		AttachNames = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
         		ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody, _systemError);
         	}
         }
