@@ -13,33 +13,45 @@ namespace Inforoom.PriceProcessor.Downloader
 		private static MySqlCommand CreateLogCommand()
 		{
 			var command = new MySqlCommand(@"
-insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ResultCode, ArchFileName, ExtrFileName) 
-VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()");
+insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ShortErrorMessage, ResultCode, ArchFileName, ExtrFileName) 
+VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()");
 			command.Parameters.AddWithValue("?Host", Environment.MachineName);
 			command.Parameters.Add("?PriceItemId", MySqlDbType.UInt64);
 			command.Parameters.Add("?Addition", MySqlDbType.VarString);
 			command.Parameters.Add("?ResultCode", MySqlDbType.Byte);
 			command.Parameters.Add("?ArchFileName", MySqlDbType.VarString);
 			command.Parameters.Add("?ExtrFileName", MySqlDbType.VarString);
+			command.Parameters.Add("?ShortErrorMessage", MySqlDbType.VarString);
 			return command;
 		}
 
 		public static void Log(string addition)
 		{
-			Log(null, addition, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(null, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static void Log(ulong currPriceItemId, string addition)
+		public static void Log(string addition, string shortErrorMessage)
 		{
-			Log(currPriceItemId, addition, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(null, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
+		}
+
+		public static void Log(ulong priceItemId, string addition)
+		{
+			Log(priceItemId, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
+		}
+
+		public static void Log(ulong priceItemId, string addition, string shortErrorMessage)
+		{
+			Log(priceItemId, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
 		public static UInt64 Log(ulong? currPriceItemId, string addition, DownPriceResultCode resultCode, string archFileName, string extrFileName)
 		{
-			return Log(currPriceItemId, addition, resultCode, archFileName, extrFileName, null);
+			return Log(currPriceItemId, addition, null, resultCode, archFileName, extrFileName, null);
 		}
 
-		public static UInt64 Log(ulong? currPriceItemId, string addition, DownPriceResultCode resultCode, string archFileName, string extrFileName, MySqlConnection connection)
+		public static UInt64 Log(ulong? currPriceItemId, string addition, string shortErrorMessage,
+			DownPriceResultCode resultCode, string archFileName, string extrFileName, MySqlConnection connection)
 		{
 			if (!String.IsNullOrEmpty(addition))
 				if (currPriceItemId.HasValue)
@@ -53,6 +65,7 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ResultCode, ?ArchFileName, ?Extr
 			command.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
 			command.Parameters["?ArchFileName"].Value = archFileName;
 			command.Parameters["?ExtrFileName"].Value = extrFileName;
+			command.Parameters["?ShortErrorMessage"].Value = shortErrorMessage;
 
 			bool NeedLogging = true;
 			//Если это успешная загрузка, то сбрасываем все ошибки

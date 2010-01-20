@@ -17,7 +17,7 @@ namespace Inforoom.Downloader
 		{
 			MySqlUtils.InTransaction((c, t) => {
 				var downloadLogId = DownloadLogEntity.Log((uint) CurrPriceItemId, 
-					null, 
+					null, null,
 					DownPriceResultCode.SuccessDownload, archFileName,
 					(String.IsNullOrEmpty(extrFileName)) ? null : Path.GetFileName(extrFileName), c);
 

@@ -88,6 +88,10 @@ namespace Inforoom.Downloader
 						CurrFileName = String.Empty;
 						GetFileFromSource(priceSource);
 					}
+					catch (PathSourceHandlerException pathException)
+					{
+						DownloadLogEntity.Log(priceSource.PriceItemId, pathException.ToString(), pathException.ErrorMessage);
+					}
 					catch (Exception e)
 					{
 						DownloadLogEntity.Log(priceSource.PriceItemId, e.ToString());
@@ -103,7 +107,7 @@ namespace Inforoom.Downloader
 							try
 							{
 								if (!correctArchive)
-									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
+									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'. Файл поврежден", CurrFileName);
 
 								if (!ProcessPriceFile(CurrFileName, out extractFile))
 									throw new PricePreprocessingException("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
@@ -203,5 +207,26 @@ namespace Inforoom.Downloader
 		protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
 
 		protected virtual void FileProcessed() { }
+	}
+
+	public class PathSourceHandlerException : Exception
+	{
+		public static string NetworkErrorMessage = "Ошибка сетевого соединения";
+
+		public PathSourceHandlerException()
+		{ }
+
+		public PathSourceHandlerException(string message, Exception innerException)
+			: base(message, innerException)
+		{
+			ErrorMessage = message;
+		}
+
+		public string ErrorMessage { get; set; }
+
+		protected virtual string GetShortErrorMessage(Exception e)
+		{
+			return String.Empty;
+		}
 	}
 }

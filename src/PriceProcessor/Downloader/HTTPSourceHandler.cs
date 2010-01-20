@@ -55,29 +55,36 @@ namespace Inforoom.Downloader
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
-			var pricePath = source.PricePath;
-			if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
-				pricePath = @"http://" + pricePath;
-
-			var httpFileName = source.PriceMask;
-			var priceDateTime = source.PriceDateTime;
-
-			if (pricePath[pricePath.Length - 1].ToString() != "/")
-				pricePath += "/";
-			var httpUrl = pricePath + httpFileName;
-			var fileLastWriteTime = GetFileDateTime(httpUrl, source.HttpLogin, source.HttpPassword);
-			var downloadInterval = Settings.Default.FileDownloadInterval;
-#if DEBUG
-			downloadInterval = -1;
-			fileLastWriteTime = DateTime.Now;
-#endif
-			if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) &&
-			    (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > downloadInterval))
+			try
 			{
-				var downFileName = DownHandlerPath + httpFileName;
-				GetFile(httpUrl, downFileName, source.HttpLogin, source.HttpPassword);
-				CurrFileName = downFileName;
-				CurrPriceDate = fileLastWriteTime;
+				var pricePath = source.PricePath;
+				if (!pricePath.StartsWith(@"http://", StringComparison.OrdinalIgnoreCase))
+					pricePath = @"http://" + pricePath;
+
+				var httpFileName = source.PriceMask;
+				var priceDateTime = source.PriceDateTime;
+
+				if (pricePath[pricePath.Length - 1].ToString() != "/")
+					pricePath += "/";
+				var httpUrl = pricePath + httpFileName;
+				var fileLastWriteTime = GetFileDateTime(httpUrl, source.HttpLogin, source.HttpPassword);
+				var downloadInterval = Settings.Default.FileDownloadInterval;
+#if DEBUG
+				downloadInterval = -1;
+				fileLastWriteTime = DateTime.Now;
+#endif
+				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) &&
+				    (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > downloadInterval))
+				{
+					var downFileName = DownHandlerPath + httpFileName;
+					GetFile(httpUrl, downFileName, source.HttpLogin, source.HttpPassword);
+					CurrFileName = downFileName;
+					CurrPriceDate = fileLastWriteTime;
+				}
+			}
+			catch (Exception e)
+			{
+				throw new HttpSourceHandlerException(e);
 			}
 		}
 
@@ -90,4 +97,54 @@ namespace Inforoom.Downloader
         				SourcesTableColumns.colHTTPPassword, source.HttpPassword));
         }
     }
+
+	public class HttpSourceHandlerException : PathSourceHandlerException
+	{
+		public static string ErrorMessageForbidden = "ƒоступ запрещен. »спользуютс€ недействительные учетные данные.";
+		public static string ErrorMessageUnauthorized = "Ќедостаточно прав, дл€ получени€ запрошеного документа.";
+
+		public HttpSourceHandlerException()
+		{ }
+
+		public HttpSourceHandlerException(Exception innerException)
+			: base(null, innerException)
+		{
+			ErrorMessage = GetShortErrorMessage(innerException);
+		}
+
+		protected override string GetShortErrorMessage(Exception e)
+		{
+			var message = String.Empty;
+			if (e is WebException)
+			{
+				message += "HTTP: ";
+				var webException = e as WebException;
+				var webResponse = webException.Response as HttpWebResponse;
+				if (webResponse != null)
+				{
+					switch (webResponse.StatusCode)
+					{
+						case HttpStatusCode.Unauthorized:
+							{
+								message += ErrorMessageUnauthorized;
+								break;
+							}
+						case HttpStatusCode.Forbidden:
+							{
+								message += ErrorMessageForbidden;
+								break;
+							}
+						default:
+							{
+								message += NetworkErrorMessage;
+								break;
+							}
+					}
+				}
+				else
+					message += NetworkErrorMessage;
+			}
+			return message;
+		}
+	}
 }

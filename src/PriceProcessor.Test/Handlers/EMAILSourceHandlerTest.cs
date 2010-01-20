@@ -10,6 +10,8 @@ using Common.Tools.Calendar;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
+using LumiSoft.Net.IMAP;
+using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.SMTP.Client;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
@@ -87,6 +89,46 @@ namespace PriceProcessor.Test
 				}
 			}
 			Assert.IsTrue(priceItemInQueue, "Ошибка обработки файла. Файл не поставлен в очередь на формализацию");
+		}
+
+		[Test(Description = "Тест для обработки всех писем-файлов находящихся в определенной директории. Проверяется что распаковали файл и что его размер > 0")]
+		public void HandleAllMessagesInDirectory()
+		{
+			// Директория, где лежат *.eml файлы. Для каждого теста указывается своя директория.
+			// Не стал добавлять все файлы в свн чтобы не увеличивать размер
+			const string dataDirectory = "C:\\history_test";
+			var mailboxAddress = Settings.Default.TestIMAPUser;
+			var mailboxPassword = Settings.Default.TestIMAPPass;
+			var imapFolder = Settings.Default.IMAPSourceFolder;
+
+			TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
+			TestHelper.RecreateDirectories();
+
+			var filePaths = Directory.GetFiles(dataDirectory, "*.eml", SearchOption.AllDirectories);
+			var indexItem = 0;
+			using (var imapClient = new IMAP_Client())
+			{
+				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
+				imapClient.Authenticate(mailboxAddress, mailboxPassword);
+				imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
+				var index = 0;
+				foreach (var filePath in filePaths)
+				{
+					var bytes = File.ReadAllBytes(filePath);
+					imapClient.StoreMessage(imapFolder, bytes);
+					index++;
+					//if (index > 20)
+					//{
+						var handler = new EMAILSourceHandler();
+						handler.StartWork();
+						Thread.Sleep(5000);
+						handler.StopWork();
+						TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
+						index = 0;
+					//}
+					//indexItem++;
+				}
+			}
 		}
 
 		[Test]

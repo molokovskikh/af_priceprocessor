@@ -1,9 +1,13 @@
  using System;
 using System.IO;
 using System.Data;
+using System.Net.Sockets;
+using Inforoom.PriceProcessor;
+using LumiSoft.Net.FTP;
 using LumiSoft.Net.FTP.Client;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
+using LumiSoft.Net;
 
 namespace Inforoom.Downloader
 {
@@ -25,7 +29,52 @@ namespace Inforoom.Downloader
 	}
 
 	public class FtpDownloader
-	{
+	{		
+		private const int FtpPort = 21;
+
+		private FTP_ListItem[] GetList(FTP_Client ftpClient, string ftpHost, string ftpDir, PriceSource priceSource)
+		{
+			ftpClient.Connect(ftpHost, FtpPort);
+			ftpClient.Authenticate(priceSource.FtpLogin, priceSource.FtpPassword);
+			ftpClient.SetCurrentDir(ftpDir);
+			FTP_ListItem[] items = null;
+			try
+			{
+				items = ftpClient.GetList();
+			}
+			catch (IOException)
+			{
+				items = ftpClient.GetList();
+			}
+			return items;
+		}
+
+		private FTP_ListItem[] FtpClientGetList(FTP_Client ftpClient, PriceSource priceSource, string ftpHost, string ftpDir)
+		{
+			FTP_ListItem[] entries = null;
+			try
+			{
+				ftpClient.TransferMode = priceSource.FtpPassiveMode ? FTP_TransferMode.Passive : FTP_TransferMode.Active;
+				entries = GetList(ftpClient, ftpHost, ftpDir, priceSource);
+			}
+			catch (FTP_ClientException e)
+			{
+				if ((e.StatusCode == (int)FTP_StatusCode.ServiceNotAvaliable) || (e.StatusCode == (int)FTP_StatusCode.ConnectionTimeout))
+				{
+					ftpClient.Disconnect();
+					ftpClient.TransferMode = (!priceSource.FtpPassiveMode) ? FTP_TransferMode.Passive : FTP_TransferMode.Active;
+					entries = GetList(ftpClient, ftpHost, ftpDir, priceSource);
+					var warningMessageBody = String.Format(
+						"Неверное значение поля FTPPassiveMode в таблице farm.Sources.\nPriceItemId = {0}\nFirmCode = {1}\n",
+						priceSource.PriceItemId, priceSource.FirmCode);
+					Mailer.SendFromServiceToService("Предупреждение в PriceProcessor", warningMessageBody);
+				}
+				else
+					throw;
+			}
+			return entries;
+		}
+
 		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;
@@ -44,23 +93,22 @@ namespace Inforoom.Downloader
 			var priceDateTime = source.PriceDateTime;
 			using (var ftpClient = new FTP_Client())
 			{
-				ftpClient.PassiveMode = true;
-				ftpClient.Connect(ftpHost, 21);
-				ftpClient.Authenticate(source.FtpLogin, source.FtpPassword);
-				ftpClient.SetCurrentDir(pricePath);
+				var dsEntries = FtpClientGetList(ftpClient, source, ftpHost, pricePath);
 
-				var dsEntries = ftpClient.GetList();
-
-				foreach (DataRow drEnt in dsEntries.Tables["DirInfo"].Rows)
+				foreach (var entry in dsEntries)
 				{
-					if (Convert.ToBoolean(drEnt["IsDirectory"]))
+					if (Convert.ToBoolean(entry.IsDir))
 						continue;
 
-					shortFileName = drEnt["Name"].ToString();
+					shortFileName = entry.Name;
 					if ((WildcardsHelper.IsWildcards(source.PriceMask) && WildcardsHelper.Matched(source.PriceMask, shortFileName)) ||
 						(String.Compare(shortFileName, source.PriceMask, true) == 0))
 					{
-						var fileLastWriteTime = Convert.ToDateTime(drEnt["Date"]);
+						var fileLastWriteTime = entry.Modified;
+#if DEBUG
+						priceDateTime = fileLastWriteTime;
+						ftpFileName = shortFileName;
+#endif
 						if (((fileLastWriteTime.CompareTo(priceDateTime) > 0)
 								&& (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
 								|| ((fileLastWriteTime.CompareTo(DateTime.Now) > 0) && (fileLastWriteTime.Subtract(priceDateTime).TotalMinutes > 0)))
@@ -75,7 +123,7 @@ namespace Inforoom.Downloader
 					return null;
 				downFileName = Path.Combine(downHandlerPath, ftpFileName);
 				using (var file = new FileStream(downFileName, FileMode.Create))
-					ftpClient.ReceiveFile(ftpFileName, file);
+					ftpClient.GetFile(ftpFileName, file);
 			}
 
 			return new DownloadedFile(downFileName, priceDateTime);
@@ -101,12 +149,19 @@ namespace Inforoom.Downloader
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
-			var downloader = new FtpDownloader();
-			var file = downloader.GetFileFromSource(source, DownHandlerPath);
-			if (file != null)
+			try
 			{
-				CurrFileName = file.FileName;
-				CurrPriceDate = file.FileDate;
+				var downloader = new FtpDownloader();
+				var file = downloader.GetFileFromSource(source, DownHandlerPath);
+				if (file != null)
+				{
+					CurrFileName = file.FileName;
+					CurrPriceDate = file.FileDate;
+				}
+			}
+			catch (Exception e)
+			{
+				throw new FtpSourceHandlerException(e);
 			}
 		}
 
@@ -114,6 +169,56 @@ namespace Inforoom.Downloader
 		{
 			var downloader = new FtpDownloader();
 			return downloader.GetLikeSources(dtSources, source);
+		}
+	}
+
+	public class FtpSourceHandlerException : PathSourceHandlerException
+	{
+		public static string ErrorMessageInvalidLoginOrPassword = "Неправильный логин/пароль.";
+		public static string ErrorMessageServiceNotAvaliable = "Сервис недоступен.";
+
+		public FtpSourceHandlerException()
+		{ }
+
+		public FtpSourceHandlerException(Exception innerException)
+			: base(null, innerException)
+		{
+			ErrorMessage = GetShortErrorMessage(innerException);
+		}
+
+		protected override string GetShortErrorMessage(Exception e)
+		{
+			var message = String.Empty;
+			var ftpClientException = e as FTP_ClientException;
+			var socketException = e as SocketException;
+			if (ftpClientException != null)
+			{
+				message = "FTP: ";
+				switch (ftpClientException.StatusCode)
+				{
+					case (int)FTP_StatusCode.UserNotLoggedIn:
+						{
+							message += ErrorMessageInvalidLoginOrPassword;
+							break;
+						}
+					case (int)FTP_StatusCode.ServiceNotAvaliable:
+						{
+							message += ErrorMessageServiceNotAvaliable;
+							break;
+						}
+					default:				
+						{
+							message += NetworkErrorMessage;
+							break;
+						}
+				}
+			}
+			else if (socketException != null)
+			{
+				message = "FTP: ";
+				message += NetworkErrorMessage;
+			}
+			return message;
 		}
 	}
 }
