@@ -116,10 +116,5 @@ namespace Inforoom.Downloader
 		{			
 			ErrorMessage = GetShortErrorMessage(innerException);
 		}
-
-		protected override string GetShortErrorMessage(Exception e)
-		{
-			return "LAN: Сетевая ошибка при взаимодействии с сервером";
-		}
 	}
 }

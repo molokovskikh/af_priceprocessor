@@ -193,7 +193,6 @@ namespace Inforoom.Downloader
 			var socketException = e as SocketException;
 			if (ftpClientException != null)
 			{
-				message = "FTP: ";
 				switch (ftpClientException.StatusCode)
 				{
 					case (int)FTP_StatusCode.UserNotLoggedIn:
@@ -215,7 +214,6 @@ namespace Inforoom.Downloader
 			}
 			else if (socketException != null)
 			{
-				message = "FTP: ";
 				message += NetworkErrorMessage;
 			}
 			return message;

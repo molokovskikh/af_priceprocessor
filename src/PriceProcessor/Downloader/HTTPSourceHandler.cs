@@ -117,7 +117,6 @@ namespace Inforoom.Downloader
 			var message = String.Empty;
 			if (e is WebException)
 			{
-				message += "HTTP: ";
 				var webException = e as WebException;
 				var webResponse = webException.Response as HttpWebResponse;
 				if (webResponse != null)

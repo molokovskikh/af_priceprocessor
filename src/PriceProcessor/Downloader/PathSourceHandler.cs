@@ -226,7 +226,7 @@ namespace Inforoom.Downloader
 
 		protected virtual string GetShortErrorMessage(Exception e)
 		{
-			return String.Empty;
+			return NetworkErrorMessage;
 		}
 	}
 }
