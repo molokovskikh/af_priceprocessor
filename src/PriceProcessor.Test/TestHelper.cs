@@ -124,6 +124,7 @@ select
   CD.FirmCode,
   CD.ShortName as FirmShortName,
   CD.FirmStatus,
+  CD.FirmSegment,
   FR.JunkPos as SelfJunkPos,
   FR.AwaitPos as SelfAwaitPos,
   FR.VitallyImportantMask as SelfVitallyImportantMask,

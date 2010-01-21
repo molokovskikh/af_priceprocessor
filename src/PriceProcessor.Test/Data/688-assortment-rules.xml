@@ -17,6 +17,7 @@
                 <xs:element name="FirmCode" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FirmShortName" type="xs:string" minOccurs="0" />
                 <xs:element name="FirmStatus" type="xs:unsignedByte" minOccurs="0" />
+								<xs:element name="FirmSegment" type="xs:unsignedByte" minOccurs="0" />
                 <xs:element name="SelfJunkPos" type="xs:string" minOccurs="0" />
                 <xs:element name="SelfAwaitPos" type="xs:string" minOccurs="0" />
                 <xs:element name="SelfVitallyImportantMask" type="xs:string" minOccurs="0" />
@@ -124,6 +125,7 @@
     <FirmCode>3287</FirmCode>
     <FirmShortName>Протек</FirmShortName>
     <FirmStatus>1</FirmStatus>
+		<FirmSegment>0</FirmSegment>
     <ParentSynonym>5</ParentSynonym>
     <Id>4609</Id>
     <PriceFormatId>1</PriceFormatId>

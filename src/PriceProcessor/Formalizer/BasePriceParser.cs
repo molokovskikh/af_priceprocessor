@@ -219,6 +219,15 @@ namespace Inforoom.Formalizer
 		ExcludeForm    = 19 // Формализован по наименованию, производителю и как исключение
 	}
 
+	// Типы ПЛ
+	[Flags]
+	public enum PricePurpose
+	{
+		Normal = 0, // обычный
+		Assortment = 1, // ассортиментный
+		Helper = 2      // справочный
+	}
+
 	//Класс содержит название полей из таблицы FormRules
 	public sealed class FormRules
 	{
@@ -242,6 +251,7 @@ namespace Inforoom.Formalizer
 		public static string colBillingStatus = "BillingStatus";
 		public static string colFirmStatus = "FirmStatus";
 		public static string colCostType = "CostType";
+		public static string colFirmSegment = "FirmSegment";
 	}
 
 	public class CoreCost : ICloneable
@@ -405,6 +415,8 @@ namespace Inforoom.Formalizer
 		protected int    priceType;
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
+		//Классификация прайса: обычный, ассортиментный, справочный
+		protected PricePurpose pricePurpose;
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI;
@@ -456,7 +468,7 @@ namespace Inforoom.Formalizer
 			costCode = (data.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(data.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(data.Rows[0][FormRules.colParentSynonym]); 
 			costType = (CostTypes)Convert.ToInt32(data.Rows[0][FormRules.colCostType]);
-
+			
 			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
 
 			//Производим попытку разобрать строку с "запрещенными выражениями"
@@ -489,6 +501,13 @@ namespace Inforoom.Formalizer
 			vitallyImportantMask = data.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
 			prevRowCount = data.Rows[0][FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(data.Rows[0][FormRules.colPrevRowCount]);
 			priceType = Convert.ToInt32(data.Rows[0][FormRules.colPriceType]);
+			var firmSegment = Convert.ToInt16(data.Rows[0][FormRules.colFirmSegment]);
+
+			pricePurpose = PricePurpose.Normal;
+			if (priceType == Settings.Default.ASSORT_FLG)
+				pricePurpose |= PricePurpose.Assortment;
+			if (firmSegment == 1)
+				pricePurpose |= PricePurpose.Helper;
 
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
@@ -1001,7 +1020,7 @@ order by Core0.Id", priceCode);
 					Convert.ToInt64(drCore["CatalogId"]),
 					Convert.ToInt64(drNewSynonym["CodeFirmCr"]),
 					Convert.ToInt64(drNewSynonym["SynonymFirmCrCode"]),
-					Convert.ToInt64(drCore["SynonymCode"]));
+					Convert.ToInt64(drCore["SynonymCode"]), pricePurpose == PricePurpose.Normal);
 				if (status == UnrecExpStatus.AssortmentForm)
 					drCore["CodeFirmCr"] = drNewSynonym["CodeFirmCr"];
 			}
@@ -1690,7 +1709,12 @@ where
 											long? synonymId = null;
 											if (!Convert.IsDBNull(drUnrecExp["ProductSynonymId"]))
 												synonymId = Convert.ToInt64(drUnrecExp["ProductSynonymId"]);
-											var status = GetAssortmentStatus(CatalogId, Convert.ToInt64(drUnrecExp["PriorProducerId"]), Convert.ToInt64(drUnrecExp["ProducerSynonymId"]), synonymId);
+											var status = GetAssortmentStatus(
+												CatalogId, 
+												Convert.ToInt64(drUnrecExp["PriorProducerId"]), 
+												Convert.ToInt64(drUnrecExp["ProducerSynonymId"]), 
+												synonymId,
+												pricePurpose == PricePurpose.Normal);
 											drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
 											drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
 											continue;
@@ -1962,7 +1986,7 @@ and r.RegionCode = cd.RegionCode",
 				  UnrecExpStatus.NameForm UnrecExpStatus.FirmForm UnrecExpStatus.AssortmentForm
 				  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
 				*/
-				//проверям ассортимент
+				//проверяем ассортимент
 				if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
 					GetAssortmentStatus(position);
 
@@ -2350,14 +2374,21 @@ and r.RegionCode = cd.RegionCode",
 
 		public void GetAssortmentStatus(FormalizationPosition position)
 		{
-			var assortmentStatus = GetAssortmentStatus(position.CatalogId, position.CodeFirmCr, position.SynonymFirmCrCode, position.SynonymCode);
+			var assortmentStatus = 
+				GetAssortmentStatus(
+					position.CatalogId, 
+					position.CodeFirmCr, 
+					position.SynonymFirmCrCode,
+					position.SynonymCode,
+					pricePurpose == PricePurpose.Normal);
+
 			//Если получили исключение, то сбрасываем CodeFirmCr
 			if (assortmentStatus == UnrecExpStatus.MarkExclude)
 				position.CodeFirmCr = null;
 			position.AddStatus(assortmentStatus);
 		}
 
-		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId, long? synonymId)
+		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId, long? synonymId, bool insertIfNotFound)
 		{
 			DataRow[] dr;
 
@@ -2393,7 +2424,7 @@ and r.RegionCode = cd.RegionCode",
 			}
 
 			//Если мы ничего не нашли, то добавляем в исключение
-			if (dr == null || dr.Length == 0)
+			if (dr == null || dr.Length == 0 && insertIfNotFound)
 				CreateExcludeOrAssortment(CatalogId, ProducerId, ProducerSynonymId, synonymId);
 
 			return UnrecExpStatus.MarkExclude;

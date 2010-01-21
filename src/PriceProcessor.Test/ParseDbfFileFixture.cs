@@ -49,9 +49,8 @@ where pricecode = 3331", connection);
 				foreach (DataColumn column in result.Tables[0].Columns)
 				{
 					//junk - определяется на основании текущей даты по этому со временем значение может измениться
-					if (column.ColumnName == "Id" || column.ColumnName == "Core_Id" || column.ColumnName == "Junk")
-						continue;
-					if (column.ColumnName == "UpdateTime" || column.ColumnName == "QuantityUpdate")
+					if (column.ColumnName == "Id" || column.ColumnName == "Core_Id" || column.ColumnName == "Junk" ||
+						column.ColumnName == "UpdateTime" || column.ColumnName == "QuantityUpdate" || column.ColumnName == "ProducerCost")
 						continue;
 					Assert.That(resultRow[column.ColumnName], Is.EqualTo(etalonRow[column.ColumnName]), "не сошлось значение в колонке {0}, строка {1}", column.ColumnName, i);
 				}

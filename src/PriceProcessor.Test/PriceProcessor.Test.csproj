@@ -212,6 +212,8 @@
     <None Include="Data\HandlersTests\552.zip" />
     <None Include="Data\StressTest\517.dbf" />
     <None Include="Data\StressTest\599.dbf" />
+    <Content Include="Data\688-assortmentprice-rules.xml" />
+    <Content Include="Data\688-helpprice-rules.xml" />
     <Content Include="Data\UpdateCoreTimeStamp-update-quantity.txt" />
     <Content Include="Data\UpdateCoreTimeStamp-update.txt" />
     <Content Include="Data\UpdateCoreTimeStamp.txt" />

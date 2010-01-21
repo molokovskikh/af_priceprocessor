@@ -140,6 +140,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Delete_broken_message()
 		{
+			Setup.Initialize("DB");
 			using (new TransactionScope())
 			{
 				TestPriceSource.Queryable.Where(s => s.EmailFrom == "naturpr@kursknet.ru" && s.EmailTo == "prices@kursk.analit.net")
