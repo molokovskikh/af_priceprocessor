@@ -134,7 +134,7 @@ namespace PriceProcessor.Test
 			var querySelectLogs = @"select count(*) from `logs`.downlogs where logtime > curdate()";
 			var countDownlogs = 0;
 			With.Connection(connection => countDownlogs = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, querySelectLogs)));
-			Assert.That(countDownlogs, Is.GreaterThan(filePaths.Length));
+			Assert.That(countDownlogs, Is.GreaterThanOrEqualTo(filePaths.Length));
 		}
 
 		[Test]
