@@ -13,10 +13,10 @@ namespace Inforoom.Downloader
 	/// </summary>
 	public abstract class BasePriceSourceHandler : BaseSourceHandler
 	{
-		protected void LogDownloadedPrice(string archFileName, string extrFileName)
+		protected void LogDownloadedPrice(ulong sourceTypeId, string archFileName, string extrFileName)
 		{
 			MySqlUtils.InTransaction((c, t) => {
-				var downloadLogId = DownloadLogEntity.Log((uint) CurrPriceItemId, 
+				var downloadLogId = DownloadLogEntity.Log(sourceTypeId, (uint) CurrPriceItemId, 
 					null, null,
 					DownPriceResultCode.SuccessDownload, archFileName,
 					(String.IsNullOrEmpty(extrFileName)) ? null : Path.GetFileName(extrFileName), c);
@@ -33,9 +33,9 @@ namespace Inforoom.Downloader
 					drCurrent[SourcesTableColumns.colPriceName]);
 		}
 
-		protected void LogDownloaderFail(string message, string archFileName)
+		protected void LogDownloaderFail(ulong sourceTypeId, string message, string archFileName)
 		{
-			var downloadLogId = DownloadLogEntity.Log(CurrPriceItemId, message, DownPriceResultCode.ErrorProcess, archFileName, null);
+			var downloadLogId = DownloadLogEntity.Log(sourceTypeId, CurrPriceItemId, message, DownPriceResultCode.ErrorProcess, archFileName, null);
 			if (downloadLogId == 0)
 				throw new Exception(String.Format("ѕри логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
 

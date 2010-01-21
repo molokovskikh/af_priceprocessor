@@ -13,8 +13,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		private static MySqlCommand CreateLogCommand()
 		{
 			var command = new MySqlCommand(@"
-insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ShortErrorMessage, ResultCode, ArchFileName, ExtrFileName) 
-VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()");
+insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ShortErrorMessage, SourceTypeId, ResultCode, ArchFileName, ExtrFileName) 
+VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()");
 			command.Parameters.AddWithValue("?Host", Environment.MachineName);
 			command.Parameters.Add("?PriceItemId", MySqlDbType.UInt64);
 			command.Parameters.Add("?Addition", MySqlDbType.VarString);
@@ -22,35 +22,36 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?ResultCode, 
 			command.Parameters.Add("?ArchFileName", MySqlDbType.VarString);
 			command.Parameters.Add("?ExtrFileName", MySqlDbType.VarString);
 			command.Parameters.Add("?ShortErrorMessage", MySqlDbType.VarString);
+			command.Parameters.Add("?SourceTypeId", MySqlDbType.UInt64);
 			return command;
 		}
 
-		public static void Log(string addition)
+		public static void Log(ulong sourceTypeId, string addition)
 		{
-			Log(null, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(sourceTypeId, null, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static void Log(string addition, string shortErrorMessage)
+		public static void Log(ulong sourceTypeId, string addition, string shortErrorMessage)
 		{
-			Log(null, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(sourceTypeId, null, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static void Log(ulong priceItemId, string addition)
+		public static void Log(ulong sourceTypeId, ulong priceItemId, string addition)
 		{
-			Log(priceItemId, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(sourceTypeId, priceItemId, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static void Log(ulong priceItemId, string addition, string shortErrorMessage)
+		public static void Log(ulong sourceTypeId, ulong priceItemId, string addition, string shortErrorMessage)
 		{
-			Log(priceItemId, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
+			Log(sourceTypeId, priceItemId, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static UInt64 Log(ulong? currPriceItemId, string addition, DownPriceResultCode resultCode, string archFileName, string extrFileName)
+		public static UInt64 Log(ulong sourceTypeId, ulong? currPriceItemId, string addition, DownPriceResultCode resultCode, string archFileName, string extrFileName)
 		{
-			return Log(currPriceItemId, addition, null, resultCode, archFileName, extrFileName, null);
+			return Log(sourceTypeId, currPriceItemId, addition, null, resultCode, archFileName, extrFileName, null);
 		}
 
-		public static UInt64 Log(ulong? currPriceItemId, string addition, string shortErrorMessage,
+		public static UInt64 Log(ulong sourceTypeId, ulong? currPriceItemId, string addition, string shortErrorMessage,
 			DownPriceResultCode resultCode, string archFileName, string extrFileName, MySqlConnection connection)
 		{
 			if (!String.IsNullOrEmpty(addition))
@@ -65,7 +66,8 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?ResultCode, 
 			command.Parameters["?ResultCode"].Value = Convert.ToByte(resultCode);
 			command.Parameters["?ArchFileName"].Value = archFileName;
 			command.Parameters["?ExtrFileName"].Value = extrFileName;
-			command.Parameters["?ShortErrorMessage"].Value = shortErrorMessage;
+			command.Parameters["?ShortErrorMessage"].Value = String.IsNullOrEmpty(shortErrorMessage) ? Convert.DBNull : shortErrorMessage;
+			command.Parameters["?SourceTypeId"].Value = sourceTypeId;
 
 			bool NeedLogging = true;
 			//Если это успешная загрузка, то сбрасываем все ошибки

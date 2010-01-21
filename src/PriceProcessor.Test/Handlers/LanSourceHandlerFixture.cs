@@ -8,6 +8,7 @@ using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using NUnit.Framework;
 using Test.Support;
+using PriceSourceType = Test.Support.PriceSourceType;
 
 namespace PriceProcessor.Test.Handlers
 {

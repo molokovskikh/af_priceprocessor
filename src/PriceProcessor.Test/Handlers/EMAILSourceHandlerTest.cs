@@ -103,8 +103,6 @@ namespace PriceProcessor.Test
 
 			TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
 			TestHelper.RecreateDirectories();
-			var queryDeleteLogs = @"delete from `logs`.downlogs where logtime > curdate()";
-			With.Connection(connection => MySqlHelper.ExecuteNonQuery(connection, queryDeleteLogs));
 
 			var filePaths = Directory.GetFiles(dataDirectory, "*.eml", SearchOption.AllDirectories);
 			var indexItem = 0;
@@ -114,27 +112,25 @@ namespace PriceProcessor.Test
 				imapClient.Authenticate(mailboxAddress, mailboxPassword);
 				imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
 				var index = 0;
+				var countDownlogs = 0;
 				foreach (var filePath in filePaths)
 				{
+					var queryDeleteLogs = @"delete from `logs`.downlogs where logtime > curdate()";
+					With.Connection(connection => countDownlogs = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, queryDeleteLogs)));
 					var bytes = File.ReadAllBytes(filePath);
 					imapClient.StoreMessage(imapFolder, bytes);
 					index++;
-//					if (index > 20)
-//					{
-						var handler = new EMAILSourceHandler();
-						handler.StartWork();
-						Thread.Sleep(2000);
-						handler.StopWork();
-						TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
-						index = 0;
-//					}
-					//indexItem++;
+					var handler = new EMAILSourceHandler();
+					handler.StartWork();
+					Thread.Sleep(8000);
+					handler.StopWork();
+					TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
+					index = 0;
+					var querySelectLogs = @"select count(*) from `logs`.downlogs where logtime > curdate()";
+					With.Connection(connection => countDownlogs = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, querySelectLogs)));
+					Assert.That(countDownlogs, Is.GreaterThanOrEqualTo(1), String.Format("Сбой произошел на файле {0}", filePath));
 				}
 			}
-			var querySelectLogs = @"select count(*) from `logs`.downlogs where logtime > curdate()";
-			var countDownlogs = 0;
-			With.Connection(connection => countDownlogs = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, querySelectLogs)));
-			Assert.That(countDownlogs, Is.GreaterThanOrEqualTo(filePaths.Length));
 		}
 
 		[Test]

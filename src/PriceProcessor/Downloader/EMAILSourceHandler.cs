@@ -189,7 +189,7 @@ namespace Inforoom.Downloader
 				catch { }
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
-				DownloadLogEntity.Log(String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
+				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
 					cause, m.MainEntity.Subject, FromList.ToAddressListString()));
 			}
 			catch (Exception exMatch)
@@ -271,19 +271,19 @@ namespace Inforoom.Downloader
 									if (ProcessPriceFile(CurrFileName, out ExtrFile))
 									{
 										Matched = true;
-										LogDownloadedPrice(Path.GetFileName(CurrFileName), ExtrFile);
+										LogDownloadedPrice((ulong)PriceSourceType.EMail, Path.GetFileName(CurrFileName), ExtrFile);
 									}
 									else
 									{
-										LogDownloaderFail("Не удалось обработать файл '" + 
+										LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось обработать файл '" + 
 											Path.GetFileName(CurrFileName) + "'", 
 											Path.GetFileName(CurrFileName));
 									}
 								}
 								else
 								{
-									LogDownloaderFail("Не удалось распаковать файл '" + 
-										Path.GetFileName(CurrFileName) + "'", 
+									LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось распаковать файл '" + 
+										Path.GetFileName(CurrFileName) + "'. Файл поврежден", 
 										Path.GetFileName(CurrFileName));
 								}
 								drS.Delete();

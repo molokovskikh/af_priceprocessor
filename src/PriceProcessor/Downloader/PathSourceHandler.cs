@@ -6,6 +6,7 @@ using Common.Tools;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
+using MySql.Data.MySqlClient;
 using FileHelper=Inforoom.PriceProcessor.FileHelper;
 
 namespace Inforoom.Downloader
@@ -18,6 +19,14 @@ namespace Inforoom.Downloader
 		}
 
 		public string FileName { get; set; }
+	}
+
+	public enum PriceSourceType : ulong
+	{
+		EMail = 1,
+		Http = 2,
+		Ftp = 3,
+		Lan = 4
 	}
 
 	public class PriceSource
@@ -47,6 +56,27 @@ namespace Inforoom.Downloader
 				PriceDateTime = DateTime.MinValue;
 			else 
 				PriceDateTime = Convert.ToDateTime(currentSource["LastDownload"]);
+		}
+
+		public ulong SourceTypeId
+		{
+			get
+			{
+				ulong sourceTypeId = 0;
+				var sql = String.Format(@"
+select
+	src.SourceTypeId
+from farm.sources src
+	join usersettings.priceItems pim on pim.Id = {0}
+where
+	src.Id = pim.SourceId", PriceItemId);
+				using (var connection = new MySqlConnection(Literals.ConnectionString()))
+				{
+					connection.Open();
+					sourceTypeId = Convert.ToUInt64(MySqlHelper.ExecuteScalar(connection, sql));
+				}
+				return sourceTypeId;
+			}
 		}
 
 		public uint PriceItemId { get; set; }
@@ -90,11 +120,11 @@ namespace Inforoom.Downloader
 					}
 					catch (PathSourceHandlerException pathException)
 					{
-						DownloadLogEntity.Log(priceSource.PriceItemId, pathException.ToString(), pathException.ErrorMessage);
+						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, pathException.ToString(), pathException.ErrorMessage);
 					}
 					catch (Exception e)
 					{
-						DownloadLogEntity.Log(priceSource.PriceItemId, e.ToString());
+						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, e.ToString());
 					}
 
 					if (!String.IsNullOrEmpty(CurrFileName))
@@ -112,17 +142,17 @@ namespace Inforoom.Downloader
 								if (!ProcessPriceFile(CurrFileName, out extractFile))
 									throw new PricePreprocessingException("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
 
-								LogDownloadedPrice(Path.GetFileName(CurrFileName), extractFile);
+								LogDownloadedPrice(priceSource.SourceTypeId, Path.GetFileName(CurrFileName), extractFile);
 								FileProcessed();
 							}
 							catch(PricePreprocessingException e)
 							{
-								LogDownloaderFail(e.Message, e.FileName);
+								LogDownloaderFail(priceSource.SourceTypeId, e.Message, e.FileName);
 								FileProcessed();
 							}
 							catch(Exception e)
 							{
-								LogDownloaderFail(e.Message, extractFile);
+								LogDownloaderFail(priceSource.SourceTypeId, e.Message, extractFile);
 							}
 							finally
 							{

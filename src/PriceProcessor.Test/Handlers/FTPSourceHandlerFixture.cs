@@ -47,10 +47,13 @@ namespace PriceProcessor.Test.Handlers
 				var priceMask = (pricesMasks.Length > 0) ? pricesMasks[i] : String.Empty;
 				var extrMask = (priceMask.Length > 0) ? extrMasks[i] : String.Empty;
 				priceItems[i] = TestPriceSource.CreateFtpPriceSource(pricePath, priceMask, extrMask, ftpLogin, ftpPassword, ftpDir);
+				var sql = String.Format(@"delete from usersettings.priceitems where SourceId = {0} and Id <> {1}",
+										priceItems[i].Source.Id, priceItems[i].Id);
+				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, sql); });
 			}
 			var handler = new FTPSourceHandler();
 			handler.StartWork();
-			Thread.Sleep(10000);
+			Thread.Sleep(6000);
 			handler.StopWork();
 			return priceItems;			
 		}
@@ -59,7 +62,10 @@ namespace PriceProcessor.Test.Handlers
 		public void FtpInvalidLoginOrPassword()
 		{
 			var pricesPaths = new [] { "ftp.ahold.comch.ru" };
-			var priceItems = Process(pricesPaths, pricesPaths, pricesPaths);
+			var ftpLogin = "test";
+			var ftpPassword = "123123123asd";
+			var ftpDir = "tmp";
+			var priceItems = Process(pricesPaths, pricesPaths, pricesPaths, ftpLogin, ftpPassword, ftpDir);
 			var count = priceItems.Length;
 			for (var i = 0; i < count; i++)
 				CheckErrorMessage(priceItems[i], FtpSourceHandlerException.ErrorMessageInvalidLoginOrPassword);
@@ -97,8 +103,11 @@ namespace PriceProcessor.Test.Handlers
 			TestHelper.RecreateDirectories();
 			var priceItems = Process(pricesPaths, pricesMasks, extrMasks, ftpLogin, ftpPassword, ftpDir);
 
+			var sql = String.Format(@"select count(*) from `logs`.downlogs where PriceItemId = {0}", priceItems[0].Id);
+			var count = 0;
+			With.Connection(connection => count = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, sql)));
 			var files = Directory.GetFiles(Settings.Default.InboundPath);
-			Assert.That(files.Length, Is.EqualTo(1));
+			Assert.That(count, Is.EqualTo(1));
 		}
 
 		[Test]
