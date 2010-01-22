@@ -49,8 +49,7 @@ namespace PriceProcessor.Test
 
 		private static string _dataDir = @"..\..\Data\";
 
-		//[TestFixtureSetUp]
-		[Test]
+		[TestFixtureSetUp]
 		public void InitTest()
 		{
 			DeleteFolders();

@@ -263,6 +263,7 @@ Content-Disposition: attachment;
 				{
 					imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
 					imapClient.Authenticate(mailbox, password);
+					imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
 					imapClient.StoreMessage(folder, messageBytes);
 				}
 			}

@@ -29,7 +29,7 @@ namespace Inforoom.Downloader
 	}
 
 	public class FtpDownloader
-	{		
+	{	/*	
 		private const int FtpPort = 21;
 
 		private FTP_ListItem[] GetList(FTP_Client ftpClient, string ftpHost, string ftpDir, PriceSource priceSource)
@@ -77,7 +77,7 @@ namespace Inforoom.Downloader
 			}
 			return entries;
 		}
-
+		/**/
 		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;
@@ -96,18 +96,26 @@ namespace Inforoom.Downloader
 			var priceDateTime = source.PriceDateTime;
 			using (var ftpClient = new FTP_Client())
 			{
-				var dsEntries = FtpClientGetList(ftpClient, source, ftpHost, pricePath);
+				//var dsEntries = FtpClientGetList(ftpClient, source, ftpHost, pricePath);
+				ftpClient.PassiveMode = true;
+				ftpClient.Connect(ftpHost, 21);
+				ftpClient.Authenticate(source.FtpLogin, source.FtpPassword);
+				ftpClient.SetCurrentDir(pricePath);
 
-				foreach (var entry in dsEntries)
+				var dsEntries = ftpClient.GetList();
+
+				foreach (DataRow entry in dsEntries.Tables["DirInfo"].Rows)
 				{
-					if (Convert.ToBoolean(entry.IsDir))
+					if (Convert.ToBoolean(entry["IsDirectory"]))
 						continue;
 
-					shortFileName = entry.Name;
+					//shortFileName = entry.Name;
+					shortFileName = entry["Name"].ToString();
 					if ((WildcardsHelper.IsWildcards(source.PriceMask) && WildcardsHelper.Matched(source.PriceMask, shortFileName)) ||
 						(String.Compare(shortFileName, source.PriceMask, true) == 0))
 					{
-						var fileLastWriteTime = entry.Modified;
+						//var fileLastWriteTime = entry.Modified;
+						var fileLastWriteTime = Convert.ToDateTime(entry["Date"]);
 #if DEBUG
 						priceDateTime = fileLastWriteTime;
 						ftpFileName = shortFileName;
@@ -126,7 +134,8 @@ namespace Inforoom.Downloader
 					return null;
 				downFileName = Path.Combine(downHandlerPath, ftpFileName);
 				using (var file = new FileStream(downFileName, FileMode.Create))
-					ftpClient.GetFile(ftpFileName, file);
+					//ftpClient.GetFile(ftpFileName, file);
+					ftpClient.ReceiveFile(ftpFileName, file);
 			}
 
 			return new DownloadedFile(downFileName, priceDateTime);
@@ -192,8 +201,9 @@ namespace Inforoom.Downloader
 		protected override string GetShortErrorMessage(Exception e)
 		{
 			var message = String.Empty;
-			var ftpClientException = e as FTP_ClientException;
+			//var ftpClientException = e as FTP_ClientException;
 			var socketException = e as SocketException;
+			/*
 			if (ftpClientException != null)
 			{
 				switch (ftpClientException.StatusCode)
@@ -215,7 +225,8 @@ namespace Inforoom.Downloader
 						}
 				}
 			}
-			else if (socketException != null)
+			else*/
+			if (socketException != null)
 			{
 				message += NetworkErrorMessage;
 			}
