@@ -65,8 +65,11 @@ namespace Inforoom.Downloader
 					ftpClient.TransferMode = (!priceSource.FtpPassiveMode) ? FTP_TransferMode.Passive : FTP_TransferMode.Active;
 					entries = GetList(ftpClient, ftpHost, ftpDir, priceSource);
 					var warningMessageBody = String.Format(
-						"Неверное значение поля FTPPassiveMode в таблице farm.Sources.\nPriceItemId = {0}\nFirmCode = {1}\n",
-						priceSource.PriceItemId, priceSource.FirmCode);
+@"При попытке подключиться к {0} с FTPPassiveMode = {1} возникла ошибка.
+Значение FTPPassiveMode было изменено на {2}. Подключение прошло успешно.
+Возможно, неверное значение поля FTPPassiveMode в таблице farm.Sources.(PriceItemId = {3}, FirmCode = {4})
+Ошибка:
+{5}", ftpHost, priceSource.FtpPassiveMode, !priceSource.FtpPassiveMode, priceSource.PriceItemId, priceSource.FirmCode, e);
 					Mailer.SendFromServiceToService("Предупреждение в PriceProcessor", warningMessageBody);
 				}
 				else
