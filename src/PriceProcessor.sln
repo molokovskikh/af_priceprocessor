@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExecuteTemplate", "ExecuteT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Support", "Test.Support\Test.Support\Test.Support.csproj", "{A215E837-1208-49E3-AF93-A9612223122C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LumiSoft.Test", "LumiSoft.Test\LumiSoft.Test.csproj", "{C62FA0B8-86A0-4D68-AECC-3C09916611BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,12 @@ Global
 		{A215E837-1208-49E3-AF93-A9612223122C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A215E837-1208-49E3-AF93-A9612223122C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A215E837-1208-49E3-AF93-A9612223122C}.Release|x86.ActiveCfg = Release|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C62FA0B8-86A0-4D68-AECC-3C09916611BA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
