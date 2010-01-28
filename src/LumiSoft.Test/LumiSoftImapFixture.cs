@@ -35,7 +35,7 @@ namespace LumiSoftTest
 		private void CheckMessageHeader(Action<Mail_Message> checkHeaderAction)
 		{
 			var tmpDir = Path.GetTempPath() + "TestGetHeaderFrom_EmlFile\\";
-			var files = Directory.GetFiles(_dataDirectory, "*.*", SearchOption.AllDirectories);
+			var files = Directory.GetFiles(_dataDirectory, "*.eml", SearchOption.AllDirectories);
 			if (Directory.Exists(tmpDir))
 				Directory.Delete(tmpDir, true);
 			var errorList = new List<string>();
@@ -84,7 +84,7 @@ namespace LumiSoftTest
         public void TestSaveAttachments_EmlFile()
         {
             var tmpDir = Path.GetTempPath() + @"TestSaveAttachment_EmlFile\";
-            var files = Directory.GetFiles(_dataDirectory, "*.*", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(_dataDirectory, "*.eml", SearchOption.AllDirectories);
             var index = 0;
             if (Directory.Exists(tmpDir))
                 Directory.Delete(tmpDir, true);
@@ -151,7 +151,7 @@ namespace LumiSoftTest
         [Test]
         public void TestParseMailFromFile()
         {
-            var files = Directory.GetFiles(_dataDirectory, "*.*", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(_dataDirectory, "*.eml", SearchOption.AllDirectories);
             foreach (var filename in files)
             {
                 try
