@@ -268,7 +268,7 @@ namespace Inforoom.Downloader
 								if (CorrectArchive)
 								{
 									string ExtrFile = String.Empty;
-									if (ProcessPriceFile(CurrFileName, out ExtrFile))
+									if (ProcessPriceFile(CurrFileName, out ExtrFile, (ulong)PriceSourceType.EMail))
 									{
 										Matched = true;
 										LogDownloadedPrice((ulong)PriceSourceType.EMail, Path.GetFileName(CurrFileName), ExtrFile);

@@ -5,6 +5,7 @@ using System.Data;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
+using System.Threading;
 
 namespace Inforoom.Downloader
 {
@@ -115,6 +116,14 @@ namespace Inforoom.Downloader
 			: base(null, innerException)
 		{			
 			ErrorMessage = GetShortErrorMessage(innerException);
+		}
+
+		protected override string GetShortErrorMessage(Exception e)
+		{
+			var threadAbortException = e as ThreadAbortException;
+			if (threadAbortException != null)
+				return ThreadAbortErrorMessage;
+			return NetworkErrorMessage;
 		}
 	}
 }

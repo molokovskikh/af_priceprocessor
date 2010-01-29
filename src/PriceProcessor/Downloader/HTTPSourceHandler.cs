@@ -4,6 +4,7 @@ using System.IO;
 using System.Data;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
+using System.Threading;
 
 namespace Inforoom.Downloader
 {
@@ -119,30 +120,27 @@ namespace Inforoom.Downloader
 			{
 				var webException = e as WebException;
 				var webResponse = webException.Response as HttpWebResponse;
-				if (webResponse != null)
+				if (webResponse == null)
+					return NetworkErrorMessage;
+				switch (webResponse.StatusCode)
 				{
-					switch (webResponse.StatusCode)
-					{
-						case HttpStatusCode.Unauthorized:
-							{
-								message += ErrorMessageUnauthorized;
-								break;
-							}
-						case HttpStatusCode.Forbidden:
-							{
-								message += ErrorMessageForbidden;
-								break;
-							}
-						default:
-							{
-								message += NetworkErrorMessage;
-								break;
-							}
-					}
+					case HttpStatusCode.Unauthorized:
+						{
+							return ErrorMessageUnauthorized;
+						}
+					case HttpStatusCode.Forbidden:
+						{
+							return ErrorMessageForbidden;
+						}
+					default:
+						{
+							return NetworkErrorMessage;
+						}
 				}
-				else
-					message += NetworkErrorMessage;
 			}
+			var threadAbortException = e as ThreadAbortException;
+			if (threadAbortException != null)
+				return ThreadAbortErrorMessage;
 			return message;
 		}
 	}

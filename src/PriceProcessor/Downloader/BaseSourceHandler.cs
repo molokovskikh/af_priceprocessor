@@ -311,7 +311,7 @@ and pd.AgencyEnabled= 1",
 			CurrParentSynonym = (dr[SourcesTableColumns.ParentSynonym] is DBNull) ? null : (ulong?)Convert.ToUInt64(dr[SourcesTableColumns.ParentSynonym]);
 		}
 
-		protected bool ProcessPriceFile(string InFile, out string ExtrFile)
+		protected bool ProcessPriceFile(string InFile, out string ExtrFile, ulong sourceTypeId)
 		{
 			ExtrFile = InFile;
 			if (ArchiveHelper.IsArchive(InFile))
@@ -327,7 +327,7 @@ and pd.AgencyEnabled= 1",
 			}
 			if (String.IsNullOrEmpty(ExtrFile))
 			{
-				DownloadLogEntity.Log(CurrPriceItemId, String.Format(
+				DownloadLogEntity.Log(sourceTypeId, CurrPriceItemId, String.Format(
 					"Не удалось найти файл в архиве. Маска файла в архиве : '{0}'",
 					drCurrent[SourcesTableColumns.colExtrMask]));
 				return false;

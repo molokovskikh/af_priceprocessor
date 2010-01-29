@@ -139,7 +139,7 @@ where
 								if (!correctArchive)
 									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'. Файл поврежден", CurrFileName);
 
-								if (!ProcessPriceFile(CurrFileName, out extractFile))
+								if (!ProcessPriceFile(CurrFileName, out extractFile, priceSource.SourceTypeId))
 									throw new PricePreprocessingException("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
 
 								LogDownloadedPrice(priceSource.SourceTypeId, Path.GetFileName(CurrFileName), extractFile);
@@ -242,6 +242,8 @@ where
 	public class PathSourceHandlerException : Exception
 	{
 		public static string NetworkErrorMessage = "Ошибка сетевого соединения";
+
+		public static string ThreadAbortErrorMessage = "Загрузка файла была прервана";
 
 		public PathSourceHandlerException()
 		{ }

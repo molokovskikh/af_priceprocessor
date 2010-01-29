@@ -8,6 +8,7 @@ using LumiSoft.Net.FTP.Client;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
 using LumiSoft.Net;
+using System.Threading;
 
 namespace Inforoom.Downloader
 {
@@ -203,6 +204,7 @@ namespace Inforoom.Downloader
 			var message = String.Empty;
 			//var ftpClientException = e as FTP_ClientException;
 			var socketException = e as SocketException;
+			var threadAbortException = e as ThreadAbortException;
 			/*
 			if (ftpClientException != null)
 			{
@@ -227,9 +229,9 @@ namespace Inforoom.Downloader
 			}
 			else*/
 			if (socketException != null)
-			{
-				message += NetworkErrorMessage;
-			}
+				return NetworkErrorMessage;
+			if (threadAbortException != null)
+				return ThreadAbortErrorMessage;
 			return message;
 		}
 	}
