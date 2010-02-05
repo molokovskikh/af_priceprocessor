@@ -6,7 +6,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.ServiceModel;
 using System.Net;
 using System.Text;
-using System.Net.Security;
+using log4net;
 using RemotePriceProcessor;
 #if (!DEBUG)
 using Inforoom.Downloader;
@@ -22,8 +22,8 @@ namespace Inforoom.PriceProcessor
 	public class Monitor
 	{
 		private readonly List<AbstractHandler> _handlers;
-		private readonly Thread tMonitor;
-		private readonly log4net.ILog _logger;
+		private readonly Thread _monitor;
+		private readonly ILog _logger = LogManager.GetLogger(typeof(Monitor));
 
 		private bool Stopped;
 
@@ -32,23 +32,21 @@ namespace Inforoom.PriceProcessor
 
 		public Monitor()
 		{
-			_logger = log4net.LogManager.GetLogger(typeof(Monitor));			
-
-			_handlers = new List<AbstractHandler>
-			             	{
-			             		new FormalizeHandler(),
+			_handlers = new List<AbstractHandler> {
+				new FormalizeHandler(),
 #if (!DEBUG)
-			             		new LANSourceHandler(),
-			             		new FTPSourceHandler(),
-			             		new HTTPSourceHandler(),
-			             		new EMAILSourceHandler(),
-			             		new WaybillSourceHandler(),
-			             		new WaybillLANSourceHandler(),
-			             		new ClearArchivedPriceSourceHandler()
+				new LANSourceHandler(),
+				new FTPSourceHandler(),
+				new HTTPSourceHandler(),
+				new EMAILSourceHandler(),
+				new WaybillSourceHandler(),
+				new WaybillLANSourceHandler(),
+				new ClearArchivedPriceSourceHandler(),
+				new RostaHandler()
 #endif
-			             	};
+			};
 
-			tMonitor = new Thread(MonitorWork) {Name = "MonitorThread"};
+			_monitor = new Thread(MonitorWork) {Name = "MonitorThread"};
 		}
 
 		//запускаем монитор с обработчиками
@@ -76,7 +74,7 @@ namespace Inforoom.PriceProcessor
                     {
                         _logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
                     }
-                tMonitor.Start();
+                _monitor.Start();
                 _logger.Info("PriceProcessor запущен.");
             }
             catch (Exception ex)
@@ -92,7 +90,7 @@ namespace Inforoom.PriceProcessor
             {
                 Stopped = true;
                 Thread.Sleep(3000);
-                tMonitor.Abort();
+                _monitor.Abort();
 				foreach (var handler in _handlers)
                     try
                     {

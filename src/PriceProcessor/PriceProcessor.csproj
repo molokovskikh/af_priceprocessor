@@ -107,6 +107,7 @@
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
+    <Compile Include="Downloader\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Formalizer\CommerceMLParser.cs" />
     <Compile Include="Formalizer\DBFPriceParser.cs" />
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
+    <Compile Include="Formalizer\FakeRostaParser.cs" />
     <Compile Include="Formalizer\FormalizationPosition.cs" />
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
