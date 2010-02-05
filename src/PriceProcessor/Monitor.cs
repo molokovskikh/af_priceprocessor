@@ -9,6 +9,7 @@ using System.Text;
 using log4net;
 using RemotePriceProcessor;
 #if (!DEBUG)
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.Downloader;
 using System.Collections;
 using System.Runtime.Serialization.Formatters;
