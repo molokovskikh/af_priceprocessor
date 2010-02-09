@@ -134,12 +134,20 @@ where pc.BaseCost = 1 and pc.PriceCode = ?PriceCode
 				try
 				{
 					var command = new MySqlCommand(@"
+
 insert into Usersettings.PriceItems(FormRuleId, SourceId) values (?FormRuleId, ?SourceId);
 set @priceItemId = LAST_INSERT_ID();
 insert into Usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName) values (?PriceCode, @priceItemId, 1, 1, ?Key);
 set @costCode = LAST_INSERT_ID();
 insert into Farm.CostFormRules(CostCode, FieldName) values (@CostCode, 'F3');
-update Usersettings.Intersection set FirmClientCode = ?Key, CostCode = @costCode where ClientCode = ?ClientId and PriceCode = ?PriceCode;
+
+update Usersettings.Intersection i
+set i.FirmClientCode = ?Key, i.CostCode = @costCode
+where PriceCode = ?PriceCode and (i.ClientCode = ?ClientId or i.clientcode in (
+select IncludeClientCode
+from Usersettings.IncludeRegulation ir
+where ir.PrimaryClientCode = ?ClientId));
+
 select @priceItemId;", connection);
 					command.Parameters.AddWithValue("?FormRuleId", formRuleId);
 					command.Parameters.AddWithValue("?SourceId", sourceId);
