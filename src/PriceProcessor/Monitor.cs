@@ -9,10 +9,8 @@ using System.Text;
 using log4net;
 using RemotePriceProcessor;
 #if (!DEBUG)
-using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Rosta;
 using Inforoom.Downloader;
-using System.Collections;
-using System.Runtime.Serialization.Formatters;
 #endif
 
 namespace Inforoom.PriceProcessor
@@ -43,7 +41,7 @@ namespace Inforoom.PriceProcessor
 				new WaybillSourceHandler(),
 				new WaybillLANSourceHandler(),
 				new ClearArchivedPriceSourceHandler(),
-				new RostaHandler()
+				new RostaHandler(4820, new RostaDownloader()),
 #endif
 			};
 
