@@ -228,6 +228,7 @@ group by i.ClientCode;", connection);
 		{
 			var price = Path.Combine(Settings.Default.TempPath, "price");
 			var producers = Path.Combine(Settings.Default.TempPath, "producers");
+			var ex = Path.Combine(Settings.Default.TempPath, "ex");
 			try
 			{
 				if (!Directory.Exists(Settings.Default.TempPath))
@@ -239,11 +240,14 @@ group by i.ClientCode;", connection);
 				if (File.Exists(producers))
 					File.Delete(producers);
 
-				_downloader.DownloadPrice(key, price, producers);
+				if (File.Exists(ex))
+					File.Delete(ex);
+
+				_downloader.DownloadPrice(key, price, producers, ex);
 				using (var connection = new MySqlConnection(Literals.ConnectionString()))
 				{
 					var data = PricesValidator.LoadFormRules(priceItemId, connection);
-					var parser = new FakeRostaParser(price, producers, connection, data);
+					var parser = new FakeRostaParser(price, producers, ex, connection, data);
 					connection.Close();
 					parser.Formalize();
 					if (connection.State == ConnectionState.Closed)
@@ -259,6 +263,8 @@ group by i.ClientCode;", connection);
 					File.Delete(price);
 				if (File.Exists(producers))
 					File.Delete(producers);
+				if (File.Exists(ex))
+					File.Delete(ex);
 			}
 		}
 	}

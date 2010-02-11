@@ -130,6 +130,7 @@
     <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="Special\RostaFixture.cs" />
+    <Compile Include="Special\RostaParserFixture.cs" />
     <Compile Include="StressTest.cs" />
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />

@@ -10,7 +10,7 @@ namespace Inforoom.PriceProcessor.Rosta
 {
 	public interface IDownloader
 	{
-		void DownloadPrice(string key, string price, string producers);
+		void DownloadPrice(string key, string price, string producers, string ex);
 	}
 
 	public class RostaDownloader : IDownloader
@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Rosta
 		private string priceFile;
 		private string producersFile;
 
-		public void DownloadPrice(string key, string price, string producers)
+		public void DownloadPrice(string key, string price, string producers, string ex)
 		{
 			this.key = key;
 			priceFile = price;
@@ -46,20 +46,18 @@ namespace Inforoom.PriceProcessor.Rosta
 					ReadResponce();
 					RequestAndDownload("GETZ PRICELISTS");
 					RequestAndDownload("GETZ GROUPS");
-					RequestAndDownload("GETZ PRICES 0");
-					RequestAndDownload("GETZ PRICES 1");
-					RequestAndDownload("GETZ PRICES 2");
-					RequestAndDownload("GETZ PRICES 3");
-					RequestAndDownload("GETZ PRICES 4");
-					RequestAndDownload("GETZ PRICES 5");
-					RequestAndDownload("GETZ PRICES 5");
-					RequestAndDownload("GETZ PRICES 6");
-					RequestAndDownload("GETZ PRICES 7");
-					RequestAndDownload("GETZ PRICES 8");
+					RequestAndDownload("GETZ PRICES 0", producers + "_source");
+					RequestAndDownload("GETZ PRICES 1", price + "_source");
+					RequestAndDownload("GETZ PRICES 2", price + "_source");
+					RequestAndDownload("GETZ PRICES 3", price + "_source");
+					RequestAndDownload("GETZ PRICES 4", price + "_source");
+					RequestAndDownload("GETZ PRICES 5", price + "_source");
+					RequestAndDownload("GETZ PRICES 6", price + "_source");
+					RequestAndDownload("GETZ PRICES 7", price + "_source");
+					RequestAndDownload("GETZ PRICES 8", price + "_source");
 					RequestAndDownload("GETZ DOC_TYPES");
-					//RequestAndDownload("GETZ COLUMNS FORCESHOW FULLNAME PACKSTOCK REESTRPRICE ARTIKULSID");
-					RequestAndDownload("GETZ COLUMNS FORCESHOW");
-					RequestAndDownload("GETZ EXTENDED FORCESHOW");
+					RequestAndDownload("GETZ COLUMNS FORCESHOW FULLNAME PACKSTOCK REESTRPRICE ARTIKULSID ARTIKULSGROUP ABATEDATE MULTIPLY");
+					RequestAndDownload("GETZ EXTENDED FORCESHOW FULLNAME PACKSTOCK REESTRPRICE ARTIKULSID ARTIKULSGROUP ABATEDATE MULTIPLY", ex + "_source");
 					RequestAndDownload("GETZ CATEGORIES");
 					RequestAndDownload("GETZ CERTIFICATES");
 					RequestAndDownload("GETZ REPORT_LIST");
@@ -72,55 +70,38 @@ namespace Inforoom.PriceProcessor.Rosta
 				}
 			}
 
-			Decode();
+			Decode(new[] {
+				producersFile + "_source",
+				priceFile + "_source",
+				ex + "_source"
+			});
 		}
 
 		private void ReadResponce()
 		{
-			SoftReader(null);
+			ReadResponce(null);
 		}
 
-		private void ReadResponce(string request)
-		{
-			SoftReader(request);
-		}
-
-		private void RequestAndDownload(string request)
-		{
-			if (_logger.IsDebugEnabled)
-			{
-				Console.WriteLine(request);
-				_logger.Debug(request);
-			}
-			writer.WriteLine(request);
-			ReadResponce(request);
-		}
-
-		private void SoftReader(string request)
+		private void ReadResponce(string downlodToFile)
 		{
 			var header = reader.ReadLine();
 			if (_logger.IsDebugEnabled)
 			{
-				Console.WriteLine(header);
 				_logger.Debug(header);
 			}
 
 			var size = GetDataSize(header);
 			if (size > 0)
 			{
-				var path = "";
-				if (request.StartsWith("GETZ PRICES"))
-					path = priceFile + "_source";
-				else if (request.StartsWith("GETZ GROUPS"))
-					path = producersFile + "_source";
-
-				if (!String.IsNullOrEmpty(path))
+				if (String.IsNullOrEmpty(downlodToFile))
 				{
-					using (var write = File.OpenWrite(path))
-						Download(stream, write, size);
+					Download(stream, Stream.Null, size);
 				}
 				else
-					Download(stream, Stream.Null, size);
+				{
+					using(var fileStream = File.Create(downlodToFile))
+						Download(stream, fileStream, size);
+				}
 			}
 			if (header.StartsWith("DATASIZE"))
 			{
@@ -131,6 +112,22 @@ namespace Inforoom.PriceProcessor.Rosta
 					_logger.Debug(line);
 				}
 			}
+		}
+
+		private void RequestAndDownload(string request)
+		{
+			if (_logger.IsDebugEnabled)
+				_logger.Debug(request);
+			writer.WriteLine(request);
+			ReadResponce(request);
+		}
+
+		private void RequestAndDownload(string request, string downloadToFile)
+		{
+			if (_logger.IsDebugEnabled)
+				_logger.Debug(request);
+			writer.WriteLine(request);
+			ReadResponce(downloadToFile);
 		}
 
 		private int GetDataSize(string response)
@@ -154,9 +151,10 @@ namespace Inforoom.PriceProcessor.Rosta
 			} while (size > 0);
 		}
 
-		private void Decode()
+		public static void Decode(string[] files)
 		{
-			foreach (var file in new [] {producersFile + "_source", priceFile + "_source"})
+			
+			foreach (var file in files)
 			{
 				using(var input = File.OpenRead(file))
 				using(var output = File.OpenWrite(file.Replace("_source", "")))
@@ -172,6 +170,5 @@ namespace Inforoom.PriceProcessor.Rosta
 				}
 			}
 		}
-
 	}
 }
