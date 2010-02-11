@@ -102,11 +102,11 @@ namespace PriceProcessor.Test.Special
 			handler.StopWork();
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void Create_new_cost_column_if_rosta_uin_configured_but_base_cost_set()
 		{
 			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0}", price.Id);
-			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 0, FirmClientCode = '6B020101000100000004040302071A1E0A091D1C03' where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
+			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12' where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 
 			var handler = new RostaHandler(price.Id, new FakeDownloader());
 			handler.SleepTime = 1;

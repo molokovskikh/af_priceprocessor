@@ -23,5 +23,11 @@ namespace Inforoom.PriceProcessor
 				}
 			}
 		}
+
+		public static void InTransaction(Action<MySqlConnection> action)
+		{
+			InTransaction((c, t) => action(c));
+		}
+
 	}
 }

@@ -18,6 +18,12 @@ namespace Inforoom.PriceProcessor.Rosta
 		public string Key { get; set; }
 	}
 
+	public class ToConfigure
+	{
+		public uint ClientId { get; set; }
+		public string Key;
+	}
+
 	public class RostaHandler : AbstractHandler
 	{
 		private DateTime _lastSync;
@@ -70,22 +76,55 @@ namespace Inforoom.PriceProcessor.Rosta
 				.Each(e => _plans.Add(e));
 
 			var clients = GetNotConfiguredClients();
-			clients.Each(InitNewPlan);
+			clients.Each(c => InitNewPlan(c, GetKey(c)));
+
+			var partialConfigured = GetPartialConfiguredClients();
+			partialConfigured.Each(p => InitNewPlan(p.ClientId, p.Key));
 
 			_lastSync = SystemTime.Now();
 		}
 
-		private void InitNewPlan(uint clientId)
+		private void InitNewPlan(uint clientId, string key)
 		{
-			var key = GetKey(clientId);
 			if (String.IsNullOrEmpty(key))
 				return;
-			var plan = new Plan {
-				Key = key,
-				PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour()
-			};
-			CreatePriceItemForNewPlan(clientId, plan);
-			_plans.Add(plan);
+
+			var existPlan = _plans.FirstOrDefault(p => p.Key == key);
+			if (existPlan != null)
+			{
+				MySqlUtils.InTransaction(c => UpdateClient(c, clientId, existPlan.PriceItemId, existPlan.Key));
+			}
+			else
+			{
+				var plan = new Plan {
+					Key = key,
+					PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour()
+				};
+				CreatePriceItemForNewPlan(clientId, plan);
+				_plans.Add(plan);
+			}
+		}
+
+		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key)
+		{
+			var command = new MySqlCommand(@"
+select CostCode
+into @costCode
+from usersettings.PricesCosts
+where PriceItemId = ?PriceItemId
+limit 1;
+
+update Usersettings.Intersection i
+set i.FirmClientCode = ?Key, i.CostCode = @costCode
+where PriceCode = ?PriceId and (i.ClientCode = ?ClientId or i.clientcode in (
+select IncludeClientCode
+from Usersettings.IncludeRegulation ir
+where ir.PrimaryClientCode = ?ClientId));", connection);
+			command.Parameters.AddWithValue("?ClientId", clientId);
+			command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+			command.Parameters.AddWithValue("?PriceId", _priceId);
+			command.Parameters.AddWithValue("?Key", key);
+			command.ExecuteNonQuery();
 		}
 
 		private string GetKey(uint clientId)
@@ -109,15 +148,12 @@ limit 1;", connection);
 
 		private void CreatePriceItemForNewPlan(uint clientId, Plan plan)
 		{
-			using (var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
-				connection.Open();
+			MySqlUtils.InTransaction(c => {
 				var readCommand = new MySqlCommand(@"
 select pi.FormRuleId, pi.SourceId
 from Usersettings.PriceItems pi
 	join Usersettings.PricesCosts pc on pc.PriceItemId = pi.Id
-where pc.BaseCost = 1 and pc.PriceCode = ?PriceCode
-", connection);
+where pc.BaseCost = 1 and pc.PriceCode = ?PriceCode", c);
 				readCommand.Parameters.AddWithValue("?PriceCode", _priceId);
 				uint formRuleId = 0;
 				uint sourceId = 0;
@@ -130,39 +166,23 @@ where pc.BaseCost = 1 and pc.PriceCode = ?PriceCode
 					}
 				}
 
-				var transaction = connection.BeginTransaction();
-				try
-				{
-					var command = new MySqlCommand(@"
-
+				var command = new MySqlCommand(@"
 insert into Usersettings.PriceItems(FormRuleId, SourceId) values (?FormRuleId, ?SourceId);
 set @priceItemId = LAST_INSERT_ID();
+
 insert into Usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName) values (?PriceCode, @priceItemId, 1, 1, ?Key);
 set @costCode = LAST_INSERT_ID();
+
 insert into Farm.CostFormRules(CostCode, FieldName) values (@CostCode, 'F3');
-
-update Usersettings.Intersection i
-set i.FirmClientCode = ?Key, i.CostCode = @costCode
-where PriceCode = ?PriceCode and (i.ClientCode = ?ClientId or i.clientcode in (
-select IncludeClientCode
-from Usersettings.IncludeRegulation ir
-where ir.PrimaryClientCode = ?ClientId));
-
-select @priceItemId;", connection);
-					command.Parameters.AddWithValue("?FormRuleId", formRuleId);
-					command.Parameters.AddWithValue("?SourceId", sourceId);
-					command.Parameters.AddWithValue("?PriceCode", _priceId);
-					command.Parameters.AddWithValue("?ClientId", clientId);
-					command.Parameters.AddWithValue("?Key", plan.Key);
-					plan.PriceItemId = Convert.ToUInt32(command.ExecuteScalar());
-					transaction.Commit();
-				}
-				catch (Exception)
-				{
-					transaction.Rollback();
-					throw;
-				}
-			}
+select @priceItemId;", c);
+				command.Parameters.AddWithValue("?FormRuleId", formRuleId);
+				command.Parameters.AddWithValue("?SourceId", sourceId);
+				command.Parameters.AddWithValue("?PriceCode", _priceId);
+				command.Parameters.AddWithValue("?ClientId", clientId);
+				command.Parameters.AddWithValue("?Key", plan.Key);
+				plan.PriceItemId = Convert.ToUInt32(command.ExecuteScalar());
+				UpdateClient(c, clientId, plan.PriceItemId, plan.Key);
+			});
 		}
 
 		private List<Plan> GetExistsPlans()
@@ -176,9 +196,15 @@ FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
 	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
-where i.pricecode = ?PriceCode and i.InvisibleOnClient = 0 and rcs.ServiceClient = 0 and ir.Id is null and i.FirmClientCode is not null and i.FirmClientCode <> ''
+where i.pricecode = ?PriceId
+	and i.InvisibleOnClient = 0
+	and rcs.ServiceClient = 0
+	and ir.Id is null
+	and i.FirmClientCode is not null
+	and i.FirmClientCode <> ''
+	and pc.BaseCost = 0
 group by pc.PriceItemId;", connection);
-				adapter.SelectCommand.Parameters.AddWithValue("?PriceCode", _priceId);
+				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
 				var data = new DataSet();
 				adapter.Fill(data);
 				foreach (DataRow row in data.Tables[0].Rows)
@@ -192,6 +218,39 @@ group by pc.PriceItemId;", connection);
 			return plans;
 		}
 
+		private List<ToConfigure> GetPartialConfiguredClients()
+		{
+			var toConfigure = new List<ToConfigure>();
+			using(var connection = new MySqlConnection(Literals.ConnectionString()))
+			{
+				var adapter = new MySqlDataAdapter(@"
+SELECT i.ClientCode, i.FirmClientCode
+FROM usersettings.Intersection I
+	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
+	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
+	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
+where i.pricecode = ?PriceId
+	and i.InvisibleOnClient = 0
+	and rcs.ServiceClient = 0
+	and ir.Id is null
+	and i.FirmClientCode is not null
+	and i.FirmClientCode <> ''
+	and pc.BaseCost = 1
+group by i.ClientCode", connection);
+				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
+				var data = new DataSet();
+				adapter.Fill(data);
+				foreach (DataRow row in data.Tables[0].Rows)
+				{
+					toConfigure.Add(new ToConfigure {
+						ClientId = Convert.ToUInt32(row["ClientCode"]),
+						Key = Convert.ToString(row["FirmClientCode"]),
+					});
+				}
+			}
+			return toConfigure;
+		}
+
 		private List<uint> GetNotConfiguredClients()
 		{
 			var clients = new List<uint>();
@@ -202,7 +261,11 @@ SELECT i.ClientCode
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
-where i.pricecode = ?PriceId and i.InvisibleOnClient = 0 and rcs.ServiceClient = 0 and ir.Id is null and (i.FirmClientCode is null or i.FirmClientCode = '')
+where i.pricecode = ?PriceId 
+	and i.InvisibleOnClient = 0 
+	and rcs.ServiceClient = 0 
+	and ir.Id is null 
+	and (i.FirmClientCode is null or i.FirmClientCode = '')
 group by i.ClientCode;", connection);
 				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
 				var data = new DataSet();
