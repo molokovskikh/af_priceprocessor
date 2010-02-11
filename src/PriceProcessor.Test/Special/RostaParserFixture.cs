@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Common.Tools;
 using Inforoom.PriceProcessor.Rosta;
 using NUnit.Framework;
 
@@ -8,6 +9,32 @@ namespace PriceProcessor.Test.Special
 	[TestFixture]
 	public class RostaParserFixture
 	{
+		[Test]
+		public void Plan_next_update()
+		{
+			SystemTime.Now = () => DateTime.Parse("11.02.2010 17:19");
+			var plan = new Plan(1, "123");
+			plan.PlanNextUpdate();
+			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("12.02.2010 6:10")).And.LessThan(DateTime.Parse("12.02.2010 7:40")));
+
+			//если загрузили в пятницу по следующая загрузка в понедельник
+			SystemTime.Now = () => DateTime.Parse("12.02.2010 17:19");
+			plan = new Plan(1, "123");
+			plan.PlanNextUpdate();
+			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
+
+			//если priceprocessor остановили и запустили в субботу то грузим а следующая загрузка в подедельник
+			SystemTime.Now = () => DateTime.Parse("13.02.2010 17:19");
+			plan = new Plan(1, "123");
+			plan.PlanNextUpdate();
+			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
+
+			SystemTime.Now = () => DateTime.Parse("14.02.2010 17:19");
+			plan = new Plan(1, "123");
+			plan.PlanNextUpdate();
+			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
+		}
+
 		[Test]
 		public void Read_extended_columns()
 		{

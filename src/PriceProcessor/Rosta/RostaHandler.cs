@@ -16,6 +16,25 @@ namespace Inforoom.PriceProcessor.Rosta
 		public uint PriceItemId { get; set; }
 		public DateTime PlanedOn { get; set; }
 		public string Key { get; set; }
+
+		public Plan(uint priceItemId, string key)
+		{
+			PriceItemId = priceItemId;
+			Key = key;
+			
+			PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour();
+		}
+
+		public void PlanNextUpdate()
+		{
+			var date =  SystemTime.Today() + new TimeSpan(1, 6, 10, 0);
+			date += (new Random().NextDouble()*1.5).Hour();
+			if (date.DayOfWeek == DayOfWeek.Sunday)
+				date += 1.Day();
+			else if (date.DayOfWeek == DayOfWeek.Saturday)
+				date += 2.Day();
+			PlanedOn =  date;
+		}
 	}
 
 	public class ToConfigure
@@ -49,13 +68,15 @@ namespace Inforoom.PriceProcessor.Rosta
 			DoSyncIfNeeded();
 			var plan = GetNextPlannedUpdate();
 
+			if (plan == null)
+				return;
+
 			if (SystemTime.Now() < plan.PlanedOn)
 				return;
 
-
 			Process(plan.PriceItemId, plan.Key);
 
-			MovePlan(plan);
+			plan.PlanNextUpdate();
 		}
 
 		private void DoSyncIfNeeded()
@@ -91,18 +112,9 @@ namespace Inforoom.PriceProcessor.Rosta
 
 			var existPlan = _plans.FirstOrDefault(p => p.Key == key);
 			if (existPlan != null)
-			{
 				MySqlUtils.InTransaction(c => UpdateClient(c, clientId, existPlan.PriceItemId, existPlan.Key));
-			}
 			else
-			{
-				var plan = new Plan {
-					Key = key,
-					PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour()
-				};
-				CreatePriceItemForNewPlan(clientId, plan);
-				_plans.Add(plan);
-			}
+				_plans.Add(CreateNewPlan(clientId, key));
 		}
 
 		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key)
@@ -146,8 +158,9 @@ limit 1;", connection);
 			}
 		}
 
-		private void CreatePriceItemForNewPlan(uint clientId, Plan plan)
+		private Plan CreateNewPlan(uint clientId, string key)
 		{
+			uint priceItemId = 0;
 			MySqlUtils.InTransaction(c => {
 				var readCommand = new MySqlCommand(@"
 select pi.FormRuleId, pi.SourceId
@@ -179,10 +192,11 @@ select @priceItemId;", c);
 				command.Parameters.AddWithValue("?SourceId", sourceId);
 				command.Parameters.AddWithValue("?PriceCode", _priceId);
 				command.Parameters.AddWithValue("?ClientId", clientId);
-				command.Parameters.AddWithValue("?Key", plan.Key);
-				plan.PriceItemId = Convert.ToUInt32(command.ExecuteScalar());
-				UpdateClient(c, clientId, plan.PriceItemId, plan.Key);
+				command.Parameters.AddWithValue("?Key", key);
+				priceItemId = Convert.ToUInt32(command.ExecuteScalar());
+				UpdateClient(c, clientId, priceItemId, key);
 			});
+			return new Plan(priceItemId, key);
 		}
 
 		private List<Plan> GetExistsPlans()
@@ -209,10 +223,10 @@ group by pc.PriceItemId;", connection);
 				adapter.Fill(data);
 				foreach (DataRow row in data.Tables[0].Rows)
 				{
-					plans.Add(new Plan {
-						PriceItemId = Convert.ToUInt32(row["PriceItemId"]),
-						Key = Convert.ToString(row["CostName"]),
-					});
+					plans.Add(new Plan(
+						Convert.ToUInt32(row["PriceItemId"]),
+						Convert.ToString(row["CostName"])
+					));
 				}
 			}
 			return plans;
@@ -276,15 +290,10 @@ group by i.ClientCode;", connection);
 			return clients;
 		}
 
-		private void MovePlan(Plan plan)
-		{
-			plan.PlanedOn = SystemTime.Now() + 2.Hour() + new Random().NextDouble().Hour();
-		}
-
 		private Plan GetNextPlannedUpdate()
 		{
 			var minPlannedOn = _plans.Min(p => p.PlanedOn);
-			return _plans.Where(p => p.PlanedOn == minPlannedOn).First();
+			return _plans.Where(p => p.PlanedOn == minPlannedOn).FirstOrDefault();
 		}
 
 		public void Process(uint priceItemId, string key)
