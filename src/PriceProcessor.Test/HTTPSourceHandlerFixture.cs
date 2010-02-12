@@ -34,6 +34,8 @@ namespace PriceProcessor.Test
 				var sql = String.Format(@"delete from usersettings.priceitems where SourceId = {0} and Id <> {1}",
 				                        priceItems[i].Source.Id, priceItems[i].Id);
 				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, sql); });
+				sql = String.Format(@"update farm.sources set RequestInterval = {0} where Id = {1}", 0, priceItems[i].Source.Id);
+				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, sql); });
 			}
 			var handler = new HTTPSourceHandler();
 			handler.StartWork();
@@ -56,7 +58,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void InvalidLoginOrPasswordTest()
 		{
-			var pricesPaths = new[] { @"http://www.orel.siaint.ru/analit" };
+			var pricesPaths = new[] { @"https://stat.analit.net/ci/auth/logon.aspx" };
 
 			var priceItems = Process(pricesPaths, pricesPaths, pricesPaths);
 
