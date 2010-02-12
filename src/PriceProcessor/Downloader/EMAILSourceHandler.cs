@@ -424,7 +424,7 @@ namespace Inforoom.Downloader
 	{
 		public static IEnumerable<MimeEntity> GetValidAttachements(this Mime mime)
 		{
-			return mime.Attachments.Where(m => !String.IsNullOrEmpty(m.GetFilename()));
+			return mime.Attachments.Where(m => !String.IsNullOrEmpty(m.GetFilename()) && m.Data != null);
 		}
 
 		public static IEnumerable<string> GetAttachmentFilenames(this Mime mime)
