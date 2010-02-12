@@ -456,7 +456,8 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				{
 					var drS = drLS[0];
 
-					foreach (var entity in m.Attachments)
+					var attachments = m.GetValidAttachements();
+					foreach (var entity in attachments)
 					{
 						if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName) || 
 							!String.IsNullOrEmpty(entity.ContentType_Name))

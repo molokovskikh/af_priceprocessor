@@ -405,17 +405,10 @@ namespace Inforoom.Downloader
 
 		protected static string GetShortFileNameFromAttachement(MimeEntity ent)
 		{
-			var shortFileName = String.Empty;
-
-			// ¬ некоторых случа€х ContentDisposition_FileName не заполнено,
-			// тогда смотрим на ContentType_Name
-			if (!String.IsNullOrEmpty(ent.ContentDisposition_FileName))
-				shortFileName = Path.GetFileName(
-					FileHelper.NormalizeFileName(ent.ContentDisposition_FileName));
-			else
-				shortFileName = Path.GetFileName
-					(FileHelper.NormalizeFileName(ent.ContentType_Name));
-			return shortFileName;
+			var filename = ent.GetFilename();
+			if (filename == null)
+				return String.Empty;
+			return filename;
 		}
 
     }
