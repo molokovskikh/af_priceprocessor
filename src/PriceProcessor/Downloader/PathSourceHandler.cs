@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using MySql.Data.MySqlClient;
 using FileHelper=Inforoom.PriceProcessor.FileHelper;
+using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Downloader
 {
@@ -93,12 +95,37 @@ where
 
 		public object FirmCode { get; set; }
 
-		public DateTime PriceDateTime { get; set; }
+		public virtual DateTime PriceDateTime { get; set; }
 		public string ArchivePassword { get; set; }
+
+		public virtual int RequestInterval
+		{
+			get
+			{
+				var interval = 0;
+				var sql = String.Format(@"
+select src.RequestInterval from farm.Sources src
+	join usersettings.PriceItems pim on pim.Id = {0}
+where src.Id = pim.SourceId", PriceItemId);
+				using (var connection = new MySqlConnection(Literals.ConnectionString()))
+				{
+					connection.Open();
+					var res = MySqlHelper.ExecuteScalar(connection, sql);
+					if (!Convert.IsDBNull(res))
+						interval = Convert.ToInt32(res);
+				}
+				return interval;
+			}
+		}
 	}
 
     public abstract class PathSourceHandler : BasePriceSourceHandler
     {
+		/// <summary>
+		/// Коллекция источников, поледнее обращение к которым завершилось неудачей
+		/// </summary>
+		protected ArrayList FailedSources = new ArrayList();
+
 		protected override void ProcessData()
 		{
 			//набор строк похожих источников
@@ -109,6 +136,8 @@ where
 				drLS = null;
 				var currentSource = dtSources.Rows[0];
 				var priceSource = new PriceSource(currentSource);
+				if (!CheckDownloadInterval(priceSource))
+					return;
 				try
 				{
 					drLS = GetLikeSources(priceSource);
@@ -120,10 +149,12 @@ where
 					}
 					catch (PathSourceHandlerException pathException)
 					{
+						FailedSources.Add(priceSource.PriceItemId);
 						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, pathException.ToString(), pathException.ErrorMessage);
 					}
 					catch (Exception e)
 					{
+						FailedSources.Add(priceSource.PriceItemId);
 						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, e.ToString());
 					}
 
@@ -187,6 +218,28 @@ where
 					FileHelper.Safe(() => dtSources.AcceptChanges());
 				}
 			}
+		}
+
+		/// <summary>
+		/// Проверяет, истек ли интервал, спустя который нужно обращаться к источнику
+		/// </summary>
+		/// <returns>
+		/// true - интервал истек, нужно обратиться
+		/// false - интервал еще не истек, не нужно обращаться
+		/// </returns>
+		protected bool CheckDownloadInterval(PriceSource source)
+		{
+			// downloadInterval - в секундах
+			var downloadInterval = source.RequestInterval;
+			if (FailedSources.Contains(source.PriceItemId))
+			{
+				FailedSources.Remove(source.PriceItemId);
+				downloadInterval = 0;
+			}
+			var seconds = DateTime.Now.Subtract(source.PriceDateTime).Hours*3600 +
+			              DateTime.Now.Subtract(source.PriceDateTime).Minutes*60 +
+			              DateTime.Now.Subtract(source.PriceDateTime).Seconds;
+			return (seconds >= downloadInterval);
 		}
 
     	private bool ProcessArchiveIfNeeded(PriceSource priceSource)
