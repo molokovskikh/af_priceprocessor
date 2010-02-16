@@ -120,6 +120,7 @@
     <Compile Include="Handlers\HandlersSetup.cs" />
     <Compile Include="Handlers\PathSourceHandlerTest.cs" />
     <Compile Include="HTTPSourceHandlerFixture.cs" />
+    <Compile Include="MySqlUtilsFixture.cs" />
     <Compile Include="ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />

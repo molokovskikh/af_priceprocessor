@@ -4,7 +4,7 @@ using Common.MySql;
 
 namespace Inforoom.PriceProcessor
 {
-	class MySqlUtils
+	public class MySqlUtils
 	{
 		public static void InTransaction(Action<MySqlConnection, MySqlTransaction> action)
 		{
