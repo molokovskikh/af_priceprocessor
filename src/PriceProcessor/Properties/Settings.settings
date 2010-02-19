@@ -220,6 +220,7 @@
   &lt;string&gt;RequestRatio&lt;/string&gt;
   &lt;string&gt;OrderCost&lt;/string&gt;
   &lt;string&gt;MinOrderCount&lt;/string&gt;
+  &lt;string&gt;ProducerCost&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
     <Setting Name="AbortingThreadTimeout" Type="System.Int32" Scope="Application">

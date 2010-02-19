@@ -549,6 +549,7 @@ namespace Inforoom.PriceProcessor.Properties {
   <string>RequestRatio</string>
   <string>OrderCost</string>
   <string>MinOrderCount</string>
+  <string>ProducerCost</string>
 </ArrayOfString>")]
         public global::System.Collections.Specialized.StringCollection CorePrimaryFields {
             get {

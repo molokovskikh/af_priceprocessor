@@ -120,6 +120,8 @@ namespace Inforoom.Formalizer
 		Period,
 		[Description("Документ")]
 		Doc,
+		[Description("Цена производителя")]
+		ProducerCost,
 		[Description("Цена минимальная")]
 		MinBoundCost,
 		[Description("Срок")]
@@ -620,6 +622,9 @@ namespace Inforoom.Formalizer
 			object MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount);
 			if ((MinOrderCount is int) && ((int)MinOrderCount >= 0))
 				drCore["MinOrderCount"] = (int)MinOrderCount;
+			var producerCost = GetFieldValueObject(PriceFields.ProducerCost);
+			if ((producerCost is decimal) && ((decimal)producerCost >= 0))
+				drCore["ProducerCost"] = (decimal) producerCost;
 
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
@@ -2187,6 +2192,7 @@ and r.RegionCode = cd.RegionCode",
 				case (int)PriceFields.RegistryCost:
 				case (int)PriceFields.MaxBoundCost:
 				case (int)PriceFields.OrderCost:
+				case (int)PriceFields.ProducerCost:
 					return ProcessCost(GetFieldRawValue(PF));
 
 				case (int)PriceFields.Quantity:

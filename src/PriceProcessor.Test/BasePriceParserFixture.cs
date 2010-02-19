@@ -106,5 +106,34 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			}
 			
 		}
+
+		[Test]
+		public void FormalizeProducerCost()
+		{
+			var fileName = @"formalize-producer-cost";
+			var updateDate = DateTime.Now;
+			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
+
+			var rules = new DataTable();
+			rules.ReadXml(String.Format(@"..\..\Data\{0}-producer-cost-rules.xml", priceItemId));
+
+			//Формализация прайс-листа
+			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			//Подсчет позиций в Core
+			var cost = TestHelper.Fill(String.Format(@"
+select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));			
+			var corePriceCode = Convert.ToInt64(cost.Tables[0].Rows[0]["PriceCode"]);
+
+
+			With.Connection(connection => {
+                var command = new MySqlCommand(@"
+select count(*) from farm.Core0 core
+  join farm.CoreCosts cc on core.Id = cc.Core_id and cc.Cost > core.ProducerCost
+where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
+                command.Parameters.AddWithValue("?PriceCode", corePriceCode);
+				var countCorePositions = Convert.ToUInt32(command.ExecuteScalar());
+				Assert.That(countCorePositions, Is.EqualTo(14));
+			});			
+		}
 	}
 }
