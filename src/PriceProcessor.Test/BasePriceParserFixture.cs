@@ -6,6 +6,9 @@ using System.Text;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
+using System.Threading;
+using System.IO;
+using Inforoom.PriceProcessor.Properties;
 
 namespace PriceProcessor.Test
 {
@@ -107,30 +110,95 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			
 		}
 
-		[Test]
+		[Test, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
 		public void FormalizeProducerCost()
 		{
 			var fileName = @"formalize-producer-cost";
-			var updateDate = DateTime.Now;
 			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
-
 			var rules = new DataTable();
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-producer-cost-rules.xml", priceItemId));
 
 			//Формализация прайс-листа
 			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			//Подсчет позиций в Core
-			var cost = TestHelper.Fill(String.Format(@"
-select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));			
-			var corePriceCode = Convert.ToInt64(cost.Tables[0].Rows[0]["PriceCode"]);
+			var corePriceCode = GetPriceCode(priceItemId);
+			CheckProducerCostInCore(corePriceCode);
+		}
 
+		[Test, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
+		public void FormalizeProducerCost2()
+		{
+			var sqlFormRules = @"
+delete from usersettings.PriceItems where Id = ?PriceItemId;
 
+insert into farm.FormRules(PriceFormatId, MaxOld, Delimiter, FCode, FName1, FFirmCr, FVolume, FQuantity, FPeriod, FProducerCost)
+values(11, 5, ';', 'F1', 'F2', 'F3', 'F4', 'F5', 'F7', 'F8');
+
+insert into usersettings.PriceItems(
+	Id,
+	FormRuleId, 
+	SourceId, 
+	RowCount, UnformCount,
+	PriceDate, 
+	LastDownload, 
+	LastFormalization, 
+	LastRetrans, 
+	WaitingDownloadInterval)
+values(
+	?PriceItemId,
+	Last_Insert_ID(), 
+	(select Id from farm.Sources limit 1),
+	0, 0, 
+	(date_sub(now(), interval 1 day)),
+	(date_sub(now(), interval 1 day)),
+	(date_sub(now(), interval 1 day)),
+	NULL,
+	24
+);
+
+insert into usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName, BaseCost) 
+values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			With.Connection(connection => {
-                var command = new MySqlCommand(@"
+                var command = new MySqlCommand(sqlFormRules, connection);
+                command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
+                command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+                command.ExecuteNonQuery();
+			});
+
+			// Копируем файл в Inbound и запускаем формализацию
+			var fileName = @"formalize-producer-cost";
+			//var fileName = @"producer-cost-with-empty";
+			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
+			TestHelper.InitDirs(Settings.Default.InboundPath, Settings.Default.BasePath, Settings.Default.ErrorFilesPath);
+			File.Copy(file, String.Format("{0}\\{1}.txt", Settings.Default.InboundPath, priceItemId));
+
+			var handler = new FormalizeHandler();
+			handler.StartWork();
+			Thread.Sleep(10000);
+			handler.StopWork();
+			CheckProducerCostInCore(GetPriceCode(priceItemId));
+			// В Base должен лежать файл
+			Assert.That(Directory.GetFiles(Settings.Default.BasePath).Length, Is.EqualTo(1));
+		}
+
+		private ulong GetPriceCode(uint priceItemId)
+		{
+			// Получаем код прайса по priceItemId
+			var cost = TestHelper.Fill(String.Format(@"
+select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));
+			var corePriceCode = Convert.ToUInt64(cost.Tables[0].Rows[0]["PriceCode"]);
+			return corePriceCode;						
+		}
+
+		private void CheckProducerCostInCore(ulong corePriceCode)
+		{
+			// Считаем кол-во позиций в core0 для данного прайс-листа, где цена производителя существует и она не нулевая
+			// (она также должна быть меньше всех остальных цен)
+			With.Connection(connection => {
+				var command = new MySqlCommand(@"
 select count(*) from farm.Core0 core
   join farm.CoreCosts cc on core.Id = cc.Core_id and cc.Cost > core.ProducerCost
 where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
-                command.Parameters.AddWithValue("?PriceCode", corePriceCode);
+				command.Parameters.AddWithValue("?PriceCode", corePriceCode);
 				var countCorePositions = Convert.ToUInt32(command.ExecuteScalar());
 				Assert.That(countCorePositions, Is.EqualTo(14));
 			});			
