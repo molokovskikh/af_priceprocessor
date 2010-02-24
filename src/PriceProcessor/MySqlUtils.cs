@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor
         				throw;
         			}
         		}
-        	}, 5);
+        	}, 100, 50, 5);
 		}
 
 		public static void InTransaction(Action<MySqlConnection> action)
