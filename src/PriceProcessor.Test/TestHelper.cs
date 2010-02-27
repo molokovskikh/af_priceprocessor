@@ -5,6 +5,7 @@ using System.Text;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
@@ -85,6 +86,16 @@ namespace PriceProcessor.Test
 			Formalize<T>(file, Convert.ToInt32(Path.GetFileNameWithoutExtension(file)));
 		}
 
+		public static void Formalize(string file, int priceItemId)
+		{
+			//var priceItemId = Convert.ToInt32(Path.GetFileNameWithoutExtension(file));
+			var data = GetParseRules(priceItemId);
+			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
+			var parserType = Type.GetType(typeName);
+			
+			Formalize(parserType, data, file, priceItemId);
+		}
+
 		public static void Formalize(Type formatType, string file)
 		{
 			Formalize(formatType, file, Convert.ToInt32(Path.GetFileNameWithoutExtension(file)));
@@ -104,7 +115,7 @@ namespace PriceProcessor.Test
 		{
 			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
-				var parser = (BasePriceParser) Activator.CreateInstance(formatType, file, connection, parseRules);
+				var parser = (BasePriceParser2) Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
 			}
 		}
