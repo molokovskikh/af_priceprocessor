@@ -137,11 +137,14 @@ where src.Id = pim.SourceId", PriceItemId);
 				var currentSource = dtSources.Rows[0];
 				var priceSource = new PriceSource(currentSource);
 				if (!CheckDownloadInterval(priceSource))
-					return;
+				{
+					currentSource.Delete();
+					dtSources.AcceptChanges();
+					continue;
+				}
 				try
 				{
 					drLS = GetLikeSources(priceSource);
-
 					try
 					{
 						CurrFileName = String.Empty;
