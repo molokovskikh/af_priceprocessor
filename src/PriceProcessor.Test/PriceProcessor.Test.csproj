@@ -79,10 +79,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
     </Reference>
-    <Reference Include="MySql.Data, Version=5.1.6.1, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\MySql.Data.dll</HintPath>
-    </Reference>
     <Reference Include="NHibernate.ByteCode.Castle, Version=2.1.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.ByteCode.Castle.dll</HintPath>
@@ -110,6 +106,7 @@
     <Compile Include="BasePriceParserFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
+    <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="ExcelFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
@@ -117,7 +114,7 @@
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
-    <Compile Include="Handlers\HandlersSetup.cs" />
+    <Compile Include="SetupFiture.cs" />
     <Compile Include="Handlers\PathSourceHandlerTest.cs" />
     <Compile Include="HTTPSourceHandlerFixture.cs" />
     <Compile Include="MySqlUtilsFixture.cs" />
@@ -144,6 +141,10 @@
     <Compile Include="WCFTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Review\MySql.Data\MySql.Data\Provider\MySql.Data.csproj">
+      <Project>{E9DF5ED1-4CBD-4226-B931-9A51610AC14D}</Project>
+      <Name>MySql.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
