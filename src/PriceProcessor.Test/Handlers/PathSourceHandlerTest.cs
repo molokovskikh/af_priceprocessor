@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Test.Support;
@@ -16,6 +18,7 @@ namespace PriceProcessor.Test.Handlers
 		[SetUp]
 		public void Setup()
 		{
+			TestHelper.RecreateDirectories();
 			sourceType = "HTTP";
 			TestPriceSource.CreateHttpPriceSource("www.ru", "index.html", "index.html");
 			CreateDirectoryPath();
@@ -77,6 +80,33 @@ namespace PriceProcessor.Test.Handlers
 
 			foreach (PriceSource item in listSources)
 				Assert.IsTrue(FailedSources.Contains(item.PriceItemId));			
+		}
+
+		[Test]
+		public void TestDownloadSeveralFiles()
+		{
+			var sql = @"
+delete from `logs`.downlogs where LogTime > curdate();
+update farm.sources set sourcetypeid = 3 where sourcetypeid = 2;";
+			With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, sql); });
+			TestHelper.RecreateDirectories();
+			var source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.pressa.html", "index.pressa.html");
+			source.LastDownload = new DateTime(DateTime.Now.Year, 1, 1);
+			source.SaveAndFlush();
+			source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.html", "index.html");
+			source.LastDownload = DateTime.Now.AddDays(30);
+			source.SaveAndFlush();
+			source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.about.html", "index.about.html");
+			source.LastDownload = new DateTime(DateTime.Now.Year, 1, 1);
+			source.SaveAndFlush();
+			var handler = new HTTPSourceHandler();
+			handler.StartWork();
+			Thread.Sleep(6000);
+			handler.StopWork();
+			sql = @"select count(*) from `logs`.downlogs where LogTime > curdate();";
+			var count = 0;
+			With.Connection(connection => { count = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, sql)); });
+			Assert.That(count, Is.EqualTo(2));
 		}
 	}
 
