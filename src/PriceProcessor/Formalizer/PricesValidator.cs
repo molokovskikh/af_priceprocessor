@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Data;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using System.Reflection;

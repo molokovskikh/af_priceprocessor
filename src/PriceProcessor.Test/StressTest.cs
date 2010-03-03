@@ -11,7 +11,6 @@ using log4net.Config;
 using log4net.Core;
 using log4net.Layout;
 using MySql.Data.MySqlClient;
-using MySql.Data.MySqlClient.Source;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test
@@ -456,7 +455,7 @@ order by Core0.Id", 3779);
 				var command2 = new MySqlCommand(File.ReadAllText("dump_2.sql"), connection);
 				command2.ExecuteNonQuery();*/
 
-				var butcher = new Batcher(connection);
+/*				var butcher = new Batcher(connection);
 				var data = File.ReadAllBytes("dump_0.sql");
 				var data1 = File.ReadAllBytes("dump_1.sql");
 				var data2 = File.ReadAllBytes("dump_2.sql");
@@ -465,7 +464,7 @@ order by Core0.Id", 3779);
 				butcher.Send(data1);
 				Console.WriteLine("send 2");
 				butcher.Send(data2);
-				Console.WriteLine("send 3");
+				Console.WriteLine("send 3");*/
 			}
 		}
 

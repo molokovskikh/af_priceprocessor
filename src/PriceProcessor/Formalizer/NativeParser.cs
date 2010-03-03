@@ -6,36 +6,60 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
-	public abstract class NativeTextParser : InterPriceParser
+	public abstract class NativeParser : InterPriceParser
 	{
-		private readonly int _startLine;
-		protected Encoding _encoding;
-		protected ISlicer _slicer;
+		protected TextParser Parser;
 
-		protected NativeTextParser(string priceFileName, MySqlConnection connection, DataTable data) 
+		protected NativeParser(string priceFileName, MySqlConnection connection, DataTable data) 
 			: base(priceFileName, connection, data)
 		{
-			_startLine = data.Rows[0]["StartLine"] is DBNull ? -1 : Convert.ToInt32(data.Rows[0]["StartLine"]);
 		}
 
-		protected NativeTextParser(Encoding encoding, ISlicer slicer, string priceFileName, MySqlConnection connection, DataTable data) 
+		protected NativeParser(Encoding encoding, ISlicer slicer, string priceFileName, MySqlConnection connection, DataTable data) 
 			: this(priceFileName, connection, data)
 		{
-			_encoding = encoding;
-			_slicer = slicer;
+			var startLine = data.Rows[0]["StartLine"] is DBNull ? -1 : Convert.ToInt32(data.Rows[0]["StartLine"]);
+			Parser = new TextParser(slicer, encoding, startLine);
 		}
 
 		public override void Open()
 		{
 			convertedToANSI = true;
+			dtPrice = Parser.Parse(priceFileName);
+			CurrPos = 0;
+			base.Open();
+		}
+	}
+
+	public interface IParser
+	{
+		DataTable Parse(string filename);
+	}
+
+	public class TextParser : IParser
+	{
+		private readonly ISlicer _slicer;
+		private readonly Encoding _encoding;
+		private readonly int _startLine;
+
+		public TextParser(ISlicer slicer, Encoding encoding, int startLine)
+		{
+			_encoding = encoding;
+			_slicer = slicer;
+			_startLine = startLine;
+		}
+
+		public DataTable Parse(string filename)
+		{
 			var lineIndex = -1;
 			var table = new DataTable();
-			using(var file = new StreamReader(priceFileName, _encoding))
+			using(var file = new StreamReader(filename, _encoding))
 			{
 				while(!file.EndOfStream)
 				{
@@ -54,9 +78,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					table.Rows.Add(row);
 				}
 			}
-			dtPrice = table;
-			CurrPos = 0;
-			base.Open();
+			return table;
 		}
 	}
 
@@ -168,9 +190,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private readonly string _delimiter;
 
-		public DelimiterSlicer(DataTable data)
+		public DelimiterSlicer(string delimiter)
 		{
-			_delimiter = data.Rows[0][FormRules.colDelimiter].ToString();
+			_delimiter = delimiter;
 			if (_delimiter == "tab")
 				_delimiter = "\t";
 		}
@@ -199,37 +221,47 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 	}
 
-	public class FixedNativeTextParser1251 : NativeTextParser
+	public class FixedNativeTextParser1251 : NativeParser
 	{
 		public FixedNativeTextParser1251(string priceFileName, MySqlConnection connection, DataTable data)
 			: base(priceFileName, connection, data)
 		{
-			_encoding = Encoding.GetEncoding(1251);
-			_slicer = new PositionSlicer(data, this, currentCoreCosts);
+			Parser = new TextParser(new PositionSlicer(data, this, currentCoreCosts),
+				Encoding.GetEncoding(1251),
+				-1);
 		}
 	}
 
-	public class FixedNativeTextParser866 : NativeTextParser
+	public class FixedNativeTextParser866 : NativeParser
 	{
 		public FixedNativeTextParser866(string priceFileName, MySqlConnection connection, DataTable data)
 			: base(priceFileName, connection, data)
 		{
-			_encoding = Encoding.GetEncoding(866);
-			_slicer = new PositionSlicer(data, this, currentCoreCosts);
+			Parser = new TextParser(new PositionSlicer(data, this, currentCoreCosts),
+				Encoding.GetEncoding(866),
+				-1);
 		}
 	}
 
-	public class DelimiterNativeTextParser1251 : NativeTextParser
+	public class DelimiterNativeTextParser1251 : NativeParser
 	{
 		public DelimiterNativeTextParser1251(string priceFileName, MySqlConnection connection, DataTable data)
-			: base(Encoding.GetEncoding(1251), new DelimiterSlicer(data), priceFileName, connection, data)
+			: base(Encoding.GetEncoding(1251),
+				new DelimiterSlicer(data.Rows[0][FormRules.colDelimiter].ToString()),
+				priceFileName,
+				connection,
+				data)
 		{}
 	}
 
-	public class DelimiterNativeTextParser866 : NativeTextParser
+	public class DelimiterNativeTextParser866 : NativeParser
 	{
 		public DelimiterNativeTextParser866(string priceFileName, MySqlConnection connection, DataTable data)
-			: base(Encoding.GetEncoding(866), new DelimiterSlicer(data), priceFileName, connection, data)
+			: base(Encoding.GetEncoding(866), 
+				new DelimiterSlicer(data.Rows[0][FormRules.colDelimiter].ToString()),
+				priceFileName,
+				connection,
+				data)
 		{}
 	}
 }

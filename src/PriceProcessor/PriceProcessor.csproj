@@ -29,7 +29,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;TESTINGUPDATE;SQLDUMP</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;TESTINGUPDATE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -73,7 +73,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
     </Reference>
-    <Reference Include="MySql.Data, Version=5.1.3.3, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
+    <Reference Include="MySql.Data, Version=6.0.4.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\MySql.Data.dll</HintPath>
     </Reference>
@@ -116,6 +116,7 @@
     <Compile Include="Downloader\WaybillLANSourceHandler.cs" />
     <Compile Include="Downloader\WaybillSourceHandler.cs" />
     <Compile Include="Formalizer\BasePriceParser.cs" />
+    <Compile Include="Formalizer\New\BasePriceParser2.cs" />
     <Compile Include="Formalizer\CommerceMLParser.cs" />
     <Compile Include="Formalizer\DBFPriceParser.cs" />
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
@@ -125,12 +126,17 @@
     <Compile Include="Formalizer\InterPriceParser.cs" />
     <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
     <Compile Include="Formalizer\NativeExcelParser.cs" />
-    <Compile Include="Formalizer\NativeTextParser.cs" />
+    <Compile Include="Formalizer\NativeParser.cs" />
+    <Compile Include="Formalizer\New\Core.cs" />
+    <Compile Include="Formalizer\New\Searcher.cs" />
     <Compile Include="Formalizer\OleDbHelper.cs" />
+    <Compile Include="Formalizer\New\PriceFormalizationInfo.cs" />
+    <Compile Include="Formalizer\New\PriceLoggingStat.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
     <Compile Include="Formalizer\Helpers\SqlBuilder.cs" />
+    <Compile Include="Formalizer\New\Exceptions.cs" />
     <Compile Include="Formalizer\SudakovXMLParser.cs" />
     <Compile Include="Formalizer\ToughDate.cs" />
     <Compile Include="Formalizer\ToughMask.cs" />

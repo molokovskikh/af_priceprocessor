@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using Inforoom.PriceProcessor.Formalizer.New;
 using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;

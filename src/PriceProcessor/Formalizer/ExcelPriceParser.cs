@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.OleDb;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 
