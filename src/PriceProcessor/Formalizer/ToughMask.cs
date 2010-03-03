@@ -1,5 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
+using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
 
 namespace Inforoom.Formalizer
@@ -20,6 +21,35 @@ namespace Inforoom.Formalizer
 		private readonly Regex re;
 		private Match m;
 		private readonly string [] reGroupName;
+
+		public ToughMask(string Mask, long clientCode, long priceCode, string clientShortName, string priceName)
+		{
+			reGroupName = new string[Enum.GetNames(typeof(NameGroup)).Length];
+			try
+			{
+				re = new Regex(Mask);
+			}
+			catch(Exception e)
+			{
+				throw new WarningFormalizeException(String.Format(Settings.Default.ParseMaskError, e), clientCode, priceCode, clientShortName, priceName);
+			}
+			foreach(var gname in re.GetGroupNames())
+			{
+				var gnameU = gname.ToUpper();
+				foreach(NameGroup ng in Enum.GetValues(typeof(NameGroup)))
+				{
+					var sNG = ng.ToString().ToUpper();
+					if (gnameU.Equals(sNG))
+					{
+						if (null == reGroupName[(int)ng])
+							reGroupName[(int)ng] = gname;
+						else
+							throw new WarningFormalizeException(String.Format(Settings.Default.DoubleGroupMaskError, ng), clientCode, priceCode, clientShortName, priceName);
+						break;
+					}
+				}
+			}
+		}
 
 		public ToughMask(string mask, PriceFormalizationInfo priceInfo)
 		{
