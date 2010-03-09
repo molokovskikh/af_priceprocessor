@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
@@ -452,42 +453,39 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
 				// Адрес отправителя должен быть только у одного поставщика, 
 				// если получилось больше, то это ошибка
-				if (drLS.Length == 1)
+
+				if (drLS.Length > 1)
 				{
-					var drS = drLS[0];
-
-					var attachments = m.GetValidAttachements();
-					foreach (var entity in attachments)
-					{
-						if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName) || 
-							!String.IsNullOrEmpty(entity.ContentType_Name))
-						{
-							SaveAttachement(entity);
-							var CorrectArchive = CheckFile();
-							matched = true;
-							if (CorrectArchive)
-							{
-								ProcessWaybillFile(CurrFileName, drS);
-							}
-							else
-							{
-								WriteLog(_currentDocumentType.TypeID, 
-									Convert.ToInt32(drS[WaybillSourcesTable.colFirmCode]), 
-									_aptekaClientCode, Path.GetFileName(CurrFileName), 
-									"Не удалось распаковать файл", currentUID);
-							}
-							Cleanup();
-						}
-					}
-
-					drS.Delete();			
+					throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", 
+						mbFrom.EmailAddress));
 				}
-				else
-					if (drLS.Length > 1)
+
+				var source = drLS.Single();
+				var attachments = m.GetValidAttachements();
+				foreach (var entity in attachments)
+				{
+					if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName) || 
+						!String.IsNullOrEmpty(entity.ContentType_Name))
 					{
-						throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", 
-							mbFrom.EmailAddress));
+						SaveAttachement(entity);
+						var correctArchive = CheckFile();
+						matched = true;
+						if (correctArchive)
+						{
+							ProcessWaybillFile(CurrFileName, source);
+						}
+						else
+						{
+							WriteLog(_currentDocumentType.TypeID, 
+								Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]), 
+								_aptekaClientCode, Path.GetFileName(CurrFileName), 
+								"Не удалось распаковать файл", currentUID);
+						}
+						Cleanup();
 					}
+				}
+
+				source.Delete();
 				dtSources.AcceptChanges();
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
