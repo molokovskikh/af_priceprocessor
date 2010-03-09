@@ -464,25 +464,21 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				var attachments = m.GetValidAttachements();
 				foreach (var entity in attachments)
 				{
-					if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName) || 
-						!String.IsNullOrEmpty(entity.ContentType_Name))
+					SaveAttachement(entity);
+					var correctArchive = CheckFile();
+					matched = true;
+					if (correctArchive)
 					{
-						SaveAttachement(entity);
-						var correctArchive = CheckFile();
-						matched = true;
-						if (correctArchive)
-						{
-							ProcessWaybillFile(CurrFileName, source);
-						}
-						else
-						{
-							WriteLog(_currentDocumentType.TypeID, 
-								Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]), 
-								_aptekaClientCode, Path.GetFileName(CurrFileName), 
-								"Не удалось распаковать файл", currentUID);
-						}
-						Cleanup();
+						ProcessWaybillFile(CurrFileName, source);
 					}
+					else
+					{
+						WriteLog(_currentDocumentType.TypeID, 
+							Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]), 
+							_aptekaClientCode, Path.GetFileName(CurrFileName), 
+							"Не удалось распаковать файл", currentUID);
+					}
+					Cleanup();
 				}
 
 				source.Delete();
