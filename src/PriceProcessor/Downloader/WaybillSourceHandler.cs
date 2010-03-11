@@ -608,6 +608,8 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					catch(Exception e)
 					{
 						_log.Error(String.Format("Ошибка при разборе документа {0}", OutFileName), e);
+						if (File.Exists(OutFileName))
+							File.Copy(OutFileName, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(OutFileName)));
 					}
 				}
 				catch (MySqlException MySQLErr)

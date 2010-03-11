@@ -251,7 +251,10 @@ namespace Inforoom.PriceProcessor.Waybills
 						}
 						catch(Exception e)
 						{
-							_log.Error(String.Format("Не удалось разобрать накладную {0}", d.GetFileName()), e);
+							var filename = d.GetFileName();
+							_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
+							if (File.Exists(filename))
+								File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)));
 							return null;
 						}
 					}).Where(d => d != null).ToList();
