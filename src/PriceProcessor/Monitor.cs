@@ -6,6 +6,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.ServiceModel;
 using System.Net;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using RemotePriceProcessor;
 #if (!DEBUG)
@@ -26,7 +27,8 @@ namespace Inforoom.PriceProcessor
 
 		private bool Stopped;
 
-		private ServiceHost _serviceHost;
+		private ServiceHost _priceProcessorHost;
+		private ServiceHost _waybillServiceHost;
 		private const string _strProtocol = @"net.tcp://";
 
 		public Monitor()
@@ -53,17 +55,9 @@ namespace Inforoom.PriceProcessor
 		{
             try
             {
-				var sbUrlService = new StringBuilder();
-				_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
-				sbUrlService.Append(_strProtocol)
-					.Append(Dns.GetHostName()).Append(":")
-					.Append(Settings.Default.WCFServicePort).Append("/")
-					.Append(Settings.Default.WCFServiceName);
+				StartServices();
 
-            	_serviceHost = PriceProcessorWcfHelper.StartService(typeof (IRemotePriceProcessor),
-            	                                                    typeof (WCFPriceProcessorService),
-            	                                                    sbUrlService.ToString());
-                foreach (var handler in _handlers)
+            	foreach (var handler in _handlers)
                     try
                     {
                         handler.StartWork();
@@ -80,6 +74,25 @@ namespace Inforoom.PriceProcessor
             {
                 _logger.Fatal("Ошибка при старте монитора", ex);
             }
+		}
+
+		private void StartServices()
+		{
+			var sbUrlService = new StringBuilder();
+			sbUrlService.Append(_strProtocol)
+				.Append(Dns.GetHostName()).Append(":")
+				.Append(Settings.Default.WCFServicePort).Append("/")
+				.Append(Settings.Default.WCFServiceName);
+
+			_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof (IRemotePriceProcessor),
+				typeof (WCFPriceProcessorService),
+				sbUrlService.ToString());
+
+			_waybillServiceHost = new ServiceHost(typeof (WaybillService));
+			_waybillServiceHost.AddServiceEndpoint(typeof (IWaybillService),
+				new NetTcpBinding(),
+				String.Format("net.tcp://{0}:901/WaybillService", Dns.GetHostName()));
+			_waybillServiceHost.Open();
 		}
 
 		//Остановливаем монитор
@@ -101,7 +114,8 @@ namespace Inforoom.PriceProcessor
                     {
 						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
                     }
-				PriceProcessorWcfHelper.StopService(_serviceHost);
+				PriceProcessorWcfHelper.StopService(_priceProcessorHost);
+				PriceProcessorWcfHelper.StopService(_waybillServiceHost);
 			}
             catch (Exception ex)
             {

@@ -4,11 +4,15 @@ using System.Collections.Generic;
 using System.ServiceProcess;
 #else
 using System.Windows.Forms;
+using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework.Config;
 using Inforoom.PriceProcessor.Properties;
 #endif
 using System.IO;
+using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using log4net.Util;
+using Environment=NHibernate.Cfg.Environment;
 
 namespace Inforoom.PriceProcessor
 {
@@ -20,6 +24,7 @@ namespace Inforoom.PriceProcessor
 			var log = LogManager.GetLogger(typeof(Program));
 			try
 			{
+				InitActiveRecord();
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG
 				InitDirs(new[] {
@@ -48,6 +53,21 @@ namespace Inforoom.PriceProcessor
 			{
 				log.Error("Ошибка запуска сервиса обработки прайс листов", e);
 			}
+		}
+
+		private static void InitActiveRecord()
+		{
+			var config = new InPlaceConfigurationSource();
+			config.Add(typeof (ActiveRecordBase),
+				new Dictionary<string, string> {
+					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
+					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
+					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
+					{Environment.ConnectionStringName, "DB"},
+					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
+					{Environment.Hbm2ddlKeyWords, "none"}
+				});
+			ActiveRecordStarter.Initialize(new[] {typeof (Document).Assembly}, config);
 		}
 
 		public static void InitDirs(IEnumerable<string> dirs)
