@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework.Config;
 #if !DEBUG
 using System.ServiceProcess;
 #else
 using System.Windows.Forms;
-using Castle.ActiveRecord;
-using Castle.ActiveRecord.Framework.Config;
 using Inforoom.PriceProcessor.Properties;
 #endif
 using System.IO;
