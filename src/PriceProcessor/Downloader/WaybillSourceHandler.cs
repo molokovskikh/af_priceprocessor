@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
@@ -564,7 +566,8 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 
 					cmdInsert.Transaction = transaction;
 
-					OutFileName = OutFileNameTemplate + cmdInsert.ExecuteScalar() + "_"
+					var documentLogId = cmdInsert.ExecuteScalar();
+					OutFileName = OutFileNameTemplate + documentLogId + "_"
 						+ drCurrent[WaybillSourcesTable.colShortName]
 						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
 						+ Path.GetExtension(FileName);
@@ -585,6 +588,27 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					Quit = true;
 					// Сохраняем накладную в локальной директории
 					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
+
+					try
+					{
+						using(new SessionScope())
+						{
+							var log = DocumentLog.Find(Convert.ToUInt32(documentLogId));
+							var rule = ParseRule.Find(log.Supplier.Id);
+							if (String.IsNullOrEmpty(rule.ReaderClassName))
+								return;
+
+							var parser = rule.CreateParser();
+							var document = new Document(log);
+							parser.Parse(OutFileName, document);
+							using (new TransactionScope())
+								document.Save();
+						}
+					}
+					catch(Exception e)
+					{
+						_log.Error(String.Format("Ошибка при разборе документа {0}", OutFileName), e);
+					}
 				}
 				catch (MySqlException MySQLErr)
 				{

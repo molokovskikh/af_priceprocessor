@@ -94,7 +94,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			return document;
 		}
 
-		private IDocumentParser CreateParser()
+		public IDocumentParser CreateParser()
 		{
 			if (String.IsNullOrEmpty(ReaderClassName))
 				throw new Exception(String.Format("Для поставщика ({0}) не настроены правила разбора накладных", FirmCode));
@@ -124,6 +124,19 @@ namespace Inforoom.PriceProcessor.Waybills
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
 	public class Document : ActiveRecordBase<Document>
 	{
+		public Document()
+		{}
+
+		public Document(DocumentLog log)
+		{
+			Log = log;
+			WriteTime = DateTime.Now;
+			FirmCode = log.Supplier.Id;
+			ClientCode = log.ClientCode.Value;
+			AddressId = log.AddressId;
+			DocumentType = DocType.Waybill;
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -209,9 +222,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public uint? Quantity { get; set; }
 
-		public void SetNds(decimal @decimal)
+		public void SetNds(decimal nds)
 		{
-			//throw new NotImplementedException();
+			SupplierCostWithoutNDS = Math.Round(SupplierCost.Value/(1 + nds/100), 2);
 		}
 	}
 

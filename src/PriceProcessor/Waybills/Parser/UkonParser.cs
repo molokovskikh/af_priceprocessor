@@ -30,6 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.Producer = parts[2];
 					docLine.Country = parts[3];
 					docLine.Quantity = Convert.ToUInt32(parts[4]);
+					docLine.Certificates = parts[12];
 					docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
 					docLine.SupplierCostWithoutNDS = Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture);
 					docLine.SupplierPriceMarkup = Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);
