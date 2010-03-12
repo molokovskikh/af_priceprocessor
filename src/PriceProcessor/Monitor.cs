@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Security;
 using System.Threading;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Properties;
@@ -89,8 +90,11 @@ namespace Inforoom.PriceProcessor
 				sbUrlService.ToString());
 
 			_waybillServiceHost = new ServiceHost(typeof (WaybillService));
+
+			var binding = new NetTcpBinding();
+			binding.Security.Mode = SecurityMode.None;
 			_waybillServiceHost.AddServiceEndpoint(typeof (IWaybillService),
-				new NetTcpBinding(),
+				binding,
 				String.Format("net.tcp://{0}:901/WaybillService", Dns.GetHostName()));
 			_waybillServiceHost.Open();
 		}
