@@ -155,6 +155,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public DocType DocumentType { get; set; }
 
+		[Property]
+		public string ProviderDocumentId { get; set; }
+
 		[BelongsTo("DownloadId")]
 		public DocumentLog Log { get; set; }
 

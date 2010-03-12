@@ -146,6 +146,7 @@
     <Compile Include="SystemNetMailSmtpFixture.cs" />
     <Compile Include="TestHelper.cs" />
     <Compile Include="TextFixture.cs" />
+    <Compile Include="Troubleshoot.cs" />
     <Compile Include="UpdateCoreTimestampsFixture.cs" />
     <Compile Include="UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekParserFixture.cs" />

@@ -14,9 +14,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				reader.ReadLine();
 				reader.ReadLine();
 				reader.ReadLine();
+				reader.ReadLine();
 
-				reader.ReadLine();
-				reader.ReadLine();
+				var header = reader.ReadLine().Split(';');
+				document.ProviderDocumentId = header[0];
+
 				reader.ReadLine();
 				reader.ReadLine();
 				reader.ReadLine();
@@ -34,6 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
 					docLine.SupplierCostWithoutNDS = Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture);
 					docLine.SupplierPriceMarkup = Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);
+					docLine.Period = parts[15];
 					docLine.ProducerCost = Convert.ToDecimal(parts[6], CultureInfo.InvariantCulture);
 				}
 			}

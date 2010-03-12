@@ -11,6 +11,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var data = Dbf.Load(file);
 			document.DocumentLines = data.Rows.Cast<DataRow>().Select(r => {
+				document.ProviderDocumentId = r["NUM_DOC"].ToString();
 				var line = document.NewLine();
 				line.Code = r["CODE_TOVAR"].ToString();
 				line.Product = r["NAME_TOVAR"].ToString();
@@ -20,6 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"]);
 				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"]);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
+				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"]));
 				return line;
 			}).ToList();
