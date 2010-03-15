@@ -116,12 +116,12 @@ namespace Inforoom.PriceProcessor.Rosta
 			var result = new List<AditionData>();
 			using(var file = File.OpenRead(s))
 			{
-				var buffer = new byte[104];
+				var buffer = new byte[100];
 				while(file.Read(buffer, 0, buffer.Length) > 0)
 				{
 					var id = BitConverter.ToUInt32(buffer, 0);
 					//var name = Encoding.GetEncoding(1251).GetString(buffer, 4, 80);
-					var date = BitConverter.ToDouble(buffer, 92);
+					var date = BitConverter.ToDouble(buffer, 88);
 					result.Add(new AditionData {
 						Id = id,
 						Period = new DateTime(1899, 12, 30) + TimeSpan.FromDays(date),

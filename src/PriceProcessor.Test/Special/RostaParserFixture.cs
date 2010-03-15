@@ -40,10 +40,10 @@ namespace PriceProcessor.Test.Special
 		{
 			var data = RostaReader.ReadAddtions(@"..\..\Data\rosta\ex");
 			var addition = data[0];
-			Assert.That(addition.Period, Is.EqualTo(new DateTime(2013, 10, 07)));
-			Assert.That(addition.Id, Is.EqualTo(8204));
+			Assert.That(addition.Period, Is.EqualTo(new DateTime(2014, 6, 8)));
+			Assert.That(addition.Id, Is.EqualTo(8203));
 			addition = data[1];
-			Assert.That(addition.Period, Is.EqualTo(new DateTime(2011, 06, 22)));
+			Assert.That(addition.Period, Is.EqualTo(new DateTime(2013, 10, 7)));
 		}
 
 		[Test, Ignore("Для тестирования руками, часто не запускать что бы не спалиться")]
