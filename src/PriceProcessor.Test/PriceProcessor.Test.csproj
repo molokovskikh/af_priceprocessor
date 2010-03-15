@@ -151,6 +151,7 @@
     <Compile Include="UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaParserFixture.cs" />
+    <Compile Include="Waybills\Parser\SiaXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\UkonParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
@@ -233,14 +234,18 @@
     <None Include="Data\Rosta\producers" />
     <None Include="Data\StressTest\517.dbf" />
     <None Include="Data\StressTest\599.dbf" />
+    <None Include="Data\Unparse.eml" />
     <None Include="Data\Waybills\0004076.sst" />
     <None Include="Data\Waybills\1008fo.pd" />
     <None Include="Data\Waybills\1016416.dbf" />
+    <None Include="Data\Waybills\1040150.DBF" />
+    <None Include="Data\Waybills\8916.dbf" />
     <Content Include="Data\688-assortmentprice-rules.xml" />
     <Content Include="Data\688-helpprice-rules.xml" />
     <Content Include="Data\UpdateCoreTimeStamp-update-quantity.txt" />
     <Content Include="Data\UpdateCoreTimeStamp-update.txt" />
     <Content Include="Data\UpdateCoreTimeStamp.txt" />
+    <Content Include="Data\Waybills\1039428.xml" />
     <Content Include="Rosta\GetRostaDataset.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

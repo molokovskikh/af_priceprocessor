@@ -118,6 +118,9 @@
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractHandler.cs" />
@@ -199,6 +202,7 @@
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\SiaParser.cs" />
+    <Compile Include="Waybills\Parser\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
     <Compile Include="Waybills\WaybillService.cs" />
     <Compile Include="WCFPriceProcessorService.cs" />

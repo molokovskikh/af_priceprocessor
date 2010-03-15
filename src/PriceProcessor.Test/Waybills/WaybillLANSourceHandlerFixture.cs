@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Tools;
+using Inforoom.Common;
+using log4net.Config;
 using LumiSoft.Net.IMAP;
 using NUnit.Framework;
 using Inforoom.Downloader;
@@ -11,6 +14,7 @@ using System.IO;
 using LumiSoft.Net.IMAP.Client;
 using Inforoom.Downloader.Documents;
 using MySql.Data.MySqlClient;
+using Test.Support.log4net;
 
 
 namespace PriceProcessor.Test
@@ -48,6 +52,35 @@ namespace PriceProcessor.Test
 			var path = Path.GetFullPath(Settings.Default.FTPOptBoxPath);
 			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.FTPOptBoxPath));
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
+		}
+
+		[Test]
+		public void Process_message_if_from_contains_more_than_one_address()
+		{
+			FileHelper.DeleteDir(Settings.Default.FTPOptBoxPath);
+
+			var filter = new EventFilter<WaybillSourceHandler>();
+
+			TestHelper.StoreMessage(Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder,
+				File.ReadAllBytes(@"..\..\Data\Unparse.eml"));
+
+			Process();
+
+			var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, @"4147\rejects\");
+			Assert.That(Directory.Exists(ftp), "не обработали документ");
+			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
+
+			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
+		}
+
+		private void Process()
+		{
+			var handler = new WaybillSourceHandler(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.StartWork();
+			Thread.Sleep(5000);
+			handler.StopWork();
 		}
 
 		private void PrepareDirectories()

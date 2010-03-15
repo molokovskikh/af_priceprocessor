@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var parser = new ProtekParser();
 			var doc = new Document();
 			var document = parser.Parse(@"..\..\Data\Waybills\1008fo.pd", doc);
-			Assert.That(document.DocumentLines.Count, Is.EqualTo(1));
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
 		}
 	}
 }

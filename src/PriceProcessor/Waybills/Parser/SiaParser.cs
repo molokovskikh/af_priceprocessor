@@ -10,7 +10,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file);
-			document.DocumentLines = data.Rows.Cast<DataRow>().Select(r => {
+			string vitallyImportantColumn = null;
+			if (data.Columns.Contains("ZHNVLS"))
+				vitallyImportantColumn = "ZHNVLS";
+			else if (data.Columns.Contains("ISZHVP"))
+				vitallyImportantColumn = "ISZHVP";
+
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NUM_DOC"].ToString();
 				var line = document.NewLine();
 				line.Code = r["CODE_TOVAR"].ToString();
@@ -23,6 +29,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"]));
+				if (!String.IsNullOrEmpty(vitallyImportantColumn))
+					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;
 				return line;
 			}).ToList();
 			return document;
