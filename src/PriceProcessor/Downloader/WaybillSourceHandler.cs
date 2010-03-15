@@ -462,6 +462,9 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 						mbFrom.EmailAddress));
 				}
 
+				if (drLS.Length == 0)
+					continue;
+
 				var source = drLS.Single();
 				var attachments = m.GetValidAttachements();
 				foreach (var entity in attachments)
