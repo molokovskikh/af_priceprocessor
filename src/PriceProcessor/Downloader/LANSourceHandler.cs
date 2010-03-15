@@ -22,6 +22,8 @@ namespace Inforoom.Downloader
 		{
 			try
 			{
+				if (_logger.IsDebugEnabled)
+					_logger.DebugFormat("Try get file from LAN source. FirmCode = {0}, PriceItemId = {1}", source.FirmCode, source.PriceItemId);
 				var pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + source.FirmCode.ToString().PadLeft(3, '0') +
 				                Path.DirectorySeparatorChar;
 				var files = Directory.GetFiles(pricePath, source.PriceMask);
@@ -32,10 +34,13 @@ namespace Inforoom.Downloader
 				foreach (var file in files)
 				{
 					var fileLastWriteTime = File.GetLastWriteTime(file);
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("File: {0}. LastWriteTime: {1}", file, fileLastWriteTime);
 					if (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)
 						sortedFileList.Add(fileLastWriteTime, file);
 				}
-
+				if (_logger.IsDebugEnabled)
+					_logger.DebugFormat("SortedList count items {0}", sortedFileList.Count);
 				//Если в списке есть файлы, то берем первый и скачиваем
 				if (sortedFileList.Count == 0)
 					return;
@@ -43,6 +48,8 @@ namespace Inforoom.Downloader
 				var downloadedFileName = sortedFileList.Values[0];
 				var downloadedLastWriteTime = sortedFileList.Keys[0];
 				var newFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
+				if (_logger.IsDebugEnabled)
+					_logger.DebugFormat("Path: {0}", newFile);
 				if (File.Exists(newFile))
 				{
 					FileHelper.ClearReadOnly(newFile);
@@ -52,6 +59,8 @@ namespace Inforoom.Downloader
 				_downloadedFile = downloadedFileName;
 				try
 				{
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("Copying from {0} to {1}", downloadedFileName, newFile);
 					File.Copy(downloadedFileName, newFile);
 					CurrFileName = newFile;
 					CurrPriceDate = downloadedLastWriteTime;
@@ -123,6 +132,8 @@ namespace Inforoom.Downloader
 			var threadAbortException = e as ThreadAbortException;
 			if (threadAbortException != null)
 				return ThreadAbortErrorMessage;
+			if (e is IOException)
+				return e.Message;
 			return NetworkErrorMessage;
 		}
 	}
