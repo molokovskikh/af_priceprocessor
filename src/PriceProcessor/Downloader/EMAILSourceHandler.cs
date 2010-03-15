@@ -134,47 +134,51 @@ namespace Inforoom.Downloader
 			c.Authenticate(Settings.Default.IMAPUser, Settings.Default.IMAPPass);
 		}
 
-        private void ProcessMime(Mime m)
-        {
-            var FromList = GetAddressList(m);
+		private void ProcessMime(Mime m)
+		{
+			var from = GetAddressList(m);
 
-            // Название аттачментов
-            string AttachNames = String.Empty;
-			string _causeSubject = String.Empty, _causeBody = String.Empty, _systemError = String.Empty;
+			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
+			try
+			{
+				CheckMime(m);
+			}
+			catch(EMailSourceHandlerException e)
+			{
+				ErrorOnCheckMime(m, from, e);
+				return;
 
-			m = UueHelper.ExtractFromUue(m, DownHandlerPath);			
-        	try
-        	{
-        		if (!CheckMime(m, ref _causeSubject, ref _causeBody, ref _systemError))
-        			throw new EMailSourceHandlerException();
-        		FillSourcesTable();
-        		if (!ProcessAttachs(m, FromList, ref _causeSubject, ref _causeBody))
-        			throw new EMailSourceHandlerException();
-        	}
-        	catch (EMailSourceHandlerException)
-        	{
+			}
+			FillSourcesTable();
+			try
+			{
+				ProcessAttachs(m, from);
+			}
+			catch (EMailSourceHandlerException e)
+			{
 				// Формируем список приложений, чтобы использовать 
 				// его при отчете о нераспознанном письме
-        		AttachNames = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
-        		ErrorOnCheckMime(m, FromList, AttachNames, _causeSubject, _causeBody, _systemError);
-        	}
-        }
-
-		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody)
-		{
-			SendUnrecLetter(m, FromList, AttachNames, causeBody);
+				ErrorOnProcessAttachs(m, from, e);
+				return;
+			}
 		}
 
-		protected virtual void ErrorOnCheckMime(Mime m, AddressList FromList, string AttachNames, string causeSubject, string causeBody, string systemError)
+		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList from, EMailSourceHandlerException exception)
 		{
-			SendUnrecLetter(m, FromList, AttachNames, causeBody);
+			SendUnrecLetter(m, from, exception);
 		}
 
-		protected virtual void SendUnrecLetter(Mime m, AddressList FromList, 
-			string AttachNames, string cause)
+		
+		protected virtual void ErrorOnCheckMime(Mime m, AddressList from, EMailSourceHandlerException exception)
+		{
+			SendUnrecLetter(m, from, exception);
+		}
+
+		protected virtual void SendUnrecLetter(Mime m, AddressList from, EMailSourceHandlerException exception)
 		{
 			try
 			{
+				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
 				try
 				{
@@ -187,10 +191,10 @@ namespace Inforoom.Downloader
 						ms);
 				}
 				catch { }
-				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
-					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
+					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, exception.Message);
 				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
-					cause, m.MainEntity.Subject, FromList.ToAddressListString()));
+					exception.Message, m.MainEntity.Subject, from.ToAddressListString()));
 			}
 			catch (Exception exMatch)
 			{
@@ -198,11 +202,10 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected virtual bool ProcessAttachs(Mime m, AddressList FromList, 
-			ref string causeSubject, ref string causeBody)
+		protected virtual void ProcessAttachs(Mime m, AddressList from)
 		{
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-			bool _Matched = false;
+			var matched = false;
 
 			var attachmentFileName = string.Empty;
 
@@ -210,29 +213,21 @@ namespace Inforoom.Downloader
 			foreach (var entity in attachments)
 			{
 				attachmentFileName = SaveAttachement(entity);
-				UnPack(m, ref _Matched, FromList, attachmentFileName);
+				UnPack(m, ref matched, from, attachmentFileName);
 				Cleanup();
 			}
 
-			if (!_Matched)
-				causeBody = "Не найден источник.";
-			return _Matched;
+			if (!matched)
+				throw new EMailSourceHandlerException("Не найден источник.");
 		}
 
 		/// <summary>
 		/// Проверяет, что письмо содержит вложения
 		/// </summary>
-		/// <param name="m"></param>
-		/// <returns></returns>
-		protected virtual bool CheckMime(Mime m, ref string causeSubject, 
-			ref string causeBody, ref string systemError)		
+		protected virtual void CheckMime(Mime m)
 		{
 			if (m.Attachments.Length == 0)
-			{
-				causeBody = "Письмо не содержит вложений.";
-				systemError = causeBody;
-			}
-			return m.Attachments.Length > 0;
+				throw new EMailSourceHandlerException("Письмо не содержит вложений.");
 		}
 
 		/// <summary>
@@ -433,7 +428,7 @@ namespace Inforoom.Downloader
 		{
 			if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName))
 				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentDisposition_FileName));
-			else if (!String.IsNullOrEmpty(entity.ContentType_Name))
+			if (!String.IsNullOrEmpty(entity.ContentType_Name))
 				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType_Name));
 			return null;
 		}
@@ -441,6 +436,16 @@ namespace Inforoom.Downloader
 
 	public class EMailSourceHandlerException : Exception
 	{
-		
+		public EMailSourceHandlerException(string message) : base(message)
+		{}
+
+		public EMailSourceHandlerException(string message, string subject, string body) : base(message)
+		{
+			Body = body;
+			Subject = subject;
+		}
+
+		public string Body { get; set; }
+		public string Subject { get; set; }
 	}
 }

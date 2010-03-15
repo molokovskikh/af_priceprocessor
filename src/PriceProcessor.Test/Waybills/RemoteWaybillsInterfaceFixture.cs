@@ -51,7 +51,7 @@ namespace PriceProcessor.Test.Waybills
 				FileName = file,
 			};
 			document.Save();
-			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_Демонстрационный(1008fo).pd", document.Id)));
+			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", document.Id)));
 
 			service.ParseWaybill(new [] {document.Id});
 

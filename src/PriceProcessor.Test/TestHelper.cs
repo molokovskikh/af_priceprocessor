@@ -269,14 +269,19 @@ Content-Disposition: attachment;
 				fileStream.Read(fileBytes, 0, (int)(fileStream.Length));
 				var messageText = String.Format(templateMessageText, to, from,
 												Path.GetFileName(attachFilePath), Convert.ToBase64String(fileBytes));
-				byte[] messageBytes = new UTF8Encoding().GetBytes(messageText);
-				using (var imapClient = new IMAP_Client())
-				{
-					imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
-					imapClient.Authenticate(mailbox, password);
-					imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
-					imapClient.StoreMessage(folder, messageBytes);
-				}
+				var messageBytes = new UTF8Encoding().GetBytes(messageText);
+				StoreMessage(mailbox, password, folder, messageBytes);
+			}
+		}
+
+		public static void StoreMessage(string mailbox, string password, string folder, byte[] messageBytes)
+		{
+			using (var imapClient = new IMAP_Client())
+			{
+				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
+				imapClient.Authenticate(mailbox, password);
+				imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
+				imapClient.StoreMessage(folder, messageBytes);
 			}
 		}
 

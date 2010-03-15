@@ -57,8 +57,7 @@ namespace Inforoom.Downloader
 			client.Authenticate(_imapUser, _imapPassword);
 		}
 
-		protected override bool CheckMime(Mime m, ref string causeSubject, 
-			ref string causeBody, ref string systemError)
+		protected override void CheckMime(Mime m)
 		{
 			var emailList = String.Empty;
 			_aptekaClientCode = null;
@@ -68,51 +67,43 @@ namespace Inforoom.Downloader
 			// на @waybills.analit.net или на @refused.analit.net
 			var correctAddresCount = CorrectClientAddress(m.MainEntity.To, ref emailList);
 			// Все хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
-			bool res = (m.Attachments.Length > 0) && (correctAddresCount == 1);
 			// Если не сопоставили с клиентом
 			if (correctAddresCount == 0)
 			{
-				systemError = "Не найден клиент.";
-				causeSubject = Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient;
-				causeBody = Settings.Default.ResponseDocBodyTemplateOnNonExistentClient;
+				throw new EMailSourceHandlerException("Не найден клиент.",
+					Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient,
+					Settings.Default.ResponseDocBodyTemplateOnNonExistentClient);
 			}
-			else
-				// Если нет вложений
-				if ((correctAddresCount == 1) && (m.Attachments.Length == 0))
-				{
-					systemError = "Письмо не содержит вложений.";
-					causeSubject = Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs;
-					causeBody = Settings.Default.ResponseDocBodyTemplateOnNothingAttachs;
-				}
-				else
-					// Если несколько клиентов в списке получателей
-					if (correctAddresCount > 1)
+			if (correctAddresCount == 1 && m.Attachments.Length == 0)
+			{
+				throw new EMailSourceHandlerException("Письмо не содержит вложений.",
+					Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs,
+					Settings.Default.ResponseDocBodyTemplateOnNothingAttachs);
+			}
+			if (correctAddresCount > 1)
+			{
+				throw new EMailSourceHandlerException("Письмо отправленно нескольким клиентам.",
+					Settings.Default.ResponseDocSubjectTemplateOnMultiDomen,
+					Settings.Default.ResponseDocBodyTemplateOnMultiDomen);
+			}
+			if (m.Attachments.Length > 0)
+			{ 
+				bool attachmentsIsBigger = false;
+				foreach(var attachment in m.Attachments)
+					if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
 					{
-						systemError = "Письмо отправленно нескольким клиентам.";
-						causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMultiDomen;
-						causeBody = Settings.Default.ResponseDocBodyTemplateOnMultiDomen;
+						attachmentsIsBigger = true;
+						break;
 					}
-					else
-						if (m.Attachments.Length > 0)
-						{ 
-							bool attachmentsIsBigger = false;
-							foreach(var attachment in m.Attachments)
-								if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
-								{
-									attachmentsIsBigger = true;
-									break;
-								}
-							if (attachmentsIsBigger)
-							{
-								res = false;
-
-								systemError = String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).", 
-									Settings.Default.MaxWaybillAttachmentSize);
-								causeSubject = Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment;
-								causeBody = String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment, Settings.Default.MaxWaybillAttachmentSize);
-							}
-						}
-			return res;
+				if (attachmentsIsBigger)
+				{
+					throw new EMailSourceHandlerException(String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
+							Settings.Default.MaxWaybillAttachmentSize),
+						Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment,
+						String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment,
+							Settings.Default.MaxWaybillAttachmentSize));
+				}
+			}
 		}
 
 		/// <summary>
@@ -258,15 +249,15 @@ WHERE
 			return dtSources;
 		}
 
-		protected override void ErrorOnCheckMime(Mime m, AddressList FromList, 
-			string AttachNames, string causeSubject, string causeBody, string systemError)
+		protected override void ErrorOnCheckMime(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
-			if (causeBody != String.Empty)
+			if (!String.IsNullOrEmpty(e.Body))
 			{
-				SendErrorLetterToProvider(FromList, causeSubject, causeBody, m);
+				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
+				SendErrorLetterToProvider(from, e.Subject, e.Body, m);
 				WriteLog(
 					(_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
-					GetFirmCodeByFromList(FromList), 
+					GetFirmCodeByFromList(from), 
 					_aptekaClientCode, 
 					null, 
 					String.Format(@"{0}
@@ -277,34 +268,34 @@ WHERE
 Тема письма поставщику : {4}
 Тело письма поставщику : 
 {5}", 
-							 systemError, 
-							 FromList.ToAddressListString(), 
+							 e.Message, 
+							 from.ToAddressListString(), 
 							 m.MainEntity.To.ToAddressListString(), 
-							 AttachNames, 
-							 causeSubject, 
-							 causeBody), 
+							 attachments, 
+							 e.Subject, 
+							 e.Body), 
 					currentUID);
 			}
 			else
-				SendUnrecLetter(m, FromList, AttachNames, "Не распознанное письмо.");
+				SendUnrecLetter(m, from, e);
 		}
 
-		protected override void ErrorOnProcessAttachs(Mime m, AddressList FromList, 
-			string AttachNames, string causeSubject, string causeBody)
+		protected override void ErrorOnProcessAttachs(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
 			try
 			{
+				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				const string cause = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
 				var ms = new MemoryStream(m.ToByteData());
 				SendErrorLetterToProvider(
-					FromList, 
+					from, 
 					Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
 					Settings.Default.ResponseDocBodyTemplateOnUnknownProvider, m);
-				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
-					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
+					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, cause);
 
 				WriteLog((_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
-					GetFirmCodeByFromList(FromList), _aptekaClientCode, null,
+					GetFirmCodeByFromList(from), _aptekaClientCode, null,
 					String.Format(@"{0} 
 Отправители     : {1}
 Получатели      : {2}
@@ -314,9 +305,9 @@ WHERE
 Тело письма поставщику : 
 {5}",
 						cause,
-						FromList.ToAddressListString(),
+						from.ToAddressListString(),
 						m.MainEntity.To.ToAddressListString(),
-						AttachNames,
+						attachments,
 						Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
 						Settings.Default.ResponseDocBodyTemplateOnUnknownProvider),
 						currentUID);
@@ -403,14 +394,14 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			return Settings.Default.DocumentFailMail;
 		}
 
-		protected override void SendUnrecLetter(Mime m, AddressList FromList, 
-			string AttachNames, string cause)
+		protected override void SendUnrecLetter(Mime m, AddressList FromList, EMailSourceHandlerException e)
 		{
 			try
 			{
+				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
 				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
-					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, AttachNames, cause);
+					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, e.Message);
 
 				WriteLog((_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
 					GetFirmCodeByFromList(FromList), _aptekaClientCode, null,
@@ -421,11 +412,11 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 Список вложений : 
 {4}
 ", 
-						cause, 
+						e.Message, 
 						m.MainEntity.Subject, 
 						FromList.ToAddressListString(), 
 						m.MainEntity.To.ToAddressListString(), 
-						AttachNames),
+						attachments),
 						currentUID);
 			}
 			catch (Exception exMatch)
@@ -434,8 +425,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			}
 		}
 
-		protected override bool ProcessAttachs(Mime m, AddressList FromList, 
-			ref string causeSubject, ref string causeBody)
+		protected override void ProcessAttachs(Mime m, AddressList FromList)
 		{
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			bool matched = false;
@@ -491,8 +481,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
 			if (!matched)
-				causeBody = "Не найден источник.";
-			return matched;
+				throw new EMailSourceHandlerException("Не найден источник.");
 		}
 
 		protected void ProcessWaybillFile(string InFile, DataRow drCurrent)
@@ -591,29 +580,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					Quit = true;
 					// Сохраняем накладную в локальной директории
 					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
-
-					try
-					{
-						using(new SessionScope())
-						{
-							var log = DocumentLog.Find(Convert.ToUInt32(documentLogId));
-							var rule = ParseRule.Find(log.Supplier.Id);
-							if (String.IsNullOrEmpty(rule.ReaderClassName))
-								return;
-
-							var parser = rule.CreateParser();
-							var document = new Document(log);
-							parser.Parse(OutFileName, document);
-							using (new TransactionScope())
-								document.Save();
-						}
-					}
-					catch(Exception e)
-					{
-						_log.Error(String.Format("Ошибка при разборе документа {0}", OutFileName), e);
-						if (File.Exists(OutFileName))
-							File.Copy(OutFileName, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(OutFileName)));
-					}
+					ParserDocument(Convert.ToUInt32(documentLogId), OutFileName);
 				}
 				catch (MySqlException MySQLErr)
 				{
@@ -648,6 +615,33 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					throw;
 				}
 			} while (!Quit);
+		}
+
+		private void ParserDocument(uint documentLogId, string OutFileName)
+		{
+			try
+			{
+				using(new SessionScope())
+				{
+					var log = DocumentLog.Find(documentLogId);
+					var rule = ParseRule.Find(log.Supplier.Id);
+
+					if (rule.DetectParser(OutFileName) == null)
+						return;
+
+					var parser = rule.CreateParser(OutFileName);
+					var document = new Document(log);
+					parser.Parse(OutFileName, document);
+					using (new TransactionScope())
+						document.Save();
+				}
+			}
+			catch(Exception e)
+			{
+				_log.Error(String.Format("Ошибка при разборе документа {0}", OutFileName), e);
+				if (File.Exists(OutFileName))
+					File.Copy(OutFileName, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(OutFileName)));
+			}
 		}
 
 		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode,
