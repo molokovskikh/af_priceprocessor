@@ -8,6 +8,7 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor.Waybills.Parser;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -62,9 +63,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			var file = String.Format("{0}_{1}",
 				Id,
 				Path.GetFileName(FileName));
-				//Supplier.ShortName,
-				//Path.GetFileNameWithoutExtension(FileName),
-				//Path.GetExtension(FileName));
 			return Path.Combine(documentDir, file);
 		}
 	}
@@ -81,7 +79,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public Document Parse(DocumentLog log)
 		{
 			var file = log.GetFileName();
-			var parser = CreateParser();
+			var parser = CreateParser(file);
 			var document = new Document {
 				Log = log,
 				WriteTime = DateTime.Now,
@@ -94,19 +92,35 @@ namespace Inforoom.PriceProcessor.Waybills
 			return document;
 		}
 
-		public IDocumentParser CreateParser()
+		public IDocumentParser CreateParser(string filename)
 		{
+			//var extention = Path.GetExtension(filename).ToLower();
+			//var type = DetectParser(extention);
 			if (String.IsNullOrEmpty(ReaderClassName))
 				throw new Exception(String.Format("Для поставщика ({0}) не настроены правила разбора накладных", FirmCode));
 
 			var name = "Inforoom.PriceProcessor.Waybills.Parser." + ReaderClassName;
 			var type = Type.GetType(name);
 			if (type == null)
-				throw new Exception("Не могу найти парсер " + name);
+				throw new Exception("Не могу понять какой парсер нужно использовать для файла " + filename);
 			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
 			if (constructor == null)
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
+		}
+
+		public Type DetectParser(string extention)
+		{
+			Type type = null;
+			if (extention == ".dbf")
+				type = typeof (SiaParser);
+			else if (extention == ".sst")
+				type = typeof (UkonParser);
+			else if (extention == ".xml")
+				type = typeof (SiaXmlParser);
+			else if (extention == ".pd")
+				type = typeof (ProtekParser);
+			return type;
 		}
 	}
 
@@ -162,7 +176,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public DocumentLog Log { get; set; }
 
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
-		public IList<DocumentLine> DocumentLines { get; set; }
+		public IList<DocumentLine> Lines { get; set; }
 
 		public DocumentLine NewLine()
 		{
@@ -171,11 +185,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public DocumentLine NewLine(DocumentLine line)
 		{
-			if (DocumentLines == null)
-				DocumentLines = new List<DocumentLine>();
+			if (Lines == null)
+				Lines = new List<DocumentLine>();
 
 			line.Document = this;
-			DocumentLines.Add(line);
+			Lines.Add(line);
 			return line;
 		}
 	}
@@ -224,6 +238,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public uint? Quantity { get; set; }
+
+		[Property]
+		public bool? VitallyImportant { get; set; }
 
 		public void SetNds(decimal nds)
 		{
