@@ -173,7 +173,7 @@ namespace PriceProcessor.Test
 
 		public void Send(string email)
 		{
-			SmtpClientEx.QuickSendSmartHost("mail.adc.analit.net",
+			SmtpClientEx.QuickSendSmartHost("box.analit.net",
 				25,
 				Environment.MachineName,
 				"service@analit.net", 

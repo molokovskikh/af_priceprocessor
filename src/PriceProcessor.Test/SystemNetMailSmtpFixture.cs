@@ -76,7 +76,7 @@ namespace PriceProcessor.Test
 			{
 				using (IMAP_Client imapClient = new IMAP_Client())
 				{
-					imapClient.Connect("mail.adc.analit.net", 143);
+					imapClient.Connect("box.analit.net", 143);
 					imapClient.Authenticate("prccopy@analit.net", "123");
 					imapClient.SelectFolder("INBOX");
 					IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
@@ -103,7 +103,7 @@ namespace PriceProcessor.Test
 						"тестовая тема SmtpWithAttachLockedFile " + Path.GetFileName(fileName),
 						"Тестовое тело сообщения SmtpWithAttachLockedFile");
 					mailMessage.Attachments.Add(new Attachment(fileName));
-					sc = new SmtpClient("mail.adc.analit.net");
+					sc = new SmtpClient("box.analit.net");
 					/*
 					 * Проблема с задержкой при отправке писем с помощью SmtpClient не лечится ничем, кроме таймаута
 					 * Если SmtpClient создается только в тесте, то настройки ServicePoint, которые закомментированны ниже
@@ -149,7 +149,7 @@ namespace PriceProcessor.Test
 						"Тестовое тело сообщения SmtpWithAttachLockedFile"))
 					{
 						mailMessage.Attachments.Add(new Attachment(fileName));
-						sc = new SmtpClient("mail.adc.analit.net");
+						sc = new SmtpClient("box.analit.net");
 						sc.Send(mailMessage);
 					}
 
