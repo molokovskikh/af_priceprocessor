@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="IMAPHost" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">mail.adc.analit.net</Value>
+      <Value Profile="(Default)">box.analit.net</Value>
     </Setting>
     <Setting Name="SMTPHost" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">mail.adc.analit.net</Value>
+      <Value Profile="(Default)">box.analit.net</Value>
     </Setting>
     <Setting Name="HandlerRequestInterval" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">30</Value>
