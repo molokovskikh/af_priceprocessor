@@ -20,6 +20,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(156.16));
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.06.2013"));
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 		}
 
 		[Test]

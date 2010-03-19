@@ -231,6 +231,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		public decimal? SupplierPriceMarkup { get; set; }
 
 		[Property]
+		public uint? Nds { get; set; }
+
+		[Property]
 		public decimal? SupplierCostWithoutNDS { get; set; }
 
 		[Property]
@@ -245,6 +248,13 @@ namespace Inforoom.PriceProcessor.Waybills
 		public void SetNds(decimal nds)
 		{
 			SupplierCostWithoutNDS = Math.Round(SupplierCost.Value/(1 + nds/100), 2);
+			Nds = (uint?) nds;
+		}
+
+		public void SetProducerCostWithoutNds(decimal cost)
+		{
+			SupplierCostWithoutNDS = cost;
+			Nds = (uint?) (SupplierCost / SupplierCostWithoutNDS - 1) * 100;
 		}
 	}
 

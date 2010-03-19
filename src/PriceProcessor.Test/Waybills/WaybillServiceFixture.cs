@@ -37,13 +37,11 @@ namespace PriceProcessor.Test.Waybills
 			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", document.Id)));
 
 			var service = new WaybillService();
-			service.ParseWaybill(new [] {document.Id});
+			var ids = service.ParseWaybill(new [] {document.Id});
 
 			using(new SessionScope())
 			{
-				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
-				Assert.That(waybills.Count, Is.EqualTo(1));
-				var waybill = waybills.Single();
+				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
 		}
