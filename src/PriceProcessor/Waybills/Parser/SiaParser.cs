@@ -28,6 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"]);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
+				line.Certificates = r["DOCUMENT"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"]));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;
