@@ -53,7 +53,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public string GetFileName()
 		{
-			var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, ClientCode.ToString().PadLeft(3, '0'));
+			var clientDir = Path.Combine(@"\\acdcserv.adc.analit.net\FTP\OptBox\", ClientCode.ToString().PadLeft(3, '0'));
 			var documentDir = Path.Combine(clientDir, DocumentType + "s");
 /*			var file = String.Format("{0}_{1}({2}){3}",
 				Id,
@@ -64,6 +64,41 @@ namespace Inforoom.PriceProcessor.Waybills
 				Id,
 				Path.GetFileName(FileName));
 			return Path.Combine(documentDir, file);
+		}
+	}
+
+	[ActiveRecord("RetClientsSet", Schema = "Usersettings")]
+	public class WaybillSettings : ActiveRecordLinqBase<WaybillSettings>
+	{
+		[PrimaryKey("ClientCode")]
+		public uint Id { get; set; }
+
+		[Property]
+		public bool ParseWaybills { get; set; }
+	}
+
+	public class WaybillFormatDetector
+	{
+		public IDocumentParser DetectParser(string file)
+		{
+			var extention = Path.GetExtension(file);
+			Type type = null;
+			if (extention == ".dbf")
+				type = typeof (SiaParser);
+			else if (extention == ".sst")
+				type = typeof (UkonParser);
+			else if (extention == ".xml")
+				type = typeof (SiaXmlParser);
+			else if (extention == ".pd")
+				type = typeof (ProtekParser);
+
+			if (type == null)
+				return null;
+
+			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
+			if (constructor == null)
+				throw new Exception("У типа {0} нет конструктора без аргументов");
+			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
 	}
 
@@ -108,20 +143,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
-
-		public Type DetectParser(string extention)
-		{
-			Type type = null;
-			if (extention == ".dbf")
-				type = typeof (SiaParser);
-			else if (extention == ".sst")
-				type = typeof (UkonParser);
-			else if (extention == ".xml")
-				type = typeof (SiaXmlParser);
-			else if (extention == ".pd")
-				type = typeof (ProtekParser);
-			return type;
-		}
 	}
 
 	public interface IDocumentParser
@@ -136,7 +157,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	}
 
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
-	public class Document : ActiveRecordBase<Document>
+	public class Document : ActiveRecordLinqBase<Document>
 	{
 		public Document()
 		{}

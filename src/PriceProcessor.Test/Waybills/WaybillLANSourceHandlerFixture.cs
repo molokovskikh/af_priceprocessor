@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Common;
+using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
 using LumiSoft.Net.IMAP;
 using NUnit.Framework;
@@ -14,6 +16,7 @@ using System.IO;
 using LumiSoft.Net.IMAP.Client;
 using Inforoom.Downloader.Documents;
 using MySql.Data.MySqlClient;
+using Test.Support;
 using Test.Support.log4net;
 
 
@@ -73,6 +76,41 @@ namespace PriceProcessor.Test
 			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
 
 			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
+		}
+
+		[Test]
+		public void Parse_waybill_if_parsing_enabled()
+		{
+			var filter = new EventFilter<WaybillSourceHandler>();
+
+			var client = TestOldClient.CreateTestClient();
+			var settings = WaybillSettings.Find(client.Id);
+			settings.ParseWaybills = true;
+			settings.Update();
+			TestHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder,
+				String.Format("{0}@waybills.analit.net", client.Id),
+				"edata@msk.katren.ru",
+				@"..\..\Data\Waybills\8916.dbf");
+
+			Process();
+
+			Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
+
+			var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));
+			Assert.That(Directory.Exists(ftp), "не обработали документ");
+			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
+
+			using(new SessionScope())
+			{
+				var logs = TestDocument.Queryable.Where(d => d.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count, Is.EqualTo(1));
+
+				var documents = Document.Queryable.Where(d => d.Log.Id == logs.Single().Id).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
+				Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
+			}
 		}
 
 		private void Process()

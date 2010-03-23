@@ -617,30 +617,32 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 			} while (!Quit);
 		}
 
-		private void ParserDocument(uint documentLogId, string OutFileName)
+		private void ParserDocument(uint documentLogId, string file)
 		{
 			try
 			{
 				using(new SessionScope())
 				{
 					var log = DocumentLog.Find(documentLogId);
-					var rule = ParseRule.Find(log.Supplier.Id);
-
-					if (rule.DetectParser(OutFileName) == null)
+					var settings = WaybillSettings.Find(log.ClientCode.Value);
+					if (!settings.ParseWaybills)
 						return;
 
-					var parser = rule.CreateParser(OutFileName);
+					var detector = new WaybillFormatDetector();
+					var parser = detector.DetectParser(file);
+					if (parser == null)
+						return;
 					var document = new Document(log);
-					parser.Parse(OutFileName, document);
+					parser.Parse(file, document);
 					using (new TransactionScope())
 						document.Save();
 				}
 			}
 			catch(Exception e)
 			{
-				_log.Error(String.Format("Ошибка при разборе документа {0}", OutFileName), e);
-				if (File.Exists(OutFileName))
-					File.Copy(OutFileName, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(OutFileName)));
+				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
+				if (File.Exists(file))
+					File.Copy(file, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(file)));
 			}
 		}
 
