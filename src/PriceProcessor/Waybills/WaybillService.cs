@@ -53,7 +53,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public string GetFileName()
 		{
-			var clientDir = Path.Combine(@"\\acdcserv.adc.analit.net\FTP\OptBox\", ClientCode.ToString().PadLeft(3, '0'));
+			var clientDir = Path.Combine(Settings.Default.WaybillsPath, ClientCode.ToString().PadLeft(3, '0'));
 			var documentDir = Path.Combine(clientDir, DocumentType + "s");
 /*			var file = String.Format("{0}_{1}({2}){3}",
 				Id,
@@ -88,7 +88,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			else if (extention == ".sst")
 				type = typeof (UkonParser);
 			else if (extention == ".xml")
-				type = typeof (SiaXmlParser);
+			{
+				if (new SiaXmlParser().IsInCorrectFormat(file))
+					type = typeof (SiaXmlParser);
+				else if (new ProtekXmlParser().IsInCorrectFormat(file))
+					type = typeof (ProtekXmlParser);
+			}
 			else if (extention == ".pd")
 				type = typeof (ProtekParser);
 
@@ -100,54 +105,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
-	}
-
-	[ActiveRecord("waybill_sources", Schema = "documents")]
-	public class ParseRule : ActiveRecordLinqBase<ParseRule>
-	{
-		[PrimaryKey]
-		public uint FirmCode { get; set; }
-
-		[Property]
-		public string ReaderClassName { get; set; }
-
-		public Document Parse(DocumentLog log)
-		{
-			var file = log.GetFileName();
-			var parser = CreateParser(file);
-			var document = new Document {
-				Log = log,
-				WriteTime = DateTime.Now,
-				FirmCode = log.Supplier.Id,
-				ClientCode = log.ClientCode.Value,
-				AddressId = log.AddressId,
-				DocumentType = DocType.Waybill
-			};
-			parser.Parse(file, document);
-			return document;
-		}
-
-		public IDocumentParser CreateParser(string filename)
-		{
-			//var extention = Path.GetExtension(filename).ToLower();
-			//var type = DetectParser(extention);
-			if (String.IsNullOrEmpty(ReaderClassName))
-				throw new Exception(String.Format("Для поставщика ({0}) не настроены правила разбора накладных", FirmCode));
-
-			var name = "Inforoom.PriceProcessor.Waybills.Parser." + ReaderClassName;
-			var type = Type.GetType(name);
-			if (type == null)
-				throw new Exception("Не могу понять какой парсер нужно использовать для файла " + filename);
-			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
-			if (constructor == null)
-				throw new Exception("У типа {0} нет конструктора без аргументов");
-			return (IDocumentParser)constructor.Invoke(new object[0]);
-		}
-	}
-
-	public interface IDocumentParser
-	{
-		Document Parse(string file, Document document);
 	}
 
 	public enum DocType
@@ -275,7 +232,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public void SetProducerCostWithoutNds(decimal cost)
 		{
 			SupplierCostWithoutNDS = cost;
-			Nds = (uint?) (SupplierCost / SupplierCostWithoutNDS - 1) * 100;
+			Nds = (uint?)(Math.Round((SupplierCost.Value / SupplierCostWithoutNDS.Value - 1) * 100));
 		}
 	}
 
@@ -291,14 +248,14 @@ namespace Inforoom.PriceProcessor.Waybills
 				using (new SessionScope())
 				{
 					var documents = ids.Select(id => DocumentLog.Find(id)).ToList();
-					var groupedBySupplier = documents.GroupBy(d => d.Supplier.Id).Select(g => g.Key).ToArray();
-					var rules = groupedBySupplier.Select(f => ParseRule.Find(f)).ToList();
+					var detector = new WaybillFormatDetector();
 					var docs = documents.Select(d => {
-						var rule = rules.First(r => r.FirmCode == d.Supplier.Id);
 						try
 						{
-							var doc = rule.Parse(d);
-							return doc;
+							var parser = detector.DetectParser(d.GetFileName());
+							if (parser == null)
+								return null;
+							return parser.Parse(d.GetFileName(), new Document(d));
 						}
 						catch(Exception e)
 						{

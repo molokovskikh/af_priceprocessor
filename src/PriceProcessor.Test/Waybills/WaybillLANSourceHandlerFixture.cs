@@ -104,7 +104,7 @@ namespace PriceProcessor.Test
 
 			using(new SessionScope())
 			{
-				var logs = TestDocument.Queryable.Where(d => d.ClientCode == client.Id).ToList();
+				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 
 				var documents = Document.Queryable.Where(d => d.Log.Id == logs.Single().Id).ToList();

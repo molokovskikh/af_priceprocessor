@@ -27,6 +27,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}
 			return document;
 		}
+
+		public bool IsInCorrectFormat(string file)
+		{
+			var document = XDocument.Load(file);
+			return document.XPathSelectElement("Документ/ЗаголовокДокумента/ТипДок") != null;
+		}
 	}
 
 	public static class Extentions

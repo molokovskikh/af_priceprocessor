@@ -43,14 +43,16 @@ namespace PriceProcessor.Test.Waybills
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
 			
-			var document = new TestDocument {
+			var document = new TestDocumentLog {
 				ClientCode = client.Id,
 				FirmCode = 1179,
 				LogTime = DateTime.Now,
 				DocumentType = DocumentType.Waybill,
 				FileName = file,
 			};
-			document.Save();
+			using (new TransactionScope())
+				document.Save();
+			
 			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", document.Id)));
 
 			service.ParseWaybill(new [] {document.Id});

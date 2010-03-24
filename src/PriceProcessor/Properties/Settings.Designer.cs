@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Configuration;
+using System.Diagnostics;
+
 namespace Inforoom.PriceProcessor.Properties {
     
     
@@ -588,6 +591,17 @@ namespace Inforoom.PriceProcessor.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("FTPOptBox")]
         public string FTPOptBoxPath {
+            get {
+                return ((string)(this["FTPOptBoxPath"]));
+            }
+        }
+
+        [
+			ApplicationScopedSetting,
+			DebuggerNonUserCode,
+			DefaultSettingValueAttribute("FTPOptBox")
+		]
+        public string WaybillsPath {
             get {
                 return ((string)(this["FTPOptBoxPath"]));
             }
