@@ -81,7 +81,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		public IDocumentParser DetectParser(string file)
 		{
-			var extention = Path.GetExtension(file);
+			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 			if (extention == ".dbf")
 				type = typeof (SiaParser);
@@ -239,7 +239,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
 	public class WaybillService : IWaybillService
 	{
-		private readonly ILog _log = LogManager.GetLogger(typeof (WaybillService));
+		private static readonly ILog _log = LogManager.GetLogger(typeof (WaybillService));
 
 		public uint[] ParseWaybill(uint[] ids)
 		{
@@ -247,7 +247,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				using (new SessionScope())
 				{
-					var documents = ids.Select(id => DocumentLog.Find(id)).ToList();
+					var documents = ids.Select(id => ActiveRecordBase<DocumentLog>.Find(id)).ToList();
 					var detector = new WaybillFormatDetector();
 					var docs = documents.Select(d => {
 						try
@@ -261,8 +261,7 @@ namespace Inforoom.PriceProcessor.Waybills
 						{
 							var filename = d.GetFileName();
 							_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
-							if (File.Exists(filename))
-								File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)));
+							SaveWaybill(filename);
 							return null;
 						}
 					}).Where(d => d != null).ToList();
@@ -279,6 +278,43 @@ namespace Inforoom.PriceProcessor.Waybills
 				_log.Error("Ошибка при разборе накладных", e);
 			}
 			return new uint[0];
+		}
+
+		public static void SaveWaybill(string filename)
+		{
+			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
+				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
+
+			if (File.Exists(filename))
+				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)));
+		}
+
+		public static void ParserDocument(uint documentLogId, string file)
+		{
+			try
+			{
+				using(new SessionScope())
+				{
+					var log = ActiveRecordBase<DocumentLog>.Find(documentLogId);
+					var settings = ActiveRecordBase<WaybillSettings>.Find(log.ClientCode.Value);
+					if (!settings.ParseWaybills)
+						return;
+
+					var detector = new WaybillFormatDetector();
+					var parser = detector.DetectParser(file);
+					if (parser == null)
+						return;
+					var document = new Document(log);
+					parser.Parse(file, document);
+					using (new TransactionScope())
+						document.Save();
+				}
+			}
+			catch(Exception e)
+			{
+				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
+				SaveWaybill(file);
+			}
 		}
 	}
 }

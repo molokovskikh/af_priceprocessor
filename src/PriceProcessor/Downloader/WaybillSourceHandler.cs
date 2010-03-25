@@ -580,7 +580,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					Quit = true;
 					// Сохраняем накладную в локальной директории
 					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
-					ParserDocument(Convert.ToUInt32(documentLogId), OutFileName);
+					WaybillService.ParserDocument(Convert.ToUInt32(documentLogId), OutFileName);
 				}
 				catch (MySqlException MySQLErr)
 				{
@@ -615,35 +615,6 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					throw;
 				}
 			} while (!Quit);
-		}
-
-		private void ParserDocument(uint documentLogId, string file)
-		{
-			try
-			{
-				using(new SessionScope())
-				{
-					var log = DocumentLog.Find(documentLogId);
-					var settings = WaybillSettings.Find(log.ClientCode.Value);
-					if (!settings.ParseWaybills)
-						return;
-
-					var detector = new WaybillFormatDetector();
-					var parser = detector.DetectParser(file);
-					if (parser == null)
-						return;
-					var document = new Document(log);
-					parser.Parse(file, document);
-					using (new TransactionScope())
-						document.Save();
-				}
-			}
-			catch(Exception e)
-			{
-				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
-				if (File.Exists(file))
-					File.Copy(file, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(file)));
-			}
 		}
 
 		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode,

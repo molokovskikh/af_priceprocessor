@@ -1,6 +1,7 @@
 using System;
 using Inforoom.Downloader.Documents;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
@@ -414,15 +415,7 @@ WHERE Addr.LegacyId = {0}", addressId);
 		{
 			if (_logger.IsDebugEnabled)
 			{
-				var localDir = FileHelper.NormalizeDir(Settings.Default.DownWaybillsPath) +
-					clientAddressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar +
-					documentType.FolderName + Path.DirectorySeparatorChar;
-				// Если директории нет, создаем её
-				if (!Directory.Exists(localDir))
-					Directory.CreateDirectory(localDir);
-				var destinationFileName = localDir + Path.GetFileName(filePath);
-				// Сохраняем копию накладной в локальной папке
-				File.Copy(filePath, destinationFileName);
+				WaybillService.SaveWaybill(filePath);
 			}
 		}
 	}
