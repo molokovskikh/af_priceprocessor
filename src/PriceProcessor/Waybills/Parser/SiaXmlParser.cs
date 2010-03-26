@@ -17,8 +17,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Product = position.XPathSelectElement("Товар").Value;
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
 				line.Quantity = Convert.ToUInt32(position.XPathSelectElement("Количество").Value);
-				line.ProducerCost = Convert.ToDecimal(position.XPathSelectElement("ЦенаИзг").Value, CultureInfo.InvariantCulture);
-				line.RegistryCost = Convert.ToDecimal(position.XPathSelectElement("ЦенаГР").Value, CultureInfo.InvariantCulture);
+				line.ProducerCost = position.Get("ЦенаИзг");
+				line.RegistryCost = position.GetOptional("ЦенаГР");
 				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCost = position.Get("ЦенаОпт");
 				line.SetNds(position.Get("СтавкаНДС"));
@@ -40,6 +40,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public static decimal Get(this XElement element, string selector)
 		{
 			return Convert.ToDecimal(element.XPathSelectElement(selector).Value, CultureInfo.InvariantCulture);
+		}
+
+		public static decimal? GetOptional(this XElement element, string selector)
+		{
+			var selectElement = element.XPathSelectElement("ЦенаГР");
+			if (String.IsNullOrEmpty(selectElement.Value))
+				return null;
+			return Convert.ToDecimal(selectElement.Value, CultureInfo.InvariantCulture);
 		}
 	}
 }
