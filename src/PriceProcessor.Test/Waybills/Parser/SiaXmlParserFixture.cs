@@ -34,6 +34,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
 		}
 
+		[Test]
+		public void Wired_vitally_important_flag()
+		{
+			parser.Parse(@"..\..\Data\Waybills\3633567_0_17202011.xml", document);
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+		}
 
 		[Test]
 		public void Parse_with_null_registry_cost_value()

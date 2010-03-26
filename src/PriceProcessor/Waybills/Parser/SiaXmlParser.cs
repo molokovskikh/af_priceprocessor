@@ -22,7 +22,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCost = position.Get("ЦенаОпт");
 				line.SetNds(position.Get("СтавкаНДС"));
-				line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
+
+				if (position.XPathSelectElement("ЖНВЛС") != null)
+					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
+				else if (position.XPathSelectElement("ЖВНЛС") != null)
+					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖВНЛС").Value) == 1;
+
 				line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;
 			}
 			return document;
