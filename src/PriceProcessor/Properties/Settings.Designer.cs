@@ -599,11 +599,11 @@ namespace Inforoom.PriceProcessor.Properties {
         [
 			ApplicationScopedSetting,
 			DebuggerNonUserCode,
-			DefaultSettingValueAttribute("FTPOptBox")
+			DefaultSettingValueAttribute("WaybillsPath")
 		]
         public string WaybillsPath {
             get {
-                return ((string)(this["FTPOptBoxPath"]));
+                return ((string)(this["WaybillsPath"]));
             }
         }
         
