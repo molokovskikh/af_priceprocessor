@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using Common.Tools;
 
@@ -23,13 +24,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Product = r["NAME_TOVAR"].ToString();
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
-				line.ProducerCost = Convert.ToDecimal(r["PR_PROIZ"]);
-				line.SupplierCost = Convert.ToDecimal(r["PRICE"]);
-				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"]);
+				line.ProducerCost = Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
+				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
+				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				line.Certificates = r["DOCUMENT"].ToString();
-				line.SetNds(Convert.ToDecimal(r["PCT_NDS"]));
+				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;
 				return line;

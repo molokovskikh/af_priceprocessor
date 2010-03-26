@@ -25,6 +25,23 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_with_character_type()
+		{
+			var parser = new SiaParser();
+			var doc = new Document();
+			var document = parser.Parse(@"..\..\Data\Waybills\1016416_char.dbf", doc);
+			Assert.That(document.Lines.Count, Is.EqualTo(3));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Г000006147"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Андипал таб. № 10"));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(5.18));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ10.Д50325"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(4.71));			
+		}
+
+		[Test]
 		public void Parse_with_vitally_important()
 		{
 			var parser = new SiaParser();
