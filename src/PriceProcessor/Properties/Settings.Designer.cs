@@ -8,9 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Configuration;
-using System.Diagnostics;
-
 namespace Inforoom.PriceProcessor.Properties {
     
     
@@ -589,26 +586,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("FTPOptBox")]
-        public string FTPOptBoxPath {
-            get {
-                return ((string)(this["FTPOptBoxPath"]));
-            }
-        }
-
-        [
-			ApplicationScopedSetting,
-			DebuggerNonUserCode,
-			DefaultSettingValueAttribute("WaybillsPath")
-		]
-        public string WaybillsPath {
-            get {
-                return ((string)(this["WaybillsPath"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DownHistory")]
         public string HistoryPath {
             get {
@@ -649,15 +626,6 @@ namespace Inforoom.PriceProcessor.Properties {
         public string WCFServiceName {
             get {
                 return ((string)(this["WCFServiceName"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("DownWaybills")]
-        public string DownWaybillsPath {
-            get {
-                return ((string)(this["DownWaybillsPath"]));
             }
         }
         
@@ -804,6 +772,42 @@ namespace Inforoom.PriceProcessor.Properties {
         public global::System.Collections.Specialized.StringCollection SyncPriceCodes {
             get {
                 return ((global::System.Collections.Specialized.StringCollection)(this["SyncPriceCodes"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("FtpRoot")]
+        public string FTPOptBoxPath {
+            get {
+                return ((string)(this["FTPOptBoxPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("FtpRoot")]
+        public string WaybillForParsePath {
+            get {
+                return ((string)(this["WaybillForParsePath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("FTPOptBox")]
+        public string WaybillsPath {
+            get {
+                return ((string)(this["WaybillsPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DownWaybills")]
+        public string DownWaybillsPath {
+            get {
+                return ((string)(this["DownWaybillsPath"]));
             }
         }
     }

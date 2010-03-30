@@ -232,9 +232,6 @@
     <Setting Name="TempPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownTemp</Value>
     </Setting>
-    <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">FTPOptBox</Value>
-    </Setting>
     <Setting Name="HistoryPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownHistory</Value>
     </Setting>
@@ -249,9 +246,6 @@
     </Setting>
     <Setting Name="WCFServiceName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">RemotePriceProcessorService</Value>
-    </Setting>
-    <Setting Name="DownWaybillsPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">DownWaybills</Value>
     </Setting>
     <Setting Name="IMAPPort" Type="System.String" Scope="Application">
       <Value Profile="(Default)">143</Value>
@@ -304,6 +298,18 @@
   &lt;string&gt;4596&lt;/string&gt;
   &lt;string&gt;2554&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="FTPOptBoxPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">FtpRoot</Value>
+    </Setting>
+    <Setting Name="WaybillForParsePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">FtpRoot</Value>
+    </Setting>
+    <Setting Name="WaybillsPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">FTPOptBox</Value>
+    </Setting>
+    <Setting Name="DownWaybillsPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">DownWaybills</Value>
     </Setting>
   </Settings>
 </SettingsFile>
