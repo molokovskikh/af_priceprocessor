@@ -20,9 +20,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.ProducerCost = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
 				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
-				line.SupplierCost = position.Get("ЦенаОпт");
+				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
-				line.SetNds(position.Get("СтавкаНДС"));
+				line.Nds = (uint?) position.Get("СтавкаНДС");
+				line.SetSupplierCostByNds(line.Nds);
 
 				if (position.XPathSelectElement("ЖНВЛС") != null)
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
