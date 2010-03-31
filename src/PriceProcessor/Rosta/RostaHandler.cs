@@ -292,6 +292,8 @@ group by i.ClientCode;", connection);
 
 		private Plan GetNextPlannedUpdate()
 		{
+			if (_plans.Count == 0)
+				return null;
 			var minPlannedOn = _plans.Min(p => p.PlanedOn);
 			return _plans.Where(p => p.PlanedOn == minPlannedOn).FirstOrDefault();
 		}
