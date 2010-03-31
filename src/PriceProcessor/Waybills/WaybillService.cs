@@ -84,7 +84,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 			if (extention == ".dbf")
-				type = typeof (SiaParser);
+				type = DetectDbfParser(file);
 			else if (extention == ".sst")
 				type = typeof (UkonParser);
 			else if (extention == ".xml")
@@ -104,6 +104,15 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (constructor == null)
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
+		}
+
+		private static Type DetectDbfParser(string file)
+		{
+			if (MoronDbfParser.CheckFileFormat(file))
+				return typeof (MoronDbfParser);
+			if (SiaParser.CheckFileFormat(file))
+				return typeof (SiaParser);
+			throw new Exception(String.Format("Не удалось определить тип парсера для DBF формата. Файл {0}", file));
 		}
 	}
 

@@ -37,5 +37,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}).ToList();
 			return document;
 		}
+
+		public static bool CheckFileFormat(string file)
+		{
+			var data = Dbf.Load(file);
+			return data.Columns.Contains("CODE_TOVAR") &&
+				   data.Columns.Contains("NAME_TOVAR") &&
+				   data.Columns.Contains("PROIZ") &&
+				   data.Columns.Contains("COUNTRY") &&
+				   data.Columns.Contains("PR_PROIZ") &&
+				   data.Columns.Contains("PCT_NDS");
+		}
 	}
 }

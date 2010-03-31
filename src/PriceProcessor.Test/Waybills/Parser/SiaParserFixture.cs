@@ -51,5 +51,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[5].VitallyImportant, Is.False);
 		}
+
+		[Test]
+		public void Check_file_format()
+		{
+			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
+			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
+			Assert.IsFalse(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
+			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
+			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
+		}
 	}
 }
