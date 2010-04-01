@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (MoronDbfParser);
 			if (SiaParser.CheckFileFormat(file))
 				return typeof (SiaParser);
-			throw new Exception(String.Format("Не удалось определить тип парсера для DBF формата. Файл {0}", file));
+			throw new Exception("Не удалось определить тип парсера для DBF формата");
 		}
 	}
 
