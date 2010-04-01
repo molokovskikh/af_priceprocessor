@@ -286,9 +286,6 @@
     <Setting Name="IMAPUser" Type="System.String" Scope="Application">
       <Value Profile="(Default)">KvasovTest@analit.net</Value>
     </Setting>
-    <Setting Name="IMAPSourceFolder" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">TEST</Value>
-    </Setting>
     <Setting Name="IMAPPass" Type="System.String" Scope="Application">
       <Value Profile="(Default)">12345678</Value>
     </Setting>
@@ -310,6 +307,9 @@
     </Setting>
     <Setting Name="DownWaybillsPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">DownWaybills</Value>
+    </Setting>
+    <Setting Name="IMAPSourceFolder" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">INBOX</Value>
     </Setting>
   </Settings>
 </SettingsFile>

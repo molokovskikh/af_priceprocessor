@@ -1,6 +1,7 @@
 ﻿using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
+using System;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
@@ -23,6 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(227.4));
 			Assert.That(doc.Lines[0].Nds, Is.EqualTo(18));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("2010-02-05")));
 		}
 	}
 }

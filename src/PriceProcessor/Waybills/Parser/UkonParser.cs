@@ -47,6 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 				var header = reader.ReadLine().Split(';');
 				document.ProviderDocumentId = header[0];
+				document.DocumentDate = Convert.ToDateTime(header[1]);
 
 				line = reader.ReadLine();
 				while (IsCommentLine(line) && !IsBodyCaption(line))

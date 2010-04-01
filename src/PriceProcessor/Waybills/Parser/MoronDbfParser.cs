@@ -14,6 +14,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var data = Dbf.Load(file);
 
+			if (data.Rows.Count > 0)
+				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["DATAGOT"]);
 			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
 			{
 				document.ProviderDocumentId = Convert.ToString(r["NUMNAK"], CultureInfo.InvariantCulture);
@@ -27,13 +29,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierCost = Convert.ToDecimal(r["CENAPROD"], CultureInfo.InvariantCulture);
 				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACOPT"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["COUNT"]);
-				line.Period = Convert.ToDateTime(r["SROKGOD"]).ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("en-US"));
+				line.Period = Convert.ToDateTime(r["SROKGOD"]).ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("en-US"));				
 				line.Certificates = r["NUMBER"].ToString();
 				line.Nds = Convert.ToUInt32(r["PRCNDS"], CultureInfo.InvariantCulture);
 				line.VitallyImportant = Convert.ToUInt32(r["OBAS"]) == 1;
 				return line;
 			}).ToList();
-			return document;			
+			return document;
 		}
 
 		public static bool CheckFileFormat(string file)
@@ -43,7 +45,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				table.Columns.Contains("DATAGOT") && 
 				table.Columns.Contains("KODAPTEK") &&
 				table.Columns.Contains("KODPOSTAV") &&
-				table.Columns.Contains("CENAPROD");
+				table.Columns.Contains("CENAPROD") &&
+				table.Columns.Contains("PRCNDS");
 		}
 	}
 }

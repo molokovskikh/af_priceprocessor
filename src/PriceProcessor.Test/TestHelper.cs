@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
+using LumiSoft.Net.Mime;
 using MySql.Data.MySqlClient;
 using System.Configuration;
 using NUnit.Framework;
@@ -272,6 +273,43 @@ Content-Disposition: attachment;
 				var messageBytes = new UTF8Encoding().GetBytes(messageText);
 				StoreMessage(mailbox, password, folder, messageBytes);
 			}
+		}
+
+		public static Mime BuildMessageWithAttach(string to, string from, string fileName)
+		{
+			try
+			{
+				var _from = new AddressList();
+				_from.Parse(from);
+				var responseMime = new Mime();
+				responseMime.MainEntity.From = _from;
+				var toList = new AddressList { new MailboxAddress(to) };
+				responseMime.MainEntity.To = toList;
+				responseMime.MainEntity.Subject = "[Debug] Test waybill";
+				responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+
+				var testEntity = responseMime.MainEntity.ChildEntities.Add();
+				testEntity.ContentType = MediaType_enum.Text_plain;
+				testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+				testEntity.DataText = "";
+
+				var attachEntity = responseMime.MainEntity.ChildEntities.Add();
+				attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+				attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+				attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+				attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
+
+				using (var fileStream = File.OpenRead(fileName))
+				{
+					var fileBytes = new byte[fileStream.Length];
+					fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
+					attachEntity.Data = fileBytes;					
+				}
+				return responseMime;
+			}
+			catch
+			{ }
+			return null;
 		}
 
 		public static void StoreMessage(string mailbox, string password, string folder, byte[] messageBytes)

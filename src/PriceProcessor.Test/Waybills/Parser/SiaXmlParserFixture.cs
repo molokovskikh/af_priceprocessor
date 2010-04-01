@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Waybills;
+﻿using System;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 
@@ -22,6 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			parser.Parse(@"..\..\Data\Waybills\1039428.xml", document);
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р-1039428"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12.03.2010")));
 			Assert.That(document.Lines.Count, Is.EqualTo(5));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Вазилип 10мг Таб.П/плен.об  Х28"));
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("КРКА-РУС/KRKA d.d."));
@@ -32,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].VitallyImportant, Is.True);
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
-			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д50494"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д50494"));			
 		}
 
 		[Test]
@@ -40,6 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			parser.Parse(@"..\..\Data\Waybills\3633567_0_17202011.xml", document);
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.03.2010")));
 		}
 
 		[Test]

@@ -30,6 +30,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[5].VitallyImportant, Is.False);
 			Assert.That(document.Lines[5].Nds.Value, Is.EqualTo(18));
 			Assert.That(document.Lines[5].Certificates, Is.EqualTo("РОСС.RU.АИ11.В00697"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("26/03/2010")));
 		}
 
 		[Test]
@@ -39,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(MoronDbfParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
 			Assert.IsTrue(MoronDbfParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
 			Assert.IsFalse(MoronDbfParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsFalse(MoronDbfParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));			
+			Assert.IsFalse(MoronDbfParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
 		}
 	}
 }

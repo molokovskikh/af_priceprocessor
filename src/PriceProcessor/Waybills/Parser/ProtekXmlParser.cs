@@ -10,6 +10,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var xdocument = XDocument.Load(file);
 			document.ProviderDocumentId = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Номер").Value;
+			document.DocumentDate = Convert.ToDateTime(xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Дата").Value);
 			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар"))
 			{
 				var line = document.NewLine();
@@ -20,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierCost = element.Get("ЦенаЗаЕдиницу");
 				line.Quantity = Convert.ToUInt32(element.XPathSelectElement("Количество").Value);
 				line.VitallyImportant = Convert.ToInt32(element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_VITAL_MED']/Значение").Value) == 1;
-				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));
+				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));				
 				document.Lines.Add(line);
 			}
 			return document;

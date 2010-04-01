@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Waybills;
+﻿using System;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 
@@ -22,6 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д95450"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 		}
 
 		[Test]
@@ -38,7 +40,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ10.Д50325"));
 			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
-			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(4.71));			
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(4.71));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("24.03.10")));
 		}
 
 		[Test]
@@ -49,6 +52,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			parser.Parse(@"..\..\Data\Waybills\8916.dbf", doc);
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01/02/2008")));
 			Assert.That(doc.Lines[5].VitallyImportant, Is.False);
 		}
 

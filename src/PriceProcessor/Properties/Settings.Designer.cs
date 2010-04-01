@@ -748,15 +748,6 @@ namespace Inforoom.PriceProcessor.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("TEST")]
-        public string IMAPSourceFolder {
-            get {
-                return ((string)(this["IMAPSourceFolder"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("12345678")]
         public string IMAPPass {
             get {
@@ -808,6 +799,15 @@ namespace Inforoom.PriceProcessor.Properties {
         public string DownWaybillsPath {
             get {
                 return ((string)(this["DownWaybillsPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("INBOX")]
+        public string IMAPSourceFolder {
+            get {
+                return ((string)(this["IMAPSourceFolder"]));
             }
         }
     }
