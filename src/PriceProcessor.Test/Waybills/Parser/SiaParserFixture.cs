@@ -23,6 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д95450"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 		}
 
