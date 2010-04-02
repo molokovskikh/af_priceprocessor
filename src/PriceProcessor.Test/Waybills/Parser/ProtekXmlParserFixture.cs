@@ -24,6 +24,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(227.4));
 			Assert.That(doc.Lines[0].Nds, Is.EqualTo(18));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(202.13));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("535353"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("2010-02-05")));
 		}
 	}

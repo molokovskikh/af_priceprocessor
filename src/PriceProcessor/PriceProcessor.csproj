@@ -200,6 +200,7 @@
     </Compile>
     <Compile Include="Rosta\RostaDownloader.cs" />
     <Compile Include="UueHelper.cs" />
+    <Compile Include="Waybills\Parser\GenezisDbfParser.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\ProtekParser.cs" />

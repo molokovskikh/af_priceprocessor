@@ -34,7 +34,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].VitallyImportant, Is.True);
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
-			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д50494"));			
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д50494"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("2610709"));
 		}
 
 		[Test]

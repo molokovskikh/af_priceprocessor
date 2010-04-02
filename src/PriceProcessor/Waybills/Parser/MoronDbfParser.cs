@@ -31,6 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Quantity = Convert.ToUInt32(r["COUNT"]);
 				line.Period = Convert.ToDateTime(r["SROKGOD"]).ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("en-US"));				
 				line.Certificates = r["NUMBER"].ToString();
+				line.SerialNumber = r["SERIJ"].ToString();
 				line.Nds = Convert.ToUInt32(r["PRCNDS"], CultureInfo.InvariantCulture);
 				line.VitallyImportant = Convert.ToUInt32(r["OBAS"]) == 1;
 				return line;

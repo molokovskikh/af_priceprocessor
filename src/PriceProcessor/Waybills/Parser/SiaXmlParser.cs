@@ -25,6 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
+				line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;
 				line.Nds = (uint?) position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
 

@@ -21,6 +21,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Code = element.XPathSelectElement("Ид").Value;
 				line.Country = element.XPathSelectElement("Страна").Value;
 				line.SupplierCost = element.Get("ЦенаЗаЕдиницу");
+				line.ProducerCost = element.Get("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_PRDPRCWONDS']/Значение");
+				var serialNumber = element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_SERIA']/Значение").Value;
+				if (serialNumber != null)
+					line.SerialNumber = serialNumber.Split('^')[0];
 				line.Quantity = Convert.ToUInt32(element.XPathSelectElement("Количество").Value);
 				line.VitallyImportant = Convert.ToInt32(element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_VITAL_MED']/Значение").Value) == 1;
 				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));				

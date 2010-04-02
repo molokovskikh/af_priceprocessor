@@ -34,6 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
 					line.RegistryCost = Convert.ToDecimal(r["OTHER"], CultureInfo.InvariantCulture);
 				line.Certificates = r["DOCUMENT"].ToString();
+				line.SerialNumber = r["SERIA"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;

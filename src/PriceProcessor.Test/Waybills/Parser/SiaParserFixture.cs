@@ -25,6 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д95450"));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("70508"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 		}
 
@@ -53,6 +54,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var doc = new Document();
 			parser.Parse(@"..\..\Data\Waybills\8916.dbf", doc);
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("R7036"));
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01/02/2008")));
 			Assert.That(doc.Lines[5].VitallyImportant, Is.False);
@@ -71,7 +73,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_without_document_date()
 		{
-			var startDate = DateTime.Now;
 			var parser = new SiaParser();
 			var document = new Document();
 			parser.Parse(@"..\..\Data\Waybills\without_date.dbf", document);

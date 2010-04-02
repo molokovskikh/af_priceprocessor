@@ -235,6 +235,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public bool? VitallyImportant { get; set; }
 
+		[Property]
+		public string SerialNumber { get; set; }
+
 		public void SetNds(decimal nds)
 		{
 			SupplierCostWithoutNDS = null;
