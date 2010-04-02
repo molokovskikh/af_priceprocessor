@@ -160,7 +160,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string ProviderDocumentId { get; set; }
 
 		[Property]
-		public DateTime DocumentDate { get; set; }
+		public DateTime? DocumentDate { get; set; }
 
 		[BelongsTo("DownloadId")]
 		public DocumentLog Log { get; set; }
@@ -330,6 +330,8 @@ namespace Inforoom.PriceProcessor.Waybills
 						return;
 					var document = new Document(log);
 					parser.Parse(file, document);
+					if (!document.DocumentDate.HasValue)
+						document.DocumentDate = DateTime.Now;
 					using (new TransactionScope())
 						document.Save();
 				}

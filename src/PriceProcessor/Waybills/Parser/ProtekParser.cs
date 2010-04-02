@@ -19,7 +19,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				reader.ReadLine();
 				var header = reader.ReadLine();
 				var headerParts = header.Split(separator);
-				document.DocumentDate = Convert.ToDateTime(headerParts[2]);
+				if (!String.IsNullOrEmpty(headerParts[2]))
+                    document.DocumentDate = Convert.ToDateTime(headerParts[2]);
 				reader.ReadLine();
 				string line;
 				while ((line = reader.ReadLine()) != null)

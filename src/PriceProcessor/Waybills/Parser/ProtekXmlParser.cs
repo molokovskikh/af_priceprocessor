@@ -10,7 +10,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var xdocument = XDocument.Load(file);
 			document.ProviderDocumentId = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Номер").Value;
-			document.DocumentDate = Convert.ToDateTime(xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Дата").Value);
+			var docDate = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Дата").Value;
+			if (!String.IsNullOrEmpty(docDate))
+                document.DocumentDate = Convert.ToDateTime(docDate);
 			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар"))
 			{
 				var line = document.NewLine();

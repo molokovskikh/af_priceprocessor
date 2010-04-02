@@ -1,4 +1,5 @@
 ﻿using System;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -65,6 +66,18 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
 			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
 			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
+		}
+
+		[Test]
+		public void Parse_without_document_date()
+		{
+			var startDate = DateTime.Now;
+			var parser = new SiaParser();
+			var document = new Document();
+			parser.Parse(@"..\..\Data\Waybills\without_date.dbf", document);
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			Assert.That(document.DocumentDate.HasValue, Is.False);
+			Assert.That(document.DocumentDate, Is.Null);
 		}
 	}
 }

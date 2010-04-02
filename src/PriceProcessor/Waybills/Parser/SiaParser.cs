@@ -19,7 +19,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NUM_DOC"].ToString();
-				document.DocumentDate = Convert.ToDateTime(r["DATE_DOC"]);
+				if (!Convert.IsDBNull(r["DATE_DOC"]))
+					document.DocumentDate = Convert.ToDateTime(r["DATE_DOC"]);
 				var line = document.NewLine();
 				line.Code = r["CODE_TOVAR"].ToString();				
 				line.Product = r["NAME_TOVAR"].ToString();

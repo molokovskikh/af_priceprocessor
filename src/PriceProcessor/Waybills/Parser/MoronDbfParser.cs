@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var data = Dbf.Load(file);
 
-			if (data.Rows.Count > 0)
+			if (data.Rows.Count > 0 && !Convert.IsDBNull(data.Rows[0]["DATAGOT"]))
 				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["DATAGOT"]);
 			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
 			{
