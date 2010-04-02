@@ -79,5 +79,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.DocumentDate.HasValue, Is.False);
 			Assert.That(document.DocumentDate, Is.Null);
 		}
+
+		[Test]
+		public void Parse_without_registry_cost()
+		{
+			var parser = new SiaParser();
+			var document = new Document();
+			parser.Parse(@"..\..\Data\Waybills\3655268_Катрен(K_59329).dbf", document);
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			Assert.That(document.Lines[0].RegistryCost, Is.Null);
+		}
 	}
 }

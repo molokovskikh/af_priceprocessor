@@ -31,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
-				if (r["OTHER"] != DBNull.Value)
+				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
 					line.RegistryCost = Convert.ToDecimal(r["OTHER"], CultureInfo.InvariantCulture);
 				line.Certificates = r["DOCUMENT"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
