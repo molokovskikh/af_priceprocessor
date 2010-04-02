@@ -9,12 +9,30 @@ namespace Inforoom.PriceProcessor
 	{
 		private static ILog _log = LogManager.GetLogger(typeof (FileHelper));
 
+		public static bool CheckMask(string shortFileName, string mask)
+		{
+			Func<string, string, bool> checkAction = (fileName, fileMask) =>
+			{
+				return (WildcardsHelper.IsWildcards(fileMask) && WildcardsHelper.Matched(fileMask, fileName)) ||
+					(String.Compare(fileName, fileMask, true) == 0) ||
+					fileName.Equals(fileMask, StringComparison.OrdinalIgnoreCase);
+			};
+
+			var matched = checkAction(shortFileName, mask);
+			if (!matched)
+				matched = checkAction(shortFileName.Replace('?', '_'), mask);
+			return matched;
+		}
+
 		public static string FindFromArhive(string TempDir, string ExtrMask)
 		{
-			var ExtrFiles = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, ExtrMask, SearchOption.AllDirectories);
-			if (ExtrFiles.Length > 0)
-				return ExtrFiles[0];
-			return String.Empty;
+			var files = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+			foreach (var file in files)
+			{
+				if (CheckMask(Path.GetFileName(file), ExtrMask))
+					return file;
+			}
+			return string.Empty;
 		}
 
 		public static void ExtractFromArhive(string ArchName, string TempDir)

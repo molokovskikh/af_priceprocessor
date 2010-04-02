@@ -178,6 +178,50 @@ WHERE RowId = ?downlogId
 			StopWcfPriceProcessor();
 		}
 
+		[Test, Description("Тест для перепосылки прайса, присланного по email")]
+		public void Resend_eml_price()
+		{
+			var archiveFileName = @"price.zip";
+			var externalFileName = @"price.txt";
+			var password = "123";
+			var emailFrom = "KvasovTest@analit.net";
+			var emailTo = "KvasovTest@analit.net";
+			var priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName, externalFileName, password);
+			Setup.Initialize("DB");
+
+			var downloadLog = new PriceDownloadLog
+			{
+				Addition = String.Empty,
+				ArchFileName = archiveFileName,
+				ExtrFileName = externalFileName,
+				Host = Environment.MachineName,
+				LogTime = DateTime.Now,
+				PriceItemId = priceItem.Id,
+				ResultCode = 2
+			};
+			downloadLog.Create();
+			downloadLog.Save();
+			
+			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
+			{
+				var message = TestHelper.BuildMessageWithAttach(emailTo, emailFrom, Path.Combine(Path.GetFullPath(@"..\..\Data\"), archiveFileName));
+				var bytes = message.ToByteData();
+				sw.Write(bytes, 0, bytes.Length);
+			}
+			StopWcfPriceProcessor();
+			StartWcfPriceProcessor();
+            WcfCallResendPrice(downloadLog.Id);
+
+            // Смотрим, есть ли только что проведенный priceItemId в очереди на формализацию
+			var priceInQuery = false;
+			foreach (var item in PriceItemList.list)
+                if (item.PriceItemId == priceItem.Id)
+                    priceInQuery = true;
+
+            Assert.IsTrue(priceInQuery, "Прайса нет в очереди на формализацию");
+			StopWcfPriceProcessor();
+		}
+
 		private void WcfCallResendPrice(ulong downlogId)
 		{
 			const string _strProtocol = @"net.tcp://";

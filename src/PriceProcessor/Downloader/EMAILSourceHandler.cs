@@ -72,7 +72,6 @@ namespace Inforoom.Downloader
 						if (items == null || items.Length == 0)
 							continue;
 
-
 						foreach (var item in items)
 						{
 							IMAP_FetchItem[] OneItem = null;
@@ -251,9 +250,9 @@ namespace Inforoom.Downloader
 						if ((drS[SourcesTableColumns.colPriceMask] is String) && 
 							!String.IsNullOrEmpty(drS[SourcesTableColumns.colPriceMask].ToString()))
 						{
-							if ((WildcardsHelper.IsWildcards((string)drS[SourcesTableColumns.colPriceMask]) && 
-								WildcardsHelper.Matched((string)drS[SourcesTableColumns.colPriceMask], ShortFileName)) ||
-								(String.Compare(ShortFileName, (string)drS[SourcesTableColumns.colPriceMask], true) == 0))
+							var priceMask = (string) drS[SourcesTableColumns.colPriceMask];
+							var priceMaskIsMatched = FileHelper.CheckMask(ShortFileName, priceMask);
+							if (priceMaskIsMatched)
 							{
 								SetCurrentPriceCode(drS);
 

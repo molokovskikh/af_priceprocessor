@@ -94,8 +94,9 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 							filename = entity.GetFilename();
 							if (String.IsNullOrEmpty(filename))
 								continue;
-							if (!filename.Equals(archFileName, StringComparison.OrdinalIgnoreCase) &&
-								!filename.Equals(externalFileName, StringComparison.OrdinalIgnoreCase))
+
+							if (!FileHelper.CheckMask(filename, archFileName) &&
+								!FileHelper.CheckMask(filename, externalFileName))
 								continue;
 							entity.DataToFile(filename);
 							break;
@@ -121,11 +122,8 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 					Directory.Delete(TempDirectory, true);
 				Directory.CreateDirectory(TempDirectory);
 				ArchiveHelper.Extract(filename, externalFileName, TempDirectory, drFocused["ArchivePassword"].ToString());
-				var files = Directory.GetFiles(TempDirectory, externalFileName, SearchOption.AllDirectories);
-				string path = String.Empty;
-				if (files.Length > 0)
-					sourceFile = files[0];
-				else
+				sourceFile = FileHelper.FindFromArhive(TempDirectory, externalFileName);
+				if (String.IsNullOrEmpty(sourceFile))
 				{
 					string errorMessage = String.Format(
 						"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
@@ -174,21 +172,14 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
 		}
 
-		public void RetransPrice(/*uint*/WcfCallParameter priceItemId)
+		public void RetransPrice(WcfCallParameter priceItemId)
 		{
 			RetransPrice(priceItemId, Settings.Default.BasePath);		
 		}
 
-		private void RetransPrice(WcfCallParameter paramPriceItemId/*uint priceItemId*/, string sourceDir)
+		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir)
 		{
 			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
-			var logInformation = paramPriceItemId.LogInformation;
-			ILog logger = null;
-			if (logInformation != null)
-				logger = log4net.LogManager.GetLogger(GetType());
-			if (logger != null)
-				logger.InfoFormat("Попытка переподложить прайс.\nКомпьютер: {0}\nПользователь: {1}\n",
-				                  logInformation.ComputerName, logInformation.UserName);
 
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
@@ -199,14 +190,8 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
-			if (logger != null)
-				logger.InfoFormat("PriceItemId = {0}. Расширение в базе для файла: {1}", priceItemId, extention);
-
 			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
 			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
-
-			if (logger != null)
-				logger.InfoFormat("\nОткуда: {0}\nКуда: {1}", sourceFile, destinationFile);
 
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
@@ -214,18 +199,13 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 
-			if (File.Exists(sourceFile))
-			{
-				File.Move(sourceFile, destinationFile);
-
-				if (logger != null)
-					logger.InfoFormat("Прайс-лист успешно переподложен");
-			}
-			else
-				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));		
+			if (!File.Exists(sourceFile))
+				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
+				
+			File.Move(sourceFile, destinationFile);
 		}
 
-		public void RetransErrorPrice(/*uint priceItemId*/WcfCallParameter priceItemId)
+		public void RetransErrorPrice(WcfCallParameter priceItemId)
 		{
             RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
 		}

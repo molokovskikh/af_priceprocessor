@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
 using LumiSoft.Net;
 using System.Threading;
+ using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -112,8 +113,9 @@ namespace Inforoom.Downloader
 
 					//shortFileName = entry.Name;
 					shortFileName = entry["Name"].ToString();
-					if ((WildcardsHelper.IsWildcards(source.PriceMask) && WildcardsHelper.Matched(source.PriceMask, shortFileName)) ||
-						(String.Compare(shortFileName, source.PriceMask, true) == 0))
+
+					var priceMaskIsMatched = PriceProcessor.FileHelper.CheckMask(shortFileName, source.PriceMask);
+					if (priceMaskIsMatched)
 					{
 						//var fileLastWriteTime = entry.Modified;
 						var fileLastWriteTime = Convert.ToDateTime(entry["Date"]);
