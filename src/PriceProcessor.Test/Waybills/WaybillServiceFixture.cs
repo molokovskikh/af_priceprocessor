@@ -18,7 +18,6 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Parse_waybill()
 		{
-			BasicConfigurator.Configure();
 			var file = "1008fo.pd";
 			var client = TestOldClient.CreateTestClient();
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());

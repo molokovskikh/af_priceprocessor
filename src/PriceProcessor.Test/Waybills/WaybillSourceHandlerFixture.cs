@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP;
 using NUnit.Framework;
 using Inforoom.Downloader;

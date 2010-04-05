@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
+using Common.Tools.Calendar;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
@@ -117,7 +118,7 @@ namespace PriceProcessor.Test
 		{
 			var handler = new WaybillSourceHandler(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.StartWork();
-			Thread.Sleep(5000);
+			Thread.Sleep(10.Second());
 			handler.StopWork();
 		}
 

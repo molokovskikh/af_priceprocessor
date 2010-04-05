@@ -1,5 +1,4 @@
-﻿using LumiSoft.Net.Mime;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace PriceProcessor.Test
 {
@@ -8,8 +7,6 @@ namespace PriceProcessor.Test
 	{
 		[Test]
 		public void shoot_it()
-		{
-			var mime = Mime.Parse(@"C:\Unparse.eml");
-		}
+		{}
 	}
 }
