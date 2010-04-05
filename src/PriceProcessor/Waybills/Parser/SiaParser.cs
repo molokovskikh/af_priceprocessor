@@ -46,13 +46,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
-				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
+				line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
-					line.RegistryCost = Convert.ToDecimal(r["OTHER"], CultureInfo.InvariantCulture);
-				line.Certificates = r["DOCUMENT"].ToString();
-				line.SerialNumber = r["SERIA"].ToString();
+					line.RegistryCost = Convert.ToDecimal(r["OTHER"], CultureInfo.InvariantCulture);				
+				line.Certificates = Convert.IsDBNull(r["DOCUMENT"]) ? null : r["DOCUMENT"].ToString();
+                line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;

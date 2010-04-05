@@ -152,6 +152,7 @@
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\GenezisDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaParserFixture.cs" />

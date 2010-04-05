@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Inforoom.Common;
 using NUnit.Framework;
 using System.IO;
 using System.ServiceModel;
@@ -10,6 +11,7 @@ using System.Net.Security;
 using RemotePriceProcessor;
 using MySql.Data.MySqlClient;
 using Test.Support;
+using System.Collections.Generic;
 
 namespace PriceProcessor.Test
 {
@@ -38,6 +40,12 @@ namespace PriceProcessor.Test
 		private static string[] ExtrFileNames = new string[5] { "price.txt", "price-15.09.2009.xls", "prs.txt", "price4.xls", "price.txt" };
 
 		private static string[] ArchivePasswords = new string[5] { "123", "", "", "", "rar1" };
+
+		[SetUp]
+		public void SetUp()
+		{
+			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";			
+		}
 
 		private void PrepareDirectories()
 		{
@@ -136,7 +144,7 @@ WHERE Id = ?PriceItemId
 
 		[Test, Description("Тест для перепосылки прайса")]
 		public void TestResendPrice()
-		{
+		{			
 			PrepareDirectories();
 			PrepareDownlogsTable();
 			PrepareSourcesTable();
@@ -187,7 +195,7 @@ WHERE RowId = ?downlogId
 			var emailFrom = "KvasovTest@analit.net";
 			var emailTo = "KvasovTest@analit.net";
 			var priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName, externalFileName, password);
-			Setup.Initialize("DB");
+			Setup.Initialize("DB");			
 
 			var downloadLog = new PriceDownloadLog
 			{
@@ -204,10 +212,11 @@ WHERE RowId = ?downlogId
 			
 			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
 			{
-				var message = TestHelper.BuildMessageWithAttach(emailTo, emailFrom, Path.Combine(Path.GetFullPath(@"..\..\Data\"), archiveFileName));
+				var attachments = new List<string> {Path.Combine(Path.GetFullPath(@"..\..\Data\"), archiveFileName)};
+				var message = TestHelper.BuildMessageWithAttachments(emailTo, emailFrom, attachments.ToArray());
 				var bytes = message.ToByteData();
 				sw.Write(bytes, 0, bytes.Length);
-			}
+			}			
 			StopWcfPriceProcessor();
 			StartWcfPriceProcessor();
             WcfCallResendPrice(downloadLog.Id);

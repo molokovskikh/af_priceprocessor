@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -42,6 +43,10 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (UkonDbfParser);
 			if (SiaParser.CheckFileFormat(file))
 				return typeof (SiaParser);
+			if (GenezisDbfParser.CheckFileFormat(file))
+				return typeof (GenezisDbfParser);
+			if (AptekaHoldingParser.CheckFileFormat(file))
+				return typeof (AptekaHoldingParser);
 			throw new Exception("Ќе удалось определить тип парсера дл€ DBF формата");
 		}
 	}

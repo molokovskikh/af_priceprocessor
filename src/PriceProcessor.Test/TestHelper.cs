@@ -275,7 +275,7 @@ Content-Disposition: attachment;
 			}
 		}
 
-		public static Mime BuildMessageWithAttach(string to, string from, string fileName)
+		public static Mime BuildMessageWithAttachments(string to, string from, string[] files)
 		{
 			try
 			{
@@ -285,25 +285,28 @@ Content-Disposition: attachment;
 				responseMime.MainEntity.From = _from;
 				var toList = new AddressList { new MailboxAddress(to) };
 				responseMime.MainEntity.To = toList;
-				responseMime.MainEntity.Subject = "[Debug] Test waybill";
+				responseMime.MainEntity.Subject = "[Debug message]";
 				responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
 
-				var testEntity = responseMime.MainEntity.ChildEntities.Add();
-				testEntity.ContentType = MediaType_enum.Text_plain;
-				testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
-				testEntity.DataText = "";
-
-				var attachEntity = responseMime.MainEntity.ChildEntities.Add();
-				attachEntity.ContentType = MediaType_enum.Application_octet_stream;
-				attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
-				attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
-				attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
-
-				using (var fileStream = File.OpenRead(fileName))
+				foreach (var fileName in files)
 				{
-					var fileBytes = new byte[fileStream.Length];
-					fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
-					attachEntity.Data = fileBytes;					
+					var testEntity = responseMime.MainEntity.ChildEntities.Add();
+					testEntity.ContentType = MediaType_enum.Text_plain;
+					testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+					testEntity.DataText = "";
+
+					var attachEntity = responseMime.MainEntity.ChildEntities.Add();
+					attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+					attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+					attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+					attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
+
+					using (var fileStream = File.OpenRead(fileName))
+					{
+						var fileBytes = new byte[fileStream.Length];
+						fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
+						attachEntity.Data = fileBytes;
+					}
 				}
 				return responseMime;
 			}
@@ -376,6 +379,8 @@ Content-Disposition: attachment;
 				Directory.Delete(Settings.Default.HistoryPath, true);
 			if (Directory.Exists(Settings.Default.TempPath))
 				Directory.Delete(Settings.Default.TempPath, true);
+			if (Directory.Exists(Settings.Default.FTPOptBoxPath))
+				Directory.Delete(Settings.Default.FTPOptBoxPath, true);
 			Program.InitDirs(new[]
 				         	{
 				         		Settings.Default.BasePath,

@@ -12,6 +12,7 @@ using System.IO;
 using ExecuteTemplate;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
+using Common.Tools;
 
 
 namespace Inforoom.Downloader
@@ -457,25 +458,35 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 
 				var source = drLS.Single();
 				var attachments = m.GetValidAttachements();
+				var savedFiles = new List<string>(attachments.Count());
 				foreach (var entity in attachments)
 				{
 					SaveAttachement(entity);
 					var correctArchive = CheckFile();
 					matched = true;
-					if (correctArchive)
+					if (!correctArchive)
 					{
-						ProcessWaybillFile(CurrFileName, source);
+						WriteLog(_currentDocumentType.TypeID,
+							Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]),
+							_aptekaClientCode, Path.GetFileName(CurrFileName),
+							"Не удалось распаковать файл", currentUID);
+						Cleanup();
+						continue;
+					}
+					if (ArchiveHelper.IsArchive(CurrFileName))
+					{
+						savedFiles.AddRange(Directory.GetFiles(CurrFileName + ExtrDirSuffix +
+							Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories));
 					}
 					else
-					{
-						WriteLog(_currentDocumentType.TypeID, 
-							Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]), 
-							_aptekaClientCode, Path.GetFileName(CurrFileName), 
-							"Не удалось распаковать файл", currentUID);
-					}
-					Cleanup();
+						savedFiles.Add(CurrFileName);
 				}
+				var documents = new List<string>();
+				documents = MultifileDocument.Merge(savedFiles);
 
+				foreach (var file in documents)
+					ProcessWaybillFile(file, source);
+				Cleanup();
 				source.Delete();
 				dtSources.AcceptChanges();
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
@@ -543,7 +554,6 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 				_aptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
 			var OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 			var OutFileName = String.Empty;
-
 			do
 			{
 				try
@@ -559,28 +569,24 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					cmdInsert.Transaction = transaction;
 
 					var documentLogId = cmdInsert.ExecuteScalar();
-					OutFileName = OutFileNameTemplate + documentLogId + "_"
+					
+					var formatDestNameString = OutFileNameTemplate + documentLogId + "_"
 						+ drCurrent[WaybillSourcesTable.colShortName]
-						+ "(" + Path.GetFileNameWithoutExtension(FileName) + ")"
+						+ "({0})"
 						+ Path.GetExtension(FileName);
 
-					OutFileName = PriceProcessor.FileHelper.NormalizeFileName(OutFileName);
+					OutFileName = PriceProcessor.FileHelper.NormalizeFileName(
+						String.Format(formatDestNameString, Path.GetFileNameWithoutExtension(FileName)));
 
-					if (File.Exists(OutFileName))
-						try
-						{
-							File.Delete(OutFileName);
-						}
-						catch { }
-
-					File.Move(FileName, OutFileName);
+					WaybillHelper.CopyToClientDir(FileName, formatDestNameString);
 
 					transaction.Commit();
-
 					Quit = true;
 					// Сохраняем накладную в локальной директории
 					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
 					WaybillService.ParserDocument(Convert.ToUInt32(documentLogId), OutFileName);
+					if (MultifileDocument.IsMergedDocument(OutFileName))
+						File.Delete(OutFileName);
 				}
 				catch (MySqlException MySQLErr)
 				{

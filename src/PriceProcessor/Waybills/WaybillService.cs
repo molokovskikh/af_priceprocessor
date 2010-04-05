@@ -9,6 +9,7 @@ using Castle.ActiveRecord.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
+using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
 
 namespace Inforoom.PriceProcessor.Waybills
 {

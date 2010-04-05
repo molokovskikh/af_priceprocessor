@@ -15,19 +15,5 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var parser = detector.DetectParser(@"..\..\Data\Waybills\8041496-001.xml");
 			Assert.That(parser, Is.InstanceOf<ProtekXmlParser>());
 		}
-
-		[Test]
-		public void Test()
-		{
-			try
-			{
-				var date = Convert.ToDateTime("");
-				Assert.IsTrue(date.Equals(DateTime.MinValue));
-			}
-			catch (Exception)
-			{
-				throw;
-			}
-		}
 	}
 }
