@@ -2,20 +2,38 @@
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
+	public class UkonDbfParser : SiaParser
+	{
+		public UkonDbfParser()
+		{
+			Encoding = Encoding.GetEncoding(1251);
+		}
+
+		public bool IsInCorrectFileFormat(string file)
+		{
+			return CheckFileFormat(file) && Dbf.Load(file).Columns.Contains("ISZNVP");
+		}
+	}
+
 	public class SiaParser : IDocumentParser
 	{
+		protected Encoding Encoding = Encoding.GetEncoding(866);
+
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file);
+			var data = Dbf.Load(file, Encoding);
 			string vitallyImportantColumn = null;
 			if (data.Columns.Contains("ZHNVLS"))
 				vitallyImportantColumn = "ZHNVLS";
 			else if (data.Columns.Contains("ISZHVP"))
 				vitallyImportantColumn = "ISZHVP";
+			else if (data.Columns.Contains("ISZNVP"))
+				vitallyImportantColumn = "ISZNVP";
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NUM_DOC"].ToString();

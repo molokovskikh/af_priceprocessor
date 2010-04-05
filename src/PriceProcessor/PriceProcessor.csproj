@@ -208,6 +208,7 @@
     <Compile Include="Waybills\Parser\SiaParser.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
+    <Compile Include="Waybills\WaybillFormatDetector.cs" />
     <Compile Include="Waybills\WaybillService.cs" />
     <Compile Include="WCFPriceProcessorService.cs" />
   </ItemGroup>
