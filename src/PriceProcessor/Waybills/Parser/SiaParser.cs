@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			Encoding = Encoding.GetEncoding(1251);
 		}
 
-		public bool IsInCorrectFileFormat(string file)
+		public static bool IsInCorrectFileFormat(string file)
 		{
 			return CheckFileFormat(file) && Dbf.Load(file).Columns.Contains("ISZNVP");
 		}

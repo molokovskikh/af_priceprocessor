@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			if (MoronDbfParser.CheckFileFormat(file))
 				return typeof (MoronDbfParser);
-			if (UkonDbfParser.CheckFileFormat(file))
+			if (UkonDbfParser.IsInCorrectFileFormat(file))
 				return typeof (UkonDbfParser);
 			if (SiaParser.CheckFileFormat(file))
 				return typeof (SiaParser);
