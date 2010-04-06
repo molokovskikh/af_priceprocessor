@@ -185,5 +185,20 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
                 SearchOption.AllDirectories);
 			Assert.That(singleFile.Count(), Is.EqualTo(1));			
 		}
+
+		[Test]
+		public void Parse_with_more_then_one_common_column()
+		{
+			var files = new List<string> {
+                @"..\..\Data\Waybills\multifile\h1766399.dbf",
+                @"..\..\Data\Waybills\multifile\b1766399.dbf"
+			};
+			SetUp(files);
+			Process_waybills();
+
+			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
+			Assert.That(savedFiles.Count(), Is.EqualTo(2));
+		}
 	}
 }

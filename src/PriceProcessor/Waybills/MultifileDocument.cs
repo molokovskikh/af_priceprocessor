@@ -102,39 +102,47 @@ namespace Inforoom.PriceProcessor.Waybills
 			return mergedFileName;
 		}
 
-		public static List<string> Merge(IList<string> extractedFiles)
+		public static List<string> Merge(List<string> extractedFiles)
 		{
-			var resultList = new List<string>();
-			for (var i = 0; i < extractedFiles.Count; i++)
+			try
 			{
-				var headerFile = String.Empty;
-				var bodyFile = String.Empty;
-				var file = extractedFiles[i];
-				if (IsHeaderFile(file))
+				var resultList = new List<string>();
+				for (var i = 0; i < extractedFiles.Count; i++)
 				{
-					headerFile = file;
-					bodyFile = GetSecondFile(headerFile, extractedFiles);
+					var headerFile = String.Empty;
+					var bodyFile = String.Empty;
+					var file = extractedFiles[i];
+					if (IsHeaderFile(file))
+					{
+						headerFile = file;
+						bodyFile = GetSecondFile(headerFile, extractedFiles);
+					}
+					if (IsBodyFile(file))
+					{
+						bodyFile = file;
+						headerFile = GetSecondFile(bodyFile, extractedFiles);
+					}
+					if (String.IsNullOrEmpty(headerFile) && String.IsNullOrEmpty(bodyFile))
+					{
+						resultList.Add(file);
+						continue;
+					}
+					if (!String.IsNullOrEmpty(headerFile) && !String.IsNullOrEmpty(bodyFile))
+					{
+						var mergedFile = MergeFiles(headerFile, bodyFile);
+						resultList.Add(mergedFile);
+						i--;
+					}
+					extractedFiles.Remove(headerFile);
+					extractedFiles.Remove(bodyFile);
 				}
-				if (IsBodyFile(file))
-				{
-					bodyFile = file;
-					headerFile = GetSecondFile(bodyFile, extractedFiles);
-				}
-				if (String.IsNullOrEmpty(headerFile) && String.IsNullOrEmpty(bodyFile))
-				{
-					resultList.Add(file);
-					continue;
-				}
-				if (!String.IsNullOrEmpty(headerFile) && !String.IsNullOrEmpty(bodyFile))
-				{
-					var mergedFile = MergeFiles(headerFile, bodyFile);
-					resultList.Add(mergedFile);
-					i--;
-				}
-				extractedFiles.Remove(headerFile);
-				extractedFiles.Remove(bodyFile);				
+				return resultList;
 			}
-			return resultList;
+			catch(Exception ex)
+			{
+				Mailer.SendFromServiceToService("Ошибка при слиянии многофайловых накладных", ex.ToString());
+				return extractedFiles;
+			}
 		}
 	}
 }
