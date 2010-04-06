@@ -28,12 +28,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var data = Dbf.Load(file, Encoding);
 			string vitallyImportantColumn = null;
+			string registryCostColumn = null;
+
 			if (data.Columns.Contains("ZHNVLS"))
 				vitallyImportantColumn = "ZHNVLS";
 			else if (data.Columns.Contains("ISZHVP"))
 				vitallyImportantColumn = "ISZHVP";
 			else if (data.Columns.Contains("ISZNVP"))
 				vitallyImportantColumn = "ISZNVP";
+
+			if (data.Columns.Contains("REESTR"))
+				registryCostColumn = "REESTR";
+			else if (data.Columns.Contains("OTHER"))
+				registryCostColumn = "OTHER";
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NUM_DOC"].ToString();
@@ -50,7 +57,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
-					line.RegistryCost = Convert.ToDecimal(r["OTHER"], CultureInfo.InvariantCulture);				
+				if (!String.IsNullOrEmpty(registryCostColumn))
+					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : 
+						(decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
 				line.Certificates = Convert.IsDBNull(r["DOCUMENT"]) ? null : r["DOCUMENT"].ToString();
                 line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));

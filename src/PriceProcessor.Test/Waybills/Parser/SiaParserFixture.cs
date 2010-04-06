@@ -61,6 +61,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_with_registry_cost_in_reestr_field()
+		{
+			var parser = new SiaParser();
+			var doc = new Document();
+			parser.Parse(@"..\..\Data\Waybills\8916_REESTR.dbf", doc);
+			Assert.That(doc.Lines.Count, Is.EqualTo(7));
+			Assert.That(doc.Lines[4].RegistryCost, Is.EqualTo(82.0615));
+			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[2].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ЗАМЕНИТЕЛЬ САХАРА\"РИО ГОЛД\" N1200 ТАБЛ"));
+		}
+
+		[Test]
 		public void Check_file_format()
 		{
 			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
