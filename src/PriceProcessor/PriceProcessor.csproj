@@ -205,6 +205,7 @@
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParser.cs" />
+    <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParser.cs" />
     <Compile Include="Waybills\Parser\SiaParser.cs" />

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -138,9 +139,10 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				return resultList;
 			}
-			catch(Exception ex)
+			catch(Exception e)
 			{
-				Mailer.SendFromServiceToService("Ошибка при слиянии многофайловых накладных", ex.ToString());
+				var _log = LogManager.GetLogger(typeof(MultifileDocument));
+				_log.Error("Ошибка при слиянии многофайловых накладных", e);
 				return extractedFiles;
 			}
 		}

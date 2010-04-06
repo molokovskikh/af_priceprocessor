@@ -16,32 +16,37 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					throw new Exception(String.Format("Неизвестная версия документа {0}, {1}", version, file));
 
 				var separator = reader.ReadLine()[0];
-				reader.ReadLine();
-				var header = reader.ReadLine();
-				var headerParts = header.Split(separator);
-				if (!String.IsNullOrEmpty(headerParts[2]))
-                    document.DocumentDate = Convert.ToDateTime(headerParts[2]);
-				reader.ReadLine();
+	
+				var headerCaptions = reader.ReadLine().Split(separator);
+				var headerParts = reader.ReadLine().Split(separator);
+
+				var bodyHeader = reader.ReadLine();
+				var header = new ProtekDocumentHeader(bodyHeader, separator);
+
+				document.DocumentDate = header.GetDocumentDate(headerCaptions, headerParts);
+				document.ProviderDocumentId = header.GetProviderDocumentId(headerCaptions, headerParts);
 				string line;
 				while ((line = reader.ReadLine()) != null)
 				{
 					var parts = line.Split(separator);
 					var docLine = new DocumentLine {
-						Code = parts[0],
-						Product = parts[1],
-						Producer = parts[2],
-						Country = parts[3],
-						Quantity = uint.Parse(parts[4], NumberStyles.Any, CultureInfo.InvariantCulture),
-						SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture),
-						Certificates = parts[7],
-						ProducerCost = Convert.ToDecimal(parts[8], CultureInfo.InvariantCulture),
-						RegistryCost = Convert.ToDecimal(parts[11], CultureInfo.InvariantCulture)
+						Code = header.GetCode(parts),
+						Product = header.GetProduct(parts),
+						Producer = header.GetProducer(parts),
+						Country = header.GetCountry(parts),
+						Quantity = header.GetQuantity(parts),
+						SupplierCost = header.GetSupplierCost(parts),
+						SupplierCostWithoutNDS = header.GetSupplierCostWithoutNds(parts),
+						Certificates = header.GetCertificates(parts),
+						ProducerCost = header.GetProducerCost(parts),
+						RegistryCost = header.GetRegistryCost(parts),
+						Nds = header.GetNds(parts),
+						Period = header.GetPeriod(parts),
+						VitallyImportant = header.GetVitallyImportant(parts),
 					};
-					docLine.SetNds(Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture));
 					document.NewLine(docLine);
 				}
 			}
-
 			return document;
 		}
 	}
