@@ -28,6 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[1].Period, Is.EqualTo("01.12.14"));
 			Assert.That(doc.Lines[1].Nds.Value, Is.EqualTo(10));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("08.02.10")));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 		}
 
@@ -121,6 +122,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
 			Assert.That(doc.Lines[8].VitallyImportant, Is.True);
+
+			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[8].RegistryCost, Is.EqualTo(164.7));
 		}
 	}
 }

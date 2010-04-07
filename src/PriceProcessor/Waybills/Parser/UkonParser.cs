@@ -68,6 +68,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.Quantity = Convert.ToUInt32(parts[4]);
 					docLine.Certificates = parts[12];
 					docLine.SerialNumber = parts[13];
+					docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : (decimal?)Convert.ToDecimal(parts[18], CultureInfo.InvariantCulture);
 					docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
 					docLine.SetProducerCostWithoutNds(Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture));
 					docLine.SupplierPriceMarkup = Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);					
