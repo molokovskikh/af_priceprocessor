@@ -73,6 +73,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.SupplierPriceMarkup = Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);					
 					docLine.Period = parts[15];
 					docLine.ProducerCost = Convert.ToDecimal(parts[6], CultureInfo.InvariantCulture);
+					if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]))
+						docLine.VitallyImportant = Convert.ToBoolean(Convert.ToUInt32(parts[25]));
 				}
 			}
 			return document;

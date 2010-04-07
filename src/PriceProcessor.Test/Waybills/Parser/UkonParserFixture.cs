@@ -28,6 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[1].Period, Is.EqualTo("01.12.14"));
 			Assert.That(doc.Lines[1].Nds.Value, Is.EqualTo(10));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("08.02.10")));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 		}
 
 		[Test]
@@ -97,6 +98,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			{
 				Assert.That(e.Message, Text.Contains("Не найдено тело накладной"));
 			}
+		}
+
+		[Test]
+		public void Parse_with_zhnvls_column()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8825045-001.sst");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("8825045-001"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.04.2010")));
+			Assert.That(doc.Lines.Count, Is.EqualTo(20));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("15918"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("АДЖИСЕПТ ПАСТИЛКИ №24 ЭВКАЛИПТ И МЕНТОЛ"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("AGIO"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Индия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(22.22));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(16.82));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(20.20));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("10/14/9024"));			
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(20.10));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[8].VitallyImportant, Is.True);
 		}
 	}
 }

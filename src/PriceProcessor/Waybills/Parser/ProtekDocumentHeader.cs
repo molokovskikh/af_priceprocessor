@@ -18,6 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] SupplierCostHeaders = { "RRPRICE" };
 		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS" };
 		public string[] CertificatesHeaders = { "SSERIA", "SERIA" };
+		public string[] SerialNumberHeaders = { "PRODSERIA" };
 		public string[] ProducerCostHeaders = { "PROD_PRICE_WONDS" };
 		public string[] RegistryCostHeaders = { "PRICERUB" };
 		public string[] NdsHeaders = { "PROC_NDS" };
@@ -184,6 +185,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string GetPeriod(string[] body)
 		{
 			var index = GetIndexOfAnyElement(_headerParts, PeriodHeaders);
+			return GetString(index, body);
+		}
+
+		public string GetSerialNumber(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, SerialNumberHeaders);
 			return GetString(index, body);
 		}
 

@@ -25,6 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(4.74));
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(18));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(5.93));
+			Assert.That(document.Lines[0].SerialNumber, Is.Null);
 		}
 
 		[Test]
@@ -45,9 +46,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(21.43));
 			Assert.That(document.Lines[0].VitallyImportant, Is.True);
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("270210^РОСС RU.ФМ01.Д74804^01.02.2012 ФГУ \"ЦЭККМП\" Росздравнадзор270210^31.03.2010 74-2424660"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("270210"));
 
-			Assert.That(document.Lines[0].Period, Is.Null);
-			Assert.That(document.Lines[0].SerialNumber, Is.Null);			
+			Assert.That(document.Lines[0].Period, Is.Null);			
 		}
 	}
 }

@@ -43,6 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						Nds = header.GetNds(parts),
 						Period = header.GetPeriod(parts),
 						VitallyImportant = header.GetVitallyImportant(parts),
+						SerialNumber = header.GetSerialNumber(parts),
 					};
 					document.NewLine(docLine);
 				}
