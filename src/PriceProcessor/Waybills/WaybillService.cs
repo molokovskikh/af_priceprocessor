@@ -21,10 +21,10 @@ namespace Inforoom.PriceProcessor.Waybills
 	}
 
 	[ActiveRecord("Clientsdata", Schema = "Usersettings")]
-	public class Supplier
+	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
 		[PrimaryKey("FirmCode")]
-		public uint Id { get; set; }
+		public int Id { get; set; }
 
 		[Property]
 		public string ShortName { get; set; }
@@ -93,7 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			Log = log;
 			WriteTime = DateTime.Now;
-			FirmCode = log.Supplier.Id;
+			FirmCode = Convert.ToUInt32(log.Supplier.Id);
 			ClientCode = log.ClientCode.Value;
 			AddressId = log.AddressId;
 			DocumentType = DocType.Waybill;
@@ -240,7 +240,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					var docs = documents.Select(d => {
 						try
 						{
-							var parser = detector.DetectParser(d.GetFileName());
+							var parser = detector.DetectParser(d.GetFileName(), d);
 							if (parser == null)
 								return null;
 							return parser.Parse(d.GetFileName(), new Document(d));
@@ -289,7 +289,7 @@ namespace Inforoom.PriceProcessor.Waybills
 						return;
 
 					var detector = new WaybillFormatDetector();
-					var parser = detector.DetectParser(file);
+					var parser = detector.DetectParser(file, log);
 					if (parser == null)
 						return;
 					var document = new Document(log);

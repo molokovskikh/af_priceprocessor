@@ -12,7 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Detect_xml_format()
 		{
 			var detector = new WaybillFormatDetector();
-			var parser = detector.DetectParser(@"..\..\Data\Waybills\8041496-001.xml");
+			var parser = detector.DetectParser(@"..\..\Data\Waybills\8041496-001.xml", null);
 			Assert.That(parser, Is.InstanceOf<ProtekXmlParser>());
 		}
 	}

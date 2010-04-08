@@ -8,7 +8,7 @@ namespace Inforoom.PriceProcessor.Waybills
 {
 	public class WaybillFormatDetector
 	{
-		public IDocumentParser DetectParser(string file)
+		public IDocumentParser DetectParser(string file, DocumentLog documentLog)
 		{
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
@@ -25,6 +25,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			else if (extention == ".pd")
 				type = typeof (ProtekParser);
+
+			// Если поставщик - это челябинский Морон, для него отдельный парсер 
+			// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
+			if ((documentLog != null) && (documentLog.Supplier.Id == 338))
+				type = typeof (Moron_338_SpecialParser);
 
 			if (type == null)
 				return null;
