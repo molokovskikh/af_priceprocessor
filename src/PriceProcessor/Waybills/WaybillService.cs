@@ -55,15 +55,21 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var clientDir = Path.Combine(Settings.Default.WaybillsPath, ClientCode.ToString().PadLeft(3, '0'));
 			var documentDir = Path.Combine(clientDir, DocumentType + "s");
-/*			var file = String.Format("{0}_{1}({2}){3}",
-				Id,
-				Supplier.ShortName,
-				Path.GetFileNameWithoutExtension(FileName),
-				Path.GetExtension(FileName));*/
 			var file = String.Format("{0}_{1}",
 				Id,
 				Path.GetFileName(FileName));
-			return Path.Combine(documentDir, file);
+			var fullName = Path.Combine(documentDir, file);
+			if (!File.Exists(fullName))
+			{
+				file = String.Format("{0}_{1}({2}){3}",
+					Id,
+					Supplier.ShortName,
+					Path.GetFileNameWithoutExtension(FileName),
+					Path.GetExtension(FileName));
+				return Path.Combine(documentDir, file);
+			}
+			else
+				return fullName;			
 		}
 	}
 
