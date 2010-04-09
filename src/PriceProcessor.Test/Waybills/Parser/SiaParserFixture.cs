@@ -103,5 +103,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);
 		}
+
+		[Test]
+		public void Parse_with_null_period()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3677177_0_3677175_0_3676850_Сиа Интернейшнл(1064837).DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(37));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.10.2011"));
+			Assert.That(document.Lines[28].Period, Is.Null);
+		}
 	}
 }

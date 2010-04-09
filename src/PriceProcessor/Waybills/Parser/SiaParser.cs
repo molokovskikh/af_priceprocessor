@@ -55,7 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
-				line.Period = Convert.ToDateTime(r["SROK"]).ToShortDateString();
+				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : 

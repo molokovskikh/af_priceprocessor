@@ -37,5 +37,22 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(10.00));
 		}
+
+		[Test]
+		public void Parse_with_null_period()
+		{
+			DocumentLog documentLog = null;
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(338);
+				documentLog = new DocumentLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3676275_Морон(476832).dbf", documentLog);
+
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("476832"));
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			Assert.That(document.Lines[0].Period, Is.Null);			
+		}
 	}
 }
