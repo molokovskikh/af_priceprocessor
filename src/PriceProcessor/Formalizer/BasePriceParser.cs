@@ -304,7 +304,7 @@ namespace Inforoom.Formalizer
 		//код ценовой колонки, может быть не установлен
 		public long?	costCode;
 
-		//список прайс-листов, на которых в тестовом режиме будет использоваться update
+		//список прайс-листов, на которых будет использоваться update
 		private List<long> priceCodesUseUpdate;
 
 		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
@@ -996,15 +996,13 @@ order by Core0.Id", priceCode);
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
 				else
 					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
+                    if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
 						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
-
-				if (drNewProducerSynonym != null)
-					drExistsCore = null;
+                if (drNewProducerSynonym != null)
+                    drExistsCore = null;
 				else
-					drExistsCore = FindPositionInExistsCore(drCore);
-
+                    drExistsCore = FindPositionInExistsCore(drCore);
 				if (drExistsCore == null)
 				{
 					_stats.InsertCount++;
@@ -1242,6 +1240,13 @@ where
 						filter.Add(String.Format("({0} = '')", primaryField));
 					else
 						filter.Add(String.Format("({0} = '{1}')", primaryField, drCore[primaryField]));
+				}
+				else if (drCore.Table.Columns[primaryField].DataType == typeof(decimal))
+				{
+					if (drCore[primaryField] is DBNull)
+						filter.Add(String.Format("({0} is null)", primaryField));
+					else
+						filter.Add(String.Format("({0} = {1})", primaryField, Convert.ToString(drCore[primaryField], CultureInfo.InvariantCulture)));					
 				}
 				else
 					if (drCore[primaryField] is DBNull)
