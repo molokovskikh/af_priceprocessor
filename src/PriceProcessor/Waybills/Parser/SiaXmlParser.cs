@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				var line = document.NewLine();
 				line.Product = position.XPathSelectElement("Товар").Value;
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
-				line.Quantity = Convert.ToUInt32(position.XPathSelectElement("Количество").Value);
+				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 				line.ProducerCost = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
 				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);

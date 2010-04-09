@@ -53,5 +53,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines.Count, Is.EqualTo(10));
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);
 		}
+
+		[Test]
+		public void Parse_with_quantity_in_fractional_format()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3677690_Катрен(6578711_6587855_044044).xml");
+
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(3));
+			Assert.That(doc.Lines[1].Quantity, Is.EqualTo(1));
+		}
 	}
 }
