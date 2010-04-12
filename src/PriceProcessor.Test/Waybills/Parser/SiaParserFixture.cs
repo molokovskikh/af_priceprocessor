@@ -113,5 +113,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.10.2011"));
 			Assert.That(document.Lines[28].Period, Is.Null);
 		}
+
+		[Test]
+		public void Parse_with_column_jnvls()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3681901_УФК_3681896_УФК_3681714_УФК_t120410___.DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(68));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[2].VitallyImportant, Is.True);
+		}
 	}
 }
