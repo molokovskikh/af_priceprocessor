@@ -29,9 +29,7 @@ namespace Inforoom.Formalizer
 
 				// Set the validation settings.
 				XmlReaderSettings settings = new XmlReaderSettings();
-				settings.ValidationType = System.Xml.ValidationType.Schema;
-				settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
-				settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
+				settings.ValidationType = System.Xml.ValidationType.None;
 				//Если установим CallBack, то будем получать все ошибки в нем. Если не установим, то получем первую и завершим разбор
 				//settings.ValidationEventHandler += new ValidationEventHandler(test79ValidationCallBack);
 				//settings.Schemas.Add(XmlSchema.Read(new StreamReader("CommerceML.xsd", Encoding.Default), test79SchemaValidationCallBack));
