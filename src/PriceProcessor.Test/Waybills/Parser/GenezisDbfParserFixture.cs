@@ -53,5 +53,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
 			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
 		}
+
+		[Test]
+		public void Parse_without_country()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3687858_Генезис УФА(3686469_Генезис Екатеринбург(463344)).dbf");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(2));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("463344"));
+			Assert.IsNull(doc.Lines[0].Country);
+			Assert.IsNull(doc.Lines[1].Country);
+
+			Assert.IsNull(doc.Lines[0].VitallyImportant);
+			Assert.IsNull(doc.Lines[1].VitallyImportant);
+		}
 	}
 }

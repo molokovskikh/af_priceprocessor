@@ -126,5 +126,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[8].RegistryCost, Is.EqualTo(164.7));
 		}
+
+		[Test]
+		public void Parse_without_SupplierPriceMarkup()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3687861_БИОТЭК (Екатеринбург-Фарм)(3687558_БИОТЭК (Екатеринбург-Фарм)(064197)).sst");
+
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("12.04.10")));
+			Assert.That(doc.Lines.Count, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("Лейкопластырь 5см х 500см Унипласт фиксирующий эластичный шт №1"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Верофарм"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("РОССИЯ"));
+		}
 	}
 }

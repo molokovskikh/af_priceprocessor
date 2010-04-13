@@ -22,7 +22,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Code = Convert.ToString(r["ITEM_ID"], CultureInfo.InvariantCulture);
 				line.Product = r["ITEM_NAME"].ToString();
 				line.Producer = r["VEND_NAME"].ToString();
-				line.Country = r["VE_COUNTRY"].ToString();
+				if (data.Columns.Contains("VE_COUNTRY"))
+					line.Country = r["VE_COUNTRY"].ToString();
 				line.ProducerCost = Convert.ToDecimal(r["PRICE_VR"], CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE_TAX"], CultureInfo.InvariantCulture);
@@ -31,7 +32,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Certificates = r["CER_NUMBER"].ToString();
 				line.Nds = Convert.ToUInt32(r["TAX_RATE"], CultureInfo.InvariantCulture);
 				line.RegistryCost = Convert.IsDBNull(r["PRICE_RR"]) ? null : (decimal?)Convert.ToDecimal(r["PRICE_RR"]);
-				line.VitallyImportant = Convert.IsDBNull(r["GNVLS"]) ? null : (bool?)(Convert.ToUInt32(r["GNVLS"]) == 1);
+				if (data.Columns.Contains("GNVLS"))
+					line.VitallyImportant = Convert.IsDBNull(r["GNVLS"]) ? null : (bool?)(Convert.ToUInt32(r["GNVLS"]) == 1);
 				line.SerialNumber = r["LOT_NUMBER"].ToString();
 				return line;
 			}).ToList();

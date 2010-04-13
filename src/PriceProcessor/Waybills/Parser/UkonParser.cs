@@ -71,7 +71,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : (decimal?)Convert.ToDecimal(parts[18], CultureInfo.InvariantCulture);
 					docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
 					docLine.SetProducerCostWithoutNds(Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture));
-					docLine.SupplierPriceMarkup = Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);					
+					docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : (decimal?)Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);					
 					docLine.Period = parts[15];
 					docLine.ProducerCost = Convert.ToDecimal(parts[6], CultureInfo.InvariantCulture);
 					if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]))
