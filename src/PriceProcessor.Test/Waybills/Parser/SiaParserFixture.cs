@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ10.Д50325"));
-			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(4.71));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("24.03.10")));
 		}
@@ -122,6 +122,28 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines.Count, Is.EqualTo(68));
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[2].VitallyImportant, Is.True);
+		}
+
+		[Test]
+		public void Parse_with_column_gzwl()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3683304_УФК_u4004036_.DBF");
+			Assert.That(document.Lines.Count, Is.EqualTo(4));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[1].VitallyImportant, Is.True);
+			Assert.That(document.Lines[2].VitallyImportant, Is.False);
+			Assert.That(document.Lines[3].VitallyImportant, Is.False);
+		}
+
+		[Test]
+		public void Parse_without_producer_cost()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3692407_Сиа_Интернейшнл_1068481_.DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(20));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("1068481"));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(121.28));
+			Assert.That(document.Lines[2].ProducerCost, Is.Null);
 		}
 	}
 }

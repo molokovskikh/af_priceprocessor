@@ -38,6 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				vitallyImportantColumn = "ISZNVP";
 			else if (data.Columns.Contains("JNVLS"))
 				vitallyImportantColumn = "JNVLS";
+			else if (data.Columns.Contains("GZWL"))
+				vitallyImportantColumn = "GZWL";
 
 			if (data.Columns.Contains("REESTR"))
 				registryCostColumn = "REESTR";
@@ -53,7 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Product = r["NAME_TOVAR"].ToString();
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
-				line.ProducerCost = Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
+				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
