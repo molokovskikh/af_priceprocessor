@@ -242,40 +242,37 @@ namespace Inforoom.PriceProcessor.Formalizer
 			{
 				var item = PriceItemList.list[i];
 				var downloadedItem = PriceItemList.GetLastestDownloaded(item.PriceItemId);
-				if (downloadedItem == null)
+				if (downloadedItem == null || item == downloadedItem)
 					//если нет скаченных прайс-листов, то элемент оставляем
 					i--;
 				else
-					if (item == downloadedItem)
-						//если элемент - последний скаченный, то оставляем
-						i--;
+				{
+					//ищем элемент в рабочих нитках
+					var thread = FindByProcessItem(item);
+					if (thread != null)
+					{
+						//если элемент найден, то останавливаем нитку, файл будет удалять нитка при останове
+						_logger.InfoFormat("Останавливаем нитку из-за дублирующего прайс-листа {0}", thread.TID);
+						thread.AbortThread();
+						_logger.InfoFormat("Останов нитки успешно вызван {0}", thread.TID);
+					}
 					else
 					{
-						//ищем элемент в рабочих нитках
-						var thread = FindByProcessItem(item);
-						if (thread != null)
+						//если нет нитки на формализацию, то просто удаляем файл из папки
+						try
 						{
-							//если элемент найден, то останавливаем нитку, файл будет удалять нитка при останове
-							_logger.InfoFormat("Останавливаем нитку из-за дублирующего прайс-листа {0}", thread.TID);
-							thread.AbortThread();
-							_logger.InfoFormat("Останов нитки успешно вызван {0}", thread.TID);
+							Common.FileHelper.FileDelete(item.FilePath);
 						}
-						else
+						catch (Exception ex)
 						{
-							//если нет нитки на формализацию, то просто удаляем файл из папки
-							try
-							{
-								Common.FileHelper.FileDelete(item.FilePath);
-							}
-							catch (Exception ex)
-							{
-								_logger.ErrorFormat("Не получилось удалить дублирующий файл {0}\r\n{1}", item.FilePath, ex);
-							}
+							_logger.ErrorFormat("Не получилось удалить дублирующий файл {0}\r\n{1}", item.FilePath, ex);
 						}
-						///Из очереди на обработку файл элемент удаляется сразу, а если была рабочая нитка, 
-						///то она удаляется в ProcessThreads, когда остановиться или ее останов принудительно прервут по таймауту
-						PriceItemList.list.Remove(item);
 					}
+					///Из очереди на обработку файл элемент удаляется сразу, а если была рабочая нитка, 
+					///то она удаляется в ProcessThreads, когда остановиться или ее останов принудительно прервут по таймауту
+					PriceItemList.list.Remove(item);
+					i--;
+				}
 			}
 		}
 
@@ -413,8 +410,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private void DeleteProcessThread(PriceProcessThread p)
 		{
 			_logger.InfoFormat("Удаляем нитку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  ProcessState = {4}", p.TID, p.ThreadIsAlive, p.ThreadState, p.FormalizeEnd, p.ProcessState);
+			//при перезапуске обработчика мы очищаем _errorMessages (хз зачем это нужно но пусть так)
+			//в этом случае мы получим null reference
+			//по этому и обвязка
 			var hi = (FileHashItem)_errorMessages[p.ProcessItem.FilePath];
-			hi.ErrorMessage = p.CurrentErrorMessage;
+			if (hi != null)
+				hi.ErrorMessage = p.CurrentErrorMessage;
 
 			//если формализация завершилась успешно
 			if (p.FormalizeOK)
@@ -453,10 +454,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				else
 				{
-					hi.ErrorCount++;
+					if (hi != null)
+						hi.ErrorCount++;
 					//Если превысили лимит ошибок, то удаляем его из списка, помещаем в ErrorFilesPath 
 					//и отправляем уведомление
-					if (hi.ErrorCount > Settings.Default.MaxErrorCount)
+					if (hi != null && hi.ErrorCount > Settings.Default.MaxErrorCount)
 					{
 						_logger.InfoFormat("Удаляем файл из-за большого кол-ва ошибок: FileName:{0} ErrorCount:{1} Downloaded:{2} ErrorMessage:{3} PriceItemId:{4}", p.ProcessItem.FilePath, hi.ErrorCount, p.ProcessItem.Downloaded, hi.ErrorMessage, p.ProcessItem.PriceItemId);
 						try
