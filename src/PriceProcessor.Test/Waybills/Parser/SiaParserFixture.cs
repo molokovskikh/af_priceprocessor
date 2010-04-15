@@ -136,6 +136,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_with_registry_cost()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3683304_УФК_u4004036_.DBF");
+			Assert.That(document.Lines.Count, Is.EqualTo(4));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[1].RegistryCost, Is.EqualTo(72.55));
+			Assert.That(document.Lines[2].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[3].RegistryCost, Is.EqualTo(0));
+		}
+
+		[Test]
 		public void Parse_without_producer_cost()
 		{
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3692407_Сиа_Интернейшнл_1068481_.DBF");

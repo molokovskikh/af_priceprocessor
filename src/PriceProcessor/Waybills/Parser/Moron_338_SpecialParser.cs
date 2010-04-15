@@ -60,6 +60,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;
+				if (data.Columns.Contains("PR_REG"))
+					line.RegistryCost = Convert.IsDBNull(r["PR_REG"]) ? null : (decimal?)Convert.ToDecimal(r["PR_REG"], CultureInfo.InvariantCulture);
 				return line;
 			}).ToList();
 			return document;
