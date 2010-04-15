@@ -32,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				type = typeof (Moron_338_SpecialParser);
 
 			if (type == null)
-				return null;
+				throw new Exception("Не удалось определить тип парсера");
 
 			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
 			if (constructor == null)

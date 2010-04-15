@@ -81,6 +81,15 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public bool ParseWaybills { get; set; }
+
+		[Property]
+		public bool OnlyParseWaybills { get; set; }
+
+
+		public bool ShouldParseWaybill()
+		{
+			return ParseWaybills || OnlyParseWaybills;
+		}
 	}
 
 	public enum DocType
@@ -247,8 +256,6 @@ namespace Inforoom.PriceProcessor.Waybills
 						try
 						{
 							var parser = detector.DetectParser(d.GetFileName(), d);
-							if (parser == null)
-								return null;
 							return parser.Parse(d.GetFileName(), new Document(d));
 						}
 						catch(Exception e)
@@ -291,13 +298,11 @@ namespace Inforoom.PriceProcessor.Waybills
 				{
 					var log = ActiveRecordBase<DocumentLog>.Find(documentLogId);
 					var settings = ActiveRecordBase<WaybillSettings>.Find(log.ClientCode.Value);
-					if (!settings.ParseWaybills)
+					if (!settings.ShouldParseWaybill())
 						return;
 
 					var detector = new WaybillFormatDetector();
 					var parser = detector.DetectParser(file, log);
-					if (parser == null)
-						return;
 					var document = new Document(log);
 					parser.Parse(file, document);
 					if (!document.DocumentDate.HasValue)

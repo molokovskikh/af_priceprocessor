@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{23B1ECD8-99E4-47D8-AE8A-222674665F06}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor", "PriceProcessor\PriceProcessor.csproj", "{207B22E7-BF6C-489A-9D29-455E11D84EB8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{046F74A6-68A8-4E5E-A9AB-7332B631CFB1} = {046F74A6-68A8-4E5E-A9AB-7332B631CFB1}
@@ -9,8 +11,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PriceProcessor.Test", "PriceProcessor.Test\PriceProcessor.Test.csproj", "{1E627B3F-1151-48EA-ABA7-DE10247FCB6C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemotePriceProcessor", "RemotePriceProcessor\RemotePriceProcessor.csproj", "{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{23B1ECD8-99E4-47D8-AE8A-222674665F06}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Log.Test", "Log.Test\Log.Test.csproj", "{4FF15E57-1D82-4989-8655-0D960888BB2C}"
 EndProject
