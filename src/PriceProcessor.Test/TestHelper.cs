@@ -381,13 +381,16 @@ Content-Disposition: attachment;
 				Directory.Delete(Settings.Default.TempPath, true);
 			if (Directory.Exists(Settings.Default.FTPOptBoxPath))
 				Directory.Delete(Settings.Default.FTPOptBoxPath, true);
+			if (Directory.Exists(Settings.Default.DownWaybillsPath))
+				Directory.Delete(Settings.Default.DownWaybillsPath, true);
 			Program.InitDirs(new[]
 				         	{
 				         		Settings.Default.BasePath,
 				         		Settings.Default.ErrorFilesPath,
 				         		Settings.Default.InboundPath,
 				         		Settings.Default.TempPath,
-				         		Settings.Default.HistoryPath
+				         		Settings.Default.HistoryPath,
+								Settings.Default.DownWaybillsPath,
 				         	});
 		}
 	}

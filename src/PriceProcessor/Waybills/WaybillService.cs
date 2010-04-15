@@ -287,7 +287,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
 
 			if (File.Exists(filename))
-				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)));
+				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
 		}
 
 		public static void ParserDocument(uint documentLogId, string file)

@@ -56,6 +56,8 @@ namespace PriceProcessor.Test
 
 		public void SetUp(IList<string> fileNames)
 		{
+			TestHelper.RecreateDirectories();
+
 			var client = TestClient.CreateSimple();
 			var supplier = TestOldClient.CreateTestSupplier();
 
