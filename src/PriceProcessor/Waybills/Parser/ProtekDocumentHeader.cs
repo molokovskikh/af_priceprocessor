@@ -47,18 +47,25 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			decimal value;
 			if (index >= 0 &&
 			    !String.IsNullOrEmpty(body[index]) &&
-			    decimal.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+			    decimal.TryParse(body[index], NumberStyles.Number, CultureInfo.CurrentCulture, out value))
+				return value;
+			if (index >= 0 &&
+				!String.IsNullOrEmpty(body[index]) &&
+				decimal.TryParse(body[index], NumberStyles.Number, CultureInfo.InvariantCulture, out value))
 				return value;
 			return null;
 		}
 
 		private uint? GetUInt(int index, string[] body)
 		{
-			uint value;
+			var value = GetDecimal(index, body);
+			if (value.HasValue)
+				return Convert.ToUInt32(value);
+			uint value2;
 			if (index >= 0 &&
-			    !String.IsNullOrEmpty(body[index]) &&
-			    uint.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
-				return value;
+				!String.IsNullOrEmpty(body[index]) &&
+				uint.TryParse(body[index], out value2))
+				return value2;
 			return null;
 		}
 

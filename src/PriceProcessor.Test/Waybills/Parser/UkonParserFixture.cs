@@ -175,5 +175,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(3));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.03.2012"));
 		}
+
+		[Test]
+		public void Parse_with_commas()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\13111-М - 16.04.2010.sst");
+
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(22.64));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(18.14));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(20.58));
+		}
 	}
 }
