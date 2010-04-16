@@ -65,5 +65,36 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
 		}
+
+		[Test]
+		public void Reject_should_not_be_parsed()
+		{
+			var file = "1008fo.pd";
+			var client = TestOldClient.CreateTestClient();
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+
+			var document = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = 1179,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Reject,
+				FileName = file,
+			};
+			using (new TransactionScope())
+				document.Save();
+
+			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", document.Id)));
+
+			service.ParseWaybill(new[] { document.Id });
+
+			using (new SessionScope())
+			{
+				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
+				Assert.That(waybills.Count, Is.EqualTo(0));
+			}
+		}
 	}
 }

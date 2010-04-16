@@ -265,7 +265,7 @@ namespace Inforoom.PriceProcessor.Waybills
 							SaveWaybill(filename);
 							return null;
 						}
-					}).Where(d => d != null).ToList();
+					}).Where(d => d != null && (d.DocumentType == DocType.Waybill)).ToList();
 
 					using (new TransactionScope())
 					{
@@ -298,7 +298,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				{
 					var log = ActiveRecordBase<DocumentLog>.Find(documentLogId);
 					var settings = ActiveRecordBase<WaybillSettings>.Find(log.ClientCode.Value);
-					if (!settings.ShouldParseWaybill())
+					if (!settings.ShouldParseWaybill() && (log.DocumentType == DocType.Waybill))
 						return;
 
 					var detector = new WaybillFormatDetector();
