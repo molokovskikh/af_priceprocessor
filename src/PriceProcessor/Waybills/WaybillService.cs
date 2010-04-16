@@ -298,7 +298,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				{
 					var log = ActiveRecordBase<DocumentLog>.Find(documentLogId);
 					var settings = ActiveRecordBase<WaybillSettings>.Find(log.ClientCode.Value);
-					if (!settings.ShouldParseWaybill() && (log.DocumentType == DocType.Waybill))
+					if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
 						return;
 
 					var detector = new WaybillFormatDetector();
