@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Waybills;
+﻿using System.Globalization;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 using System;
@@ -44,12 +45,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("Трамадол р-р д/и 50мг/мл 2мл амп N5x1 МЭЗ РОС"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("461009^РОСС RU.ФМ01.Д91475^01.03.2010 ФГУ \"ЦЭККМП\" Росздравнадзор^01.11.2012"));
-			Assert.That(doc.Lines[0].Period, Is.EqualTo(""));
+			Assert.That(doc.Lines[0].Period, Is.Null);
 			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
 
 			Assert.That(doc.Lines[1].Product, Is.EqualTo("Трамадол р-р д/и 50мг/мл 2мл амп N5x1 МЭЗ РОС"));
 			Assert.That(doc.Lines[1].Certificates, Is.EqualTo("461009^РОСС RU.ФМ01.Д91475^01.03.2010 ФГУ \"ЦЭККМП\" Росздравнадзор^01.11.2012"));
-			Assert.That(doc.Lines[1].Period, Is.EqualTo(""));
+			Assert.That(doc.Lines[1].Period, Is.Null);
 			Assert.That(doc.Lines[1].Nds.Value, Is.EqualTo(10));
 		}
 
@@ -137,6 +138,42 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("Лейкопластырь 5см х 500см Унипласт фиксирующий эластичный шт №1"));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Верофарм"));
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("РОССИЯ"));
+		}
+
+		[Test]
+		public void Parse_Protek()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3700197_Протек-21(9041050-001).sst");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(7));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("9041050-001"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("16.04.2010")));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("13881"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ГЛИБОМЕТ ТАБ. П/О 2,5МГ/400МГ №40"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Berlin-Chemie"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Германия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(191.29));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(166.86));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(173.90));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(4.22));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("92588^74-2391651^09.02.2010 ЦККЛС в г.Челябинск92588^POCC DE.ФM01.Д52733^27.01.2010 ФГУ ЦЭККМП Росздравнадзор"));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("92588"));
+		}
+
+		[Test]
+		public void Parse_with_empty_strings_at_the_end()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3699446_Катрен(046726).sst");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(7));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("46726"));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("3015207"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("АСПИКОР 0,1 N30 ТАБЛ П/О"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Вертекс ЗАО."));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(3));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.03.2012"));
 		}
 	}
 }

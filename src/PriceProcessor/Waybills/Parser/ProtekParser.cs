@@ -45,6 +45,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						VitallyImportant = header.GetVitallyImportant(parts),
 						SerialNumber = header.GetSerialNumber(parts),
 					};
+					if (header.GetNds(parts).HasValue)
+					{
+						docLine.SetNds((decimal) header.GetNds(parts));
+						docLine.SetSupplierCostByNds(docLine.Nds);
+					}
+					if (header.GetSupplierCostWithoutNds(parts).HasValue)
+						docLine.SetProducerCostWithoutNds((decimal)header.GetSupplierCostWithoutNds(parts));					
 					document.NewLine(docLine);
 				}
 			}

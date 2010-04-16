@@ -8,29 +8,39 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	class ProtekDocumentHeader
 	{
-		public string[] DocumentDateHeaders = { "Дата", "DATE0" };
-		public string[] ProviderDocumentIdHeaders = { "CD_A" };
-		public string[] CodeHeaders = { "CD_M" };
-		public string[] ProductHeaders = { "NM_M" };
-		public string[] ProducerHeaders = { "NM_PROD" };
-		public string[] CountryHeaders = { "COUNTRY" };
-		public string[] QuantityHeaders = { "QTY" };
-		public string[] SupplierCostHeaders = { "RRPRICE" };
-		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS" };
-		public string[] CertificatesHeaders = { "SSERIA", "SERIA" };
-		public string[] SerialNumberHeaders = { "PRODSERIA" };
-		public string[] ProducerCostHeaders = { "PROD_PRICE_WONDS" };
-		public string[] RegistryCostHeaders = { "PRICERUB" };
+		public string[] DocumentDateHeaders = { "Дата", "DATE0", "Дата документа" };
+		public string[] ProviderDocumentIdHeaders = { "CD_A", "Номер документа", "Номер" };
+		public string[] CodeHeaders = { "CD_M", "Код товара" };
+		public string[] ProductHeaders = { "NM_M", "Наименование товара" };
+		public string[] ProducerHeaders = { "NM_PROD", "Производитель" };
+		public string[] CountryHeaders = { "COUNTRY", "Страна производителя" };
+		public string[] QuantityHeaders = { "QTY", "Количество" };
+		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС" };
+		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS", "Цена Протека без НДС", "Цена поставщика без НДС" };
+		public string[] CertificatesHeaders = { "SSERIA", "SERIA", "Серии сертификатов", "Сертификаты" };
+		public string[] SerialNumberHeaders = { "PRODSERIA", "Серия производителя" };
+		public string[] ProducerCostHeaders = { "PROD_PRICE_WONDS", "Цена производителя без НДС", "Цена производителя" };
+		public string[] RegistryCostHeaders = { "PRICERUB", "Реестровая цена в рублях", "Реестровая цена" };
 		public string[] NdsHeaders = { "PROC_NDS" };
-		public string[] PeriodHeaders = { "EXPIRY" };
-		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС" };
+		public string[] PeriodHeaders = { "EXPIRY", "Дата истекания срока годности данной серии", "Дата окончания срока годности серии" };
+		public string[] SupplierPriceMarkupHeaders = { "Наценка посредника", "Торговая надбавка оптового звена" };
+		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС", "ЖНВЛС" };
 
 		private IList<string> _headerParts;
 
 		public ProtekDocumentHeader(string headerLine, char separator)
 		{
 			_headerParts = headerLine.Split(separator);
+			UseSequencedIndexing = false;
 		}
+
+		public ProtekDocumentHeader(string[] headerParts)
+		{
+			_headerParts = headerParts;
+			UseSequencedIndexing = false;
+		}
+
+		public bool UseSequencedIndexing { get; set; }
 
 		private decimal? GetDecimal(int index, string[] body)
 		{
@@ -89,10 +99,22 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return GetDateTime(index, header);
 		}
 
+		public DateTime? GetDocumentDate(string[] headerData)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, DocumentDateHeaders);
+			return GetDateTime(index, headerData);
+		}
+
 		public string GetProviderDocumentId(string[] headerCaptions, string[] header)
 		{
 			var index = GetIndexOfAnyElement(headerCaptions, ProviderDocumentIdHeaders);
 			return GetString(index, header);
+		}
+
+		public string GetProviderDocumentId(string[] headerData)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, ProviderDocumentIdHeaders);
+			return GetString(index, headerData);
 		}
 
 		public string GetCode(string[] body)
@@ -131,9 +153,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			var supplierCost = GetDecimal(index, body);
 			if (supplierCost.HasValue)
 				return supplierCost;
-			var nds = GetNds(body);
-			var supplierCostWithoutNds = GetSupplierCostWithoutNds(body);
-			return Math.Round(supplierCostWithoutNds.Value * (1 + ((decimal)nds.Value / 100)), 2);
+			return null;
 		}
 
 		public decimal? GetSupplierCostWithoutNds(string[] body)
@@ -142,9 +162,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			var supplierCostWithoutNds = GetDecimal(index, body);
 			if (supplierCostWithoutNds.HasValue)
 				return supplierCostWithoutNds;
-			var nds = GetNds(body);
-			var supplierCost = GetSupplierCost(body);
-			return Math.Round(supplierCost.Value / (1 + ((decimal)nds.Value) / 100), 2);
+			return null;
 		}
 
 		public string GetCertificates(string[] body)
@@ -165,15 +183,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return GetDecimal(index, body);
 		}
 
+		public decimal? GetSupplierPriceMarkup(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, SupplierPriceMarkupHeaders);
+			return GetDecimal(index, body);
+		}
+
 		public uint? GetNds(string[] body)
 		{
 			var index = GetIndexOfAnyElement(_headerParts, NdsHeaders);
 			var nds = GetUInt(index, body);
 			if (nds.HasValue)
 				return nds;
-			var supplierCost = GetSupplierCost(body);
-			var supplierCostWithoutNDS = GetSupplierCostWithoutNds(body);
-			return (uint?)(Math.Round((supplierCost.Value / supplierCostWithoutNDS.Value - 1) * 100));
+			return null;
 		}
 
 		public bool? GetVitallyImportant(string[] body)
@@ -194,13 +216,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return GetString(index, body);
 		}
 
-		private static int GetIndexOfAnyElement(IList<string> list, IEnumerable<string> elements)
+		private int GetIndexOfAnyElement(IList<string> list, IEnumerable<string> elements)
 		{
 			foreach (var element in elements)
 			{
 				if (list.Contains(element))
+				{
 					//return list.IndexOf(element) < 2 ? 0 : (list.IndexOf(element) + 1) / 3 - 1;
-					return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element) / 3;
+					if (UseSequencedIndexing)
+						return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element);
+					return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element)/3;
+				}
 			}
 			return -1;
 		}
