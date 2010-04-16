@@ -44,45 +44,41 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		private decimal? GetDecimal(int index, string[] body)
 		{
-			try
-			{
-				if (index >= 0 && !String.IsNullOrEmpty(body[index]))
-					return (Convert.ToDecimal(body[index], CultureInfo.InvariantCulture));
-			}
-			catch (Exception) {}
+			decimal value;
+			if (index >= 0 &&
+			    !String.IsNullOrEmpty(body[index]) &&
+			    decimal.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+				return value;
 			return null;
 		}
 
 		private uint? GetUInt(int index, string[] body)
 		{
-			try
-			{
-				if (index >= 0 && !String.IsNullOrEmpty(body[index]))
-					return (uint.Parse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture));
-			}
-			catch (Exception) {}
-			return null;			
+			uint value;
+			if (index >= 0 &&
+			    !String.IsNullOrEmpty(body[index]) &&
+			    uint.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+				return value;
+			return null;
 		}
 
 		private bool? GetBoolean(int index, string[] body)
 		{
-			try
-			{
-				if (index >= 0 && !String.IsNullOrEmpty(body[index]))
-					return (Convert.ToBoolean(Convert.ToUInt32(body[index], CultureInfo.InvariantCulture)));
-			}
-			catch (Exception) {}
-			return null;						
+			int value;
+			if (index >= 0 &&
+			    !String.IsNullOrEmpty(body[index]) &&
+			    int.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+				return (value != 0);
+			return null;
 		}
 
 		private DateTime? GetDateTime(int index, string[] body)
 		{
-			try
-			{
-				if (index >= 0 && !String.IsNullOrEmpty(body[index]))
-					return (Convert.ToDateTime(body[index]));
-			}
-			catch (Exception) {}
+			DateTime value;
+			if (index >= 0 &&
+			    !String.IsNullOrEmpty(body[index]) &&
+			    DateTime.TryParse(body[index], out value))
+				return value;
 			return null;
 		}
 
