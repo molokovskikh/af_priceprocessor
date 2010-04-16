@@ -1,8 +1,24 @@
-﻿import file from Deploy.bake
+﻿import System
+import file from Deploy.bake
 import file from WindowsServiceSupport.bake
 import file from Lib.bake
 import file from Migration.bake
+import System.ServiceModel
 
+[ServiceContract]
+interface IWaybillService: 
+	[OperationContract]
+	def ParseWaybill(uints as (uint)) as (uint)
+
+Task @ParseWaybills:
+	binding = NetTcpBinding()
+	binding.Security.Mode = SecurityMode.None
+	factory = ChannelFactory[of IWaybillService](binding, "net.tcp://fms:901/WaybillService")
+	channel = factory.CreateChannel()
+	id = Convert.ToUInt32(Configuration.Id)
+	a = (id,)
+	print channel.ParseWaybill(a)
+	
 Global(
 	project : "PriceProcessor",
 	server : "fms.adc.analit.net",
@@ -16,3 +32,4 @@ Global(
 Task @default, [@BuildService]
 
 Task @deploy, [@Migrate, @DeployService, @SendDeployNotification]
+
