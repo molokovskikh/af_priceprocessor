@@ -19,6 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				var line = document.NewLine();
 				line.Product = position.XPathSelectElement("Товар").Value;
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
+				line.Code = (position.XPathSelectElement("КодТовара") == null) ? null : position.XPathSelectElement("КодТовара").Value;
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 				line.ProducerCost = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");

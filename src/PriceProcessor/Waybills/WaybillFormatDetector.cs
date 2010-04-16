@@ -16,7 +16,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				type = DetectDbfParser(file);
 			else if (extention == ".sst")
 				type = typeof (UkonParser);
-			else if (extention == ".xml")
+			else if ((extention == ".xml") || (extention == ".data"))
 			{
 				if (new SiaXmlParser().IsInCorrectFormat(file))
 					type = typeof (SiaXmlParser);
