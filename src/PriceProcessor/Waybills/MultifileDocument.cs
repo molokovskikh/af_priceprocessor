@@ -75,17 +75,30 @@ namespace Inforoom.PriceProcessor.Waybills
 				else
 					tableBody.Columns.Add(column.ColumnName);
 			}
+			var headerColumnName = String.Empty;
+			var bodyColumnName = String.Empty;
 			if (commonColumns.Count != 1)
+			{
+				headerColumnName = "DOCNUM";
+				bodyColumnName = "DOCNUMBER";
+			}
+			else
+			{
+				headerColumnName = commonColumns[0];
+				bodyColumnName = commonColumns[0];				
+			}
+
+			if (!tableHeader.Columns.Contains(headerColumnName) || !tableBody.Columns.Contains(bodyColumnName))
 				throw new Exception(String.Format(@"
-При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1.
+При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1 и нет колонок {2} или {3}.
 Файл-заголовок: {0}
-Файл-тело: {1}", headerFilePath, bodyFilePath));
-			var idColumn = commonColumns[0];
+Файл-тело: {1}", headerFilePath, bodyFilePath, headerColumnName, bodyColumnName));
+
 			foreach (DataRow headerRow in tableHeader.Rows)
 			{
 				foreach (DataRow bodyRow in tableBody.Rows)
 				{
-					if (!headerRow[idColumn].Equals(bodyRow[idColumn]))
+					if (!headerRow[headerColumnName].Equals(bodyRow[bodyColumnName]))
 						continue;
 					foreach (DataColumn column in tableHeader.Columns)
 					{

@@ -75,5 +75,35 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 
 			File.Delete(mergedFiles[0]);
 		}
+
+		[Test]
+		public void Parse_with_znvls()
+		{
+			var files = new List<string> {
+				@"..\..\Data\Waybills\multifile\h150410_46902_.dbf",
+				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf",
+			};
+
+			var mergedFiles = MultifileDocument.Merge(files);
+			Assert.That(mergedFiles.Count, Is.EqualTo(1));
+			parser.Parse(mergedFiles[0], document);
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("46902"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("15/04/2010")));
+			Assert.That(document.Lines.Count, Is.EqualTo(9));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("2354939"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("ГЕНТОС N20 ТАБЛ"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("АВСТРИЯ"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Рихард Биттнер АГ"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(184.3900));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(161.0400));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(146.4));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.05.2012"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС AT.ФМ08.Д15648"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("8379159"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.0000));
+		}
 	}
 }

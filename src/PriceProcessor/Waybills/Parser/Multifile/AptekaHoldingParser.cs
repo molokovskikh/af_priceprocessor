@@ -15,8 +15,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Multifile
 			var data = Dbf.Load(file);
 			if (data.Rows.Count > 0 && !Convert.IsDBNull(data.Rows[0]["REGDATE"]))
 				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["REGDATE"]);
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r["DOCNUMBER"], CultureInfo.InvariantCulture);
 				var line = document.NewLine();
 				line.Code = Convert.ToString(r["GOODSID"], CultureInfo.InvariantCulture);
@@ -29,9 +29,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Multifile
 				line.Period = Convert.ToDateTime(r["BESTBEFORE"]).ToShortDateString();
 				line.Certificates = r["ANALYSIS"].ToString();
 				line.SetNds(Convert.ToUInt32(r["NDS"], CultureInfo.InvariantCulture));
-				line.RegistryCost = Convert.IsDBNull(r["PRICEREG"]) ? null : (decimal?)Convert.ToDecimal(r["PRICEREG"]);
+				line.RegistryCost = Convert.IsDBNull(r["PRICEREG"]) ? null : (decimal?) Convert.ToDecimal(r["PRICEREG"]);
 				if (data.Columns.Contains("ISDEC"))
-					line.VitallyImportant = Convert.IsDBNull(r["ISDEC"]) ? null : (bool?)(Convert.ToUInt32(r["ISDEC"]) == 1);
+					line.VitallyImportant = Convert.IsDBNull(r["ISDEC"]) ? null : (bool?) (Convert.ToUInt32(r["ISDEC"]) == 1);
 				line.SerialNumber = r["SERIES"].ToString();
 				return line;
 			}).ToList();
