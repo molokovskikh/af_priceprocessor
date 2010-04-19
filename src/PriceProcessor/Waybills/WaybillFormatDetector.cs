@@ -28,7 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			// Если поставщик - это челябинский Морон, для него отдельный парсер 
 			// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
-			if ((documentLog != null) && (documentLog.Supplier.Id == 338))
+			if ((documentLog != null) && (documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001))
 				type = typeof (Moron_338_SpecialParser);
 
 			if (type == null)

@@ -48,6 +48,8 @@ namespace PriceProcessor.Test
 
 		private SummaryInfo _summary = new SummaryInfo();
 
+		private bool IsEmlFile = false;
+
 		[SetUp]
 		public void DeleteDirectories()
 		{
@@ -74,16 +76,22 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			});
 
 			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
-			
-			var message = TestHelper.BuildMessageWithAttachments(
-				String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
-				String.Format("{0}@test.test", client.Id), fileNames.ToArray());
+
+			byte[] bytes;
+			if (IsEmlFile)
+				bytes = File.ReadAllBytes(fileNames[0]);
+			else
+			{
+				var message = TestHelper.BuildMessageWithAttachments(
+					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
+					String.Format("{0}@test.test", client.Id), fileNames.ToArray());
+				bytes = message.ToByteData();
+			}
 
 			TestHelper.StoreMessage(
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
-				Settings.Default.IMAPSourceFolder, message.ToByteData());
-
+				Settings.Default.IMAPSourceFolder, bytes);
 			_summary.Client = client;
 			_summary.Supplier = supplier;
 		}
@@ -201,6 +209,17 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
+		}
+
+		[Test, Ignore("Оставляю на случай если нужно положить письмо с накладной в ящик и подебажить")]
+		public void Parse_eml_file()
+		{
+			var files = new List<string> {
+				@"C:\Users\dorofeev\Desktop\1.eml",
+			};
+			IsEmlFile = true;
+			SetUp(files);
+			Process_waybills();
 		}
 	}
 }

@@ -54,5 +54,35 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.Lines[0].Period, Is.Null);			
 		}
+
+		[Test]
+		public void Parse_Ekaterinburg_farm()
+		{
+			DocumentLog documentLog = null;
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(4001);
+				documentLog = new DocumentLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\bi055540.DBF", documentLog) is Moron_338_SpecialParser);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\bi055540.DBF", documentLog);
+
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("55540"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("19/02/2010")));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("252839416"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Азитромицин 250мг капс №6"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Вертекс ЗАО"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("РОССИЯ"));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(67.17));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(70.59));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.11.2011"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ03.Д01939"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("231009"));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(document.Lines[0].VitallyImportant, Is.True);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(80.70));
+		}
 	}
 }

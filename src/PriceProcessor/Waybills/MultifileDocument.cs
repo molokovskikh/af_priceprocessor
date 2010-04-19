@@ -136,7 +136,7 @@ namespace Inforoom.PriceProcessor.Waybills
 						bodyFile = file;
 						headerFile = GetSecondFile(bodyFile, extractedFiles);
 					}
-					if (String.IsNullOrEmpty(headerFile) && String.IsNullOrEmpty(bodyFile))
+					if (String.IsNullOrEmpty(headerFile) || String.IsNullOrEmpty(bodyFile))
 					{
 						resultList.Add(file);
 						continue;
