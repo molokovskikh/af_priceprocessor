@@ -57,7 +57,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
-				line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
+				if (data.Columns.Contains("NACENKA"))
+					line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)

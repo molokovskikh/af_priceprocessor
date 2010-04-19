@@ -48,7 +48,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
-				line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
+				if (data.Columns.Contains("NACENKA"))
+					line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				if (data.Columns.Contains("OTHER") && r["OTHER"] != DBNull.Value)
@@ -59,7 +60,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
-					line.VitallyImportant = Convert.ToUInt32(r[vitallyImportantColumn]) == 1;
+					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
 				if (data.Columns.Contains("PR_REG"))
 					line.RegistryCost = Convert.IsDBNull(r["PR_REG"]) ? null : (decimal?)Convert.ToDecimal(r["PR_REG"], CultureInfo.InvariantCulture);
 				return line;
