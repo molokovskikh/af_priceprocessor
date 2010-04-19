@@ -48,6 +48,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (data.Columns.Contains("GNVLS"))
 					line.VitallyImportant = Convert.IsDBNull(r["GNVLS"]) ? null : (bool?)(Convert.ToUInt32(r["GNVLS"]) == 1);
 				line.SerialNumber = r["LOT_NUMBER"].ToString();
+				if (data.Columns.Contains("PER_MARKUP"))
+					line.SupplierPriceMarkup = Convert.IsDBNull(r["PER_MARKUP"]) ? null : (decimal?)Convert.ToDecimal(r["PER_MARKUP"], CultureInfo.InvariantCulture);
 				return line;
 			}).ToList();
 			return document;

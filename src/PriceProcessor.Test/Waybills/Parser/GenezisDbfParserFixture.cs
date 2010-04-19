@@ -69,7 +69,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
-		public void Parse_with_different_columns()
+		public void Parse_Genezis_Ekaterinburg()
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3703756_Генезис_Екатеринбург_905875_.dbf");
 
@@ -90,6 +90,31 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(2.85));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+		}
+
+		[Test]
+		public void Parse_Genezis_Perm()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\898091.DBF");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(1));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("898091"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("14/04/2010")));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("46338"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ФЛЕМОКЛАВ СОЛЮТАБ ТАБ. 500МГ+125МГ N20"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("АСТЕЛЛАС ФАРМА ЮРОП Б.В."));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Нидерланды"));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(452.70));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(503.00));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0.00));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("09G10/57"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОССNLФМ09Д00878"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.07.2012"));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(273.27000));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(300.60));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
 		}
 	}
 }
