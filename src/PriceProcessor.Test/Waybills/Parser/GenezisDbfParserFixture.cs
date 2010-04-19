@@ -67,5 +67,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsNull(doc.Lines[0].VitallyImportant);
 			Assert.IsNull(doc.Lines[1].VitallyImportant);
 		}
+
+		[Test]
+		public void Parse_with_different_columns()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3703756_Генезис_Екатеринбург_905875_.dbf");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(3));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("905875"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/04/2010")));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("175"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("АСКОРБИНОВ. К-ТА ТАБ. 0.1Г N10 С ГЛЮК."));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("ИРБИТСКИЙ ХИМФАРМЗАВОД ОАО"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Российская Федерация"));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(2.37));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(100));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("250210"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОССRUФМ05Д67000"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.03.2011"));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(2.59000));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(2.85));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+		}
 	}
 }
