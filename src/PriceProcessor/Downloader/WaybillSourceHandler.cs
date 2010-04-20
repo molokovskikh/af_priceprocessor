@@ -17,6 +17,29 @@ using Common.Tools;
 
 namespace Inforoom.Downloader
 {
+	public class DocumentForParsing
+	{
+		public DocumentForParsing()
+		{
+			FileName = String.Empty;
+			DocumentLog = null;
+		}
+
+		public DocumentForParsing(DocumentLog log)
+		{
+			DocumentLog = log;
+			FileName = log.GetFileName();
+		}
+
+		public DocumentForParsing(DocumentLog log, string fileName)
+		{
+			DocumentLog = log;
+			FileName = fileName;
+		}
+
+		public string FileName { get; set; }		
+		public DocumentLog DocumentLog { get; set;}
+	}
 
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
@@ -481,11 +504,13 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 					else
 						savedFiles.Add(CurrFileName);
 				}
-				var documents = new List<string>();
-				documents = MultifileDocument.Merge(savedFiles);
-
+				var documentLogsIds = ProcessWaybillFile(savedFiles, source);
+				var documents = MultifileDocument.Merge(documentLogsIds.ToArray());
 				foreach (var file in documents)
-					ProcessWaybillFile(file, source);
+				{
+					WaybillService.ParserDocument(file.DocumentLog.Id, file.FileName);
+					MultifileDocument.DeleteMergedFiles(file.FileName);
+				}
 				Cleanup();
 				source.Delete();
 				dtSources.AcceptChanges();
@@ -495,22 +520,30 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				throw new EMailSourceHandlerException("Не найден источник.");
 		}
 
-		protected void ProcessWaybillFile(string InFile, DataRow drCurrent)
+		protected IList<uint> ProcessWaybillFile(IList<string> files, DataRow drCurrent)
 		{
-			//Массив файлов 
-			var Files = new[] { InFile };
-			if (ArchiveHelper.IsArchive(InFile))
+			var documentLogsIds = new List<uint>();
+
+			foreach (var archiveFile in files)
 			{
-				Files = Directory.GetFiles(InFile + ExtrDirSuffix + 
-					Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+				var extractedFiles = new[] { archiveFile };
+				if (ArchiveHelper.IsArchive(archiveFile))
+					extractedFiles = Directory.GetFiles(archiveFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+				foreach (var s in extractedFiles)
+				{
+					var documentLogId = MoveWaybill(s, drCurrent);
+					if (documentLogId.Equals(0))
+					{
+						_log.Error(String.Format("Ошибка при обработке файла {0}", s));
+						continue;
+					}
+					documentLogsIds.Add(documentLogId);
+				}				
 			}
-			foreach (string s in Files)
-			{
-				MoveWaybill(s, drCurrent);
-			}
+			return documentLogsIds;
 		}
 
-		protected void MoveWaybill(string FileName, DataRow drCurrent)
+		protected uint MoveWaybill(string FileName, DataRow drCurrent)
 		{
 			bool Quit = false;
 
@@ -578,15 +611,20 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					OutFileName = PriceProcessor.FileHelper.NormalizeFileName(
 						String.Format(formatDestNameString, Path.GetFileNameWithoutExtension(FileName)));
 
-					WaybillHelper.CopyToClientDir(FileName, formatDestNameString);
+					if (File.Exists(OutFileName))
+						try
+						{
+							File.Delete(OutFileName);
+						}
+						catch { }
+					File.Move(FileName, OutFileName);
 
 					transaction.Commit();
 					Quit = true;
 					// Сохраняем накладную в локальной директории
 					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
-					WaybillService.ParserDocument(Convert.ToUInt32(documentLogId), OutFileName);
-					if (MultifileDocument.IsMergedDocument(OutFileName))
-						File.Delete(OutFileName);
+
+					return Convert.ToUInt32(documentLogId);
 				}
 				catch (MySqlException MySQLErr)
 				{
@@ -621,6 +659,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 					throw;
 				}
 			} while (!Quit);
+			return 0;
 		}
 
 		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode,

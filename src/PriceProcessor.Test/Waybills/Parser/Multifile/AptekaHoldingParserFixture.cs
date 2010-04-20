@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using System.IO;
+using Test.Support;
 
 namespace PriceProcessor.Test.Waybills.Parser.Multifile
 {
@@ -18,21 +22,69 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[SetUp]
 		public void Setup()
 		{
+			TestHelper.RecreateDirectories();
 			parser = new AptekaHoldingParser();
 			document = new Document();
+		}
+
+		private void CreateClientDirectory(uint clientId)
+		{
+			var directory = Settings.Default.FTPOptBoxPath;
+			if (!Directory.Exists(directory))
+				Directory.CreateDirectory(directory);
+
+			directory = Path.Combine(directory, clientId.ToString().PadLeft(3, '0'));
+			if (!Directory.Exists(directory))
+				Directory.CreateDirectory(directory);
+
+			directory = Path.Combine(directory, DocType.Waybill + "s");
+			if (!Directory.Exists(directory))
+				Directory.CreateDirectory(directory);
+		}
+
+		private uint[] GetFilesForParsing(params string[] filePaths)
+		{
+			var resultList = new List<uint>();
+			uint documentLogId = 0;
+			uint clientCode = 5;
+			foreach (var filePath in filePaths)
+			{
+				With.Connection(connection => {
+					var cmdInsert = new MySqlCommand(@"
+INSERT INTO logs.document_logs (FirmCode, ClientCode, FileName, DocumentType)
+VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id();", connection);
+
+					cmdInsert.Parameters.AddWithValue("?FirmCode", clientCode);
+					cmdInsert.Parameters.AddWithValue("?ClientCode", clientCode);
+					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(filePath));
+					cmdInsert.Parameters.AddWithValue("?DocumentType", DocType.Waybill);
+					documentLogId = Convert.ToUInt32(cmdInsert.ExecuteScalar());
+				});
+				resultList.Add(documentLogId);
+				var clientDir = Path.Combine(Settings.Default.WaybillsPath, clientCode.ToString().PadLeft(3, '0'));
+				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");
+				var name = String.Format("{0}_{1}({2}){3}",
+					documentLogId,
+					"Протек-15",
+					Path.GetFileNameWithoutExtension(filePath),
+					Path.GetExtension(filePath));
+				CreateClientDirectory(clientCode);
+				File.Copy(filePath, Path.Combine(documentDir, name));
+			}
+			return resultList.ToArray();
 		}
 
 		[Test]
 		public void Parse()
 		{
-			var files = new List<string> {
+			var files = GetFilesForParsing(
                 @"..\..\Data\Waybills\multifile\h271433.dbf",
 				@"..\..\Data\Waybills\multifile\b271433.dbf"
-			};
+			);
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
 
-			parser.Parse(mergedFiles[0], document);
+			parser.Parse(mergedFiles[0].FileName, document);
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("00000271433/0"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("26/03/2010")));
 			Assert.That(document.Lines.Count, Is.EqualTo(6));
@@ -54,13 +106,10 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Check_file_format()
 		{
-			var files = new List<string> {
+			var files = GetFilesForParsing (
                 @"..\..\Data\Waybills\multifile\h271433.dbf",
 				@"..\..\Data\Waybills\multifile\b271433.dbf"
-			};
-			var mergedFilePath = @"..\..\Data\Waybills\multifile\merged_h271433.dbf";
-			if (File.Exists(mergedFilePath))
-				File.Delete(mergedFilePath);
+			);
 
 			var mergedFiles = MultifileDocument.Merge(files);			
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
@@ -71,22 +120,20 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
-			Assert.IsTrue(AptekaHoldingParser.CheckFileFormat(mergedFiles[0]));
-
-			File.Delete(mergedFiles[0]);
+			Assert.IsTrue(AptekaHoldingParser.CheckFileFormat(mergedFiles[0].FileName));
 		}
 
 		[Test]
 		public void Parse_with_znvls()
 		{
-			var files = new List<string> {
+			var files = GetFilesForParsing (
 				@"..\..\Data\Waybills\multifile\h150410_46902_.dbf",
-				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf",
-			};
+				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf"
+			);
 
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
-			parser.Parse(mergedFiles[0], document);
+			parser.Parse(mergedFiles[0].FileName, document);
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("46902"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("15/04/2010")));
 			Assert.That(document.Lines.Count, Is.EqualTo(9));

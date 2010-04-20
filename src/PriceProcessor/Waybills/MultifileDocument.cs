@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
 using Common.Tools;
+using Inforoom.Downloader;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -37,35 +40,41 @@ namespace Inforoom.PriceProcessor.Waybills
 			return GetPartialFileName("b", mergedFileName);
 		}
 
-		private static bool IsPartialFile(string filePath, string nameStartString)
+		private static bool IsPartialFile(DocumentLog documentLog, string nameStartString)
 		{
-			return Path.GetFileNameWithoutExtension(filePath).StartsWith(nameStartString) &&
-				Path.GetExtension(filePath).Equals(".dbf", StringComparison.OrdinalIgnoreCase);			
+			return Path.GetFileNameWithoutExtension(documentLog.FileName).StartsWith(nameStartString) &&
+				Path.GetExtension(documentLog.FileName).Equals(".dbf", StringComparison.OrdinalIgnoreCase);			
 		}
 
-		private static bool IsHeaderFile(string file)
+		private static bool IsHeaderFile(DocumentLog file)
 		{
 			return IsPartialFile(file, "h");
 		}
 
-		private static string GetSecondFile(string headerFile, IEnumerable<string> files)
+		private static DocumentLog GetSecondFile(DocumentLog documentLog, IEnumerable<DocumentLog> files)
 		{
+			var headerFile = documentLog.FileName;
 			var template = Path.GetFileName(headerFile).Substring(1);
+			var directory = Path.GetDirectoryName(headerFile);
 			foreach (var file in files)
-				if (file.EndsWith(template) && !headerFile.Equals(file, StringComparison.OrdinalIgnoreCase))
+			{
+				if (file.FileName.EndsWith(template) &&
+					!headerFile.Equals(file.FileName, StringComparison.OrdinalIgnoreCase) &&
+					Path.GetDirectoryName(file.FileName).Equals(directory))
 					return file;
-			return String.Empty;
+			}
+			return null;
 		}
 
-		private static bool IsBodyFile(string file)
+		private static bool IsBodyFile(DocumentLog documentLog)
 		{
-			return IsPartialFile(file, "b");
+			return IsPartialFile(documentLog, "b");
 		}
 
-		private static string MergeFiles(string headerFilePath, string bodyFilePath)
+		private static string MergeFiles(DocumentLog headerFile, DocumentLog bodyFile)
 		{
-			var tableHeader = Dbf.Load(headerFilePath);
-			var tableBody = Dbf.Load(bodyFilePath);
+			var tableHeader = Dbf.Load(headerFile.GetFileName());
+			var tableBody = Dbf.Load(bodyFile.GetFileName());
 
 			var commonColumns = new List<string>();
 			foreach (DataColumn column in tableHeader.Columns)
@@ -92,7 +101,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				throw new Exception(String.Format(@"
 При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1 и нет колонок {2} или {3}.
 Файл-заголовок: {0}
-Файл-тело: {1}", headerFilePath, bodyFilePath, headerColumnName, bodyColumnName));
+Файл-тело: {1}", headerFile.FileName, bodyFile.FileName, headerColumnName, bodyColumnName));
 
 			foreach (DataRow headerRow in tableHeader.Rows)
 			{
@@ -110,45 +119,47 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			tableBody.AcceptChanges();
 			// Path.GetFileName(headerFilePath).Substring(1) потому что первая буква "h" нам не нужна
-			var mergedFileName = Path.Combine(Path.GetDirectoryName(headerFilePath),
-				MergedPrefix + Path.GetFileName(headerFilePath).Substring(1));
+			var mergedFileName = Path.Combine(Path.GetTempPath(), MergedPrefix + Path.GetFileName(headerFile.FileName).Substring(1));
+			if (File.Exists(mergedFileName))
+				File.Delete(mergedFileName);
 			Dbf.Save(tableBody, mergedFileName);
 			return mergedFileName;
 		}
 
-		public static List<string> Merge(List<string> extractedFiles)
+		public static IList<DocumentForParsing> Merge(uint[] ids)
 		{
+			DocumentLog headerFile = null;
+			DocumentLog bodyFile = null;
 			try
 			{
-				var resultList = new List<string>();
-				for (var i = 0; i < extractedFiles.Count; i++)
+				var resultList = new List<DocumentForParsing>();
+				var documents = ids.Select(id => ActiveRecordBase<DocumentLog>.Find(id)).ToList();
+				
+				for (var i = 0; i < documents.Count; i++)
 				{
-					var headerFile = String.Empty;
-					var bodyFile = String.Empty;
-					var file = extractedFiles[i];
+					headerFile = null;
+					bodyFile = null;
+					var file = documents[i];
 					if (IsHeaderFile(file))
 					{
 						headerFile = file;
-						bodyFile = GetSecondFile(headerFile, extractedFiles);
+						bodyFile = GetSecondFile(headerFile, documents);
 					}
 					if (IsBodyFile(file))
 					{
 						bodyFile = file;
-						headerFile = GetSecondFile(bodyFile, extractedFiles);
+						headerFile = GetSecondFile(bodyFile, documents);
 					}
-					if (String.IsNullOrEmpty(headerFile) || String.IsNullOrEmpty(bodyFile))
-					{
-						resultList.Add(file);
-						continue;
-					}
-					if (!String.IsNullOrEmpty(headerFile) && !String.IsNullOrEmpty(bodyFile))
+					if ((headerFile != null) && (bodyFile != null))
 					{
 						var mergedFile = MergeFiles(headerFile, bodyFile);
-						resultList.Add(mergedFile);
+						resultList.Add(new DocumentForParsing(file, mergedFile));
+						documents.Remove(headerFile);
+						documents.Remove(bodyFile);
 						i--;
 					}
-					extractedFiles.Remove(headerFile);
-					extractedFiles.Remove(bodyFile);
+					else
+						resultList.Add(new DocumentForParsing(file));						
 				}
 				return resultList;
 			}
@@ -156,8 +167,28 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				var _log = LogManager.GetLogger(typeof(MultifileDocument));
 				_log.Error("Ошибка при слиянии многофайловых накладных", e);
-				return extractedFiles;
+				WaybillService.SaveWaybill(headerFile.GetFileName());
+				WaybillService.SaveWaybill(bodyFile.GetFileName());
+				return ids.Select(id => new DocumentForParsing(ActiveRecordBase<DocumentLog>.Find(id))).ToList();;
 			}
+		}
+
+		public static void DeleteMergedFiles(string fileName)
+		{
+			if (IsMergedDocument(fileName) && File.Exists(fileName))
+				File.Delete(fileName);			
+		}
+
+		public static void DeleteMergedFiles(IEnumerable<string> filePaths)
+		{
+			foreach (var file in filePaths)
+				DeleteMergedFiles(file);
+		}
+
+		public static void DeleteMergedFiles(IEnumerable<DocumentForParsing> filePaths)
+		{
+			foreach (var file in filePaths)
+				DeleteMergedFiles(file.FileName);
 		}
 	}
 }

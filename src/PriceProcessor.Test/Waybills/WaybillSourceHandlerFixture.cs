@@ -96,6 +96,36 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			_summary.Supplier = supplier;
 		}
 
+		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
+		{
+			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
+			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));			
+		}
+
+		private void CheckDocumentLogEntry(int waitingCountEntries)
+		{
+			using (new SessionScope())
+			{
+				var logs = TestDocumentLog.Queryable.Where(log =>
+					log.ClientCode == _summary.Client.Id &&
+					log.FirmCode == _summary.Supplier.Id &&
+					log.AddressId == _summary.Client.Addresses[0].Id);
+				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
+			}
+		}
+
+		private void CheckDocumentEntry(int waitingCountEntries)
+		{
+			using (new SessionScope())
+			{
+				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
+					doc.ClientCode == _summary.Client.Id &&
+					doc.AddressId == _summary.Client.Addresses[0].Id);
+				Assert.That(documents.Count(), Is.EqualTo(waitingCountEntries));
+			}			
+		}
+
 		private void Process_waybills()
 		{
 			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -209,6 +239,45 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
+		}
+
+		[Test, Description("Накладная в формате dbf и первая буква в имени h (как у заголовка двухфайловой накладной)")]
+		public void Parse_when_waybill_like_multifile_header()
+		{
+			var files = new List<string> {@"..\..\Data\Waybills\h1016416.DBF",};
+
+			SetUp(files);
+			Process_waybills();
+
+			CheckClientDirectory(1, DocType.Waybill);
+			CheckDocumentLogEntry(1);
+			CheckDocumentEntry(1);
+		}
+
+		[Test, Description("Накладная в формате dbf и первая буква в имени b (как у тела двухфайловой накладной)")]
+		public void Parse_when_waybill_like_multifile_body()
+		{
+			var files = new List<string> { @"..\..\Data\Waybills\bi055540.DBF", };
+
+			SetUp(files);
+			Process_waybills();
+
+			CheckClientDirectory(1, DocType.Waybill);
+			CheckDocumentLogEntry(1);
+			CheckDocumentEntry(1);
+		}
+
+		[Test, Description("2 накладные в формате dbf, первые буквы имен h и b, но это две разные накладные")]
+		public void Parse_like_multifile_but_is_not()
+		{
+			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
+
+			SetUp(files);
+			Process_waybills();
+
+			CheckClientDirectory(2, DocType.Waybill);
+			CheckDocumentLogEntry(2);
+			CheckDocumentEntry(2);
 		}
 
 		[Test, Ignore("Оставляю на случай если нужно положить письмо с накладной в ящик и подебажить")]

@@ -7,6 +7,7 @@ using System.Text;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
 using Common.Tools;
+using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
@@ -53,7 +54,8 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public string GetFileName()
 		{
-			var clientDir = Path.Combine(Settings.Default.WaybillsPath, ClientCode.ToString().PadLeft(3, '0'));
+			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
+			var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
 			var documentDir = Path.Combine(clientDir, DocumentType + "s");
 			var file = String.Format("{0}_{1}",
 				Id,
@@ -250,22 +252,26 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				using (new SessionScope())
 				{
-					var documents = ids.Select(id => ActiveRecordBase<DocumentLog>.Find(id)).ToList();
 					var detector = new WaybillFormatDetector();
-					var docs = documents.Select(d => {
+					var docsForParsing = MultifileDocument.Merge(ids);
+
+					var docs = docsForParsing.Select(d => {
 						try
 						{
-							var parser = detector.DetectParser(d.GetFileName(), d);
-							return parser.Parse(d.GetFileName(), new Document(d));
+							if (d.DocumentLog.DocumentType.Equals(DocType.Reject))
+								return null;
+							var parser = detector.DetectParser(d.FileName, d.DocumentLog);
+							return parser.Parse(d.FileName, new Document(d.DocumentLog));
 						}
-						catch(Exception e)
+						catch (Exception e)
 						{
-							var filename = d.GetFileName();
+							var filename = d.FileName;
 							_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
 							SaveWaybill(filename);
 							return null;
 						}
-					}).Where(d => d != null && (d.DocumentType == DocType.Waybill)).ToList();
+					}).Where(d => d != null).ToList();
+					MultifileDocument.DeleteMergedFiles(docsForParsing);
 
 					using (new TransactionScope())
 					{
