@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using Inforoom.PriceProcessor.Waybills;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using ExecuteTemplate;
@@ -13,6 +14,13 @@ using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
+	public class ProcessedDocument
+	{
+		public uint DocumentLogId { get; set; }
+		public string FormattedFilePath { get; set; }
+		public string TempFilePath { get; set; }
+	}
+
 	public class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
@@ -247,15 +255,26 @@ and st.SourceID = 4";
 
 			foreach (var s in Files)
 			{
-				if (!MoveWaybill(InFile, s, drCurrent, documentReader))
+				var processedDocument = MoveWaybill(InFile, s, drCurrent, documentReader);
+				if (processedDocument == null)
 					processed = false;
+				else
+				{
+					WaybillService.ParserDocument(Convert.ToUInt32(processedDocument.DocumentLogId), processedDocument.FormattedFilePath);
+					if (File.Exists(processedDocument.FormattedFilePath))
+						File.Delete(processedDocument.FormattedFilePath);
+					if (File.Exists(processedDocument.TempFilePath))
+						File.Delete(processedDocument.TempFilePath);
+				}
 			}
 			return processed;
 		}
 
-		protected bool MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
+		protected ProcessedDocument MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			return MethodTemplate.ExecuteMethod(
+			ProcessedDocument processedDocument = null;
+
+			MethodTemplate.ExecuteMethod(
 				new ExecuteArgs(),
 				delegate(ExecuteArgs args)
 				{
@@ -361,12 +380,12 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 							if (!Directory.Exists(aptekaClientDirectory))
 								Directory.CreateDirectory(aptekaClientDirectory);
 
-							var outFileName = outFileNameTemplate + cmdInsert.ExecuteScalar() + "_"
+							var documentLogId = cmdInsert.ExecuteScalar();							
+							var outFileName = outFileNameTemplate + documentLogId + "_"
 							                     + drCurrent["ShortName"]
 							                     + "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
 							                     + Path.GetExtension(formatFile);
 							outFileName = PriceProcessor.FileHelper.NormalizeFileName(outFileName);
-
 							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
 							if (File.Exists(outFileName))
 								try
@@ -384,15 +403,14 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 							_logger.InfoFormat("Файл {0} скопирован в документы клиента.", outFileName);
 							// Сохраняем накладную в локальной папке
 							SaveWaybill(clientAddressId, _currentDocumentType, outFileName);
+
+							processedDocument = new ProcessedDocument {
+								DocumentLogId = Convert.ToUInt32(documentLogId),
+								FormattedFilePath = formatFile,
+								TempFilePath = FileName,
+							};
 						}
-
-						if (File.Exists(formatFile))
-							File.Delete(formatFile);
-						if (File.Exists(FileName))
-							File.Delete(FileName);
-
 					}
-
 					return true;
 				},
 				false,
@@ -400,6 +418,8 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 				true,
 				false,
 				(e, ex) => Ping());
+
+			return processedDocument;
 		}
 
 		private void WriteLog(int? documentType, int? logSupplierId, int? logAddressId, string logFileName, string logAddition)
