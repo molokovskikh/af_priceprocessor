@@ -40,6 +40,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				registryCostColumn = "PR_REG";
 			else if (data.Columns.Contains("PRICE_RR"))
 				registryCostColumn = "PRICE_RR";
+			else if (data.Columns.Contains("REESTRPRIC"))
+				registryCostColumn = "REESTRPRIC";
 
 			if (data.Columns.Contains("DOCUMENT"))
 				certificatesColumn = "DOCUMENT";
