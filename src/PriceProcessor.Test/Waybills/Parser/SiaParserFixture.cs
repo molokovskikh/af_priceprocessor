@@ -156,5 +156,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(121.28));
 			Assert.That(document.Lines[2].ProducerCost, Is.Null);
 		}
+
+		[Test]
+		public void Parse_Moron_zhnvls()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(9));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("482025"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.True);
+			Assert.That(document.Lines[3].VitallyImportant, Is.True);
+			Assert.That(document.Lines[7].VitallyImportant, Is.True);
+		}
 	}
 }

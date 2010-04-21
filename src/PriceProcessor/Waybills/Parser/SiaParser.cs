@@ -41,6 +41,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				vitallyImportantColumn = "JNVLS";
 			else if (data.Columns.Contains("GZWL"))
 				vitallyImportantColumn = "GZWL";
+			else if (data.Columns.Contains("Priznak_pr"))
+				vitallyImportantColumn = "Priznak_pr";
 
 			if (data.Columns.Contains("REESTR"))
 				registryCostColumn = "REESTR";
