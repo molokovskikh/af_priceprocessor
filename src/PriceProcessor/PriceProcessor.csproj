@@ -210,6 +210,7 @@
     <Compile Include="Waybills\Parser\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParser.cs" />
+    <Compile Include="Waybills\Parser\Protek28Parser.cs" />
     <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParser.cs" />

@@ -52,6 +52,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (GenezisDbfParser);
 			if (AptekaHoldingParser.CheckFileFormat(file))
 				return typeof (AptekaHoldingParser);
+			if (Protek28Parser.CheckFileFormat(file))
+				return typeof (Protek28Parser);
 			throw new Exception("Ќе удалось определить тип парсера дл€ DBF формата");
 		}
 	}
