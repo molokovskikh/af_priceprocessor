@@ -156,5 +156,28 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(121.28));
 			Assert.That(document.Lines[2].ProducerCost, Is.Null);
 		}
+
+		[Test]
+		public void Parse_ForaFarmLogic_Moscow()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3700278_ФораФарм_лоджик-Москва_37607_.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(66));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("37607"));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("9452"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("QS Юниор cалфетка влажная д/девочек (земляника) 10шт"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Моск. ф-ка влажных салфеток"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("РОССИЯ"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(7.50));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(6.36));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].RegistryCost, Is.Null);
+			Assert.That(document.Lines[0].Period, Is.EqualTo("02.12.2011"));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.АЕ51.В13746"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("1209"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("08/04/2010")));
+		}
 	}
 }
