@@ -583,7 +583,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressI
 
 			MySqlTransaction transaction = null;
 
-			var AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + 
+			var AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.WaybillsPath) + 
 				_aptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
 			var OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
 			var OutFileName = String.Empty;

@@ -383,6 +383,8 @@ Content-Disposition: attachment;
 				Directory.Delete(Settings.Default.FTPOptBoxPath, true);
 			if (Directory.Exists(Settings.Default.DownWaybillsPath))
 				Directory.Delete(Settings.Default.DownWaybillsPath, true);
+			if (Directory.Exists(Settings.Default.WaybillsPath))
+				Directory.Delete(Settings.Default.WaybillsPath, true);
 			Program.InitDirs(new[]
 				         	{
 				         		Settings.Default.BasePath,

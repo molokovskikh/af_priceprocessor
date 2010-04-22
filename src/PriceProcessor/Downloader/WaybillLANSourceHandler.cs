@@ -373,7 +373,7 @@ VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition)
 								continue;
 							}
 							// Директория, куда будут складываться накладные и отказы для конкретного адреса
-							var aptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + 
+							var aptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.WaybillsPath) + 
 								clientAddressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
 							var outFileNameTemplate = aptekaClientDirectory + Path.DirectorySeparatorChar;
 
