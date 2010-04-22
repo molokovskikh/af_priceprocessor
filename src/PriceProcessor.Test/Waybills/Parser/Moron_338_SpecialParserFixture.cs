@@ -117,5 +117,25 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(284.2500));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("AR5148"));
 		}
+
+		[Test]
+		public void Parse_Moron_zhnvls()
+		{
+			DocumentLog documentLog = null;
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(338);
+				documentLog = new DocumentLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog);
+			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog) is Moron_338_SpecialParser);
+
+			Assert.That(document.Lines.Count, Is.EqualTo(9));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("482025"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.True);
+			Assert.That(document.Lines[3].VitallyImportant, Is.True);
+			Assert.That(document.Lines[7].VitallyImportant, Is.True);
+		}
 	}
 }
