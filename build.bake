@@ -1,10 +1,15 @@
 ﻿import System
+import System.ServiceModel
+import LumiSoft.Net.IMAP from "lib/LumiSoft.Net.dll"
+import LumiSoft.Net.IMAP.Client
+import LumiSoft.Net.Mime
+import LumiSoft.Net.SMTP.Client
+import System.IO
 import file from Deploy.bake
 import file from WindowsServiceSupport.bake
 import file from Lib.bake
 import file from Migration.bake
 import file from Test.bake
-import System.ServiceModel
 
 [ServiceContract]
 interface IWaybillService: 
@@ -34,3 +39,32 @@ Task @default, [@BuildService]
 
 Task @deploy, [@Migrate, @DeployService, @SendDeployNotification]
 
+Desc """
+Переотправляет не обработанные накладные, берет письмо из kvasovtest и переотправляет его
+
+Полезна если что то поломалось а пришли накладные
+Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
+"""
+Task @ResendWaybills:
+	using client = IMAP_Client():
+		client.Connect("box.analit.net", 143)
+		client.Authenticate("kvasovtest@analit.net", "12345678")
+		client.SelectFolder("INBOX")
+		ProcessedUID = List of string()
+		sequence_set = IMAP_SequenceSet()
+		sequence_set.Parse("1:*", long.MaxValue)
+		items = client.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false)
+		for item in items:
+			sequence = IMAP_SequenceSet()
+			sequence.Parse(item.UID.ToString(), long.MaxValue)
+			message = client.FetchMessages(sequence, IMAP_FetchItem_Flags.Message, false, true)
+			mine = Mime.Parse(message[0].MessageData)
+			for attachment in mine.Attachments:
+				attachedMime = Mime.Parse(attachment.Data)
+				print "Resend ${attachedMime.MainEntity.Subject}"
+				SmtpClientEx.QuickSendSmartHost("box.analit.net", 
+					25, 
+					Environment.MachineName,
+					"service@analit.net",
+					("root@waybills.analit.net",),
+					MemoryStream(attachedMime.Attachments[0].Data))
