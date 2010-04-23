@@ -51,8 +51,18 @@ namespace Inforoom.Formalizer
 			else
 				SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName));
 
+			string downloadId = null;
+			var fileName = Path.GetFileNameWithoutExtension(p.InputFileName);
+			if (fileName.IndexOf("_") > -1)
+			{
+				downloadId = fileName.Substring(fileName.IndexOf("_") + 1, fileName.Length - fileName.IndexOf("_") - 1);
+				uint id;
+				uint.TryParse(downloadId, out id);
+				downloadId = id.ToString();
+			}
+
 			LogToDb(command => {
-				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs )";
+				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Form, Unform, Zero, Forb, ResultId, TotalSecs, DownloadId) VALUES (NOW(), ?Host, ?PriceItemId, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs, ?DownloadId)";
 				command.Parameters.Clear();
 				command.Parameters.AddWithValue("?Host", Environment.MachineName);
 				command.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
@@ -62,6 +72,7 @@ namespace Inforoom.Formalizer
 				command.Parameters.AddWithValue("?Forb", p.forbCount);
 				command.Parameters.AddWithValue("?ResultId", (p.maxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
 				command.Parameters.AddWithValue("?TotalSecs", FormSecs);
+				command.Parameters.AddWithValue("?DownloadId", downloadId);
 				command.ExecuteNonQuery();
 			});
 

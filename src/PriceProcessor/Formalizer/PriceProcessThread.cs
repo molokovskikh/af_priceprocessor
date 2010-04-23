@@ -235,6 +235,7 @@ namespace Inforoom.Formalizer
 						}
 
 						_workPrice.downloaded = _processItem.Downloaded;
+						_workPrice.InputFileName = _processItem.FilePath;
 
 						_processState = PriceProcessState.CallFormalize;
 						_workPrice.Formalize();

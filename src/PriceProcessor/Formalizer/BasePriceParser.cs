@@ -360,6 +360,8 @@ namespace Inforoom.Formalizer
 		protected readonly ILog _logger;
 
 
+		public string InputFileName { get; set; }
+
 		/// <summary>
 		/// Конструктор парсера
 		/// </summary>

@@ -49,7 +49,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			//Получили список файдов и добавил его на обраобтку
 			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath))
+			{
+				_logger.InfoFormat("Загрузил файл {0} из очереди", priceFile);
 				AddPriceFileToList(priceFile, false);
+			}
+
+			foreach (var priceProcessThread in PriceItemList.list)
+			{
+				_logger.InfoFormat("Файл в очереди {0}", priceProcessThread.FilePath);
+			}
 
 			_errorMessages = new Hashtable();
 
