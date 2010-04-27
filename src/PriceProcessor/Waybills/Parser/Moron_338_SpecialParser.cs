@@ -93,7 +93,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				   data.Columns.Contains("PROIZ") &&
 				   data.Columns.Contains("COUNTRY") &&
 				   data.Columns.Contains("PR_PROIZ") &&
-				   data.Columns.Contains("PCT_NDS");
+				   data.Columns.Contains("PCT_NDS") &&
+				   data.Columns.Contains("VOLUME");
 		}
 	}
 }

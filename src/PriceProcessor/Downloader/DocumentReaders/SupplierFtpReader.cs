@@ -9,7 +9,7 @@ using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 {
-	public class GenezisPermReader : BaseDocumentReader
+	public class SupplierFtpReader : BaseDocumentReader
 	{
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
@@ -37,9 +37,6 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 
 			foreach (DataRow drApteka in ds.Tables[0].Rows)
 				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
-
-			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с кодом доставки = " + supplierDeliveryId + ".");
 
 			return list;
 		}

@@ -187,7 +187,7 @@ GROUP BY SupplierId
 		private IList<DocumentLog> ProcessWaybill(DocType documentType, WaybillSource waybillSource, DownloadedFile waybill)
 		{
 			var documentLogs = new List<DocumentLog>();
-			var reader = new GenezisPermReader();
+			var reader = new SupplierFtpReader();
 
 			try
 			{
