@@ -119,6 +119,41 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_Katren_Ufa_with_column_vital()
+		{
+			DocumentLog documentLog = null;
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(7146u);
+				documentLog = new DocumentLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\K_12345.dbf", documentLog) is Moron_338_SpecialParser);
+
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\K_12345.dbf", documentLog);
+			Assert.That(document.Lines.Count, Is.EqualTo(22));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("12345"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("22.01.2010")));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("1126300"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("АКРИДЕРМ СК 15,0 МАЗЬ"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(68.5000));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("россия"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Акрихин ХФК ОАО"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.10.2012"));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(68.5000));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д03430"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("501009"));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(75.35));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[1].VitallyImportant, Is.True);
+			Assert.That(document.Lines[2].VitallyImportant, Is.False);
+		}
+
+		[Test]
 		public void Parse_Moron_zhnvls()
 		{
 			DocumentLog documentLog = null;
