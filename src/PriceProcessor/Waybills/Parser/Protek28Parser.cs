@@ -36,8 +36,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Product = r["TOVAR"].ToString();
 				line.Producer = r["IZGOT"].ToString();
 				line.Country = r["STRANA"].ToString();
-				line.ProducerCost = Convert.IsDBNull(r["CENAIZG"]) ? null : (decimal?)Convert.ToDecimal(r["CENAIZG"], CultureInfo.InvariantCulture);
-				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["CENAOPT"], CultureInfo.InvariantCulture);
+				line.ProducerCost = Convert.IsDBNull(r["CENIZGBNDS"]) ? null : (decimal?)Convert.ToDecimal(r["CENIZGBNDS"], CultureInfo.InvariantCulture);
+				line.SupplierCost = Convert.ToDecimal(r["CENAOPT"], CultureInfo.InvariantCulture);
+				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["CENOPTBNDS"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["SRGOD"]) ? null : Convert.ToDateTime(r["SRGOD"]).ToShortDateString();
 
@@ -65,8 +66,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				   data.Columns.Contains("STAVKANDS") &&
 				   data.Columns.Contains("STRANA") &&
 				   data.Columns.Contains("CENAOPT") &&
+				   data.Columns.Contains("CENOPTBNDS") &&
 				   data.Columns.Contains("IZGOT") &&
-				   data.Columns.Contains("CENAIZG") &&
+				   data.Columns.Contains("CENIZGBNDS") &&
 				   data.Columns.Contains("KOL");
 		}
 	}

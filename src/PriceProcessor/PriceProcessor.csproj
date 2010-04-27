@@ -132,7 +132,7 @@
     <Compile Include="Downloader\BaseSourceHandler.cs" />
     <Compile Include="Downloader\ClearArchivedPriceSourceHandler.cs" />
     <Compile Include="Downloader\DocumentReaders\BaseDocumentReader.cs" />
-    <Compile Include="Downloader\DocumentReaders\GenezisPermReader.cs" />
+    <Compile Include="Downloader\DocumentReaders\SupplierFtpReader.cs" />
     <Compile Include="Downloader\DocumentReaders\ProtekMoscow_180_Reader.cs" />
     <Compile Include="Downloader\DocumentReaders\ProtekOmsk_3777_Reader.cs" />
     <Compile Include="Downloader\DocumentReaders\SIAMoscow_2788_Reader.cs" />
