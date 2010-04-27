@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 
 namespace Inforoom.Downloader.Documents
 {
@@ -16,6 +17,8 @@ namespace Inforoom.Downloader.Documents
 	//јбстрактный класс, описывающий тип документа
 	public abstract class InboundDocumentType
 	{
+		public abstract DocType Type { get; }
+
 		public abstract int TypeID
 		{
 			get;
@@ -51,6 +54,11 @@ namespace Inforoom.Downloader.Documents
 
 	public class WaybillType : InboundDocumentType
 	{
+		public override DocType Type
+		{
+			get { return DocType.Waybill; }
+		}
+
 		public override int TypeID
 		{
 			get { return 1; }
@@ -69,6 +77,11 @@ namespace Inforoom.Downloader.Documents
 
 	public class RejectType : InboundDocumentType
 	{
+		public override DocType Type
+		{
+			get { return DocType.Reject; }
+		}
+
 		public override int TypeID
 		{
 			get { return 2; }

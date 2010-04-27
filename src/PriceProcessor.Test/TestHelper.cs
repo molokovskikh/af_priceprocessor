@@ -393,6 +393,7 @@ Content-Disposition: attachment;
 				         		Settings.Default.TempPath,
 				         		Settings.Default.HistoryPath,
 								Settings.Default.DownWaybillsPath,
+								Settings.Default.FTPOptBoxPath,
 				         	});
 		}
 	}

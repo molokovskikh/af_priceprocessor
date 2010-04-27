@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Security;
 using System.Threading;
+using Inforoom.Downloader.Ftp;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Properties;
 using System.ServiceModel;
@@ -36,6 +38,7 @@ namespace Inforoom.PriceProcessor
 		{
 			_handlers = new List<AbstractHandler> {
 				new FormalizeHandler(),
+				new WaybillFtpSourceHandler(),
 #if (!DEBUG)
 				new LANSourceHandler(),
 				new FTPSourceHandler(),

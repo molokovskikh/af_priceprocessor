@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Test.Support;
 using System.Threading;
 using System.IO;
+using Inforoom.Downloader.Ftp;
 
 namespace PriceProcessor.Test.Handlers
 {

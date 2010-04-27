@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
@@ -25,7 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
 		[PrimaryKey("FirmCode")]
-		public int Id { get; set; }
+		public uint Id { get; set; }
 
 		[Property]
 		public string ShortName { get; set; }
@@ -48,6 +49,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public DocType DocumentType { get; set; }
+
+		[Property("Addition")]
+		public string Comment { get; set; }
 
 		[Property]
 		public string FileName { get; set; }
@@ -73,6 +77,34 @@ namespace Inforoom.PriceProcessor.Waybills
 			else
 				return fullName;			
 		}
+
+		public static DocumentLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment)
+		{
+			try
+			{
+				using (var scope = new TransactionScope())
+				{
+					var supplier = Supplier.Find(supplierId);
+					var document = new DocumentLog {
+						Supplier = supplier,
+						AddressId = addressId,
+						ClientCode = clientId,
+						FileName = fileName,
+						DocumentType = documentType,
+						Comment = comment,
+					};
+					document.Create();
+					scope.VoteCommit();
+					return document;
+				}
+			}
+			catch (Exception e)
+			{
+				var log = LogManager.GetLogger(typeof (WaybillService));
+				log.Error("Ошибка при создании записи в documents.document_log", e);
+				return null;
+			}
+		}
 	}
 
 	[ActiveRecord("RetClientsSet", Schema = "Usersettings")]
@@ -96,8 +128,8 @@ namespace Inforoom.PriceProcessor.Waybills
 
 	public enum DocType
 	{
-		Waybill = 1,
-		Reject = 2
+		[Description("Накладная")] Waybill = 1,
+		[Description("Отказ")] Reject = 2
 	}
 
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]

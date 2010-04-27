@@ -167,6 +167,7 @@
     <Compile Include="Waybills\Parser\UkonParserFixture.cs" />
     <Compile Include="Waybills\Parser\WaybillParser.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
+    <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />

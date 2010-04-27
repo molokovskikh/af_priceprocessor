@@ -1,11 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
+	public enum WaybillSourceType
+	{
+		[Description("FTP АК 'Инфорум'")] FtpInforoom = 4,
+		[Description("FTP Поставщика")] FtpSupplier = 5,
+		[Description("Email")] Email = 1,
+	}
+
 	public class WaybillHelper
 	{
 		public static void CopyToClientDir(string srcFileName, string destFileNameFormatString)

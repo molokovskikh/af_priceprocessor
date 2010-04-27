@@ -1,8 +1,11 @@
  using System;
-using System.IO;
+ using System.Collections;
+ using System.Collections.Generic;
+ using System.IO;
 using System.Data;
 using System.Net.Sockets;
-using Inforoom.PriceProcessor;
+ using Common.Tools;
+ using Inforoom.PriceProcessor;
 using LumiSoft.Net.FTP;
 using LumiSoft.Net.FTP.Client;
 using Inforoom.PriceProcessor.Properties;
@@ -11,7 +14,7 @@ using LumiSoft.Net;
 using System.Threading;
  using FileHelper=Inforoom.Common.FileHelper;
 
-namespace Inforoom.Downloader
+namespace Inforoom.Downloader.Ftp
 {
 	public class DownloadedFile
 	{
@@ -30,8 +33,174 @@ namespace Inforoom.Downloader
 		}
 	}
 
+	public class FailedFile
+	{
+		public string FileName { get; set; }
+		public string ErrorMessage { get; set; }
+
+		public FailedFile()
+		{}
+
+		public FailedFile(string fileName, Exception e)
+		{
+			FileName = fileName;
+			ErrorMessage = e.ToString();
+		}
+	}
+
 	public class FtpDownloader
-	{	/*	
+	{
+		public IList<FailedFile> FailedFiles = new List<FailedFile>();
+
+		/// <summary>
+		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
+		/// Если при получении какого-то файла произошла ошибка, то пытается получить этот файл еще 2 раза, если не удалось,
+		/// тогда имя этого файла добавляется в список FailedFiles.
+		/// TODO: Если файл, имя которого находилось в FailedSources, успешно забран, отправляет уведомление в сервис
+		/// </summary>
+		/// <param name="ftpHost">Имя хоста</param>
+		/// <param name="ftpPort">Номер порта</param>
+		/// <param name="ftpDirectory">Директория</param>
+		/// <param name="username">Логин</param>
+		/// <param name="password">Пароль</param>
+		/// <param name="fileMask">Маска имени файла (на соответствие маске проверяется каждый файл)</param>
+		/// <param name="lastDownloadTime">Время, когда была последняя загрузка</param>
+		/// <param name="downloadDirectory">Директория, куда будут сохранены загруженные файлы</param>
+		/// <returns>Список файлов, сохраненных локально</returns>
+		public IList<DownloadedFile> GetFilesFromSource(string ftpHost, int ftpPort, string ftpDirectory, string username,
+			string password, string fileMask, DateTime lastDownloadTime, string downloadDirectory)
+		{
+			ftpHost = PathHelper.GetFtpHost(ftpHost);
+			if (!ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
+				ftpDirectory = @"/" + ftpDirectory;
+
+			var receivedFiles = new List<DownloadedFile>();
+			using (var ftpClient = new FTP_Client())
+			{
+				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory);
+				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows)
+				{
+					if (Convert.ToBoolean(entry["IsDirectory"]))
+						continue;
+					var fileInDirectory = entry["Name"].ToString();
+
+					// Если файл не подходит по маске, берем следующий
+					if (!PriceProcessor.FileHelper.CheckMask(fileInDirectory, fileMask))
+						continue;
+
+					var fileWriteTime = Convert.ToDateTime(entry["Date"]);
+#if DEBUG
+					lastDownloadTime = DateTime.Now.AddMonths(-1);
+#endif
+
+					if (((fileWriteTime.CompareTo(lastDownloadTime) > 0) &&
+						 (DateTime.Now.Subtract(fileWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)) ||
+						((fileWriteTime.CompareTo(DateTime.Now) > 0) && (fileWriteTime.Subtract(lastDownloadTime).TotalMinutes > 0)))
+					{
+						var downloadedFile = Path.Combine(downloadDirectory, fileInDirectory);
+
+						try
+						{
+#if !DEBUG
+							ReceiveFile(ftpClient, fileInDirectory, downloadedFile);
+#else
+							// Для тестов
+							if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
+								ftpDirectory = ftpDirectory.Substring(1);
+							var path = Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory);
+							File.Copy(Path.Combine(path, fileInDirectory), downloadedFile, true);
+#endif
+							receivedFiles.Add(new DownloadedFile(downloadedFile, fileWriteTime));
+							FileHelper.ClearReadOnly(downloadedFile);
+						}
+						catch (Exception e)
+						{
+							FailedFiles.Add(new FailedFile(fileInDirectory, e));
+							var log = log4net.LogManager.GetLogger(GetType());
+							log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
+						}
+					}
+					else
+					{
+						var log = log4net.LogManager.GetLogger(GetType());
+						log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
+					}
+				}
+#if !DEBUG
+				ftpClient.Disconnect();
+#endif
+			}
+			return receivedFiles;
+		}
+
+		private DataSet GetFtpFilesAndDirectories(FTP_Client ftpClient, string ftpHost, int ftpPort, string username, string password, string ftpDirectory)
+		{
+			DataSet dataSetEntries = null;
+#if !DEBUG
+				ftpClient.PassiveMode = true;
+				ftpClient.Connect(ftpHost, ftpPort);
+				ftpClient.Authenticate(username, password);
+				ftpClient.SetCurrentDir(ftpDirectory);
+
+				dataSetEntries = ftpClient.GetList();
+#else
+			if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
+				ftpDirectory = ftpDirectory.Substring(1);
+			dataSetEntries = new DataSet();
+			var table = dataSetEntries.Tables.Add("DirInfo");
+			table.Columns.Add("Name");
+			table.Columns.Add("Date");
+			table.Columns.Add("IsDirectory");
+			var files = Directory.GetFiles(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), "*.*");
+			foreach (var file in files)
+			{
+				var row = table.NewRow();
+				row["Name"] = Path.GetFileName(file);
+				row["Date"] = DateTime.Now.AddDays(-1);
+				row["IsDirectory"] = false;
+				table.Rows.Add(row);
+			}
+			table.AcceptChanges();
+			dataSetEntries.AcceptChanges();
+#endif
+			return dataSetEntries;
+		}
+
+		/// <summary>
+		/// Пытается загрузить файл. После 3х неудачных попыток последнее исключение отдается наверх
+		/// </summary>
+		/// <param name="ftpClient">Объект FTP клиента</param>
+		/// <param name="fileInDirectory">Имя файла в текущей FTP директории</param>
+		/// <param name="downloadedFileName">Путь к файлу, куда он должен быть загружен</param>
+		private void ReceiveFile(FTP_Client ftpClient, string fileInDirectory, string downloadedFileName)
+		{
+			var countAttempts = 3;
+
+			for (var i = 0; i < countAttempts; i++)
+			{
+				try
+				{
+					if (File.Exists(downloadedFileName))
+					{
+						var log = log4net.LogManager.GetLogger(GetType());
+						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
+						File.Delete(downloadedFileName);
+					}
+					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew))
+					{
+						ftpClient.ReceiveFile(fileInDirectory, fileStream);
+						return;
+					}
+				}
+				catch (Exception)
+				{
+					if (i >= countAttempts)
+						throw;
+				}
+			}
+		}
+
+		/*	
 		private const int FtpPort = 21;
 
 		private FTP_ListItem[] GetList(FTP_Client ftpClient, string ftpHost, string ftpDir, PriceSource priceSource)
@@ -80,6 +249,7 @@ namespace Inforoom.Downloader
 			return entries;
 		}
 		/**/
+
 		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;

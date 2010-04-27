@@ -17,7 +17,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			DocumentLog documentLog = null;
 			using (new SessionScope()) {
-				var supplier = Supplier.Find(338);
+				var supplier = Supplier.Find(338u);
 				documentLog = new DocumentLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}
@@ -44,7 +44,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			DocumentLog documentLog = null;
 			using (new SessionScope())
 			{
-				var supplier = Supplier.Find(338);
+				var supplier = Supplier.Find(338u);
 				documentLog = new DocumentLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}
@@ -61,7 +61,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			DocumentLog documentLog = null;
 			using (new SessionScope())
 			{
-				var supplier = Supplier.Find(4001);
+				var supplier = Supplier.Find(4001u);
 				documentLog = new DocumentLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}
@@ -91,7 +91,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			DocumentLog documentLog = null;
 			using (new SessionScope())
 			{
-				var supplier = Supplier.Find(7146);
+				var supplier = Supplier.Find(7146u);
 				documentLog = new DocumentLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}
@@ -124,7 +124,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			DocumentLog documentLog = null;
 			using (new SessionScope())
 			{
-				var supplier = Supplier.Find(338);
+				var supplier = Supplier.Find(338u);
 				documentLog = new DocumentLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}

@@ -83,27 +83,15 @@ namespace Inforoom.Downloader
 								_message = Mime.Parse(OneItem[0].MessageData);
 								currentUID = item.UID;
 								Ping();
-							}
-							catch (Exception ex)
-							{
-								_logger.Error("On Parse", ex);
-								_message = null;
-								SendBrokenMessage(item, OneItem, ex);
-							}
-
-							if (_message == null)
-								continue;
-
-							try
-							{
 								ProcessMime(_message);
 							}
 							catch (Exception ex)
 							{
-								_logger.Error("On Process", ex);
+								_logger.Error("Ошибка при обработке письма", ex);
+								_message = null;
 								SendBrokenMessage(item, OneItem, ex);
 							}
-						}//foreach (IMAP_FetchItem)
+						}
 
 						//Производим удаление писем
 						var sequence = new IMAP_SequenceSet();
