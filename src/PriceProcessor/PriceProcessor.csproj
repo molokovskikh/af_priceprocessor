@@ -218,6 +218,7 @@
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParser.cs" />
     <Compile Include="Waybills\Parser\SiaParser.cs" />
+    <Compile Include="Waybills\Parser\SiaPermParser.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
     <Compile Include="Waybills\WaybillFormatDetector.cs" />
