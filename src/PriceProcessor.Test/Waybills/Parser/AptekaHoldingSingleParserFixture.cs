@@ -49,6 +49,32 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse3()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\1281_1087568.dbf");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(8));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("АХ1-1087568"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("29/04/2010")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("3"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("L-тироксин табл. 100мкг N100  (ЖВЛС)"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Berlin-Chemie AG/Menarini Group"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("Германия"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(107.12));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(104.90));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("93052"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС.DE.ФМ01.Д27143 д"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.08.2011"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.True);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(107.75));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(115.39));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+		}
+
+		[Test]
 		public void CheckFileFormat()
 		{
 			Assert.IsFalse(AptekaHoldingSingleParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));

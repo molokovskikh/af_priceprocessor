@@ -17,6 +17,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
 			string registryCostColumn = null;
+			string ndsColumn = null;
 
 			var data = Dbf.Load(file, Encoding);
 			if (data.Columns.Contains("PV"))
@@ -27,6 +28,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			if (data.Columns.Contains("SERTIF"))
 				certificatesColumn = "SERTIF";
+
+			if (data.Columns.Contains("NDSstavk"))
+				ndsColumn = "NDSstavk";
+			else if (data.Columns.Contains("NDSstavk"))
+				ndsColumn = "NDSSTAVK";
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
 			{
@@ -52,7 +58,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
-				line.Nds = Convert.IsDBNull(r["NDSstavk"]) ? null : (uint?)Convert.ToUInt32(r["NDSstavk"], CultureInfo.InvariantCulture);
+				line.Nds = Convert.IsDBNull(r[ndsColumn]) ? null : (uint?)Convert.ToUInt32(r[ndsColumn], CultureInfo.InvariantCulture);
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
 				return line;

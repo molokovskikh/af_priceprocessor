@@ -88,13 +88,18 @@ namespace Inforoom.PriceProcessor.Waybills
 			var bodyColumnName = String.Empty;
 			if (commonColumns.Count != 1)
 			{
-				headerColumnName = "DOCNUM";
-				bodyColumnName = "DOCNUMBER";
+				headerColumnName = "DOCNUMBER";
+				if (!tableHeader.Columns.Contains(headerColumnName))
+					headerColumnName = "DOCNUM";
+
+				bodyColumnName = "DOCNUMDER";
+				if (!tableBody.Columns.Contains(bodyColumnName))
+					bodyColumnName = "DOCNUMBER";
 			}
 			else
 			{
 				headerColumnName = commonColumns[0];
-				bodyColumnName = commonColumns[0];				
+				bodyColumnName = commonColumns[0];
 			}
 
 			if (!tableHeader.Columns.Contains(headerColumnName) || !tableBody.Columns.Contains(bodyColumnName))
@@ -102,7 +107,7 @@ namespace Inforoom.PriceProcessor.Waybills
 При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1 и нет колонок {2} или {3}.
 Файл-заголовок: {0}
 Файл-тело: {1}", headerFile.FileName, bodyFile.FileName, headerColumnName, bodyColumnName));
-
+			
 			foreach (DataRow headerRow in tableHeader.Rows)
 			{
 				foreach (DataRow bodyRow in tableBody.Rows)
@@ -118,6 +123,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 			}
 			tableBody.AcceptChanges();
+			
 			// Path.GetFileName(headerFilePath).Substring(1) потому что первая буква "h" нам не нужна
 			var mergedFileName = Path.Combine(Path.GetTempPath(), MergedPrefix + Path.GetFileName(headerFile.FileName).Substring(1));
 			if (File.Exists(mergedFileName))

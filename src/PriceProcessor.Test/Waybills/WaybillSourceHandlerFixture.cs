@@ -280,6 +280,18 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			CheckDocumentEntry(2);
 		}
 
+		[Test]
+		public void Parse_Schipakin()
+		{
+			var files = new List<string> { @"..\..\Data\Waybills\multifile\h160410.dbf", @"..\..\Data\Waybills\multifile\b160410.dbf" };
+			SetUp(files);
+			Process_waybills();
+
+			CheckClientDirectory(2, DocType.Waybill);
+			CheckDocumentLogEntry(2);
+			CheckDocumentEntry(1);
+		}
+
 		[Test, Ignore("Оставляю на случай если нужно положить письмо с накладной в ящик и подебажить")]
 		public void Parse_eml_file()
 		{

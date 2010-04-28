@@ -12,22 +12,29 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Multifile
 	{
 		public Document Parse(string file, Document document)
 		{
+			var providerDocumentIdColumn = "DOCNUMBER";
 			var data = Dbf.Load(file);
+			if (data.Columns.Contains("DOCNUMDER"))
+			{
+				data = Dbf.Load(file, Encoding.GetEncoding(1251));
+				providerDocumentIdColumn = "DOCNUMDER";
+			}
+
 			if (data.Rows.Count > 0 && !Convert.IsDBNull(data.Rows[0]["REGDATE"]))
 				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["REGDATE"]);
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
-				document.ProviderDocumentId = Convert.ToString(r["DOCNUMBER"], CultureInfo.InvariantCulture);
+				document.ProviderDocumentId = Convert.ToString(r[providerDocumentIdColumn], CultureInfo.InvariantCulture);
 				var line = document.NewLine();
 				line.Code = Convert.ToString(r["GOODSID"], CultureInfo.InvariantCulture);
 				line.Product = r["GOODSN"].ToString();
 				line.Producer = r["FIRMN"].ToString();
-				line.Country = r["COUNTRYN"].ToString();
+				line.Country = Convert.IsDBNull(r["COUNTRYN"]) ? null : r["COUNTRYN"].ToString();
 				line.ProducerCost = Convert.ToDecimal(r["PRICEF"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["QUANTITY"]);
 				line.Period = Convert.ToDateTime(r["BESTBEFORE"]).ToShortDateString();
-				line.Certificates = r["ANALYSIS"].ToString();
+				line.Certificates = Convert.IsDBNull(r["ANALYSIS"]) ? null : r["ANALYSIS"].ToString();
 				line.SetNds(Convert.ToUInt32(r["NDS"], CultureInfo.InvariantCulture));
 				line.RegistryCost = Convert.IsDBNull(r["PRICEREG"]) ? null : (decimal?) Convert.ToDecimal(r["PRICEREG"]);
 				if (data.Columns.Contains("ISDEC"))

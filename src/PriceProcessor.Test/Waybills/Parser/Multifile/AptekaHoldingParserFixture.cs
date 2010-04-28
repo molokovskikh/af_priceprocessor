@@ -152,5 +152,32 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("8379159"));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.0000));
 		}
+
+		[Test]
+		public void Parse_Schipakin()
+		{
+			var files = GetFilesForParsing(@"..\..\Data\Waybills\multifile\h160410.dbf", @"..\..\Data\Waybills\multifile\b160410.dbf");
+
+			var mergedFiles = MultifileDocument.Merge(files);
+			Assert.That(mergedFiles.Count, Is.EqualTo(1));
+			parser.Parse(mergedFiles[0].FileName, document);
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Оф000000335"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("15/04/2010")));
+			Assert.That(document.Lines.Count, Is.EqualTo(18));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("429"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Гольфы Артемис 70 Дэн черные"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("КИТАЙ"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Тайвань"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(4));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(50.67));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(68.76));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(68.76));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(0));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].Period, Is.EqualTo("15.10.2010"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС TW.ИМ25.В02103"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("51754406033007352161"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.0000));
+		}
 	}
 }
