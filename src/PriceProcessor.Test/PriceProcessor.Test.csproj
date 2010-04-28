@@ -153,6 +153,7 @@
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="UpdateCoreTimestampsFixture.cs" />
     <Compile Include="UsedSynonymLogsFixture.cs" />
+    <Compile Include="Waybills\Parser\AptekaHoldingSingleParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\AptekaHoldingSingleParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\GenezisDbfParserFixture.cs" />

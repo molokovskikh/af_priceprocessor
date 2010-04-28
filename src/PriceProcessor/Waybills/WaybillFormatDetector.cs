@@ -61,6 +61,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (SiaPermParser);
 			if (AptekaHoldingSingleParser.CheckFileFormat(file))
 				return typeof (AptekaHoldingSingleParser);
+			if (AptekaHoldingSingleParser2.CheckFileFormat(file))
+				return typeof(AptekaHoldingSingleParser2);
 			throw new Exception("Ќе удалось определить тип парсера дл€ DBF формата");
 		}
 	}
