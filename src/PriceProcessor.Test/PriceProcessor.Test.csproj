@@ -165,6 +165,7 @@
     <Compile Include="Waybills\Parser\Protek28ParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParserFixture.cs" />
+    <Compile Include="Waybills\Parser\RostaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParserFixture.cs" />

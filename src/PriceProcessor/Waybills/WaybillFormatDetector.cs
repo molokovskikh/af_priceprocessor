@@ -65,6 +65,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof(AptekaHoldingSingleParser2);
 			if (AptekaHoldingIzhevskParser.CheckFileFormat(file))
 				return typeof(AptekaHoldingIzhevskParser);
+			if (RostaPermParser.CheckFileFormat(file))
+				return typeof(RostaPermParser);
 			throw new Exception("Ќе удалось определить тип парсера дл€ DBF формата");
 		}
 	}
