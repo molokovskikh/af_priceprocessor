@@ -11,20 +11,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class GenezisDbfParserFixture
 	{
-		private GenezisDbfParser parser;
-		private Document document;
-
-		[SetUp]
-		public void Setup()
-		{
-			parser = new GenezisDbfParser();
-			document = new Document();
-		}
-
 		[Test]
 		public void Parse()
 		{
-			parser.Parse(@"..\..\Data\Waybills\890579.dbf", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\890579.dbf");
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("890579"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("23/03/2010")));
 			Assert.That(document.Lines.Count, Is.EqualTo(9));
