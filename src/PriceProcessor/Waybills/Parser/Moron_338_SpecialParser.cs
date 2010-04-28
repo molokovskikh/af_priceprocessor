@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Common.Tools;
@@ -89,6 +90,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public static bool CheckFileFormat(string file)
 		{
+			if (Path.GetExtension(file.ToLower()) != ".dbf")
+				return false;
+
 			var data = Dbf.Load(file);
 			return data.Columns.Contains("CODE_TOVAR") &&
 				   data.Columns.Contains("NAME_TOVAR") &&

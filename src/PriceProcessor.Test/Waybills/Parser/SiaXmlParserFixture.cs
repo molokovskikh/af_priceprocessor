@@ -64,6 +64,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_OAC()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3749510_ОАС(1798100).xml");
+			
+			Assert.That(doc.Lines.Count, Is.EqualTo(2));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("152660"));
+		}
+
+		[Test]
 		public void Parse_data_file()
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3699498_Катрен_046729_.data");
