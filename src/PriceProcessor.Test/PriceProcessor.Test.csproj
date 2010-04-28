@@ -155,6 +155,7 @@
     <Compile Include="UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\GenezisDbfParserFixture.cs" />
+    <Compile Include="Waybills\Parser\IzhevskFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParserFixture.cs" />
