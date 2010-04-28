@@ -81,11 +81,11 @@ GROUP BY SupplierId
 
 		protected override void ProcessData()
 		{
-			FillSourcesTable();
-
+			FillSourcesTable();			
 			foreach (DataRow sourceRow in dtSources.Rows)
-			{
+			{				
 				var waybillSource = new WaybillSource(sourceRow);
+				_log.InfoFormat("Попытка забрать накладные с FTP поставщика. Код поставщика = {0}", waybillSource.SupplierId);
 				if (!IsNeedToDownload(waybillSource))
 					continue;
 
@@ -144,7 +144,10 @@ GROUP BY SupplierId
 					waybillSource.Password, "*.*", waybillSource.LastDownloadTime, DownHandlerPath);
 
 				if (FailedSources.Contains(waybillSource.SupplierId))
+				{
 					FailedSources.Remove(waybillSource.SupplierId);
+					_log.ErrorFormat("После возникновения ошибок загрузка накладных прошла успешно. Код поставщика: {0}", waybillSource.SupplierId);
+				}
 			}
 			catch (Exception e)
 			{
@@ -163,7 +166,7 @@ GROUP BY SupplierId
 					_log.Debug(errorMessage, e);
 			}
 
-			if (FailedSources.Count > 0 || downloader.FailedFiles.Count > 0)
+			if (downloader.FailedFiles.Count > 0)
 				SendDownloadingErrorMessages(downloader, waybillSource);
 
 			return downloadedWaybills;
@@ -174,10 +177,7 @@ GROUP BY SupplierId
 			// downloadInterval - в секундах
 			var downloadInterval = source.DownloadInterval;
 			if (FailedSources.Contains(source.SupplierId))
-			{
-				FailedSources.Remove(source.SupplierId);
 				downloadInterval = 0;
-			}
 			var seconds = DateTime.Now.Subtract(source.LastDownloadTime).TotalSeconds;
 			if (seconds < downloadInterval)
 				_log.Debug(String.Format("Для источника накладных еще не истек таймаут. Не забираем накладную (код поставщика: {0})", source.SupplierId));
@@ -310,7 +310,7 @@ WHERE dl.FirmCode = ?SupplierId and dl.FileName like ?FileName and dl.LogTime > 
 				}
 				
 				if (!String.IsNullOrEmpty(restoredFilesMessage.ToString()))
-					_log.InfoFormat(
+					_log.ErrorFormat(
 						"После ошибок загрузки с FTP поставщика следующие документы были загружены (код поставщика: {0})\n{1}",
 						waybillSource.SupplierId, restoredFilesMessage);
 			}
