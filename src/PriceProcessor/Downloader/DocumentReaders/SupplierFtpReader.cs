@@ -11,6 +11,11 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 {
 	public class SupplierFtpReader : BaseDocumentReader
 	{
+		public SupplierFtpReader()
+		{
+			excludeExtentions = new string[] { };
+		}
+
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var list = new List<ulong>();
