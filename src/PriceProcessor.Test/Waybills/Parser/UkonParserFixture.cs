@@ -12,9 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var parser = new UkonParser();
-			var doc = new Document();
-			parser.Parse(@"..\..\Data\Waybills\0004076.sst", doc);
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\0004076.sst");
 			Assert.That(doc.Lines.Count, Is.EqualTo(2));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("0000004076"));
 
@@ -36,9 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void ParseWithMultilineComments()
 		{
-			var parser = new UkonParser();
-			var doc = new Document();
-			parser.Parse(@"..\..\Data\Waybills\3645763_ОАС(114504).sst", doc);
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3645763_ОАС(114504).sst");
 			Assert.That(doc.Lines.Count, Is.EqualTo(2));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("114504"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("30.03.2010")));

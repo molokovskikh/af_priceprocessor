@@ -14,9 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var parser = new MoronDbfParser();
-			var doc = new Document();
-			var document = parser.Parse(@"..\..\Data\Waybills\0000470553.dbf", doc);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\0000470553.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(72));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("470553.00"));
 

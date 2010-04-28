@@ -11,9 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var parser = new ProtekXmlParser();
-			var doc = new Document();
-			parser.Parse(@"..\..\Data\Waybills\8041496-001.xml", doc);
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8041496-001.xml");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("8041496-001"));
 			Assert.That(doc.Lines[0].Code, Is.EqualTo("22761"));
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("АЛФАВИТ ТАБ. №210"));

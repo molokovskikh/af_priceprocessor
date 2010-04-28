@@ -8,20 +8,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class SiaXmlParserFixture
 	{
-		private SiaXmlParser parser;
-		private Document document;
-
-		[SetUp]
-		public void Setup()
-		{
-			parser = new SiaXmlParser();
-			document = new Document();
-		}
-
 		[Test]
 		public void Parse()
 		{
-			parser.Parse(@"..\..\Data\Waybills\1039428.xml", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\1039428.xml");
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р-1039428"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12.03.2010")));
 			Assert.That(document.Lines.Count, Is.EqualTo(5));
@@ -41,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Wired_vitally_important_flag()
 		{
-			parser.Parse(@"..\..\Data\Waybills\3633567_0_17202011.xml", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3633567_0_17202011.xml");
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.03.2010")));
 		}
@@ -49,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_null_registry_cost_value()
 		{
-			parser.Parse(@"..\..\Data\Waybills\3633111_2_3632591_1_1748104.xml", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3633111_2_3632591_1_1748104.xml");
 			Assert.That(document.Lines.Count, Is.EqualTo(10));
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);
 		}

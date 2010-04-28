@@ -12,9 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var parser = new SiaParser();
-			var doc = new Document();
-			var document = parser.Parse(@"..\..\Data\Waybills\1016416.dbf", doc);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\1016416.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("1016416"));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Пентамин 5% Р-р д/ин. 1мл Амп. Х10 Б"));
@@ -32,9 +30,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_character_type()
 		{
-			var parser = new SiaParser();
-			var doc = new Document();
-			var document = parser.Parse(@"..\..\Data\Waybills\1016416_char.dbf", doc);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\1016416_char.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("Г000006147"));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Андипал таб. № 10"));
@@ -51,8 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_with_vitally_important()
 		{
 			var parser = new SiaParser();
-			var doc = new Document();
-			parser.Parse(@"..\..\Data\Waybills\8916.dbf", doc);
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8916.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("R7036"));
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
@@ -64,8 +59,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_with_registry_cost_in_reestr_field()
 		{
 			var parser = new SiaParser();
-			var doc = new Document();
-			parser.Parse(@"..\..\Data\Waybills\8916_REESTR.dbf", doc);
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8916_REESTR.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[4].RegistryCost, Is.EqualTo(82.0615));
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
@@ -87,8 +81,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_without_document_date()
 		{
 			var parser = new SiaParser();
-			var document = new Document();
-			parser.Parse(@"..\..\Data\Waybills\without_date.dbf", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\without_date.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.DocumentDate.HasValue, Is.False);
 			Assert.That(document.DocumentDate, Is.Null);
@@ -98,8 +91,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_without_registry_cost()
 		{
 			var parser = new SiaParser();
-			var document = new Document();
-			parser.Parse(@"..\..\Data\Waybills\3655268_Катрен(K_59329).dbf", document);
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3655268_Катрен(K_59329).dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);
 		}
