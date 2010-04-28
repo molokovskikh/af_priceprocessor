@@ -203,5 +203,37 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(16.89));
 		}
+
+		[Test]
+		public void Parse_Sia_Orel()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-1043585.DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(20));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р-1043585"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("23.04.2010")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("17709"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Аква Марис спрей назальный /морская вода/ 30мл Б"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Jadran Co."));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("Хорватия"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(3));
+			Assert.That(document.Lines[0].ProducerCost, Is.Null);
+			Assert.That(document.Lines[2].ProducerCost, Is.EqualTo(19.0900));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(123.7700));
+			Assert.That(document.Lines[0].SerialNumber, Is.Null);
+			Assert.That(document.Lines[2].SerialNumber, Is.EqualTo("81109"));
+			Assert.That(document.Lines[0].Certificates, Is.Null);
+			Assert.That(document.Lines[2].Certificates, Is.EqualTo("РОСС RU.ФМ05.Д16560"));
+			Assert.That(document.Lines[0].Period, Is.Null);
+			Assert.That(document.Lines[2].Period, Is.EqualTo("01.12.2012"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(112.52));
+			Assert.That(document.Lines[2].SupplierCostWithoutNDS, Is.EqualTo(19.9));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[2].SupplierPriceMarkup, Is.EqualTo(14.6674));
+		}
 	}
 }
