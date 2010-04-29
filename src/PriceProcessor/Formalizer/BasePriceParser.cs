@@ -557,7 +557,7 @@ namespace Inforoom.Formalizer
 			if ((producerCost is decimal) && ((decimal)producerCost >= 0))
 				drCore["ProducerCost"] = (decimal) producerCost;
 			var nds = GetFieldValueObject(PriceFields.Nds);
-			if ((nds is int) && (Convert.ToUInt32(nds) >= 0))
+			if ((nds is int) && (Convert.ToUInt32(nds) > 0))
 				drCore["Nds"] = Convert.ToUInt32(nds);
 
 			object dt = GetFieldValueObject(PriceFields.Period);
