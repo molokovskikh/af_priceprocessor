@@ -49,6 +49,8 @@ namespace Inforoom.Formalizer
 		Doc,
 		[Description("Цена производителя")]
 		ProducerCost,
+		[Description("Ставка НДС")]
+		Nds,
 		[Description("Цена минимальная")]
 		MinBoundCost,
 		[Description("Срок")]
@@ -554,6 +556,9 @@ namespace Inforoom.Formalizer
 			var producerCost = GetFieldValueObject(PriceFields.ProducerCost);
 			if ((producerCost is decimal) && ((decimal)producerCost >= 0))
 				drCore["ProducerCost"] = (decimal) producerCost;
+			var nds = GetFieldValueObject(PriceFields.Nds);
+			if ((nds is int) && (Convert.ToUInt32(nds) >= 0))
+				drCore["Nds"] = Convert.ToUInt32(nds);
 
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
@@ -2131,6 +2136,7 @@ and r.RegionCode = cd.RegionCode",
 
 				case (int)PriceFields.Quantity:
 				case (int)PriceFields.MinOrderCount:
+				case (int)PriceFields.Nds:
 					return ProcessInt(GetFieldRawValue(PF));
 
 				case (int)PriceFields.Period:

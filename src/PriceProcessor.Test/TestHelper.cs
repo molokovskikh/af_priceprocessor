@@ -121,6 +121,15 @@ namespace PriceProcessor.Test
 			}
 		}
 
+		public static void FormalizeOld(Type formatType, DataTable parseRules, string file, int priceItemId)
+		{
+			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			{
+				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
+				parser.Formalize();
+			}
+		}
+
 		public static DataTable GetParseRules(int priceItemId)
 		{
 			return With.Connection(c => {

@@ -55,7 +55,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			// Каталожная запись не проверена, производитель проверен. Должны вставить в исключения
 			PrepareTables(priceCode, catalogId, producerId);
 			TestHelper.Execute(@"update catalogs.producers set Checked = 1 where Id = {0}", producerId);
-			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
 			var excludes = TestHelper.Fill(String.Format("select OriginalSynonymId from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
 			// Проверяем, что запись в исключениях создалась для нужного синонима
@@ -96,7 +96,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 
 				var countBefore = Convert.ToInt32(With.Connection(conn => MySqlHelper.ExecuteScalar(conn, "select count(*) from catalogs.Assortment")));
 				Assert.AreEqual(0, countBefore, "Не подготовили таблицу Assortment.");
-				TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, dataPath, priceItemId);
+				TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, dataPath, priceItemId);
 
 				var countAfter = Convert.ToInt32(With.Connection(conn => MySqlHelper.ExecuteScalar(conn, "select count(*) from catalogs.Assortment")));
 
@@ -119,7 +119,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-producer-cost-rules.xml", priceItemId));
 
 			//Формализация прайс-листа
-			TestHelper.Formalize(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
 			var corePriceCode = GetPriceCode(priceItemId);
 			CheckProducerCostInCore(corePriceCode);
 		}
@@ -186,7 +186,7 @@ values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			var cost = TestHelper.Fill(String.Format(@"
 select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));
 			var corePriceCode = Convert.ToUInt64(cost.Tables[0].Rows[0]["PriceCode"]);
-			return corePriceCode;						
+			return corePriceCode;
 		}
 
 		private void CheckProducerCostInCore(ulong corePriceCode)
@@ -201,7 +201,94 @@ where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
 				command.Parameters.AddWithValue("?PriceCode", corePriceCode);
 				var countCorePositions = Convert.ToUInt32(command.ExecuteScalar());
 				Assert.That(countCorePositions, Is.EqualTo(14));
-			});			
+			});
+		}
+
+		[Test, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
+		public void FormalizeNds()
+		{
+			var fileName = @"formalize-nds";
+			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
+			var rules = new DataTable();
+			rules.ReadXml(String.Format(@"..\..\Data\{0}-nds-rules.xml", priceItemId));
+
+			//Формализация прайс-листа
+			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
+			var corePriceCode = GetPriceCode(priceItemId);
+			CheckNdsInCore(corePriceCode);
+		}
+
+		private void CheckNdsInCore(ulong corePriceCode)
+		{
+			// Считаем кол-во позиций в core0 для данного прайс-листа, где цена производителя существует и она не нулевая
+			// (она также должна быть меньше всех остальных цен)
+			With.Connection(connection =>
+			{
+				var command = new MySqlCommand(@"
+select count(*) from farm.Core0 core
+  join farm.CoreCosts cc on core.Id = cc.Core_id
+where PriceCode = ?PriceCode and Nds is not null;", connection);
+				command.Parameters.AddWithValue("?PriceCode", corePriceCode);
+				var countCorePositions = Convert.ToUInt32(command.ExecuteScalar());
+				Assert.That(countCorePositions, Is.EqualTo(13));
+			});
+		}
+
+		[Test, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из таблицы FormRules")]
+		public void FormalizeNds2()
+		{
+			var sqlFormRules = @"
+delete from usersettings.PriceItems where Id = ?PriceItemId;
+
+insert into farm.FormRules(PriceFormatId, MaxOld, Delimiter, FCode, FName1, FFirmCr, FVolume, FQuantity, FPeriod, FProducerCost, FNds)
+values(11, 5, ';', 'F1', 'F2', 'F3', 'F4', 'F5', 'F7', 'F8', 'F9');
+
+insert into usersettings.PriceItems(
+	Id,
+	FormRuleId, 
+	SourceId, 
+	RowCount, UnformCount,
+	PriceDate, 
+	LastDownload, 
+	LastFormalization, 
+	LastRetrans, 
+	WaitingDownloadInterval)
+values(
+	?PriceItemId,
+	Last_Insert_ID(), 
+	(select Id from farm.Sources limit 1),
+	0, 0, 
+	(date_sub(now(), interval 1 day)),
+	(date_sub(now(), interval 1 day)),
+	(date_sub(now(), interval 1 day)),
+	NULL,
+	24
+);
+
+insert into usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName, BaseCost) 
+values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
+			With.Connection(connection =>
+			{
+				var command = new MySqlCommand(sqlFormRules, connection);
+				command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
+				command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+				command.ExecuteNonQuery();
+			});
+
+			// Копируем файл в Inbound и запускаем формализацию
+			var fileName = @"formalize-nds";
+			//var fileName = @"producer-cost-with-empty";
+			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
+			TestHelper.InitDirs(Settings.Default.InboundPath, Settings.Default.BasePath, Settings.Default.ErrorFilesPath);
+			File.Copy(file, String.Format("{0}\\{1}.txt", Settings.Default.InboundPath, priceItemId));
+
+			var handler = new FormalizeHandler();
+			handler.StartWork();
+			Thread.Sleep(10000);
+			handler.StopWork();
+			CheckNdsInCore(GetPriceCode(priceItemId));
+			// В Base должен лежать файл
+			Assert.That(Directory.GetFiles(Settings.Default.BasePath).Length, Is.EqualTo(1));
 		}
 	}
 }

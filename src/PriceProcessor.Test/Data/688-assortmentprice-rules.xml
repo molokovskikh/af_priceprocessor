@@ -36,6 +36,12 @@
                 <xs:element name="ListName" type="xs:string" minOccurs="0" />
                 <xs:element name="TxtCodeBegin" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="TxtCodeEnd" type="xs:unsignedInt" minOccurs="0" />
+		<xs:element name="FProducerCost" type="xs:string" minOccurs="0" />
+		<xs:element name="TxtProducerCostBegin" type="xs:string" minOccurs="0" />
+		<xs:element name="TxtProducerCostEnd" type="xs:string" minOccurs="0" />
+		<xs:element name="FNds" type="xs:string" minOccurs="0" />
+		<xs:element name="TxtNdsBegin" type="xs:string" minOccurs="0" />
+		<xs:element name="TxtNdsEnd" type="xs:string" minOccurs="0" />
                 <xs:element name="TxtCodeCrBegin" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="TxtCodeCrEnd" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="TxtNameBegin" type="xs:unsignedInt" minOccurs="0" />

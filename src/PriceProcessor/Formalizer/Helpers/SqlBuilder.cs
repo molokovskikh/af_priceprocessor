@@ -74,7 +74,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
 					"Period, Junk, Await, MinBoundCost, " +
 						"VitallyImportant, RequestRatio, RegistryCost, " +
-							"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, " +
+							"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, Nds, " +
 								"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
 			sb.Append("(");
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
@@ -94,6 +94,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
 			sb.AppendFormat("{0}, ", (drCore["ProducerCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["ProducerCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+			sb.AppendFormat("{0}, ", (drCore["Nds"] is DBNull) ? "null" : Convert.ToUInt32(drCore["Nds"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			AddTextParameter("Code", drCore, sb);
 			sb.Append(", ");
 
