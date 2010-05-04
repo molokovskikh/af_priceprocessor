@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.SerialNumber = parts[13];
 				docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : (decimal?) Convert.ToDecimal(parts[18], CultureInfo.InvariantCulture);
 				docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
-				docLine.SetProducerCostWithoutNds(Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture));
+				docLine.SetSupplierCostWithoutNds(Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture));
 				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : (decimal?) Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);
 				docLine.Period = parts[15];
 				docLine.ProducerCost = Convert.ToDecimal(parts[6], CultureInfo.InvariantCulture);
@@ -155,7 +155,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.SerialNumber = bodyDescription.GetSerialNumber(parts);
 					docLine.RegistryCost = bodyDescription.GetRegistryCost(parts);
 					docLine.SupplierCost = bodyDescription.GetSupplierCost(parts);
-					docLine.SetProducerCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
+					docLine.SetSupplierCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
 					docLine.SupplierPriceMarkup = bodyDescription.GetSupplierPriceMarkup(parts);
 					docLine.Period = bodyDescription.GetPeriod(parts);
 					docLine.ProducerCost = bodyDescription.GetProducerCost(parts);

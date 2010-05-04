@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						docLine.SetSupplierCostByNds(docLine.Nds);
 					}
 					if (header.GetSupplierCostWithoutNds(parts).HasValue)
-						docLine.SetProducerCostWithoutNds((decimal)header.GetSupplierCostWithoutNds(parts));					
+						docLine.SetSupplierCostWithoutNds((decimal)header.GetSupplierCostWithoutNds(parts));					
 					document.NewLine(docLine);
 				}
 			}

@@ -52,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		public DbfParser Line(Expression<Func<DocumentLine, object>> ex, string[] names)
+		public DbfParser Line(Expression<Func<DocumentLine, object>> ex, params string[] names)
 		{
 			var propertyInfo = GetInfo(ex);
 			_lineActions.Add((line, dataRow) => {
@@ -122,7 +122,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			{
 				var line = document.NewLine();
 				foreach (var action in _lineActions)
+				{
 					action(line, row);
+					line.SetValues();
+				}
 			}
 		}
 	}

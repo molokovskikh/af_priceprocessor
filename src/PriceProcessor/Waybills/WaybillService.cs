@@ -248,6 +248,16 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string SerialNumber { get; set; }
 
+		public void SetValues()
+		{
+			if (!Nds.HasValue && SupplierCostWithoutNDS.HasValue)
+				SetSupplierCostWithoutNds(SupplierCostWithoutNDS.Value);
+			if (!SupplierCostWithoutNDS.HasValue && Nds.HasValue)
+				SetNds(Nds.Value);
+			if (!SupplierCost.HasValue && Nds.HasValue && SupplierCostWithoutNDS.HasValue)
+				SetSupplierCostByNds(Nds.Value);
+		}
+
 		public void SetNds(decimal nds)
 		{
 			SupplierCostWithoutNDS = null;
@@ -256,7 +266,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			Nds = (uint?) nds;
 		}
 
-		public void SetProducerCostWithoutNds(decimal cost)
+		public void SetSupplierCostWithoutNds(decimal cost)
 		{
 			SupplierCostWithoutNDS = cost;
 			Nds = null;
@@ -264,16 +274,12 @@ namespace Inforoom.PriceProcessor.Waybills
 				Nds = (uint?) (Math.Round((SupplierCost.Value/SupplierCostWithoutNDS.Value - 1)*100));
 		}
 
-		public bool SetSupplierCostByNds(decimal? nds)
+		public void SetSupplierCostByNds(decimal? nds)
 		{
 			Nds = (uint?) nds;
 			SupplierCost = null;
 			if (SupplierCostWithoutNDS.HasValue && Nds.HasValue)
-			{
 				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value*(1 + ((decimal) Nds.Value/100)), 2);
-				return true;
-			}
-			return false;
 		}
 	}
 
