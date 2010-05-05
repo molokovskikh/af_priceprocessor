@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
+	[TestFixture]
 	public class KatrenOrelDbfParserFixture
 	{
 		[Test]

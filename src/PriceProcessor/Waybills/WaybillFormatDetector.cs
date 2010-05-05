@@ -25,6 +25,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			else if (extention == ".pd")
 				type = typeof (ProtekParser);
+			else if (extention == ".txt")
+			{
+				if (KatrenOrelTxtParser.CheckFileFormat(file))
+					type = typeof (KatrenOrelTxtParser);
+			}
 
 			// Если поставщик - это челябинский Морон, для него отдельный парсер 
 			// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
