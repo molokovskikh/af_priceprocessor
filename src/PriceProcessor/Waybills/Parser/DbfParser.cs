@@ -44,6 +44,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public DbfParser DocumentHeader(Expression<Func<Document, object>> ex, string name)
 		{
+			if (String.IsNullOrEmpty(name))
+				return this;
 			var propertyInfo = GetInfo(ex);
 			_headerActions.Add((line, dataRow) => {
 				var value = dataRow[name];
@@ -107,7 +109,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				return Convert.ToString(value);
 			}
 			if (type == typeof(DateTime) || type == typeof(DateTime?))
+			{
+				DateTime res;
+				if (DateTime.TryParse(value.ToString(), out res))
+					return Convert.ToDateTime(value);
+				if (DateTime.TryParseExact(value.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+					return res;
 				return Convert.ToDateTime(value);
+			}
 			if (type == typeof(bool) || type == typeof(bool?))
 				return Convert.ToBoolean(value);
 			throw new Exception("Преобразование для этого типа не реализовано");

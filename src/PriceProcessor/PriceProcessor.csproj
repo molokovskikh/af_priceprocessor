@@ -215,6 +215,7 @@
     <Compile Include="Waybills\Parser\GenezisDbfParser.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
     <Compile Include="Waybills\Parser\IzhevskFarmParser.cs" />
+    <Compile Include="Waybills\Parser\KatrenOrelDbfParser.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParser.cs" />
