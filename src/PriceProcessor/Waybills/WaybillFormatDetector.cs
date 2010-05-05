@@ -76,6 +76,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (FarmaimpeksIzhevskParser);
 			if (KatrenOrelDbfParser.CheckFileFormat(file))
 				return typeof (KatrenOrelDbfParser);
+			if (GodunovDbfParser.CheckFileFormat(file))
+				return typeof (GodunovDbfParser);
 			throw new Exception("Ќе удалось определить тип парсера дл€ DBF формата");
 		}
 	}
