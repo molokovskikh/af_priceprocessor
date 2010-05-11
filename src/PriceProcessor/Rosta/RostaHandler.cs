@@ -209,7 +209,7 @@ select @priceItemId;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode2
+SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -230,7 +230,7 @@ group by pc.PriceItemId;", connection);
 					plans.Add(new Plan(
 						Convert.ToUInt32(row["PriceItemId"]),
 						Convert.ToString(row["CostName"]),
-						Convert.ToString(row["FirmClientCode2"])
+						Convert.ToString(row["FirmClientCode"])
 					));
 				}
 			}

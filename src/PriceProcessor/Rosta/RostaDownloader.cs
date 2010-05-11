@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Rosta
 				using(reader = new StreamReader(stream, encoding, false, 1))
 				{
 					writer.AutoFlush = true;
-					var responce = ReadResponce(String.Format("LOGIN {0}", key));
+					var responce = ReadResponce(String.Format("LOGIN {0} 05010130", key));
 					var serverKey = Convert.ToInt32(responce.Split(' ')[4].Trim());
 					ReadResponce("HWINFO {0}", RostaDecoder.CryptHwinfo(hwinfo, serverKey));
 					ReadResponce("SET CODEPAGE WIN1251");
