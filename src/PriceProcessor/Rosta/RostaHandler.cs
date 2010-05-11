@@ -16,12 +16,13 @@ namespace Inforoom.PriceProcessor.Rosta
 		public uint PriceItemId { get; set; }
 		public DateTime PlanedOn { get; set; }
 		public string Key { get; set; }
+		public string Hwinfo { get; set; }
 
-		public Plan(uint priceItemId, string key)
+		public Plan(uint priceItemId, string key, string hwinfo)
 		{
 			PriceItemId = priceItemId;
 			Key = key;
-			
+			Hwinfo = hwinfo;
 			PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour();
 		}
 
@@ -41,6 +42,7 @@ namespace Inforoom.PriceProcessor.Rosta
 	{
 		public uint ClientId { get; set; }
 		public string Key;
+		public string Hwinfo;
 	}
 
 	public class RostaHandler : AbstractHandler
@@ -74,7 +76,7 @@ namespace Inforoom.PriceProcessor.Rosta
 			if (SystemTime.Now() < plan.PlanedOn)
 				return;
 
-			Process(plan.PriceItemId, plan.Key);
+			Process(plan);
 
 			plan.PlanNextUpdate();
 		}
@@ -96,25 +98,27 @@ namespace Inforoom.PriceProcessor.Rosta
 				.ToList()
 				.Each(e => _plans.Add(e));
 
+/*			временно не работает тк в SpyInfo нет информации о процессоре и мамке может быть не заработает никогда
 			var clients = GetNotConfiguredClients();
 			clients.Each(c => InitNewPlan(c, GetKey(c)));
+*/
 
 			var partialConfigured = GetPartialConfiguredClients();
-			partialConfigured.Each(p => InitNewPlan(p.ClientId, p.Key));
+			partialConfigured.Each(p => InitNewPlan(p));
 
 			_lastSync = SystemTime.Now();
 		}
 
-		private void InitNewPlan(uint clientId, string key)
+		private void InitNewPlan(ToConfigure configure)
 		{
-			if (String.IsNullOrEmpty(key))
+			if (String.IsNullOrEmpty(configure.Key) || String.IsNullOrEmpty(configure.Hwinfo))
 				return;
 
-			var existPlan = _plans.FirstOrDefault(p => p.Key == key);
+			var existPlan = _plans.FirstOrDefault(p => p.Key == configure.Key);
 			if (existPlan != null)
-				MySqlUtils.InTransaction(c => UpdateClient(c, clientId, existPlan.PriceItemId, existPlan.Key));
+				MySqlUtils.InTransaction(c => UpdateClient(c, configure.ClientId, existPlan.PriceItemId, existPlan.Key));
 			else
-				_plans.Add(CreateNewPlan(clientId, key));
+				_plans.Add(CreateNewPlan(configure));
 		}
 
 		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key)
@@ -158,7 +162,7 @@ limit 1;", connection);
 			}
 		}
 
-		private Plan CreateNewPlan(uint clientId, string key)
+		private Plan CreateNewPlan(ToConfigure configure)
 		{
 			uint priceItemId = 0;
 			MySqlUtils.InTransaction(c => {
@@ -191,12 +195,12 @@ select @priceItemId;", c);
 				command.Parameters.AddWithValue("?FormRuleId", formRuleId);
 				command.Parameters.AddWithValue("?SourceId", sourceId);
 				command.Parameters.AddWithValue("?PriceCode", _priceId);
-				command.Parameters.AddWithValue("?ClientId", clientId);
-				command.Parameters.AddWithValue("?Key", key);
+				command.Parameters.AddWithValue("?ClientId", configure.ClientId);
+				command.Parameters.AddWithValue("?Key", configure.Key);
 				priceItemId = Convert.ToUInt32(command.ExecuteScalar());
-				UpdateClient(c, clientId, priceItemId, key);
+				UpdateClient(c, configure.ClientId, priceItemId, configure.Key);
 			});
-			return new Plan(priceItemId, key);
+			return new Plan(priceItemId, configure.Key, configure.Hwinfo);
 		}
 
 		private List<Plan> GetExistsPlans()
@@ -205,7 +209,7 @@ select @priceItemId;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostName
+SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode2
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -225,7 +229,8 @@ group by pc.PriceItemId;", connection);
 				{
 					plans.Add(new Plan(
 						Convert.ToUInt32(row["PriceItemId"]),
-						Convert.ToString(row["CostName"])
+						Convert.ToString(row["CostName"]),
+						Convert.ToString(row["FirmClientCode2"])
 					));
 				}
 			}
@@ -238,7 +243,7 @@ group by pc.PriceItemId;", connection);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT i.ClientCode, i.FirmClientCode
+SELECT i.ClientCode, i.FirmClientCode, i.FirmClientCode2
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -259,6 +264,7 @@ group by i.ClientCode", connection);
 					toConfigure.Add(new ToConfigure {
 						ClientId = Convert.ToUInt32(row["ClientCode"]),
 						Key = Convert.ToString(row["FirmClientCode"]),
+						Hwinfo = Convert.ToString(row["FirmClientCode2"])
 					});
 				}
 			}
@@ -298,7 +304,7 @@ group by i.ClientCode;", connection);
 			return _plans.Where(p => p.PlanedOn == minPlannedOn).FirstOrDefault();
 		}
 
-		public void Process(uint priceItemId, string key)
+		public void Process(Plan plan)
 		{
 			var price = Path.Combine(Settings.Default.TempPath, "price");
 			var producers = Path.Combine(Settings.Default.TempPath, "producers");
@@ -317,17 +323,17 @@ group by i.ClientCode;", connection);
 				if (File.Exists(ex))
 					File.Delete(ex);
 
-				_downloader.DownloadPrice(key, price, producers, ex);
+				_downloader.DownloadPrice(plan.Key, plan.Hwinfo, price, producers, ex);
 				using (var connection = new MySqlConnection(Literals.ConnectionString()))
 				{
-					var data = PricesValidator.LoadFormRules(priceItemId, connection);
+					var data = PricesValidator.LoadFormRules(plan.PriceItemId, connection);
 					var parser = new FakeRostaParser(price, producers, ex, connection, data);
 					connection.Close();
 					parser.Formalize();
 					if (connection.State == ConnectionState.Closed)
 						connection.Open();
 					var command = new MySqlCommand("update usersettings.priceitems set PriceDate = now() where id = ?id", connection);
-					command.Parameters.AddWithValue("?id", priceItemId);
+					command.Parameters.AddWithValue("?id", plan.PriceItemId);
 					command.ExecuteNonQuery();
 				}
 			}

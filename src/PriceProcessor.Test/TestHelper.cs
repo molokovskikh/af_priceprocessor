@@ -116,7 +116,7 @@ namespace PriceProcessor.Test
 		{
 			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
 			{
-				var parser = (BasePriceParser2) Activator.CreateInstance(formatType, file, connection, parseRules);
+				var parser = (BasePriceParser) Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
 			}
 		}
@@ -212,7 +212,7 @@ from core0 c
   join corecosts cc on cc.Core_Id = c.Id
 where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables[0];
 
-			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count));
+			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "количество позиций не совпадает");
 			for(var i = 0; i < etalonCore0.Rows.Count; i++)
 			{
 				var etalonRow = etalonCore0.Rows[i];
