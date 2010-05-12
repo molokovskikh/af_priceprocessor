@@ -130,8 +130,7 @@ namespace PriceProcessor.Test.Special
 
 			Directory.CreateDirectory("output");
 			var downloader = new RostaDownloader();
-			downloader.DownloadPrice("20100227139999-843-12 05010130", "00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel\r\n02/05/2007-I945-6A79TG0AC-00", "price", "producers", "ex");
+			downloader.DownloadPrice("20100227139999-843-12", "00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel\r\n02/05/2007-I945-6A79TG0AC-00", "price", "producers", "ex");
 		}
-
 	}
 }
