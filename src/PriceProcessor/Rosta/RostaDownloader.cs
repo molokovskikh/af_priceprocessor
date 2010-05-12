@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Common.Tools.Calendar;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using log4net;
 
@@ -30,6 +31,8 @@ namespace Inforoom.PriceProcessor.Rosta
 			producersFile = producers;
 			using( var tcpClient = new TcpClient())
 			{
+				tcpClient.SendTimeout = (int) 60.Second().TotalMilliseconds;
+				tcpClient.ReceiveTimeout = (int) 60.Second().TotalMilliseconds;
 				tcpClient.Connect(new IPEndPoint(IPAddress.Parse("77.233.165.8"), 215));
 				using(stream = tcpClient.GetStream())
 				using(writer = new StreamWriter(stream, encoding, 1))
