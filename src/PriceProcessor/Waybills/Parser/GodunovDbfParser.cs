@@ -24,7 +24,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.ProducerCost, "PRICE_ZI")
 				.Line(l => l.SupplierCost, "PRICE")
-				//.Line(l => l.SupplierCostWithoutNDS, "SELL_NO_ND")
 				.Line(l => l.Quantity, "KOL")
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.RegistryCost, "PRICE_REG")

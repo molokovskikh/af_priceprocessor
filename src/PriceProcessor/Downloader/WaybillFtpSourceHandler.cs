@@ -131,7 +131,7 @@ GROUP BY SupplierId
 					url = waybillSource.WaybillUrl;
 				else if (documentsType.Type == DocType.Reject)
 					url = waybillSource.RejectUrl;
-				_log.DebugFormat("Попытка получения документов с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
+				_log.InfoFormat("Попытка получения документов с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
 					waybillSource.SupplierId, documentsType.Type.GetDescription(), url);
 				if (String.IsNullOrEmpty(url))
 					return downloadedWaybills;

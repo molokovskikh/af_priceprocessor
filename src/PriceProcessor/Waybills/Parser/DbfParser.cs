@@ -124,8 +124,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public void ToDocument(Document document, DataTable table)
 		{
+			if (table.Rows.Count == 0)
+				return;
 			foreach (var action in _headerActions)
-				action(document, table.Rows[1]);
+				action(document, table.Rows[0]);
 
 			foreach (var row in table.Rows.Cast<DataRow>())
 			{

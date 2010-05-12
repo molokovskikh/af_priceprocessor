@@ -63,28 +63,31 @@ GROUP BY AddressId";
 			var sqlUnion = String.Empty;
 			if (useUnion)
 				sqlUnion = " UNION ";
+
 			if (filterBySupplierClientId)
-				sqlSupplierClientId = " AND Inter.SupplierClientId = ?SupplierClientId ";
+				sqlSupplierClientId = " FutureInter.SupplierClientId = ?SupplierClientId ";
 			if (filterBySupplierDeliveryId)
-				sqlSupplierDeliveryId = " AND AddrInter.SupplierDeliveryId = ?SupplierDeliveryId ";
+				sqlSupplierDeliveryId = " AddrInter.SupplierDeliveryId = ?SupplierDeliveryId ";
+
+			var sqlCondition = sqlSupplierClientId;
+			if (filterBySupplierClientId && filterBySupplierDeliveryId)
+				sqlCondition = String.Format(" {0} AND {1} ", sqlSupplierClientId, sqlSupplierDeliveryId);
+			else
+				sqlCondition += sqlSupplierDeliveryId;
+
 			var sqlQuery = sqlUnion + @"
 SELECT
-	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) AS AddressId,
-	Inter.SupplierClientId,
+	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId,
+	FutureInter.SupplierClientId,
 	AddrInter.SupplierDeliveryId,
-	Inter.SupplierPaymentId
+	FutureInter.SupplierPaymentId
 FROM
-	future.Addresses Addr,
-	future.Intersection Inter,
-	future.AddressIntersection AddrInter,
-	usersettings.PricesData pd
+	future.Addresses Addr
+JOIN future.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
+JOIN usersettings.PricesData pd ON pd.FirmCode = ?SupplierId
+JOIN future.Intersection FutureInter ON FutureInter.Id = AddrInter.IntersectionId AND FutureInter.PriceId = pd.PriceCode
 WHERE
-	Inter.PriceId = pd.PriceCode
-AND pd.FirmCode = ?SupplierId
-" + sqlSupplierClientId + sqlSupplierDeliveryId + 
-@"
-AND Addr.Id = AddrInter.AddressId";
-
+" + sqlCondition;
 			return sqlQuery;
 		}
 

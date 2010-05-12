@@ -54,6 +54,7 @@ namespace PriceProcessor.Test
 		public void DeleteDirectories()
 		{
 			TestHelper.RecreateDirectories();
+			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 		}
 
 		public void SetUp(IList<string> fileNames)
@@ -296,7 +297,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		public void Parse_eml_file()
 		{
 			var files = new List<string> {
-				@"C:\Users\dorofeev\Desktop\1.eml",
+				@"C:\Users\dorofeev\Desktop\WaybillUnparse.eml",
 			};
 			IsEmlFile = true;
 			SetUp(files);

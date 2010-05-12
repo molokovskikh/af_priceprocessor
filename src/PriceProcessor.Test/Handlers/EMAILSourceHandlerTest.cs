@@ -7,6 +7,7 @@ using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Common.Tools.Calendar;
+using Inforoom.Common;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
@@ -21,6 +22,16 @@ using Test.Support;
 
 namespace PriceProcessor.Test
 {
+	public class EmailSourceHandlerForTesting : EMAILSourceHandler
+	{
+		public void Process()
+		{
+			CreateDirectoryPath();
+			CreateWorkConnection();
+			ProcessData();
+		}
+	}
+
 	[TestFixture]
 	public class EMAILSourceHandlerTest : EMAILSourceHandler
 	{
@@ -35,6 +46,48 @@ namespace PriceProcessor.Test
 		private ulong[] _sourceIds = new ulong[10] { 3, 7, 10, 13, 18, 22, 30, 37, 38, 45 };
 
 		private static string _dataDir = @"..\..\Data\";
+
+		private SummaryInfo _summary = new SummaryInfo();
+
+		public void SetUp(IList<string> fileNames, string emailTo, string emailFrom)
+		{
+			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
+			TestHelper.RecreateDirectories();
+
+			var client = TestClient.CreateSimple();
+			var supplier = TestOldClient.CreateTestSupplier();
+			_summary.Client = client;
+			_summary.Supplier = supplier;
+
+			var email = String.Format("{0}test@test.test", supplier.Id);
+			if (String.IsNullOrEmpty(emailTo))
+				emailTo = email;
+			if (String.IsNullOrEmpty(emailFrom))
+				emailFrom = email;
+			TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, "*.*", "*.*");
+
+			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+
+			byte[] bytes;
+			foreach (var file in fileNames)
+			{
+				if (Path.GetExtension(file.ToLower()) == ".eml")
+				{
+					bytes = File.ReadAllBytes(file);
+				}
+				else
+				{
+					var message = TestHelper.BuildMessageWithAttachments(
+						String.Format(emailTo),
+						String.Format(emailFrom), new[] { file });
+					bytes = message.ToByteData();
+				}
+				TestHelper.StoreMessage(
+					Settings.Default.TestIMAPUser,
+					Settings.Default.TestIMAPPass,
+					Settings.Default.IMAPSourceFolder, bytes);
+			}
+		}
 
 		[Test]
 		public void IsMailAddresTest()
@@ -89,6 +142,17 @@ namespace PriceProcessor.Test
 				}
 			}
 			Assert.IsTrue(priceItemInQueue, "Ошибка обработки файла. Файл не поставлен в очередь на формализацию");
+		}
+
+		[Test, Description("Тест для обработки прайс-листа в письме"), Ignore("Тест для отладки обработчика писем")]
+		public void Process_price_in_message()
+		{
+			var files = new[] { @"..\..\Data\EmailSourceHandlerTest\Price_ProgTechnologi.eml" };
+			var emailTo = "prices@izh.analit.net";
+			var emailFrom = "prtech@udmnet.ru";
+			SetUp(files, emailTo, emailFrom);
+			var handler = new EmailSourceHandlerForTesting();
+			handler.Process();
 		}
 
 		[Test, Ignore("Тест для обработки всех писем-файлов находящихся в определенной директории. Проверяется что распаковали файл и что его размер > 0")]

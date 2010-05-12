@@ -17,20 +17,17 @@ namespace Inforoom.Downloader
 
         protected static DateTime GetFileDateTime(string httpFile, string httpUser, string httpPassword)
         {
-            var request = (HttpWebRequest)WebRequest.Create(httpFile);
-            request.Method = WebRequestMethods.Http.Head;
+        	var fileDate = DateTime.MinValue;
+        	var request = (HttpWebRequest) WebRequest.Create(httpFile);
+			request.Method = WebRequestMethods.Http.Head;
 
-            if (!String.IsNullOrEmpty(httpUser))
-                request.Credentials = new NetworkCredential(httpUser, httpPassword);
-
+			if (!String.IsNullOrEmpty(httpUser))
+				request.Credentials = new NetworkCredential(httpUser, httpPassword);
 			request.Proxy = null;
 
-            var response = (HttpWebResponse)request.GetResponse();
-			var fdt = response.LastModified;
-
-            response.Close();
-
-            return fdt;
+			using (var response = (HttpWebResponse) request.GetResponse())
+				fileDate = response.LastModified;
+        	return fileDate;
         }
 
         protected static void GetFile(string httpFile, string saveFileName, string httpUser, string httpPassword)
