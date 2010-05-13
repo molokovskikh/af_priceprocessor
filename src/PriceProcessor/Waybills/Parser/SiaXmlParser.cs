@@ -19,6 +19,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				var line = document.NewLine();
 				line.Product = position.XPathSelectElement("Товар").Value;
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
+				if (position.XPathSelectElement("СтранаИзготовителя") != null)
+					line.Country = position.XPathSelectElement("СтранаИзготовителя").Value;
 				line.Code = (position.XPathSelectElement("КодТовара") == null) ? null : position.XPathSelectElement("КодТовара").Value;
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 				line.ProducerCost = position.Get("ЦенаИзг");
@@ -30,9 +32,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Nds = (uint?) position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
 
-				if (position.XPathSelectElement("ЖНВЛС") != null)
+				if (position.XPathSelectElement("ЖНВЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖНВЛС").Value))
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
-				else if (position.XPathSelectElement("ЖВНЛС") != null)
+				else if (position.XPathSelectElement("ЖВНЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖВНЛС").Value))
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖВНЛС").Value) == 1;
 
 				line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;
