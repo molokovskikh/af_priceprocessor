@@ -168,6 +168,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(document.Lines.Count, Is.EqualTo(9));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("482025"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(38.40));
 			Assert.That(document.Lines[0].VitallyImportant, Is.True);
 			Assert.That(document.Lines[3].VitallyImportant, Is.True);
 			Assert.That(document.Lines[7].VitallyImportant, Is.True);

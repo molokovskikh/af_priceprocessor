@@ -47,6 +47,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				registryCostColumn = "PRICE_RR";
 			else if (data.Columns.Contains("REESTRPRIC"))
 				registryCostColumn = "REESTRPRIC";
+			if (data.Columns.Contains("cach_reest"))
+				registryCostColumn = "cach_reest";
 
 			if (data.Columns.Contains("DOCUMENT"))
 				certificatesColumn = "DOCUMENT";
