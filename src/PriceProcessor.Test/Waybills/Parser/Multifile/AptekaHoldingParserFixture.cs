@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using System.IO;
@@ -114,13 +115,13 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id
 			var mergedFiles = MultifileDocument.Merge(files);			
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
 				
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
-			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
-			Assert.IsTrue(AptekaHoldingParser.CheckFileFormat(mergedFiles[0].FileName));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
+			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));
+			Assert.IsTrue(AptekaHoldingParser.CheckFileFormat(Dbf.Load(mergedFiles[0].FileName)));
 		}
 
 		[Test]

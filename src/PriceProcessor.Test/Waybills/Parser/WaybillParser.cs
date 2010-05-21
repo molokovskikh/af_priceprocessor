@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills;
@@ -17,6 +18,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public static Document Parse(string filePath, DocumentLog documentLog)
 		{
 			var detector = new WaybillFormatDetector();
+			if (!File.Exists(filePath))
+				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
 			if (parser == null)
 				return null;

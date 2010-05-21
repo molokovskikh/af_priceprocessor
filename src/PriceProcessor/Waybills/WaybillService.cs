@@ -11,7 +11,6 @@ using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
-using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -209,6 +208,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string Code { get; set; }
 
+		//Информация о сертификате это строка что то вроде РОСС.NL.ФМ09.Д00778
 		[Property]
 		public string Certificates { get; set; }
 

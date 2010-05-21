@@ -1,7 +1,6 @@
 ﻿using System;
-using Castle.ActiveRecord;
-using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Waybills.Parser;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -46,7 +45,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_vitally_important()
 		{
-			var parser = new SiaParser();
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8916.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("R7036"));
@@ -58,7 +56,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_registry_cost_in_reestr_field()
 		{
-			var parser = new SiaParser();
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8916_REESTR.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[4].RegistryCost, Is.EqualTo(82.0615));
@@ -70,17 +67,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Check_file_format()
 		{
-			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
-			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
-			Assert.IsFalse(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
-			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsTrue(SiaParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
+			Assert.IsTrue(SiaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsTrue(SiaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsFalse(SiaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
+			Assert.IsTrue(SiaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsTrue(SiaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
 		}
 
 		[Test]
 		public void Parse_without_document_date()
 		{
-			var parser = new SiaParser();
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\without_date.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.DocumentDate.HasValue, Is.False);
@@ -90,7 +86,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_without_registry_cost()
 		{
-			var parser = new SiaParser();
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3655268_Катрен(K_59329).dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);

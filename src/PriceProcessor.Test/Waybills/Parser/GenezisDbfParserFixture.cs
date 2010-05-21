@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Waybills.Parser;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -36,12 +33,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Check_file_format()
 		{
-			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
-			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
-			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
-			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
-			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
+			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
+			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
+			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));
 		}
 
 		[Test]

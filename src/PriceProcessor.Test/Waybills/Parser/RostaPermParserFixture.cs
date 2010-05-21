@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Inforoom.PriceProcessor.Waybills.Parser;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -38,13 +36,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void CheckFileFormat()
 		{
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\0000470553.dbf"));
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
-			Assert.IsFalse(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\R1362131.DBF"));
-			Assert.IsTrue(RostaPermParser.CheckFileFormat(@"..\..\Data\Waybills\78349-14.dbf"));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
+			Assert.IsFalse(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\R1362131.DBF")));
+			Assert.IsTrue(RostaPermParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\78349-14.dbf")));
 		}
 	}
 }

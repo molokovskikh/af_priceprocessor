@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser;
-using Inforoom.PriceProcessor.Waybills.Parser.Multifile;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -37,6 +39,12 @@ namespace Inforoom.PriceProcessor.Waybills
 				(documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001 || documentLog.Supplier.Id == 7146))
 				type = typeof (Moron_338_SpecialParser);
 
+			//Юкон посылает в формате как сиа но в кодировке 1251, пидарасы
+			if (documentLog != null 
+				&& documentLog.Supplier.Id == 105 
+				&& type == typeof(SiaParser))
+				type = typeof (UkonDbfParser);
+
 			if (type == null)
 				throw new Exception("Не удалось определить тип парсера");
 
@@ -48,37 +56,23 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private static Type DetectDbfParser(string file)
 		{
-			if (MoronDbfParser.CheckFileFormat(file))
-				return typeof (MoronDbfParser);
-			if (UkonDbfParser.IsInCorrectFileFormat(file))
-				return typeof (UkonDbfParser);
-			if (SiaParser.CheckFileFormat(file))
-				return typeof (SiaParser);
-			if (GenezisDbfParser.CheckFileFormat(file))
-				return typeof (GenezisDbfParser);
-			if (AptekaHoldingParser.CheckFileFormat(file))
-				return typeof (AptekaHoldingParser);
-			if (Protek28Parser.CheckFileFormat(file))
-				return typeof (Protek28Parser);
-			if (IzhevskFarmParser.CheckFileFormat(file))
-				return typeof (IzhevskFarmParser);
-			if (SiaPermParser.CheckFileFormat(file))
-				return typeof (SiaPermParser);
-			if (AptekaHoldingSingleParser.CheckFileFormat(file))
-				return typeof (AptekaHoldingSingleParser);
-			if (AptekaHoldingSingleParser2.CheckFileFormat(file))
-				return typeof(AptekaHoldingSingleParser2);
-			if (AptekaHoldingIzhevskParser.CheckFileFormat(file))
-				return typeof(AptekaHoldingIzhevskParser);
-			if (RostaPermParser.CheckFileFormat(file))
-				return typeof(RostaPermParser);
-			if (FarmaimpeksIzhevskParser.CheckFileFormat(file))
-				return typeof (FarmaimpeksIzhevskParser);
-			if (KatrenOrelDbfParser.CheckFileFormat(file))
-				return typeof (KatrenOrelDbfParser);
-			if (GodunovDbfParser.CheckFileFormat(file))
-				return typeof (GodunovDbfParser);
-			throw new Exception("Не удалось определить тип парсера для DBF формата");
+			var types = typeof (WaybillFormatDetector)
+				.Assembly
+				.GetTypes()
+				.Where(t => t.Namespace.EndsWith("Waybills.Parser.DbfParsers") && t.IsPublic)
+				.ToList();
+
+			foreach (var type in types)
+			{
+				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+				if (detectFormat == null)
+					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
+				var data = Dbf.Load(file);
+				var result = (bool)detectFormat.Invoke(null, new object[] {data});
+				if (result)
+					return type;
+			}
+			return null;
 		}
 	}
 }

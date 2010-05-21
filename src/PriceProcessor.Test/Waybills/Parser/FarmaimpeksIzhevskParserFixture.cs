@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Inforoom.PriceProcessor.Waybills.Parser;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -40,12 +38,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void CheckFileFormat()
 		{
-			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\1016416.dbf"));
-			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\1016416_char.DBF"));
-			Assert.IsTrue(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\fm21554.dbf"));
-			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\1040150.DBF"));
-			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\8916.dbf"));
-			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(@"..\..\Data\Waybills\95472.dbf"));
+			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsTrue(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\fm21554.dbf")));
+			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
+			Assert.IsFalse(FarmaimpeksIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\95472.dbf")));
 		}
 	}
 }
