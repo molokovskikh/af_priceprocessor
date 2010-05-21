@@ -171,6 +171,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public DateTime? DocumentDate { get; set; }
 
+		[Property]
+		public string Parser { get; set; }
+
 		[BelongsTo("DownloadId")]
 		public DocumentLog Log { get; set; }
 
@@ -303,7 +306,9 @@ namespace Inforoom.PriceProcessor.Waybills
 							if (d.DocumentLog.DocumentType.Equals(DocType.Reject))
 								return null;
 							var parser = detector.DetectParser(d.FileName, d.DocumentLog);
-							return parser.Parse(d.FileName, new Document(d.DocumentLog));
+							var document = new Document(d.DocumentLog);
+							document.Parser = parser.GetType().Name;
+							return parser.Parse(d.FileName, document);
 						}
 						catch (Exception e)
 						{
@@ -352,6 +357,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					var detector = new WaybillFormatDetector();
 					var parser = detector.DetectParser(file, log);
 					var document = new Document(log);
+					document.Parser = parser.GetType().Name;
 					parser.Parse(file, document);
 					if (!document.DocumentDate.HasValue)
 						document.DocumentDate = DateTime.Now;
