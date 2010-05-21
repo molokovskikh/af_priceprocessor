@@ -159,6 +159,7 @@
     <Compile Include="Waybills\Parser\AptekaHoldingSingleParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\FarmaimpeksIzhevskParserFixture.cs" />
+    <Compile Include="Waybills\Parser\FarmGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\GenezisDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\GodunovDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\IzhevskFarmParserFixture.cs" />
