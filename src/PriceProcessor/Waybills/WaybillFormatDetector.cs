@@ -39,12 +39,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				(documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001 || documentLog.Supplier.Id == 7146))
 				type = typeof (Moron_338_SpecialParser);
 
-			//ёкон посылает в формате как сиа но в кодировке 1251, пидарасы
-			if (documentLog != null 
-				&& documentLog.Supplier.Id == 105 
-				&& type == typeof(SiaParser))
-				type = typeof (UkonDbfParser);
-
 			if (type == null)
 				throw new Exception("Ќе удалось определить тип парсера");
 

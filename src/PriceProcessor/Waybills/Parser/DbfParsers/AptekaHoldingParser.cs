@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var data = Dbf.Load(file);
 			if (data.Columns.Contains("DOCNUMDER"))
 			{
-				data = Dbf.Load(file, Encoding.GetEncoding(1251));
+				data = Dbf.Load(file);
 				providerDocumentIdColumn = "DOCNUMDER";
 			}
 
