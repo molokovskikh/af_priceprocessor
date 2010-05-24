@@ -78,9 +78,9 @@ GROUP BY AddressId";
 			var sqlQuery = sqlUnion + @"
 SELECT
 	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId,
-	FutureInter.SupplierClientId,
-	AddrInter.SupplierDeliveryId,
-	FutureInter.SupplierPaymentId
+	ifnull(FutureInter.SupplierClientId, ''),
+	ifnull(AddrInter.SupplierDeliveryId, ''),
+	ifnull(FutureInter.SupplierPaymentId, '')
 FROM
 	future.Addresses Addr
 JOIN future.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
