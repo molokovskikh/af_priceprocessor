@@ -38,10 +38,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			return
 				@"
 SELECT
-	i.ClientCode AS AddressId,
-	i.FirmClientCode AS SupplierClientId,
-	i.FirmClientCode2 AS SupplierDeliveryId,
-	i.FirmClientCode3 AS SupplierPaymentId
+	i.ClientCode AS AddressId
 FROM
 	usersettings.Intersection i,
 	usersettings.PricesData pd
@@ -77,10 +74,7 @@ GROUP BY AddressId";
 
 			var sqlQuery = sqlUnion + @"
 SELECT
-	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId,
-	ifnull(FutureInter.SupplierClientId, ''),
-	ifnull(AddrInter.SupplierDeliveryId, ''),
-	ifnull(FutureInter.SupplierPaymentId, '')
+	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId
 FROM
 	future.Addresses Addr
 JOIN future.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
