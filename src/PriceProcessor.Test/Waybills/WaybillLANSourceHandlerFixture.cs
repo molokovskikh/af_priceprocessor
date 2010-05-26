@@ -52,12 +52,13 @@ namespace PriceProcessor.Test
 			TestHelper.RecreateDirectories();
 			_summary.Client = TestClient.CreateSimple();
 			_summary.Supplier = TestOldClient.CreateTestSupplier();
+			ArchiveHelper.SevenZipExePath = Path.Combine(Path.GetFullPath("."), @"7zip\7z.exe");
 		}
 
 		private void Process_waybills()
 		{
 			var handler = new WaybillLANSourceHandlerForTesting();
-			handler.Process();			
+			handler.Process();
 		}
 
 		public void Insert_waybill_source()
@@ -106,9 +107,14 @@ where a.Id = ?AddressId", connection);
 
 		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.WaybillsPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
+			var savedFiles = GetFileForAddress(documentsType);
 			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));
+		}
+
+		private string[] GetFileForAddress(DocType documentsType)
+		{
+			var clientDirectory = Path.Combine(Settings.Default.WaybillsPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
 
 		private void CheckDocumentLogEntry(int waitingCountEntries)
@@ -130,7 +136,7 @@ where a.Id = ?AddressId", connection);
 			var filePath = @"..\..\Data\Waybills\890579.dbf";
 
 			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
-			Insert_waybill_source();			
+			Insert_waybill_source();
 			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
 
 			Process_waybills();
@@ -139,8 +145,7 @@ where a.Id = ?AddressId", connection);
 			CheckDocumentLogEntry(1);
 		}
 
-
-		[Test, Ignore("Сломан. Чинить.")]
+		[Test]
 		public void TestSIAMoscow2788()
 		{
 			var supplierCode = 2788;
@@ -163,17 +168,15 @@ where a.Id = ?AddressId", connection);
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
 		}
 
-		[Test, Ignore("Сломан. Чинить")]
+		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
 			FileHelper.DeleteDir(Settings.Default.FTPOptBoxPath);
 
 			var filter = new EventFilter<WaybillSourceHandler>();
 
-			TestHelper.StoreMessage(Settings.Default.TestIMAPUser,
-				Settings.Default.TestIMAPPass,
-				Settings.Default.IMAPSourceFolder,
-				File.ReadAllBytes(@"..\..\Data\Unparse.eml"));
+			TestHelper.ClearImapFolder();
+			TestHelper.StoreMessage(File.ReadAllBytes(@"..\..\Data\Unparse.eml"));
 
 			Process();
 
@@ -184,7 +187,7 @@ where a.Id = ?AddressId", connection);
 			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
 		}
 
-		[Test, Ignore("Сломан. Чинить")]
+		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
 			var filter = new EventFilter<WaybillSourceHandler>();
@@ -193,9 +196,9 @@ where a.Id = ?AddressId", connection);
 			var settings = WaybillSettings.Find(client.Id);
 			settings.ParseWaybills = true;
 			settings.Update();
-			TestHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
-				Settings.Default.TestIMAPPass,
-				Settings.Default.IMAPSourceFolder,
+
+			TestHelper.ClearImapFolder();
+			TestHelper.StoreMessageWithAttachToImapFolder(
 				String.Format("{0}@waybills.analit.net", client.Id),
 				"edata@msk.katren.ru",
 				@"..\..\Data\Waybills\8916.dbf");
@@ -221,23 +224,13 @@ where a.Id = ?AddressId", connection);
 
 		private void Process()
 		{
-			var handler = new WaybillSourceHandler(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			handler.StartWork();
-			Thread.Sleep(10.Second());
-			handler.StopWork();
+			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.Process();
 		}
 
 		private void PrepareDirectories()
 		{
 			TestHelper.RecreateDirectories();
-
-			// Удаляем папку FtpOptBox
-			if (Directory.Exists(Settings.Default.FTPOptBoxPath))
-				Directory.Delete(Settings.Default.FTPOptBoxPath, true);
-
-			// Создаем ее заново и копируем туда накладные. Пока только для SIA (код 2788)
-			// Потом можно будет сюда добавить других поставщиков
-			Directory.CreateDirectory(Settings.Default.FTPOptBoxPath);
 
 			// Создаем директории для поставщиков 
 			foreach (var supplierCode in _supplierCodes)

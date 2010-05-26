@@ -81,7 +81,7 @@ GROUP BY SupplierId
 
 		protected override void ProcessData()
 		{
-			FillSourcesTable();			
+			FillSourcesTable();
 			foreach (DataRow sourceRow in dtSources.Rows)
 			{				
 				var waybillSource = new WaybillSource(sourceRow);
@@ -91,8 +91,7 @@ GROUP BY SupplierId
 
 				foreach (var documentType in _documentTypes)
 				{
-					IList<DownloadedFile> downloadedWaybills = null;
-					downloadedWaybills = ReceiveDocuments(documentType, waybillSource);
+					var downloadedWaybills = ReceiveDocuments(documentType, waybillSource);
 					foreach (var downloadedWaybill in downloadedWaybills)
 					{
 						CurrFileName = downloadedWaybill.FileName;
@@ -100,14 +99,8 @@ GROUP BY SupplierId
 						// Обработка накладной(или отказа), помещение ее в папку клиенту
 						var logs = ProcessWaybill(documentType.Type, waybillSource, downloadedWaybill);
 
-						// Разбор накладных. Если скачанный файл является архивом, то к моменту разбора, во временной папке уже лежат разархивированные файлы
 						foreach (var log in logs)
-						{
-							var fileName = downloadedWaybill.FileName;
-							if (ArchiveHelper.IsArchive(downloadedWaybill.FileName))
-								fileName = Directory.GetFiles(downloadedWaybill.FileName + ExtrDirSuffix, log.FileName, SearchOption.AllDirectories)[0];
-							WaybillService.ParserDocument(log.Id, fileName);
-						}
+							WaybillService.ParserDocument(log);
 
 						// Удаление временных файлов
 						Cleanup();
@@ -184,9 +177,9 @@ GROUP BY SupplierId
 			return (seconds >= downloadInterval);
 		}
 
-		private IList<DocumentLog> ProcessWaybill(DocType documentType, WaybillSource waybillSource, DownloadedFile waybill)
+		private IEnumerable<DocumentReceiveLog> ProcessWaybill(DocType documentType, WaybillSource waybillSource, DownloadedFile waybill)
 		{
-			var documentLogs = new List<DocumentLog>();
+			var documentLogs = new List<DocumentReceiveLog>();
 			var reader = new SupplierFtpReader();
 
 			try
@@ -239,11 +232,12 @@ GROUP BY SupplierId
 							_log.DebugFormat("Файл {0} не является новой накладной, не обрабатываем его", file);
 							continue;
 						}
-						var log = DocumentLog.Log(waybillSource.SupplierId, (uint?) clientId, (uint?) addrId,
-						                          Path.GetFileName(file), documentType, null);
-						if (!addrId.HasValue)
-							addrId = clientId;
-						CopyDocumentToClientDirectory(log, waybillSource.SupplierName, (uint)addrId, file, documentType);
+						var log = DocumentReceiveLog.Log(waybillSource.SupplierId, 
+							(uint?) clientId,
+							(uint?) addrId,
+							file,
+							documentType);
+						log.CopyDocumentToClientDirectory();
 						documentLogs.Add(log);
 					}
 				}
@@ -318,20 +312,6 @@ WHERE dl.FirmCode = ?SupplierId and dl.FileName like ?FileName and dl.LogTime > 
 			{
 				_log.Error("При отправке сообщения об ошибках при загрузке накладных с FTP поставщика возникла ошибка", e);
 			}
-		}
-
-		private void CopyDocumentToClientDirectory(DocumentLog documentLog, string supplierName, ulong addressId, string fileName, DocType documentType)
-		{
-			var clientDirectory = Common.FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) +
-				addressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + documentType + "s";
-
-			if (!Directory.Exists(clientDirectory))
-				Directory.CreateDirectory(clientDirectory);
-
-			var destinationFileName = documentLog.Id + "_" + supplierName + "(" + Path.GetFileNameWithoutExtension(fileName) + ")" + Path.GetExtension(fileName);
-			destinationFileName = Path.Combine(clientDirectory, destinationFileName);
-
-			File.Copy(fileName, destinationFileName, true);
 		}
 	}
 }

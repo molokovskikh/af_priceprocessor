@@ -14,8 +14,11 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class RemoteWaybillsInterfaceFixture
 	{
-		private IWaybillService service;
-		private ServiceHost host;
+		IWaybillService service;
+		ServiceHost host;
+		TestOldClient client;
+		string waybillsPath;
+		string rejectsPath;
 
 		[SetUp]
 		public void Setup()
@@ -27,6 +30,13 @@ namespace PriceProcessor.Test.Waybills
 
 			var factory = new ChannelFactory<IWaybillService>(binding, "net.tcp://localhost:9846/Waybill");
 			service = factory.CreateChannel();
+
+			client = TestOldClient.CreateTestClient();
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			waybillsPath = Path.Combine(docRoot, "Waybills");
+			rejectsPath = Path.Combine(docRoot, "Rejects");
+			Directory.CreateDirectory(rejectsPath);
+			Directory.CreateDirectory(waybillsPath);
 		}
 
 		[TearDown]
@@ -39,11 +49,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_documents_on_remote_call()
 		{
 			var file = "1008fo.pd";
-			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			
+
 			var document = new TestDocumentLog {
 				ClientCode = client.Id,
 				FirmCode = 1179,
@@ -71,10 +77,6 @@ namespace PriceProcessor.Test.Waybills
 		public void Reject_should_not_be_parsed()
 		{
 			var file = "1008fo.pd";
-			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
-			var regectsPath = Path.Combine(docRoot, "Rejects");
-			Directory.CreateDirectory(regectsPath);
 
 			var document = new TestDocumentLog
 			{
@@ -87,7 +89,7 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope())
 				document.Save();
 
-			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(regectsPath, String.Format("{0}_1008fo.pd", document.Id)));
+			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(rejectsPath, String.Format("{0}_1008fo.pd", document.Id)));
 
 			service.ParseWaybill(new[] { document.Id });
 
@@ -102,10 +104,6 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_multifile()
 		{
 			var files = new[] { @"..\..\Data\Waybills\multifile\b271433.dbf", @"..\..\Data\Waybills\multifile\h271433.dbf" };
-			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
 
 			var documentLogs = new List<TestDocumentLog>();
 			foreach (var file in files)

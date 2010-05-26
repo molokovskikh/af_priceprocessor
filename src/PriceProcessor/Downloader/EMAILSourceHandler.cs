@@ -378,10 +378,7 @@ namespace Inforoom.Downloader
 			var attachmentFileName = GetShortFileNameFromAttachement(ent);
 			CurrFileName = DownHandlerPath + attachmentFileName;
 			using (var fs = new FileStream(CurrFileName, FileMode.Create))
-			{
 				ent.DataToStream(fs);
-				fs.Close();
-			}
 			return attachmentFileName;
 		}
 

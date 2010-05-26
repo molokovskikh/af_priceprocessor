@@ -31,81 +31,6 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string ShortName { get; set; }
 	}
 
-	[ActiveRecord("Document_logs", Schema = "logs")]
-	public class DocumentLog : ActiveRecordLinqBase<DocumentLog>
-	{
-		[PrimaryKey("RowId")]
-		public uint Id { get; set; }
-
-		[BelongsTo("FirmCode")]
-		public Supplier Supplier { get; set; }
-
-		[Property]
-		public uint? ClientCode { get; set; }
-
-		[Property]
-		public uint? AddressId { get; set; }
-
-		[Property]
-		public DocType DocumentType { get; set; }
-
-		[Property("Addition")]
-		public string Comment { get; set; }
-
-		[Property]
-		public string FileName { get; set; }
-
-		public string GetFileName()
-		{
-			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
-			var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
-			var documentDir = Path.Combine(clientDir, DocumentType + "s");
-			var file = String.Format("{0}_{1}",
-				Id,
-				Path.GetFileName(FileName));
-			var fullName = Path.Combine(documentDir, file);
-			if (!File.Exists(fullName))
-			{
-				file = String.Format("{0}_{1}({2}){3}",
-					Id,
-					Supplier.ShortName,
-					Path.GetFileNameWithoutExtension(FileName),
-					Path.GetExtension(FileName));
-				return Path.Combine(documentDir, file);
-			}
-			else
-				return fullName;			
-		}
-
-		public static DocumentLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment)
-		{
-			try
-			{
-				using (var scope = new TransactionScope())
-				{
-					var supplier = Supplier.Find(supplierId);
-					var document = new DocumentLog {
-						Supplier = supplier,
-						AddressId = addressId,
-						ClientCode = clientId,
-						FileName = fileName,
-						DocumentType = documentType,
-						Comment = comment,
-					};
-					document.Create();
-					scope.VoteCommit();
-					return document;
-				}
-			}
-			catch (Exception e)
-			{
-				var log = LogManager.GetLogger(typeof (WaybillService));
-				log.Error("Ошибка при создании записи в documents.document_log", e);
-				return null;
-			}
-		}
-	}
-
 	[ActiveRecord("RetClientsSet", Schema = "Usersettings")]
 	public class WaybillSettings : ActiveRecordLinqBase<WaybillSettings>
 	{
@@ -137,7 +62,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public Document()
 		{}
 
-		public Document(DocumentLog log)
+		public Document(DocumentReceiveLog log)
 		{
 			Log = log;
 			WriteTime = DateTime.Now;
@@ -175,7 +100,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string Parser { get; set; }
 
 		[BelongsTo("DownloadId")]
-		public DocumentLog Log { get; set; }
+		public DocumentReceiveLog Log { get; set; }
 
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public IList<DocumentLine> Lines { get; set; }
@@ -193,6 +118,14 @@ namespace Inforoom.PriceProcessor.Waybills
 			line.Document = this;
 			Lines.Add(line);
 			return line;
+		}
+
+		public void Parse(IDocumentParser parser, string file)
+		{
+			Parser = parser.GetType().Name;
+			parser.Parse(file, this);
+			if (!DocumentDate.HasValue)
+				DocumentDate = DateTime.Now;
 		}
 	}
 
@@ -297,34 +230,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				using (new SessionScope())
 				{
-					var detector = new WaybillFormatDetector();
-					var docsForParsing = MultifileDocument.Merge(ids);
-
-					var docs = docsForParsing.Select(d => {
-						try
-						{
-							if (d.DocumentLog.DocumentType.Equals(DocType.Reject))
-								return null;
-							var parser = detector.DetectParser(d.FileName, d.DocumentLog);
-							var document = new Document(d.DocumentLog);
-							document.Parser = parser.GetType().Name;
-							return parser.Parse(d.FileName, document);
-						}
-						catch (Exception e)
-						{
-							var filename = d.FileName;
-							_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
-							SaveWaybill(filename);
-							return null;
-						}
-					}).Where(d => d != null).ToList();
-					MultifileDocument.DeleteMergedFiles(docsForParsing);
-
-					using (new TransactionScope())
-					{
-						docs.Each(d => d.Save());
-						return docs.Select(d => d.Id).ToArray();
-					}
+					return ParseWaybills(DocumentReceiveLog.LoadByIds(ids), false)
+						.Select(d => d.Id)
+						.ToArray();
 				}
 			}
 			catch (Exception e)
@@ -332,6 +240,51 @@ namespace Inforoom.PriceProcessor.Waybills
 				_log.Error("Ошибка при разборе накладных", e);
 			}
 			return new uint[0];
+		}
+
+		public static void ParseWaybills(List<DocumentReceiveLog> logs)
+		{
+			try
+			{
+				ParseWaybills(logs, true);
+			}
+			catch(Exception e)
+			{
+				_log.Error("Ошибка при разборе накладных", e);
+			}
+		}
+
+		private static IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
+		{
+			var detector = new WaybillFormatDetector();
+			var docsForParsing = MultifileDocument.Merge(logs);
+
+			var docs = docsForParsing.Select(d => {
+				try
+				{
+					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
+					if (d.DocumentLog.DocumentType == DocType.Reject)
+						return null;
+					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
+						return null;
+					return detector.DetectAndParse(d.DocumentLog, d.FileName);
+				}
+				catch (Exception e)
+				{
+					var filename = d.FileName;
+					_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
+					SaveWaybill(filename);
+					return null;
+				}
+			}).Where(d => d != null).ToList();
+			MultifileDocument.DeleteMergedFiles(docsForParsing);
+
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				docs.Each(d => d.Save());
+				scope.VoteCommit();
+			}
+			return docs;
 		}
 
 		public static void SaveWaybill(string filename)
@@ -343,26 +296,28 @@ namespace Inforoom.PriceProcessor.Waybills
 				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
 		}
 
+		public static void ParserDocument(DocumentReceiveLog log)
+		{
+			ParserDocument(log.Id, log.GetFileName());
+		}
+
 		public static void ParserDocument(uint documentLogId, string file)
 		{
 			try
 			{
 				using(new SessionScope())
 				{
-					var log = ActiveRecordBase<DocumentLog>.Find(documentLogId);
-					var settings = ActiveRecordBase<WaybillSettings>.Find(log.ClientCode.Value);
+					var log = DocumentReceiveLog.Find(documentLogId);
+					var settings = WaybillSettings.Find(log.ClientCode.Value);
 					if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
 						return;
 
-					var detector = new WaybillFormatDetector();
-					var parser = detector.DetectParser(file, log);
-					var document = new Document(log);
-					document.Parser = parser.GetType().Name;
-					parser.Parse(file, document);
-					if (!document.DocumentDate.HasValue)
-						document.DocumentDate = DateTime.Now;
-					using (new TransactionScope())
+					var document = new WaybillFormatDetector().DetectAndParse(log, file);
+					using (var transaction = new TransactionScope(OnDispose.Rollback))
+					{
 						document.Save();
+						transaction.VoteCommit();
+					}
 				}
 			}
 			catch(Exception e)

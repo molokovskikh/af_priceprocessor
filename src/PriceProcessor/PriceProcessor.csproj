@@ -140,6 +140,7 @@
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
+    <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Rosta\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
@@ -206,6 +207,7 @@
     </Compile>
     <Compile Include="Rosta\RostaDownloader.cs" />
     <Compile Include="UueHelper.cs" />
+    <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllinceHealthcareParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSingleParser.cs" />
@@ -222,7 +224,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\RostaPermParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaPermParser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\UkonDbfParser.cs" />
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />

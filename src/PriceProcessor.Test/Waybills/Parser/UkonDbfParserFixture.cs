@@ -18,7 +18,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			file = @"..\..\Data\Waybills\" + file;
 			var detector = new WaybillFormatDetector();
-			var parser = detector.DetectParser(file, new DocumentLog{Supplier = new Supplier{Id = 105}});
+			var parser = detector.DetectParser(file, new DocumentReceiveLog{Supplier = new Supplier{Id = 105}});
 			var doc = new Document();
 			return parser.Parse(file, doc);
 		}

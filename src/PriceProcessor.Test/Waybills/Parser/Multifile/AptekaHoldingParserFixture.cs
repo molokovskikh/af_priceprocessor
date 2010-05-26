@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Common.Tools;
-using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
@@ -43,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 				Directory.CreateDirectory(directory);
 		}
 
-		private uint[] GetFilesForParsing(params string[] filePaths)
+		private List<DocumentReceiveLog> GetFilesForParsing(params string[] filePaths)
 		{
 			var resultList = new List<uint>();
 			uint documentLogId = 0;
@@ -72,7 +69,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id
 				CreateClientDirectory(clientCode);
 				File.Copy(filePath, Path.Combine(documentDir, name));
 			}
-			return resultList.ToArray();
+			return DocumentReceiveLog.LoadByIds(resultList.ToArray());
 		}
 
 		[Test]

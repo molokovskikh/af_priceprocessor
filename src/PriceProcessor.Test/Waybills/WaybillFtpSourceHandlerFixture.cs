@@ -201,7 +201,7 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 				foreach (var clientCode in clientCodes)
 				{
 					// Проверяем наличие записей в document_logs
-					var logs = DocumentLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.ClientCode == clientCode);
+					var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.ClientCode == clientCode);
 					Assert.That(logs.Count(), Is.EqualTo(1));
 
 					// Проверяем наличие записей в documentheaders
@@ -238,11 +238,11 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 				var handler = new WaybillFtpSourceHandlerForTesting();
 				handler.Process();
 
-				var logs = DocumentLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
+				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				var countLogs = logs.Count();
 
 				handler.Process();
-				var logs2 = DocumentLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
+				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
 		}

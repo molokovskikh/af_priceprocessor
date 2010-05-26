@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
 using log4net;
@@ -40,18 +37,18 @@ namespace Inforoom.PriceProcessor.Waybills
 			return GetPartialFileName("b", mergedFileName);
 		}
 
-		private static bool IsPartialFile(DocumentLog documentLog, string nameStartString)
+		private static bool IsPartialFile(DocumentReceiveLog documentLog, string nameStartString)
 		{
 			return Path.GetFileNameWithoutExtension(documentLog.FileName).StartsWith(nameStartString) &&
 				Path.GetExtension(documentLog.FileName).Equals(".dbf", StringComparison.OrdinalIgnoreCase);			
 		}
 
-		private static bool IsHeaderFile(DocumentLog file)
+		private static bool IsHeaderFile(DocumentReceiveLog file)
 		{
 			return IsPartialFile(file, "h");
 		}
 
-		private static DocumentLog GetSecondFile(DocumentLog documentLog, IEnumerable<DocumentLog> files)
+		private static DocumentReceiveLog GetSecondFile(DocumentReceiveLog documentLog, IEnumerable<DocumentReceiveLog> files)
 		{
 			var headerFile = documentLog.FileName;
 			var template = Path.GetFileName(headerFile).Substring(1);
@@ -66,12 +63,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			return null;
 		}
 
-		private static bool IsBodyFile(DocumentLog documentLog)
+		private static bool IsBodyFile(DocumentReceiveLog documentLog)
 		{
 			return IsPartialFile(documentLog, "b");
 		}
 
-		private static string MergeFiles(DocumentLog headerFile, DocumentLog bodyFile)
+		private static string MergeFiles(DocumentReceiveLog headerFile, DocumentReceiveLog bodyFile)
 		{
 			var tableHeader = Dbf.Load(headerFile.GetFileName());
 			var tableBody = Dbf.Load(bodyFile.GetFileName());
@@ -132,15 +129,13 @@ namespace Inforoom.PriceProcessor.Waybills
 			return mergedFileName;
 		}
 
-		public static IList<DocumentForParsing> Merge(uint[] ids)
+		public static IList<DocumentForParsing> Merge(List<DocumentReceiveLog> documents)
 		{
-			DocumentLog headerFile = null;
-			DocumentLog bodyFile = null;
+			DocumentReceiveLog headerFile = null;
+			DocumentReceiveLog bodyFile = null;
 			try
 			{
 				var resultList = new List<DocumentForParsing>();
-				var documents = ids.Select(id => ActiveRecordBase<DocumentLog>.Find(id)).ToList();
-				
 				for (var i = 0; i < documents.Count; i++)
 				{
 					headerFile = null;
@@ -165,17 +160,17 @@ namespace Inforoom.PriceProcessor.Waybills
 						i--;
 					}
 					else
-						resultList.Add(new DocumentForParsing(file));						
+						resultList.Add(new DocumentForParsing(file));
 				}
 				return resultList;
 			}
 			catch(Exception e)
 			{
-				var _log = LogManager.GetLogger(typeof(MultifileDocument));
-				_log.Error("Ошибка при слиянии многофайловых накладных", e);
+				var log = LogManager.GetLogger(typeof(MultifileDocument));
+				log.Error("Ошибка при слиянии многофайловых накладных", e);
 				WaybillService.SaveWaybill(headerFile.GetFileName());
 				WaybillService.SaveWaybill(bodyFile.GetFileName());
-				return ids.Select(id => new DocumentForParsing(ActiveRecordBase<DocumentLog>.Find(id))).ToList();;
+				return documents.Select(d => new DocumentForParsing(d)).ToList();
 			}
 		}
 

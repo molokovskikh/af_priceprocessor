@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
@@ -250,176 +251,90 @@ and st.SourceID = 4";
 				return false;
 			}
 
-			//Если есть файлы для разбора, то хорошо, если нет, то архив не разобран
-			var processed = Files.Length > 0;
+			var processed = false;
 
-			foreach (var s in Files)
+			foreach (var file in Files)
 			{
-				var processedDocument = MoveWaybill(InFile, s, drCurrent, documentReader);
-				if (processedDocument == null)
-					processed = false;
-				else
-				{
-					WaybillService.ParserDocument(Convert.ToUInt32(processedDocument.DocumentLogId), processedDocument.FormattedFilePath);
-					if (File.Exists(processedDocument.FormattedFilePath))
-						File.Delete(processedDocument.FormattedFilePath);
-					if (File.Exists(processedDocument.TempFilePath))
-						File.Delete(processedDocument.TempFilePath);
-				}
+				if (MoveWaybill(InFile, file, drCurrent, documentReader))
+					processed = true;
 			}
 			return processed;
 		}
 
-		protected ProcessedDocument MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
+		protected bool MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			ProcessedDocument processedDocument = null;
-
-			MethodTemplate.ExecuteMethod(
-				new ExecuteArgs(),
-				delegate(ExecuteArgs args)
+			using (var cleaner = new FileCleaner())
+			{
+				cleaner.Watch(FileName);
+				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
+				List<ulong> addresses;
+				try
 				{
-					//Пытаемся преобразовать имя файла 
-					var _convertedFileName = FileHelper.FileNameToWindows1251(Path.GetFileName(FileName));
-					if (!_convertedFileName.Equals(Path.GetFileName(FileName), StringComparison.CurrentCultureIgnoreCase))
+					addresses = documentReader.GetClientCodes(_workConnection, supplierId, ArchFileName, FileName);
+				}
+				catch(Exception e)
+				{
+					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
+					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.Type, FileName, message);
+					return false;
+				}
+
+				if (addresses == null)
+					return false;
+
+				string formatFile = null;
+				foreach (var addressId in addresses)
+				{
+					var clientAddressId = (int?) addressId;
+					var clientId = (uint?)GetClientIdByAddress(ref clientAddressId);
+					if (clientId == null)
 					{
-						//Если результат преобразования отличается от исходного имени, то переименовываем файл
-						_convertedFileName = Path.GetDirectoryName(FileName) + Path.DirectorySeparatorChar + _convertedFileName;
-						File.Move(FileName, _convertedFileName);
-						FileName = _convertedFileName;
+						clientId = (uint?) clientAddressId;
+						clientAddressId = null;
 					}
 
-					var cmdInsert = new MySqlCommand(@"
-INSERT INTO logs.document_logs (FirmCode, ClientCode, AddressId, FileName, DocumentType, Addition) 
-VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?DocumentType, ?Addition); select last_insert_id();", _workConnection);
-					cmdInsert.Parameters.AddWithValue("?SupplierId", drCurrent[WaybillSourcesTable.colFirmCode]);
-					cmdInsert.Parameters.AddWithValue("?ClientId", DBNull.Value);
-					cmdInsert.Parameters.AddWithValue("?AddressId", DBNull.Value);
-					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
-					cmdInsert.Parameters.AddWithValue("?Addition", DBNull.Value);
-					cmdInsert.Parameters.AddWithValue("?DocumentType", _currentDocumentType.TypeID);
-
-					List<ulong> listAddresses;
-
-					cmdInsert.Transaction = args.DataAdapter.SelectCommand.Transaction;
+					if (formatFile == null)
+					{
+						try
+						{
+							formatFile = documentReader.FormatOutputFile(FileName, drCurrent);
+							cleaner.Watch(formatFile);
+						}
+						catch(Exception e)
+						{
+							var message = "Не удалось отформатировать документ.\nОшибка: " + e;
+							DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.Type, FileName, message);
+							return false;
+						}
+					}
 
 					try
 					{
-						//Пытаемся получить список клиентов для накладной
-						var supplierId = Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]);
-						listAddresses = documentReader.GetClientCodes(_workConnection, supplierId, ArchFileName, FileName);
+						documentReader.ImportDocument(
+							_workConnection,
+							supplierId,
+							(ulong) clientId,
+							1,
+							FileName);
 					}
-					catch (Exception ex)
+					catch(Exception e)
 					{
-						//Логируем и выходим
-						cmdInsert.Parameters["?Addition"].Value = "Не удалось сопоставить документ клиентам.\nОшибка: " + ex;
-						cmdInsert.ExecuteNonQuery();
+						var message = "Не удалось импортировать документ в базу.\nОшибка: " + e;
+						DocumentReceiveLog.LogFail(supplierId, clientId, (uint?) clientAddressId, _currentDocumentType.Type, FileName, message);
 						return false;
 					}
 
-					if (listAddresses != null)
-					{
-						string formatFile;
-						try
-						{
-							//пытаемся отформатировать документ
-							formatFile = documentReader.FormatOutputFile(FileName, drCurrent);
-						}
-						catch (Exception ex)
-						{
-							//Логируем и выходим
-							var addressId = (int?)(listAddresses[0]);
-							var clientId = GetClientIdByAddress(ref addressId);
-							if (clientId == null)
-							{
-								clientId = addressId;
-								addressId = null;
-							}
-							cmdInsert.Parameters["?ClientId"].Value = clientId;
-							cmdInsert.Parameters["?AddressId"].Value = addressId;
-							cmdInsert.Parameters["?Addition"].Value = "Не удалось отформатировать документ.\nОшибка: " + ex;
-							cmdInsert.ExecuteNonQuery();
-							return false;
-						}
+					var log = DocumentReceiveLog.Log(supplierId,
+						clientId,
+						(uint?) clientAddressId,
+						formatFile,
+						_currentDocumentType.Type);
+					log.CopyDocumentToClientDirectory();
+					WaybillService.ParserDocument(log);
+				}
+			}
 
-						foreach (var addressId in listAddresses)
-						{
-							var clientAddressId = (int?)addressId;
-							var clientId = GetClientIdByAddress(ref clientAddressId);
-							if (clientId == null)
-							{
-								clientId = clientAddressId;
-								clientAddressId = null;
-							}
-							cmdInsert.Parameters["?ClientId"].Value = clientId;
-							cmdInsert.Parameters["?AddressId"].Value = clientAddressId;
-							cmdInsert.Parameters["?Addition"].Value = DBNull.Value;
-
-							if (clientAddressId == null)
-								clientAddressId = clientId;
-
-							try
-							{
-								documentReader.ImportDocument(
-									_workConnection,
-									Convert.ToUInt64(drCurrent[WaybillSourcesTable.colFirmCode]),
-									(ulong)clientAddressId,
-									1,
-									FileName);
-							}
-							catch (Exception ex)
-							{
-								cmdInsert.Parameters["?Addition"].Value = "Не удалось импортировать документ в базу.\nОшибка: " + ex;
-								cmdInsert.ExecuteNonQuery();
-								continue;
-							}
-							// Директория, куда будут складываться накладные и отказы для конкретного адреса
-							var aptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.WaybillsPath) + 
-								clientAddressId.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
-							var outFileNameTemplate = aptekaClientDirectory + Path.DirectorySeparatorChar;
-
-							if (!Directory.Exists(aptekaClientDirectory))
-								Directory.CreateDirectory(aptekaClientDirectory);
-
-							var documentLogId = cmdInsert.ExecuteScalar();							
-							var outFileName = outFileNameTemplate + documentLogId + "_"
-							                     + drCurrent["ShortName"]
-							                     + "(" + Path.GetFileNameWithoutExtension(formatFile) + ")"
-							                     + Path.GetExtension(formatFile);
-							outFileName = PriceProcessor.FileHelper.NormalizeFileName(outFileName);
-							//todo: filecopy здесь происходит логирование действий по копированию документов в папку клиента, из-за предположения, что есть проблема с пропажей документов
-							if (File.Exists(outFileName))
-								try
-								{
-									_logger.DebugFormat("MoveWaybill.Попытка удалить файл {0}", outFileName);
-									File.Delete(outFileName);
-									_logger.DebugFormat("MoveWaybill.Удаление файла успешно {0}", outFileName);
-								}
-								catch (Exception ex)
-								{
-									_logger.ErrorFormat("MoveWaybill.Ошибка при удалении файла {0}\r\n{1}", outFileName, ex);
-								}
-
-							File.Copy(formatFile, outFileName);
-							_logger.InfoFormat("Файл {0} скопирован в документы клиента.", outFileName);
-							// Сохраняем накладную в локальной папке
-							SaveWaybill(clientAddressId, _currentDocumentType, outFileName);
-
-							processedDocument = new ProcessedDocument {
-								DocumentLogId = Convert.ToUInt32(documentLogId),
-								FormattedFilePath = formatFile,
-								TempFilePath = FileName,
-							};
-						}
-					}
-					return true;
-				},
-				false,
-				_workConnection,
-				true,
-				false,
-				(e, ex) => Ping());
-
-			return processedDocument;
+			return true;
 		}
 
 		private void WriteLog(int? documentType, int? logSupplierId, int? logAddressId, string logFileName, string logAddition)

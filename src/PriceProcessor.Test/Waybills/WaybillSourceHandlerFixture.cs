@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP;
 using NUnit.Framework;
@@ -194,7 +195,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			}
 
 			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, "DownWAYBILL"), "*.*");
-			Assert.That(tmpFiles.Count(), Is.EqualTo(0));
+			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временный файл {0}", tmpFiles.Implode());
 		}
 
 		[Test]

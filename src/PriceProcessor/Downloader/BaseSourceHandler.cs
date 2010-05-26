@@ -404,19 +404,5 @@ WHERE Addr.LegacyId = {0}", addressId);
 				addressId = Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, queryGetAddressIdByLegacyId));
 			return Convert.ToInt32(clientCode);
 		}
-
-		/// <summary>
-		/// Сохраняет накладную (или отказ) в локальную директорию
-		/// </summary>
-		/// <param name="clientAddressId">Идентификатор адреса клиента</param>
-		/// <param name="documentType">Тип документа (накладная или отказ)</param>
-		/// <param name="filePath">Путь к файлу накладной (или отказа)</param>
-		protected void SaveWaybill(int? clientAddressId, InboundDocumentType documentType, string filePath)
-		{
-			if (_logger.IsDebugEnabled)
-			{
-				WaybillService.SaveWaybill(filePath);
-			}
-		}
 	}
 }

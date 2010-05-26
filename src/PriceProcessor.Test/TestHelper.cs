@@ -239,6 +239,16 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 			}
 		}
 
+		public static void StoreMessageWithAttachToImapFolder(string to, string from, string attachFilePath)
+		{
+			StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder,
+				to,
+				from,
+				attachFilePath);
+		}
+
 		/// <summary>
 		/// Кладет сообщение с файлом-вложением в IMAP папку.
 		/// Ящик, пароль и название IMAP папки берутся из конфигурационного файла.
@@ -324,6 +334,14 @@ Content-Disposition: attachment;
 			return null;
 		}
 
+		public static void StoreMessage(byte[] messageBytes)
+		{
+			StoreMessage(Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder,
+				messageBytes);
+		}
+
 		public static void StoreMessage(string mailbox, string password, string folder, byte[] messageBytes)
 		{
 			using (var imapClient = new IMAP_Client())
@@ -333,6 +351,11 @@ Content-Disposition: attachment;
 				imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
 				imapClient.StoreMessage(folder, messageBytes);
 			}
+		}
+
+		public static void ClearImapFolder()
+		{
+			ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 		}
 
 		/// <summary>
@@ -382,28 +405,22 @@ Content-Disposition: attachment;
 
 		public static void RecreateDirectories()
 		{
-			if (Directory.Exists(Settings.Default.InboundPath))
-				Directory.Delete(Settings.Default.InboundPath, true);
-			if (Directory.Exists(Settings.Default.HistoryPath))
-				Directory.Delete(Settings.Default.HistoryPath, true);
-			if (Directory.Exists(Settings.Default.TempPath))
-				Directory.Delete(Settings.Default.TempPath, true);
-			if (Directory.Exists(Settings.Default.FTPOptBoxPath))
-				Directory.Delete(Settings.Default.FTPOptBoxPath, true);
-			if (Directory.Exists(Settings.Default.DownWaybillsPath))
-				Directory.Delete(Settings.Default.DownWaybillsPath, true);
-			if (Directory.Exists(Settings.Default.WaybillsPath))
-				Directory.Delete(Settings.Default.WaybillsPath, true);
-			Program.InitDirs(new[]
-				         	{
-				         		Settings.Default.BasePath,
-				         		Settings.Default.ErrorFilesPath,
-				         		Settings.Default.InboundPath,
-				         		Settings.Default.TempPath,
-				         		Settings.Default.HistoryPath,
-								Settings.Default.DownWaybillsPath,
-								Settings.Default.FTPOptBoxPath,
-				         	});
+			var dirs = new[] {
+				Settings.Default.BasePath,
+				Settings.Default.ErrorFilesPath,
+				Settings.Default.InboundPath,
+				Settings.Default.TempPath,
+				Settings.Default.HistoryPath,
+				Settings.Default.FTPOptBoxPath,
+				Settings.Default.DownWaybillsPath,
+				Settings.Default.WaybillsPath
+			};
+
+			dirs.Each(d => {
+				if (Directory.Exists(d))
+					Inforoom.Common.FileHelper.DeleteDir(d);
+				Directory.CreateDirectory(d);
+			});
 		}
 	}
 }

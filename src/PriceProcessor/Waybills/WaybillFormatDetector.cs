@@ -4,13 +4,12 @@ using System.Linq;
 using System.Reflection;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser;
-using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
 	public class WaybillFormatDetector
 	{
-		public IDocumentParser DetectParser(string file, DocumentLog documentLog)
+		public IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
 		{
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
@@ -67,6 +66,14 @@ namespace Inforoom.PriceProcessor.Waybills
 					return type;
 			}
 			return null;
+		}
+
+		public Document DetectAndParse(DocumentReceiveLog log, string file)
+		{
+			var parser = DetectParser(file, log);
+			var document = new Document(log);
+			document.Parser = parser.GetType().Name;
+			return parser.Parse(file, document);
 		}
 	}
 }

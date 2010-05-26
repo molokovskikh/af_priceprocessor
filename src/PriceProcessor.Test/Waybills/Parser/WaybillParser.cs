@@ -15,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			return Parse(filePath, null);
 		}
 
-		public static Document Parse(string filePath, DocumentLog documentLog)
+		public static Document Parse(string filePath, DocumentReceiveLog documentLog)
 		{
 			var detector = new WaybillFormatDetector();
 			if (!File.Exists(filePath))
@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			return parser.Parse(filePath, new Document());
 		}
 
-		public static IDocumentParser GetParserType(string filePath, DocumentLog documentLog)
+		public static IDocumentParser GetParserType(string filePath, DocumentReceiveLog documentLog)
 		{
 			var detector = new WaybillFormatDetector();
 			return detector.DetectParser(filePath, documentLog);

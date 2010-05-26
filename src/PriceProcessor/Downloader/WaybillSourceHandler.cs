@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
@@ -25,20 +26,20 @@ namespace Inforoom.Downloader
 			DocumentLog = null;
 		}
 
-		public DocumentForParsing(DocumentLog log)
+		public DocumentForParsing(DocumentReceiveLog log)
 		{
 			DocumentLog = log;
 			FileName = log.GetFileName();
 		}
 
-		public DocumentForParsing(DocumentLog log, string fileName)
+		public DocumentForParsing(DocumentReceiveLog log, string fileName)
 		{
 			DocumentLog = log;
 			FileName = fileName;
 		}
 
 		public string FileName { get; set; }		
-		public DocumentLog DocumentLog { get; set;}
+		public DocumentReceiveLog DocumentLog { get; set;}
 	}
 
 	public class WaybillSourceHandler : EMAILSourceHandler
@@ -454,8 +455,6 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			bool matched = false;
 
-			DataRow[] drLS;
-
 			/*
 			 * В накладных письма обрабатываются немного по-другому: 
 			 * письма обрабатываются относительно адреса отправителя
@@ -465,51 +464,56 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			 */
 			foreach (var mbFrom in FromList.Mailboxes)
 			{
-				drLS = dtSources.Select(String.Format("({0} like '*{1}*')",
+				var sources = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
 				// Адрес отправителя должен быть только у одного поставщика, 
 				// если получилось больше, то это ошибка
 
-				if (drLS.Length > 1)
+				if (sources.Length > 1)
 				{
 					throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", 
 						mbFrom.EmailAddress));
 				}
 
-				if (drLS.Length == 0)
+				if (sources.Length == 0)
 					continue;
 
-				var source = drLS.Single();
+				var source = sources.Single();
 				var attachments = m.GetValidAttachements();
-				var savedFiles = new List<string>(attachments.Count());
-				foreach (var entity in attachments)
+				//двойная очистка FileCleaner и Cleanup нужно оставить только одно
+				//думаю Cleaner подходит лучше
+				using (var cleaner = new FileCleaner())
 				{
-					SaveAttachement(entity);
-					var correctArchive = CheckFile();
-					matched = true;
-					if (!correctArchive)
+					var savedFiles = new List<string>();
+					foreach (var entity in attachments)
 					{
-						WriteLog(_currentDocumentType.TypeID,
-							Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]),
-							_aptekaClientCode, Path.GetFileName(CurrFileName),
-							"Не удалось распаковать файл", currentUID);
-						Cleanup();
-						continue;
+						SaveAttachement(entity);
+						var correctArchive = CheckFile();
+						matched = true;
+						if (!correctArchive)
+						{
+							WriteLog(_currentDocumentType.TypeID,
+								Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]),
+								_aptekaClientCode, Path.GetFileName(CurrFileName),
+								"Не удалось распаковать файл", currentUID);
+							Cleanup();
+							continue;
+						}
+						if (ArchiveHelper.IsArchive(CurrFileName))
+						{
+							var files = Directory.GetFiles(CurrFileName + ExtrDirSuffix +
+								Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+							savedFiles.AddRange(files);
+							cleaner.Watch(files);
+						}
+						else
+						{
+							savedFiles.Add(CurrFileName);
+							cleaner.Watch(CurrFileName);
+						}
 					}
-					if (ArchiveHelper.IsArchive(CurrFileName))
-					{
-						savedFiles.AddRange(Directory.GetFiles(CurrFileName + ExtrDirSuffix +
-							Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories));
-					}
-					else
-						savedFiles.Add(CurrFileName);
-				}
-				var documentLogsIds = ProcessWaybillFile(savedFiles, source);
-				var documents = MultifileDocument.Merge(documentLogsIds.ToArray());
-				foreach (var file in documents)
-				{
-					WaybillService.ParserDocument(file.DocumentLog.Id, file.FileName);
-					MultifileDocument.DeleteMergedFiles(file.FileName);
+					var logs = ProcessWaybillFile(savedFiles, source);
+					WaybillService.ParseWaybills(logs);
 				}
 				Cleanup();
 				source.Delete();
@@ -520,45 +524,22 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				throw new EMailSourceHandlerException("Не найден источник.");
 		}
 
-		protected IList<uint> ProcessWaybillFile(IList<string> files, DataRow drCurrent)
+		protected List<DocumentReceiveLog> ProcessWaybillFile(IList<string> files, DataRow drCurrent)
 		{
-			var documentLogsIds = new List<uint>();
-
+			var logs = new List<DocumentReceiveLog>();
 			foreach (var archiveFile in files)
 			{
 				var extractedFiles = new[] { archiveFile };
 				if (ArchiveHelper.IsArchive(archiveFile))
 					extractedFiles = Directory.GetFiles(archiveFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
-				foreach (var s in extractedFiles)
-				{
-					var documentLogId = MoveWaybill(s, drCurrent);
-					if (documentLogId.Equals(0))
-					{
-						_log.Error(String.Format("Ошибка при обработке файла {0}", s));
-						continue;
-					}
-					documentLogsIds.Add(documentLogId);
-				}				
+
+				logs.AddRange(extractedFiles.Select(s => MoveWaybill(s, drCurrent)));
 			}
-			return documentLogsIds;
+			return logs;
 		}
 
-		protected uint MoveWaybill(string FileName, DataRow drCurrent)
+		protected DocumentReceiveLog MoveWaybill(string file, DataRow source)
 		{
-			bool Quit = false;
-
-			//Пытаемся преобразовать имя файла 
-			string _convertedFileName = FileHelper.FileNameToWindows1251(Path.GetFileName(FileName));
-			if (!_convertedFileName.Equals(Path.GetFileName(FileName), StringComparison.CurrentCultureIgnoreCase))
-			{
-				//Если результат преобразования отличается от исходного имени, то переименовываем файл
-				_convertedFileName = Path.GetDirectoryName(FileName) + 
-					Path.DirectorySeparatorChar + _convertedFileName;
-
-				File.Move(FileName, _convertedFileName);
-				FileName = _convertedFileName;
-			}
-
 			var addressId = _aptekaClientCode;
 			var clientId = GetClientIdByAddress(ref addressId);
 			if (clientId == null)
@@ -567,99 +548,10 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				addressId = null;
 			}
 
-			var cmdInsert = new MySqlCommand(@"
-INSERT INTO logs.document_logs (FirmCode, ClientCode, FileName, MessageUID, DocumentType, AddressId)
-VALUES (?FirmCode, ?ClientCode, ?FileName, ?MessageUID, ?DocumentType, ?AddressId); select last_insert_id();", _workConnection);
-
-			cmdInsert.Parameters.AddWithValue("?FirmCode", drCurrent[WaybillSourcesTable.colFirmCode]);
-			cmdInsert.Parameters.AddWithValue("?ClientCode", clientId);
-			cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(FileName));
-			cmdInsert.Parameters.AddWithValue("?MessageUID", currentUID);
-			cmdInsert.Parameters.AddWithValue("?DocumentType", _currentDocumentType.TypeID);
-			if (addressId == null)
-				cmdInsert.Parameters.AddWithValue("?AddressId", DBNull.Value);
-			else
-				cmdInsert.Parameters.AddWithValue("?AddressId", addressId);
-
-			MySqlTransaction transaction = null;
-
-			var AptekaClientDirectory = FileHelper.NormalizeDir(Settings.Default.WaybillsPath) + 
-				_aptekaClientCode.ToString().PadLeft(3, '0') + Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
-			var OutFileNameTemplate = AptekaClientDirectory + Path.DirectorySeparatorChar;
-			var OutFileName = String.Empty;
-			do
-			{
-				try
-				{
-					if (_workConnection.State != ConnectionState.Open)
-						_workConnection.Open();
-
-					if (!Directory.Exists(AptekaClientDirectory))
-						Directory.CreateDirectory(AptekaClientDirectory);
-
-					transaction = _workConnection.BeginTransaction(IsolationLevel.RepeatableRead);
-
-					cmdInsert.Transaction = transaction;
-
-					var documentLogId = cmdInsert.ExecuteScalar();
-					
-					var formatDestNameString = OutFileNameTemplate + documentLogId + "_"
-						+ drCurrent[WaybillSourcesTable.colShortName]
-						+ "({0})"
-						+ Path.GetExtension(FileName);
-
-					OutFileName = PriceProcessor.FileHelper.NormalizeFileName(
-						String.Format(formatDestNameString, Path.GetFileNameWithoutExtension(FileName)));
-
-					if (File.Exists(OutFileName))
-						try
-						{
-							File.Delete(OutFileName);
-						}
-						catch { }
-					File.Move(FileName, OutFileName);
-
-					transaction.Commit();
-					Quit = true;
-					// Сохраняем накладную в локальной директории
-					SaveWaybill(_aptekaClientCode, _currentDocumentType, OutFileName);
-
-					return Convert.ToUInt32(documentLogId);
-				}
-				catch (MySqlException MySQLErr)
-				{
-					if (transaction != null)
-					{
-						transaction.Rollback();
-						transaction = null;
-					}
-
-					if ((MySQLErr.Number == 1205) || (MySQLErr.Number == 1213) || (MySQLErr.Number == 1422))
-					{
-						_logger.Error("ExecuteCommand.Повтор", MySQLErr);
-						Ping();
-						System.Threading.Thread.Sleep(5000);
-						Ping();
-					}
-					else
-						throw;
-				}
-				catch 
-				{
-					if (transaction != null)
-					{
-						transaction.Rollback();
-					}
-					if (!String.IsNullOrEmpty(OutFileName) && File.Exists(OutFileName))
-						try
-						{
-							File.Delete(OutFileName);
-						}
-						catch { }
-					throw;
-				}
-			} while (!Quit);
-			return 0;
+			var log = DocumentReceiveLog.Log(Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
+				(uint?) clientId, (uint?) addressId, file, _currentDocumentType.Type, currentUID);
+			log.CopyDocumentToClientDirectory();
+			return log;
 		}
 
 		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode,
