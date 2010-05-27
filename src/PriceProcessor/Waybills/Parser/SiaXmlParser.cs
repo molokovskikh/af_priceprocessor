@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			document.ProviderDocumentId = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок").Value;
 			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
 			if (!String.IsNullOrEmpty(docDate))
-                document.DocumentDate = Convert.ToDateTime(docDate);
+				document.DocumentDate = Convert.ToDateTime(docDate);
 			foreach(var position in xDocument.XPathSelectElements(@"Документ/ТоварныеПозиции/ТоварнаяПозиция"))
 			{
 				var line = document.NewLine();
@@ -38,6 +38,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖВНЛС").Value) == 1;
 
 				line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;
+
+				if (line.RegistryCost != null && line.RegistryCost > 0)
+					line.VitallyImportant = true;
 			}
 			return document;
 		}
