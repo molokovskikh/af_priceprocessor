@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding);
+			var data = Dbf.Load(file, Encoding, true);
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
 			string registryCostColumn = null;
@@ -54,7 +54,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				if (!Convert.IsDBNull(r["DATE_DOC"]))
 					document.DocumentDate = Convert.ToDateTime(r["DATE_DOC"]);
 				var line = document.NewLine();
-				line.Code = r["CODE_TOVAR"].ToString();				
+				line.Code = r["CODE_TOVAR"].ToString();
 				line.Product = r["NAME_TOVAR"].ToString();
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();

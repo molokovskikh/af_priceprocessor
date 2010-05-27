@@ -12,12 +12,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public Document Parse(string file, Document document)
 		{
 			var providerDocumentIdColumn = "DOCNUMBER";
-			var data = Dbf.Load(file);
+			var data = Dbf.Load(file, true);
 			if (data.Columns.Contains("DOCNUMDER"))
-			{
-				data = Dbf.Load(file);
 				providerDocumentIdColumn = "DOCNUMDER";
-			}
 
 			if (data.Rows.Count > 0 && !Convert.IsDBNull(data.Rows[0]["REGDATE"]))
 				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["REGDATE"]);
