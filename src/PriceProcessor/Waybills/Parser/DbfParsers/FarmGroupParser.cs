@@ -33,7 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable table)
 		{
 			return table.Columns.Contains("DATEB")
-				&& table.Columns.Contains("DATEDOC")
+				&& table.Columns.Contains("GOOD")
 				&& table.Columns.Contains("SERT");
 		}
 	}

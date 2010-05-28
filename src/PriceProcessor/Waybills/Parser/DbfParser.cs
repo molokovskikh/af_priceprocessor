@@ -48,8 +48,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				return this;
 			var propertyInfo = GetInfo(ex);
 			_headerActions.Add((line, dataRow) => {
-				var value = dataRow[name];
-				propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+				if (dataRow.Table.Columns.Contains(name))
+				{
+					var value = dataRow[name];
+					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+				}
 			});
 			return this;
 		}

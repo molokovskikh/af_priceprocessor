@@ -176,6 +176,7 @@
     <Compile Include="Waybills\Parser\RostaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaPermParserFixture.cs" />
+    <Compile Include="Waybills\Parser\SiaVrnParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\UkonDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\UkonParserFixture.cs" />
