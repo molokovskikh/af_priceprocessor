@@ -52,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn]))
 				{
 					decimal value;
-					if (decimal.TryParse(r[registryCostColumn].ToString(),out value))
+					if (decimal.TryParse(r[registryCostColumn].ToString(), out value))
 						line.RegistryCost = value;
 				}
 
