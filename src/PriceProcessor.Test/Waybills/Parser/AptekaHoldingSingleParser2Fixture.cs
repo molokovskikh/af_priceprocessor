@@ -36,6 +36,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
 		}
 
+		
+		[Test]
+		public void Parse_with_asterist_in_registry_cost()
+		{
+			var doc = WaybillParser.Parse("652077.dbf");
+			var line = doc.Lines[0];
+			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.Product, Is.EqualTo("ДОКТОР МОМ ПАСТИЛ. ОТ КАШЛЯ N20 КЛУБНИКА"));
+		}
+
 		[Test]
 		public void CheckFileFormat()
 		{
