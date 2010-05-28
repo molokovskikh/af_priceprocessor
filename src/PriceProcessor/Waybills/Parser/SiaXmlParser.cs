@@ -41,6 +41,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 				if (line.RegistryCost != null && line.RegistryCost > 0)
 					line.VitallyImportant = true;
+
+				//цена гос реестра есть только для жнвлс
+				//по этому если есть цена значит жнвлс
+				if (line.VitallyImportant == null 
+					&& line.RegistryCost != null && line.RegistryCost > 0)
+					line.VitallyImportant = true;
 			}
 			return document;
 		}

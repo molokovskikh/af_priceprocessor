@@ -1,6 +1,4 @@
 ﻿using System;
-using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -83,7 +81,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(73.8707));
 			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(83.71));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(76.1));
-			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
 		}
 
 		[Test]
