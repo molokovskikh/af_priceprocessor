@@ -34,7 +34,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		{
 			return table.Columns.Contains("DATEB")
 				&& table.Columns.Contains("GOOD")
-				&& table.Columns.Contains("SERT");
+				&& table.Columns.Contains("SERT")
+				&& table.Columns.Contains("PV");
 		}
 	}
 }

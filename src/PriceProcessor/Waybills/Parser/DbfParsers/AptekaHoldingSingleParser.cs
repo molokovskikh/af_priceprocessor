@@ -49,10 +49,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["GODEN"]) ? null : Convert.ToDateTime(r["GODEN"]).ToShortDateString();
 
-				if (!String.IsNullOrEmpty(registryCostColumn) && Convert.IsDBNull(r[registryCostColumn]))
+				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn]))
 				{
 					decimal value;
-					if (decimal.TryParse(r[registryCostColumn].ToString(), out value))
+					if (decimal.TryParse(r[registryCostColumn].ToString(),out value))
 						line.RegistryCost = value;
 				}
 
