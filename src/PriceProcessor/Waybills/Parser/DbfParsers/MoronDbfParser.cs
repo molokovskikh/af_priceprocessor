@@ -1,50 +1,38 @@
-﻿using System;
-using System.Data;
-using System.Globalization;
-using System.Linq;
-using Common.Tools;
+﻿using System.Data;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class MoronDbfParser : IDocumentParser
+	public class MoronDbfParser : BaseDbfParser
 	{
-		public Document Parse(string file, Document document)
+		public override DbfParser GetParser()
 		{
-			var data = Dbf.Load(file);
-
-			if (data.Rows.Count > 0 && !Convert.IsDBNull(data.Rows[0]["DATAGOT"]))
-				document.DocumentDate = Convert.ToDateTime(data.Rows[0]["DATAGOT"]);
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
-				document.ProviderDocumentId = Convert.ToString(r["NUMNAK"], CultureInfo.InvariantCulture);
-				var line = document.NewLine();
-				line.Code = Convert.ToString(r["KODNLKLEK"], CultureInfo.InvariantCulture);
-				line.Product = r["NAMLEK"].ToString();
-				line.Producer = r["NAMZAVOD"].ToString();
-				line.Country = r["NAMSTRANA"].ToString();
-				line.ProducerCost = Convert.ToDecimal(r["CENARAS"], CultureInfo.InvariantCulture);
-				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["CENAPRBNDS"], CultureInfo.InvariantCulture);
-				line.SupplierCost = Convert.ToDecimal(r["CENAPROD"], CultureInfo.InvariantCulture);
-				line.SupplierPriceMarkup = Convert.ToDecimal(r["NACOPT"], CultureInfo.InvariantCulture);
-				line.Quantity = Convert.ToUInt32(r["COUNT"]);
-				line.Period = Convert.ToDateTime(r["SROKGOD"]).ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("en-US"));				
-				line.Certificates = r["NUMBER"].ToString();
-				line.SerialNumber = r["SERIJ"].ToString();
-				line.Nds = Convert.ToUInt32(r["PRCNDS"], CultureInfo.InvariantCulture);
-				line.VitallyImportant = Convert.ToUInt32(r["OBAS"]) == 1;
-				return line;
-			}).ToList();
-			return document;
+			return new DbfParser()
+				.DocumentHeader(d => d.ProviderDocumentId, "NUMNAK")
+				.DocumentHeader(d => d.DocumentDate, "DATAGOT")
+				.Line(l => l.Code, "KODNLKLEK")
+				.Line(l => l.Product, "NAMLEK")
+				.Line(l => l.Producer, "NAMZAVOD")
+				.Line(l => l.Country, "NAMSTRANA")
+				.Line(l => l.Period, "SROKGOD")
+				.Line(l => l.SerialNumber, "SERIJ")
+				.Line(l => l.Quantity, "COUNT")
+				.Line(l => l.SupplierCost, "CENAPROD")
+				.Line(l => l.ProducerCost, "CENARAS")
+				.Line(l => l.Nds, "PRCNDS")
+				.Line(l => l.VitallyImportant, "OBAS")
+				.Line(l => l.RegistryCost, "CENAREE")
+				.Line(l => l.Certificates, "NUMBER")
+				.Line(l => l.SupplierCostWithoutNDS, "CENAPRBNDS");
 		}
 
-		public static bool CheckFileFormat(DataTable table)
+		public static bool CheckFileFormat(DataTable data)
 		{
-			return table.Columns.Contains("NUMNAK") && 
-				table.Columns.Contains("DATAGOT") && 
-				table.Columns.Contains("KODAPTEK") &&
-				table.Columns.Contains("KODPOSTAV") &&
-				table.Columns.Contains("CENAPROD") &&
-				table.Columns.Contains("PRCNDS");
+			return data.Columns.Contains("NUMNAK") && 
+				data.Columns.Contains("DATAGOT") && 
+				data.Columns.Contains("KODAPTEK") &&
+				data.Columns.Contains("KODPOSTAV") &&
+				data.Columns.Contains("CENAPROD") &&
+				data.Columns.Contains("PRCNDS");
 		}
 	}
 }
