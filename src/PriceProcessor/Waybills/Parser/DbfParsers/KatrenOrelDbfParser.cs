@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.RegistryCost, "PRICE_REES")
 				.Line(l => l.Certificates, "SERT_N")
 				.Line(l => l.SerialNumber, "SERIES")
-				.Line(l => l.VitallyImportant, "")
+				.Line(l => l.VitallyImportant, "VitImport")
 				.Line(l => l.Nds, "NDS_PR")
 				.ToDocument(document, data);
 

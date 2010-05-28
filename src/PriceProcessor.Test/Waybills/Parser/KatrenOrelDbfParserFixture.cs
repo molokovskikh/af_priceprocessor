@@ -36,6 +36,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_with_vitally_important()
+		{
+			var doc = WaybillParser.Parse("97303.dbf");
+			Assert.That(doc.Lines[2].VitallyImportant, Is.True);
+		}
+
+		[Test]
 		public void CheckFileFormat()
 		{
 			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
