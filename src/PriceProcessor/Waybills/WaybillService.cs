@@ -127,6 +127,17 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!DocumentDate.HasValue)
 				DocumentDate = DateTime.Now;
 		}
+
+		public static string GenerateProviderDocumentId()
+		{
+			return DateTime.Now.ToString()
+				.Replace(".", String.Empty)
+				.Replace(" ", String.Empty)
+				.Replace(":", String.Empty)
+				.Replace(",", String.Empty)
+				.Replace("-", String.Empty)
+				.Replace("/", String.Empty);
+		}
 	}
 
 	[ActiveRecord("DocumentBodies", Schema = "documents")]

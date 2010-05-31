@@ -53,6 +53,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					var value = dataRow[name];
 					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
 				}
+				else
+				{
+					if (propertyInfo.PropertyType == typeof(string) &&
+						propertyInfo.Name.Equals("ProviderDocumentId", StringComparison.InvariantCultureIgnoreCase))
+						propertyInfo.SetValue(line, Document.GenerateProviderDocumentId(), new object[0]);
+					else if ((propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
+						&& propertyInfo.Name.Equals("DocumentDate", StringComparison.InvariantCultureIgnoreCase))
+						propertyInfo.SetValue(line, DateTime.Now, new object[0]);
+				}
 			});
 			return this;
 		}

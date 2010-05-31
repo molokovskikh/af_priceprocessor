@@ -1,3 +1,6 @@
+using System;
+using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -9,8 +12,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse("Ð-1873247.DBF");
-			Assert.That(doc.ProviderDocumentId, Is.Null);
-			Assert.That(doc.DocumentDate, Is.Null);
+			var providerDocId = Document.GenerateProviderDocumentId();
+			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
+
+			Assert.IsTrue(doc.ProviderDocumentId.StartsWith(providerDocId));
+			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("2592"));
