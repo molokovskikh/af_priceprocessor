@@ -175,6 +175,7 @@
     <Compile Include="Waybills\Parser\ProtekXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\RostaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\ServiceMedParserFixture.cs" />
+    <Compile Include="Waybills\Parser\SiaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaVrnParserFixture.cs" />
