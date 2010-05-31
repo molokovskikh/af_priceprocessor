@@ -116,13 +116,19 @@ namespace Inforoom.PriceProcessor.Rosta
 
 			var existPlan = _plans.FirstOrDefault(p => p.Key == configure.Key);
 			if (existPlan != null)
-				MySqlUtils.InTransaction(c => UpdateClient(c, configure.ClientId, existPlan.PriceItemId, existPlan.Key));
+				MySqlUtils.InTransaction(c => UpdateClient(c, configure.ClientId, existPlan.PriceItemId, existPlan.Key, existPlan.Hwinfo));
 			else
 				_plans.Add(CreateNewPlan(configure));
 		}
 
-		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key)
+		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key, string hwinfo)
 		{
+			var motherboard = "";
+			var parts = hwinfo.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
+			var cpuid = parts[0];
+			if (parts.Length > 1)
+				motherboard = parts[1];
+
 			var command = new MySqlCommand(@"
 select CostCode
 into @costCode
@@ -131,7 +137,7 @@ where PriceItemId = ?PriceItemId
 limit 1;
 
 update Usersettings.Intersection i
-set i.FirmClientCode = ?Key, i.CostCode = @costCode
+set i.FirmClientCode = ?Key, i.FirmClientCode2 = ?cpuid, i.FirmClientCode3 = ?Motherboard, i.CostCode = @costCode
 where PriceCode = ?PriceId and (i.ClientCode = ?ClientId or i.clientcode in (
 select IncludeClientCode
 from Usersettings.IncludeRegulation ir
@@ -140,6 +146,8 @@ where ir.PrimaryClientCode = ?ClientId));", connection);
 			command.Parameters.AddWithValue("?PriceItemId", priceItemId);
 			command.Parameters.AddWithValue("?PriceId", _priceId);
 			command.Parameters.AddWithValue("?Key", key);
+			command.Parameters.AddWithValue("?CpuId", cpuid);
+			command.Parameters.AddWithValue("?Motherboard", motherboard);
 			command.ExecuteNonQuery();
 		}
 
@@ -198,7 +206,7 @@ select @priceItemId;", c);
 				command.Parameters.AddWithValue("?ClientId", configure.ClientId);
 				command.Parameters.AddWithValue("?Key", configure.Key);
 				priceItemId = Convert.ToUInt32(command.ExecuteScalar());
-				UpdateClient(c, configure.ClientId, priceItemId, configure.Key);
+				UpdateClient(c, configure.ClientId, priceItemId, configure.Key, configure.Hwinfo);
 			});
 			return new Plan(priceItemId, configure.Key, configure.Hwinfo);
 		}
@@ -209,7 +217,7 @@ select @priceItemId;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode
+SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -220,6 +228,8 @@ where i.pricecode = ?PriceId
 	and ir.Id is null
 	and i.FirmClientCode is not null
 	and i.FirmClientCode <> ''
+	and i.FirmClientCode2 is not null
+	and i.FirmClientCode2 <> ''
 	and pc.BaseCost = 0
 group by pc.PriceItemId;", connection);
 				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
@@ -229,8 +239,8 @@ group by pc.PriceItemId;", connection);
 				{
 					plans.Add(new Plan(
 						Convert.ToUInt32(row["PriceItemId"]),
-						Convert.ToString(row["CostName"]),
-						Convert.ToString(row["FirmClientCode"])
+						Convert.ToString(row["FirmClientCode"]),
+						Convert.ToString(row["FirmClientCode2"]) + "\r\n" + Convert.ToString(row["FirmClientCode3"])
 					));
 				}
 			}
@@ -243,7 +253,7 @@ group by pc.PriceItemId;", connection);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT i.ClientCode, i.FirmClientCode, i.FirmClientCode2
+SELECT i.ClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -254,6 +264,8 @@ where i.pricecode = ?PriceId
 	and ir.Id is null
 	and i.FirmClientCode is not null
 	and i.FirmClientCode <> ''
+	and i.FirmClientCode2 is not null
+	and i.FirmClientCode2 <> ''
 	and pc.BaseCost = 1
 group by i.ClientCode", connection);
 				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
@@ -264,7 +276,7 @@ group by i.ClientCode", connection);
 					toConfigure.Add(new ToConfigure {
 						ClientId = Convert.ToUInt32(row["ClientCode"]),
 						Key = Convert.ToString(row["FirmClientCode"]),
-						Hwinfo = Convert.ToString(row["FirmClientCode2"])
+						Hwinfo = Convert.ToString(row["FirmClientCode2"]) + "\r\n" + row["FirmClientCode3"]
 					});
 				}
 			}

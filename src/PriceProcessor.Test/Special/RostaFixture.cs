@@ -14,19 +14,24 @@ namespace PriceProcessor.Test.Special
 {
 	public class FakeDownloader : IDownloader
 	{
+		public string Hwinfo;
+
 		public void DownloadPrice(string key, string hwinfo, string price, string producers, string ex)
 		{
+			Hwinfo = hwinfo;
 			File.Copy(@"..\..\Data\Rosta\price", price);
 			File.Copy(@"..\..\Data\Rosta\producers", producers);
 			File.Copy(@"..\..\Data\Rosta\ex", ex);
 		}
 	}
 
-	[TestFixture, Ignore]
+	[TestFixture]
 	public class RostaFixture
 	{
 		private TestOldClient client;
 		private TestPrice price;
+		private RostaHandler handler;
+		private FakeDownloader downloader;
 
 		[SetUp]
 		public void SetUp()
@@ -37,8 +42,6 @@ namespace PriceProcessor.Test.Special
 			price = CreatePriceForRosta();
 
 			client = TestOldClient.CreateTestClient(524288UL);
-
-			BasicConfigurator.Configure();
 		}
 
 		public static TestPrice CreatePriceForRosta()
@@ -61,7 +64,7 @@ namespace PriceProcessor.Test.Special
 			return price;
 		}
 
-		[Test]
+		[Test, Ignore("Сломан тк больше не хранится нужная информация для росты пусть належится пару меяцев а затем удалить")]
 		public void Try_to_formalize_price_for_new_client()
 		{
 			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0}", price.Id);
@@ -91,33 +94,43 @@ namespace PriceProcessor.Test.Special
 		public void Parser_should_read_period()
 		{
 			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0}", price.Id);
-			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 0 where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
-			TestHelper.Execute(@"insert into logs.SpyInfo(UserId, RostaUin) values ({0}, '6B020101000100000004040302071A1E0A091D1C03')", client.Users.First().Id);
+			TestHelper.Execute(@"
+update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
+update Usersettings.Intersection 
+set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = ''
+where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 
-			var handler = new RostaHandler(price.Id, new FakeDownloader());
-			handler.SleepTime = 1;
-			handler.StartWork();
-
-			Thread.Sleep(3.Second());
-			SystemTime.Now = () => DateTime.Now + 1.Hour();
-			Thread.Sleep(20.Second());
-
+			Process();
+			AssertThatFormalized();
 			var costs = TestHelper.Fill(String.Format("select * from Farm.Core0 where PriceCode = {0}", price.Id));
-			Assert.That(costs.Tables[0].Rows.Count, Is.GreaterThan(0));
 			Assert.That(costs.Tables[0].Rows[0]["Period"], Is.Not.EqualTo(""));
-			handler.StopWork();
+		}
+
+		[Test]
+		public void Create_client_with_only_cpuid()
+		{
+			TestHelper.Execute(@"
+update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
+update Usersettings.Intersection 
+set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = ''
+where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
+
+			Process();
+			AssertThatFormalized();
+			Assert.That(downloader.Hwinfo, Is.EqualTo("00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel\r\n"));
 		}
 
 		[Test]
 		public void Create_new_cost_column_if_rosta_uin_configured_but_base_cost_set()
 		{
-			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0}", price.Id);
 			TestHelper.Execute(@"
+update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
 update Usersettings.Intersection 
-set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel\r\n02/05/2007-I945-6A79TG0AC-00' 
+set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = '02/05/2007-I945-6A79TG0AC-00'
 where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 
-			var handler = new RostaHandler(price.Id, new FakeDownloader());
+			var downloader = new FakeDownloader();
+			var handler = new RostaHandler(price.Id, downloader);
 			handler.SleepTime = 1;
 
 			handler.StartWork();
@@ -131,6 +144,26 @@ where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 			}
 
 			handler.StopWork();
+		}
+
+		private void AssertThatFormalized()
+		{
+			var costs = TestHelper.Fill(String.Format("select * from Farm.Core0 where PriceCode = {0}", price.Id));
+			Assert.That(costs.Tables[0].Rows.Count, Is.GreaterThan(0));
+			Assert.That(costs.Tables[0].Rows[0]["Period"], Is.Not.EqualTo(""));
+			handler.StopWork();
+		}
+
+		private void Process()
+		{
+			downloader = new FakeDownloader();
+			handler = new RostaHandler(price.Id, downloader);
+			handler.SleepTime = 1;
+			handler.StartWork();
+
+			Thread.Sleep(3.Second());
+			SystemTime.Now = () => DateTime.Now + 1.Hour();
+			Thread.Sleep(20.Second());
 		}
 	}
 }
