@@ -213,6 +213,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSingleParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSingleParser2.cs" />
     <Compile Include="Waybills\Parser\BaseDbfParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AralMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmGroupParser.cs" />

@@ -44,8 +44,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public DbfParser DocumentHeader(Expression<Func<Document, object>> ex, string name)
 		{
-			if (String.IsNullOrEmpty(name))
-				return this;
 			var propertyInfo = GetInfo(ex);
 			_headerActions.Add((line, dataRow) => {
 				if (dataRow.Table.Columns.Contains(name))

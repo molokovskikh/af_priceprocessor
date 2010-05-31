@@ -158,6 +158,7 @@
     <Compile Include="Waybills\Parser\AptekaHoldingIzhevskParserFixture.cs" />
     <Compile Include="Waybills\Parser\AptekaHoldingSingleParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\AptekaHoldingSingleParserFixture.cs" />
+    <Compile Include="Waybills\Parser\AralMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\AvestaFarmatsevtikaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\FarmaimpeksIzhevskParserFixture.cs" />
