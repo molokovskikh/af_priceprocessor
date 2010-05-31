@@ -182,5 +182,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(18.14));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(20.58));
 		}
+
+		[Test]
+		public void Parse_AlianceHelskeaRus()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\6456625.sst");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("СМ-6456625/00"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.06.2010")));
+			Assert.That(doc.Lines.Count, Is.EqualTo(4));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("30093"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("Али капс капс. 0.49г N8 Россия"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("ВИС ООО"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(456.19));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(379.02));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(386.60));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(18));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ09.Д03270"));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("0310"));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
+		}
 	}
 }
