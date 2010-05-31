@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
 				.Line(l => l.ProducerCost, "PRICEENT")
-				.Line(l => l.VitallyImportant, "PV")
+				.Line(l => l.VitallyImportant, "PV", "GV")
 				.ToDocument(document, Dbf.Load(file));
 			return document;
 		}
@@ -35,7 +35,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return table.Columns.Contains("DATEB")
 				&& table.Columns.Contains("GOOD")
 				&& table.Columns.Contains("SERT")
-				&& table.Columns.Contains("PV");
+				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV"));
 		}
 	}
 }
