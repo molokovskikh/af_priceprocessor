@@ -206,5 +206,34 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
 		}
+
+		[Test]
+		public void Parse_with_float_quantity()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\103923.sst");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("103923"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("31.05.2010")));
+			Assert.That(doc.Lines.Count, Is.EqualTo(4));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("13480840"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ТЕРМОМЕТР ЭЛЕКТРОННЫЙ AMDT-11 С МЯГ НАКОНЕЧНИКОМ"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Амрус Энтерпрайзис ЛТД"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("сша"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС US.ИМ04.В06948"));
+
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(93.94));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(86));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(93.94));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("032010"));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[2].SupplierCost, Is.EqualTo(30.14));
+			Assert.That(doc.Lines[2].SupplierCostWithoutNDS, Is.EqualTo(27.40));
+			Assert.That(doc.Lines[2].Nds, Is.EqualTo(10));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
+		}
 	}
 }

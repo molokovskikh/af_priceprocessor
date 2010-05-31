@@ -79,6 +79,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return IsHeaderBeforeData(line, headerName) ? line : String.Empty;
 		}
 
+		private static decimal? ToDecimal(string body)
+		{
+			if (String.IsNullOrEmpty(body))
+				return null;
+			decimal value;
+			if (decimal.TryParse(body, NumberStyles.Number, CultureInfo.CurrentCulture, out value))
+				return value;
+			if (decimal.TryParse(body, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
+				return value;
+			return null;
+		}
+
 		public Document ParseIndexingMethod(StreamReader reader, Document document)
 		{
 			reader.BaseStream.Seek(0, SeekOrigin.Begin);
@@ -107,15 +119,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.Product = parts[1];
 				docLine.Producer = parts[2];
 				docLine.Country = parts[3];
-				docLine.Quantity = Convert.ToUInt32(parts[4]);
+				docLine.Quantity = Convert.ToUInt32(ToDecimal(parts[4]));
 				docLine.Certificates = parts[12];
 				docLine.SerialNumber = parts[13];
-				docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : (decimal?) Convert.ToDecimal(parts[18], CultureInfo.InvariantCulture);
-				docLine.SupplierCost = Convert.ToDecimal(parts[5], CultureInfo.InvariantCulture);
-				docLine.SetSupplierCostWithoutNds(Convert.ToDecimal(parts[7], CultureInfo.InvariantCulture));
-				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : (decimal?) Convert.ToDecimal(parts[9], CultureInfo.InvariantCulture);
+				docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : ToDecimal(parts[18]);
+				docLine.SupplierCost = ToDecimal(parts[5]);
+				docLine.SetSupplierCostWithoutNds(ToDecimal(parts[7]).Value);
+				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
 				docLine.Period = parts[15];
-				docLine.ProducerCost = Convert.ToDecimal(parts[6], CultureInfo.InvariantCulture);
+				docLine.ProducerCost = ToDecimal(parts[6]);
 				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]))
 					docLine.VitallyImportant = Convert.ToBoolean(Convert.ToUInt32(parts[25]));
 			}
