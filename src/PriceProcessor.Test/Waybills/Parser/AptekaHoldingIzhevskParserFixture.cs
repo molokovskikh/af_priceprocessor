@@ -46,6 +46,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(AptekaHoldingIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
 			Assert.IsFalse(AptekaHoldingIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\R1362131.DBF")));
 			Assert.IsTrue(AptekaHoldingIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\396559.DBF")));
+			Assert.IsFalse(AptekaHoldingIzhevskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\3889082_Протек-28(212305_140089_9694708_001).dbf")));
 		}
 	}
 }

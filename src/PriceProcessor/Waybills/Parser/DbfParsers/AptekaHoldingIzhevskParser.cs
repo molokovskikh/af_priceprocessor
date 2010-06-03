@@ -67,7 +67,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				   data.Columns.Contains("CENAOPT") &&
 				   data.Columns.Contains("SRGOD") &&
 				   data.Columns.Contains("SERIA") &&
-				   data.Columns.Contains("STAVKANDS");
+				   data.Columns.Contains("STAVKANDS") &&
+				   !data.Columns.Contains("CENIZGBNDS");
 		}
 	}
 }

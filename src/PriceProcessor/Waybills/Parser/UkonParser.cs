@@ -105,7 +105,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				document.DocumentDate = Convert.ToDateTime(header[1]);
 
 			line = reader.ReadLine();
-			while (IsCommentLine(line) && !IsBodyCaption(line))
+			while (IsCommentLine(line) || !IsBodyCaption(line))
 				line = reader.ReadLine();
 
 			if (String.IsNullOrEmpty(line))
