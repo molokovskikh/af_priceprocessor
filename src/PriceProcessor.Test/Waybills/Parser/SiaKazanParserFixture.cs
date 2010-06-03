@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -26,6 +27,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(552.0300));
 			Assert.That(line.SupplierCost, Is.EqualTo(607.2300));
 			Assert.That(line.SerialNumber, Is.EqualTo("09J01/87"));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Parse_SiaInternationalSpb()
+		{
+			var doc = WaybillParser.Parse("3889638_Сиа Интернейшнл(Р-2616032).DBF");
+
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("86446"));
+			Assert.That(line.Product, Is.EqualTo("Адаптол таб. 500мг №20"));
+			Assert.That(line.Producer, Is.EqualTo("Олайнский Хфз"));
+			Assert.That(line.Country, Is.EqualTo("Латвия"));
+			Assert.That(line.Quantity, Is.EqualTo(1.0000));
+			Assert.That(line.ProducerCost, Is.EqualTo(199.1100));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.Period, Is.EqualTo("01.03.2014"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ФМ01.Д98043 ( ФГУ центр сертификации минестерства здравоохранения РФ)"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(210.7400));
+			Assert.That(line.SupplierCost, Is.EqualTo(231.8100));
+			Assert.That(line.SerialNumber, Is.EqualTo("120310"));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 		}
 	}
