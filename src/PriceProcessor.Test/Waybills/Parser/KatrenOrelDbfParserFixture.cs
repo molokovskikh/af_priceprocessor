@@ -53,5 +53,31 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\95472.dbf")));
 			Assert.IsTrue(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\83504.dbf")));
 		}
+
+		[Test]
+		public void Parse_SiaInternationalVrn()
+		{
+			var document = WaybillParser.Parse(@"Р1903070.DBF");
+			Assert.That(document.Lines.Count, Is.EqualTo(6));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р-1903070"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("28.05.2010")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("14823"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Аргосульфан 2% Крем 40г"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Polfa/PF Jelfa SA, Польша"));
+			Assert.That(document.Lines[0].Country, Is.Null);
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(171.6500));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(163.0600));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("912061"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС PL.ФМ01.Д06613"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("31.12.2011"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[1].Nds.Value, Is.EqualTo(18));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(179.3700));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+		}
 	}
 }

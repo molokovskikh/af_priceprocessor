@@ -23,11 +23,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCost, "PRICE_OPL")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE_BASE")
 				.Line(l => l.Quantity, "KOLVO")
-				.Line(l => l.Period, "GOD")
+				.Line(l => l.Period, "GOD", "SROK_S")
 				.Line(l => l.RegistryCost, "PRICE_REES")
 				.Line(l => l.Certificates, "SERT_N")
 				.Line(l => l.SerialNumber, "SERIES")
-				.Line(l => l.VitallyImportant, "VitImport")
+				.Line(l => l.VitallyImportant, "VitImport", "PV")
 				.Line(l => l.Nds, "NDS_PR")
 				.ToDocument(document, data);
 
@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("DCODE") &&
 				   data.Columns.Contains("PRICE_BASE") &&
 				   data.Columns.Contains("KOLVO") &&
-				   data.Columns.Contains("GOD") &&
+				   (data.Columns.Contains("GOD") || data.Columns.Contains("SROK_S")) &&
 				   data.Columns.Contains("NDS_PR") &&
 				   data.Columns.Contains("PRO_NNDS");
 		}

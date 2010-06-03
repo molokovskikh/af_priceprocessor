@@ -50,7 +50,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				if (result)
 					count++;
 			}
-			if (count != 1)
+			if (count > 1)
 				throw new Exception("Для разбора данного формата подходит более одного парсера");
 		}
 
