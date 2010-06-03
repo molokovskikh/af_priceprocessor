@@ -227,6 +227,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProgressTechParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Protek28Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PulsFKParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaPermParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ServiceMedParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaKazanParser.cs" />
