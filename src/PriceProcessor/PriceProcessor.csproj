@@ -215,12 +215,14 @@
     <Compile Include="Waybills\Parser\BaseDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AralMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmGroupParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenezisDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GodunovDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\IzhevskFarmParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelDbfParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\MedicineSpbDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProgressTechParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Protek28Parser.cs" />

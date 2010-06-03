@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_SiaInternationalSpb()
 		{
 			var doc = WaybillParser.Parse("3889638_Сиа Интернейшнл(Р-2616032).DBF");
-
+			
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			var line = doc.Lines[0];
@@ -51,6 +51,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCost, Is.EqualTo(231.8100));
 			Assert.That(line.SerialNumber, Is.EqualTo("120310"));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.VitallyImportant, Is.Null);
 		}
 	}
 }
