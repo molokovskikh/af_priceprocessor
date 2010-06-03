@@ -161,6 +161,7 @@
     <Compile Include="Waybills\Parser\AralMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\AvestaFarmatsevtikaParserFixture.cs" />
     <Compile Include="Waybills\Parser\BssSpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\BssSpbXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\FarmaimpeksIzhevskParserFixture.cs" />
     <Compile Include="Waybills\Parser\FarmGroupParserFixture.cs" />

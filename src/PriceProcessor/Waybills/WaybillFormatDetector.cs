@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Common.Tools;
+using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Parser;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -18,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			else if (extention == ".sst")
 				type = typeof (UkonParser);
 			else if (extention == ".xls")
-				type = typeof (Protek9Parser);
+				type = DetectXlsParser(file);
 			else if ((extention == ".xml") || (extention == ".data"))
 			{
 				if (new SiaXmlParser().IsInCorrectFormat(file))
@@ -68,6 +69,15 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (result)
 					return type;
 			}
+			return null;
+		}
+
+		private static Type DetectXlsParser(string file)
+		{
+			if (BssSpbXlsParser.CheckFileFormat(file))
+				return typeof (BssSpbXlsParser);
+			if (Protek9Parser.CheckFileFormat(file))
+				return typeof(Protek9Parser);
 			return null;
 		}
 

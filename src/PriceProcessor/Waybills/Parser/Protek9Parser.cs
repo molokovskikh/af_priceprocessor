@@ -34,5 +34,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}
 			return document;
 		}
+
+		public static bool CheckFileFormat(string file)
+		{
+			var workbook = Workbook.Load(file);
+			var sheet = workbook.Worksheets[0];
+			return (sheet.Cells[5, 1].StringValue.ToLower().Equals("наименование")) &&
+			       (sheet.Cells[5, 2].StringValue.ToLower().Equals("производитель")) &&
+			       (sheet.Cells[5, 4].StringValue.ToLower().Equals("цена с ндс"));
+		}
 	}
 }
