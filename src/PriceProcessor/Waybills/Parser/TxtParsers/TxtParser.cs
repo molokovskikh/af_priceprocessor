@@ -9,21 +9,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	public class TxtParser
 	{
-		private string[] DocumentDateHeaders = { "Дата" };
-		private string[] ProviderDocumentIdHeaders = { "Фактура" };
+		private string[] DocumentDateHeaders = { "Дата", "Дата фактуры" };
+		private string[] ProviderDocumentIdHeaders = { "Фактура", "№ счет фактуры" };
 		private string[] CodeHeaders = { "Код" };
-		private string[] ProductHeaders = { "Наименование товара" };
-		private string[] ProducerHeaders = { "Про-ль" };
-		private string[] CountryHeaders = {  "Страна производителя" };
+		private string[] ProductHeaders = { "Наименование товара", "Наименование препарата" };
+		private string[] ProducerHeaders = { "Про-ль", "Предприятие изготовитель" };
+		private string[] CountryHeaders = {  "Страна" };
 		private string[] QuantityHeaders = { "Кол-во" };
 		private string[] SupplierCostHeaders = { "Цена с НДС" };
 		private string[] SupplierCostWithoutNdsHeaders = { "Цена без НДС" };
 		private string[] CertificatesHeaders = { "Номер сертификата" };
 		private string[] SerialNumberHeaders = { "Серия" };
-		private string[] ProducerCostHeaders = { "Цена з/и без НДС" };
-		private string[] RegistryCostHeaders = { "Реестр" };
-		private string[] NdsHeaders = { };
-		private string[] PeriodHeaders = { "Срок годности" };
+		private string[] ProducerCostHeaders = { "Цена з/и без НДС", "Отп. цена изготовит" };
+		private string[] RegistryCostHeaders = { "Реестр", "Цена госреестра" };
+		private string[] NdsHeaders = { "НДС Ставка" };
+		private string[] PeriodHeaders = { "Срок годности", "Срок годн." };
 		private string[] SupplierPriceMarkupHeaders = { };
 		private string[] VitallyImportantHeaders = { "ЖВ" };
 
@@ -35,6 +35,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			_separator = separator;
 			_headers = header.Split(_separator).ToList();
+			for (var i = 0; i < _headers.Count; i++)
+				_headers[i] = _headers[i].Trim();
 		}
 
 		public bool ReadLine(StreamReader reader)

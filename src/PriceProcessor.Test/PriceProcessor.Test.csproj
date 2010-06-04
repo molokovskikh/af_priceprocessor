@@ -168,6 +168,7 @@
     <Compile Include="Waybills\Parser\GenezisDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\GodunovDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\IzhevskFarmParserFixture.cs" />
+    <Compile Include="Waybills\Parser\KatrenOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenOrelDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenOrelTxtParserFixture.cs" />
     <Compile Include="Waybills\Parser\MedicineSpbDfbParserFixture.cs" />

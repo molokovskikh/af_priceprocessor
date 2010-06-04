@@ -85,6 +85,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (KatrenOrelTxtParser);
 			if (RostaOmskParser.CheckFileFormat(file))
 				return typeof (RostaOmskParser);
+			if (KatrenOmskParser.CheckFileFormat(file))
+				return typeof (KatrenOmskParser);
 			return null;
 		}
 
