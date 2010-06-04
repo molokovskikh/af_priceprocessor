@@ -14,8 +14,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
 			var book = Workbook.Load(file);
 			var sheet = book.Worksheets[0];
-			var cell = sheet.Cells[1, 1];
-			var value = cell.StringValue;
 
 			document.ProviderDocumentId = sheet.Cells[2, 2].StringValue;
 			DateTime docDate;

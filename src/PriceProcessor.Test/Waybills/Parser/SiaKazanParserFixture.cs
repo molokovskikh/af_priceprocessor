@@ -54,5 +54,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);
 		}
+
+		[Test]
+		public void Parse_SiaInternational_Omsk()
+		{
+			var doc = WaybillParser.Parse("3907412_СИА Интернейшнл-Омск(Р-766755).DBF");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("53"));
+			Assert.That(line.Product, Is.EqualTo("А-пар Аэр. 125г Б М .@"));
+			Assert.That(line.Producer, Is.EqualTo("S.C.A.T./Omega pharma"));
+			Assert.That(line.Country, Is.EqualTo("Франция"));
+			Assert.That(line.Quantity, Is.EqualTo(1.0000));
+			Assert.That(line.ProducerCost, Is.EqualTo(207.1800));
+			Assert.That(line.Nds, Is.EqualTo(18));
+			Assert.That(line.Period, Is.EqualTo("01.02.2013"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС FR.ХП09.В01598 (НИИ дезинфектологии МЗ РФ)"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(207.1800));
+			Assert.That(line.SupplierCost, Is.EqualTo(244.4700));
+			Assert.That(line.SerialNumber, Is.EqualTo("G 248"));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.VitallyImportant, Is.Null);
+		}
 	}
 }
