@@ -180,6 +180,7 @@
     <Compile Include="Waybills\Parser\ProtekParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\PulsFKParserFixture.cs" />
+    <Compile Include="Waybills\Parser\RostaOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\RostaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\ServiceMedParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaKazanParserFixture.cs" />

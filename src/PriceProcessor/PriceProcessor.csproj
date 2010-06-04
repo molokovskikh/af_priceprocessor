@@ -235,8 +235,9 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaPermParser.cs" />
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
+    <Compile Include="Waybills\Parser\Helpers\ParseHelper.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
-    <Compile Include="Waybills\Parser\KatrenOrelTxtParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelTxtParser.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingParser.cs" />
     <Compile Include="Waybills\Parser\Protek9Parser.cs" />
@@ -244,6 +245,8 @@
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\ProtekXmlParser.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\TxtParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\RostaOmskParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
     <Compile Include="Waybills\WaybillFormatDetector.cs" />
     <Compile Include="Waybills\WaybillHelper.cs" />

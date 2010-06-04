@@ -5,6 +5,7 @@ using System.Reflection;
 using Common.Tools;
 using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -30,10 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			else if (extention == ".pd")
 				type = typeof (ProtekParser);
 			else if (extention == ".txt")
-			{
-				if (KatrenOrelTxtParser.CheckFileFormat(file))
-					type = typeof (KatrenOrelTxtParser);
-			}
+				type = DetectTxtParser(file);
 
 			// Если поставщик - это челябинский Морон, для него отдельный парсер 
 			// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
@@ -78,6 +76,15 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (BssSpbXlsParser);
 			if (Protek9Parser.CheckFileFormat(file))
 				return typeof(Protek9Parser);
+			return null;
+		}
+
+		private static Type DetectTxtParser(string file)
+		{
+			if (KatrenOrelTxtParser.CheckFileFormat(file))
+				return typeof (KatrenOrelTxtParser);
+			if (RostaOmskParser.CheckFileFormat(file))
+				return typeof (RostaOmskParser);
 			return null;
 		}
 
