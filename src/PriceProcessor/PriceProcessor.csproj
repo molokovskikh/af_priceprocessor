@@ -237,6 +237,7 @@
     <Compile Include="Waybills\Parser\DbfParser.cs" />
     <Compile Include="Waybills\Parser\Helpers\ParseHelper.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
+    <Compile Include="Waybills\Parser\OACXlsParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOmskParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelTxtParser.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParser.cs" />

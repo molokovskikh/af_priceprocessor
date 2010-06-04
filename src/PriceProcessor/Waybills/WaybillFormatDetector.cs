@@ -76,6 +76,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (BssSpbXlsParser);
 			if (Protek9Parser.CheckFileFormat(file))
 				return typeof(Protek9Parser);
+			if (OACXlsParser.CheckFileFormat(file))
+				return typeof (OACXlsParser);
 			return null;
 		}
 
