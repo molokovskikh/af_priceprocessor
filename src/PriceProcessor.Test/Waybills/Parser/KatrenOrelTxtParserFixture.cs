@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(203.74));
 			
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(20.44));
 		}
 
 		[Test]
@@ -60,8 +60,37 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[1].Certificates, Is.EqualTo("РОСС HU.ПК12.В06358"));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
 			
-			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[3].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Parse_Katren_Voronezh2()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3919268_Катрен_118340_.txt");
+			Assert.That(doc.Lines.Count, Is.EqualTo(7));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("118340"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("08.06.2010")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("24187465"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ДОЛФИН СР-ВО ГИГИЕНИЧ Д/ПРОМЫВ 1,0 N30 /ДЕТ/"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Динамика, ООО"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("россия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(3));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(162.00));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(167.46));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(167.46));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("112009"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.11.2011"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС RU.АЯ79.В11173"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[3].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[2].SupplierPriceMarkup, Is.EqualTo(205.64));
 		}
 
 		[Test]

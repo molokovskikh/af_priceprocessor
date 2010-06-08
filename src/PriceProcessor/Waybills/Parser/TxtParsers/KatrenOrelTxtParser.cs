@@ -37,6 +37,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.ProducerCost = GetDecimal(line[5]);
 					docLine.SupplierCost = GetDecimal(line[6]);
 					docLine.SetNds(GetDecimal(line[7]).Value);
+					if (!String.IsNullOrEmpty(line[8]))
+						docLine.SupplierPriceMarkup = GetDecimal(line[8]);
 					if (!String.IsNullOrEmpty(line[9]))
 						docLine.SerialNumber = line[9];
 					if (!String.IsNullOrEmpty(line[10]))
@@ -45,6 +47,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						docLine.Certificates = line[12];
 					if (!String.IsNullOrEmpty(line[16]))
 						docLine.RegistryCost = GetDecimal(line[16]);
+					if (line.Length > 18 && !String.IsNullOrEmpty(line[18]))
+						docLine.VitallyImportant = Convert.ToBoolean(Convert.ToUInt32(line[18]));
 				}
 			}
 			return document;
