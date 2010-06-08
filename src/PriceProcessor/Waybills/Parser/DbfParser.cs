@@ -128,7 +128,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				return Convert.ToDateTime(value);
 			}
 			if (type == typeof(bool) || type == typeof(bool?))
-				return Convert.ToBoolean(value);
+			{
+				bool res;
+				if (Boolean.TryParse(value.ToString(), out res))
+					return res;
+				return Convert.ToBoolean(Convert.ToInt32(value));
+			}
 			throw new Exception("Преобразование для этого типа не реализовано");
 		}
 
