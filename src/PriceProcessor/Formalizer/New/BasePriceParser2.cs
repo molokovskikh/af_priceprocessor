@@ -705,7 +705,10 @@ order by c.Id", _priceInfo.PriceCode);
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
 			if (downloaded)
+			{
 				ProcessUndefinedCost();
+				ProcessZeroCost();
+			}
 
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
@@ -1023,6 +1026,31 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 					@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
+  Список ценовых колонок:
+{2}
+
+С уважением,
+  PriceProcessor.");
+
+		}
+
+		/// <summary>
+		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
+		/// </summary>
+		private void ProcessZeroCost()
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (var cost in _costDescriptions)
+				if (((_loggingStat.zeroCount > 0) && (_loggingStat.formCount == 0)) || (cost.ZeroCostCount == _loggingStat.formCount))
+					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
+
+			if (stringBuilder.Length > 0)
+				SendAlertToUserFail(
+					stringBuilder,
+					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
+					@"
+Здравствуйте!
+  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
   Список ценовых колонок:
 {2}
 
@@ -1809,7 +1837,8 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 					description.UndefinedCostCount++;
 					continue;
 				}
-
+				if (value == 0)
+					description.ZeroCostCount++;
 				
 				costs.Add(new Cost(description, value));
 			}

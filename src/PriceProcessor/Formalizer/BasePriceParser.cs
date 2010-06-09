@@ -196,6 +196,8 @@ namespace Inforoom.Formalizer
 		public decimal? cost;
 		//кол-во позиций с неустановленной ценой для данной ценовой колонки
 		public int undefinedCostCount;
+		//кол-во позиций с нулевой ценой для данной ценовой колонки
+		public int zeroCostCount;
 
 		public CoreCost(Int64 ACostCode, string ACostName, bool ABaseCost, 
 			string AFieldName, int ATxtBegin, int ATxtEnd)
@@ -1319,7 +1321,10 @@ where
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
 			if (downloaded)
+			{
 				ProcessUndefinedCost();
+				ProcessZeroCost();
+			}
 
 			if (Settings.Default.CheckZero && (zeroCount > (formCount + unformCount + zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, firmCode, priceCode, firmShortName, priceName, formCount, zeroCount, unformCount, forbCount);
@@ -1763,6 +1768,31 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 					@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
+  Список ценовых колонок:
+{2}
+
+С уважением,
+  PriceProcessor.");
+
+		}
+
+		/// <summary>
+		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
+		/// </summary>
+		private void ProcessZeroCost()
+		{
+			StringBuilder stringBuilder = new StringBuilder();
+			foreach (var cost in currentCoreCosts)
+				if (((cost.zeroCostCount > 0) && (formCount == 0)) || (cost.zeroCostCount == formCount))
+					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.costName);
+
+			if (stringBuilder.Length > 0)
+				SendAlertToUserFail(
+					stringBuilder,
+					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
+					@"
+Здравствуйте!
+  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
   Список ценовых колонок:
 {2}
 
@@ -2572,6 +2602,9 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 				//если неустановленная цена, то увеличиваем счетчик
 				if (!c.cost.HasValue)
 					c.undefinedCostCount++;
+				//если нулевая цена, то увеличиваем счетчик
+				if (c.cost == 0)
+					c.zeroCostCount++;
 			}
 			return res;
 		}

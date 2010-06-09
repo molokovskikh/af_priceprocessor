@@ -75,6 +75,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public int End { get; set; }
 
 		public int UndefinedCostCount;
+		public int ZeroCostCount;
 	}
 
 	public class NewCore : Core

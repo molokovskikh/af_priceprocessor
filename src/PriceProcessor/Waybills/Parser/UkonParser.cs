@@ -113,6 +113,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			while ((line = reader.ReadLine()) != null)
 			{
+				if (String.IsNullOrEmpty(line))
+					continue;
 				var parts = line.Split(';');
 				var docLine = document.NewLine();
 				docLine.Code = parts[0];
@@ -128,8 +130,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
 				docLine.Period = parts[15];
 				docLine.ProducerCost = ToDecimal(parts[6]);
-				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]))
-					docLine.VitallyImportant = Convert.ToBoolean(Convert.ToUInt32(parts[25]));
+				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
+					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
 			}
 			return document;
 		}
