@@ -42,22 +42,59 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			throw new Exception("Неизвестный тип выражения");
 		}
 
-		public DbfParser DocumentHeader(Expression<Func<Document, object>> ex, string name)
+		// Если fieldName - это поле, из которого будет читаться ProviderDocumentId,
+		// то этот метод делает проверку на то, что в поле ProviderDocumentId содержатся не порядковые номера
+		// Если там НЕ порядковые номера, вернется true, иначе false
+		private bool CheckProviderDocumentId(PropertyInfo propertyInfo, DataRow row, string fieldName)
+		{
+			// Если это свойство - не ProviderDocumentId, то говорим что все хорошо
+			if (!(propertyInfo.PropertyType == typeof(string) && propertyInfo.Name.Equals("ProviderDocumentId", StringComparison.InvariantCultureIgnoreCase)))
+				return true;
+
+			var rows = row.Table.Rows;
+			var value = row[fieldName];
+			Decimal intValue = 0;
+
+			// Если не удалось преобразовать к числу, значит это не порядковый номер, выходим
+			if (!Decimal.TryParse(value.ToString(), out intValue))
+				return true;
+
+			// Если кол-во строк больше 1 и значение во 2-ой строке НЕ совпадает с значением в первой строке
+			// значит считаем что в поле ProviderDocumentId содержатся порядковые номера. Выходим
+			if ((rows.Count > 1) && !rows[rows.IndexOf(row) + 1][fieldName].Equals(value))
+				return false;
+
+			// Если всего одна строка, и значение поля ProviderDocumentId в ней равен 1, то считаем что это порядковый номер
+			if (rows.Count.Equals(1) && intValue.Equals(1))
+				return false;
+
+			// Если дошли сюда, то предполагаем что во всех строках ProviderDocumentId одинаков и НЕ содержит порядковые номера строк
+			return true;
+		}
+
+		public DbfParser DocumentHeader(Expression<Func<Document, object>> ex, params string[] names)
 		{
 			var propertyInfo = GetInfo(ex);
 			_headerActions.Add((line, dataRow) => {
-				if (dataRow.Table.Columns.Contains(name))
+				var found = false;
+				foreach (var name in names)
 				{
+					if (!dataRow.Table.Columns.Contains(name))
+						continue;
 					var value = dataRow[name];
+					if (!CheckProviderDocumentId(propertyInfo, dataRow, name))
+						continue;
 					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+					found = true;
+					break;
 				}
-				else
+				if (!found)
 				{
 					if (propertyInfo.PropertyType == typeof(string) &&
 						propertyInfo.Name.Equals("ProviderDocumentId", StringComparison.InvariantCultureIgnoreCase))
 						propertyInfo.SetValue(line, Document.GenerateProviderDocumentId(), new object[0]);
 					else if ((propertyInfo.PropertyType == typeof(DateTime) || propertyInfo.PropertyType == typeof(DateTime?))
-						&& propertyInfo.Name.Equals("DocumentDate", StringComparison.InvariantCultureIgnoreCase))
+							 && propertyInfo.Name.Equals("DocumentDate", StringComparison.InvariantCultureIgnoreCase))
 						propertyInfo.SetValue(line, DateTime.Now, new object[0]);
 				}
 			});
