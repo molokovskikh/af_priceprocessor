@@ -58,14 +58,10 @@ namespace PriceProcessor.Test
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 		}
 
-		public void SetUp(IList<string> fileNames)
+		private static void CreateWaybillSource(TestClient client, TestOldClient supplier)
 		{
-			TestHelper.RecreateDirectories();
-
-			var client = TestClient.CreateSimple();
-			var supplier = TestOldClient.CreateTestSupplier();
-
-			With.Connection(connection => {
+			With.Connection(connection =>
+			{
 				var command = new MySqlCommand(@"
 INSERT INTO `documents`.`waybill_sources` (FirmCode, EMailFrom, SourceId) VALUES (?FirmCode, ?EmailFrom, ?SourceId);
 UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?ClientCode
@@ -76,7 +72,16 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 				command.Parameters.AddWithValue("?SourceId", 1);
 				command.ExecuteNonQuery();
 			});
+		}
 
+		public void SetUp(IList<string> fileNames)
+		{
+			TestHelper.RecreateDirectories();
+
+			var client = TestClient.CreateSimple();
+			var supplier = TestOldClient.CreateTestSupplier();
+
+			CreateWaybillSource(client, supplier);
 			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 
 			byte[] bytes;
@@ -164,6 +169,22 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var tempFilePath = Path.Combine(Settings.Default.TempPath, "DownWAYBILL");
 			tempFilePath = Path.Combine(tempFilePath, "0000470553.dbf");
 			Assert.IsFalse(File.Exists(tempFilePath));
+		}
+
+		[Test, Description("Тест для случая когда два поставщика имеют один и тот же email в Waybill_wources (обычно это филиалы одного и того же поставщика)")]
+		public void Send_waybill_from_supplier_with_filials()
+		{
+			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
+			SetUp(fileNames);
+
+			var supplier = TestOldClient.CreateTestSupplier(64UL);
+			CreateWaybillSource(_summary.Client, supplier);
+			Process_waybills();
+
+			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
+				SearchOption.AllDirectories);
+			Assert.That(savedFiles.Count(), Is.EqualTo(1));
 		}
 
 		[Test]

@@ -450,6 +450,65 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			}
 		}
 
+		// Проверяет, что поставщик может работать и работает с данным клиентом.
+		// supplierId - код поставщика
+		// clientId - код клиента (или из "новой" или из "старой" реальности)
+		private bool SupplierAvaliableForClient(ulong supplierId, ulong clientId)
+		{
+			var supplier = new MySqlParameter("?SupplierId", MySqlDbType.Int32);
+			supplier.Value = supplierId;
+			var client = new MySqlParameter("?ClientId", MySqlDbType.Int32);
+			client.Value = clientId;
+
+			return Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, @"
+SELECT
+	count(*)
+FROM
+(
+	SELECT i.Id
+	FROM usersettings.clientsdata as clients
+		JOIN usersettings.clientsdata as suppliers ON suppliers.FirmCode = ?SupplierId
+		JOIN usersettings.pricesdata as prices ON prices.FirmCode = suppliers.FirmCode AND prices.enabled = 1 AND prices.AgencyEnabled = 1
+		JOIN usersettings.intersection as i ON
+			i.ClientCode = clients.FirmCode
+			AND i.PriceCode = prices.PriceCode
+			AND DisabledByAgency = 0
+			AND DisabledByFirm = 0
+			AND DisabledByClient = 0
+	WHERE clients.FirmCode = ?ClientId
+	UNION
+	SELECT i.Id
+	FROM future.clients
+		JOIN usersettings.clientsdata as suppliers ON suppliers.FirmCode = ?SupplierId
+		JOIN usersettings.pricesdata as prices ON prices.FirmCode = suppliers.FirmCode AND prices.enabled = 1 AND prices.AgencyEnabled = 1
+		JOIN future.intersection as i ON
+			i.ClientId = clients.Id
+			AND i.PriceId = prices.PriceCode
+			AND i.AgencyEnabled = 1
+			AND i.AvailableForClient = 1
+	WHERE clients.Id = ?ClientId
+) as Temp", supplier, client)) > 0;
+		}
+
+		private DataRow SelectWaybillSourceForClient(DataRow[] sources, int? deliveryId)
+		{
+			var addressId = deliveryId;
+			var clientId = GetClientIdByAddress(ref addressId) ?? deliveryId;
+			DataRow result = null;
+			var countAvaliableClients = 0;
+
+			foreach (var dataRow in sources)
+			{
+				var supplierId = Convert.ToUInt64(dataRow[WaybillSourcesTable.colFirmCode]);
+				if (SupplierAvaliableForClient(supplierId, Convert.ToUInt64(clientId)))
+				{
+					result = dataRow;
+					countAvaliableClients++;
+				}
+			}
+			return (countAvaliableClients == 1) ? result : null;
+		}
+
 		protected override void ProcessAttachs(Mime m, AddressList FromList)
 		{
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
@@ -467,18 +526,22 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 				var sources = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
 				// Адрес отправителя должен быть только у одного поставщика, 
-				// если получилось больше, то это ошибка
+				// если получилось больше, то ищем поставщика, который доступен клиенту,
+				// если таких нет или несколько, то это ошибка
+
+				DataRow source = null;
 
 				if (sources.Length > 1)
 				{
-					throw new Exception(String.Format("На адрес \"{0}\" назначено несколько поставщиков.", 
-						mbFrom.EmailAddress));
+					source = SelectWaybillSourceForClient(sources, _aptekaClientCode);
+					if (source == null)
+						throw new Exception(String.Format(
+							"На адрес \"{0}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", mbFrom.EmailAddress));
 				}
-
-				if (sources.Length == 0)
+				else if (sources.Length == 0)
 					continue;
-
-				var source = sources.Single();
+				else
+					source = sources.Single();
 				var attachments = m.GetValidAttachements();
 				//двойная очистка FileCleaner и Cleanup нужно оставить только одно
 				//думаю Cleaner подходит лучше
