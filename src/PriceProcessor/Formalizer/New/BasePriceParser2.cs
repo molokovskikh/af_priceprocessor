@@ -1041,7 +1041,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (var cost in _costDescriptions)
-				if (((_loggingStat.zeroCount > 0) && (_loggingStat.formCount == 0)) || (cost.ZeroCostCount == _loggingStat.formCount))
+				if (((cost.ZeroCostCount > 0) && (_loggingStat.formCount == 0)) || (cost.ZeroCostCount == _loggingStat.formCount))
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
 
 			if (stringBuilder.Length > 0)
@@ -1832,13 +1832,13 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 				var costValue = dtPrice.Rows[CurrPos][description.FieldName];
 				var value = Cost.Parse(costValue);
 
+				if (value == 0)
+					description.ZeroCostCount++;
 				if (Cost.IsZeroOrLess(value))
 				{
 					description.UndefinedCostCount++;
 					continue;
 				}
-				if (value == 0)
-					description.ZeroCostCount++;
 				
 				costs.Add(new Cost(description, value));
 			}
