@@ -34,7 +34,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					if (!String.IsNullOrEmpty(line[3]))
 						docLine.Country = line[3];
 					docLine.Quantity = Convert.ToUInt32(line[4]);
-					docLine.ProducerCost = GetDecimal(line[5]);
+					if (!String.IsNullOrEmpty(line[5]))
+						docLine.ProducerCost = GetDecimal(line[5]);
 					docLine.SupplierCost = GetDecimal(line[6]);
 					docLine.SetNds(GetDecimal(line[7]).Value);
 					if (!String.IsNullOrEmpty(line[8]))

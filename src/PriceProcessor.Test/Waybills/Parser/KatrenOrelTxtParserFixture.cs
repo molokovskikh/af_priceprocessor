@@ -105,5 +105,31 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\82936.txt"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3767013_Катрен(91136).txt"));
 		}
+
+		[Test]
+		public void Parse_Tredifarm()
+		{
+			var doc = WaybillParser.Parse("00086534.txt");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(14));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("РНТ-000000086534"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("10.06.2010")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("00000315"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("Ацилакт свечи №10 - Ланафарм ООО"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Ланафарм ООО"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(doc.Lines[0].ProducerCost, Is.Null);
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(24.06));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(21.87));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("260310"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.04.2011"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС 002683"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(4.81));
+		}
 	}
 }
