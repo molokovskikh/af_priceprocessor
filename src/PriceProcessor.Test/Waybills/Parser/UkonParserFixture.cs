@@ -32,6 +32,33 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_with_zero_supplier_cost_without_nds()
+		{
+			var doc = WaybillParser.Parse(@"9907125-002.sst");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(1));
+
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("9907125-002"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("16.06.2010")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("1660"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("ДЕСИТИН МАЗЬ 57Г"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Pfizer"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("США"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(84.78));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].Nds, Is.Null);
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("2408013"));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(8.01));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("2408013^74-2197593^20.03.2009 ЦККЛС в г.Челябинск2408013^POCC US.ФM01.Д26788^15.12.2008 ФГУ ЦЭККМП Росздравнадзор"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.12.2010"));
+		}
+
+		[Test]
 		public void Parse_ForaFarmLogic_Msk()
 		{
 			var doc = WaybillParser.Parse(@"362677.sst");

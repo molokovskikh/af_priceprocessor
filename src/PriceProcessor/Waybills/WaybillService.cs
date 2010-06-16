@@ -217,7 +217,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			SupplierCostWithoutNDS = cost;
 			Nds = null;
-			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue)
+			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && (SupplierCostWithoutNDS.Value != 0))
 				Nds = (uint?) (Math.Round((SupplierCost.Value/SupplierCostWithoutNDS.Value - 1)*100));
 		}
 
