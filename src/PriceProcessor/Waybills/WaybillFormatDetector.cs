@@ -41,7 +41,10 @@ namespace Inforoom.PriceProcessor.Waybills
 				type = typeof (Moron_338_SpecialParser);
 
 			if (type == null)
-				throw new Exception("Не удалось определить тип парсера");
+			{
+				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
+				return null;
+			}
 
 			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
 			if (constructor == null)
@@ -95,6 +98,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
 		{
 			var parser = DetectParser(file, log);
+			if (parser == null)
+				return null;
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
 			return parser.Parse(file, document);
