@@ -43,7 +43,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (type == null)
 			{
 				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
+#if !DEBUG
 				return null;
+#else
+				throw new Exception("Не удалось определить тип парсера");
+#endif
 			}
 
 			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
@@ -92,6 +96,12 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof (RostaOmskParser);
 			if (KatrenOmskParser.CheckFileFormat(file))
 				return typeof (KatrenOmskParser);
+			if (DetstvoOmskParser.CheckFileFormat(file))
+				return typeof (DetstvoOmskParser);
+			if (RostaMskParser.CheckFileFormat(file))
+				return typeof (RostaMskParser);
+			if (TredifarmParser.CheckFileFormat(file))
+				return typeof (TredifarmParser);
 			return null;
 		}
 

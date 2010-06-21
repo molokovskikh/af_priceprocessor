@@ -46,6 +46,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
 			{
 				var headers = reader.ReadLine().Split('\t');
+				if (headers.Length < 4)
+					return false;
 				return (headers[0].ToLower().Equals("фактура") &&
 					headers[1].ToLower().Equals("дата") &&
 					headers[2].ToLower().Equals("код") &&
