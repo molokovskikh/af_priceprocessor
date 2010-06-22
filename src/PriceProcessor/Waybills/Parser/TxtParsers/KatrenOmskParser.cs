@@ -22,9 +22,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 					var line = document.NewLine();
 					line.Code = txtParser.Code;
-					line.Product = txtParser.Product.Trim();
-					line.Producer = txtParser.Producer.Trim();
-					line.SerialNumber = txtParser.SerialNumber.Trim();
+					line.Product = txtParser.Product;
+					line.Producer = txtParser.Producer;
+					line.SerialNumber = txtParser.SerialNumber;
 					line.Country = txtParser.Country;
 					line.Quantity = txtParser.Quantity;
 					line.ProducerCost = txtParser.ProducerCost;

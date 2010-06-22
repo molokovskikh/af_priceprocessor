@@ -48,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Helpers
 		public static string GetString(string val)
 		{
 			if (!String.IsNullOrEmpty(val))
-				return val;
+				return val.Trim();
 			return null;
 		}
 	}

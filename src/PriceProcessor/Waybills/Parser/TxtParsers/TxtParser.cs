@@ -134,7 +134,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public uint? Nds
 		{
-			get { return ParseHelper.GetUInt(GetValue(NdsHeaders)); }
+			get
+			{
+				return ParseHelper.GetUInt(GetValue(NdsHeaders).Replace("%", ""));
+			}
 		}
 
 		public string Period
