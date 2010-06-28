@@ -1041,7 +1041,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (var cost in _costDescriptions)
-				if (((cost.ZeroCostCount > 0) && (_loggingStat.formCount == 0)) || (cost.ZeroCostCount == _loggingStat.formCount))
+				if ((cost.ZeroCostCount > 0) && ((_loggingStat.formCount == 0) || (cost.ZeroCostCount == _loggingStat.formCount)))
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
 
 			if (stringBuilder.Length > 0)

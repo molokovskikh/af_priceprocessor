@@ -1783,7 +1783,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (var cost in currentCoreCosts)
-				if (((cost.zeroCostCount > 0) && (formCount == 0)) || (cost.zeroCostCount == formCount))
+				if ((cost.zeroCostCount > 0) && ((formCount == 0) || (cost.zeroCostCount == formCount)))
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.costName);
 
 			if (stringBuilder.Length > 0)
