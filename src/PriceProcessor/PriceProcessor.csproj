@@ -218,6 +218,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\FarmakonPlusParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmGroupParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenezisDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GodunovDbfParser.cs" />
