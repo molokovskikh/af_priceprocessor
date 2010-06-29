@@ -28,5 +28,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(6.3273));
 			Assert.That(line.ProducerCost, Is.EqualTo(6.09));
 		}
+
+		[Test]
+		public void Parse_Avesta_Farmatsevtika()
+		{
+			var doc = WaybillParser.Parse("106836_10.dbf");
+
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("106836"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("29.06.2010")));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("43423"));
+			Assert.That(line.Product, Is.EqualTo("ÂÈÀÃÐÀ òàá ï/î 100ìã N1"));
+			Assert.That(line.Producer, Is.EqualTo("Pfizer"));
+			Assert.That(line.SerialNumber, Is.EqualTo("8312804"));
+			Assert.That(line.Period, Is.EqualTo("01.12.2013"));
+			Assert.That(line.SupplierCost, Is.EqualTo(472.6600));
+			Assert.That(line.Quantity, Is.EqualTo(10));
+			Assert.That(line.Certificates, Is.EqualTo("ÐÎÑÑ FR.ÔÌ08.Ä94373"));
+			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.Country, Is.EqualTo("Ôðàíöèÿ"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(429.6900));
+			Assert.That(line.ProducerCost, Is.EqualTo(390.6300));
+		}
 	}
 }
