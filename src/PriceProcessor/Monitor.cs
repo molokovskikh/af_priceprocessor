@@ -38,8 +38,8 @@ namespace Inforoom.PriceProcessor
 		{
 			_handlers = new List<AbstractHandler> {
 				new FormalizeHandler(),
-				new WaybillFtpSourceHandler(),
 #if (!DEBUG)
+				new WaybillFtpSourceHandler(),
 				new LANSourceHandler(),
 				new FTPSourceHandler(),
 				new HTTPSourceHandler(),

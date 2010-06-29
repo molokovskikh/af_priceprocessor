@@ -324,6 +324,8 @@ namespace Inforoom.PriceProcessor.Waybills
 						return;
 
 					var document = new WaybillFormatDetector().DetectAndParse(log, file);
+					if (document == null)
+						return;
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
 						document.Save();
