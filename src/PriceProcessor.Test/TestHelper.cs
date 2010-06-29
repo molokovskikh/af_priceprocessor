@@ -207,9 +207,10 @@ where priceitemid = {0}", priceItemId)).Tables[0].Rows[0];
 			var costcode = row[1];
 
 			var resultCore0 = Fill(String.Format(@"
-select c.*, cc.Cost
+select c.*, cc.Cost, s.Synonym
 from core0 c
   join corecosts cc on cc.Core_Id = c.Id
+  join farm.Synonym s on s.SynonymCode = c.SynonymCode
 where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables[0];
 
 			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "количество позиций не совпадает");
@@ -220,7 +221,8 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 
 				foreach (DataColumn column in etalonCore0.Columns)
 				{
-					if (column.ColumnName.ToLower() == "id")
+					var columnName = column.ColumnName.ToLower();
+					if (columnName == "id" || columnName == "Synonym")
 						continue;
 
 /*					if (column.ColumnName == "SynonymCode")
@@ -231,10 +233,26 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 						continue;
 					}*/
 
-
-					Assert.That(resultRow[column.ColumnName],
-					            Is.EqualTo(etalonRow[column.ColumnName]),
-					            "Колонка {0}. Строка результата {1}. Строка эталона {2}.", column.ColumnName, resultRow["Id"], etalonRow["Id"]);
+					if (false)
+					{
+						if (!resultRow[column.ColumnName].Equals(etalonRow[column.ColumnName])) 
+							Console.WriteLine("Значения не совпадают эталон {5} результат {6}. Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.",
+								column.ColumnName,
+								resultRow["Id"], 
+								etalonRow["Id"], 
+								i, 
+								resultRow["Synonym"],
+								etalonRow[columnName],
+								resultRow[columnName]
+							);
+					}
+					else
+					{
+						Assert.That(resultRow[column.ColumnName],
+							Is.EqualTo(etalonRow[column.ColumnName]),
+							"Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.", column.ColumnName,
+							resultRow["Id"], etalonRow["Id"], i, resultRow["Synonym"]);
+					}
 				}
 			}
 		}

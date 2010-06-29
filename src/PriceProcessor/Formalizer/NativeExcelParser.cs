@@ -12,14 +12,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class NativeExcelParser : InterPriceParser
 	{
-		private readonly string _sheetName;
-		private readonly int _startLine;
+		private readonly ExcelLoader _loader;
 
 		public NativeExcelParser(string priceFileName, MySqlConnection connection, DataTable table)
 			: base(priceFileName, connection, table)
 		{
-			_sheetName = table.Rows[0]["ListName"].ToString().Replace("$", "");
-			_startLine = table.Rows[0]["StartLine"] is DBNull ? 0 : Convert.ToInt32(table.Rows[0]["StartLine"]);
+			_loader = new ExcelLoader(
+				table.Rows[0]["ListName"].ToString().Replace("$", ""), 
+				table.Rows[0]["StartLine"] is DBNull ? 0 : Convert.ToInt32(table.Rows[0]["StartLine"]));
+
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
 		}
 
@@ -28,19 +29,44 @@ namespace Inforoom.PriceProcessor.Formalizer
 			convertedToANSI = true;
 			CurrPos = 0;
 
-			var workbook = Workbook.Load(priceFileName);
+			_loader.PeriodField = GetFieldName(PriceFields.Period);
+			dtPrice = _loader.Load(priceFileName);
+
+			base.Open();
+		}
+	}
+
+	public class ExcelLoader
+	{
+		private readonly int _startLine;
+		private readonly string _sheetName;
+		
+		public ExcelLoader(string sheetName, int startLine) : this()
+		{
+			_sheetName = sheetName;
+			_startLine = startLine;
+		}
+
+		public ExcelLoader()
+		{}
+
+
+		public string PeriodField { get; set; }
+
+		public DataTable Load(string file)
+		{
+			var workbook = Workbook.Load(file);
 			var worksheet = workbook.Worksheets.Where(w => String.Compare(w.Name, _sheetName, true) == 0).FirstOrDefault();
 			if (worksheet == null)
 				worksheet = workbook.Worksheets[0];
 
-			var cells = worksheet.Cells;
 			var dataTable = new DataTable();
+
+			var cells = worksheet.Cells;
 			dataTable.Columns
 				.AddRange(Enumerable.Range(cells.FirstColIndex + 1, cells.LastColIndex - cells.FirstColIndex + 1)
 				.Select(i => new DataColumn("F" + i))
 				.ToArray());
-
-			var perionColumn = GetFieldName(PriceFields.Period);
 
 			for(var i = Math.Max(cells.FirstRowIndex, _startLine); i <= cells.LastRowIndex; i++)
 			{
@@ -50,7 +76,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					var cell = cells[i, j];
 
 					var columnName = "F" + (j + 1);
-					if (columnName == perionColumn)
+					if (columnName == PeriodField)
 					{
 						var dateTimeValue = cell.TryToGetValueAsDateTime();
 						if (dateTimeValue != null)
@@ -59,13 +85,44 @@ namespace Inforoom.PriceProcessor.Formalizer
 							continue;
 						}
 					}
-					row[columnName] = cell.Value;
+					ProcessFormatIfNeeded(columnName, cell, row);
 				}
 				dataTable.Rows.Add(row);
 			}
 
-			dtPrice = dataTable;
-			base.Open();
+			return dataTable;
+		}
+
+		private void ProcessFormatIfNeeded(string columnName, Cell cell, DataRow row)
+		{
+			if (cell.Value is double 
+				&& cell.Format.FormatType == CellFormatType.Number
+				&& (cell.Format.FormatString == "0.00" || cell.Format.FormatString == "#,##0.00"))
+			{
+				row[columnName] = Math.Round((double) cell.Value, 2);
+				return;
+			}
+
+			if (cell.Value is double 
+				&& cell.Format.FormatType == CellFormatType.Date
+				&& cell.Format.FormatString == "d-mmm")
+			{
+				var value = cell.TryToGetValueAsDateTime();
+				if (value != null)
+				{
+					row[columnName] = value.Value.ToString("dd.MMM");
+					return;
+				}
+			}
+
+			if (cell.Value is double
+				&& cell.Format.FormatType == CellFormatType.Custom
+				&& cell.Format.FormatString == "00000000000")
+			{
+				row[columnName] = cell.Value.ToString().PadLeft(11, '0');
+				return;
+			}
+			row[columnName] = cell.Value;
 		}
 	}
 }
