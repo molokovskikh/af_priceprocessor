@@ -152,7 +152,6 @@
     <Compile Include="Formalizer\BasePriceParser.cs" />
     <Compile Include="Formalizer\New\BasePriceParser2.cs" />
     <Compile Include="Formalizer\CommerceMLParser.cs" />
-    <Compile Include="Formalizer\DBFPriceParser.cs" />
     <Compile Include="Formalizer\ExcelPriceParser.cs" />
     <Compile Include="Rosta\FakeRostaParser.cs" />
     <Compile Include="Formalizer\FormalizationPosition.cs" />
