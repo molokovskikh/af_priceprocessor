@@ -50,7 +50,7 @@ namespace PriceProcessor.Test
 					Console.WriteLine(DateTime.Now + " - " + file);
 					var priceItemId = Path.GetFileNameWithoutExtension(file);
 					TestHelper.Execute(String.Format("update usersettings.PriceItems set RowCount = 0 where id = {0}", priceItemId));
-					TestHelper.Formalize<NativeDbfPriceParser>(Path.GetFullPath(file));
+					TestHelper.Formalize<NativeExcelParser>(Path.GetFullPath(file));
 					TestHelper.Verify(priceItemId);
 				}
 				catch (Exception e)
@@ -73,7 +73,7 @@ namespace PriceProcessor.Test
 					Console.WriteLine(DateTime.Now + " - " + file);
 					var priceItemId = Path.GetFileNameWithoutExtension(file);
 					TestHelper.Execute(String.Format("update usersettings.PriceItems set RowCount = 0 where id = {0}", priceItemId));
-					TestHelper.Formalize<DBFPriceParser>(Path.GetFullPath(file));
+					TestHelper.Formalize<ExcelPriceParser>(Path.GetFullPath(file));
 					TestHelper.Execute(@"
 select PriceCode
 into @PriceCode
