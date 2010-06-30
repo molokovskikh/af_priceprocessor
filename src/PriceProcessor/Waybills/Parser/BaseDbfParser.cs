@@ -6,7 +6,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, true);
+			var data = Dbf.Load(file);
 			var parser = GetParser();
 			parser.ToDocument(document, data);
 			return document;

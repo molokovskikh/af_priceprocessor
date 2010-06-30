@@ -70,8 +70,8 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private static string MergeFiles(DocumentReceiveLog headerFile, DocumentReceiveLog bodyFile)
 		{
-			var tableHeader = Dbf.Load(headerFile.GetFileName(), true);
-			var tableBody = Dbf.Load(bodyFile.GetFileName(), true);
+			var tableHeader = Dbf.Load(headerFile.GetFileName());
+			var tableBody = Dbf.Load(bodyFile.GetFileName());
 
 			var commonColumns = new List<string>();
 			foreach (DataColumn column in tableHeader.Columns)

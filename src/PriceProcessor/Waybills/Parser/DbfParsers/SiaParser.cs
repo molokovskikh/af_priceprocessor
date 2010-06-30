@@ -9,11 +9,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class SiaParser : IDocumentParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
-
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding, true);
+			var data = Dbf.Load(file);
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
 			string registryCostColumn = null;

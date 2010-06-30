@@ -12,7 +12,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public Document Parse(string file, Document document)
 		{
 			var providerDocumentIdColumn = "DOCNUMBER";
-			var data = Dbf.Load(file, true);
+			var data = Dbf.Load(file);
 			if (data.Columns.Contains("DOCNUMDER"))
 				providerDocumentIdColumn = "DOCNUMDER";
 

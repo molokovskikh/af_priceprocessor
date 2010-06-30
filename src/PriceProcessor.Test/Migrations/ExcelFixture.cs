@@ -32,7 +32,7 @@ namespace PriceProcessor.Test
 
 			using(new SessionScope())
 			{
-				items = TestPriceItem.Queryable.Where(i => i.Format.PriceFormat == PriceFormatType.Xls).ToList();
+				items = TestPriceItem.Queryable.Where(i => i.Format.PriceFormat == PriceFormatType.Dbf).ToList();
 				ids = items.Select(i => i.Id).ToArray();
 			}
 		}
@@ -44,13 +44,13 @@ namespace PriceProcessor.Test
 			{
 				try
 				{
-					var file = Path.Combine(path, String.Format("{0}.xls", id));
+					var file = Path.Combine(path, String.Format("{0}.dbf", id));
 					if (!File.Exists(file))
 						continue;
 					Console.WriteLine(DateTime.Now + " - " + file);
 					var priceItemId = Path.GetFileNameWithoutExtension(file);
 					TestHelper.Execute(String.Format("update usersettings.PriceItems set RowCount = 0 where id = {0}", priceItemId));
-					TestHelper.Formalize<NativeExcelParser>(Path.GetFullPath(file));
+					TestHelper.Formalize<NativeDbfPriceParser>(Path.GetFullPath(file));
 					TestHelper.Verify(priceItemId);
 				}
 				catch (Exception e)
@@ -67,13 +67,13 @@ namespace PriceProcessor.Test
 			{
 				try
 				{
-					var file = Path.Combine(path, String.Format("{0}.xls", id));
+					var file = Path.Combine(path, String.Format("{0}.dbf", id));
 					if (!File.Exists(file))
 						continue;
 					Console.WriteLine(DateTime.Now + " - " + file);
 					var priceItemId = Path.GetFileNameWithoutExtension(file);
 					TestHelper.Execute(String.Format("update usersettings.PriceItems set RowCount = 0 where id = {0}", priceItemId));
-					TestHelper.Formalize<ExcelPriceParser>(Path.GetFullPath(file));
+					TestHelper.Formalize<DBFPriceParser>(Path.GetFullPath(file));
 					TestHelper.Execute(@"
 select PriceCode
 into @PriceCode
@@ -117,56 +117,11 @@ where pricecode = @PriceCode;
 
 			foreach (var item in items)
 			{
-				var price = String.Format(@"\\fms.adc.analit.net\prices\base\{0}.xls", item.Id);
+				Console.WriteLine(item.Id);
+				var price = String.Format(@"\\fms.adc.analit.net\prices\base\{0}.dbf", item.Id);
 				if (File.Exists(price))
-					File.Copy(price, Path.Combine(path, String.Format("{0}.xls", item.Id)));
+					File.Copy(price, Path.Combine(path, String.Format("{0}.dbf", item.Id)));
 			}
-
-/*			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
-			{
-				connection.Open();
-				var adapter = new MySqlDataAdapter(@"
-select *
-from farm.core0 c
-  join corecosts cc on c.id = cc.Core_Id
-where pricecode = 3331", connection);
-				var data = new DataSet();
-				adapter.Fill(data);
-				using (var file = File.Create("552.xml"))
-				{
-					data.WriteXml(file, XmlWriteMode.WriteSchema);
-				}
-			}*/
-		}
-
-		[Test]
-		public void Try_to_formalize_ole()
-		{
-			var files = Directory.GetFiles(Path.GetFullPath(@"..\..\Data\Excel\"));
-			foreach (var file in files)
-			{
-				try
-				{
-					Console.WriteLine(DateTime.Now + " - " + file);
-					var priceItemId = Path.GetFileNameWithoutExtension(file);
-					TestHelper.Execute(String.Format("update usersettings.PriceItems set RowCount = 0 where id = {0}", priceItemId));
-					TestHelper.Formalize<ExcelPriceParser>(Path.GetFullPath(file));
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-				}
-			}
-		}
-
-		[Test]
-		public void test()
-		{
-			//var format = "[Белый][<1] ММ.ГГ; ММ.ГГ";
-			//Assert.That(NativeExcelParser.IsADateFormat(format), Is.True);
-
-			Console.WriteLine(Regex.Replace("[Белый][<1] ММ.ГГ; ММ.ГГ", @"\[\w+\]", ""));
-			Console.WriteLine(Regex.Replace("[Белый][<1] ММ.ГГ; ММ.ГГ", @"^\[\w+\]+", ""));
 		}
 
 		[Test]
