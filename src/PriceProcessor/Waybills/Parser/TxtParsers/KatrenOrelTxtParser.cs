@@ -26,6 +26,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
+				if (header.Length < 4)
+					return false;
 				if (!header[3].ToLower().Equals("зао нпк катрен") &&
 					!header[3].ToLower().Equals("ооо \"биолайн\"") &&
 					!header[3].ToLower().Equals("роста-тюменский филиал") &&
