@@ -30,6 +30,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				vitallyImportantColumn = "Priznak_pr";
 			else if (data.Columns.Contains("VITAL"))
 				vitallyImportantColumn = "VITAL";
+			else if (data.Columns.Contains("GVLS"))
+				vitallyImportantColumn = "GVLS";
 
 			if (data.Columns.Contains("REESTR"))
 				registryCostColumn = "REESTR";
