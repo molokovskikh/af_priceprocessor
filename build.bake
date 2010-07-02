@@ -27,11 +27,13 @@ Task @ParseWaybills:
 	for result in results:
 		print result
 
+if Configuration.IsDefined("Platform"):
+	Global(platform : Configuration.Platform)
+
 Global(
 	project : "PriceProcessor",
 	server : "fms.adc.analit.net",
 	humanReadableName : "Служба обработки прайс-листов",
-	platform : "x86",
 	serviceName : "PriceProcessorService",
 
 	libs : ("Common.Tools", "ExecuteTemplate")
