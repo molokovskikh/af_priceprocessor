@@ -63,7 +63,7 @@ namespace Inforoom.PriceProcessor
 			tWork.Abort();
 		}
 
-		protected virtual void Ping()
+		protected void Ping()
 		{
 			lastPing = DateTime.Now;
 		}

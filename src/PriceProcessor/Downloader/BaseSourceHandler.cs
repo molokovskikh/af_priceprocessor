@@ -139,12 +139,6 @@ namespace Inforoom.Downloader
                 catch { }
         }
 
-		protected override void Ping()
-		{
-			base.Ping();	
-			try { _workConnection.Ping(); } catch{}
-		}
-
         //Типа источника
         protected string SourceType
         { 
