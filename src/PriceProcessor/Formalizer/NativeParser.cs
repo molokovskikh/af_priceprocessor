@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
@@ -31,7 +32,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void Open()
 		{
 			convertedToANSI = true;
-			dtPrice = Parser.Parse(priceFileName);
+			if (_parseConvertedFiles)
+				dtPrice = Parser.Parse(priceFileName, priceItemId);
+			else
+				dtPrice = Parser.Parse(priceFileName);
 			CurrPos = 0;
 			base.Open();
 		}
@@ -40,6 +44,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 	public interface IParser
 	{
 		DataTable Parse(string filename);
+
+		DataTable Parse(string filename, long priceItemId);
 	}
 
 	public class TextParser : IParser
@@ -80,6 +86,34 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 			return table;
 		}
+
+		// Временный.
+		// Для обработки прайс-листов, сконвертированных из xls в txt (эксель при конвертировании экранирует строку двойными кавычками)
+		public DataTable Parse(string filename, long priceItemId)
+		{
+			var lineIndex = -1;
+			var table = new DataTable();
+			using (var file = new StreamReader(filename, _encoding))
+			{
+				while (!file.EndOfStream)
+				{
+					var line = file.ReadLine();
+					lineIndex++;
+					if (lineIndex < _startLine)
+						continue;
+
+					if (line.Length == 0)
+						continue;
+
+					var row = table.NewRow();
+
+					_slicer.Slice(table, line, row, priceItemId);
+
+					table.Rows.Add(row);
+				}
+			}
+			return table;
+		}
 	}
 
 	public class TxtFieldDef : IComparer, IComparable<TxtFieldDef>
@@ -111,6 +145,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 	public interface ISlicer
 	{
 		void Slice(DataTable table, string line, DataRow row);
+
+		// Временный.
+		// Для обработки прайс-листов, сконвертированных из xls в txt (эксель при конвертировании экранирует строку двойными кавычками)
+		void Slice(DataTable table, string line, DataRow row, long priceItemId);
 	}
 
 	public class PositionSlicer : ISlicer
@@ -184,6 +222,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				row[rule.FieldName] = line.Substring(begin, length).Trim();
 			}
 		}
+
+		public void Slice(DataTable table, string line, DataRow row, long priceItemId)
+		{
+			throw new Exception("Not Implemented");
+		}
 	}
 
 	public class DelimiterSlicer : ISlicer
@@ -207,6 +250,39 @@ namespace Inforoom.PriceProcessor.Formalizer
 				var begin = table.Columns.Count + 1;
 				var count = values.Length;
 				for(var i = begin; i <= count; i++)
+					table.Columns.Add(new DataColumn("F" + i));
+			}
+
+			var columnIndex = 0;
+			foreach (DataColumn column in table.Columns)
+			{
+				if (columnIndex > values.Length - 1)
+					break;
+				row[column.ColumnName] = values[columnIndex].Trim();
+				columnIndex++;
+			}
+		}
+
+		public void Slice(DataTable table, string line, DataRow row, long priceItemId)
+		{
+			var priceItemIds = new List<long>() { 903, 1177, 951, 235, 910, 996, 1170,
+				886, 1160, 90, 494, 822, 1184, 941, 468, 879, 479, 651, 977, 1004, 1032, 917, 628, 8 };
+
+			if (priceItemIds.Contains(priceItemId))
+			{
+				line = Regex.Replace(line, "\"\"", "\"");
+				line = Regex.Replace(line, "\t\"", "\t");
+				line = Regex.Replace(line, "\"\t", "\t");
+			}
+			else
+				line = line.Replace("\"", "");
+			var values = line.Split(new[] { _delimiter }, StringSplitOptions.None);
+
+			if (table.Columns.Count < values.Length)
+			{
+				var begin = table.Columns.Count + 1;
+				var count = values.Length;
+				for (var i = begin; i <= count; i++)
 					table.Columns.Add(new DataColumn("F" + i));
 			}
 

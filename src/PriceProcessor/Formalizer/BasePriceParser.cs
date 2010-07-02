@@ -322,6 +322,12 @@ namespace Inforoom.Formalizer
 		//явл€етс€ ли обрабатываемый прайс-лист загруженным?
 		public bool downloaded;
 
+		// ¬ременный флажок
+		// если true, тогда при парсинге провер€ем, если разбираемый priceItemId
+		// находитс€ в списке, тогда замен€ем кавычки с помощью регул€рного выражени€ 
+		// (это нужно дл€ файлов, которые были сконвертированы из XLS в TXT)
+		public bool _parseConvertedFiles = true;
+
 		//ключ дл€ priceitems
 		public long priceItemId;
 		//индекс цены с таким же кодом как у прайса в списке цен (currentCoreCosts)
