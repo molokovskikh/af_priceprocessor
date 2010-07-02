@@ -215,6 +215,7 @@
     <Compile Include="Waybills\Parser\BaseDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AralMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Avesta_6256_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmakonPlusParser.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaPermParser.cs" />
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
+    <Compile Include="Waybills\Parser\UnsafeBaseDbfParser.cs" />
     <Compile Include="Waybills\Parser\Helpers\ParseHelper.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
     <Compile Include="Waybills\Parser\OACXlsParser.cs" />

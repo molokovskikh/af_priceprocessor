@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
@@ -42,10 +45,22 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var count = 0;
 			foreach (var type in types)
 			{
+				// Пропускаем этот парсер, потому что он определяется по коду поставщика
+				// и чтобы не возникала ошибка "Для разбора данного формата подходит более одного парсера"
+				if (type == typeof(Avesta_6256_SpecialParser))
+					continue;
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-				var data = Dbf.Load(file);
+				DataTable data = null;
+				try
+				{
+					data = Dbf.Load(file);
+				}
+				catch (DbfException)
+				{
+					data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
+				}
 				var result = (bool)detectFormat.Invoke(null, new object[] { data });
 				if (result)
 					count++;

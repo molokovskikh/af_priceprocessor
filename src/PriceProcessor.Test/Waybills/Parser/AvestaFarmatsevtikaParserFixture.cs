@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -87,6 +89,43 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(doc.Lines[2].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[2].RegistryCost, Is.EqualTo(2));
+		}
+
+		[Test, Description("Тест для файла, в котором тип одной из колонок указан как NUMBER, но там встречаются строковые значения")]
+		public void Parse_unsafe_with_wrong_column_type()
+		{
+			DocumentReceiveLog documentLog = null;
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(6256u);
+				documentLog = new DocumentReceiveLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\4006238_Авеста-Фармацевтика_106949_1_.dbf", documentLog) is Avesta_6256_SpecialParser);
+
+			var doc = WaybillParser.Parse("4006238_Авеста-Фармацевтика_106949_1_.dbf", documentLog);
+
+			var providerDocId = Document.GenerateProviderDocumentId();
+			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
+
+			Assert.IsTrue(doc.ProviderDocumentId.StartsWith(providerDocId));
+			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("41215"));
+			Assert.That(line.Product, Is.EqualTo("АМПИЦИЛЛИН Т/Г таб 250мг N20 Барнаул"));
+			Assert.That(line.Producer, Is.EqualTo("Барнаульский ЗМП"));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.Quantity, Is.EqualTo(8));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.Period, Is.EqualTo("01.05.2012"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ10.Д05887"));
+			Assert.That(line.SupplierCost, Is.EqualTo(18.9200));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(17.2000));
+			Assert.That(line.ProducerCost, Is.EqualTo(15.7300));
+			Assert.That(line.SerialNumber, Is.EqualTo("100410"));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(9.3452));
+			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
 		}
 	}
 }

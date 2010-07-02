@@ -5,6 +5,7 @@ using System.Reflection;
 using Common.Tools;
 using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -15,31 +16,37 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
-			if (extention == ".dbf")
-				type = DetectDbfParser(file);
-			else if (extention == ".sst")
-				type = typeof (UkonParser);
-			else if (extention == ".xls")
-				type = DetectXlsParser(file);
-			else if ((extention == ".xml") || (extention == ".data"))
+
+			// Если это накладная от Авеста-Фармацевтика, обрабатываем ее специальным парсером, не проверяем на соответствие форматам других парсеров
+			if ((documentLog != null) && documentLog.Supplier.Id == 6256)
+				type = typeof(Avesta_6256_SpecialParser);
+			else
 			{
-				if (new SiaXmlParser().IsInCorrectFormat(file))
-					type = typeof (SiaXmlParser);
-				else if (new ProtekXmlParser().IsInCorrectFormat(file))
-					type = typeof (ProtekXmlParser);
+				if (extention == ".dbf")
+					type = DetectDbfParser(file);
+				else if (extention == ".sst")
+					type = typeof (UkonParser);
+				else if (extention == ".xls")
+					type = DetectXlsParser(file);
+				else if ((extention == ".xml") || (extention == ".data"))
+				{
+					if (new SiaXmlParser().IsInCorrectFormat(file))
+						type = typeof (SiaXmlParser);
+					else if (new ProtekXmlParser().IsInCorrectFormat(file))
+						type = typeof (ProtekXmlParser);
+				}
+				else if (extention == ".pd")
+					type = typeof (ProtekParser);
+				else if (extention == ".txt")
+					type = DetectTxtParser(file);
+
+				// Если поставщик - это челябинский Морон, для него отдельный парсер 
+				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
+				if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
+				    (documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
+				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802))
+					type = typeof (Moron_338_SpecialParser);
 			}
-			else if (extention == ".pd")
-				type = typeof (ProtekParser);
-			else if (extention == ".txt")
-				type = DetectTxtParser(file);
-
-			// Если поставщик - это челябинский Морон, для него отдельный парсер 
-			// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
-			if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
-				(documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
-				|| documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802))
-				type = typeof (Moron_338_SpecialParser);
-
 			if (type == null)
 			{
 				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
