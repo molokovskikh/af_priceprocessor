@@ -21,24 +21,24 @@ namespace PriceProcessor.Test.Special
 		public void Plan_next_update()
 		{
 			SystemTime.Now = () => DateTime.Parse("11.02.2010 17:19");
-			var plan = new Plan(1, "123", "");
+			var plan = new Plan(1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("12.02.2010 6:10")).And.LessThan(DateTime.Parse("12.02.2010 7:40")));
 
 			//если загрузили в пятницу по следующая загрузка в понедельник
 			SystemTime.Now = () => DateTime.Parse("12.02.2010 17:19");
-			plan = new Plan(1, "123", "");
+			plan = new Plan(1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 
 			//если priceprocessor остановили и запустили в субботу то грузим а следующая загрузка в подедельник
 			SystemTime.Now = () => DateTime.Parse("13.02.2010 17:19");
-			plan = new Plan(1, "123", "");
+			plan = new Plan(1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 
 			SystemTime.Now = () => DateTime.Parse("14.02.2010 17:19");
-			plan = new Plan(1, "123", "");
+			plan = new Plan(1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 		}
@@ -130,7 +130,7 @@ namespace PriceProcessor.Test.Special
 
 			Directory.CreateDirectory("output");
 			var downloader = new RostaDownloader();
-			downloader.DownloadPrice("20100227139999-843-12", "00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel\r\n02/05/2007-I945-6A79TG0AC-00", "price", "producers", "ex");
+			downloader.DownloadPrice("20070122094213-218-44", "00000F49-00010800-0000651D-BFEBFBFF-605B5101-003C7040-GenuineIntel\r\n12/21/2005-Grantsdale-P5GV-TMX-00", "price", "producers", "ex");
 		}
 	}
 }

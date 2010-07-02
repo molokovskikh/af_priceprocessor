@@ -40,8 +40,12 @@ namespace Inforoom.PriceProcessor.Rosta
 				{
 					writer.AutoFlush = true;
 					var responce = ReadResponce(String.Format("LOGIN {0} 05010130", key));
-					var serverKey = Convert.ToInt32(responce.Split(' ')[4].Trim());
-					ReadResponce("HWINFO {0}", RostaDecoder.CryptHwinfo(hwinfo, serverKey));
+					var parts = responce.Split(' ');
+					if (parts.Length >= 5)
+					{
+						var serverKey = Convert.ToInt32(parts[4].Trim());
+						ReadResponce("HWINFO {0}", RostaDecoder.CryptHwinfo(hwinfo, serverKey));
+					}
 					ReadResponce("SET CODEPAGE WIN1251");
 					ReadResponce("GET EXPORT_PERMISSION");
 					RequestAndDownload("GETZ PRICELISTS");

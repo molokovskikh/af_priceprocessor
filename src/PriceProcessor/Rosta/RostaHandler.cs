@@ -18,12 +18,15 @@ namespace Inforoom.PriceProcessor.Rosta
 		public string Key { get; set; }
 		public string Hwinfo { get; set; }
 
-		public Plan(uint priceItemId, string key, string hwinfo)
+		public Plan(uint priceItemId, string key, string hwinfo, DateTime lastDownload)
 		{
 			PriceItemId = priceItemId;
 			Key = key;
 			Hwinfo = hwinfo;
-			PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour();
+			if (lastDownload.Year == 2000)
+				PlanedOn = SystemTime.Now();
+			else
+				PlanedOn = SystemTime.Now() + new Random().NextDouble().Hour();
 		}
 
 		public void PlanNextUpdate()
@@ -208,7 +211,7 @@ select @priceItemId;", c);
 				priceItemId = Convert.ToUInt32(command.ExecuteScalar());
 				UpdateClient(c, configure.ClientId, priceItemId, configure.Key, configure.Hwinfo);
 			});
-			return new Plan(priceItemId, configure.Key, configure.Hwinfo);
+			return new Plan(priceItemId, configure.Key, configure.Hwinfo, new DateTime(2000, 01, 01));
 		}
 
 		private List<Plan> GetExistsPlans()
@@ -217,10 +220,11 @@ select @priceItemId;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3
+SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3, pi.PriceDate
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
+	join Usersettings.priceitems pi on pi.Id = pc.PriceItemId
 	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
 where i.pricecode = ?PriceId
 	and i.InvisibleOnClient = 0
@@ -240,7 +244,8 @@ group by pc.PriceItemId;", connection);
 					plans.Add(new Plan(
 						Convert.ToUInt32(row["PriceItemId"]),
 						Convert.ToString(row["FirmClientCode"]),
-						Convert.ToString(row["FirmClientCode2"]) + "\r\n" + Convert.ToString(row["FirmClientCode3"])
+						Convert.ToString(row["FirmClientCode2"]) + "\r\n" + Convert.ToString(row["FirmClientCode3"]),
+						Convert.ToDateTime(row["PriceDate"])
 					));
 				}
 			}
@@ -276,7 +281,7 @@ group by i.ClientCode", connection);
 					toConfigure.Add(new ToConfigure {
 						ClientId = Convert.ToUInt32(row["ClientCode"]),
 						Key = Convert.ToString(row["FirmClientCode"]),
-						Hwinfo = Convert.ToString(row["FirmClientCode2"]) + "\r\n" + row["FirmClientCode3"]
+						Hwinfo = Convert.ToString(row["FirmClientCode2"]) + "\r\n" + row["FirmClientCode3"],
 					});
 				}
 			}
