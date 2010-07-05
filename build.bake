@@ -43,11 +43,32 @@ Task @default, [@BuildService]
 
 Task @deploy, [@Migrate, @DeployService, @SendDeployNotification]
 
+def IsDocument(mime as Mime):
+	for box in mime.MainEntity.To.Mailboxes:
+		domain = box.Domain.ToLower()
+		return true if domain.EndsWith("waybills.analit.net") \
+			or domain.EndsWith("refused.analit.net")
+	return false
+
+def Resend(attachment as MimeEntity):
+	attachedMime = Mime.Parse(attachment.Data)
+	if not IsDocument(attachedMime):
+		print "Ignored ${attachedMime.MainEntity.Subject}"
+		return
+	print "Resend ${attachedMime.MainEntity.Subject}"
+	SmtpClientEx.QuickSendSmartHost("box.analit.net", 
+		25, 
+		Environment.MachineName,
+		"service@analit.net",
+		("root@waybills.analit.net",),
+		MemoryStream(attachment.Data))
+
 Desc """
 Переотправляет не обработанные накладные, берет письмо из kvasovtest и переотправляет его
 
 Полезна если что то поломалось а пришли накладные
 Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
+или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
 """
 Task @ResendWaybills:
 	using client = IMAP_Client():
@@ -64,11 +85,8 @@ Task @ResendWaybills:
 			message = client.FetchMessages(sequence, IMAP_FetchItem_Flags.Message, false, true)
 			mine = Mime.Parse(message[0].MessageData)
 			for attachment in mine.Attachments:
-				attachedMime = Mime.Parse(attachment.Data)
-				print "Resend ${attachedMime.MainEntity.Subject}"
-				SmtpClientEx.QuickSendSmartHost("box.analit.net", 
-					25, 
-					Environment.MachineName,
-					"service@analit.net",
-					("root@waybills.analit.net",),
-					MemoryStream(attachedMime.Attachments[0].Data))
+				if attachment.ContentType_Name == "Unparse.eml":
+					Resend(attachment)
+				else:
+					attachedMime = Mime.Parse(attachment.Data)
+					Resend(attachedMime.Attachments[0])
