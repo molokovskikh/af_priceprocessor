@@ -17,8 +17,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 
-			// ≈сли это накладна€ от јвеста-‘армацевтика, обрабатываем ее специальным парсером, не провер€ем на соответствие форматам других парсеров
-			if ((documentLog != null) && documentLog.Supplier.Id == 6256)
+			// ≈сли это накладна€ в формате DBF от јвеста-‘армацевтика,
+			// обрабатываем ее специальным парсером, не провер€ем на соответствие форматам других парсеров
+			if ((documentLog != null) && documentLog.Supplier.Id == 6256 && extention == ".dbf")
 				type = typeof(Avesta_6256_SpecialParser);
 			else
 			{
