@@ -53,6 +53,16 @@ namespace PriceProcessor.Test.Loader
 		}
 
 		[Test]
+		//применять форматирование для чисел
+		public void Custom_numeric_format()
+		{
+			Load(90);
+			var data = Load(235);
+			Assert.That(data.Rows[11][5], Is.EqualTo("1889,1"));
+			Assert.That(data.Rows[25][5], Is.EqualTo("1081,7"));
+		}
+
+		[Test]
 		public void Process_numeric_format_with_groups()
 		{
 			var data = Load(886);
@@ -66,11 +76,11 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(data.Rows[8][1], Is.EqualTo("00000000422"));
 		}
 
-		[Test, Ignore("Пока сломан на будущее")]
+		[Test]
 		public void Read_biff8_with_labels()
 		{
 			var data = Load(951);
-			Assert.That(data.Rows[1][1], Is.EqualTo("Ковш черпак береза 1л арт.Б101 N1x1 Зигер РОС"));
+			Assert.That(data.Rows[1][1], Is.EqualTo(" Ковш черпак береза 1л арт.Б101 N1x1 Зигер РОС"));
 		}
 
 		[Test]

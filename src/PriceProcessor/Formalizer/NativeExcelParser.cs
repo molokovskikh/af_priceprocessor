@@ -99,9 +99,26 @@ namespace Inforoom.PriceProcessor.Formalizer
 				&& cell.Format.FormatType == CellFormatType.Number
 				&& (cell.Format.FormatString == "0.00" || cell.Format.FormatString == "#,##0.00"))
 			{
-				row[columnName] = Math.Round((double) cell.Value, 2);
+				row[columnName] = Math.Round((double) cell.Value, 2, MidpointRounding.AwayFromZero);
 				return;
 			}
+
+			if (cell.Value is decimal
+				&& cell.Format.FormatType == CellFormatType.Custom
+				&& cell.Format.FormatString == "#,##0.0")
+			{
+				row[columnName] = Math.Round((decimal) cell.Value, 1, MidpointRounding.AwayFromZero);
+				return;
+			}
+
+			if (cell.Value is double
+				&& cell.Format.FormatType == CellFormatType.Custom
+				&& cell.Format.FormatString == "#,##0.0")
+			{
+				row[columnName] = Math.Round((double) cell.Value, 1, MidpointRounding.AwayFromZero);
+				return;
+			}
+
 
 			if (cell.Value is double 
 				&& cell.Format.FormatType == CellFormatType.Date
@@ -117,9 +134,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			if (cell.Value is double
 				&& cell.Format.FormatType == CellFormatType.Custom
-				&& cell.Format.FormatString == "00000000000")
+				&& (cell.Format.FormatString == "00000000000"
+					|| cell.Format.FormatString == "00000000"
+					|| cell.Format.FormatString == "00000"))
 			{
-				row[columnName] = cell.Value.ToString().PadLeft(11, '0');
+				var padCount = cell.FormatString.Length;
+				row[columnName] = cell.Value.ToString().PadLeft(padCount, '0');
 				return;
 			}
 			row[columnName] = cell.Value;

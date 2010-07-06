@@ -39,6 +39,8 @@ namespace PriceProcessor.Test
 
 	public class TestHelper
 	{
+		public static bool FulVerification;
+
 		public static void InitDirs(params string[] dirs)
 		{
 			dirs.Each(dir => {
@@ -233,7 +235,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 						continue;
 					}*/
 
-					if (false)
+					if (FulVerification)
 					{
 						if (!resultRow[column.ColumnName].Equals(etalonRow[column.ColumnName])) 
 							Console.WriteLine("Значения не совпадают эталон {5} результат {6}. Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.",
