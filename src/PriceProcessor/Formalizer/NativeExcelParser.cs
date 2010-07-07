@@ -30,6 +30,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			CurrPos = 0;
 
 			_loader.PeriodField = GetFieldName(PriceFields.Period);
+			_loader.PriceItemId = (uint) priceItemId;
 			dtPrice = _loader.Load(priceFileName);
 
 			base.Open();
@@ -52,6 +53,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 
 		public string PeriodField { get; set; }
+		public uint PriceItemId { get; set; }
 
 		public DataTable Load(string file)
 		{
@@ -81,7 +83,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 						var dateTimeValue = cell.TryToGetValueAsDateTime();
 						if (dateTimeValue != null)
 						{
-							row[columnName] = dateTimeValue;
+							//медицина пишет в срок годносит 1953 год если срок годности не ограничен всякие скальпели и прочее
+							if (PriceItemId == 822u && dateTimeValue == new DateTime(1953, 01, 01))
+								row[columnName] = DBNull.Value;
+							else
+								row[columnName] = dateTimeValue;
 							continue;
 						}
 					}
