@@ -45,7 +45,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена Ѕ≈« Ќдс)
 				if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
 				    (documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
-				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802))
+				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
+					 || documentLog.Supplier.Id == 21))
 					type = typeof (Moron_338_SpecialParser);
 			}
 			if (type == null)

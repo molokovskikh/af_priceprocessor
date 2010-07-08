@@ -222,32 +222,5 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
 			Assert.That(document.Lines[2].SupplierPriceMarkup, Is.EqualTo(14.6674));
 		}
-
-		[Test]
-		public void Parse_Sia_Orel_with_zhnvls()
-		{
-			var doc = WaybillParser.Parse("Р-1081732.DBF");
-
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-1081732"));
-			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("30.06.2010")));
-			var line = doc.Lines[0];
-			Assert.That(line.Code, Is.EqualTo("3716"));
-			Assert.That(line.Product, Is.EqualTo("Амбробене 30мг Таб. Х20"));
-			Assert.That(line.Producer, Is.EqualTo("Ratiopharm/Merckle"));
-			Assert.That(line.Country, Is.EqualTo("Германия"));
-			Assert.That(line.Quantity, Is.EqualTo(5));
-			Assert.That(line.ProducerCost, Is.EqualTo(42.3700));
-			Assert.That(line.Nds, Is.EqualTo(10));
-			Assert.That(line.Period, Is.EqualTo("01.03.2014"));
-			Assert.That(line.Certificates, Is.EqualTo("РОСС DE.ФМ08.Д01507"));
-			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(36.1));
-			Assert.That(line.SupplierCost, Is.EqualTo(39.7100));
-			Assert.That(line.SerialNumber, Is.EqualTo("J12090"));
-			Assert.That(line.RegistryCost, Is.EqualTo(0));
-			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-6.2780));
-			Assert.That(line.VitallyImportant, Is.False);
-
-			Assert.That(doc.Lines[1].VitallyImportant, Is.True);
-		}
 	}
 }
