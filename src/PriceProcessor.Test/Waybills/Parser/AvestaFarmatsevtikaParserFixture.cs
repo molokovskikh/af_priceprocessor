@@ -91,18 +91,23 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[2].RegistryCost, Is.EqualTo(2));
 		}
 
-		[Test, Description("Тест для файла, в котором тип одной из колонок указан как NUMBER, но там встречаются строковые значения")]
-		public void Parse_unsafe_with_wrong_column_type()
+		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)
 		{
 			DocumentReceiveLog documentLog = null;
 			using (new SessionScope())
 			{
-				var supplier = Supplier.Find(6256u);
+				var supplier = Supplier.Find(supplierId);
 				documentLog = new DocumentReceiveLog { Supplier = supplier, };
 				documentLog.CreateAndFlush();
 			}
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\4006238_Авеста-Фармацевтика_106949_1_.dbf", documentLog) is Avesta_6256_SpecialParser);
+			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
+			return documentLog;
+		}
 
+		[Test, Description("Тест для файла, в котором тип одной из колонок указан как NUMBER, но там встречаются строковые значения")]
+		public void Parse_unsafe_with_wrong_column_type()
+		{
+			var documentLog = CreateDocumentLog(6256u, @"..\..\Data\Waybills\4006238_Авеста-Фармацевтика_106949_1_.dbf");
 			var doc = WaybillParser.Parse("4006238_Авеста-Фармацевтика_106949_1_.dbf", documentLog);
 
 			var providerDocId = Document.GenerateProviderDocumentId();
@@ -126,6 +131,40 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(9.3452));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Parse3()
+		{
+			DocumentReceiveLog documentLog = null;
+			var fileName = @"..\..\Data\Waybills\4049766_Авеста-Фармацевтика(118955).dbf";
+			using (new SessionScope())
+			{
+				var supplier = Supplier.Find(6256u);
+				documentLog = new DocumentReceiveLog { Supplier = supplier, };
+				documentLog.CreateAndFlush();
+			}
+			Assert.IsFalse(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
+
+			var doc = WaybillParser.Parse("4049766_Авеста-Фармацевтика(118955).dbf", documentLog);
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("118955"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("09.07.2010")));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("40764"));
+			Assert.That(line.Product, Is.EqualTo("АДЖИСЕПТ МЕНТОЛ+ЭВКАЛИПТ пастилки N24"));
+			Assert.That(line.Producer, Is.EqualTo("Agio Pharmaceuticals"));
+			Assert.That(line.Country, Is.EqualTo("Индия"));
+			Assert.That(line.Quantity, Is.EqualTo(5));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.Period, Is.EqualTo("31.12.2012"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС IN.ФМ08.Д95800"));
+			Assert.That(line.SupplierCost, Is.EqualTo(22.90));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(20.8200));
+			Assert.That(line.ProducerCost, Is.EqualTo(20.4200));
+			Assert.That(line.SerialNumber, Is.EqualTo("10/14/0004"));
+			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.VitallyImportant, Is.Null);
+			Assert.That(line.RegistryCost, Is.Null);
 		}
 	}
 }

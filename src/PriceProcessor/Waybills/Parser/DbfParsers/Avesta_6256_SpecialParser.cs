@@ -10,6 +10,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class Avesta_6256_SpecialParser : UnsafeBaseDbfParser
 	{
+		public static DataTable Load(string file)
+		{
+			try
+			{
+				return Dbf.Load(file);
+			}
+			catch (DbfException)
+			{
+				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
+			}
+		}
+
 		public static bool CheckFileFormat(DataTable table)
 		{
 			return (table.Columns.Contains("DATEB") || table.Columns.Contains("DETEB"))
