@@ -1,7 +1,6 @@
 using System;
-using Inforoom.Downloader.Documents;
+using Common.MySql;
 using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
@@ -9,47 +8,47 @@ using System.IO;
 using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
-using ExecuteTemplate;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using FileHelper=Inforoom.Common.FileHelper;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
 {
-    // ласс содержит название полей из таблицы Sources
-    public sealed class SourcesTableColumns
-    {
-        public static string colFirmCode = "FirmCode";
-        public static string colPriceCode = "PriceCode";
+	// ласс содержит название полей из таблицы Sources
+	public sealed class SourcesTableColumns
+	{
+		public static string colFirmCode = "FirmCode";
+		public static string colPriceCode = "PriceCode";
 		public static string colCostCode = "CostCode";
 		public static string colPriceItemId = "PriceItemId";
 		public static string colShortName = "ShortName";
-        public static string colPriceName = "PriceName";
-        public static string colRegionName = "RegionName";
+		public static string colPriceName = "PriceName";
+		public static string colRegionName = "RegionName";
 		public const string ParentSynonym = "ParentSynonym";
 		public static string colFileExtention = "FileExtention";
 
 		public static string colPriceDate = "PriceDate";
 
-        //public static string colLastDateTime = "LastDateTime";
-        //public static string colPriceDateTime = "PriceDateTime";
+		//public static string colLastDateTime = "LastDateTime";
+		//public static string colPriceDateTime = "PriceDateTime";
 
-        public static string colPricePath = "PricePath";
+		public static string colPricePath = "PricePath";
 
-        public static string colEMailTo = "EMailTo";
-        public static string colEMailFrom = "EMailFrom";
+		public static string colEMailTo = "EMailTo";
+		public static string colEMailFrom = "EMailFrom";
 
-        public static string colFTPDir = "FTPDir";
-        public static string colFTPLogin = "FTPLogin";
-        public static string colFTPPassword = "FTPPassword";
+		public static string colFTPDir = "FTPDir";
+		public static string colFTPLogin = "FTPLogin";
+		public static string colFTPPassword = "FTPPassword";
 		public static string colFTPPassiveMode = "FTPPassiveMode";
 
-        public static string colHTTPLogin = "HTTPLogin";
-        public static string colHTTPPassword = "HTTPPassword";
+		public static string colHTTPLogin = "HTTPLogin";
+		public static string colHTTPPassword = "HTTPPassword";
 
-        public static string colPriceMask = "PriceMask";
-        public static string colExtrMask = "ExtrMask";
-    }
+		public static string colPriceMask = "PriceMask";
+		public static string colExtrMask = "ExtrMask";
+	}
 
 	// ласс дл€ хранени€ последней ошибки по каждому прайс-листу
 	//ѕозвол€ет не логировать ошибки по два раза
@@ -68,54 +67,45 @@ namespace Inforoom.Downloader
 
 	public abstract class BaseSourceHandler : AbstractHandler
 	{
-		//—оединение дл€ работы
-		protected MySqlConnection _workConnection;
-        protected MySqlDataAdapter daFillSources;
+		/// <summary>
+		/// “аблица с источниками
+		/// </summary>
+		protected DataTable dtSources = new DataTable();
 
-        /// <summary>
-        /// “аблица с источниками
-        /// </summary>
-        protected DataTable dtSources = new DataTable();
-
-        /// <summary>
-        /// “ип источника, за который отвечает данный обработчик
-        /// </summary>
-        protected string sourceType;
-
-        /// <summary>
-        ///  од текущего обрабатываемого прайса
-        /// </summary>
-        protected ulong CurrPriceCode;
+		/// <summary>
+		///  од текущего обрабатываемого прайса
+		/// </summary>
+		protected ulong CurrPriceCode;
 		protected ulong? CurrCostCode;
 		protected ulong CurrPriceItemId;
 		protected ulong? CurrParentSynonym;
-        /// <summary>
-        /// текуща€ обрабатываема строка в таблице
-        /// </summary>
-        protected DataRow drCurrent;
-        /// <summary>
-        /// текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
-        /// </summary>
-        protected string CurrFileName;
-        /// <summary>
-        /// временна€ директори€ дл€ скачивани€ файлов (+ TempPath + 'Down' + SourceType)
-        /// </summary>
-        protected string DownHandlerPath;
+		/// <summary>
+		/// текуща€ обрабатываема строка в таблице
+		/// </summary>
+		protected DataRow drCurrent;
+		/// <summary>
+		/// текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
+		/// </summary>
+		protected string CurrFileName;
+		/// <summary>
+		/// временна€ директори€ дл€ скачивани€ файлов (+ TempPath + 'Down' + SourceType)
+		/// </summary>
+		protected string DownHandlerPath;
 		/// <summary>
 		/// директори€ дл€ сохранени€ файлов дл€ истории 
 		/// </summary>
 		protected string DownHistoryPath;
 		/// <summary>
-        /// текуща€ дата файла
-        /// </summary>
-        protected DateTime CurrPriceDate;
+		/// текуща€ дата файла
+		/// </summary>
+		protected DateTime CurrPriceDate;
 
-        protected static string ExtrDirSuffix = "Extr";
+		protected static string ExtrDirSuffix = "Extr";
 		protected ILog _log;
 
-        public BaseSourceHandler()
-        {
-            SleepTime = Settings.Default.HandlerRequestInterval;
+		public BaseSourceHandler()
+		{
+			SleepTime = Settings.Default.HandlerRequestInterval;
 			_log = LogManager.GetLogger(GetType());
 		}
 
@@ -123,10 +113,9 @@ namespace Inforoom.Downloader
 		public override void StartWork()
 		{
 			CreateDirectoryPath();
-            CreateWorkConnection();
 
-            base.StartWork();
-        }
+			base.StartWork();
+		}
 
 		public override void StopWork()
 		{
@@ -134,23 +123,14 @@ namespace Inforoom.Downloader
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("–абоча€ нитка не остановилась за {0} миллисекунд.", maxJoinTime);
-            if (_workConnection.State == ConnectionState.Open)
-                try { _workConnection.Close(); }
-                catch { }
-        }
+		}
 
-        //“ипа источника
-        protected string SourceType
-        { 
-            get
-            {
-                return sourceType;
-            }
-        }
+		//“ипа источника
+		protected string SourceType { get; set;  }
 
-        protected virtual string GetSQLSources()
-        {
-            return String.Format(@"
+		protected virtual string GetSQLSources()
+		{
+			return String.Format(@"
 SELECT
   pi.Id as PriceItemId,
   cd.FirmCode,
@@ -182,7 +162,7 @@ FROM
   farm.FormRules           AS fr,
   farm.pricefmts           AS pf
 WHERE
-    sourcetypes.Type = '{0}'
+	sourcetypes.Type = '{0}'
 and st.SourceTypeId = sourcetypes.Id
 and (length(st.PriceMask) > 0)
 and pi.SourceId = st.ID
@@ -195,12 +175,12 @@ and fr.Id = pi.FormRuleId
 and pf.Id = fr.PriceFormatId
 and cd.FirmStatus   = 1
 and pd.AgencyEnabled= 1", 
-                SourceType);
-        }
+				SourceType);
+		}
 
 		protected void CreateDirectoryPath()
 		{
-			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + sourceType;
+			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + SourceType;
 			if (!Directory.Exists(DownHandlerPath))
 				Directory.CreateDirectory(DownHandlerPath);
 			DownHandlerPath += Path.DirectorySeparatorChar;
@@ -210,54 +190,19 @@ and pd.AgencyEnabled= 1",
 				Directory.CreateDirectory(DownHistoryPath);
 		}
 
-        protected void CreateWorkConnection()
-        {
-            _workConnection = new MySqlConnection(Literals.ConnectionString());
-            try
-            {
-                _workConnection.Open();
-                daFillSources = new MySqlDataAdapter(GetSQLSources(), _workConnection);
-            }
-            catch (Exception ex)
-            {
-				_logger.Error("ќшибка на CreateWorkConnection", ex);
-            }
-        }
-
-        protected void FillSourcesTable()
-        {
-        	try
-			{
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(
-					new ExecuteArgs(), GetSourcesTable, null, 
-					_workConnection, true, false, delegate { Ping(); });
-
-				if (_log.IsDebugEnabled)
-					_log.DebugFormat("ƒл€ обработчика {0} {1}", sourceType, dtSources != null ? "загружено источников " + dtSources.Rows.Count : "источники не загружены");
-			}
-			catch
-			{
-				// ≈сли здесь возникает ошибка, то мы пытаемс€ открыть соединение и 
-				// снова запрашивает таблицу с источниками
-				if (_workConnection.State != ConnectionState.Closed)
-					try { _workConnection.Close(); } catch { }
-				_workConnection.Open();
-				dtSources = MethodTemplate.ExecuteMethod<ExecuteArgs, DataTable>(
-					new ExecuteArgs(), GetSourcesTable, null,
-					_workConnection, true, false, delegate { Ping(); });
-			}
-		}
-
-		protected virtual DataTable GetSourcesTable(ExecuteArgs e)
+		protected void FillSourcesTable()
 		{
-			dtSources.Clear();
-			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
-			daFillSources.Fill(dtSources);
-			return dtSources;
+			using(var connection = new MySqlConnection(Literals.ConnectionString()))
+			{
+				dtSources.Clear();
+				connection.Open();
+				var adapter = new MySqlDataAdapter(GetSQLSources(), connection);
+				adapter.Fill(dtSources);
+			}
 		}
 
-        protected static void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
-        {
+		protected static void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
+		{
 			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
 				Settings.Default.SMTPErrorList,
@@ -269,15 +214,15 @@ and pd.AgencyEnabled= 1",
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
-        }
+		}
 
 		protected virtual string GetFailMail()
 		{
 			return Settings.Default.SMTPUserFail;
 		}
 
-        protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
-        {
+		protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
+		{
 			ms.Position = 0;
 			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
@@ -295,7 +240,7 @@ and pd.AgencyEnabled= 1",
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
-        }
+		}
 
 		protected void SetCurrentPriceCode(DataRow dr)
 		{
@@ -364,39 +309,46 @@ and pd.AgencyEnabled= 1",
 		/// <param name="addressId">Id или LegacyId в таблице Addresses
 		/// ≈сли будет передан LegacyId, то в эту переменную запишетс€ Addresses.Id</param>
 		/// <returns></returns>
-		protected int? GetClientIdByAddress(ref int? addressId)
+		protected uint? GetClientIdByAddress(ref uint? addressId)
 		{
 			if (addressId == null)
 				return null;
-			var queryGetClientCodeByLegacyId = String.Format(@"
+
+			var address = addressId;
+
+			var clientId = With.Connection<uint?>(c => {
+				var queryGetClientCodeByLegacyId = String.Format(@"
 SELECT Addr.ClientId
 FROM future.Addresses Addr
-WHERE Addr.LegacyId = {0}", addressId);
+WHERE Addr.LegacyId = {0}", address);
 
 			var queryGetClientCodeByAddressId = String.Format(@"
 SELECT Addr.ClientId
 FROM future.Addresses Addr
-WHERE Addr.Id = {0}", addressId);
+WHERE Addr.Id = {0}", address);
 
 			var queryGetAddressIdByLegacyId = String.Format(@"
 SELECT Addr.Id
 FROM future.Addresses Addr
-WHERE Addr.LegacyId = {0}", addressId);
+WHERE Addr.LegacyId = {0}", address);
 
-			// ѕытаемс€ выбрать код клиента по Addresses.LegacyId
-			var clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCodeByLegacyId);
-			if ((clientCode == null) || (clientCode is DBNull))
-			{
-				// ≈сли не выбрали по LegacyId, пытаемс€ выбрать по Addresses.Id
-				clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCodeByAddressId);
-				// ≈сли ничего не выбрали, возвращаем null
+				// ѕытаемс€ выбрать код клиента по Addresses.LegacyId
+				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByLegacyId);
 				if ((clientCode == null) || (clientCode is DBNull))
-					return null;
-			}
-			else
-				// ≈сли выбрали код клиента по LegacyID, выбираем код адреса по LegacyId
-				addressId = Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, queryGetAddressIdByLegacyId));
-			return Convert.ToInt32(clientCode);
+				{
+					// ≈сли не выбрали по LegacyId, пытаемс€ выбрать по Addresses.Id
+					clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
+					// ≈сли ничего не выбрали, возвращаем null
+					if ((clientCode == null) || (clientCode is DBNull))
+						return null;
+				}
+				else
+					// ≈сли выбрали код клиента по LegacyID, выбираем код адреса по LegacyId
+					address = Convert.ToUInt32(MySqlHelper.ExecuteScalar(c, queryGetAddressIdByLegacyId));
+				return Convert.ToUInt32(clientCode);
+			});
+			addressId = address;
+			return clientId;
 		}
 	}
 }

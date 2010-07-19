@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 using MySql.Data.MySqlClient;
 using System.Data;
 
@@ -100,9 +101,7 @@ WHERE
 			return InputFile;
 		}
 
-		public virtual void ImportDocument(MySqlConnection Connection, ulong FirmCode, ulong ClientCode, int DocumentType, string CurrentFileName)
-		{ 
-		}
-	
+		public virtual void ImportDocument(DocumentReceiveLog log)
+		{}
 	}
 }

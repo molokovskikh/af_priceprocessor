@@ -12,7 +12,7 @@ namespace Inforoom.Downloader
     {
         public HTTPSourceHandler()
         {
-			sourceType = "HTTP";
+			SourceType = "HTTP";
 		}
 
         protected static DateTime GetFileDateTime(string httpFile, string httpUser, string httpPassword)

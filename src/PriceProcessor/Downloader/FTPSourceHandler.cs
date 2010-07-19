@@ -328,7 +328,7 @@ namespace Inforoom.Downloader.Ftp
 	{
 		public FTPSourceHandler()
 		{
-			sourceType = "FTP";
+			SourceType = "FTP";
 		}
 
 		protected override void GetFileFromSource(PriceSource source)

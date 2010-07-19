@@ -2,11 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using Common.MySql;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills;
-using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
-using ExecuteTemplate;
 using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
 using System.Net.Mail;
@@ -29,7 +28,7 @@ namespace Inforoom.Downloader
 
 		public WaybillLANSourceHandler()
 		{
-			sourceType = "WAYBILLLAN";
+			SourceType = "WAYBILLLAN";
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
 		}
 
@@ -127,8 +126,8 @@ and st.SourceID = 4";
 									}
 									else
 									{
-										var supplierId = Convert.ToInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
-										WriteLog(documentType.TypeID, supplierId, null, Path.GetFileName(CurrFileName), 
+										var supplierId = Convert.ToUInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
+										WriteLog(documentType.DocType, supplierId, null, Path.GetFileName(CurrFileName), 
 											String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
 										//Распаковать файл не удалось, поэтому удаляем его из папки
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
@@ -245,9 +244,9 @@ and st.SourceID = 4";
 			}
 			catch (Exception exDivide)
 			{
-				var supplierId = Convert.ToInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				WriteLog(_currentDocumentType.TypeID, supplierId, null, Path.GetFileName(CurrFileName), 
-					String.Format("Не удалось разделить файлы: {0}", exDivide.ToString()));
+				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
+				WriteLog(_currentDocumentType.DocType, supplierId, null, Path.GetFileName(CurrFileName), 
+					String.Format("Не удалось разделить файлы: {0}", exDivide));
 				return false;
 			}
 
@@ -261,115 +260,61 @@ and st.SourceID = 4";
 			return processed;
 		}
 
-		protected bool MoveWaybill(string ArchFileName, string FileName, DataRow drCurrent, BaseDocumentReader documentReader)
+		protected bool MoveWaybill(string archFileName, string fileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
 			using (var cleaner = new FileCleaner())
 			{
-				cleaner.Watch(FileName);
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				List<ulong> addresses;
 				try
 				{
-					addresses = documentReader.GetClientCodes(_workConnection, supplierId, ArchFileName, FileName);
+					cleaner.Watch(fileName);
+
+					var addresses = With.Connection(c => documentReader.GetClientCodes(c, supplierId, archFileName, fileName));
+					var formatFile = documentReader.FormatOutputFile(fileName, drCurrent);
+					cleaner.Watch(formatFile);
+
+					foreach (var addressId in addresses)
+					{
+						var clientAddressId = (uint?) addressId;
+						var clientId = GetClientIdByAddress(ref clientAddressId);
+						if (clientId == null)
+						{
+							clientId = clientAddressId;
+							clientAddressId = null;
+						}
+
+						var log = DocumentReceiveLog.Log(supplierId,
+							clientId,
+							clientAddressId,
+							formatFile,
+							_currentDocumentType.DocType);
+
+						documentReader.ImportDocument(log);
+						log.CopyDocumentToClientDirectory();
+						WaybillService.ParserDocument(log);
+					}
 				}
 				catch(Exception e)
 				{
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.Type, FileName, message);
+					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
 					return false;
-				}
-
-				if (addresses == null)
-					return false;
-
-				string formatFile = null;
-				foreach (var addressId in addresses)
-				{
-					var clientAddressId = (int?) addressId;
-					var clientId = (uint?)GetClientIdByAddress(ref clientAddressId);
-					if (clientId == null)
-					{
-						clientId = (uint?) clientAddressId;
-						clientAddressId = null;
-					}
-
-					if (formatFile == null)
-					{
-						try
-						{
-							formatFile = documentReader.FormatOutputFile(FileName, drCurrent);
-							cleaner.Watch(formatFile);
-						}
-						catch(Exception e)
-						{
-							var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-							DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.Type, FileName, message);
-							return false;
-						}
-					}
-
-					try
-					{
-						documentReader.ImportDocument(
-							_workConnection,
-							supplierId,
-							(ulong) clientId,
-							1,
-							FileName);
-					}
-					catch(Exception e)
-					{
-						var message = "Не удалось импортировать документ в базу.\nОшибка: " + e;
-						DocumentReceiveLog.LogFail(supplierId, clientId, (uint?) clientAddressId, _currentDocumentType.Type, FileName, message);
-						return false;
-					}
-
-					var log = DocumentReceiveLog.Log(supplierId,
-						clientId,
-						(uint?) clientAddressId,
-						formatFile,
-						_currentDocumentType.Type);
-					log.CopyDocumentToClientDirectory();
-					WaybillService.ParserDocument(log);
 				}
 			}
 
 			return true;
 		}
 
-		private void WriteLog(int? documentType, int? logSupplierId, int? logAddressId, string logFileName, string logAddition)
+		private void WriteLog(DocType documentType, uint supplierId, uint? addressId, string logFileName, string comment)
 		{
-			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), delegate(ExecuteArgs args)
+			var clientId = GetClientIdByAddress(ref addressId);
+			if (clientId == null)
 			{
-				var cmdInsert = new MySqlCommand(@"
-INSERT INTO logs.document_logs (FirmCode, ClientCode, AddressId, FileName, Addition, DocumentType) 
-VALUES (?SupplierId, ?ClientId, ?AddressId, ?FileName, ?Addition, ?DocumentType)", args.DataAdapter.SelectCommand.Connection);
-				// Получаем идентификатор клиента по идентификатору адреса
-				var logClientId = GetClientIdByAddress(ref logAddressId);
-				if (logClientId == null)
-				{
-					logClientId = logAddressId;
-					logAddressId = null;
-				}
+				clientId = addressId;
+				addressId = null;
+			}
 
-				cmdInsert.Parameters.AddWithValue("?SupplierId", logSupplierId);
-				cmdInsert.Parameters.AddWithValue("?ClientId", logClientId);
-				cmdInsert.Parameters.AddWithValue("?FileName", logFileName);
-				cmdInsert.Parameters.AddWithValue("?Addition", logAddition);
-				cmdInsert.Parameters.AddWithValue("?DocumentType", documentType);
-				cmdInsert.Parameters.AddWithValue("?AddressId", logAddressId);
-				cmdInsert.ExecuteNonQuery();
-
-				return null;
-			}, 
-				null,
-				_workConnection,
-				true,
-				false,
-				delegate {
-					Ping();
-				});
-
+			DocumentReceiveLog.Log(supplierId, clientId, addressId, logFileName, documentType, comment);
 		}
 
 		private static BaseDocumentReader GetDocumentReader(string readerClassName)

@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
+using Common.MySql;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;
@@ -10,6 +14,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 
 namespace Inforoom.Downloader.DocumentReaders
@@ -345,45 +350,30 @@ namespace Inforoom.Downloader.DocumentReaders
 			return dtResult;
 		}
 
-		public override void ImportDocument(MySqlConnection Connection, ulong FirmCode, ulong ClientCode, int DocumentType, string CurrentFileName)
+		public override void ImportDocument(DocumentReceiveLog log)
 		{
 			var dsDocument = new DataSet();
-			dsDocument.ReadXml(CurrentFileName);
-			var ProviderDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
-			var DocumentHeaderId = MySqlHelper.ExecuteScalar(
-				Connection, @"
-SELECT 
-	id 
-FROM 
-	documents.documentheaders 
-WHERE 
-	FirmCode = ?FirmCode 
-	AND ClientCode = ?ClientCode 
-	AND DocumentType = ?DocumentType 
-	AND ProviderDocumentId = ?ProviderDocumentId",
-				new MySqlParameter("?FirmCode", FirmCode),
-				new MySqlParameter("?ClientCode", ClientCode),
-				new MySqlParameter("?DocumentType", DocumentType),
-				new MySqlParameter("?ProviderDocumentId", ProviderDocumentId));
-			if (DocumentHeaderId == null)
-			{
-				MySqlHelper.ExecuteNonQuery(
-					Connection, @"
-INSERT INTO documents.documentheaders (FirmCode, ClientCode, DocumentType, ProviderDocumentId) 
-VALUES (?FirmCode, ?ClientCode, ?DocumentType, ?ProviderDocumentId)",
-					new MySqlParameter("?FirmCode", FirmCode),
-					new MySqlParameter("?ClientCode", ClientCode),
-					new MySqlParameter("?DocumentType", DocumentType),
-					new MySqlParameter("?ProviderDocumentId", ProviderDocumentId));
-			}
-			else
+			dsDocument.ReadXml(log.GetFileName());
+			var providerDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
+			var doc = Document.Queryable.FirstOrDefault(d => d.FirmCode == log.Supplier.Id
+				&& d.ClientCode == log.ClientCode
+				&& d.ProviderDocumentId == providerDocumentId
+				&& d.DocumentType == log.DocumentType);
+			if (doc != null)
 				throw new Exception(String.Format(
-					"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
-					FirmCode,
-					ClientCode,
-					DocumentType,
-					ProviderDocumentId));
+						"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
+						log.Supplier.Id,
+						log.ClientCode,
+						log.DocumentType,
+						providerDocumentId));
+			doc = new Document(log) {
+				ProviderDocumentId = providerDocumentId
+			};
+			using(var transaction = new TransactionScope(OnDispose.Commit))
+			{
+				doc.Save();
+				transaction.VoteCommit();
+			}
 		}
-
 	}
 }

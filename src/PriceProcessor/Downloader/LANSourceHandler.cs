@@ -15,7 +15,7 @@ namespace Inforoom.Downloader
 
 		public LANSourceHandler()
 		{
-			sourceType = "LAN";
+			SourceType = "LAN";
 		}
 
 		protected override void GetFileFromSource(PriceSource source)

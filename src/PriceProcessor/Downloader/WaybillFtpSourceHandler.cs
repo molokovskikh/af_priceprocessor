@@ -97,7 +97,7 @@ GROUP BY SupplierId
 						CurrFileName = downloadedWaybill.FileName;
 
 						// Обработка накладной(или отказа), помещение ее в папку клиенту
-						var logs = ProcessWaybill(documentType.Type, waybillSource, downloadedWaybill);
+						var logs = ProcessWaybill(documentType.DocType, waybillSource, downloadedWaybill);
 
 						foreach (var log in logs)
 							WaybillService.ParserDocument(log);
@@ -120,12 +120,12 @@ GROUP BY SupplierId
 			var downloader = new FtpDownloader();
 			try
 			{
-				if (documentsType.Type == DocType.Waybill)
+				if (documentsType.DocType == DocType.Waybill)
 					url = waybillSource.WaybillUrl;
-				else if (documentsType.Type == DocType.Reject)
+				else if (documentsType.DocType == DocType.Reject)
 					url = waybillSource.RejectUrl;
 				_log.InfoFormat("Попытка получения документов с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
-					waybillSource.SupplierId, documentsType.Type.GetDescription(), url);
+					waybillSource.SupplierId, documentsType.DocType.GetDescription(), url);
 				if (String.IsNullOrEmpty(url))
 					return downloadedWaybills;
 
@@ -184,11 +184,11 @@ GROUP BY SupplierId
 
 			try
 			{
-				var addressIds = reader.GetClientCodes(_workConnection, waybillSource.SupplierId, waybill.FileName, waybill.FileName);
+				var addressIds = With.Connection(c => reader.GetClientCodes(c, waybillSource.SupplierId, waybill.FileName, waybill.FileName));
 
 				foreach (var addressId in addressIds)
 				{
-					var addrId = (int?) addressId;
+					var addrId = (uint?) addressId;
 					var clientId = GetClientIdByAddress(ref addrId);
 					if (clientId == null)
 					{
@@ -233,8 +233,8 @@ GROUP BY SupplierId
 							continue;
 						}
 						var log = DocumentReceiveLog.Log(waybillSource.SupplierId, 
-							(uint?) clientId,
-							(uint?) addrId,
+							clientId,
+							addrId,
 							file,
 							documentType);
 						log.CopyDocumentToClientDirectory();
@@ -249,22 +249,17 @@ GROUP BY SupplierId
 			return documentLogs;
 		}
 
-		private bool IsNewWaybill(string waybillFileName, DateTime waybillDate, uint supplierId, int? clientId, int? addressId)
+		private bool IsNewWaybill(string waybillFileName, DateTime waybillDate, uint supplierId, uint? clientId, uint? addressId)
 		{
-			var count = 0;
-			var filterByAddress = addressId.HasValue ? " and AddressId = ?AddressId" : String.Empty;
+			var docs = DocumentReceiveLog.Queryable
+				.Where(d => d.Supplier.Id == supplierId
+					&& d.FileName == waybillFileName
+					&& d.LogTime > waybillDate
+					&& d.ClientCode == clientId);
+			if (addressId.HasValue)
+				docs = docs.Where(d => d.AddressId == addressId);
 
-			var command = new MySqlCommand(String.Format(@"
-SELECT count(*)
-FROM logs.document_logs dl
-WHERE dl.FirmCode = ?SupplierId and dl.FileName like ?FileName and dl.LogTime > ?WaybillDate and dl.ClientCode = ?ClientCode {0}
-", filterByAddress), _workConnection);
-			command.Parameters.AddWithValue("?FileName", waybillFileName);
-			command.Parameters.AddWithValue("?WaybillDate", waybillDate);
-			command.Parameters.AddWithValue("?ClientCode", clientId);
-			command.Parameters.AddWithValue("?AddressId", addressId);
-			command.Parameters.AddWithValue("?SupplierId", supplierId);
-			count = Convert.ToInt32(command.ExecuteScalar());
+			var count = docs.Count();
 			return count == 0;
 		}
 

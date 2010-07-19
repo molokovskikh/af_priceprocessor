@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Castle.ActiveRecord;
+using Common.MySql;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP.Client;
@@ -10,11 +10,9 @@ using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using System.IO;
-using ExecuteTemplate;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
-using Common.Tools;
-
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
 {
@@ -38,14 +36,14 @@ namespace Inforoom.Downloader
 			FileName = fileName;
 		}
 
-		public string FileName { get; set; }		
+		public string FileName { get; set; }
 		public DocumentReceiveLog DocumentLog { get; set;}
 	}
 
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
 		// Код клиента (аптеки)
-		private int? _aptekaClientCode;
+		private uint? _clientId;
 
 		// Типы документов (накладные, отказы)
 		private readonly List<InboundDocumentType> _documentTypes;
@@ -61,7 +59,7 @@ namespace Inforoom.Downloader
 
 		public WaybillSourceHandler()
 		{
-			sourceType = "WAYBILL";
+			SourceType = "WAYBILL";
 			_documentTypes = new List<InboundDocumentType> { 
 				new WaybillType(), new RejectType() 
 			};
@@ -85,7 +83,7 @@ namespace Inforoom.Downloader
 		protected override void CheckMime(Mime m)
 		{
 			var emailList = String.Empty;
-			_aptekaClientCode = null;
+			_clientId = null;
 			_currentDocumentType = null;
 
 			// Получаем кол-во корректных адресов, т.е. отправленных 
@@ -136,7 +134,7 @@ namespace Inforoom.Downloader
 		/// Также ищет указанный код среди адресов в таблице future.Addresses,
 		/// поэтому можно сказать, что также проверяет адрес клиента на существование
 		/// </summary>
-		private bool ClientExists(int checkClientCode)
+		private bool ClientExists(uint checkClientCode)
 		{
 			var queryGetClientCode = String.Format(@"
 SELECT cd.FirmCode 
@@ -145,20 +143,11 @@ WHERE cd.FirmType = 1 AND FirmCode = {0}
 UNION
 SELECT Addr.Id
 FROM Future.Addresses Addr
-WHERE Addr.Id = {0} OR Addr.LegacyId = {0}
-", checkClientCode);
-
-			return MethodTemplate.ExecuteMethod(
-				new ExecuteArgs(), 
-				delegate {
-					var clientCode = MySqlHelper.ExecuteScalar(_workConnection, queryGetClientCode);
-					return (clientCode != null);
-				},
-				false,
-				_workConnection,
-				true,
-				false,
-				delegate { Ping(); });
+WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
+			return With.Connection(c => {
+				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCode);
+				return (clientCode != null);
+			});
 		}
 
 		/// <summary>
@@ -169,15 +158,15 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}
 		/// (или коду адреса), будет возвращен этот код. 
 		/// Если код не удалось извлечь или он не найден ни среди кодов клиентов,
 		/// ни среди кодов адресов, будет возвращен null</returns>
-		private int? GetClientCode(string emailAddress)
+		private uint? GetClientCode(string emailAddress)
 		{ 
 			emailAddress = emailAddress.ToLower();
 			InboundDocumentType testType = null;
-			int? testClientCode = null;
+			uint? testClientCode = null;
 
 			foreach (var documentType in _documentTypes)
 			{
-				int clientCode;
+				uint clientCode;
 
 				// Пытаемся извлечь код клиента из email адреса
 				if (documentType.ParseEmail(emailAddress, out clientCode))
@@ -195,7 +184,7 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}
 					if (_currentDocumentType == null)
 					{
 						_currentDocumentType = testType;
-						_aptekaClientCode = testClientCode;
+						_clientId = testClientCode;
 					}
 				}
 				else
@@ -207,8 +196,8 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}
 
 		private int CorrectClientAddress(AddressList addressList, ref string emailList)
 		{
-			int? currentClientCode;
-			int clientCodeCount = 0;
+			uint? currentClientCode;
+			var clientCodeCount = 0;
 
 			// Пробегаемся по всем адресам TO и ищем адрес вида 
 			// <\d+@waybills.analit.net> или <\d+@refused.analit.net>
@@ -247,81 +236,41 @@ WHERE
 cd.FirmStatus = 1
 AND st.SourceID = 1
 ";
-/*			return @"
-SELECT
-  cd.FirmCode,
-  cd.ShortName,
-  r.Region as RegionName,
-  st.EMailFrom
-FROM
-	usersettings.ClientsData AS Apteka,
-	Documents.Waybill_Sources AS st
-	INNER JOIN usersettings.ClientsData AS cd ON CD.FirmCode = st.FirmCode
-	INNER JOIN farm.regions AS r ON r.RegionCode = cd.RegionCode
-WHERE
-	cd.FirmStatus = 1
-	AND (Apteka.FirmCode = ?AptekaClientCode)
-	AND st.SourceID = 1";*/
 		}
 
-		protected override DataTable GetSourcesTable(ExecuteArgs e)
-		{
-			dtSources.Clear();
-			daFillSources.SelectCommand.Transaction = e.DataAdapter.SelectCommand.Transaction;
-			daFillSources.SelectCommand.Parameters.Clear();
-			//daFillSources.SelectCommand.Parameters.AddWithValue("?AptekaClientCode", _aptekaClientCode);
-			daFillSources.Fill(dtSources);
-			return dtSources;
-		}
-
-		protected override void ErrorOnCheckMime(Mime m, AddressList from, EMailSourceHandlerException e)
-		{
-			if (!String.IsNullOrEmpty(e.Body))
-			{
-				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
-				SendErrorLetterToProvider(from, e.Subject, e.Body, m);
-				WriteLog(
-					(_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
-					GetFirmCodeByFromList(from), 
-					_aptekaClientCode, 
-					null, 
-					String.Format(@"{0}
-Отправители            : {1}
-Получатели             : {2}
-Список вложений        : 
-{3}
-Тема письма поставщику : {4}
-Тело письма поставщику : 
-{5}", 
-							 e.Message, 
-							 from.ToAddressListString(), 
-							 m.MainEntity.To.ToAddressListString(), 
-							 attachments, 
-							 e.Subject, 
-							 e.Body), 
-					currentUID);
-			}
-			else
-				SendUnrecLetter(m, from, e);
-		}
-
-		protected override void ErrorOnProcessAttachs(Mime m, AddressList from, EMailSourceHandlerException e)
+		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
 			try
 			{
+				if (!String.IsNullOrEmpty(e.Body))
+				{
+					SendUnrecLetter(m, from, e);
+					return;
+				}
+
+				var subject = e.Subject;
+				var body = e.Body;
+				var message = e.Message;
+				if (e is EmailFromUnregistredMail)
+				{
+					subject = Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider;
+					body = Settings.Default.ResponseDocBodyTemplateOnUnknownProvider;
+					message = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
+				}
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
-				const string cause = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
-				var ms = new MemoryStream(m.ToByteData());
 				SendErrorLetterToProvider(
 					from, 
-					Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
-					Settings.Default.ResponseDocBodyTemplateOnUnknownProvider, m);
-				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
-					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, cause);
+					subject, 
+					body, m);
 
-				WriteLog((_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
-					GetFirmCodeByFromList(from), _aptekaClientCode, null,
-					String.Format(@"{0} 
+				if (e is EmailFromUnregistredMail)
+				{
+					var ms = new MemoryStream(m.ToByteData());
+					FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
+						m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, e.Body);
+				}
+
+				var comment = String.Format(@"{0} 
 Отправители     : {1}
 Получатели      : {2}
 Список вложений : 
@@ -329,13 +278,19 @@ WHERE
 Тема письма поставщику : {4}
 Тело письма поставщику : 
 {5}",
-						cause,
-						from.ToAddressListString(),
-						m.MainEntity.To.ToAddressListString(),
-						attachments,
-						Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider, 
-						Settings.Default.ResponseDocBodyTemplateOnUnknownProvider),
-						currentUID);
+					message,
+					from.ToAddressListString(),
+					m.MainEntity.To.ToAddressListString(),
+					attachments,
+					subject, 
+					body);
+
+				WriteLog(_currentDocumentType.DocType,
+					GetFirmCodeByFromList(from),
+					_clientId,
+					null,
+					comment,
+					currentUID);
 			}
 			catch (Exception exMatch)
 			{
@@ -381,55 +336,24 @@ WHERE
 			{ }
 		}
 
-		private int? GetFirmCodeByFromList(AddressList FromList)
-		{
-			try
-			{
-				foreach (MailboxAddress address in FromList)
-				{
-					var FirmCode = MethodTemplate.ExecuteMethod(
-						new ExecuteArgs(),
-						delegate {
-							return MySqlHelper.ExecuteScalar(
-								_workConnection,
-								String.Format(@"
-SELECT w.FirmCode 
-FROM documents.waybill_sources w 
-WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
-						},
-						null,
-						_workConnection,
-						true,
-						false,
-						(e, ex) => Ping());
-						
-					if (FirmCode != null)
-						return Convert.ToInt32(FirmCode);
-				}
-				return null;
-			}
-			catch
-			{
-				return null;
-			}
-		}
-
 		protected override string GetFailMail()
 		{
 			return Settings.Default.DocumentFailMail;
 		}
 
-		protected override void SendUnrecLetter(Mime m, AddressList FromList, EMailSourceHandlerException e)
+		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
 		{
 			try
 			{
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
-				FailMailSend(m.MainEntity.Subject, FromList.ToAddressListString(), 
+				FailMailSend(m.MainEntity.Subject, fromList.ToAddressListString(), 
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, e.Message);
 
-				WriteLog((_currentDocumentType != null) ? (int?)_currentDocumentType.TypeID : null,
-					GetFirmCodeByFromList(FromList), _aptekaClientCode, null,
+				WriteLog(_currentDocumentType.DocType,
+					GetFirmCodeByFromList(fromList),
+					_clientId,
+					null,
 					String.Format(@"{0} 
 Тема            : {1} 
 Отправители     : {2}
@@ -439,7 +363,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 ", 
 						e.Message, 
 						m.MainEntity.Subject, 
-						FromList.ToAddressListString(), 
+						fromList.ToAddressListString(), 
 						m.MainEntity.To.ToAddressListString(), 
 						attachments),
 						currentUID);
@@ -460,7 +384,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)); ;
 			var client = new MySqlParameter("?ClientId", MySqlDbType.Int32);
 			client.Value = clientId;
 
-			return Convert.ToInt32(MySqlHelper.ExecuteScalar(_workConnection, @"
+			return With.Connection(c => Convert.ToInt32(MySqlHelper.ExecuteScalar(c,@"
 SELECT
 	count(*)
 FROM
@@ -487,10 +411,10 @@ FROM
 			AND i.AgencyEnabled = 1
 			AND i.AvailableForClient = 1
 	WHERE clients.Id = ?ClientId
-) as Temp", supplier, client)) > 0;
+) as Temp", supplier, client)) > 0);
 		}
 
-		private DataRow SelectWaybillSourceForClient(DataRow[] sources, int? deliveryId)
+		private DataRow SelectWaybillSourceForClient(DataRow[] sources, uint? deliveryId)
 		{
 			var addressId = deliveryId;
 			var clientId = GetClientIdByAddress(ref addressId) ?? deliveryId;
@@ -529,11 +453,11 @@ FROM
 				// если получилось больше, то ищем поставщика, который доступен клиенту,
 				// если таких нет или несколько, то это ошибка
 
-				DataRow source = null;
+				DataRow source;
 
 				if (sources.Length > 1)
 				{
-					source = SelectWaybillSourceForClient(sources, _aptekaClientCode);
+					source = SelectWaybillSourceForClient(sources, _clientId);
 					if (source == null)
 						throw new Exception(String.Format(
 							"На адрес \"{0}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", mbFrom.EmailAddress));
@@ -555,9 +479,9 @@ FROM
 						matched = true;
 						if (!correctArchive)
 						{
-							WriteLog(_currentDocumentType.TypeID,
-								Convert.ToInt32(source[WaybillSourcesTable.colFirmCode]),
-								_aptekaClientCode, Path.GetFileName(CurrFileName),
+							WriteLog(_currentDocumentType.DocType,
+								Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
+								_clientId, Path.GetFileName(CurrFileName),
 								"Не удалось распаковать файл", currentUID);
 							Cleanup();
 							continue;
@@ -584,7 +508,23 @@ FROM
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
 			if (!matched)
-				throw new EMailSourceHandlerException("Не найден источник.");
+				throw new EmailFromUnregistredMail("Не найден источник.");
+		}
+
+		private uint? GetFirmCodeByFromList(AddressList FromList)
+		{
+			foreach (MailboxAddress address in FromList)
+			{
+				var firmCode = With.Connection(c => MySqlHelper.ExecuteScalar(
+					c,
+					String.Format(@"
+SELECT w.FirmCode 
+FROM documents.waybill_sources w 
+WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
+				if (firmCode != null)
+					return Convert.ToUInt32(firmCode);
+			}
+			return null;
 		}
 
 		protected List<DocumentReceiveLog> ProcessWaybillFile(IList<string> files, DataRow drCurrent)
@@ -603,55 +543,32 @@ FROM
 
 		protected DocumentReceiveLog MoveWaybill(string file, DataRow source)
 		{
-			var addressId = _aptekaClientCode;
+			var addressId = _clientId;
 			var clientId = GetClientIdByAddress(ref addressId);
 			if (clientId == null)
 			{
-				clientId = _aptekaClientCode;
+				clientId = _clientId;
 				addressId = null;
 			}
 
 			var log = DocumentReceiveLog.Log(Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
-				(uint?) clientId, (uint?) addressId, file, _currentDocumentType.Type, currentUID);
+				clientId, addressId, file, _currentDocumentType.DocType, currentUID);
 			log.CopyDocumentToClientDirectory();
 			return log;
 		}
 
-		private void WriteLog(int? DocumentType, int? FirmCode, int? ClientCode,
-			string FileName, string Addition, int MessageUID)
+		private void WriteLog(DocType documentType, uint? firmCode, uint? clientCode,
+			string fileName, string addition, int messageUid)
 		{
-			var addressId = ClientCode;
-			int? clientId = GetClientIdByAddress(ref addressId);
+			var addressId = clientCode;
+			var clientId = GetClientIdByAddress(ref addressId);
 			if (clientId == null)
 			{
-				clientId = ClientCode;
+				clientId = clientCode;
 				addressId = null;
 			}
 
-			MethodTemplate.ExecuteMethod<ExecuteArgs, object>(new ExecuteArgs(), 
-				delegate(ExecuteArgs args) {
-					var cmdInsert = new MySqlCommand(@"
-INSERT INTO logs.document_logs (FirmCode, ClientCode, FileName, Addition, MessageUID, DocumentType, AddressId) 
-VALUES (?FirmCode, ?ClientCode, ?FileName, ?Addition, ?MessageUID, ?DocumentType, ?AddressId)", args.DataAdapter.SelectCommand.Connection);
-
-					cmdInsert.Parameters.AddWithValue("?FirmCode", FirmCode);
-					cmdInsert.Parameters.AddWithValue("?ClientCode", clientId);
-					cmdInsert.Parameters.AddWithValue("?FileName", FileName);
-					cmdInsert.Parameters.AddWithValue("?Addition", Addition);
-					cmdInsert.Parameters.AddWithValue("?MessageUID", MessageUID);
-					cmdInsert.Parameters.AddWithValue("?DocumentType", DocumentType);
-					if (addressId == null)
-						cmdInsert.Parameters.AddWithValue("?AddressId", DBNull.Value);
-					else
-						cmdInsert.Parameters.AddWithValue("?AddressId", addressId);
-					cmdInsert.ExecuteNonQuery();
-					return null;
-				},
-				null,
-				_workConnection,
-				true,
-				false,
-				(e, ex) => Ping());
+			DocumentReceiveLog.Log(firmCode, clientId, addressId, fileName, documentType, addition, messageUid);
 		}
 	}
 }

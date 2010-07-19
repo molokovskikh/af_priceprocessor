@@ -26,7 +26,7 @@ namespace Inforoom.Downloader
 
 		public EMAILSourceHandler()
 		{
-			sourceType = "EMAIL";
+			SourceType = "EMAIL";
 		}
 
 		protected string GetCorrectEmailAddress(string Source)
@@ -124,39 +124,23 @@ namespace Inforoom.Downloader
 		private void ProcessMime(Mime m)
 		{
 			var from = GetAddressList(m);
-
 			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
-			try
-			{
-				CheckMime(m);
-			}
-			catch(EMailSourceHandlerException e)
-			{
-				ErrorOnCheckMime(m, from, e);
-				return;
 
-			}
-			FillSourcesTable();
 			try
 			{
+				FillSourcesTable();
 				ProcessAttachs(m, from);
+				CheckMime(m);
 			}
 			catch (EMailSourceHandlerException e)
 			{
 				// Формируем список приложений, чтобы использовать 
 				// его при отчете о нераспознанном письме
-				ErrorOnProcessAttachs(m, from, e);
-				return;
+				ErrorOnMessageProcessing(m, from, e);
 			}
 		}
 
-		protected virtual void ErrorOnProcessAttachs(Mime m, AddressList from, EMailSourceHandlerException exception)
-		{
-			SendUnrecLetter(m, from, exception);
-		}
-
-		
-		protected virtual void ErrorOnCheckMime(Mime m, AddressList from, EMailSourceHandlerException exception)
+		protected virtual void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException exception)
 		{
 			SendUnrecLetter(m, from, exception);
 		}
@@ -416,6 +400,15 @@ namespace Inforoom.Downloader
 				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType_Name));
 			return null;
 		}
+	}
+
+	public class EmailFromUnregistredMail : EMailSourceHandlerException
+	{
+		public EmailFromUnregistredMail(string message) : base(message)
+		{}
+
+		public EmailFromUnregistredMail(string message, string subject, string body) : base(message, subject, body)
+		{}
 	}
 
 	public class EMailSourceHandlerException : Exception

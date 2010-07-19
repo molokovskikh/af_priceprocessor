@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Inforoom.PriceProcessor.Waybills;
 
 namespace Inforoom.Downloader.Documents
@@ -17,84 +14,45 @@ namespace Inforoom.Downloader.Documents
 	//јбстрактный класс, описывающий тип документа
 	public abstract class InboundDocumentType
 	{
-		public abstract DocType Type { get; }
+		public DocType DocType { get; protected set; }
 
-		public abstract int TypeID
-		{
-			get;
-		}
+		public string FolderName { get; protected set;  }
 
-		public abstract string FolderName
-		{
-			get;
-		}
+		public string Domen { get; protected set; }
 
-		public abstract string Domen
+		public bool ParseEmail(string email, out uint clientCode)
 		{
-			get;
-		}
-
-		public bool ParseEmail(string email, out int ClientCode)
-		{
-			ClientCode = 0;
+			clientCode = 0;
 			int Index = email.IndexOf("@" + Domen);
 			if (Index > -1)
 			{
-				if (int.TryParse(email.Substring(0, Index), out ClientCode))
+				if (uint.TryParse(email.Substring(0, Index), out clientCode))
 				{
 					return true;
 				}
-				else
-					return false;
-			}
-			else
 				return false;
+			}
+			return false;
 		}
 	}
 
 	public class WaybillType : InboundDocumentType
 	{
-		public override DocType Type
+		public WaybillType()
 		{
-			get { return DocType.Waybill; }
-		}
-
-		public override int TypeID
-		{
-			get { return 1; }
-		}
-
-		public override string FolderName
-		{
-			get { return "Waybills"; }
-		}
-
-		public override string Domen
-		{
-			get { return "waybills.analit.net"; }
+			DocType = DocType.Waybill;
+			FolderName = "Waybills";
+			Domen = "waybills.analit.net";
 		}
 	}
 
 	public class RejectType : InboundDocumentType
 	{
-		public override DocType Type
+		public RejectType()
 		{
-			get { return DocType.Reject; }
-		}
-
-		public override int TypeID
-		{
-			get { return 2; }
-		}
-
-		public override string FolderName
-		{
-			get { return "Rejects"; }
-		}
-
-		public override string Domen
-		{
-			get { return "refused.analit.net"; }
+			DocType = DocType.Reject;
+			FolderName = "Rejects";
+			Domen = "refused.analit.net";
 		}
 	}
 
