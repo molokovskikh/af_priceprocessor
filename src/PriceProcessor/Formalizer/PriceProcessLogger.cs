@@ -42,7 +42,7 @@ namespace Inforoom.Formalizer
 			_letterAboutConnectionSended = true;
 		}
 
-		public void SuccesLog(BasePriceParser p)
+		public void SuccesLog(IPriceFormalizer p)
 		{
 			string messageBody = "", messageSubject = "";
 			//Формирование заголовков письма и 
@@ -80,7 +80,7 @@ namespace Inforoom.Formalizer
 				Mailer.SendToWarningList(messageSubject, messageBody);
 		}
 
-		public void ErrodLog(BasePriceParser p, Exception ex)
+		public void ErrodLog(IPriceFormalizer p, Exception ex)
 		{
 			string messageBody = "", messageSubject = "";
 			if (ex is FormalizeException)
@@ -115,9 +115,8 @@ namespace Inforoom.Formalizer
 			Mailer.SendToWarningList(messageSubject, messageBody);
 		}
 
-		public void ErrodLog(BasePriceParser2 parser, Exception ex)
+		public void ErrodLog(PriceFormalizationInfo priceInfo, Exception ex)
 		{
-			var priceInfo = parser.PriceInfo;
 			string messageBody = "", messageSubject = "";
 			if (ex is FormalizeException)
 				CurrentErrorMessage = ex.Message;

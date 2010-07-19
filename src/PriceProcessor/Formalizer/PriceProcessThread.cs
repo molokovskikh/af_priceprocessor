@@ -40,6 +40,23 @@ namespace Inforoom.Formalizer
 		FinalizeThread
 	}
 
+	public interface IPriceFormalizer
+	{
+		void Formalize();
+
+		bool Downloaded { get; set; }
+		string InputFileName { get; set; }
+		int formCount { get; }
+		int unformCount { get; }
+		int zeroCount { get; }
+		int forbCount { get; }
+		int maxLockCount { get; }
+		long priceCode { get; }
+		long firmCode { get; }
+		string firmShortName { get; }
+		string priceName { get; }
+	}
+
 	public class PriceProcessThread
 	{
 		//Временный каталог для файла
@@ -48,8 +65,6 @@ namespace Inforoom.Formalizer
 		private string _tempFileName;
 		//Ссылка на обрабатываемый элемент
 		private readonly PriceProcessItem _processItem;
-		//Соединение с базой
-		private MySqlConnection _connection;
 
 		private readonly Thread _thread;
 		//время прерывания рабочей нитки 
@@ -61,7 +76,7 @@ namespace Inforoom.Formalizer
 		private readonly PriceProcessLogger _log;
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
 
-		private BasePriceParser _workPrice;
+		private IPriceFormalizer _workPrice;
 
 		private PriceProcessState _processState = PriceProcessState.None;
 
@@ -194,7 +209,6 @@ namespace Inforoom.Formalizer
 				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 
 				_processState = PriceProcessState.GetConnection;
-				_connection = new MySqlConnection(Literals.ConnectionString());
 				_processState = PriceProcessState.GetLogConnection;
 				try
 				{
@@ -212,29 +226,12 @@ namespace Inforoom.Formalizer
 					}
 
 					_processState = PriceProcessState.CheckConnection;
-					CheckConnection(_connection);
-
 					try
 					{
-						try
-						{
-							_processState = PriceProcessState.CallValidate;
-							_workPrice = PricesValidator.Validate(_connection, _processItem.FilePath, _tempFileName, _processItem);
-						}
-						finally
-						{
-							if (_connection.State == ConnectionState.Open)
-								try
-								{
-									_connection.Close();
-								}
-								catch(Exception onWorkCloseConnection)
-								{
-									_logger.Error("Ошибка при закрытии рабочего соединения", onWorkCloseConnection);
-								}
-						}
+						_processState = PriceProcessState.CallValidate;
+						_workPrice = PricesValidator.Validate(_processItem.FilePath, _tempFileName, (uint)_processItem.PriceItemId);
 
-						_workPrice.downloaded = _processItem.Downloaded;
+						_workPrice.Downloaded = _processItem.Downloaded;
 						_workPrice.InputFileName = _processItem.FilePath;
 
 						_processState = PriceProcessState.CallFormalize;

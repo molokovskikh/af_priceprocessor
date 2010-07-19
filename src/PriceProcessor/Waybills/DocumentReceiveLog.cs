@@ -21,6 +21,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		public Supplier Supplier { get; set; }
 
 		[Property]
+		public DateTime LogTime { get; set; }
+
+		[Property]
 		public uint? ClientCode { get; set; }
 
 		[Property]
@@ -80,21 +83,24 @@ namespace Inforoom.PriceProcessor.Waybills
 			return Log(supplierId, clientId, addressId, fileName, documentType, null, null);
 		}
 
+		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment)
+		{
+			return Log(supplierId, clientId, addressId, fileName, documentType, comment, null);
+		}
+
 		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, int messageId)
 		{
 			return Log(supplierId, clientId, addressId, fileName, documentType, null, messageId);
 		}
 
-		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId)
+		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId)
 		{
 			fileName = CleanupFilename(fileName);
 			var localFile = fileName;
 			fileName = Path.GetFileName(fileName);
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				var supplier = Supplier.Find(supplierId);
 				var document = new DocumentReceiveLog {
-					Supplier = supplier,
 					AddressId = addressId,
 					ClientCode = clientId,
 					FileName = fileName,
@@ -103,6 +109,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					Comment = comment,
 					MessageUid = messageId
 				};
+				if (supplierId != null)
+					document.Supplier = Supplier.Find(supplierId.Value);
+
 				document.Create();
 				scope.VoteCommit();
 				return document;

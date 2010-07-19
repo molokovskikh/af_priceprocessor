@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Inforoom.PriceProcessor.Formalizer.New;
 
 namespace Inforoom.Formalizer
 {
 	public class FormalizationPosition
 	{
+		public NewCore Core;
 		public UnrecExpStatus Status { get; set; }
 
 		public string PositionName { get; set; }

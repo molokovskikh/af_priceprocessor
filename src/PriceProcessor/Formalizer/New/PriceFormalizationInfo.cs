@@ -8,6 +8,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class PriceFormalizationInfo
 	{
+		
 		public PriceFormalizationInfo(DataRow row)
 		{
 			PriceName = row[FormRules.colSelfPriceName].ToString();
@@ -16,6 +17,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			CostCode = (row[FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(row[FormRules.colCostCode]);
 			PriceCode = Convert.ToUInt32(row[FormRules.colPriceCode]);
 			FormByCode = Convert.ToBoolean(row[FormRules.colFormByCode]);
+			CostType = (CostTypes)Convert.ToInt32(row[FormRules.colCostType]);
 			IsUpdating = Settings.Default.SyncPriceCodes
 				.Cast<string>()
 				.Select(c => Convert.ToUInt32(c))
@@ -33,6 +35,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public bool FormByCode { get; set; }
 		public bool IsAssortmentPrice { get; set; }
+		public CostTypes CostType { get; set; }
 		public bool IsUpdating { get; set;}
 	}
 }

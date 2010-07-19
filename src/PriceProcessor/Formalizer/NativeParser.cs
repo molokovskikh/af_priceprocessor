@@ -47,7 +47,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 	public interface IParser
 	{
 		DataTable Parse(string filename);
-
 		DataTable Parse(string filename, bool specialProcessing);
 	}
 

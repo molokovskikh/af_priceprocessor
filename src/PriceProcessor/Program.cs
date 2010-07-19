@@ -6,6 +6,7 @@ using Castle.ActiveRecord.Framework.Config;
 using System.ServiceProcess;
 #else
 using System.Windows.Forms;
+using Common.MySql;
 using Inforoom.PriceProcessor.Properties;
 #endif
 using System.IO;
@@ -24,6 +25,7 @@ namespace Inforoom.PriceProcessor
 			var log = LogManager.GetLogger(typeof(Program));
 			try
 			{
+				With.DefaultConnectionStringName = "DB";
 				InitActiveRecord();
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG

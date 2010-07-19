@@ -343,7 +343,7 @@ group by i.ClientCode;", connection);
 				_downloader.DownloadPrice(plan.Key, plan.Hwinfo, price, producers, ex);
 				using (var connection = new MySqlConnection(Literals.ConnectionString()))
 				{
-					var data = PricesValidator.LoadFormRules(plan.PriceItemId, connection);
+					var data = PricesValidator.LoadFormRules(plan.PriceItemId);
 					var parser = new FakeRostaParser(price, producers, ex, connection, data);
 					connection.Close();
 					parser.Formalize();

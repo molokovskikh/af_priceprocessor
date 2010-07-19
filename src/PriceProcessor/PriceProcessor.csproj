@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Inforoom.PriceProcessor</RootNamespace>
     <AssemblyName>PriceProcessor</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
@@ -140,6 +140,8 @@
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
+    <Compile Include="Formalizer\FarmImpeksFormalizer.cs" />
+    <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Rosta\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />
@@ -306,10 +308,6 @@
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ExecuteTemplate\ExecuteTemplate\ExecuteTemplate.csproj">
-      <Project>{046F74A6-68A8-4E5E-A9AB-7332B631CFB1}</Project>
-      <Name>ExecuteTemplate</Name>
     </ProjectReference>
     <ProjectReference Include="..\RemotePriceProcessor\RemotePriceProcessor.csproj">
       <Project>{F53DDD6D-5BFA-4AE6-A455-CCB187ED1407}</Project>

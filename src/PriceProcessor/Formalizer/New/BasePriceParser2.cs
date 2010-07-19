@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Common.Tools;
 using Inforoom.Formalizer;
@@ -22,9 +19,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class BasePriceParser2
 	{
-		//таблица с прайсом
-		protected DataTable dtPrice;
-
 		//Соедиение с базой данных
 		protected MySqlConnection _connection;
 
@@ -37,7 +31,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		//Таблица со списоком синонимов производителей
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
-		protected DataTable dtNewSynonymFirmCr;
+
 		//Таблица с ассортиментом
 		protected MySqlDataAdapter daAssortment;
 		protected DataTable dtAssortment;
@@ -63,16 +57,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		protected DataSet dsMyDB;
 
-		protected string[] FieldNames;
-
-		protected int CurrPos = -1;
-
-		protected string priceFileName;
-
 		private FormalizeStats _stats = new FormalizeStats();
 
 		//Является ли обрабатываемый прайс-лист загруженным?
-		public bool downloaded;
+		public bool Downloaded;
 
 		//ключ для priceitems
 		public long priceItemId;
@@ -81,29 +69,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		protected long parentSynonym;
 		//Кол-во распознаных позиций в прошлый раз
 		protected long prevRowCount;
-		//производить формализацию по коду
-		protected bool formByCode;
-
-		//Маска, которая накладывается на имя позиции
-		protected string nameMask;
-		//Запрещенные слова, которые могут быть в имени
-		protected string forbWords;
-		protected string[] forbWordsList;
-		//как в прайсе поставщика метятся ожидаемые позиции
-		protected string awaitPos;
-		//как в прайсе поставщика метятся "плохие" позиции
-		protected string junkPos;
-		//как в прайсе поставщика метятся жизненно-важные позиции
-		protected string vitallyImportantMask;
 
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
-
-		//Надо ли конвертировать полученную строку в ANSI
-		protected bool convertedToANSI;
-
-		protected ToughDate toughDate;
-		protected ToughMask toughMask;
 
 		protected readonly ILog _logger;
 
@@ -115,9 +83,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private readonly List<NewCore> _newCores = new List<NewCore>();
 		private readonly List<ExistsCore> _existsCores = new List<ExistsCore>();
 
-		private readonly IParser _parser;
-
-		public List<CostDescription> _costDescriptions;
+		private readonly IReader _reader;
 
 		public PriceFormalizationInfo PriceInfo
 		{
@@ -132,180 +98,42 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// <summary>
 		/// Конструктор парсера
 		/// </summary>
-		public BasePriceParser2(string priceFileName, IParser parser, MySqlConnection connection, DataTable data)
+		public BasePriceParser2(IReader reader, DataRow priceInfo)
 		{
 			_logger = LogManager.GetLogger(GetType());
-			_logger.DebugFormat("Создали класс для обработки файла {0}", priceFileName);
+			_reader = reader;
 
-			_parser = parser;
-
-			var priceInfo = data.Rows[0];
 			_priceInfo = new PriceFormalizationInfo(priceInfo);
 
-			this.priceFileName = priceFileName;
-			dtPrice = new DataTable();
-			_connection = connection;
+			_connection = new MySqlConnection(Literals.ConnectionString());
 			dsMyDB = new DataSet();
-			FieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
 			
 			priceItemId = Convert.ToInt64(priceInfo[FormRules.colPriceItemId]); 
 			parentSynonym = Convert.ToInt64(priceInfo[FormRules.colParentSynonym]); 
 			costType = (CostTypes)Convert.ToInt32(priceInfo[FormRules.colCostType]);
 
-			nameMask = priceInfo[FormRules.colNameMask] is DBNull ? String.Empty : (string)priceInfo[FormRules.colNameMask];
-
-			//Производим попытку разобрать строку с "запрещенными выражениями"
-			forbWords = priceInfo[FormRules.colForbWords] is DBNull ? String.Empty : (string)priceInfo[FormRules.colForbWords];
-			forbWords = forbWords.Trim();
-			if (String.Empty != forbWords)
-			{
-				forbWordsList = forbWords.Split( new[] {' '} );
-				var len = 0;
-				foreach(var s in forbWordsList)
-					if(String.Empty != s)
-						len++;
-				if (len > 0)
-				{
-					var newForbWordList = new string[len];
-					var i = 0;
-					foreach(var s in forbWordsList)
-						if(String.Empty != s)
-						{
-							newForbWordList[i] = s;
-							i++;
-						}
-				}
-				else
-					forbWordsList = null;
-			}
-
-			awaitPos = priceInfo[FormRules.colSelfAwaitPos].ToString();
-			junkPos  = priceInfo[FormRules.colSelfJunkPos].ToString();
-			vitallyImportantMask = priceInfo[FormRules.colSelfVitallyImportantMask].ToString();
 			prevRowCount = priceInfo[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(priceInfo[FormRules.colPrevRowCount]);
-
-			toughDate = new ToughDate();
-			if (String.Empty != nameMask)
-				toughMask = new ToughMask(nameMask, _priceInfo);
 
 			string selectCostFormRulesSQL;
 			if (costType == CostTypes.MultiColumn)
 				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", _priceInfo.PriceCode);
 			else
 				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", _priceInfo.PriceCode, _priceInfo.CostCode.Value);
-			var daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, _connection );
+			var daPricesCost = new MySqlDataAdapter(selectCostFormRulesSQL, _connection );
 			var dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
-			_costDescriptions = dtPricesCost.Rows.Cast<DataRow>().Select(r => new CostDescription(r)).ToList();
+			_reader.CostDescriptions = dtPricesCost.Rows.Cast<DataRow>().Select(r => new CostDescription(r)).ToList();
 			_logger.DebugFormat("Загрузили цены {0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode);
-
-			if (_costDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)
-				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, _priceInfo);
-
-			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
-			if (!_priceInfo.IsAssortmentPrice && costType == CostTypes.MultiColumn)
-			{
-				var baseCosts = _costDescriptions.Where(c => c.IsBaseCost).ToArray();
-				if (baseCosts.Length == 0)
-					throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, _priceInfo);
-
-				if (baseCosts.Length > 1)
-				{
-					throw new WarningFormalizeException(
-						String.Format(Settings.Default.DoubleBaseCostsError,
-							baseCosts[0].Id,
-							baseCosts[1].Id),
-						_priceInfo);
-				}
-				var baseCost = baseCosts.Single();
-
-				if ((this is FixedNativeTextParser1251 || this is FixedNativeTextParser866) 
-					&& ((baseCost.Begin == -1 || baseCost.End == -1) || String.Empty == baseCost.FieldName))
-					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, _priceInfo);
-			}
-
-			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-			{
-				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
-				SetFieldName(pf, data.Rows[0][tmpName] is DBNull ? String.Empty : (string)data.Rows[0][tmpName]);
-			}
-		}
-
-		/// <summary>
-		/// Производится вставка данных в таблицу Core
-		/// </summary>
-		public void InsertToCore(FormalizationPosition position, Cost[] costs)
-		{
-			if (!position.Junk)
-				position.Junk = (bool)GetFieldValueObject(PriceFields.Junk);
-
-			var core = new NewCore {
-				ProductId = (uint) position.ProductId.Value,
-				CodeFirmCr = position.CodeFirmCr.HasValue ? (uint) position.CodeFirmCr.Value : 0,
-				SynonymCode = (uint) position.SynonymCode.Value,
-				SynonymFirmCrCode = position.SynonymFirmCrCode.HasValue ? (uint) position.SynonymFirmCrCode.Value : 0,
-
-				Code = GetFieldValue(PriceFields.Code),
-				CodeCr = GetFieldValue(PriceFields.CodeCr),
-				Unit = GetFieldValue(PriceFields.Unit),
-				Volume = GetFieldValue(PriceFields.Volume),
-				Quantity = GetFieldValueObject(PriceFields.Quantity) is DBNull ? null : GetFieldValueObject(PriceFields.Quantity).ToString(),
-				Note = GetFieldValue(PriceFields.Note),
-				Doc = (string)GetFieldValueObject(PriceFields.Doc),
-
-				Junk = position.Junk,
-				Await = (bool)GetFieldValueObject(PriceFields.Await),
-				VitallyImportant = (bool)GetFieldValueObject(PriceFields.VitallyImportant),
-
-				MinBoundCost = GetDecimalValue(PriceFields.MinBoundCost),
-				MaxBoundCost = GetDecimalValue(PriceFields.MaxBoundCost),
-				OrderCost = GetDecimalValue(PriceFields.OrderCost),
-				MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.MinOrderCount),
-				RequestRatio = GetFieldValueObject(PriceFields.RequestRatio) is DBNull ? 0 : Convert.ToUInt32(GetFieldValueObject(PriceFields.RequestRatio)),
-				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
-			};
-/*
-			if (position.InternalProducerSynonymId.HasValue)
-				drCore["InternalProducerSynonymId"] = position.InternalProducerSynonymId;*/
-
-			var rawPeriodValue = GetFieldValueObject(PriceFields.Period);
-			string periodValue;
-			//если получилось преобразовать в дату, то сохраняем в формате даты
-			if (rawPeriodValue is DateTime)
-				periodValue = ((DateTime)rawPeriodValue).ToString("dd'.'MM'.'yyyy");
-			else
-			{
-				//Если не получилось преобразовать, то смотрим на "сырое" значение поле, если оно не пусто, то пишем в базу
-				periodValue = GetFieldRawValue(PriceFields.Period);
-				if (String.IsNullOrEmpty(periodValue))
-					periodValue = null;
-			}
-			core.Period = periodValue;
-			core.Costs = costs;
-			core.ExistsCore = _searcher.Find(core);
-			_newCores.Add(core);
-			_loggingStat.formCount++;
-		}
-
-		public decimal GetDecimalValue(PriceFields field)
-		{
-			var value = GetFieldValueObject(field);
-			if (value is DBNull)
-				return 0;
-			if (Cost.IsZeroOrLess((decimal)value))
-				return 0;
-			return (decimal) value;
 		}
 
 		/// <summary>
 		/// Вставка в таблицу запрещенных предложений
 		/// </summary>
-		/// <param name="PosName"></param>
-		public void InsertIntoForb(string PosName)
+		public void InsertIntoForb(FormalizationPosition position)
 		{
 			var newRow = dtForb.NewRow();
 			newRow["PriceItemId"] = priceItemId;
-			newRow["Forb"] = PosName;
+			newRow["Forb"] = position.PositionName;
 			dtForb.Rows.Add(newRow);
 			_loggingStat.forbCount++;
 		}
@@ -313,24 +141,24 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// <summary>
 		/// Вставка записи в Zero
 		/// </summary>
-		public void InsertToZero()
+		public void InsertToZero(FormalizationPosition position)
 		{
-			DataRow drZero = dtZero.NewRow();
+			var drZero = dtZero.NewRow();
+			var core = position.Core;
 
 			drZero["PriceItemId"] = priceItemId;
-			drZero["Name"] = GetFieldValueObject(PriceFields.Name1);
-			drZero["FirmCr"] = GetFieldValueObject(PriceFields.FirmCr);
-			drZero["Code"] = GetFieldValueObject(PriceFields.Code);
-			drZero["CodeCr"] = GetFieldValueObject(PriceFields.CodeCr);
-			drZero["Unit"] = GetFieldValueObject(PriceFields.Unit);
-			drZero["Volume"] = GetFieldValueObject(PriceFields.Volume);
-			drZero["Quantity"] = GetFieldValueObject(PriceFields.Quantity);
-			drZero["Note"] = GetFieldValueObject(PriceFields.Note);
-			drZero["Period"] = GetFieldValueObject(PriceFields.Period);
-			drZero["Doc"] = GetFieldValueObject(PriceFields.Doc);
+			drZero["Name"] = position.PositionName;
+			drZero["FirmCr"] = position.FirmCr;
+			drZero["Code"] = core.Code;
+			drZero["CodeCr"] = core.CodeCr;
+			drZero["Unit"] = core.Unit;
+			drZero["Volume"] = core.Volume;
+			drZero["Quantity"] = core.Quantity;
+			drZero["Note"] = core.Note;
+			drZero["Period"] = core.Period;
+			drZero["Doc"] = core.Doc;
 
 			dtZero.Rows.Add(drZero);
-
 			_loggingStat.zeroCount++;
 		}
 
@@ -341,20 +169,18 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			DataRow drUnrecExp = dtUnrecExp.NewRow();
 			drUnrecExp["PriceItemId"] = priceItemId;
-			drUnrecExp["Name1"] = GetFieldValue(PriceFields.Name1);
-			drUnrecExp["FirmCr"] = GetFieldValue(PriceFields.FirmCr);
-			drUnrecExp["Code"] = GetFieldValue(PriceFields.Code);
-			drUnrecExp["CodeCr"] = GetFieldValue(PriceFields.CodeCr);
-			drUnrecExp["Unit"] = GetFieldValue(PriceFields.Unit);
-			drUnrecExp["Volume"] = GetFieldValue(PriceFields.Volume);
-			drUnrecExp["Quantity"] = GetFieldValueObject(PriceFields.Quantity);
-			drUnrecExp["Note"] = GetFieldValue(PriceFields.Note);
-			drUnrecExp["Period"] = GetFieldValueObject(PriceFields.Period);
-			drUnrecExp["Doc"] = GetFieldValueObject(PriceFields.Doc);
+			drUnrecExp["Name1"] = position.PositionName;
+			drUnrecExp["FirmCr"] = position.FirmCr;
+			drUnrecExp["Code"] = position.Core.Code;
+			drUnrecExp["CodeCr"] = position.Core.CodeCr;
+			drUnrecExp["Unit"] = position.Core.Unit;
+			drUnrecExp["Volume"] = position.Core.Volume;
+			drUnrecExp["Quantity"] = position.Core.Quantity;
+			drUnrecExp["Note"] = position.Core.Note;
+			drUnrecExp["Period"] = position.Core.Period;
+			drUnrecExp["Doc"] = position.Core.Doc;
 
-			if (!position.Junk)
-				position.Junk = (bool)GetFieldValueObject(PriceFields.Junk);
-			drUnrecExp["Junk"] = Convert.ToByte(position.Junk);
+			drUnrecExp["Junk"] = Convert.ToByte(position.Core.Junk);
 
 			drUnrecExp["AddDate"] = DateTime.Now;
 
@@ -403,7 +229,7 @@ FROM
   farm.Synonym, 
   catalogs.products 
 WHERE 
-    (Synonym.PriceCode={0}) 
+	(Synonym.PriceCode={0}) 
 and (products.Id = Synonym.ProductId)
 "
 					, 
@@ -437,7 +263,6 @@ and (products.Id = Synonym.ProductId)
 			assortmentSearchCount = 0;
 			excludesSearchWatch = new Stopwatch();
 			excludesSearchCount = 0;
-
 
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format(@"
@@ -589,7 +414,7 @@ order by c.Id", _priceInfo.PriceCode);
 				{
 					var coreId = reader.GetUInt64(0);
 					var costId = reader.GetUInt32(1);
-					var description = _costDescriptions.First(c => c.Id == costId);
+					var description = _reader.CostDescriptions.First(c => c.Id == costId);
 					if (coreId != core.Id)
 					{
 						core.Costs = costs.ToArray();
@@ -645,29 +470,6 @@ order by c.Id", _priceInfo.PriceCode);
 			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
-		private DataRow CheckPositionByProducerSynonym(DataRow drCore)
-		{
-			var drNewSynonym = dtNewSynonymFirmCr.Select("InternalProducerSynonymId = " + drCore["InternalProducerSynonymId"])[0];
-
-			//Если это вновь созданных синоним, то возвращаем ссылку на него, иначе изменяем Core
-			if (drNewSynonym.RowState == DataRowState.Added)
-				return drNewSynonym;
-
-			drCore["SynonymFirmCrCode"] = drNewSynonym["SynonymFirmCrCode"];
-			drCore["InternalProducerSynonymId"] = DBNull.Value;
-			if (!Convert.ToBoolean(drNewSynonym["IsAutomatic"]) && !Convert.IsDBNull(drNewSynonym["CodeFirmCr"]))
-			{
-				var status = GetAssortmentStatus(
-					Convert.ToInt64(drCore["CatalogId"]),
-					Convert.ToInt64(drNewSynonym["CodeFirmCr"]),
-					Convert.ToInt64(drNewSynonym["SynonymFirmCrCode"]),
-					Convert.ToInt64(drCore["SynonymCode"]));
-				if (status == UnrecExpStatus.AssortmentForm)
-					drCore["CodeFirmCr"] = drNewSynonym["CodeFirmCr"];
-			}
-			return null;
-		}
-
 		private IEnumerable<string> BuildSql()
 		{
 			foreach (var core in _newCores)
@@ -704,11 +506,8 @@ order by c.Id", _priceInfo.PriceCode);
 		public void FinalizePrice()
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
-			if (downloaded)
-			{
-				ProcessUndefinedCost();
-				ProcessZeroCost();
-			}
+			if (Downloaded)
+				_reader.SendWaring(_loggingStat);
 
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
@@ -736,6 +535,15 @@ order by c.Id", _priceInfo.PriceCode);
 					foreach (var populatedBytes in PrepareData(withBuffer))
 					{
 						batcher.Send(buffer, populatedBytes);
+					}
+#else
+					var builder = new StringBuilder();
+					var command = new MySqlCommand(null, _connection);
+					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c)))
+					{
+						command.CommandText = builder.ToString();
+						builder.Clear();
+						command.ExecuteNonQuery();
 					}
 #endif
 
@@ -772,7 +580,7 @@ order by c.Id", _priceInfo.PriceCode);
 		private IEnumerable<int> PrepareData(/*byte[] buffer, */Action<string, int> populateCommand)
 		{
 			var MaxPacketSize = 500*1024;
-			var MaxCommandCount = 10;
+			var MaxCommandCount = 500;
 			var index = 0;
 			var populatedBytes = 0;
 			foreach (var command in BuildSql().Where(c => !String.IsNullOrEmpty(c)))
@@ -785,6 +593,8 @@ order by c.Id", _priceInfo.PriceCode);
 
 				if (index > MaxCommandCount || populatedBytes + command.Length > MaxPacketSize)
 				{
+					if (_logger.IsDebugEnabled)
+						_logger.Debug("Запуск");
 					yield return populatedBytes;
 					populatedBytes = 0;
 					index = 0;
@@ -831,7 +641,7 @@ order by c.Id", _priceInfo.PriceCode);
 			//Производим обновление PriceDate и LastFormalization в информации о формализации
 			//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
 			cleanUpCommand.Parameters.Clear();
-			if (downloaded)
+			if (Downloaded)
 			{
 				cleanUpCommand.CommandText = String.Format(
 					"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", _loggingStat.formCount, _loggingStat.unformCount, priceItemId);
@@ -846,7 +656,7 @@ UPDATE usersettings.AnalitFReplicationInfo A, usersettings.PricesData P
 SET
   a.ForceReplication = 1
 where
-    p.PriceCode = {0}
+	p.PriceCode = {0}
 and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 			logMessage.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(cleanUpCommand));
@@ -871,7 +681,7 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 			{
 				foreach (DataRow drUnrecExp in dtUnrecExp.Rows)
 				{
-					var drsProducerSynonyms = dtNewSynonymFirmCr.Select("OriginalSynonym = '" + drUnrecExp["FirmCr"].ToString().Replace("'", "''") + "'");
+					var drsProducerSynonyms = dtSynonymFirmCr.Select("InternalProducerSynonymId is not null and OriginalSynonym = '" + drUnrecExp["FirmCr"].ToString().Replace("'", "''") + "'");
 
 					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
 						throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
@@ -897,11 +707,8 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 											drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
 											continue;
 										}
-										else
-										{
-											drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
-											drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
-										}
+										drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
+										drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
 									}
 									else
 									{
@@ -939,7 +746,7 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm) &&
 						(((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.ExcludeForm) != UnrecExpStatus.ExcludeForm))
 					{
-						daUnrecExp.Update(new DataRow[] { drUnrecExp });
+						daUnrecExp.Update(new[] { drUnrecExp });
 						applyCount++;
 					}
 				}
@@ -953,17 +760,15 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 		private void InsertNewProducerSynonyms(MySqlTransaction finalizeTransaction)
 		{
-			daSynonymFirmCr.InsertCommand.Connection = _connection;
-			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
-
-			dtNewSynonymFirmCr = null;
-			dtSynonymFirmCr.DefaultView.RowFilter = "InternalProducerSynonymId is not null";
-			dtNewSynonymFirmCr = dtSynonymFirmCr.DefaultView.ToTable();
-
 			if (!_stats.CanCreateProducerSynonyms())
 				return;
 
-			foreach (DataRow drNewProducerSynonym in dtNewSynonymFirmCr.Rows)
+			daSynonymFirmCr.InsertCommand.Connection = _connection;
+			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
+
+			var createdProducerSynonyms = dtSynonymFirmCr.Select("InternalProducerSynonymId is not null");
+
+			foreach (var drNewProducerSynonym in createdProducerSynonyms)
 			{
 				if (!Convert.IsDBNull(drNewProducerSynonym["SynonymFirmCrCode"]))
 					//Если код синонима производителя существует, то он был создан не PriceProcessor и 
@@ -981,7 +786,7 @@ FROM
   farm.SynonymFirmCr
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
 WHERE 
-    (SynonymFirmCr.PriceCode = ?PriceCode)
+	(SynonymFirmCr.PriceCode = ?PriceCode)
 and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 						,
 						new MySqlParameter("?PriceCode", parentSynonym),
@@ -1007,122 +812,19 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 					}
 				}
 			}
-		}
 
-		/// <summary>
-		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
-		/// </summary>
-		private void ProcessUndefinedCost()
-		{
-			var stringBuilder = new StringBuilder();
-			foreach (var cost in _costDescriptions)
-				if (cost.UndefinedCostCount > _loggingStat.formCount * 0.05)
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
-
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
-
-		}
-
-		/// <summary>
-		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
-		/// </summary>
-		private void ProcessZeroCost()
-		{
-			StringBuilder stringBuilder = new StringBuilder();
-			foreach (var cost in _costDescriptions)
-				if ((cost.ZeroCostCount > 0) && ((_loggingStat.formCount == 0) || (cost.ZeroCostCount == _loggingStat.formCount)))
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
-
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
-
-		}
-
-		protected void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body)
-		{
-			var drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
-select
-  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
-  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
-from
-usersettings.pricescosts pc,
-usersettings.pricesdata pd,
-usersettings.clientsdata cd,
-farm.regions r
-where
-    pc.PriceItemId = ?PriceItemId
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and r.RegionCode = cd.RegionCode",
-				new MySqlParameter("?PriceItemId", priceItemId));
-			subject = String.Format(subject, drProvider["PriceName"], drProvider["ShortFirmName"]);
-			body = String.Format(
-				body,
-				drProvider["PriceName"],
-				drProvider["ShortFirmName"],
-				stringBuilder);
-
-			_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
-			Mailer.SendUserFail(subject, body);
-		}
-
-		public void Open()
-		{
-			dtPrice = _parser.Parse(priceFileName);
-			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
-			if (!downloaded)
-				return;
-			var sb = new StringBuilder();
-
-			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
-					sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
-
-			
-			foreach (var cost in _costDescriptions)
-				if (!String.IsNullOrEmpty(cost.FieldName) && !dtPrice.Columns.Contains(cost.FieldName))
-					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.Name, cost.FieldName);
-
-			if (sb.Length > 0)
-				SendAlertToUserFail(
-					sb,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
-					@"
-Здравствуйте!
-В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
-Следующие поля отсутствуют:
-{2}
-
-С уважением,
-PriceProcessor.");
-		}
-
-		protected static string GetDescription(PriceFields value)
-		{
-			var descriptions = value.GetType().GetField(value.ToString()).GetCustomAttributes(false);
-			return ((System.ComponentModel.DescriptionAttribute)descriptions[0]).Description;
+			foreach (var core in _newCores.Where(c => c.CreatedProducerSynonym != null))
+			{
+				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProducerSynonym["SynonymFirmCrCode"]);
+				if (!(core.CreatedProducerSynonym["CodeFirmCr"] is DBNull))
+				{
+					var producerId = Convert.ToUInt32(core.CreatedProducerSynonym["CodeFirmCr"]);
+					var assortmentStatus = GetAssortmentStatus(core.ProductId, producerId, core.SynonymFirmCrCode, core.SynonymCode);
+					//Если получили исключение, то сбрасываем CodeFirmCr
+					if (assortmentStatus != UnrecExpStatus.MarkExclude)
+						core.CodeFirmCr = producerId;
+				}
+			}
 		}
 
 		/// <summary>
@@ -1133,13 +835,6 @@ PriceProcessor.");
 			using(NDC.Push(String.Format("{0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode)))
 			{
 				_logger.Debug("начало Formalize");
-
-				using (Timer("Чтение прайс листа"))
-					Open();
-
-				if (dtPrice.Rows.Count == 0)
-					throw new FormalizeException("В полученом прайс листе не удалось найти ни одной позиции", _priceInfo);
-
 				try
 				{
 					_connection.Open();
@@ -1172,406 +867,54 @@ PriceProcessor.");
 
 		private void InternalFormalize()
 		{
-			if (null != toughMask)
-				toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
-
-			do
+			foreach (var position in _reader.Read())
 			{
-				var posName = GetFieldValue(PriceFields.Name1, true);
-
-				if (String.IsNullOrEmpty(posName))
-					continue;
-
-				if (IsForbidden(posName))
+				if (IsForbidden(position.PositionName))
 				{
-					InsertIntoForb(posName);
+					InsertIntoForb(position);
 					continue;
 				}
 
-				Cost[] costs = null;
+				var core = position.Core;
 				if (!_priceInfo.IsAssortmentPrice)
 				{
-					costs = ProcessCosts(_costDescriptions);
-					var currentQuantity = GetFieldValueObject(PriceFields.Quantity);
-
 					//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
 					//или если количество определенно и оно равно 0
-					if (costs.Length == 0 || (currentQuantity is int && (int)currentQuantity == 0))
+					if (core.Costs.Length == 0 || core.QuantityAsInt == 0)
 					{
-						InsertToZero();
+						InsertToZero(position);
 						continue;
 					}
 				}
 
-				var position = new FormalizationPosition {
-					PositionName = posName,
-					Code = GetFieldValue(PriceFields.Code),
-					OriginalName = GetFieldValue(PriceFields.OriginalName, true),
-					FirmCr = GetFieldValue(PriceFields.FirmCr, true)
-				};
-
 				GetProductId(position);
-				GetCodeFirmCr(position);
+				GetProducerId(position);
+				GetAssortmentStatus(position);
 
-				//Если не получили CodeFirmCr, то считаем, 
-				//что позиция формализована по ассортименту, т.к. производитель не опознан и проверить по ассортименту нельзя
-				/*
-				Возможны ситуации:
-				  UnrecExpStatus.NameForm UnrecExpStatus.FirmForm UnrecExpStatus.AssortmentForm
-				  UnrecExpStatus.NameForm                         UnrecExpStatus.AssortmentForm
-				*/
-				//проверям ассортимент
-				if (position.ProductId.HasValue && position.CodeFirmCr.HasValue)
-					GetAssortmentStatus(position);
-
-				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
-				if (position.IsSet(UnrecExpStatus.NameForm))
-				{
-					if (!position.IsHealth())
-						throw new Exception(String.Format("Не верное состояние формализуемой позиции {0}, программист допустил ошибку", position.PositionName));
-
-					InsertToCore(position, costs);
-				}
-				else
+				if (!position.IsSet(UnrecExpStatus.NameForm))
 					_loggingStat.unformCount++;
+				else
+					_loggingStat.formCount++;
+
+				if (position.IsSet(UnrecExpStatus.NameForm) && !position.IsHealth())
+					throw new Exception(String.Format("Не верное состояние формализуемой позиции {0}, программист допустил ошибку", position.PositionName));
 
 				if (position.IsNotSet(UnrecExpStatus.FullForm) && position.IsNotSet(UnrecExpStatus.ExcludeForm))
 					InsertToUnrec(position);
 
-			}
-			while (Next());
-		}
-
-		/// <summary>
-		/// Установить название поля, которое будет считано из набора данных
-		/// </summary>
-		public void SetFieldName(PriceFields PF, string Value)
-		{
-			FieldNames[(int)PF] = Value;
-		}
-
-		/// <summary>
-		/// Получить название поля
-		/// </summary>
-		public string GetFieldName(PriceFields PF)
-		{
-			return FieldNames[(int)PF];
-		}
-
-		/// <summary>
-		/// Перейти на следующую позици набора данных
-		/// </summary>
-		/// <returns>Удачно ли выполнен переход?</returns>
-		public virtual bool Next()
-		{
-			CurrPos++;
-			if (CurrPos < dtPrice.Rows.Count)
-			{
-				if (null != toughMask)
-					toughMask.Analyze( GetFieldRawValue(PriceFields.Name1) );
-				return true;
-			}
-			return false;
-		}
-
-		/// <summary>
-		/// Получить сырое значение текущего поля
-		/// </summary>
-		/// <param name="field"></param>
-		/// <returns></returns>
-		public virtual string GetFieldRawValue(PriceFields field)
-		{
-			try
-			{
-				//Если имя столбца для поля не определено, то возвращаем null
-				if (String.IsNullOrEmpty(GetFieldName(field)))
-					return null;
-
-				var value = dtPrice.Rows[CurrPos][GetFieldName(field)].ToString();
-				if (convertedToANSI)
-					value = CleanupCharsThatNotFitIn1251(value);
-				return value;
-			}
-			catch
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// строки в базе данных хранятся в 1251, если мы засунем в базу символ которого нет в 1251 
-		/// то назад мы получим не этот же символ а что то "близкое" по этому строки нужно очищать от 
-		/// таких символов
-		/// </summary>
-		public string CleanupCharsThatNotFitIn1251(string value)
-		{
-			var ansi = Encoding.GetEncoding(1251);
-			var unicodeBytes = Encoding.Unicode.GetBytes(value);
-			var ansiBytes = Encoding.Convert(Encoding.Unicode, ansi, unicodeBytes);
-			return ansi.GetString(ansiBytes);
-		}
-
-		/// <summary>
-		/// Получить значение поля в обработанном виде
-		/// </summary>
-		public virtual string GetFieldValue(PriceFields field)
-		{
-			string res = null;
-
-			//Сначала пытаемся вытянуть данные из toughMask
-			if (null != toughMask)
-			{
-				res = toughMask.GetFieldValue(field);
-				if (null != res)
+				if (position.IsSet(UnrecExpStatus.NameForm))
 				{
-					//Удаляем опасные слова только из наименований
-					if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field))
-						res = RemoveForbWords(res);
-					if ((PriceFields.Note != field) && (PriceFields.Doc != field))
-						res = UnSpace(res);
+					core.ProductId = (uint)position.ProductId;
+					core.SynonymCode = (uint)position.SynonymCode;
+					if (position.CodeFirmCr != null)
+						core.CodeFirmCr = (uint) position.CodeFirmCr;
+					if (position.SynonymFirmCrCode != null)
+						core.SynonymFirmCrCode = (uint)position.SynonymFirmCrCode;
+					if (_priceInfo.IsUpdating)
+						core.ExistsCore = _searcher.Find(core);
+					_newCores.Add(core);
 				}
 			}
-
-			//Если у нас это не получилось, что пытаемся вытянуть данные из самого поля
-			if ((null == res) || ("" == res.Trim()))
-			{
-				res = GetFieldRawValue(field);
-				if (null != res)
-				{
-					if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field))
-						res = RemoveForbWords(res);
-					res = UnSpace(res);
-				}
-			}
-
-			if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field) ||(PriceFields.FirmCr == field))
-			{
-				if (null != res && res.Length > 255)
-				{
-					res = res.Remove(255, res.Length - 255);
-					res = res.Trim();
-				}
-			}
-
-			if (PriceFields.Name1 == field || PriceFields.OriginalName == field)
-			{
-				if (dtPrice.Columns.IndexOf(GetFieldName(PriceFields.Name2) ) > -1)
-					res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name2))));
-				if (dtPrice.Columns.IndexOf(GetFieldName(PriceFields.Name3) ) > -1)
-					res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name3))));
-
-				if (null != res && res.Length > 255)
-				{
-					res = res.Remove(255, res.Length - 255);
-					res = res.Trim();
-				}
-
-				return res;
-			}
-
-			return res;
-		}
-
-		/// <summary>
-		/// Получить значение поле в нижнем регистре
-		/// </summary>
-		/// <param name="PF"></param>
-		/// <param name="LowerCase"></param>
-		/// <returns></returns>
-		public virtual string GetFieldValue(PriceFields PF, bool LowerCase)
-		{
-			string Value = GetFieldValue(PF);
-			if ((null != Value) && LowerCase)
-				return Value.ToLower();
-			return Value;
-		}
-
-		/// <summary>
-		/// Получить значение поля как объект
-		/// </summary>
-		/// <param name="PF"></param>
-		/// <returns></returns>
-		public virtual object GetFieldValueObject(PriceFields PF)
-		{
-			switch((int)PF)
-			{
-				case (int)PriceFields.Await:
-					return GetBoolValue(PriceFields.Await, awaitPos);
-
-				case (int)PriceFields.Junk:
-					return GetJunkValue();
-
-				case (int)PriceFields.VitallyImportant:
-					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
-
-				case (int)PriceFields.RequestRatio:
-					return ProcessInt(GetFieldRawValue(PF));
-
-				case (int)PriceFields.Code:
-				case (int)PriceFields.CodeCr:
-				case (int)PriceFields.Doc:
-				case (int)PriceFields.FirmCr:
-				case (int)PriceFields.Name1:
-				case (int)PriceFields.Name2:
-				case (int)PriceFields.Name3:
-				case (int)PriceFields.Note:
-				case (int)PriceFields.Unit:
-				case (int)PriceFields.Volume:
-				case (int)PriceFields.OriginalName:
-					return GetFieldValue(PF);
-
-				case (int)PriceFields.MinBoundCost:
-				case (int)PriceFields.RegistryCost:
-				case (int)PriceFields.MaxBoundCost:
-				case (int)PriceFields.OrderCost:
-					return ProcessCost(GetFieldRawValue(PF));
-
-				case (int)PriceFields.Quantity:
-				case (int)PriceFields.MinOrderCount:
-					return ProcessInt(GetFieldRawValue(PF));
-
-				case (int)PriceFields.Period:
-					return ProcessPeriod(GetFieldRawValue(PF));
-
-				default:
-					return DBNull.Value;
-			}
-		}
-
-		/// <summary>
-		/// Обработать значение цены
-		/// </summary>
-		/// <param name="CostValue"></param>
-		/// <returns></returns>
-		public virtual object ProcessCost(string CostValue)
-		{
-			if (!String.IsNullOrEmpty(CostValue))
-			{
-				try
-				{
-					var nfi = CultureInfo.CurrentCulture.NumberFormat;
-					var res = String.Empty;
-					foreach (var c in CostValue)
-					{
-						if (Char.IsDigit(c))
-							res = String.Concat(res, c);
-						else
-						{
-							if ((!Char.IsWhiteSpace(c)) && (res != String.Empty) && (-1 == res.IndexOf(nfi.CurrencyDecimalSeparator)))
-								res = String.Concat(res, nfi.CurrencyDecimalSeparator);
-						}
-					}
-
-					//Если результирующая строка пуста, то возвращаем DBNull
-					if (String.IsNullOrEmpty(res))
-						return DBNull.Value;
-
-					var value = Decimal.Parse(res, NumberStyles.Currency);
-					value = Math.Round(value, 6);
-					return value;
-				}
-				catch
-				{
-					return DBNull.Value;
-				}
-			}
-			return DBNull.Value;
-		}
-
-		/// <summary>
-		/// Обработать значение IntValue и получить результать как целое число
-		/// </summary>
-		/// <param name="IntValue"></param>
-		/// <returns></returns>
-		public virtual object ProcessInt(string IntValue)
-		{
-			if (!String.IsNullOrEmpty(IntValue))
-			{
-				try
-				{
-					var cost = ProcessCost(IntValue);
-					if (cost is decimal)
-						return Convert.ToInt32(decimal.Truncate((decimal) cost));
-					return cost;
-				}
-				catch
-				{
-					return DBNull.Value;
-				}
-			}
-			return DBNull.Value;
-		}
-
-		/// <summary>
-		/// Обработать значение срока годности
-		/// </summary>
-		/// <param name="PeriodValue"></param>
-		/// <returns></returns>
-		public virtual object ProcessPeriod(string PeriodValue)
-		{
-			DateTime res = DateTime.MaxValue;
-			string pv;
-			if (null != toughMask)
-			{
-				pv = toughMask.GetFieldValue(PriceFields.Period);
-				if (!String.IsNullOrEmpty(pv))
-				{
-					res = toughDate.Analyze( pv );
-					if (!DateTime.MaxValue.Equals(res))
-						return res;
-				}
-			}
-			if (!String.IsNullOrEmpty(PeriodValue))
-			{
-				res = toughDate.Analyze( PeriodValue );
-				if (DateTime.MaxValue.Equals(res))
-				{
-					return DBNull.Value;
-				}
-				return res;
-			}
-			return DBNull.Value;
-		}
-
-		/// <summary>
-		/// Убрать лишние пробелы в имени
-		/// </summary>
-		/// <param name="Value"></param>
-		/// <returns></returns>
-		public string UnSpace(string Value)
-		{
-			if (null != Value)
-			{
-				Value = Value.Trim(); 
-				while(Value.IndexOf("  ") > -1)
-					Value = Value.Replace("  ", " ");
-				return Value;
-			}
-			return null;
-		}
-
-		/// <summary>
-		/// Удалить запрещенные слова
-		/// </summary>
-		/// <param name="Value"></param>
-		/// <returns></returns>
-		public string RemoveForbWords(string Value)
-		{
-			if (null != Value)
-			{
-				if (String.Empty != forbWords)
-				{
-					foreach(string s in forbWordsList)
-					{
-						Value = Value.Replace(s, "");
-					}
-					if (String.Empty == Value)
-						return null;
-					return Value;
-				}
-				return Value;
-			}
-			return null;
 		}
 
 		//Содержится ли название в таблице запрещенных слов
@@ -1585,7 +928,7 @@ PriceProcessor.");
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow[] dr = null;
-			if (formByCode)
+			if (_priceInfo.FormByCode)
 			{
 				if (!String.IsNullOrEmpty(position.Code))
 					dr = dtSynonym.Select(String.Format("Code = '{0}'", position.Code.Replace("'", "''")));
@@ -1609,8 +952,11 @@ PriceProcessor.");
 			}
 		}
 
-		public void GetAssortmentStatus(FormalizationPosition position)
+		private void GetAssortmentStatus(FormalizationPosition position)
 		{
+			if (!position.ProductId.HasValue || !position.CodeFirmCr.HasValue)
+				return;
+
 			var assortmentStatus = GetAssortmentStatus(position.CatalogId, position.CodeFirmCr, position.SynonymFirmCrCode, position.SynonymCode);
 			//Если получили исключение, то сбрасываем CodeFirmCr
 			if (assortmentStatus == UnrecExpStatus.MarkExclude)
@@ -1618,7 +964,7 @@ PriceProcessor.");
 			position.AddStatus(assortmentStatus);
 		}
 
-		public UnrecExpStatus GetAssortmentStatus(long? CatalogId, long? ProducerId, long? ProducerSynonymId, long? synonymId)
+		private UnrecExpStatus GetAssortmentStatus(long? catalogId, long? producerId, long? producerSynonymId, long? synonymId)
 		{
 			DataRow[] dr;
 
@@ -1627,8 +973,8 @@ PriceProcessor.");
 			{
 				dr = dtAssortment.Select(
 					String.Format("CatalogId = {0} and ProducerId = {1}",
-						CatalogId,
-						ProducerId));
+						catalogId,
+						producerId));
 				assortmentSearchCount++;
 			}
 			finally
@@ -1636,7 +982,7 @@ PriceProcessor.");
 				assortmentSearchWatch.Stop();
 			}
 
-			if (dr != null && dr.Length == 1)
+			if (dr.Length == 1)
 				return UnrecExpStatus.AssortmentForm;
 
 			excludesSearchWatch.Start();
@@ -1644,8 +990,8 @@ PriceProcessor.");
 			{
 				dr = dtExcludes.Select(
 					String.Format("CatalogId = {0} and ProducerSynonymId = {1}",
-						CatalogId,
-						ProducerSynonymId));
+						catalogId,
+						producerSynonymId));
 				excludesSearchCount++;
 			}
 			finally
@@ -1654,8 +1000,8 @@ PriceProcessor.");
 			}
 
 			//Если мы ничего не нашли, то добавляем в исключение
-			if (dr == null || dr.Length == 0)
-				CreateExcludeOrAssortment(CatalogId, ProducerId, ProducerSynonymId, synonymId);
+			if (dr.Length == 0 && !_priceInfo.IsAssortmentPrice)
+				CreateExcludeOrAssortment(catalogId, producerId, producerSynonymId, synonymId);
 
 			return UnrecExpStatus.MarkExclude;
 		}
@@ -1698,7 +1044,7 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 		}
 
 		//Смогли ли мы распознать производителя по названию?
-		public void GetCodeFirmCr(FormalizationPosition position)
+		private void GetProducerId(FormalizationPosition position)
 		{
 			if (String.IsNullOrEmpty(position.FirmCr))
 			{
@@ -1707,8 +1053,8 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 			}
 			else
 			{
-				var dr = dtSynonymFirmCr.Select(String.Format("Synonym = '{0}'", position.FirmCr.Replace("'", "''")));
-				if ((null != dr) && (dr.Length > 0))
+				var dr = dtSynonymFirmCr.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+				if (dr.Length > 0)
 				{
 					//Если значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
 					position.CodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
@@ -1730,119 +1076,24 @@ where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producer
 					if (position.IsSet(UnrecExpStatus.NameForm))
 					{
 						position.IsAutomaticProducerSynonym = true;
-						position.InternalProducerSynonymId = InsertSynonymFirm(GetFieldValue(PriceFields.FirmCr, false));
+						position.InternalProducerSynonymId = InsertSynonymFirm(position);
 					}
 				}
-
 			}
 		}
 
-		private long InsertSynonymFirm(string firmCr)
+		private long InsertSynonymFirm(FormalizationPosition position)
 		{
 			var drInsert = dtSynonymFirmCr.NewRow();
 			drInsert["CodeFirmCr"] = DBNull.Value;
 			drInsert["SynonymFirmCrCode"] = DBNull.Value;
 			drInsert["IsAutomatic"] = 1;
-			drInsert["Synonym"] = firmCr.ToLower();
-			drInsert["OriginalSynonym"] = firmCr.Trim();
+			drInsert["Synonym"] = position.FirmCr.ToLower();
+			drInsert["OriginalSynonym"] = position.FirmCr.Trim();
 			dtSynonymFirmCr.Rows.Add(drInsert);
+			position.Core.CreatedProducerSynonym = drInsert;
 			_stats.ProducerSynonymCreatedCount++;
 			return (long)drInsert["InternalProducerSynonymId"];
-		}
-
-		protected bool GetBoolValue(PriceFields priceField, string mask)
-		{
-			bool value = false;
-
-			var trueValues = new[] { "истина", "true"};
-			var falseValues = new[] { "ложь", "false" };
-
-			string[] selectedValues = null;
-
-			try
-			{
-				foreach (string boolValue in trueValues)
-					if (boolValue.Equals(mask, StringComparison.OrdinalIgnoreCase))
-						selectedValues = trueValues;
-
-				foreach (string boolValue in falseValues)
-					if (boolValue.Equals(mask, StringComparison.OrdinalIgnoreCase))
-						selectedValues = falseValues;
-
-				string fieldValue = GetFieldValue(priceField);
-
-				//Если в столбце значение пусто, то возвращаем значение по умолчанию
-				if (String.IsNullOrEmpty(fieldValue))
-					return value;
-
-				if (selectedValues != null)
-				{
-					Regex reRussian = new Regex(selectedValues[0], RegexOptions.IgnoreCase);
-					Match mRussian = reRussian.Match(fieldValue);
-					Regex reEnglish = new Regex(selectedValues[1], RegexOptions.IgnoreCase);
-					Match mEnglish = reEnglish.Match(fieldValue);
-					value = (mRussian.Success || mEnglish.Success);
-				}
-				else
-				{
-					Regex re = new Regex(mask);
-					Match m = re.Match(fieldValue);
-					value = (m.Success);
-				}
-			}
-			catch
-			{
-			}
-
-			return value;
-		}
-
-		/// <summary>
-		/// Получить значение поля Junk
-		/// </summary>
-		/// <returns></returns>
-		public bool GetJunkValue()
-		{
-			var JunkValue = false;
-			var t = GetFieldValueObject(PriceFields.Period);
-			if (t is DateTime)
-			{
-				var dt = (DateTime)t;
-				var ts = SystemTime.Now().Subtract(dt);
-				JunkValue = (Math.Abs(ts.Days) < 180);
-			}
-			if (!JunkValue)
-			{
-				JunkValue = GetBoolValue(PriceFields.Junk, junkPos);
-			}
-
-			return JunkValue;
-		}
-
-		/// <summary>
-		/// Обрабатывает цены и возврашает кол-во не нулевых цен
-		/// </summary>
-		public Cost[] ProcessCosts(List<CostDescription> descriptions)
-		{
-			var costs = new List<Cost>();
-			for(var i = 0; i < descriptions.Count; i++)
-			{
-				var description = descriptions[i];
-				
-				var costValue = dtPrice.Rows[CurrPos][description.FieldName];
-				var value = Cost.Parse(costValue);
-
-				if (value == 0)
-					description.ZeroCostCount++;
-				if (Cost.IsZeroOrLess(value))
-				{
-					description.UndefinedCostCount++;
-					continue;
-				}
-				
-				costs.Add(new Cost(description, value));
-			}
-			return costs.ToArray();
 		}
 	}
 }

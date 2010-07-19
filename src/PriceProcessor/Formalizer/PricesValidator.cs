@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using System.Data;
+using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
 using System.Reflection;
-using System.Configuration;
-using Inforoom.PriceProcessor;
 
 namespace Inforoom.Formalizer
 {
@@ -23,15 +22,14 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// ѕроизводит проверку прайса на существовани€ правил и создает соответствующий тип парсера
 		/// </summary>
-		public static BasePriceParser Validate(MySqlConnection myconn, string FileName, string TempFileName, PriceProcessItem item)
+		public static IPriceFormalizer Validate(string fileName, string tempFileName, uint priceItemId)
 		{
-			var shortFileName = Path.GetFileName(FileName);
-			var dtFormRules = LoadFormRules((uint) item.PriceItemId, myconn);
+			var shortFileName = Path.GetFileName(fileName);
+			var dtFormRules = LoadFormRules(priceItemId);
 			if ( dtFormRules.Rows.Count > 0 )
 			{	
-				var CurrentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
+				var currentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
 
-				#region  опирование файла
 				//«десь будем производить копирование файла
 				int CopyErrorCount = 0;
 				bool CopySucces = false;
@@ -39,7 +37,7 @@ namespace Inforoom.Formalizer
 				{
 					try
 					{
-						File.Copy(FileName, TempFileName, true);
+						File.Copy(fileName, tempFileName, true);
 						CopySucces = true;
 					}
 					catch(Exception e)
@@ -51,7 +49,7 @@ namespace Inforoom.Formalizer
 						}
 						else
 							throw new FormalizeException(
-								String.Format(Settings.Default.FileCopyError, FileName, Path.GetDirectoryName(TempFileName), e), 
+								String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e), 
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]), 
 								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 								(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
@@ -60,22 +58,20 @@ namespace Inforoom.Formalizer
 				}
 				while(!CopySucces);
 
-				FileName = TempFileName;
-				#endregion
+				fileName = tempFileName;
 
 				if ("1" == dtFormRules.Rows[0][FormRules.colFirmStatus].ToString())
 				{
 					//ѕровер€ем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
 					if (!dtFormRules.Rows[0].IsNull(FormRules.colCostType) && Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType])))
 					{
-						var parserClass = GetParserClassName(CurrentParserClassName);
+						var parserClass = GetParserClassName(currentParserClassName);
 
 						if (parserClass != null)
-						{
-							return (BasePriceParser)Activator.CreateInstance(parserClass, new object[] { FileName, myconn, dtFormRules });
-						}
+							return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, dtFormRules}));
+
 						throw new WarningFormalizeException(
-							String.Format(Settings.Default.UnknownPriceFMTError, CurrentParserClassName),
+							String.Format(Settings.Default.UnknownPriceFMTError, currentParserClassName),
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 							(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
@@ -98,7 +94,7 @@ namespace Inforoom.Formalizer
 			throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, shortFileName));
 		}
 
-		public static DataTable LoadFormRules(uint priceItemId, MySqlConnection myconn)
+		public static DataTable LoadFormRules(uint priceItemId)
 		{
 			var query = String.Format(@"
 select
@@ -139,9 +135,10 @@ and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
 and pricefmts.ID = PFR.PriceFormatId", priceItemId);
 
 			var dtFormRules = new DataTable("FromRules");
-			myconn.Open();
-			var daFormRules = new MySqlDataAdapter(query, myconn);
-			daFormRules.Fill(dtFormRules);
+			With.Connection(c => {
+				var daFormRules = new MySqlDataAdapter(query, c);
+				daFormRules.Fill(dtFormRules);
+			});
 			return dtFormRules;
 		}
 	}

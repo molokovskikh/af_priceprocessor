@@ -1,5 +1,4 @@
 ﻿using System;
-using ExecuteTemplate;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;

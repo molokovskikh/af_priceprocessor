@@ -80,7 +80,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 	public class NewCore : Core
 	{
-		private ExistsCore _existsCore; 
+		private ExistsCore _existsCore;
+		public int QuantityAsInt = -1;
+		public DataRow CreatedProducerSynonym;
 
 		public ExistsCore ExistsCore
 		{

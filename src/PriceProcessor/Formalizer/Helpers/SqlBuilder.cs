@@ -181,7 +181,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				.Append(GetStringValue(core.Doc))
 				.Append(");")
 				.Append("set @LastCoreID = last_insert_id();");
-			Console.WriteLine(command);
 			return command.ToString();
 		}
 
