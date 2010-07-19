@@ -2,10 +2,9 @@
 using System.Data;
 using System.IO;
 using System.Text;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
@@ -13,30 +12,10 @@ using LumiSoft.Net.Mime;
 using MySql.Data.MySqlClient;
 using System.Configuration;
 using NUnit.Framework;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {
-	public class With
-	{
-		public static void Connection(Action<MySqlConnection> action)
-		{
-			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
-			{
-				connection.Open();
-				action(connection);
-			}
-		}
-
-		public static T Connection<T>(Func<MySqlConnection, T> action)
-		{
-			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
-			{
-				connection.Open();
-				return action(connection);
-			}
-		}
-	}
-
 	public class TestHelper
 	{
 		public static bool FulVerification;
@@ -213,8 +192,9 @@ select c.*, cc.Cost, s.Synonym
 from core0 c
   join corecosts cc on cc.Core_Id = c.Id
   join farm.Synonym s on s.SynonymCode = c.SynonymCode
-where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables[0];
+where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (4413102, 4413103);", pricecode, costcode)).Tables[0];
 
+			Assert.That(resultCore0.Rows.Count, Is.GreaterThan(0), "ничего не формализовали");
 			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "количество позиций не совпадает");
 			for(var i = 0; i < etalonCore0.Rows.Count; i++)
 			{

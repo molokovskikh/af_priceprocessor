@@ -27,14 +27,17 @@ namespace PriceProcessor.Test
 		[SetUp]
 		public void Setup()
 		{
+			//822 - глушняк
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
 
 			using(new SessionScope())
 			{
-				items = TestPriceItem.Queryable.Where(i => i.Format.PriceFormat == PriceFormatType.Dbf).ToList();
-				ids = items.Select(i => i.Id).ToArray();
+				items = TestPriceItem.Queryable.Where(i => i.Format.PriceFormat == PriceFormatType.Xls).ToList();
+				ids = items.Select(i => i.Id).Where(id => id != 910u && id != 977u && id != 886).ToArray();
 			}
+			TestHelper.FulVerification = true;
+			ids = new uint[] {468u};
 		}
 
 		[Test, Ignore("не работает, т.к. нужны были для проверки формализации новых форматов и сравнения со старыми")]
@@ -44,7 +47,7 @@ namespace PriceProcessor.Test
 			{
 				try
 				{
-					var file = Path.Combine(path, String.Format("{0}.dbf", id));
+					var file = Path.Combine(path, String.Format("{0}.xls", id));
 					if (!File.Exists(file))
 						continue;
 					Console.WriteLine(DateTime.Now + " - " + file);
@@ -67,7 +70,7 @@ namespace PriceProcessor.Test
 			{
 				try
 				{
-					var file = Path.Combine(path, String.Format("{0}.dbf", id));
+					var file = Path.Combine(path, String.Format("{0}.xls", id));
 					if (!File.Exists(file))
 						continue;
 					Console.WriteLine(DateTime.Now + " - " + file);
@@ -118,9 +121,9 @@ where pricecode = @PriceCode;
 			foreach (var item in items)
 			{
 				Console.WriteLine(item.Id);
-				var price = String.Format(@"\\fms.adc.analit.net\prices\base\{0}.dbf", item.Id);
+				var price = String.Format(@"\\fms.adc.analit.net\prices\base\{0}.xls", item.Id);
 				if (File.Exists(price))
-					File.Copy(price, Path.Combine(path, String.Format("{0}.dbf", item.Id)));
+					File.Copy(price, Path.Combine(path, String.Format("{0}.xls", item.Id)));
 			}
 		}
 

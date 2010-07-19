@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Common.MySql;
 using Inforoom.Common;
 using NUnit.Framework;
 using System.IO;
@@ -12,6 +13,7 @@ using RemotePriceProcessor;
 using MySql.Data.MySqlClient;
 using Test.Support;
 using System.Collections.Generic;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {

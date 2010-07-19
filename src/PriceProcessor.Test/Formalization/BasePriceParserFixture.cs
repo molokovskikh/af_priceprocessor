@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Threading;
 using System.IO;
 using Inforoom.PriceProcessor.Properties;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {

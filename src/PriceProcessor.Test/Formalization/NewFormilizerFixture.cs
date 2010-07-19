@@ -22,7 +22,6 @@ namespace PriceProcessor.Test.Formalization
 		private TestPrice price;
 		private TestPriceItem priceItem;
 		private DataTable table;
-		private MySqlConnection connection;
 
 		[SetUp]
 		public void Setup()
@@ -59,7 +58,6 @@ namespace PriceProcessor.Test.Formalization
 				price.NewPriceCost(priceItem).FormRule.FieldName = "F4";
 				price.Update();
 			}
-			connection = new MySqlConnection(Literals.ConnectionString());
 			table = TestHelper.GetParseRules((int) priceItem.Id);
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 		}
@@ -140,7 +138,12 @@ namespace PriceProcessor.Test.Formalization
 			{
 				var synonyms = TestProducerSynonym.Queryable.Where(s => s.Price == price).ToList();
 				Assert.That(synonyms.Select(s => s.Name).ToArray(), Is.EqualTo(new[] {"Санкт-Петербургская ф.ф.", "Твинс Тэк"}));
-				Assert.That(synonyms.Single(s => s.Name == "Твинс Тэк").Producer, Is.Null);
+				var createdSynonym = synonyms.Single(s => s.Name == "Твинс Тэк");
+				Assert.That(createdSynonym.Producer, Is.Null);
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				var core = cores.Single(c => c.ProductSynonym.Name == "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
+				Assert.That(core.ProducerSynonym, Is.EqualTo(createdSynonym), "создали синоним но не назначили его позиции в core");
+
 			}
 		}
 
@@ -264,7 +267,9 @@ namespace PriceProcessor.Test.Formalization
 
 		private void Formilize()
 		{
-			formalizer = new BasePriceParser2(file, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), connection, table);
+			var row = table.Rows[0];
+			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, new PriceFormalizationInfo(row));
+			formalizer = new BasePriceParser2(reader, row);
 			formalizer.Formalize();
 		}
 	}

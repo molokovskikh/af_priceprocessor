@@ -1,25 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Castle.ActiveRecord;
+using Common.MySql;
 using Common.Tools;
-using Common.Tools.Calendar;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills;
-using log4net.Config;
-using LumiSoft.Net.IMAP;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using System.Threading;
 using System.IO;
-using LumiSoft.Net.IMAP.Client;
-using Inforoom.Downloader.Documents;
 using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.log4net;
-
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {
@@ -28,7 +22,6 @@ namespace PriceProcessor.Test
 		public void Process()
 		{
 			CreateDirectoryPath();
-			CreateWorkConnection();
 			ProcessData();
 		}
 	}

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.MySql;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using System.Threading;
 using Test.Support;
-using MySql.Data.MySqlClient;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {

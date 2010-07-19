@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Config;
+using Common.MySql;
 using Inforoom.PriceProcessor.Waybills;
 using NHibernate.Cfg;
 using NUnit.Framework;
@@ -9,11 +10,12 @@ using Test.Support;
 namespace PriceProcessor.Test
 {
 	[SetUpFixture]
-	public class SetupFiture
+	public class SetupFixture
 	{
 		[SetUp]
 		public void Setup()
 		{
+			With.DefaultConnectionStringName = "DB";
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),
 				new Dictionary<string, string> {

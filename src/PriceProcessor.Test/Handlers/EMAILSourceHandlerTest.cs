@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Common.MySql;
 using Common.Tools;
 using Common.Tools.Calendar;
 using Inforoom.Common;
@@ -19,6 +20,7 @@ using NUnit.Framework;
 using System.Threading;
 using System.IO;
 using Test.Support;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {
@@ -27,7 +29,6 @@ namespace PriceProcessor.Test
 		public void Process()
 		{
 			CreateDirectoryPath();
-			CreateWorkConnection();
 			ProcessData();
 		}
 	}

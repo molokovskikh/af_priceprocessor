@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;

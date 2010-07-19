@@ -1,13 +1,14 @@
 ﻿using System;
+using Common.MySql;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.FTP.Server;
-using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
 using System.Threading;
 using System.IO;
 using Inforoom.Downloader.Ftp;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test.Handlers
 {

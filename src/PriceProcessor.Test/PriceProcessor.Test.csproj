@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PriceProcessor.Test</RootNamespace>
     <AssemblyName>PriceProcessor.Test</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>
     </SccProjectName>
@@ -115,23 +115,25 @@
     </Reference>
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveHelperFixture.cs" />
-    <Compile Include="AssortmentFixture.cs" />
-    <Compile Include="BasePriceParserFixture.cs" />
+    <Compile Include="Formalization\AssortmentFixture.cs" />
+    <Compile Include="Formalization\BasePriceParserFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
+    <Compile Include="Loader\FarmImpeksFormalizerFixture.cs" />
     <Compile Include="Migrations\ExcelFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
-    <Compile Include="SetupFiture.cs" />
+    <Compile Include="SetupFixture.cs" />
     <Compile Include="Handlers\PathSourceHandlerTest.cs" />
     <Compile Include="HTTPSourceHandlerFixture.cs" />
     <Compile Include="MySqlUtilsFixture.cs" />
@@ -152,8 +154,8 @@
     <Compile Include="TestHelper.cs" />
     <Compile Include="TextFixture.cs" />
     <Compile Include="Troubleshoot.cs" />
-    <Compile Include="UpdateCoreTimestampsFixture.cs" />
-    <Compile Include="UsedSynonymLogsFixture.cs" />
+    <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
+    <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\AllinceHealthcareParserFixture.cs" />
     <Compile Include="Waybills\Parser\AptekaHoldingIzhevskParserFixture.cs" />
@@ -207,6 +209,10 @@
     <Compile Include="WCFTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common.MySql\Common.MySql\Common.MySql.csproj">
+      <Project>{8A680813-C83B-497A-85E6-E8F07B7D7650}</Project>
+      <Name>Common.MySql</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>
       <Name>Common.Tools</Name>

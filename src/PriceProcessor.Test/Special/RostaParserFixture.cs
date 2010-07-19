@@ -104,7 +104,7 @@ namespace PriceProcessor.Test.Special
 			var priceItemId = price.Costs[0].PriceItem.Id;
 			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
-				var data = PricesValidator.LoadFormRules(priceItemId, connection);
+				var data = PricesValidator.LoadFormRules(priceItemId);
 				var parser = new FakeRostaParser(@"..\..\Data\Rosta\price",
 					@"..\..\Data\Rosta\producers",
 					@"..\..\Data\Rosta\ex",

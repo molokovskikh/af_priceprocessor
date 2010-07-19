@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.IMAP;
@@ -37,7 +38,6 @@ namespace PriceProcessor.Test
 		public void Process()
 		{
 			CreateDirectoryPath();
-			CreateWorkConnection();
 			ProcessData();
 		}
 	}

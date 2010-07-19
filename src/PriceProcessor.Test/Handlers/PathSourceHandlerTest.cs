@@ -4,11 +4,12 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using MySql.Data.MySqlClient;
+using Common.MySql;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Test.Support;
 using System.Collections;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test.Handlers
 {
@@ -19,10 +20,9 @@ namespace PriceProcessor.Test.Handlers
 		public void Setup()
 		{
 			TestHelper.RecreateDirectories();
-			sourceType = "HTTP";
+			SourceType = "HTTP";
 			TestPriceSource.CreateHttpPriceSource("www.ru", "index.html", "index.html");
 			CreateDirectoryPath();
-			CreateWorkConnection();			
 		}
 
 		protected override void GetFileFromSource(PriceSource row)

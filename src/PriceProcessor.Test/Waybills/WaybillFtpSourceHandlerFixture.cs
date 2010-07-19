@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Common.MySql;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Properties;
@@ -25,7 +26,6 @@ namespace PriceProcessor.Test.Waybills
 		public void Process()
 		{
 			CreateDirectoryPath();
-			CreateWorkConnection();
 			ProcessData();
 		}
 	}
