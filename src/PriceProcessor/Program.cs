@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Config;
+using Common.MySql;
 #if !DEBUG
 using System.ServiceProcess;
 #else
 using System.Windows.Forms;
-using Common.MySql;
 using Inforoom.PriceProcessor.Properties;
 #endif
 using System.IO;
