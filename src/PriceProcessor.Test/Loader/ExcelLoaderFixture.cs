@@ -92,7 +92,7 @@ namespace PriceProcessor.Test.Loader
 
 		private DataTable Load(int id)
 		{
-			return loader.Load(String.Format(@"..\..\..\data\ExcelLoaderFixture\{0}.xls", id));
+			return loader.Load(String.Format(@"..\..\data\ExcelLoaderFixture\{0}.xls", id));
 		}
 	}
 }

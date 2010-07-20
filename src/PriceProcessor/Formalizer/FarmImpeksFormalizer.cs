@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Linq;
+using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Waybills;
@@ -28,11 +29,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public virtual string PriceName { get; set; }
 	}
 
+	public class Customer
+	{
+		public string Id;
+		public decimal PriceMarkup;
+	}
+
 	public class PriceXmlReader : IReader
 	{
 		private readonly string _filename;
 		private readonly XmlReader _reader;
 		private bool _inPrice;
+		private bool _readed;
 
 		public PriceXmlReader(string filename)
 		{
@@ -45,22 +53,41 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IEnumerable<string> Prices()
 		{
-			while (_reader.Read())
+			while (ReadFromReader())
 			{
-				if (_reader.Name == "Прайс" && _reader.NodeType == XmlNodeType.Element)
+				while (_reader.Name == "Прайс" && _reader.NodeType == XmlNodeType.Element && _readed)
 				{
 					_inPrice = true;
+					_readed = false;
 					yield return _reader.GetAttribute("ID");
 				}
 			}
 		}
 
+		public IEnumerable<Customer> Customers()
+		{
+			do
+			{
+				if (_reader.Name == "Получатель" && _reader.NodeType == XmlNodeType.Element)
+				{
+					yield return new Customer {
+						Id = _reader.GetAttribute("ПолучательID"),
+						PriceMarkup = Convert.ToDecimal(_reader.GetAttribute("Наценка"))
+					};
+				}
+				else if (_reader.Name != "Получатель" && _reader.NodeType == XmlNodeType.Element)
+				{
+					yield break;
+				}
+			} while (ReadFromReader());
+		}
+
 		public IEnumerable<FormalizationPosition> Read()
 		{
 			var cost = CostDescriptions.First();
-			while(_reader.Read())
+			while (ReadFromReader())
 			{
-				if (_inPrice && _reader.Name == "Позиция")
+				if (_inPrice && _reader.Name == "Позиция" && _reader.NodeType == XmlNodeType.Element)
 				{
 					yield return new FormalizationPosition {
 						PositionName = _reader.GetAttribute("Наименование"),
@@ -83,7 +110,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 					};
 				}
-				else if (_reader.NodeType != XmlNodeType.Element && _reader.Name != "Позиция")
+				else if (_reader.Name != "Позиция" && _reader.NodeType == XmlNodeType.Element)
 				{
 					_inPrice = false;
 					yield break;
@@ -91,7 +118,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 		}
 
-		public T GetNullable<T>(string name)
+		private bool ReadFromReader()
+		{
+			_readed = true;
+			return _reader.Read();
+		}
+
+		private T GetNullable<T>(string name)
 		{
 			var value = _reader.GetAttribute(name);
 			if (String.IsNullOrWhiteSpace(value))
@@ -126,18 +159,41 @@ namespace Inforoom.PriceProcessor.Formalizer
 			{
 				var priceInfo = _data.Rows[0];
 				var supplierId = Convert.ToUInt32(priceInfo["FirmCode"]);
+				Price price;
 				using(new SessionScope(FlushAction.Never))
+					price = Price.Queryable.Where(p => p.Supplier.Id == supplierId && p.PriceName == priceName).FirstOrDefault();
+
+				if (price == null)
 				{
-					var price = Price.Queryable.Where(p => p.Supplier.Id == supplierId && p.PriceName == priceName).FirstOrDefault();
-					if (price == null)
-					{
-						_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, priceName);
-						continue;
-					}
-					priceInfo["PriceCode"] = price.Id;
+					_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, priceName);
+					continue;
 				}
+				priceInfo["PriceCode"] = price.Id;
 				var parser = new BasePriceParser2(reader, priceInfo);
 				parser.Formalize();
+
+				var customers = reader.Customers().ToList();
+				With.Transaction((c, t) => {
+					var command = new MySqlCommand(@"
+update Future.Intersection i
+set i.AvailableForClient = 0
+where i.PriceId = ?priceId", c);
+					command.Parameters.AddWithValue("?priceId", price.Id);
+					command.ExecuteNonQuery();
+
+					foreach (var customer in customers)
+					{
+						command.CommandText = @"
+update Future.Intersection i
+set i.AvailableForClient = 1, i.PriceMarkup = ?priceMarkup
+where i.SupplierClientId = ?id and i.PriceId = ?priceId";
+						command.Parameters.Clear();
+						command.Parameters.AddWithValue("?id", customer.Id);
+						command.Parameters.AddWithValue("?priceMarkup", customer.PriceMarkup);
+						command.Parameters.AddWithValue("?priceId", price.Id);
+						command.ExecuteNonQuery();
+					}
+				});
 			}
 		}
 

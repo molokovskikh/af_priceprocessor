@@ -57,6 +57,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 	public class CostDescription
 	{
+		public CostDescription()
+		{}
+
 		public CostDescription(DataRow row)
 		{
 			Id = Convert.ToUInt32(row["CostCode"]);
