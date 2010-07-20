@@ -178,6 +178,7 @@ where a.Id = ?AddressId", connection);
 		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
+			var beign = DateTime.Now;
 			var filter = new EventFilter<WaybillSourceHandler>();
 
 			var client = TestOldClient.CreateTestClient();
@@ -203,6 +204,7 @@ where a.Id = ?AddressId", connection);
 			{
 				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
+				Assert.That(logs.Single().LogTime, Is.GreaterThanOrEqualTo(beign));
 
 				var documents = Document.Queryable.Where(d => d.Log.Id == logs.Single().Id).ToList();
 				Assert.That(documents.Count, Is.EqualTo(1));

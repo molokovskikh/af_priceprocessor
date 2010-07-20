@@ -12,6 +12,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.IO;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
+using log4net.Config;
 using log4net.Util;
 using Environment=NHibernate.Cfg.Environment;
 
@@ -22,6 +23,7 @@ namespace Inforoom.PriceProcessor
 		public static void Main()
 		{
 			SystemInfo.NullText = null;
+			XmlConfigurator.Configure();
 			var log = LogManager.GetLogger(typeof(Program));
 			try
 			{

@@ -147,9 +147,9 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
-				                                                doc.ClientCode == _summary.Client.Id &&
-				                                                doc.AddressId == _summary.Client.Addresses[0].Id &&
-				                                                doc.DocumentDate != null);
+					doc.ClientCode == _summary.Client.Id &&
+					doc.AddressId == _summary.Client.Addresses[0].Id &&
+					doc.DocumentDate != null);
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
 		}
@@ -163,7 +163,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 
 			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
-                SearchOption.AllDirectories);
+				SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(1));
 
 			var tempFilePath = Path.Combine(Settings.Default.TempPath, "DownWAYBILL");

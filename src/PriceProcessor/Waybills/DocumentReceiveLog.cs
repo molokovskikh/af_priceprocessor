@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("FirmCode")]
 		public Supplier Supplier { get; set; }
 
-		[Property]
+		[Property(Insert = false)]
 		public DateTime LogTime { get; set; }
 
 		[Property]
