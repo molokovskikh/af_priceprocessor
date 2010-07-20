@@ -221,7 +221,7 @@ namespace Inforoom.Formalizer
 	/// <summary>
 	/// Summary description for BasePriceParser.
 	/// </summary>
-	public abstract class BasePriceParser
+	public abstract class BasePriceParser : IPriceFormalizer
 	{
 		//таблица с прайсом
 		protected DataTable dtPrice;
@@ -281,30 +281,30 @@ namespace Inforoom.Formalizer
 		protected int CurrPos = -1;
 
 		//Кол-во успешно формализованных
-		public int formCount;
+		public int formCount { get; set; }
 		//Кол-во "нулей"
-		public int zeroCount;
+		public int zeroCount { get; set; }
 		//Кол-во нераспознанных событий
-		public int unformCount;
+		public int unformCount { get; set; }
 		//Кол-во нераспознаных по всей форме
-		public int unrecCount;
+		public int unrecCount { get; set; }
 		//Кол-во "запрещенных" позиций
-		public int forbCount;
+		public int forbCount { get; set; }
 
 		//Максимальное кол-во рестартов транзакций при применении прайс-листа в базу данных
-		public int maxLockCount;
+		public int maxLockCount { get; set; }
 
 		protected string priceFileName;
 
 		//FormalizeSettings
 		//имя прайса
-		public string	priceName;
+		public string	priceName { get; set; }
 		//Имя клиента
-		public string	firmShortName;
+		public string	firmShortName { get; set; }
 		//Код клиента
-		public long	firmCode;
+		public long	firmCode { get; set; }
 		//ключ прайса
-		public long		priceCode = -1;
+		public long		priceCode { get; set; }
 		//код ценовой колонки, может быть не установлен
 		public long?	costCode;
 
@@ -364,6 +364,7 @@ namespace Inforoom.Formalizer
 		protected readonly ILog _logger;
 
 		public string InputFileName { get; set; }
+
 
 		/// <summary>
 		/// Конструктор парсера
@@ -1911,6 +1912,12 @@ and r.RegionCode = cd.RegionCode",
 				_logger.Debug("конец Formalize");
 				log4net.NDC.Pop();
 			}
+		}
+
+		public bool Downloaded
+		{
+			get { return downloaded; }
+			set { downloaded = value; }
 		}
 
 		private void InternalFormalize()
