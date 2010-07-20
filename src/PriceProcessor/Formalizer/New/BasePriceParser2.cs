@@ -107,10 +107,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 			_connection = new MySqlConnection(Literals.ConnectionString());
 			dsMyDB = new DataSet();
-			
-			priceItemId = Convert.ToInt64(priceInfo[FormRules.colPriceItemId]); 
-			parentSynonym = Convert.ToInt64(priceInfo[FormRules.colParentSynonym]); 
-			costType = (CostTypes)Convert.ToInt32(priceInfo[FormRules.colCostType]);
+
+			priceItemId = _priceInfo.PriceItemId;
+			parentSynonym = _priceInfo.ParentSynonym; 
+			costType = _priceInfo.CostType;
 
 			prevRowCount = priceInfo[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(priceInfo[FormRules.colPrevRowCount]);
 

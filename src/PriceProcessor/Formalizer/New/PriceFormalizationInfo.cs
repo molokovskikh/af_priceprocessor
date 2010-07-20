@@ -8,7 +8,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class PriceFormalizationInfo
 	{
-		
+		public long PriceItemId;
+		public long ParentSynonym;
+
 		public PriceFormalizationInfo(DataRow row)
 		{
 			PriceName = row[FormRules.colSelfPriceName].ToString();
@@ -23,6 +25,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				.Select(c => Convert.ToUInt32(c))
 				.Any(id => id == PriceCode);
 			IsAssortmentPrice = Convert.ToInt32(row[FormRules.colPriceType]) == Settings.Default.ASSORT_FLG;
+			PriceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]);
+			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
 		}
 
 		public string PriceName { get; set; }

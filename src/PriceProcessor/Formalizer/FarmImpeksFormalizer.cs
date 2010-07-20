@@ -27,6 +27,22 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		[Property]
 		public virtual string PriceName { get; set; }
+
+		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
+		public virtual IList<PriceCost> Costs { get; set; }
+	}
+
+	[ActiveRecord("PricesCosts", Schema = "Usersettings")]
+	public class PriceCost
+	{
+		[PrimaryKey("CostCode")]
+		public virtual uint Id { get; set;  }
+
+		[BelongsTo("PriceCode")]
+		public virtual Price Price { get; set; }
+
+		[Property]
+		public virtual uint PriceItemId { get; set; }
 	}
 
 	public class Customer
@@ -159,18 +175,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 			{
 				var priceInfo = _data.Rows[0];
 				var supplierId = Convert.ToUInt32(priceInfo["FirmCode"]);
-				Price price;
-				using(new SessionScope(FlushAction.Never))
-					price = Price.Queryable.Where(p => p.Supplier.Id == supplierId && p.PriceName == priceName).FirstOrDefault();
+				PriceCost cost = null;
+				using (new SessionScope(FlushAction.Never))
+				{
+					var price = Price.Queryable.Where(p => p.Supplier.Id == supplierId && p.PriceName == priceName).FirstOrDefault();
+					if (price != null)
+						cost = price.Costs.First();
+				}
 
-				if (price == null)
+				if (cost == null)
 				{
 					_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, priceName);
 					continue;
 				}
-				priceInfo["PriceCode"] = price.Id;
-				var parser = new BasePriceParser2(reader, priceInfo);
-				parser.Formalize();
+
+				FormalizePrice(reader, priceInfo, cost);
 
 				var customers = reader.Customers().ToList();
 				With.Transaction((c, t) => {
@@ -178,7 +197,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 update Future.Intersection i
 set i.AvailableForClient = 0
 where i.PriceId = ?priceId", c);
-					command.Parameters.AddWithValue("?priceId", price.Id);
+					command.Parameters.AddWithValue("?priceId", cost.Price.Id);
 					command.ExecuteNonQuery();
 
 					foreach (var customer in customers)
@@ -190,35 +209,34 @@ where i.SupplierClientId = ?id and i.PriceId = ?priceId";
 						command.Parameters.Clear();
 						command.Parameters.AddWithValue("?id", customer.Id);
 						command.Parameters.AddWithValue("?priceMarkup", customer.PriceMarkup);
-						command.Parameters.AddWithValue("?priceId", price.Id);
+						command.Parameters.AddWithValue("?priceId", cost.Price.Id);
 						command.ExecuteNonQuery();
 					}
 				});
 			}
 		}
 
+		private void FormalizePrice(PriceXmlReader reader, DataRow priceInfo, PriceCost cost)
+		{
+			priceInfo["PriceCode"] = cost.Price.Id;
+			priceInfo["CostCode"] = cost.Id;
+			priceInfo["PriceItemId"] = cost.PriceItemId;
+			var parser = new BasePriceParser2(reader, priceInfo);
+			parser.Downloaded = Downloaded;
+			parser.Formalize();
+			formCount += parser.Stat.formCount;
+			forbCount += parser.Stat.forbCount;
+			unformCount += parser.Stat.unformCount;
+			zeroCount += parser.Stat.zeroCount;
+		}
+
 		public bool Downloaded { get; set; }
 		public string InputFileName { get; set; }
 
-		public int formCount
-		{
-			get { return 0; }
-		}
-
-		public int unformCount
-		{
-			get { return 0; }
-		}
-
-		public int zeroCount
-		{
-			get { return 0; }
-		}
-
-		public int forbCount
-		{
-			get { return 0; }
-		}
+		public int formCount { get; private set; }
+		public int unformCount { get; private set; }
+		public int zeroCount { get; private set; }
+		public int forbCount { get; private set; }
 
 		public int maxLockCount
 		{
