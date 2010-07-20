@@ -143,18 +143,13 @@ where a.Id = ?AddressId", connection);
 		{
 			var supplierCode = 2788;
 
-            PrepareDirectories();
+			PrepareDirectories();
 
 			CopyFilesFromDataDirectory(_waybillFiles2788, supplierCode);
 
 			ClearDocumentHeadersTable(Convert.ToUInt64(supplierCode));
 
-			// Запускаем обработчик
-			var handler = new WaybillLANSourceHandler();
-			handler.StartWork();
-			// Ждем какое-то время, чтоб обработчик обработал
-			Thread.Sleep(5000);
-			handler.StopWork();
+			Process_waybills();
 
 			var path = Path.GetFullPath(Settings.Default.FTPOptBoxPath);
 			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.FTPOptBoxPath));
@@ -229,7 +224,7 @@ where a.Id = ?AddressId", connection);
 			foreach (var supplierCode in _supplierCodes)
 			{
 				var supplierDir = Settings.Default.FTPOptBoxPath + Path.DirectorySeparatorChar +
-				                  Convert.ToString(supplierCode) + Path.DirectorySeparatorChar;
+								  Convert.ToString(supplierCode) + Path.DirectorySeparatorChar;
 				Directory.CreateDirectory(supplierDir);
 				Directory.CreateDirectory(supplierDir + WaybillsDirectory);
 				Directory.CreateDirectory(supplierDir + RejectsDirectory);

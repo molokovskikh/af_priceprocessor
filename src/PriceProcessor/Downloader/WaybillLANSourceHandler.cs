@@ -289,7 +289,7 @@ and st.SourceID = 4";
 							formatFile,
 							_currentDocumentType.DocType);
 
-						documentReader.ImportDocument(log);
+						documentReader.ImportDocument(log, fileName);
 						log.CopyDocumentToClientDirectory();
 						WaybillService.ParserDocument(log);
 					}

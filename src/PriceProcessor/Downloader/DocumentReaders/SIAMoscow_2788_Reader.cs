@@ -350,29 +350,33 @@ namespace Inforoom.Downloader.DocumentReaders
 			return dtResult;
 		}
 
-		public override void ImportDocument(DocumentReceiveLog log)
+		public override void ImportDocument(DocumentReceiveLog log, string filename)
 		{
 			var dsDocument = new DataSet();
-			dsDocument.ReadXml(log.GetFileName());
+			dsDocument.ReadXml(filename);
 			var providerDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
-			var doc = Document.Queryable.FirstOrDefault(d => d.FirmCode == log.Supplier.Id
-				&& d.ClientCode == log.ClientCode
-				&& d.ProviderDocumentId == providerDocumentId
-				&& d.DocumentType == log.DocumentType);
-			if (doc != null)
-				throw new Exception(String.Format(
-						"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
-						log.Supplier.Id,
-						log.ClientCode,
-						log.DocumentType,
-						providerDocumentId));
-			doc = new Document(log) {
-				ProviderDocumentId = providerDocumentId
-			};
-			using(var transaction = new TransactionScope(OnDispose.Commit))
+
+			using(new SessionScope())
 			{
-				doc.Save();
-				transaction.VoteCommit();
+				var doc = Document.Queryable.FirstOrDefault(d => d.FirmCode == log.Supplier.Id
+					&& d.ClientCode == log.ClientCode
+					&& d.ProviderDocumentId == providerDocumentId
+					&& d.DocumentType == log.DocumentType);
+				if (doc != null)
+					throw new Exception(String.Format(
+							"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
+							log.Supplier.Id,
+							log.ClientCode,
+							log.DocumentType,
+							providerDocumentId));
+				doc = new Document(log) {
+					ProviderDocumentId = providerDocumentId
+				};
+				using(var transaction = new TransactionScope(OnDispose.Rollback))
+				{
+					doc.Save();
+					transaction.VoteCommit();
+				}
 			}
 		}
 	}

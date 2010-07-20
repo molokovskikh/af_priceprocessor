@@ -101,7 +101,7 @@ WHERE
 			return InputFile;
 		}
 
-		public virtual void ImportDocument(DocumentReceiveLog log)
+		public virtual void ImportDocument(DocumentReceiveLog log, string filename)
 		{}
 	}
 }

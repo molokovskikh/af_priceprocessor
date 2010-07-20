@@ -125,12 +125,11 @@ namespace Inforoom.Downloader
 		{
 			var from = GetAddressList(m);
 			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
-
+			FillSourcesTable();
 			try
 			{
-				FillSourcesTable();
-				ProcessAttachs(m, from);
 				CheckMime(m);
+				ProcessAttachs(m, from);
 			}
 			catch (EMailSourceHandlerException e)
 			{

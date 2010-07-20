@@ -233,15 +233,18 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 
+			var handler = new WaybillFtpSourceHandlerForTesting();
+			handler.Process();
+			var countLogs = 0;
 			using (new SessionScope())
 			{
-				var handler = new WaybillFtpSourceHandlerForTesting();
-				handler.Process();
-
 				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
-				var countLogs = logs.Count();
+				countLogs = logs.Count();
+			}
 
-				handler.Process();
+			handler.Process();
+			using (new SessionScope())
+			{
 				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
