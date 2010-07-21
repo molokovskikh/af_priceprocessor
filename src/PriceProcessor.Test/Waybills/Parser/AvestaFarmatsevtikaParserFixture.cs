@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
@@ -165,6 +162,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
+		}
+
+		[Test]
+		public void Read_vitaly_important_flag_from_sst()
+		{
+			var doc = WaybillParser.Parse("4090225_Авеста-Фармацевтика(130122).sst");
+			Assert.That(doc.Lines.Count, Is.EqualTo(24));
+			var line = doc.Lines[2];
+			Assert.That(line.Code, Is.EqualTo("1411866"));
+			Assert.That(line.Product, Is.EqualTo("ВОДА д/инъекций амп 5мл N10 Эллара"));
+			Assert.That(line.Producer, Is.EqualTo("Эллара МЦ ООО"));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.VitallyImportant, Is.True);
 		}
 	}
 }

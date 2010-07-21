@@ -132,6 +132,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.ProducerCost = ToDecimal(parts[6]);
 				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
 					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
+				//авеста хранит в колонке 11 хранит признак жизненно важный
+				else if (parts[10] == "0" || parts[10] == "1")
+					docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
 			}
 			return document;
 		}
