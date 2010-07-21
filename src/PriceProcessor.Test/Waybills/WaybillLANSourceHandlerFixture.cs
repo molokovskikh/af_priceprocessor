@@ -204,9 +204,11 @@ where a.Id = ?AddressId", connection);
 			{
 				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
-				Assert.That(logs.Single().LogTime, Is.GreaterThanOrEqualTo(beign));
+				var log = logs.Single();
+				Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
+				Assert.That(log.DocumentSize, Is.GreaterThan(0));
 
-				var documents = Document.Queryable.Where(d => d.Log.Id == logs.Single().Id).ToList();
+				var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
 			}

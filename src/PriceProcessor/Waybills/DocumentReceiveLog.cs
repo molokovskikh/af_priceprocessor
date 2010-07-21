@@ -41,6 +41,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public int? MessageUid { get; set; }
 
+		[Property]
+		public long? DocumentSize { get; set; }
+
 		private string _localFile;
 
 		//файл документа может быть локальным (если он прошел через PriceProcessor и лежит в temp) или пришедшим от клиента тогда он лежит на ftp
@@ -107,8 +110,12 @@ namespace Inforoom.PriceProcessor.Waybills
 					_localFile = localFile,
 					DocumentType = documentType,
 					Comment = comment,
-					MessageUid = messageId
+					MessageUid = messageId,
 				};
+
+				if (File.Exists(localFile))
+					document.DocumentSize = new FileInfo(localFile).Length;
+
 				if (supplierId != null)
 					document.Supplier = Supplier.Find(supplierId.Value);
 
