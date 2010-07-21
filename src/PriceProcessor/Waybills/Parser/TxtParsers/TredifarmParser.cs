@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-	public class TredifarmParser : BaseIndexingParser, IDocumentParser
+	public class TredifarmParser : BaseIndexingParser
 	{
-		public new Document Parse(string file, Document document)
-		{
-			base.Parse(file, document);
-			return document;
-		}
-
 		protected override void SetIndexes()
 		{
 			CodeIndex = 0;

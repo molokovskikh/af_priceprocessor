@@ -240,6 +240,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaPermParser.cs" />
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\BiolainParser.cs" />
     <Compile Include="Waybills\Parser\UnsafeBaseDbfParser.cs" />
     <Compile Include="Waybills\Parser\Helpers\ParseHelper.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />

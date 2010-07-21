@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-	public class KatrenOrelTxtParser : BaseIndexingParser, IDocumentParser
+	public class KatrenOrelTxtParser : BaseIndexingParser
 	{
-		public Document Parse(string file, Document document)
+		public static bool CheckFileFormat(string file)
 		{
-			base.Parse(file, document);
-			return document;
+			return CheckByHeaderPart(file, new [] {
+				"зао нпк катрен",
+				"роста-тюменский филиал",
+				"зао \"надежда-фарм\" тамбовский ф-л",
+				"ооо \"норман-плюс\""});
 		}
 
-		public static bool CheckFileFormat(string file)
+		public static bool CheckByHeaderPart(string file, IEnumerable<string> name)
 		{
 			if (Path.GetExtension(file).ToLower() != ".txt")
 				return false;
@@ -28,11 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				var header = reader.ReadLine().Split(';');
 				if (header.Length < 4)
 					return false;
-				if (!header[3].ToLower().Equals("зао нпк катрен") &&
-					!header[3].ToLower().Equals("ооо \"биолайн\"") &&
-					!header[3].ToLower().Equals("роста-тюменский филиал") &&
-					!header[3].ToLower().Equals("зао \"надежда-фарм\" тамбовский ф-л") &&
-					!header[3].ToLower().Equals("ооо \"норман-плюс\""))
+				if (name.All(n => !header[3].ToLower().Equals(n)))
 					return false;
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))

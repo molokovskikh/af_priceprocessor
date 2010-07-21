@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -107,34 +108,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
-		public void Parse_Biolain_Voronezh()
-		{
-			var doc = WaybillParser.Parse("3944680_Биолайн(5741).txt");
-			Assert.That(doc.Lines.Count, Is.EqualTo(4));
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo("5741"));
-			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("15.06.2010")));
-
-			Assert.That(doc.Lines[0].Code, Is.EqualTo("533973"));
-			Assert.That(doc.Lines[0].Product, Is.EqualTo("Атенолол~табл. 0,05 г уп.контурн.яч. 10 пач.картон. 3~Пранафарм Россия"));
-			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Пранафарм"));
-			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
-			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(20));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(5.89));
-			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(6.21));
-			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(5.65));
-			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
-			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("20210"));
-			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.03.2012"));
-			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС RU ФМ05 Д87832"));
-			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(5.89));
-			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(12.42));
-		}
-
-		[Test]
 		public void Parse_Rosta_Tumen()
 		{
-			var doc = WaybillParser.Parse("3911727_Роста(78381_9).txt");
+			var doc = WaybillParser.Parse(@"3911727_Роста(78381_9).txt");
 
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("78381/9"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("04.06.2010")));

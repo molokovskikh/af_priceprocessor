@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-	public class BaseIndexingParser
+	public abstract class BaseIndexingParser : IDocumentParser
 	{
 		protected int ProviderDocumentIdIndex = 0;
 		protected int DocumentDateIndex = 1;
@@ -82,7 +80,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
-		protected Document Parse(string file, Document document)
+		public virtual Document Parse(string file, Document document)
 		{
 			SetIndexes();
 			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))

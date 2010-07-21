@@ -74,10 +74,24 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private static Type DetectDbfParser(string file)
 		{
+			return DetectParser(file, "Dbf");
+		}
+
+		private static Type DetectTxtParser(string file)
+		{
+			return DetectParser(file, "Txt");
+		}
+
+		private static Type DetectParser(string file, string group)
+		{
+			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
 			var types = typeof (WaybillFormatDetector)
 				.Assembly
 				.GetTypes()
-				.Where(t => t.Namespace.EndsWith("Waybills.Parser.DbfParsers") && t.IsPublic)
+				.Where(t => t.Namespace.EndsWith(@namespace) 
+					&& t.IsPublic
+					&& !t.IsAbstract
+					&& typeof(IDocumentParser).IsAssignableFrom(t))
 				.ToList();
 
 			foreach (var type in types)
@@ -85,8 +99,17 @@ namespace Inforoom.PriceProcessor.Waybills
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-				var data = Dbf.Load(file);
-				var result = (bool)detectFormat.Invoke(null, new object[] {data});
+				object[] args;
+				if (group == "Dbf")
+				{
+					var data = Dbf.Load(file);
+					args = new [] {data};
+				}
+				else
+				{
+					args = new[] {file};
+				}
+				var result = (bool)detectFormat.Invoke(null, args);
 				if (result)
 					return type;
 			}
@@ -101,23 +124,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof(Protek9Parser);
 			if (OACXlsParser.CheckFileFormat(file))
 				return typeof (OACXlsParser);
-			return null;
-		}
-
-		private static Type DetectTxtParser(string file)
-		{
-			if (KatrenOrelTxtParser.CheckFileFormat(file))
-				return typeof (KatrenOrelTxtParser);
-			if (RostaOmskParser.CheckFileFormat(file))
-				return typeof (RostaOmskParser);
-			if (KatrenOmskParser.CheckFileFormat(file))
-				return typeof (KatrenOmskParser);
-			if (DetstvoOmskParser.CheckFileFormat(file))
-				return typeof (DetstvoOmskParser);
-			if (RostaMskParser.CheckFileFormat(file))
-				return typeof (RostaMskParser);
-			if (TredifarmParser.CheckFileFormat(file))
-				return typeof (TredifarmParser);
 			return null;
 		}
 

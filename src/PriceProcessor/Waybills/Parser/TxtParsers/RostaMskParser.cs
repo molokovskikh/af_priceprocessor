@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-	public class RostaMskParser : BaseIndexingParser, IDocumentParser
+	public class RostaMskParser : BaseIndexingParser
 	{
 		protected override void SetIndexes()
 		{
@@ -25,12 +22,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CertificatesIndex = 12;
 			RegistryCostIndex = -1;
 			VitallyImportantIndex = -1;
-		}
-
-		public new Document Parse(string file, Document document)
-		{
-			base.Parse(file, document);
-			return document;
 		}
 
 		public static bool CheckFileFormat(string file)
