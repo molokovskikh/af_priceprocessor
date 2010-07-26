@@ -109,8 +109,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 						PositionName = _reader.GetAttribute("Наименование"),
 						FirmCr = _reader.GetAttribute("Производитель"),
 						Core = new NewCore {
-							Code = _reader.GetAttribute("Код товара"),
-							CodeCr = _reader.GetAttribute("Код производителя"),
+							Code = _reader.GetAttribute("КодТовара"),
+							CodeCr = _reader.GetAttribute("КодПроизводителя"),
 							MaxBoundCost = GetNullable<decimal>("МаксЦена"),
 							Quantity = _reader.GetAttribute("Количество"),
 							Volume = _reader.GetAttribute("Упаковка"),
