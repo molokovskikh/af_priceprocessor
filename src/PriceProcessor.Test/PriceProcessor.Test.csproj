@@ -128,7 +128,6 @@
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmImpeksFormalizerFixture.cs" />
     <Compile Include="Loader\XmlReaderFixture.cs" />
-    <Compile Include="Migrations\ExcelFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
@@ -138,7 +137,6 @@
     <Compile Include="Handlers\PathSourceHandlerTest.cs" />
     <Compile Include="HTTPSourceHandlerFixture.cs" />
     <Compile Include="MySqlUtilsFixture.cs" />
-    <Compile Include="Migrations\ParseDbfFileFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
     <Compile Include="PriceProcessItemFixture.cs" />
