@@ -14,13 +14,6 @@ using Inforoom.Common;
 
 namespace Inforoom.Downloader
 {
-	public class ProcessedDocument
-	{
-		public uint DocumentLogId { get; set; }
-		public string FormattedFilePath { get; set; }
-		public string TempFilePath { get; set; }
-	}
-
 	public class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
