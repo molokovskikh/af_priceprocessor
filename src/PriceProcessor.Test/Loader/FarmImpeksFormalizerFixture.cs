@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Properties;
 using NUnit.Framework;
 using Test.Support;
 
@@ -42,6 +43,7 @@ namespace PriceProcessor.Test.Loader
 				price.NewPriceCost(priceItem).FormRule.FieldName = "123";
 				price.SaveAndFlush();
 				price.Maintain();
+				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
 				price = new TestPrice {
@@ -53,6 +55,7 @@ namespace PriceProcessor.Test.Loader
 				price.NewPriceCost(priceItem).FormRule.FieldName = "123";
 				price.SaveAndFlush();
 				price.Maintain();
+				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 			}
 		}
