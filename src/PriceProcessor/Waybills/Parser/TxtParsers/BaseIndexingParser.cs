@@ -28,6 +28,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
 
+		protected string CommentMark;
+
 		protected virtual void SetIndexes()
 		{
 			ProviderDocumentIdIndex = 0;
@@ -82,87 +84,142 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
+		public enum Part
+		{
+			None,
+			Header,
+			Body
+		}
+
+		public static IEnumerable<string> Lines(string file)
+		{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
+			{
+				string line;
+				while ((line = reader.ReadLine()) != null)
+				{
+					yield return line;
+				}
+			}
+		}
+
 		public virtual Document Parse(string file, Document document)
 		{
 			SetIndexes();
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
+			var part = Part.None;
+			foreach (var line in Lines(file).Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(CommentMark) || !l.StartsWith(CommentMark)))
 			{
-				reader.ReadLine();
-				var header = reader.ReadLine().Split(';');
-				document.ProviderDocumentId = header[ProviderDocumentIdIndex];
-				if (!String.IsNullOrEmpty(header[DocumentDateIndex]))
-					document.DocumentDate = Convert.ToDateTime(header[DocumentDateIndex]);
-
-				reader.ReadLine();
-				var bodyLine = String.Empty;
-				while ((bodyLine = reader.ReadLine()) != null)
+				if (part == Part.None && line.ToLower() == "[header]")
 				{
-					if (String.IsNullOrEmpty(bodyLine))
-						continue;
-					var line = bodyLine.Split(';');
-					var docLine = document.NewLine();
-
-					docLine.Code = line[CodeIndex];
-					docLine.Product = line[ProductIndex];
-					docLine.Producer = line[ProducerIndex];
-					docLine.Country = GetString(line[CountryIndex]);
-					docLine.Quantity = Convert.ToUInt32(GetDecimal(line[QuantityIndex]));
-
-					if ((ProducerCostIndex > 0) && line.Length > ProducerCostIndex)
-						docLine.ProducerCost = GetDecimal(line[ProducerCostIndex]);
-
-					if (SupplierCostIndex > 0)
-						docLine.SupplierCost = GetDecimal(line[SupplierCostIndex]);
-
-					if ((NdsIndex > 0) && (line.Length > NdsIndex))
-						docLine.Nds = (uint?)GetDecimal(line[NdsIndex]);
-
-					if ((SupplierPriceMarkupIndex > 0) && (line.Length > SupplierPriceMarkupIndex))
-						docLine.SupplierPriceMarkup = GetDecimal(line[SupplierPriceMarkupIndex]);
-
-					if ((SupplierCostWithoutNdsIndex > 0) && (line.Length > SupplierCostWithoutNdsIndex))
-						docLine.SupplierCostWithoutNDS = GetDecimal(line[SupplierCostWithoutNdsIndex]);
-
-					docLine.SerialNumber = GetString(line[SerialNumberIndex]);
-					docLine.Period = GetString(line[PeriodIndex]);
-
-					if ((CertificatesIndex > 0) && (line.Length > CertificatesIndex))
-						docLine.Certificates = GetString(line[CertificatesIndex]);
-
-					if ((RegistryCostIndex > 0) && (line.Length > RegistryCostIndex))
-						docLine.RegistryCost = GetDecimal(line[RegistryCostIndex]);
-
-					if ((VitallyImportantIndex > 0) && line.Length > VitallyImportantIndex && !String.IsNullOrEmpty(line[VitallyImportantIndex]))
-						docLine.VitallyImportant = GetBool(line[VitallyImportantIndex]);
-
-					docLine.SetValues();
+					part = Part.Header;
+					continue;
 				}
+
+				if (part == Part.Header && line.ToLower() == "[body]")
+				{
+					part = Part.Body;
+					continue;
+				}
+
+				if (part == Part.Header)
+					ReadHeader(document, line);
+				if (part == Part.Body)
+					ReadBody(document, line);
 			}
 			return document;
 		}
 
-		public static bool CheckByHeaderPart(string file, IEnumerable<string> name)
+		private void ReadHeader(Document document, string line)
+		{
+			var header = line.Split(';');
+			document.ProviderDocumentId = header[ProviderDocumentIdIndex];
+			if (!String.IsNullOrEmpty(header[DocumentDateIndex]))
+				document.DocumentDate = Convert.ToDateTime(header[DocumentDateIndex]);
+		}
+
+		private void ReadBody(Document document, string line)
+		{
+			var parts = line.Split(';');
+			var docLine = document.NewLine();
+
+			docLine.Code = parts[CodeIndex];
+			docLine.Product = parts[ProductIndex];
+			docLine.Producer = parts[ProducerIndex];
+			docLine.Country = GetString(parts[CountryIndex]);
+			docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
+
+			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex)
+				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+
+			if (SupplierCostIndex > 0)
+				docLine.SupplierCost = GetDecimal(parts[SupplierCostIndex]);
+
+			if ((NdsIndex > 0) && (parts.Length > NdsIndex))
+				docLine.Nds = (uint?)GetDecimal(parts[NdsIndex]);
+
+			if ((SupplierPriceMarkupIndex > 0) && (parts.Length > SupplierPriceMarkupIndex))
+				docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
+
+			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
+				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
+
+			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
+			docLine.Period = GetString(parts[PeriodIndex]);
+
+			if ((CertificatesIndex > 0) && (parts.Length > CertificatesIndex))
+				docLine.Certificates = GetString(parts[CertificatesIndex]);
+
+			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
+				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
+
+			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
+				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+
+			docLine.SetValues();
+		}
+
+		public static bool CheckByHeaderPart(string file, IEnumerable<string> name, string commentMark)
 		{
 			if (Path.GetExtension(file).ToLower() != ".txt")
 				return false;
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
+
+			var part = Part.None;
+			foreach (var line in Lines(file).Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(commentMark) || !l.StartsWith(commentMark)))
 			{
-				var headerCaption = reader.ReadLine();
-				if (!headerCaption.ToLower().Equals("[header]"))
-					return false;
-				var header = reader.ReadLine().Split(';');
-				if (header.Length < 4)
-					return false;
-				if (name.All(n => !header[3].Equals(n, StringComparison.CurrentCultureIgnoreCase)))
-					return false;
-				var bodyCaption = reader.ReadLine();
-				if (!bodyCaption.ToLower().Equals("[body]"))
-					return false;
-				var body = reader.ReadLine().Split(';');
-				if (GetDecimal(body[6]) == null)
-					return false;
+				if (part == Part.None && line.ToLower() == "[header]")
+				{
+					part = Part.Header;
+					continue;
+				}
+
+				if (part == Part.Header && line.ToLower() == "[body]")
+				{
+					part = Part.Body;
+					continue;
+				}
+
+				if (part == Part.Header)
+				{
+					var parts = line.Split(';');
+					if (parts.Length < 4)
+						return false;
+					if (name.All(n => !parts[3].Equals(n, StringComparison.CurrentCultureIgnoreCase)))
+						return false;
+				}
+				if (part == Part.Body)
+				{
+					var parts = line.Split(';');
+					if (GetDecimal(parts[6]) == null)
+						return false;
+					return true;
+				}
 			}
-			return true;
+			return false;
+		}
+
+		public static bool CheckByHeaderPart(string file, IEnumerable<string> name)
+		{
+			return CheckByHeaderPart(file, name, null);
 		}
 	}
 }

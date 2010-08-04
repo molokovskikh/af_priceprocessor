@@ -4,6 +4,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 	{
 		protected override void SetIndexes()
 		{
+			CommentMark = "-";
 			CodeIndex = 0;
 			ProductIndex = 1;
 			ProducerIndex = 2;
@@ -20,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			return CheckByHeaderPart(file, new [] {"Индивидуальный Предприниматель Шафиев Наиль Энверо"});
+			return CheckByHeaderPart(file, new [] {"Индивидуальный Предприниматель Шафиев Наиль Энверо", "ООО \"МОРОН\""}, "-");
 		}
 	}
 }
