@@ -182,6 +182,7 @@
     <Compile Include="Waybills\Parser\MoronDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Multifile\AptekaHoldingParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Multifile\AralPlusParserFixture.cs" />
     <Compile Include="Waybills\Parser\OACXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\ProgressTechParserFixture.cs" />
     <Compile Include="Waybills\Parser\Protek28ParserFixture.cs" />
