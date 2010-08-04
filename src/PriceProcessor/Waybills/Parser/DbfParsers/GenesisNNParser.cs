@@ -20,6 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.RegistryCost, "PRICE_REES")
 				.Line(l => l.VitallyImportant, "ISLIFE")
 				.Line(l => l.SerialNumber, "SERIES")
+				.Line(l => l.Period, "DATE_VALID")
 				.Line(l => l.Certificates, "SERT");
 		}
 

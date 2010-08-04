@@ -21,6 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(11));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(9.69));
+			Assert.That(line.Period, Is.EqualTo("01.04.2012"));
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.SerialNumber, Is.EqualTo("790310"));
 			Assert.That(line.Certificates, Is.EqualTo("пняя RU.тл05.д87777"));
