@@ -220,6 +220,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmakonPlusParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmGroupParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\GenesisNNParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenezisDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GodunovDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\IzhevskFarmParser.cs" />
