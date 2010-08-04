@@ -131,6 +131,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_vitally_important()
+		{
+			var doc = WaybillParser.Parse("147242.dbf");
+			var line = doc.Lines[5];
+			Assert.That(line.VitallyImportant, Is.True);
+			Assert.That(line.RegistryCost, Is.EqualTo(62.58));
+		}
+
+		[Test]
 		public void Parse3()
 		{
 			DocumentReceiveLog documentLog = null;
