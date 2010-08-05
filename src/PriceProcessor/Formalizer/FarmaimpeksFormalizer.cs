@@ -16,7 +16,7 @@ using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
-	[ActiveRecord("PricesData", Schema = "Usersettings")]
+	[ActiveRecord("PricesData", Schema = "Usersettings", DynamicUpdate = true)]
 	public class Price : ActiveRecordLinqBase<Price>
 	{
 		[PrimaryKey("PriceCode")]
@@ -33,7 +33,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 	}
 
 	[ActiveRecord("PricesCosts", Schema = "Usersettings")]
-	public class PriceCost
+	public class PriceCost : ActiveRecordLinqBase<PriceCost>
 	{
 		[PrimaryKey("CostCode")]
 		public virtual uint Id { get; set;  }
@@ -43,12 +43,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		[Property]
 		public virtual uint PriceItemId { get; set; }
+
+		[Property]
+		public virtual string CostName { get; set; }
 	}
 
 	public class Customer
 	{
 		public string Id;
 		public decimal PriceMarkup;
+	}
+
+	public class FarmaimpeksPrice
+	{
+		public string Id;
+		public string Name;
 	}
 
 	public class PriceXmlReader : IReader
@@ -67,7 +76,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			_reader = XmlReader.Create(File.OpenRead(_filename), settings);
 		}
 
-		public IEnumerable<string> Prices()
+		public IEnumerable<FarmaimpeksPrice> Prices()
 		{
 			while (ReadFromReader())
 			{
@@ -75,7 +84,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 				{
 					_inPrice = true;
 					_readed = false;
-					yield return _reader.GetAttribute("ID");
+					yield return new FarmaimpeksPrice {
+						Id = _reader.GetAttribute("ID"),
+						Name = _reader.GetAttribute("Наименование")
+					};
 				}
 			}
 		}
@@ -154,14 +166,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{}
 	}
 
-	public class FarmImpeksFormalizer : IPriceFormalizer
+	public class FarmaimpeksFormalizer : IPriceFormalizer
 	{
 		private string _fileName;
 		private DataTable _data;
 		private PriceFormalizationInfo _priceInfo;
-		private ILog _log = LogManager.GetLogger(typeof (FarmImpeksFormalizer));
+		private ILog _log = LogManager.GetLogger(typeof (FarmaimpeksFormalizer));
 
-		public FarmImpeksFormalizer(string filename, MySqlConnection connection, DataTable data)
+		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, DataTable data)
 		{
 			_fileName = filename;
 			_data = data;
@@ -171,21 +183,19 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public void Formalize()
 		{
 			var reader = new PriceXmlReader(_fileName);
-			foreach (var priceName in reader.Prices())
+			foreach (var parsedPrice in reader.Prices())
 			{
 				var priceInfo = _data.Rows[0];
 				var supplierId = Convert.ToUInt32(priceInfo["FirmCode"]);
-				PriceCost cost = null;
+				PriceCost cost;
 				using (new SessionScope(FlushAction.Never))
 				{
-					var price = Price.Queryable.Where(p => p.Supplier.Id == supplierId && p.PriceName == priceName).FirstOrDefault();
-					if (price != null)
-						cost = price.Costs.First();
+					cost = PriceCost.Queryable.FirstOrDefault(c => c.Price.Supplier.Id == supplierId && c.CostName == parsedPrice.Id);
 				}
 
 				if (cost == null)
 				{
-					_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, priceName);
+					_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, parsedPrice.Id);
 					continue;
 				}
 
@@ -193,7 +203,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 				var customers = reader.Customers().ToList();
 				With.Transaction((c, t) => {
+
 					var command = new MySqlCommand(@"
+update Usersettings.Pricesdata
+set PriceName = ?name
+where pricecode = ?PriceId", c);
+					command.Parameters.AddWithValue("?PriceId", cost.Price.Id);
+					command.Parameters.AddWithValue("?Name", parsedPrice.Name);
+					command.ExecuteNonQuery();
+
+					command = new MySqlCommand(@"
 update Future.Intersection i
 set i.AvailableForClient = 0
 where i.PriceId = ?priceId", c);

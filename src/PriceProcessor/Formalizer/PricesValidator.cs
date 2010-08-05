@@ -26,72 +26,68 @@ namespace Inforoom.Formalizer
 		{
 			var shortFileName = Path.GetFileName(fileName);
 			var dtFormRules = LoadFormRules(priceItemId);
-			if ( dtFormRules.Rows.Count > 0 )
-			{	
-				var currentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
+			if (dtFormRules.Rows.Count == 0)
+				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, shortFileName));
 
-				//«десь будем производить копирование файла
-				int CopyErrorCount = 0;
-				bool CopySucces = false;
-				do
+			var currentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
+
+			//«десь будем производить копирование файла
+			int CopyErrorCount = 0;
+			bool CopySucces = false;
+			do
+			{
+				try
 				{
-					try
-					{
-						File.Copy(fileName, tempFileName, true);
-						CopySucces = true;
-					}
-					catch(Exception e)
-					{
-						if (CopyErrorCount < 10 )
-						{
-							CopyErrorCount++;
-							System.Threading.Thread.Sleep(500);
-						}
-						else
-							throw new FormalizeException(
-								String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e), 
-								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]), 
-								Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-								(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-								(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
-					}
+					File.Copy(fileName, tempFileName, true);
+					CopySucces = true;
 				}
-				while(!CopySucces);
-
-				fileName = tempFileName;
-
-				if ("1" == dtFormRules.Rows[0][FormRules.colFirmStatus].ToString())
+				catch(Exception e)
 				{
-					//ѕровер€ем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
-					if (!dtFormRules.Rows[0].IsNull(FormRules.colCostType) && Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType])))
+					if (CopyErrorCount < 10 )
 					{
-						var parserClass = GetParserClassName(currentParserClassName);
-
-						if (parserClass != null)
-							return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, dtFormRules}));
-
-						throw new WarningFormalizeException(
-							String.Format(Settings.Default.UnknownPriceFMTError, currentParserClassName),
-							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
+						CopyErrorCount++;
+						System.Threading.Thread.Sleep(500);
+					}
+					else
+						throw new FormalizeException(
+							String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e), 
+							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]), 
 							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 							(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
 							(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
-					}
-					throw new WarningFormalizeException(
-						String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
-						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
-						Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-						(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-						(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
 				}
+			}
+			while(!CopySucces);
+
+			fileName = tempFileName;
+
+			if (dtFormRules.Rows[0][FormRules.colFirmStatus].ToString() == "0")
 				throw new WarningFormalizeException(
 					Settings.Default.DisableByFirmStatusError,
 					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
 					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
 					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
 					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
-			}
-			throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, shortFileName));
+
+			//ѕровер€ем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
+			if (dtFormRules.Rows[0].IsNull(FormRules.colCostType) || !Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType])))
+				throw new WarningFormalizeException(
+					String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
+					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
+					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+
+			var parserClass = GetParserClassName(currentParserClassName);
+			if (parserClass == null)
+				throw new WarningFormalizeException(
+					String.Format(Settings.Default.UnknownPriceFMTError, currentParserClassName),
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
+					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
+					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
+					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+
+			return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, dtFormRules}));
 		}
 
 		public static DataTable LoadFormRules(uint priceItemId)

@@ -140,7 +140,7 @@
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
-    <Compile Include="Formalizer\FarmImpeksFormalizer.cs" />
+    <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Rosta\RostaHandler.cs" />
