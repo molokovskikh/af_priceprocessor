@@ -10,7 +10,7 @@ using Test.Support;
 namespace PriceProcessor.Test.Loader
 {
 	[TestFixture]
-	public class FarmImpeksFormalizerFixture
+	public class FarmaimpeksFormalizerFixture
 	{
 		private List<TestPrice> prices = new List<TestPrice>();
 		private TestPriceItem priceItem;
@@ -35,24 +35,26 @@ namespace PriceProcessor.Test.Loader
 
 				var firmCode = TestOldClient.CreateTestSupplier().Id;
 				var price = new TestPrice {
-					CostType = CostType.MultiColumn, //мультиколоночный
-					FirmCode = firmCode, //демонстрационыый поставщик
+					CostType = CostType.MultiColumn,
+					FirmCode = firmCode,
 					ParentSynonym = 4745,
 					PriceName = "2"
 				};
-				price.NewPriceCost(priceItem).FormRule.FieldName = "123";
+				var cost = price.NewPriceCost(priceItem, "123");
+				cost.Name = "2";
 				price.SaveAndFlush();
 				price.Maintain();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
 				price = new TestPrice {
-					CostType = CostType.MultiColumn, //мультиколоночный
-					FirmCode = firmCode, //демонстрационыый поставщик
+					CostType = CostType.MultiColumn,
+					FirmCode = firmCode,
 					ParentSynonym = 4745,
 					PriceName = "11"
 				};
-				price.NewPriceCost(priceItem).FormRule.FieldName = "123";
+				cost = price.NewPriceCost(priceItem, "123");
+				cost.Name = "11";
 				price.SaveAndFlush();
 				price.Maintain();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
@@ -63,8 +65,7 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Load_xml_source()
 		{
-			var formalizer = PricesValidator.Validate(@"..\..\Data\FarmImpecsPrice.xml", Path.GetTempFileName(), priceItem.Id);
-			formalizer.Formalize();
+			Formalize("FarmaimpeksPrice.xml");
 			using(new SessionScope())
 			foreach (var price in prices)
 			{
@@ -87,8 +88,7 @@ namespace PriceProcessor.Test.Loader
 				trustedIntersection.Save();
 			}
 
-			var formalizer = PricesValidator.Validate(@"..\..\Data\FarmImpecsPrice.xml", Path.GetTempFileName(), priceItem.Id);
-			formalizer.Formalize();
+			Formalize("FarmaimpeksPrice.xml");
 			using(new SessionScope())
 			{
 				var regularIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == normalClient);
@@ -97,6 +97,20 @@ namespace PriceProcessor.Test.Loader
 				var trustedIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == trustedClient);
 				Assert.That(trustedIntersection.AvailableForClient, Is.True);
 			}
+		}
+
+		[Test]
+		public void Update_price_name_from_source_file()
+		{
+			Formalize("FarmaimpeksSmallPrice.xml");
+			var price = TestPrice.Find(prices[0].Id);
+			Assert.That(price.PriceName, Is.EqualTo("Прайс Опт ДП"));
+		}
+
+		private void Formalize(string file)
+		{
+			var formalizer = PricesValidator.Validate(Path.Combine(@"..\..\Data\", file), Path.GetTempFileName(), priceItem.Id);
+			formalizer.Formalize();
 		}
 	}
 }

@@ -126,7 +126,7 @@
     <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
-    <Compile Include="Loader\FarmImpeksFormalizerFixture.cs" />
+    <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
     <Compile Include="Loader\XmlReaderFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="FormalizeHandlerFixture.cs" />

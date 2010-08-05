@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Special
 
 		public static TestPrice CreatePriceForRosta()
 		{
-			var price = TestPrice.CreateTestPrice(CostType.MultiFile);
+			var price = TestPrice.CreateTestPrice(CostType.MultiFile, "F3");
 			var cost = price.Costs.First();
 			var format = cost.PriceItem.Format;
 			format.FCode = "F1";
@@ -58,9 +58,6 @@ namespace PriceProcessor.Test.Special
 			format.Update();
 			price.ParentSynonym = 216;
 			price.Update();
-			var rule = price.Costs.First().FormRule;
-			rule.FieldName = "F3";
-			rule.Update();
 			return price;
 		}
 

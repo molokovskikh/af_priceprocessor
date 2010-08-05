@@ -3,11 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
-using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Properties;
-using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
 
@@ -29,34 +27,16 @@ namespace PriceProcessor.Test.Formalization
 			file = "test.txt";
 			using(new SessionScope())
 			{
-				price = new TestPrice {
-					CostType = 0, //мультиколоночный
-					FirmCode = 1179 //демонстрационыый поставщик
-				};
-				price.Save();
-
-				var source = new TestPriceSource {
-					SourceType = PriceSourceType.Email,
-				};
-				source.Save();
-
-				var format = new TestFormat {
-					PriceFormat = PriceFormatType.NativeDelimiter1251,
-					Delimiter = ";",
-					FName1 = "F1",
-					FFirmCr = "F2",
-					FQuantity = "F3"
-				};
-				format.Save();
-
-				priceItem = new TestPriceItem {
-					Source = source,
-					Format = format,
-				};
-				priceItem.Save();
-
-				price.NewPriceCost(priceItem).FormRule.FieldName = "F4";
-				price.Update();
+				price = TestOldClient.CreateTestSupplierWithPrice(p => {
+					var rules = p.Costs.Single().PriceItem.Format;
+					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
+					rules.Delimiter = ";";
+					rules.FName1 = "F1";
+					rules.FFirmCr = "F2";
+					rules.FQuantity = "F3";
+					p.Costs.Single().FormRule.FieldName = "F4";
+				});
+				priceItem = price.Costs.First().PriceItem;
 			}
 			table = TestHelper.GetParseRules((int) priceItem.Id);
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
@@ -67,8 +47,8 @@ namespace PriceProcessor.Test.Formalization
 		{
 			using(new TransactionScope())
 			{
-				price.NewPriceCost(priceItem).FormRule.FieldName = "F5";
-				price.NewPriceCost(priceItem).FormRule.FieldName = "F6";
+				price.NewPriceCost(priceItem, "F5");
+				price.NewPriceCost(priceItem, "F6");
 				price.Update();
 			}
 
@@ -222,8 +202,8 @@ namespace PriceProcessor.Test.Formalization
 
 			using (new TransactionScope())
 			{
-				price.NewPriceCost(priceItem).FormRule.FieldName = "F5";
-				price.NewPriceCost(priceItem).FormRule.FieldName = "F6";
+				price.NewPriceCost(priceItem, "F5");
+				price.NewPriceCost(priceItem, "F6");
 				price.Update();
 				var product = TestProduct.Queryable.First();
 				var producer = TestProducer.Queryable.First();
