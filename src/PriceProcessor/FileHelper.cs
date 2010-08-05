@@ -78,15 +78,6 @@ namespace Inforoom.PriceProcessor
 			return (PathPart + InputFilename);
 		}
 
-		public static void CopyStreams(Stream input, Stream output)
-		{
-			const int size = 4096;
-			var bytes = new byte[4096];
-			int numBytes;
-			while ((numBytes = input.Read(bytes, 0, size)) > 0)
-				output.Write(bytes, 0, numBytes);
-		}
-
 		public static void Safe(Action action)
 		{
 			try

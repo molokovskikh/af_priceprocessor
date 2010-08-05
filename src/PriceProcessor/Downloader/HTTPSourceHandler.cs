@@ -2,23 +2,22 @@ using System;
 using System.Net;
 using System.IO;
 using System.Data;
-using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Properties;
 using System.Threading;
 
 namespace Inforoom.Downloader
 {
-    public class HTTPSourceHandler : PathSourceHandler
-    {
-        public HTTPSourceHandler()
-        {
+	public class HTTPSourceHandler : PathSourceHandler
+	{
+		public HTTPSourceHandler()
+		{
 			SourceType = "HTTP";
 		}
 
-        protected static DateTime GetFileDateTime(string httpFile, string httpUser, string httpPassword)
-        {
-        	var fileDate = DateTime.MinValue;
-        	var request = (HttpWebRequest) WebRequest.Create(httpFile);
+		protected static DateTime GetFileDateTime(string httpFile, string httpUser, string httpPassword)
+		{
+			var fileDate = DateTime.MinValue;
+			var request = (HttpWebRequest) WebRequest.Create(httpFile);
 			request.Method = WebRequestMethods.Http.Head;
 
 			if (!String.IsNullOrEmpty(httpUser))
@@ -27,29 +26,26 @@ namespace Inforoom.Downloader
 
 			using (var response = (HttpWebResponse) request.GetResponse())
 				fileDate = response.LastModified;
-        	return fileDate;
-        }
+			return fileDate;
+		}
 
-        protected static void GetFile(string httpFile, string saveFileName, string httpUser, string httpPassword)
-        {
-            var request = (HttpWebRequest)WebRequest.Create(httpFile);
-            request.Method = WebRequestMethods.Http.Get;
+		protected static void GetFile(string httpFile, string saveFileName, string httpUser, string httpPassword)
+		{
+			var request = (HttpWebRequest)WebRequest.Create(httpFile);
+			request.Method = WebRequestMethods.Http.Get;
 
-            if (!String.IsNullOrEmpty(httpUser))
-                request.Credentials = new NetworkCredential(httpUser, httpPassword);
+			if (!String.IsNullOrEmpty(httpUser))
+				request.Credentials = new NetworkCredential(httpUser, httpPassword);
 
-            request.Proxy = null;
+			request.Proxy = null;
 
-            var response = (HttpWebResponse)request.GetResponse();
-            var responseStream = response.GetResponseStream();
-            using (var fs = new FileStream(saveFileName, FileMode.Create))
-            {
-                FileHelper.CopyStreams(responseStream, fs);
-                fs.Close();
-            }
-            response.Close();
-        }
-
+			using (var response = (HttpWebResponse)request.GetResponse())
+			using (var responseStream = response.GetResponseStream())
+			using (var fs = new FileStream(saveFileName, FileMode.Create))
+			{
+				responseStream.CopyTo(fs);
+			}
+		}
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
@@ -72,7 +68,7 @@ namespace Inforoom.Downloader
 				fileLastWriteTime = DateTime.Now;
 #endif
 				if ((fileLastWriteTime.CompareTo(priceDateTime) > 0) &&
-				    (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > downloadInterval))
+					(DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > downloadInterval))
 				{
 					var downFileName = DownHandlerPath + httpFileName;
 					GetFile(httpUrl, downFileName, source.HttpLogin, source.HttpPassword);
@@ -86,15 +82,15 @@ namespace Inforoom.Downloader
 			}
 		}
 
-    	protected override DataRow[] GetLikeSources(PriceSource source)
-        {
-        	return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
-        				SourcesTableColumns.colPricePath, source.PricePath,
-        				SourcesTableColumns.colPriceMask, source.PriceMask,
-        				SourcesTableColumns.colHTTPLogin, source.HttpLogin,
-        				SourcesTableColumns.colHTTPPassword, source.HttpPassword));
-        }
-    }
+		protected override DataRow[] GetLikeSources(PriceSource source)
+		{
+			return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
+						SourcesTableColumns.colPricePath, source.PricePath,
+						SourcesTableColumns.colPriceMask, source.PriceMask,
+						SourcesTableColumns.colHTTPLogin, source.HttpLogin,
+						SourcesTableColumns.colHTTPPassword, source.HttpPassword));
+		}
+	}
 
 	public class HttpSourceHandlerException : PathSourceHandlerException
 	{
