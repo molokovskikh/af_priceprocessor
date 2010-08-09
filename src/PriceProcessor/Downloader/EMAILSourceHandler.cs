@@ -18,11 +18,11 @@ using System.Net.Mail;
 namespace Inforoom.Downloader
 {
 	public class EMAILSourceHandler : BasePriceSourceHandler
-    {
+	{
 		//UID текущего обрабатываемого письма
 		protected int currentUID;
 
-    	private Mime _message;
+		private Mime _message;
 
 		public EMAILSourceHandler()
 		{
@@ -275,11 +275,11 @@ namespace Inforoom.Downloader
 			catch { }
 		}
 
-    	protected AddressList GetAddressList(Mime m)
+		protected AddressList GetAddressList(Mime m)
 		{
 			// Заполняем список адресов From
-			AddressList FromList = new AddressList();
-			bool SenderFound = false;
+			var from = new AddressList();
+			bool senderFound = false;
 
 			// адрес из поля Sender, может быть не установлен
 			string senderAddress = null;
@@ -293,37 +293,37 @@ namespace Inforoom.Downloader
 				if (!IsMailAddress(senderAddress))
 					senderAddress = null;
 			}
-            // Иногда список адресов оказывается пуст - СПАМ
-            if (m.MainEntity.From != null)
-            {
-                foreach (MailboxAddress a in m.MainEntity.From.Mailboxes)
-                {
-                    //Проверяем, что адрес что-то содержит
+			// Иногда список адресов оказывается пуст - СПАМ
+			if (m.MainEntity.From != null)
+			{
+				foreach (var a in m.MainEntity.From.Mailboxes)
+				{
+					//Проверяем, что адрес что-то содержит
 					if (!String.IsNullOrEmpty(a.EmailAddress))
-                    {
+					{
 						// получам корректный адрес
-						string correctAddress = GetCorrectEmailAddress(a.EmailAddress);
+						var correctAddress = GetCorrectEmailAddress(a.EmailAddress);
 						// Если после всех проверок адрес является EMail-адресом, то добавляем в список
 						if (IsMailAddress(correctAddress))
 						{
-							FromList.Add(new MailboxAddress(correctAddress));
+							from.Add(new MailboxAddress(correctAddress));
 							if (!String.IsNullOrEmpty(senderAddress) && 
 								senderAddress.Equals(correctAddress, StringComparison.OrdinalIgnoreCase))
-								SenderFound = true;
+								senderFound = true;
 						}
-                    }
-                }
-            }
+					}
+				}
+			}
 
-			if (!String.IsNullOrEmpty(senderAddress) && !SenderFound)
-				FromList.Add(new MailboxAddress(senderAddress));
+			if (!String.IsNullOrEmpty(senderAddress) && !senderFound)
+				from.Add(new MailboxAddress(senderAddress));
 
 			// Иногда список адресов оказывается пуст - СПАМ, 
 			// в этом случае создаем пустую коллекцию, чтобы все было в порядке
-            if (m.MainEntity.To == null)
-                m.MainEntity.To = new AddressList();
+			if (m.MainEntity.To == null)
+				m.MainEntity.To = new AddressList();
 
-			return FromList;
+			return from;
 		}
 
 		protected bool CheckFile()
@@ -373,7 +373,7 @@ namespace Inforoom.Downloader
 			return filename;
 		}
 
-    }
+	}
 
 	public static class MimeEntityExtentions
 	{
