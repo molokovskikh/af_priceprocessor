@@ -1,13 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.ServiceModel;
 using System.Net.Security;
 using System.IO;
+using log4net;
 
 namespace RemotePriceProcessor
 {
+	public class ErrorHandlerBehavior : IServiceBehavior
+	{
+		public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+		{}
+
+		public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters)
+		{}
+
+		public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+		{
+			foreach(var dispatcher in serviceHostBase.ChannelDispatchers.OfType<ChannelDispatcher >())
+				dispatcher.ErrorHandlers.Add(new ErrorHandler());
+		}
+	}
+
+	public class ErrorHandler : IErrorHandler
+	{
+		private ILog log = LogManager.GetLogger(typeof (ErrorHandler));
+
+		public void ProvideFault(Exception error, MessageVersion version, ref Message fault)
+		{
+			var faultException = new FaultException("Произошла ошибка. Попробуйте повторить операцию позднее.");
+			
+			var message = Message.CreateMessage(version, faultException.CreateMessageFault(), faultException.Action);
+			fault = message;
+		}
+
+		public bool HandleError(Exception error)
+		{
+			log.Error("Ошибка при обращении к сервису", error);
+			return true;
+		}
+	}
+
 	/// <summary>
 	/// Класс для вызовов методов Wcf сервиса RemotePriceProcessor
 	/// </summary>
@@ -46,6 +85,7 @@ namespace RemotePriceProcessor
 			var serviceHost = new ServiceHost(serviceImplementationType);
 			var binding = CreateTcpBinding();
 			serviceHost.AddServiceEndpoint(serviceInterfaceType, binding, wcfServiceUrl);
+			serviceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
 			serviceHost.Open();
 			return serviceHost;
 		}

@@ -236,7 +236,7 @@ and pd.AgencyEnabled= 1",
 					cause,
 					AttachNames)))
 			{
-				mm.Attachments.Add(new Attachment(ms, ((String.IsNullOrEmpty(Subject)) ? "Unrec" : Subject) + ".eml"));
+				mm.Attachments.Add(new Attachment(ms, "Исходное письмо.eml"));
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}

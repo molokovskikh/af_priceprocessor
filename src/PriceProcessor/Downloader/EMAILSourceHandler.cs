@@ -10,6 +10,7 @@ using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using Inforoom.Common;
+using LumiSoft.Net.SMTP.Client;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
 using Inforoom.PriceProcessor;
 using System.Net.Mail;
@@ -150,17 +151,13 @@ namespace Inforoom.Downloader
 			{
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
-				try
-				{
-					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost(
-						Settings.Default.SMTPHost,
-						25,
-						Environment.MachineName,
-						Settings.Default.ServiceMail,
-						new[] { Settings.Default.UnrecLetterMail },
-						ms);
-				}
-				catch { }
+				SmtpClientEx.QuickSendSmartHost(
+					Settings.Default.SMTPHost,
+					25,
+					Environment.MachineName,
+					Settings.Default.ServiceMail,
+					new[] { Settings.Default.UnrecLetterMail },
+					ms);
 				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, exception.Message);
 				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 

@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
@@ -12,8 +17,8 @@ using Inforoom.Downloader;
 
 namespace Inforoom.PriceProcessor
 {
-	public class WCFPriceProcessorService : MarshalByRefObject, IRemotePriceProcessor
-    {
+	public class WCFPriceProcessorService : IRemotePriceProcessor
+	{
 		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
 
 		private const string MessagePriceNotFoundInArchive = "Данный прайс-лист в архиве отсутствует";
@@ -57,7 +62,7 @@ FROM
   farm.formrules fr,
   farm.pricefmts
 WHERE
-    pim.Id = logs.PriceItemId
+	pim.Id = logs.PriceItemId
 and pc.PriceItemId = pim.Id
 and pc.PriceCode = pd.PriceCode
 and ((pd.CostType = 1) OR (pc.BaseCost = 1))
@@ -206,7 +211,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 
 		public void RetransErrorPrice(WcfCallParameter priceItemId)
 		{
-            RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
+			RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
 		}
 
 		public string[] ErrorFiles()
@@ -385,5 +390,5 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 			}
 		}
-    }
+	}
 }

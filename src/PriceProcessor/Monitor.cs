@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Security;
+using System.ServiceModel.Dispatcher;
 using System.Threading;
 using Inforoom.Downloader.Ftp;
 using Inforoom.PriceProcessor.Downloader;
@@ -99,6 +100,7 @@ namespace Inforoom.PriceProcessor
 			_waybillServiceHost.AddServiceEndpoint(typeof (IWaybillService),
 				binding,
 				String.Format("net.tcp://{0}:901/WaybillService", Dns.GetHostName()));
+			_waybillServiceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
 			_waybillServiceHost.Open();
 		}
 
