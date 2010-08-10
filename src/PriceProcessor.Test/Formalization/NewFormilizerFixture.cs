@@ -62,7 +62,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			using(new SessionScope())
 			{
@@ -84,7 +84,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			using(new SessionScope())
 			{
@@ -112,7 +112,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", product, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			using(new SessionScope())
 			{
@@ -140,7 +140,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			TestCore core;
 			using (new SessionScope())
@@ -152,7 +152,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;73.88;");
 
-			Formilize();
+			Formalize();
 
 			using(new SessionScope())
 			{
@@ -174,7 +174,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			TestCore core;
 			using (new SessionScope())
@@ -186,7 +186,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;73.88;");
 
-			Formilize();
+			Formalize();
 
 			using(new SessionScope())
 			{
@@ -211,7 +211,7 @@ namespace PriceProcessor.Test.Formalization
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 			}
 
-			Formilize();
+			Formalize();
 
 			TestCore core;
 			using (new SessionScope())
@@ -227,7 +227,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;72.10;;73.66;");
 
-			Formilize();
+			Formalize();
 
 			using (new SessionScope())
 			{
@@ -240,12 +240,40 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
+		[Test]
+		public void Create_forbidden_expressions()
+		{
+			using(new TransactionScope())
+			{
+				var product = TestProduct.Queryable.First();
+				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
+				new TestForbidden {Name = "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", Price = price}.Save();
+			}
+
+			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;
+911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;
+911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;30;44.71;");
+
+			using (new SessionScope())
+			{
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				Assert.That(cores.Count, Is.EqualTo(1));
+				Assert.That(cores[0].ProductSynonym.Name, Is.EqualTo("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г"));
+			}
+		}
+
 		private void Price(string contents)
 		{
 			File.WriteAllText(file, contents, Encoding.GetEncoding(1251));
 		}
 
-		private void Formilize()
+		private void Formalize(string content)
+		{
+			Price(content);
+			Formalize();
+		}
+
+		private void Formalize()
 		{
 			var row = table.Rows[0];
 			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, new PriceFormalizationInfo(row));

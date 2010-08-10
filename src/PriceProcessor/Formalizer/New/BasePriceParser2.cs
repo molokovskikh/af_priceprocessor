@@ -131,6 +131,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// </summary>
 		public void InsertIntoForb(FormalizationPosition position)
 		{
+			var forb = dtForb.Rows.Cast<DataRow>().FirstOrDefault(r => r["Forb"].ToString().Equals(position.PositionName, StringComparison.CurrentCultureIgnoreCase));
+			if (forb != null)
+				return;
 			var newRow = dtForb.NewRow();
 			newRow["PriceItemId"] = priceItemId;
 			newRow["Forb"] = position.PositionName;
