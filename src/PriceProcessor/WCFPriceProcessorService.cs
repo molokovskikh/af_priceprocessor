@@ -156,6 +156,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 						if (!FileHelper.CheckMask(attachmentFilename, archFileName) &&
 							!FileHelper.CheckMask(attachmentFilename, externalFileName))
 							continue;
+						attachmentFilename = Path.Combine(Path.GetTempPath(), attachmentFilename);
 						entity.DataToFile(attachmentFilename);
 						return attachmentFilename;
 					}
