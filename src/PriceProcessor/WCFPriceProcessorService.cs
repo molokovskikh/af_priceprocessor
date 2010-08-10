@@ -157,7 +157,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 							!FileHelper.CheckMask(attachmentFilename, externalFileName))
 							continue;
 						entity.DataToFile(attachmentFilename);
-						return filename;
+						return attachmentFilename;
 					}
 				}
 				catch (Exception ex)
