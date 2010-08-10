@@ -2,6 +2,7 @@
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Config;
 using Common.MySql;
+using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills;
 using NHibernate.Cfg;
 using NUnit.Framework;
@@ -15,6 +16,7 @@ namespace PriceProcessor.Test
 		[SetUp]
 		public void Setup()
 		{
+			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			With.DefaultConnectionStringName = "DB";
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),

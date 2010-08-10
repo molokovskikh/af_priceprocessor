@@ -191,7 +191,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 
 			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 			var clientCodes = CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 
 			using (new SessionScope())
 			{
@@ -231,7 +230,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 
 			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 			CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 
 			var handler = new WaybillFtpSourceHandlerForTesting();
 			handler.Process();

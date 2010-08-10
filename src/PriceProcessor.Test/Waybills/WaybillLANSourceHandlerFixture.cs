@@ -45,7 +45,6 @@ namespace PriceProcessor.Test
 			TestHelper.RecreateDirectories();
 			_summary.Client = TestClient.CreateSimple();
 			_summary.Supplier = TestOldClient.CreateTestSupplier();
-			ArchiveHelper.SevenZipExePath = Path.Combine(Path.GetFullPath("."), @"7zip\7z.exe");
 		}
 
 		private void Process_waybills()

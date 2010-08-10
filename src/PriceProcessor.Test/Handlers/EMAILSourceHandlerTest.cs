@@ -52,7 +52,6 @@ namespace PriceProcessor.Test
 
 		public void SetUp(IList<string> fileNames, string emailTo, string emailFrom)
 		{
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			TestHelper.RecreateDirectories();
 
 			var client = TestClient.CreateSimple();
@@ -107,7 +106,7 @@ namespace PriceProcessor.Test
 
 			// Очищаем IMAP папку
 			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
-			                           Settings.Default.IMAPSourceFolder);
+									   Settings.Default.IMAPSourceFolder);
 
 			// Пересоздаем папки (чтоб в них не было файлов)
 			TestHelper.RecreateDirectories();
@@ -120,8 +119,8 @@ namespace PriceProcessor.Test
 			{
 				// Кладем в IMAP папку сообщение с вложениями
 				TestHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
-				                                              Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder,
-				                                              email, email, _dataDir + fileName);
+															  Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder,
+															  email, email, _dataDir + fileName);
 			}
 
 			// Запускаем обработчик
@@ -170,7 +169,6 @@ namespace PriceProcessor.Test
 			TestHelper.RecreateDirectories();
 
 			var filePaths = Directory.GetFiles(dataDirectory, "*.eml", SearchOption.AllDirectories);
-			var indexItem = 0;
 			using (var imapClient = new IMAP_Client())
 			{
 				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
@@ -201,7 +199,6 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Delete_broken_message()
 		{
-			Setup.Initialize("DB");
 			using (new TransactionScope())
 			{
 				TestPriceSource.Queryable.Where(s => s.EmailFrom == "naturpr@kursknet.ru" && s.EmailTo == "prices@kursk.analit.net")
@@ -299,12 +296,9 @@ WHERE
 						var paramSourceId = new MySqlParameter("?SourceId", _sourceIds[indexSourceId]);
 						With.Connection(connection => {
 							MySqlHelper.ExecuteNonQuery(connection, queryUpdate, paramEmailTo, paramEmailFrom,
-                                paramPriceMask, paramExtrMask, paramSourceId, paramArchivePassword);
-                            });
+								paramPriceMask, paramExtrMask, paramSourceId, paramArchivePassword);
+							});
 						break;
-					}
-					catch (Exception)
-					{
 					}
 					finally
 					{

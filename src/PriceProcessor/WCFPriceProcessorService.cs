@@ -79,72 +79,33 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var sourceArchiveFileName = filename;
 			var archFileName = drFocused["DArchFileName"].ToString();
 			var externalFileName = drFocused["DExtrFileName"].ToString();
-			if (drFocused["DSourceType"].ToString().Equals("EMAIL",
-				StringComparison.OrdinalIgnoreCase))
+			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
 			{
 				// Если файл пришел по e-mail, то это должен быть файл *.eml, открываем его на чтение
-				using (var fs = new FileStream(filename, FileMode.Open, 
-					FileAccess.Read, FileShare.Read))
-				{
-					var logger = LogManager.GetLogger(GetType());
-					try
-					{
-						var message = Mime.Parse(fs);
-						message = UueHelper.ExtractFromUue(message, Path.GetTempPath());
-
-						var attachments = message.GetValidAttachements();
-						foreach (var entity in attachments)
-						{
-							filename = entity.GetFilename();
-							if (String.IsNullOrEmpty(filename))
-								continue;
-
-							if (!FileHelper.CheckMask(filename, archFileName) &&
-								!FileHelper.CheckMask(filename, externalFileName))
-								continue;
-							entity.DataToFile(filename);
-							break;
-						}
-					}
-					catch (Exception ex)
-					{
-						logger.ErrorFormat(
-							"Возникла ошибка при попытке перепровести прайс. Не удалось обработать файл {0}. Файл должен быть письмом (*.eml)\n{1}",
-							filename, ex);
-						string errorMessage = String.Format("Не удалось перепровести прайс.");
-						Mailer.SendFromServiceToService("Ошибка при перепосылке прайс-листа", String.Format("Имя файла: {0}\n{1}", filename, ex.ToString()));
-						throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
-					}
-				}
+				filename = ExtractFileFromAttachment(filename, archFileName, externalFileName);
 			}
-			var sourceFile = String.Empty;
-			var TempDirectory = Path.GetTempPath() + 
-				Path.GetFileNameWithoutExtension(archFileName);
+			var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
 			if (ArchiveHelper.IsArchive(filename))
 			{
-				if (Directory.Exists(TempDirectory))
-					Directory.Delete(TempDirectory, true);
-				Directory.CreateDirectory(TempDirectory);
-				ArchiveHelper.Extract(filename, externalFileName, TempDirectory, drFocused["ArchivePassword"].ToString());
-				sourceFile = FileHelper.FindFromArhive(TempDirectory, externalFileName);
-				if (String.IsNullOrEmpty(sourceFile))
+				if (Directory.Exists(tempDirectory))
+					Directory.Delete(tempDirectory, true);
+				Directory.CreateDirectory(tempDirectory);
+				ArchiveHelper.Extract(filename, externalFileName, tempDirectory, drFocused["ArchivePassword"].ToString());
+				filename = FileHelper.FindFromArhive(tempDirectory, externalFileName);
+				if (String.IsNullOrEmpty(filename))
 				{
-					string errorMessage = String.Format(
+					var errorMessage = String.Format(
 						"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 				}
 			}
-			else
-			{
-				sourceFile = filename;
-			}
 
-			if (String.IsNullOrEmpty(sourceFile))
+			if (String.IsNullOrEmpty(filename))
 				return;
 
-			var PriceExtention = drFocused["DFileExtention"].ToString();
+			var priceExtention = drFocused["DFileExtention"].ToString();
 			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + 
-				"d" + drFocused["DPriceItemId"] + "_" + downlogId + PriceExtention;
+				"d" + drFocused["DPriceItemId"] + "_" + downlogId + priceExtention;
 
 			if (File.Exists(destinationFile))
 			{
@@ -152,7 +113,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 					new FaultReason(MessagePriceInQueue));
 			}
 
-			File.Copy(sourceFile, destinationFile);
+			File.Copy(filename, destinationFile);
 
 			var item = new PriceProcessItem(true, 
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
@@ -172,13 +133,47 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 					Path.GetExtension(sourceArchiveFileName);
 				File.Copy(sourceArchiveFileName, destinationFile);
 			}
-			if (Directory.Exists(TempDirectory))
-				FileHelper.Safe(() => Directory.Delete(TempDirectory, true));
+			if (Directory.Exists(tempDirectory))
+				FileHelper.Safe(() => Directory.Delete(tempDirectory, true));
+		}
+
+		private string ExtractFileFromAttachment(string filename, string archFileName, string externalFileName)
+		{
+			using (var fs = new FileStream(filename, FileMode.Open, 
+				FileAccess.Read, FileShare.Read))
+			{
+				var logger = LogManager.GetLogger(GetType());
+				try
+				{
+					var message = Mime.Parse(fs);
+					message = UueHelper.ExtractFromUue(message, Path.GetTempPath());
+
+					var attachments = message.GetValidAttachements();
+					foreach (var entity in attachments)
+					{
+						var attachmentFilename = entity.GetFilename();
+
+						if (!FileHelper.CheckMask(attachmentFilename, archFileName) &&
+							!FileHelper.CheckMask(attachmentFilename, externalFileName))
+							continue;
+						entity.DataToFile(attachmentFilename);
+						return filename;
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.ErrorFormat(
+						"Возникла ошибка при попытке перепровести прайс. Не удалось обработать файл {0}. Файл должен быть письмом (*.eml)\n{1}",
+						filename, ex);
+					throw;
+				}
+			}
+			throw new Exception(String.Format("В архиве '{0}' не удалось найти архив '{1}' или файл прайс листа {2}", filename, archFileName, externalFileName));
 		}
 
 		public void RetransPrice(WcfCallParameter priceItemId)
 		{
-			RetransPrice(priceItemId, Settings.Default.BasePath);		
+			RetransPrice(priceItemId, Settings.Default.BasePath);
 		}
 
 		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir)

@@ -55,7 +55,6 @@ namespace PriceProcessor.Test
 		public void DeleteDirectories()
 		{
 			TestHelper.RecreateDirectories();
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 		}
 
 		private static void CreateWaybillSource(TestClient client, TestOldClient supplier)
@@ -223,7 +222,6 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		public void Parse_multifile_document_in_archive()
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\multifile\apteka_holding.rar" };
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			SetUp(files);
 			Process_waybills();
 
@@ -236,7 +234,6 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		public void Parse_multifile_with_single_document()
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\multifile\multifile_with_single.zip" };
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			SetUp(files);
 			Process_waybills();
 

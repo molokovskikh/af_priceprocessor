@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NUnit.Framework;
-using System.Net.Mail;
 using System.IO;
+using System.Net.Mail;
+using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Threading;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
-using System.Collections;
-using System.ServiceProcess;
-using System.Net;
-using System.Reflection;
+using NUnit.Framework;
 
 namespace PriceProcessor.Test
 {
@@ -18,16 +14,16 @@ namespace PriceProcessor.Test
 	public class SystemNetMailSmtpFixture
 	{
 		//Остановили ли мы сервис вручную?
-		bool serviceStopped = false;
+		private bool serviceStopped;
 		//Ссылка на сервис Symantec Antivirus
-		ServiceController symantecAntiVirus = null;
+		private ServiceController symantecAntiVirus;
 
 		[TestFixtureSetUp]
 		public void TestInit()
 		{
 			//Попытка найти сервис "Symantec AntiVirus" и остановить его, чтобы он не проксировал
 			ServiceController[] services = ServiceController.GetServices();
-			symantecAntiVirus = Array.Find<ServiceController>(
+			symantecAntiVirus = Array.Find(
 				services,
 				delegate(ServiceController value) { return value.ServiceName.Equals("Symantec AntiVirus", StringComparison.OrdinalIgnoreCase); });
 
@@ -35,7 +31,8 @@ namespace PriceProcessor.Test
 			{
 				symantecAntiVirus.Stop();
 				symantecAntiVirus.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
-				Assert.That(symantecAntiVirus.Status, Is.EqualTo(ServiceControllerStatus.Stopped), "Не удалось остановить сервис Symantec AntiVirus");
+				Assert.That(symantecAntiVirus.Status, Is.EqualTo(ServiceControllerStatus.Stopped),
+					"Не удалось остановить сервис Symantec AntiVirus");
 				serviceStopped = true;
 			}
 		}
@@ -67,25 +64,26 @@ namespace PriceProcessor.Test
 			string _rootTempPath = Path.GetTempFileName();
 			if (File.Exists(_rootTempPath))
 				File.Delete(_rootTempPath);
-			_rootTempPath = Path.GetDirectoryName(_rootTempPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(_rootTempPath);
+			_rootTempPath = Path.GetDirectoryName(_rootTempPath) + Path.DirectorySeparatorChar +
+				Path.GetFileNameWithoutExtension(_rootTempPath);
 
 			if (!Directory.Exists(_rootTempPath))
 				Directory.CreateDirectory(_rootTempPath);
 
 			try
 			{
-				using (IMAP_Client imapClient = new IMAP_Client())
+				using (var imapClient = new IMAP_Client())
 				{
 					imapClient.Connect("box.analit.net", 143);
 					imapClient.Authenticate("prccopy@analit.net", "123");
 					imapClient.SelectFolder("INBOX");
-					IMAP_SequenceSet sequence_set = new IMAP_SequenceSet();
+					var sequence_set = new IMAP_SequenceSet();
 					sequence_set.Parse("1:*", long.MaxValue);
 					IMAP_FetchItem[] items = imapClient.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
 					if ((items != null) && (items.Length > 0))
 					{
-						string[] uids = Array.ConvertAll<IMAP_FetchItem, string>(items, delegate(IMAP_FetchItem value) { return value.UID.ToString(); });
-						IMAP_SequenceSet deletedSet = new IMAP_SequenceSet();
+						string[] uids = Array.ConvertAll(items, delegate(IMAP_FetchItem value) { return value.UID.ToString(); });
+						var deletedSet = new IMAP_SequenceSet();
 						deletedSet.Parse(String.Join(",", uids));
 						imapClient.DeleteMessages(deletedSet, true);
 					}
@@ -120,17 +118,17 @@ namespace PriceProcessor.Test
 					 * http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=146711
 					 */
 					sc.Send(mailMessage);
-					
+
 					try
 					{
 						File.Delete(fileName);
 						Assert.Fail("Получилось удалить файл, заблокированный SmtpClient'ом.");
 					}
-					catch (System.IO.IOException exception)
+					catch (IOException exception)
 					{
 						Assert.That(
-							System.Runtime.InteropServices.Marshal.GetHRForException(exception),
-							Is.EqualTo((int)-2147024864),
+							Marshal.GetHRForException(exception),
+							Is.EqualTo(-2147024864),
 							"Код ошибки отличается от ожидаемого.");
 						mailMessage.Dispose();
 						mailMessage = null;
@@ -160,7 +158,7 @@ namespace PriceProcessor.Test
 
 					imapClient.SelectFolder("INBOX");
 
-					IMAP_SequenceSet newSet = new IMAP_SequenceSet();
+					var newSet = new IMAP_SequenceSet();
 					newSet.Parse("1:*");
 					items = imapClient.FetchMessages(newSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
 
@@ -169,8 +167,8 @@ namespace PriceProcessor.Test
 					Assert.That(items[0].Envelope.Subject.EndsWith("file1.txt"), "Первое письмо не было доставлено");
 					Assert.That(items[1].Envelope.Subject.EndsWith("file2.txt"), "Второе письмо не было доставлено");
 
-					string[] uidsFiles = Array.ConvertAll<IMAP_FetchItem, string>(items, delegate(IMAP_FetchItem value) { return value.UID.ToString(); });
-					IMAP_SequenceSet deletedFilesSet = new IMAP_SequenceSet();
+					string[] uidsFiles = Array.ConvertAll(items, delegate(IMAP_FetchItem value) { return value.UID.ToString(); });
+					var deletedFilesSet = new IMAP_SequenceSet();
 					deletedFilesSet.Parse(String.Join(",", uidsFiles));
 					imapClient.DeleteMessages(deletedFilesSet, true);
 				}

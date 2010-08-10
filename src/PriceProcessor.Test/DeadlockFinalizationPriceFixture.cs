@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 using Inforoom.Formalizer;
@@ -145,7 +143,7 @@ for update"
 							command.Parameters.AddWithValue("?PriceCode", _priceCode);
 							command.Parameters.AddWithValue("?CostCode", _costCode);
 
-							var dummy = command.ExecuteScalar();
+							command.ExecuteScalar();
 
 							//Надо спать какое-то время, чтобы нитка формализации попала в Deadlock
 							Thread.Sleep(180000);
