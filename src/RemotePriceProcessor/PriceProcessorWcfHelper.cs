@@ -34,14 +34,19 @@ namespace RemotePriceProcessor
 
 		public void ProvideFault(Exception error, MessageVersion version, ref Message fault)
 		{
-			var faultException = new FaultException("Произошла ошибка. Попробуйте повторить операцию позднее.");
-			
-			var message = Message.CreateMessage(version, faultException.CreateMessageFault(), faultException.Action);
-			fault = message;
+			if (fault == null)
+			{
+				var faultException = new FaultException("Произошла ошибка. Попробуйте повторить операцию позднее.");
+
+				var message = Message.CreateMessage(version, faultException.CreateMessageFault(), faultException.Action);
+				fault = message;
+			}
 		}
 
 		public bool HandleError(Exception error)
 		{
+			if (error is FaultException)
+				return true;
 			log.Error("Ошибка при обращении к сервису", error);
 			return true;
 		}

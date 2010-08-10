@@ -10,11 +10,17 @@ namespace PriceProcessor.Test.Services
 	[TestFixture]
 	public class ErrorHandlerFixture
 	{
+		private ServiceHost host;
+		private ITest channel;
+
 		[ServiceContract]
 		public interface ITest
 		{
 			[OperationContract]
 			void Test();
+
+			[OperationContract]
+			void TestаFault();
 		}
 
 		public class TestService : ITest
@@ -23,12 +29,17 @@ namespace PriceProcessor.Test.Services
 			{
 				throw new Exception();
 			}
+
+			public void TestаFault()
+			{
+				throw new FaultException<string>("test", new FaultReason("test"));
+			}
 		}
 
-		[Test]
-		public void Handle_error()
+		[SetUp]
+		public void Setup()
 		{
-			var host = new ServiceHost(typeof (TestService));
+			host = new ServiceHost(typeof (TestService));
 
 			var binding = new NetTcpBinding();
 			binding.Security.Mode = SecurityMode.None;
@@ -41,14 +52,41 @@ namespace PriceProcessor.Test.Services
 			host.Open();
 
 			var factory = new ChannelFactory<ITest>(binding, url);
-			var channel = factory.CreateChannel();
+			channel = factory.CreateChannel();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			((ICommunicationObject)channel).Close();
+			host.Close();
+		}
+
+		[Test]
+		public void Handle_error()
+		{
 			try
 			{
 				channel.Test();
+				Assert.Fail("не выбросили исключение");
 			}
 			catch (Exception e)
 			{
 				Assert.That(e.Message, Is.EqualTo("Произошла ошибка. Попробуйте повторить операцию позднее."));
+			}
+		}
+
+		[Test]
+		public void Do_not_handle_fault()
+		{
+			try
+			{
+				channel.TestаFault();
+				Assert.Fail("не выбросили исключение");
+			}
+			catch (FaultException e)
+			{
+				Assert.That(e.Message, Is.EqualTo("test"));
 			}
 		}
 	}
