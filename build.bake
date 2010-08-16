@@ -28,9 +28,6 @@ Task @ParseWaybills:
 	for result in results:
 		print result
 
-if Configuration.IsDefined("Platform"):
-	Global(platform : Configuration.Platform)
-
 Global(
 	project : "PriceProcessor",
 	server : "fms.adc.analit.net",
@@ -42,7 +39,7 @@ Global(
 
 Task @default, [@BuildService]
 
-Task @deploy, [@Migrate, @DeployService, @SendDeployNotification]
+Task @deploy, [@Production, @Migrate, @DeployService, @SendDeployNotification]
 
 def IsDocument(mime as Mime):
 	for box in mime.MainEntity.To.Mailboxes:
