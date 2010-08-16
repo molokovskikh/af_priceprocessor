@@ -35,14 +35,6 @@ namespace Inforoom.PriceProcessor
 				 body);
 		}
 
-		public static void SendFromFarmToService(string subject, string body)
-		{
-			Send(Settings.Default.FarmSystemEmail,
-			     Settings.Default.ServiceMail,
-			     subject,
-			     body);
-		}
-
 		public static void SendUserFail(string subject, string body)
 		{
 			Send(Settings.Default.ServiceMail,

@@ -104,7 +104,7 @@ namespace PriceProcessor.Test
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1), "ожидалось исключение для CatalogId = {0}", excludeCatalogId);
 		}
 
-		[Test]
+		[Test, Ignore("Ассортимент временно не создается, а может и не временно")]
 		public void Create_new_assortment_if_product_not_checked()
 		{
 			var catalogId = 13468;
@@ -192,8 +192,10 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
 			TestHelper.Execute(@"update catalogs.producers set Checked = 0 where Id = {0}", producerId);
 			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
-			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(1));
+/*			
+ * новые записи в ассортименте не создаются
+ * assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(1));*/
 			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0));
 
@@ -203,8 +205,9 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 delete from catalogs.assortment where id = {1} or (CatalogId = {0} and ProducerId = {1});
 insert into catalogs.assortment values({1}, {0}, {1}, 1)", catalogId, notCheckedProducerId);
 			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
-			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));
+/* новые записи в ассортименте не создаются
+ * assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
+			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));*/
 			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));			
 		}

@@ -40,11 +40,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		protected DataTable dtExcludes;
 		protected MySqlCommandBuilder cbExcludes;
 
-		Stopwatch assortmentSearchWatch;
-		int assortmentSearchCount;
-		Stopwatch excludesSearchWatch;
-		int excludesSearchCount;
-
 		protected MySqlDataAdapter daUnrecExp;
 		protected MySqlCommandBuilder cbUnrecExp;
 		protected DataTable dtUnrecExp;
@@ -94,6 +89,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			get { return _loggingStat; }
 		}
+
+		private ProducerResolver _producerResolver;
 
 		/// <summary>
 		/// Конструктор парсера
@@ -252,20 +249,15 @@ and (products.Id = Synonym.ProductId)
 			_logger.Debug("построили индекс по Assortment");
 
 			daExcludes = new MySqlDataAdapter(
-				String.Format("SELECT Id, CatalogId, ProducerSynonymId, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), _connection);
+				String.Format("SELECT Id, CatalogId, ProducerSynonym, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), _connection);
 			cbExcludes = new MySqlCommandBuilder(daExcludes);
 			daExcludes.InsertCommand = cbExcludes.GetInsertCommand();
 			daExcludes.InsertCommand.CommandTimeout = 0;
 			daExcludes.Fill(dsMyDB, "Excludes");
 			dtExcludes = dsMyDB.Tables["Excludes"];
 			_logger.Debug("загрузили Excludes");
-			dtExcludes.Constraints.Add("ProducerSynonymKey", new[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonymId"] }, false);
+			dtExcludes.Constraints.Add("ProducerSynonymKey", new[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonym"] }, false);
 			_logger.Debug("построили индекс по Excludes");
-
-			assortmentSearchWatch = new Stopwatch();
-			assortmentSearchCount = 0;
-			excludesSearchWatch = new Stopwatch();
-			excludesSearchCount = 0;
 
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format(@"
@@ -344,6 +336,8 @@ select @LastSynonymFirmCrCode;");
 				loadExistsWatch.Stop();
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса, {0}с", loadExistsWatch.Elapsed.TotalSeconds);
 			}
+
+			_producerResolver = new ProducerResolver(PriceInfo, _stats, dtAssortment, dtExcludes, dtSynonymFirmCr);
 
 			_logger.Debug("конец Prepare");
 		}
@@ -664,13 +658,8 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 			logMessage.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(cleanUpCommand));
 
-			_logger.InfoFormat("Statistica: {0}", logMessage.ToString());
-			_logger.DebugFormat(
-				"Statistica search: assortment = {0} excludes = {1}  during assortment = {2} during excludes = {3}",
-				(assortmentSearchCount > 0) ? assortmentSearchWatch.ElapsedMilliseconds / assortmentSearchCount : 0,
-				(excludesSearchCount > 0) ? excludesSearchWatch.ElapsedMilliseconds / excludesSearchCount : 0,
-				assortmentSearchWatch.ElapsedMilliseconds,
-				excludesSearchWatch.ElapsedMilliseconds);
+			_logger.InfoFormat("Statistica: {0}", logMessage);
+			_stats.PrintSearchStats();
 		}
 
 		private string UnrecExpUpdate(MySqlTransaction finalizeTransaction)
@@ -724,16 +713,8 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 										else
 										{
 											drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-											var CatalogId = Convert.ToInt64(MySqlHelper.ExecuteScalar(
-												_connection,
-												"select CatalogId from catalogs.products p where Id = ?Productid",
-												new MySqlParameter("?Productid", drUnrecExp["PriorProductId"])));
-											long? synonymId = null;
-											if (!Convert.IsDBNull(drUnrecExp["ProductSynonymId"]))
-												synonymId = Convert.ToInt64(drUnrecExp["ProductSynonymId"]);
-											var status = GetAssortmentStatus(CatalogId, Convert.ToInt64(drUnrecExp["PriorProducerId"]), Convert.ToInt64(drUnrecExp["ProducerSynonymId"]), synonymId);
-											drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
-											drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm | status);
+											drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
+											drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
 											continue;
 										}
 
@@ -817,17 +798,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 			}
 
 			foreach (var core in _newCores.Where(c => c.CreatedProducerSynonym != null))
-			{
 				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProducerSynonym["SynonymFirmCrCode"]);
-				if (!(core.CreatedProducerSynonym["CodeFirmCr"] is DBNull))
-				{
-					var producerId = Convert.ToUInt32(core.CreatedProducerSynonym["CodeFirmCr"]);
-					var assortmentStatus = GetAssortmentStatus(core.ProductId, producerId, core.SynonymFirmCrCode, core.SynonymCode);
-					//Если получили исключение, то сбрасываем CodeFirmCr
-					if (assortmentStatus != UnrecExpStatus.MarkExclude)
-						core.CodeFirmCr = producerId;
-				}
-			}
 		}
 
 		/// <summary>
@@ -891,8 +862,9 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 				}
 
 				GetProductId(position);
-				GetProducerId(position);
-				GetAssortmentStatus(position);
+				_producerResolver.ResolveProducer(position);
+				//GetProducerId(position);
+				//GetAssortmentStatus(position);
 
 				if (!position.IsSet(UnrecExpStatus.NameForm))
 					_loggingStat.unformCount++;
@@ -953,150 +925,6 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 				position.Junk = Convert.ToBoolean(dr[0]["Junk"]);
 				position.AddStatus(UnrecExpStatus.NameForm);
 			}
-		}
-
-		private void GetAssortmentStatus(FormalizationPosition position)
-		{
-			if (!position.ProductId.HasValue || !position.CodeFirmCr.HasValue)
-				return;
-
-			var assortmentStatus = GetAssortmentStatus(position.CatalogId, position.CodeFirmCr, position.SynonymFirmCrCode, position.SynonymCode);
-			//Если получили исключение, то сбрасываем CodeFirmCr
-			if (assortmentStatus == UnrecExpStatus.MarkExclude)
-				position.CodeFirmCr = null;
-			position.AddStatus(assortmentStatus);
-		}
-
-		private UnrecExpStatus GetAssortmentStatus(long? catalogId, long? producerId, long? producerSynonymId, long? synonymId)
-		{
-			DataRow[] dr;
-
-			assortmentSearchWatch.Start();
-			try
-			{
-				dr = dtAssortment.Select(
-					String.Format("CatalogId = {0} and ProducerId = {1}",
-						catalogId,
-						producerId));
-				assortmentSearchCount++;
-			}
-			finally
-			{
-				assortmentSearchWatch.Stop();
-			}
-
-			if (dr.Length == 1)
-				return UnrecExpStatus.AssortmentForm;
-
-			excludesSearchWatch.Start();
-			try
-			{
-				dr = dtExcludes.Select(
-					String.Format("CatalogId = {0} and ProducerSynonymId = {1}",
-						catalogId,
-						producerSynonymId));
-				excludesSearchCount++;
-			}
-			finally
-			{
-				excludesSearchWatch.Stop();
-			}
-
-			//Если мы ничего не нашли, то добавляем в исключение
-			if (dr.Length == 0 && !_priceInfo.IsAssortmentPrice)
-				CreateExcludeOrAssortment(catalogId, producerId, producerSynonymId, synonymId);
-
-			return UnrecExpStatus.MarkExclude;
-		}
-
-		private void CreateExcludeOrAssortment(long? catalogId, long? producerId, long? producerSynonymId, long? synonymId)
-		{
-			if (CanCreateAssortment(catalogId, producerId))
-			{
-				var assortment = dtAssortment.NewRow();
-				assortment["CatalogId"] = catalogId;
-				assortment["ProducerId"] = producerId;
-				assortment["Checked"] = false;
-				dtAssortment.Rows.Add(assortment);
-			}
-			else
-			{
-				try
-				{
-					var drExclude = dtExcludes.NewRow();
-					drExclude["PriceCode"] = parentSynonym;
-					drExclude["CatalogId"] = catalogId;
-					drExclude["ProducerSynonymId"] = producerSynonymId;
-					drExclude["OriginalSynonymId"] = synonymId;
-					dtExcludes.Rows.Add(drExclude);
-				}
-				catch (ConstraintException)
-				{
-				}
-			}
-		}
-
-		private bool CanCreateAssortment(long? catalogId, long? producerId)
-		{
-			var query = String.Format(@"
-select count(*) FROM catalogs.Assortment A
-  join catalogs.Producers P on P.Id = {1}
-where CatalogId = {0} and (A.Checked = 1 or P.Checked = 1)", catalogId, producerId);
-			var count = Convert.ToInt32(MySqlHelper.ExecuteScalar(_connection, query));
-			return (count == 0);
-		}
-
-		//Смогли ли мы распознать производителя по названию?
-		private void GetProducerId(FormalizationPosition position)
-		{
-			if (String.IsNullOrEmpty(position.FirmCr))
-			{
-				//Если в производителе ничего не написано, то устанавливаем все в null, и говорим, что распознано по производителю
-				position.AddStatus(UnrecExpStatus.FirmForm);
-			}
-			else
-			{
-				var dr = dtSynonymFirmCr.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-				if (dr.Length > 0)
-				{
-					//Если значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
-					position.CodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
-					position.IsAutomaticProducerSynonym = Convert.ToBoolean(dr[0]["IsAutomatic"]);
-					if (Convert.IsDBNull(dr[0]["InternalProducerSynonymId"]))
-					{
-						_stats.ProducerSynonymUsedExistCount++;
-						position.SynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
-					}
-					else
-						position.InternalProducerSynonymId = Convert.ToInt64(dr[0]["InternalProducerSynonymId"]);
-
-					if (!position.IsAutomaticProducerSynonym)
-						position.AddStatus(UnrecExpStatus.FirmForm);
-				}
-				else
-				{
-					//Если позиция распознано по наименованию, то добавляем автоматический синоним, если его нет
-					if (position.IsSet(UnrecExpStatus.NameForm))
-					{
-						position.IsAutomaticProducerSynonym = true;
-						position.InternalProducerSynonymId = InsertSynonymFirm(position);
-					}
-				}
-			}
-		}
-
-		private long InsertSynonymFirm(FormalizationPosition position)
-		{
-			var drInsert = dtSynonymFirmCr.NewRow();
-			drInsert["CodeFirmCr"] = DBNull.Value;
-			drInsert["SynonymFirmCrCode"] = DBNull.Value;
-			drInsert["IsAutomatic"] = 1;
-			drInsert["Synonym"] = position.FirmCr.ToLower();
-			drInsert["OriginalSynonym"] = position.FirmCr.Trim();
-			dtSynonymFirmCr.Rows.Add(drInsert);
-			position.Core.CreatedProducerSynonym = drInsert;
-			_stats.ProducerSynonymCreatedCount++;
-			return (long)drInsert["InternalProducerSynonymId"];
 		}
 	}
 }

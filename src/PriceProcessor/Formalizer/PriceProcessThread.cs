@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Properties;
@@ -77,8 +78,6 @@ namespace Inforoom.Formalizer
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
 
 		private IPriceFormalizer _workPrice;
-
-		private PriceProcessState _processState = PriceProcessState.None;
 
 		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage)
 		{
@@ -183,231 +182,88 @@ namespace Inforoom.Formalizer
 			}
 		}
 
-		public PriceProcessState ProcessState
-		{
-			get 
-			{
-				return _processState;
-			}
-		}
+		public PriceProcessState ProcessState { get; set; }
 
 		/// <summary>
 		/// Процедура формализации
 		/// </summary>
 		public void ThreadWork()
 		{
-			_processState = PriceProcessState.Begin;
+			ProcessState = PriceProcessState.Begin;
 			var allWorkTimeString = String.Empty;
+			string outPriceFileName = null;
+			using(var cleaner = new FileCleaner())
 			try
 			{
 				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-				var outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
+				outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
 				//Используем идентификатор нитки в качестве названия временной папки
 				_tempPath = Path.GetTempPath() + TID + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')
 				_tempFileName = _tempPath + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
+				cleaner.Watch(_tempFileName);
 				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
 
-				_processState = PriceProcessState.GetConnection;
-				_processState = PriceProcessState.GetLogConnection;
+				ProcessState = PriceProcessState.CreateTempDirectory;
+
+				//Создаем директорию для временного файла и копируем туда файл
+				if (Directory.Exists(_tempPath))
+					FileHelper.DeleteDir(_tempPath);
+
+				Directory.CreateDirectory(_tempPath);
+
 				try
 				{
-					_processState = PriceProcessState.CreateTempDirectory;
+					ProcessState = PriceProcessState.CallValidate;
+					_workPrice = PricesValidator.Validate(_processItem.FilePath, _tempFileName, (uint)_processItem.PriceItemId);
 
-					//Создаем директорию для временного файла и копируем туда файл
-					if (!Directory.Exists(_tempPath))
-						Directory.CreateDirectory(_tempPath);
-					else
-					{
-						//удаляем предыдущие файлы из директории, если они не были удалены
-						var tempFiles = Directory.GetFiles(_tempPath);
-						foreach (var tempDeleteFile in tempFiles)
-							FileHelper.FileDelete(tempDeleteFile);
-					}
+					_workPrice.Downloaded = _processItem.Downloaded;
+					_workPrice.InputFileName = _processItem.FilePath;
 
-					_processState = PriceProcessState.CheckConnection;
-					try
-					{
-						_processState = PriceProcessState.CallValidate;
-						_workPrice = PricesValidator.Validate(_processItem.FilePath, _tempFileName, (uint)_processItem.PriceItemId);
+					ProcessState = PriceProcessState.CallFormalize;
+					_workPrice.Formalize();
 
-						_workPrice.Downloaded = _processItem.Downloaded;
-						_workPrice.InputFileName = _processItem.FilePath;
-
-						_processState = PriceProcessState.CallFormalize;
-						_workPrice.Formalize();
-
-						FormalizeOK = true;
-					}
-					finally
-					{
-						var tsFormalize = DateTime.UtcNow.Subtract(_startedAt);
-						_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
-						allWorkTimeString = tsFormalize.ToString();
-					}
-
-					_processState = PriceProcessState.FinalCopy;
-					try
-					{
-						if (FormalizeOK)
-						{
-							//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-							File.Copy(_tempFileName, outPriceFileName, true);
-							var ft = DateTime.UtcNow;
-							File.SetCreationTimeUtc(outPriceFileName, ft);
-							File.SetLastWriteTimeUtc(outPriceFileName, ft);
-							File.SetLastAccessTimeUtc(outPriceFileName, ft);
-						}
-					}
-					catch(Exception e)
-					{
-						throw new FormalizeException(
-							String.Format(Settings.Default.FileCopyError, _tempFileName, Settings.Default.BasePath, e), 
-							_workPrice.firmCode, 
-							_workPrice.priceCode, 
-							_workPrice.firmShortName, 
-							_workPrice.priceName);
-					}
-
+					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
-				catch(WarningFormalizeException e)
+				catch (WarningFormalizeException e)
 				{
-					//Если получили человеческую ошибку, то говорим, что формализация завершилась удачно
-					try
-					{
-						//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-						if (File.Exists(_tempFileName))
-							File.Copy(_tempFileName, outPriceFileName, true);
-						else
-							//Копируем оригинальный файл в случае неизвестного файла
-							File.Copy(_processItem.FilePath, outPriceFileName, true);
-						var ft = DateTime.UtcNow;
-						File.SetCreationTimeUtc(outPriceFileName, ft);
-						File.SetLastWriteTimeUtc(outPriceFileName, ft);
-						File.SetLastAccessTimeUtc(outPriceFileName, ft);
-						_log.WarningLog(e, e.Message);
-						FormalizeOK = true;
-					}
-					catch(Exception ex)
-					{
-						FormalizeOK = false;
-						_log.ErrodLog(_workPrice,
-						              new FormalizeException(
-						              	String.Format(Settings.Default.FileCopyError, _tempFileName, Settings.Default.BasePath, ex),
-						              	e.clientCode,
-						              	e.priceCode,
-						              	e.clientName,
-						              	e.priceName));
-					}
-				}
-				catch(FormalizeException e)
-				{
-					FormalizeOK = false;
-					_log.ErrodLog(_workPrice, e);
-				}
-				catch(Exception e)
-				{
-					FormalizeOK = false;
-					if ( !(e is ThreadAbortException) )
-						_log.ErrodLog(_workPrice, e);
-					else
-						_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+					_log.WarningLog(e, e.Message);
+					FormalizeOK = true;
 				}
 				finally
 				{
-					_processState = PriceProcessState.CloseConnection;
+					var tsFormalize = DateTime.UtcNow.Subtract(_startedAt);
+					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
+					allWorkTimeString = tsFormalize.ToString();
 				}
+
+				ProcessState = PriceProcessState.FinalCopy;
+				//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
+				if (File.Exists(_tempFileName))
+					File.Copy(_tempFileName, outPriceFileName, true);
+				else
+					File.Copy(_processItem.FilePath, outPriceFileName, true);
+				var ft = DateTime.UtcNow;
+				File.SetCreationTimeUtc(outPriceFileName, ft);
+				File.SetLastWriteTimeUtc(outPriceFileName, ft);
+				File.SetLastAccessTimeUtc(outPriceFileName, ft);
 			}
 			catch(Exception e)
 			{
-				if (!(e is ThreadAbortException))
-				{
-					_logger.Error("Необработанная ошибка в нитке", e);
-					Mailer.SendFromFarmToService("ThreadWork Error", e.ToString());
-				}
+				if (e is ThreadAbortException)
+					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				else
-					_logger.Error("Ошибка ThreadAbortException", e);
+				{
+					_log.ErrodLog(_workPrice, e);
+					Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
+				}
 			}
 			finally
 			{
-				_processState = PriceProcessState.FinalizeThread;
-				Thread.Sleep(10);
-				GC.Collect();
-				Thread.Sleep(100);
-				try
-				{
-					if (File.Exists(_tempFileName))
-						FileHelper.FileDelete(_tempFileName);
-				}
-				catch(Exception e)
-				{
-					_logger.Error("Ошибка при удалении", e);
-				}
+				ProcessState = PriceProcessState.FinalizeThread;
 				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, allWorkTimeString);
 				FormalizeEnd = true;
-			}
-		}
-
-		/// <summary>
-		/// Проверка connection на попытку выборки из clientsdata. Если выборка не будет успешной, то генерируем ошибку.
-		/// </summary>
-		/// <param name="myconn"></param>
-		private void CheckConnection(MySqlConnection myconn)
-		{
-			if (myconn.State != ConnectionState.Open)
-				myconn.Open();
-			try
-			{
-				var dsNowTime = MySqlHelper.ExecuteDataset(myconn, "select now()");
-				if (!((dsNowTime.Tables.Count == 1) && (dsNowTime.Tables[0].Rows.Count == 1)))
-				{
-					//Попытка получить время создания connection
-					DateTime? creationTime = null;
-					var driverField = myconn.GetType().GetField("driver", BindingFlags.Instance | BindingFlags.NonPublic);
-					var driverInternal = driverField.GetValue(myconn);
-					if (driverInternal != null)
-					{
-						var creationTimeField = driverInternal.GetType().GetField("creationTime", BindingFlags.Instance | BindingFlags.NonPublic);
-						creationTime = (DateTime?)creationTimeField.GetValue(driverInternal);
-					}
-
-					//Пытаемся получить InnoDBStatus
-					bool InnoDBByConnection = false;
-					string InnoDBStatus = String.Empty;
-					var dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
-					if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1) && (dsStatus.Tables[0].Columns.Contains("Status")))
-					{
-						InnoDBStatus = dsStatus.Tables[0].Rows[0]["Status"].ToString();
-						InnoDBByConnection = true;
-					}
-					if (!InnoDBByConnection)
-					{
-						var drInnoDBStatus = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), "show engine innodb status");
-						if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
-							InnoDBStatus = drInnoDBStatus["Status"].ToString();
-					}
-
-					string techInfo = String.Format(@"
-ServerThreadId           = {0}
-CreationTime             = {1}
-InnoDBStatusByConnection = {2}
-InnoDB Status            =
-{3}",
-										myconn.ServerThread,
-										creationTime,
-										InnoDBByConnection,
-										InnoDBStatus);
-
-					_logger.InfoFormat("При проверке соединения получили 0 записей : {0}", techInfo);
-					_log.SendMySqlFailMessage(techInfo);
-
-					throw new Exception("При попытке выборки из clientsdata не получили записей. Перезапустите PriceProcessor.");
-				}
-			}
-			finally
-			{
-				myconn.Close();
 			}
 		}
 	}

@@ -27,6 +27,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			IsAssortmentPrice = Convert.ToInt32(row[FormRules.colPriceType]) == Settings.Default.ASSORT_FLG;
 			PriceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]);
 			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
+
+			PricePurpose = PricePurpose.Normal;
+			var firmSegment = Convert.ToInt16(row[FormRules.colFirmSegment]);
+			if (IsAssortmentPrice)
+				PricePurpose |= PricePurpose.Assortment;
+			if (firmSegment == 1)
+				PricePurpose |= PricePurpose.Helper;
 		}
 
 		public string PriceName { get; set; }
@@ -41,5 +48,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public bool IsAssortmentPrice { get; set; }
 		public CostTypes CostType { get; set; }
 		public bool IsUpdating { get; set;}
+
+		public PricePurpose PricePurpose { get; set; }
 	}
 }
