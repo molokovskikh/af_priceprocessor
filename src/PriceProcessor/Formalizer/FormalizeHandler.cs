@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private readonly FileSystemWatcher FSW;
 
 		//список с рабочими нитками формализации
-		private readonly List<PriceProcessThread> pt;
+		protected readonly List<PriceProcessThread> pt;
 
 		//Время последнего статистического отчета 
 		private DateTime lastStatisticReport = DateTime.Now.AddDays(-1);
@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		//Период статистического отчета в секундах
 		private const int statisticPeriodPerSecs = 30;
 
-		private Hashtable _errorMessages;
+		protected Hashtable _errorMessages;
 
 		/// <summary>
 		/// Время последней удачной формализации
@@ -317,31 +317,23 @@ namespace Inforoom.PriceProcessor.Formalizer
 						PriceItemList.list.Remove(i);
 				});
 
-			int j = 0;
-			while ((pt.Count < Settings.Default.MaxWorkThread) && (j < processList.Count))
+			foreach (var item in processList.TakeWhile(i => pt.Count < Settings.Default.MaxWorkThread).Where(i => i.IsReadyForProcessing(pt)))
 			{
-				var item = processList[j];
-								
-				if (item.IsReadyForProcessing(pt))
+				_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
+				FileHashItem hashItem;
+				if (_errorMessages.Contains(item.FilePath))
+					hashItem = (FileHashItem)_errorMessages[item.FilePath];
+				else
 				{
-					_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
-					FileHashItem hashItem;
-					if (_errorMessages.Contains(item.FilePath))
-						hashItem = (FileHashItem)_errorMessages[item.FilePath];
-					else
-					{
-						hashItem = new FileHashItem();
-						_errorMessages.Add(item.FilePath, hashItem);
-					}
-					pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
-					//если значение не было установлено, то скорей всего не было ниток на формализацию, 
-					//поэтому устанавливаем время последней удачной формализации как текущее время
-					if (!_lastFormalizationDate.HasValue)
-						_lastFormalizationDate = DateTime.UtcNow;
-					_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
+					hashItem = new FileHashItem();
+					_errorMessages.Add(item.FilePath, hashItem);
 				}
-
-				j++;
+				pt.Add(new PriceProcessThread(item, hashItem.ErrorMessage));
+				//если значение не было установлено, то скорей всего не было ниток на формализацию, 
+				//поэтому устанавливаем время последней удачной формализации как текущее время
+				if (!_lastFormalizationDate.HasValue)
+					_lastFormalizationDate = DateTime.UtcNow;
+				_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
 			}
 		}
 

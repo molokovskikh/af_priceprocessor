@@ -28,7 +28,7 @@ namespace Inforoom.PriceProcessor
 		public DateTime? FileTime { get; set; }
 
 		//Дата создания элемента, чтобы знать: можно ли его брать в обработку или нет
-		public DateTime CreateTime { get; private set; }
+		public DateTime CreateTime { get; /* для теста private */set; }
 
 		private ulong? ParentSynonym { get; set; }
 
@@ -100,7 +100,7 @@ group by pi.Id",
 				return false;
 
 			//Не формализуется ли прайс-лист с такими же синонимами?
-			return !processList.Select(t => t.ProcessItem).Where(i => i != this).All(IsSynonymEqual);
+			return !processList.Select(t => t.ProcessItem).Where(i => i != this).Any(IsSynonymEqual);
 		}
 
 		public bool IsSynonymEqual(PriceProcessItem item)

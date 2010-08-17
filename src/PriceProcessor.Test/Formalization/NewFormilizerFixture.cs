@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -293,6 +294,54 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;
 Теотард 200мг Капс.пролонг.дейст. Х40;Вектор;157;83.02;");
+
+			using (new SessionScope())
+			{
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				Assert.That(cores.Count, Is.EqualTo(2));
+				var core1 = cores[0];
+				Assert.That(core1.Product.Id, Is.EqualTo(product1.Id));
+				Assert.That(core1.Producer.Id, Is.EqualTo(producer1.Id));
+
+				var core2 = cores[0];
+				Assert.That(core2.Product.Id, Is.EqualTo(product2.Id));
+				Assert.That(core2.Producer.Id, Is.EqualTo(producer2.Id));
+			}
+		}
+
+		[Test]
+		public void Do_not_create_same_excludes()
+		{
+			TestProducer producer1;
+			TestProducer producer2;
+			TestProduct product1;
+			TestProduct product2;
+
+			using (new TransactionScope())
+			{
+				producer1 = TestProducer.Queryable.First();
+				producer2 = TestProducer.Queryable.Skip(1).First();
+				new TestProducerSynonym("Вектор", producer1, price).Save();
+				new TestProducerSynonym("Вектор", producer2, price).Save();
+
+				product1 = TestProduct.Queryable.First();
+				product2 = TestProduct.Queryable.Skip(1).First();
+				new TestProductSynonym("5-нок 50мг Таб. П/о Х50", product1, price).Save();
+				new TestProductSynonym("Теотард 200мг Капс.пролонг.дейст. Х40", product2, price).Save();
+
+				var assortment1 = TestAssortment.Queryable.FirstOrDefault(a => a.Producer == producer1 && a.Catalog == product1.CatalogProduct);
+				if (assortment1 != null)
+					assortment1.Delete();
+
+				var assortment2 = TestAssortment.Queryable.FirstOrDefault(a => a.Producer == producer2 && a.Catalog == product2.CatalogProduct);
+				if (assortment2 != null)
+					assortment2.Delete();
+			}
+
+			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;
+5-нок 50мг Таб. П/о Х50;Вектор;157;83.02;");
+
+			Console.WriteLine(price.Id);
 
 			using (new SessionScope())
 			{

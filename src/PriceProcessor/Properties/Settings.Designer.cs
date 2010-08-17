@@ -354,6 +354,7 @@ namespace Inforoom.PriceProcessor.Properties {
             get {
                 return ((int)(this["MaxWorkThread"]));
             }
+			set { this["MaxWorkThread"] = value; }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
