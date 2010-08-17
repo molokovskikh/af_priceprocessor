@@ -863,8 +863,6 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 
 				GetProductId(position);
 				_producerResolver.ResolveProducer(position);
-				//GetProducerId(position);
-				//GetAssortmentStatus(position);
 
 				if (!position.IsSet(UnrecExpStatus.NameForm))
 					_loggingStat.unformCount++;
