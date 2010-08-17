@@ -1656,8 +1656,7 @@ where
 								throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
 
 					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
-					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm) &&
-						(((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.ExcludeForm) != UnrecExpStatus.ExcludeForm))
+					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm))
 					{
 						daUnrecExp.Update(new DataRow[] { drUnrecExp });
 						applyCount++;
@@ -1948,7 +1947,7 @@ and r.RegionCode = cd.RegionCode",
 				else
 					unformCount++;
 
-				if (position.IsNotSet(UnrecExpStatus.FullForm) && position.IsNotSet(UnrecExpStatus.ExcludeForm))
+				if (position.IsNotSet(UnrecExpStatus.FullForm))
 					InsertToUnrec(position);
 
 			}
