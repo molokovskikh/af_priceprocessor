@@ -60,19 +60,9 @@ namespace Inforoom.Formalizer
 
 	public class PriceProcessThread
 	{
-		//Временный каталог для файла
-		private string _tempPath;
-		//Имя файла, который реально проходит обработку
-		private string _tempFileName;
-		//Ссылка на обрабатываемый элемент
-		private readonly PriceProcessItem _processItem;
-
 		private readonly Thread _thread;
 		//время прерывания рабочей нитки 
 		private DateTime? _abortingTime;
-
-		//Время начала формализации
-		private readonly DateTime _startedAt;
 
 		private readonly PriceProcessLogger _log;
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
@@ -81,9 +71,11 @@ namespace Inforoom.Formalizer
 
 		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage)
 		{
-			_startedAt = DateTime.UtcNow;
+			StartDate = DateTime.UtcNow;
+			ProcessItem = item;
+			ProcessState = PriceProcessState.None;
+
 			_log = new PriceProcessLogger(prevErrorMessage, item);
-			_processItem = item;
 			_thread = new Thread(ThreadWork);
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
 			_thread.Start();
@@ -100,13 +92,7 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// время начала формализации
 		/// </summary>
-		public DateTime StartDate
-		{
-			get
-			{
-				return _startedAt;
-			}
-		}
+		public DateTime StartDate { get; private set; }
 
 		public bool ThreadIsAlive
 		{
@@ -174,15 +160,9 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Ссылка на обрабатываемый элемент
 		/// </summary>
-		public PriceProcessItem ProcessItem
-		{
-			get
-			{
-				return _processItem;
-			}
-		}
+		public PriceProcessItem ProcessItem { get; private set; }
 
-		public PriceProcessState ProcessState { get; set; }
+		public PriceProcessState ProcessState { get; private set; }
 
 		/// <summary>
 		/// Процедура формализации
@@ -191,34 +171,33 @@ namespace Inforoom.Formalizer
 		{
 			ProcessState = PriceProcessState.Begin;
 			var allWorkTimeString = String.Empty;
-			string outPriceFileName = null;
 			using(var cleaner = new FileCleaner())
 			try
 			{
 				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-				outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
+				var outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
 				//Используем идентификатор нитки в качестве названия временной папки
-				_tempPath = Path.GetTempPath() + TID + "\\";
+				var tempPath = Path.GetTempPath() + TID + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')
-				_tempFileName = _tempPath + _processItem.PriceItemId + Path.GetExtension(_processItem.FilePath);
-				cleaner.Watch(_tempFileName);
-				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", _processItem.FilePath);
+				var tempFileName = tempPath + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
+				cleaner.Watch(tempFileName);
+				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", ProcessItem.FilePath);
 
 				ProcessState = PriceProcessState.CreateTempDirectory;
 
 				//Создаем директорию для временного файла и копируем туда файл
-				if (Directory.Exists(_tempPath))
-					FileHelper.DeleteDir(_tempPath);
+				if (Directory.Exists(tempPath))
+					FileHelper.DeleteDir(tempPath);
 
-				Directory.CreateDirectory(_tempPath);
+				Directory.CreateDirectory(tempPath);
 
 				try
 				{
 					ProcessState = PriceProcessState.CallValidate;
-					_workPrice = PricesValidator.Validate(_processItem.FilePath, _tempFileName, (uint)_processItem.PriceItemId);
+					_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
 
-					_workPrice.Downloaded = _processItem.Downloaded;
-					_workPrice.InputFileName = _processItem.FilePath;
+					_workPrice.Downloaded = ProcessItem.Downloaded;
+					_workPrice.InputFileName = ProcessItem.FilePath;
 
 					ProcessState = PriceProcessState.CallFormalize;
 					_workPrice.Formalize();
@@ -233,17 +212,17 @@ namespace Inforoom.Formalizer
 				}
 				finally
 				{
-					var tsFormalize = DateTime.UtcNow.Subtract(_startedAt);
+					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
 					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
 					allWorkTimeString = tsFormalize.ToString();
 				}
 
 				ProcessState = PriceProcessState.FinalCopy;
 				//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-				if (File.Exists(_tempFileName))
-					File.Copy(_tempFileName, outPriceFileName, true);
+				if (File.Exists(tempFileName))
+					File.Copy(tempFileName, outPriceFileName, true);
 				else
-					File.Copy(_processItem.FilePath, outPriceFileName, true);
+					File.Copy(ProcessItem.FilePath, outPriceFileName, true);
 				var ft = DateTime.UtcNow;
 				File.SetCreationTimeUtc(outPriceFileName, ft);
 				File.SetLastWriteTimeUtc(outPriceFileName, ft);
@@ -262,7 +241,7 @@ namespace Inforoom.Formalizer
 			finally
 			{
 				ProcessState = PriceProcessState.FinalizeThread;
-				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", _processItem.FilePath, allWorkTimeString);
+				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
 				FormalizeEnd = true;
 			}
 		}

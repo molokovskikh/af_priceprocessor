@@ -66,7 +66,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private DataRow[] ResolveAmbiguous(FormalizationPosition position, DataRow[] productSynonyms)
 		{
-			var assortment = this._assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+			var assortment = _assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
 			foreach (var productSynonym in productSynonyms)
 			{
 				if (productSynonym["CodeFirmCr"] is DBNull)
