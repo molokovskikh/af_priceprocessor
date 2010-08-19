@@ -192,11 +192,11 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 			var clientCodes = CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
 
+			var handler = new WaybillFtpSourceHandlerForTesting();
+			handler.Process();
+
 			using (new SessionScope())
 			{
-				var handler = new WaybillFtpSourceHandlerForTesting();
-				handler.Process();
-
 				foreach (var clientCode in clientCodes)
 				{
 					// Проверяем наличие записей в document_logs

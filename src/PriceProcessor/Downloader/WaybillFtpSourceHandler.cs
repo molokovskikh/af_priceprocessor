@@ -4,17 +4,13 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.Common;
-using Inforoom.Downloader;
-using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
 using Inforoom.PriceProcessor.Downloader.DocumentReaders;
-using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
-using MySql.Data.MySqlClient;
-using MySqlHelper = Common.MySql.MySqlHelper;
 using Inforoom.Downloader.Ftp;
 
 namespace Inforoom.PriceProcessor.Downloader
@@ -251,16 +247,19 @@ GROUP BY SupplierId
 
 		private bool IsNewWaybill(string waybillFileName, DateTime waybillDate, uint supplierId, uint? clientId, uint? addressId)
 		{
-			var docs = DocumentReceiveLog.Queryable
-				.Where(d => d.Supplier.Id == supplierId
-					&& d.FileName == waybillFileName
-					&& d.LogTime > waybillDate
-					&& d.ClientCode == clientId);
-			if (addressId.HasValue)
-				docs = docs.Where(d => d.AddressId == addressId);
+			using (new SessionScope(FlushAction.Never))
+			{
+				var docs = DocumentReceiveLog.Queryable
+					.Where(d => d.Supplier.Id == supplierId
+						&& d.FileName == waybillFileName
+						&& d.LogTime > waybillDate
+						&& d.ClientCode == clientId);
+				if (addressId.HasValue)
+					docs = docs.Where(d => d.AddressId == addressId);
 
-			var count = docs.Count();
-			return count == 0;
+				var count = docs.Count();
+				return count == 0;
+			}
 		}
 
 		private void SendDownloadingErrorMessages(FtpDownloader downloader, WaybillSource waybillSource)
