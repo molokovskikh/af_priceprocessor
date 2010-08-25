@@ -34,73 +34,59 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				return;
 			}
 
-			var dr = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			if (dr.Length > 1)
-			{
-				dr = ResolveAmbiguous(position, dr);
-			}
+			var synonym = ResolveSynonym(position);
+			if (synonym == null)
+				synonym = CreateProducerSynonym(position);
 
-			if (dr.Length == 0)
-			{
-				position.IsAutomaticProducerSynonym = true;
-				position.InternalProducerSynonymId = InsertSynonymFirm(position);
-				return;
-			}
-
-			//Если значение CodeFirmCr не установлено, то устанавливаем в null, иначе берем значение кода
-			position.CodeFirmCr = Convert.IsDBNull(dr[0]["CodeFirmCr"]) ? null : (long?)Convert.ToInt64(dr[0]["CodeFirmCr"]);
-			position.IsAutomaticProducerSynonym = Convert.ToBoolean(dr[0]["IsAutomatic"]);
-			if (Convert.IsDBNull(dr[0]["InternalProducerSynonymId"]))
+			if (!Convert.IsDBNull(synonym["CodeFirmCr"]))
+				position.CodeFirmCr = Convert.ToInt64(synonym["CodeFirmCr"]);
+			position.IsAutomaticProducerSynonym = Convert.ToBoolean(synonym["IsAutomatic"]);
+			if (Convert.IsDBNull(synonym["InternalProducerSynonymId"]))
 			{
 				_stats.ProducerSynonymUsedExistCount++;
-				position.SynonymFirmCrCode = Convert.ToInt64(dr[0]["SynonymFirmCrCode"]);
+				position.SynonymFirmCrCode = Convert.ToInt64(synonym["SynonymFirmCrCode"]);
 			}
 			else
-				position.InternalProducerSynonymId = Convert.ToInt64(dr[0]["InternalProducerSynonymId"]);
+			{
+				position.InternalProducerSynonymId = Convert.ToInt64(synonym["InternalProducerSynonymId"]);
+				if (position.Core != null)
+					position.Core.CreatedProducerSynonym = synonym;
+			}
 
 			if (!position.IsAutomaticProducerSynonym)
 				position.AddStatus(UnrecExpStatus.FirmForm);
 
-			CheckAssortmentStatus(position);
+			if (position.CodeFirmCr == null)
+				CheckExclude(position);
 		}
 
-		private DataRow[] ResolveAmbiguous(FormalizationPosition position, DataRow[] productSynonyms)
+		private DataRow ResolveSynonym(FormalizationPosition position)
 		{
+			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
 			var assortment = _assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
-			foreach (var productSynonym in productSynonyms)
+			foreach (var productSynonym in synonyms)
 			{
 				if (productSynonym["CodeFirmCr"] is DBNull)
 					continue;
 
-				if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
-					return new [] {productSynonym};
+				using (_stats.AssortmentSearch())
+				{
+					if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
+					{
+						position.AddStatus(UnrecExpStatus.AssortmentForm);
+						return productSynonym;
+					}
+				}
 			}
-			return productSynonyms;
+			return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
 		}
 
-		private void CheckAssortmentStatus(FormalizationPosition position)
+		private void CheckExclude(FormalizationPosition position)
 		{
-			if (!position.ProductId.HasValue || !position.CodeFirmCr.HasValue)
+			if (position.IsAutomaticProducerSynonym)
 				return;
 
-			var assortmentStatus = GetAssortmentStatus(position);
-			//Если получили исключение, то сбрасываем CodeFirmCr
-			if (assortmentStatus == UnrecExpStatus.MarkExclude)
-				position.CodeFirmCr = null;
-			position.AddStatus(assortmentStatus);
-		}
-
-		private UnrecExpStatus GetAssortmentStatus(FormalizationPosition position)
-		{
 			DataRow[] dr;
-
-			using(_stats.AssortmentSearch())
-				dr = _assortment.Select(String.Format("CatalogId = {0} and ProducerId = {1}",
-					position.CatalogId,
-					position.CodeFirmCr));
-
-			if (dr.Length == 1)
-				return UnrecExpStatus.AssortmentForm;
 
 			using(_stats.ExludeSearch())
 				dr = _excludes.Select(String.Format("CatalogId = {0} and ProducerSynonym = '{1}'",
@@ -110,8 +96,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			//Если мы ничего не нашли, то добавляем в исключение
 			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
 				CreateExclude(position);
-
-			return UnrecExpStatus.MarkExclude;
+			position.AddStatus(UnrecExpStatus.AssortmentForm);
 		}
 
 		private void CreateExclude(FormalizationPosition position)
@@ -129,19 +114,17 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			{}
 		}
 
-		private long InsertSynonymFirm(FormalizationPosition position)
+		private DataRow CreateProducerSynonym(FormalizationPosition position)
 		{
-			var drInsert = _producerSynonyms.NewRow();
-			drInsert["CodeFirmCr"] = DBNull.Value;
-			drInsert["SynonymFirmCrCode"] = DBNull.Value;
-			drInsert["IsAutomatic"] = 1;
-			drInsert["Synonym"] = position.FirmCr.ToLower();
-			drInsert["OriginalSynonym"] = position.FirmCr.Trim();
-			_producerSynonyms.Rows.Add(drInsert);
-			if (position.Core != null)
-				position.Core.CreatedProducerSynonym = drInsert;
+			var synonym = _producerSynonyms.NewRow();
+			synonym["CodeFirmCr"] = DBNull.Value;
+			synonym["SynonymFirmCrCode"] = DBNull.Value;
+			synonym["IsAutomatic"] = 1;
+			synonym["Synonym"] = position.FirmCr.ToLower();
+			synonym["OriginalSynonym"] = position.FirmCr.Trim();
+			_producerSynonyms.Rows.Add(synonym);
 			_stats.ProducerSynonymCreatedCount++;
-			return (long)drInsert["InternalProducerSynonymId"];
+			return synonym;
 		}
 	}
 }

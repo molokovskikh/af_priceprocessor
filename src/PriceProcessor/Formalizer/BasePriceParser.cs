@@ -117,7 +117,7 @@ namespace Inforoom.Formalizer
 
 		public bool CanCreateProducerSynonyms()
 		{
-			return ProducerSynonymCreatedCount == 0 || ProducerSynonymCreatedCount < ProducerSynonymUsedExistCount || (ProducerSynonymUsedExistCount / ProducerSynonymCreatedCount * 100 > 20);
+			return ProducerSynonymCreatedCount == 0 || ProducerSynonymCreatedCount < ProducerSynonymUsedExistCount || (ProducerSynonymUsedExistCount / (double)ProducerSynonymCreatedCount * 100 > 20);
 		}
 
 		//—бросить счетчики, которые используютс€ в статистике подготовки SQL-команд с update'ми
