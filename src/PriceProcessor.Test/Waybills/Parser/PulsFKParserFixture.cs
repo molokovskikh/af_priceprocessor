@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
@@ -58,6 +56,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(311.22));
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.True);
+		}
+
+		[Test]
+		public void Parse_zdrav_service()
+		{
+			var doc = WaybillParser.Parse("1689520.DBF", new DocumentReceiveLog {Supplier = new Supplier {Id = 1581}});
+			var line = doc.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Бумага туалетная Зева Плюс 2-х сл. Ромашка (144065) N4"));
 		}
 	}
 }

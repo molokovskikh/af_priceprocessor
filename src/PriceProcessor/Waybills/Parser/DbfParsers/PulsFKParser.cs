@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
+	//не указывают кодировку по этому приходится задавать явно
 	public class PulsFKParser : BaseDbfParser
 	{
 		public override DbfParser GetParser()

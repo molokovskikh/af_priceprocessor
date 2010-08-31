@@ -55,6 +55,10 @@ namespace Inforoom.PriceProcessor.Waybills
 				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
 				     || documentLog.Supplier.Id == 21))
 					type = typeof (Moron_338_SpecialParser);
+
+				if (type == typeof(PulsFKParser) && documentLog != null
+					&& documentLog.Supplier.Id == 1581)
+					type = typeof (ZdravServiceParser);
 			}
 			if (type == null)
 			{
