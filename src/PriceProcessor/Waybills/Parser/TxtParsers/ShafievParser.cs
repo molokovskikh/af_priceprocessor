@@ -16,7 +16,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			SerialNumberIndex = 9;
 			PeriodIndex = 10;
 			CertificatesIndex = 12;
-			RegistryCostIndex = 17;
+			RegistryCostIndex = 16;
+		    VitallyImportantIndex = 19;
+
+
 		}
 
 		public static bool CheckFileFormat(string file)
