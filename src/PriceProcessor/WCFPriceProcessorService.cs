@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
-using System.ServiceModel.Channels;
-using System.ServiceModel.Description;
-using System.ServiceModel.Dispatcher;
+using Common.MySql;
+using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
@@ -14,11 +13,14 @@ using System.ServiceModel;
 using LumiSoft.Net.Mime;
 using log4net;
 using Inforoom.Downloader;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor
 {
 	public class WCFPriceProcessorService : IRemotePriceProcessor
 	{
+		private ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
+
 		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
 
 		private const string MessagePriceNotFoundInArchive = "Данный прайс-лист в архиве отсутствует";
@@ -172,6 +174,53 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			throw new Exception(String.Format("В архиве '{0}' не удалось найти архив '{1}' или файл прайс листа {2}", filename, archFileName, externalFileName));
 		}
 
+		public void RetransPriceSmart(uint priceId)
+		{
+			With.Connection(c => {
+
+				var price = Price.Find(priceId);
+				if (price.ParentSynonym != null)
+					priceId = price.ParentSynonym.Value;
+
+				var adapter = new MySqlDataAdapter(@"
+select
+  pc.PriceItemId,
+  pf.FileExtention
+from
+  usersettings.pricesdata pd,
+  usersettings.clientsdata cd,
+  usersettings.pricescosts pc,
+  usersettings.priceitems pim,
+  farm.formrules fr,
+  farm.pricefmts pf
+where
+    ((pd.PriceCode = ?priceId) or (pd.ParentSynonym = ?priceId))
+and pd.AgencyEnabled = 1
+and cd.FirmCode = pd.FirmCode
+and cd.FirmStatus = 1
+and pc.PriceCode = pd.PriceCode
+and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and pim.Id = pc.PriceItemId
+and (pim.UnformCount > 0)
+and fr.Id = pim.FormRuleId
+and pf.Id = fr.PriceFormatId", c);
+				adapter.SelectCommand.Parameters.AddWithValue("?priceId", priceId);
+				var data = new DataTable();
+				adapter.Fill(data);
+				foreach (var row in data.Rows.Cast<DataRow>())
+				{
+					try
+					{
+						RetransPrice(row, Settings.Default.BasePath);
+					}
+					catch (Exception e)
+					{
+						log.Error(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
+					}
+				}
+			});
+		}
+
 		public void RetransPrice(WcfCallParameter priceItemId)
 		{
 			RetransPrice(priceItemId, Settings.Default.BasePath);
@@ -180,14 +229,20 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir)
 		{
 			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
-
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
-select p.FileExtention
+select pim.PriceItemId, p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
 where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+
+			RetransPrice(row, sourceDir);
+		}
+
+		private void RetransPrice(DataRow row, string sourceDir)
+		{
+			var priceItemId = Convert.ToUInt64(row["PriceItemId"]);
 			var extention = row["FileExtention"];
 
 			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
@@ -204,6 +259,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 				
 			File.Move(sourceFile, destinationFile);
 		}
+
 
 		public void RetransErrorPrice(WcfCallParameter priceItemId)
 		{

@@ -2,9 +2,51 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 
 namespace RemotePriceProcessor
 {
+	public class AuditInfoInspector : IClientMessageInspector
+	{
+		public object BeforeSendRequest(ref Message request, IClientChannel channel)
+		{
+			request.Headers.Add(MessageHeader.CreateHeader("UserName", "", Environment.UserName));
+			request.Headers.Add(MessageHeader.CreateHeader("MachineName", "", Environment.MachineName));
+			return null;
+		}
+
+		public void AfterReceiveReply(ref Message reply, object correlationState)
+		{}
+	}
+
+	public class MessageInspectorRegistrator : IEndpointBehavior
+	{
+		private readonly IClientMessageInspector[] _inspectors;
+
+		public MessageInspectorRegistrator(IClientMessageInspector[] inspectors)
+		{
+			_inspectors = inspectors;
+		}
+
+		public void Validate(ServiceEndpoint endpoint)
+		{}
+
+		public void AddBindingParameters(ServiceEndpoint endpoint,
+			BindingParameterCollection bindingParameters)
+		{}
+
+		public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
+		{}
+
+		public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
+		{
+			foreach (var inspector in _inspectors)
+				clientRuntime.MessageInspectors.Add(inspector);
+		}
+	}
+
 	[Serializable]
 	public class PriceProcessorException : ApplicationException
 	{
@@ -74,7 +116,7 @@ namespace RemotePriceProcessor
 	/// <summary>
 	/// интерфейс для удаленного взаимодействия с PriceProcessor'ом
 	/// </summary>
-	[ServiceContract]    
+	[ServiceContract]
 	public interface IRemotePriceProcessor
 	{
 		/// <summary>
@@ -86,6 +128,9 @@ namespace RemotePriceProcessor
 
 		[OperationContract]
 		void RetransPrice(WcfCallParameter downlogId);
+
+		[OperationContract]
+		void RetransPriceSmart(uint priceId);
 
 		[OperationContract]
 		string[] ErrorFiles();

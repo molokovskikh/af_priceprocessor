@@ -34,7 +34,21 @@ namespace PriceProcessor.Test.Services
 			StopWcfPriceProcessor();
 		}
 
-				private void WcfCallResendPrice(ulong downlogId)
+		private void WcfCallResendPrice(uint downlogId)
+		{
+			WcfCall(r => {
+				var paramDownlogId = new WcfCallParameter {
+					Value = downlogId,
+					LogInformation = new LogInformation {
+						ComputerName = Environment.MachineName,
+						UserName = Environment.UserName
+					}
+				};
+				r.ResendPrice(paramDownlogId);
+			});
+		}
+
+		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
 			const string _strProtocol = @"net.tcp://";
 			var binding = new NetTcpBinding();
@@ -56,14 +70,7 @@ namespace PriceProcessor.Test.Services
 			var success = false;
 			try
 			{
-				var paramDownlogId = new WcfCallParameter() {
-					Value = downlogId,
-					LogInformation = new LogInformation() {
-						ComputerName = Environment.MachineName,
-						UserName = Environment.UserName
-					}
-				};
-				priceProcessor.ResendPrice(paramDownlogId);
+				action(priceProcessor);
 				((ICommunicationObject)priceProcessor).Close();
 				success = true;
 			}
@@ -196,6 +203,27 @@ namespace PriceProcessor.Test.Services
 			var files = Directory.GetFiles(Settings.Default.HistoryPath);
 			Assert.That(files.Length, Is.EqualTo(2));
 			Assert.That(Path.GetExtension(files[0]), Is.EqualTo(Path.GetExtension(files[1])));
+		}
+
+		[Test]
+		public void Smart_resend_should_resend_price_and_all_related_prices()
+		{
+			var rootPrice = TestOldClient.CreateTestSupplierWithPrice();
+			var childPrice = TestOldClient.CreateTestSupplierWithPrice();
+
+			childPrice.Costs[0].PriceItem.UnformCount = 10;
+			childPrice.Costs[0].PriceItem.Update();
+			rootPrice.Costs[0].PriceItem.UnformCount = 10;
+			rootPrice.Costs[0].PriceItem.Update();
+			childPrice.ParentSynonym = rootPrice.Id;
+			childPrice.Save();
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+
+			WcfCall(r => r.RetransPriceSmart(childPrice.Id));
+
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
 		}
 	}
 }

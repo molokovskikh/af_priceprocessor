@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
-using System.Text;
 using System.ServiceModel;
 using System.Net.Security;
 using System.IO;
@@ -67,6 +65,7 @@ namespace RemotePriceProcessor
 		{
 			var binding = CreateTcpBinding();
 			_channelFactory = new ChannelFactory<IRemotePriceProcessor>(binding, wcfServiceUrl);
+			_channelFactory.Endpoint.Behaviors.Add(new MessageInspectorRegistrator(new [] { new AuditInfoInspector() }));
 		}
 
 		public void Dispose()
@@ -108,7 +107,7 @@ namespace RemotePriceProcessor
 		private void AbortClientProxy()
 		{
 			if (((ICommunicationObject)_clientProxy).State != CommunicationState.Closed)
-				((ICommunicationObject)_clientProxy).Abort();			
+				((ICommunicationObject)_clientProxy).Abort();
 		}
 
 		public bool ResendPrice(ulong downlogId)
@@ -116,10 +115,9 @@ namespace RemotePriceProcessor
 			LastErrorMessage = String.Empty;
 			try
 			{
-				var parameter = new WcfCallParameter() {
+				var parameter = new WcfCallParameter {
 					Value = downlogId,
-					LogInformation = new LogInformation()
-					{
+					LogInformation = new LogInformation {
 						ComputerName = Environment.MachineName,
 						UserName = Environment.UserName
 					}
@@ -138,6 +136,20 @@ namespace RemotePriceProcessor
 				AbortClientProxy();
 			}
 			return true;
+		}
+
+		public void RetransPriceSmart(uint priceId)
+		{
+			try
+			{
+				_clientProxy = _channelFactory.CreateChannel();
+				_clientProxy.RetransPriceSmart(priceId);
+				((ICommunicationObject)_clientProxy).Close();
+			}
+			finally
+			{
+				AbortClientProxy();
+			}
 		}
 
 		public bool RetransPrice(ulong priceItemId)

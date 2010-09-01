@@ -28,6 +28,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 		[Property]
 		public virtual string PriceName { get; set; }
 
+		[Property]
+		public virtual uint? ParentSynonym { get; set; }
+
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }
 	}
