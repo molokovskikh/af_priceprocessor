@@ -231,7 +231,7 @@ and pf.Id = fr.PriceFormatId", c);
 			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 @"
-select pim.PriceItemId, p.FileExtention
+select pim.Id as PriceItemId, p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
