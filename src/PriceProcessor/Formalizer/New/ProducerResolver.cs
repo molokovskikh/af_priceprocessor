@@ -120,8 +120,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			synonym["CodeFirmCr"] = DBNull.Value;
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
 			synonym["IsAutomatic"] = 1;
-			synonym["Synonym"] = position.FirmCr.ToLower();
-			synonym["OriginalSynonym"] = position.FirmCr.Trim();
+			synonym["Synonym"] = position.FirmCr;
+			synonym["OriginalSynonym"] = position.FirmCr;
 			_producerSynonyms.Rows.Add(synonym);
 			_stats.ProducerSynonymCreatedCount++;
 			return synonym;
