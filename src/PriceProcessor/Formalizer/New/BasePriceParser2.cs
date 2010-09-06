@@ -759,7 +759,7 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 					drNewProducerSynonym.AcceptChanges();
 				else
 				{
-					var dsExistsProducerSynonym = MySqlHelper.ExecuteDataset(_connection, @"
+/*					var dsExistsProducerSynonym = MySqlHelper.ExecuteDataset(_connection, @"
 SELECT
   SynonymFirmCrCode,
   CodeFirmCr,
@@ -769,12 +769,12 @@ FROM
   farm.SynonymFirmCr
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
 WHERE 
-	(SynonymFirmCr.PriceCode = ?PriceCode)
-and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
+	SynonymFirmCr.PriceCode = ?PriceCode
+and SynonymFirmCr.Synonym = ?OriginalSynonym"
 						,
 						new MySqlParameter("?PriceCode", parentSynonym),
 						new MySqlParameter("?OriginalSynonym", drNewProducerSynonym["OriginalSynonym"]));
-					if ((dsExistsProducerSynonym.Tables.Count == 1) && (dsExistsProducerSynonym.Tables[0].Rows.Count == 1))
+					if (dsExistsProducerSynonym.Tables[0].Rows.Count > 0)
 					{
 						//Если уже синоним существует, то обноляем его у себя
 						drNewProducerSynonym["SynonymFirmCrCode"] = dsExistsProducerSynonym.Tables[0].Rows[0]["SynonymFirmCrCode"];
@@ -788,11 +788,11 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 						drExistsProducerSynonym.AcceptChanges();
 					}
 					else
-					{ 
+					{*/
 						daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
 						daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
 						drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
-					}
+/*					}*/
 				}
 			}
 

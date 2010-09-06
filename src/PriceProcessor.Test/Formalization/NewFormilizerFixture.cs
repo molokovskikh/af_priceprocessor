@@ -106,10 +106,11 @@ namespace PriceProcessor.Test.Formalization
 			using (new TransactionScope())
 			{
 				var product = TestProduct.Queryable.First();
-				var producer = TestProducer.Queryable.First();
-				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
 				new TestProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", product, price).Save();
+
+				price.CreateAssortmentBoundSynonyms(
+					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+					"Санкт-Петербургская ф.ф.");
 
 				price.CreateAssortmentBoundSynonyms(
 					"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
@@ -335,14 +336,18 @@ namespace PriceProcessor.Test.Formalization
 			TestProducer producer2;
 			TestProduct product1;
 			TestProduct product2;
+			TestProducerSynonym synonym1;
+			TestProducerSynonym synonym2;
 
 			using (new TransactionScope())
 			{
 				var producers = TestProducer.Queryable.Take(2).ToList();
 				producer1 = producers[0];
 				producer2 = producers[1];
-				new TestProducerSynonym("Вектор", producer1, price).Save();
-				new TestProducerSynonym("Вектор", producer2, price).Save();
+				synonym1 = new TestProducerSynonym("Вектор", producer1, price);
+				synonym1.Save();
+				synonym2 = new TestProducerSynonym("Вектор", producer2, price);
+				synonym2.Save();
 
 				var products = TestProduct.Queryable.Take(2).ToList();
 				product1 = products[0];
@@ -372,11 +377,13 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(cores.Count, Is.EqualTo(3));
 				var core1 = cores[1];
 				Assert.That(core1.Product.Id, Is.EqualTo(product1.Id));
+				Assert.That(core1.ProducerSynonym.Id, Is.Not.EqualTo(synonym1.Id).And.Not.EqualTo(synonym2.Id));
 				Assert.That(core1.ProducerSynonym.Name, Is.EqualTo("Вектор"));
 				Assert.That(core1.Producer, Is.Null);
 
 				var core2 = cores[2];
 				Assert.That(core2.Product.Id, Is.EqualTo(product2.Id));
+				Assert.That(core2.ProducerSynonym.Id, Is.Not.EqualTo(synonym1.Id).And.Not.EqualTo(synonym2.Id));
 				Assert.That(core2.ProducerSynonym.Name, Is.EqualTo("Вектор"));
 				Assert.That(core2.Producer, Is.Null);
 				var excludes = TestExclude.Queryable.Where(c => c.Price == price).ToList();

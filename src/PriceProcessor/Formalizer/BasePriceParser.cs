@@ -1690,7 +1690,7 @@ where
 					drNewProducerSynonym.AcceptChanges();
 				else
 				{
-					var dsExistsProducerSynonym = MySqlHelper.ExecuteDataset(MyConn, @"
+/*					var dsExistsProducerSynonym = MySqlHelper.ExecuteDataset(MyConn, @"
 SELECT
   SynonymFirmCrCode,
   CodeFirmCr,
@@ -1719,11 +1719,11 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 						drExistsProducerSynonym.AcceptChanges();
 					}
 					else
-					{ 
+					{*/
 						daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
 						daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
 						drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
-					}
+/*					}*/
 				}
 			}
 		}
