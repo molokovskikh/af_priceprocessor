@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Linq;
 using Common.Tools;
 using System.Collections;
@@ -20,56 +20,56 @@ using System.Configuration;
 
 namespace Inforoom.Formalizer
 {
-	//Все возможные поля прайса
+	//Р’СЃРµ РІРѕР·РјРѕР¶РЅС‹Рµ РїРѕР»СЏ РїСЂР°Р№СЃР°
 	public enum PriceFields
 	{
-		[Description("Код")]
+		[Description("РљРѕРґ")]
 		Code,
-		[Description("Код производителя")]
+		[Description("РљРѕРґ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ")]
 		CodeCr,
-		[Description("Наименование 1")]
+		[Description("РќР°РёРјРµРЅРѕРІР°РЅРёРµ 1")]
 		Name1,
-		[Description("Наименование 2")]
+		[Description("РќР°РёРјРµРЅРѕРІР°РЅРёРµ 2")]
 		Name2,
-		[Description("Наименование 3")]
+		[Description("РќР°РёРјРµРЅРѕРІР°РЅРёРµ 3")]
 		Name3,
-		[Description("Производитель")]
+		[Description("РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ")]
 		FirmCr,
-		[Description("Единица измерения")]
+		[Description("Р•РґРёРЅРёС†Р° РёР·РјРµСЂРµРЅРёСЏ")]
 		Unit,
-		[Description("Цеховая упаковка")]
+		[Description("Р¦РµС…РѕРІР°СЏ СѓРїР°РєРѕРІРєР°")]
 		Volume,
-		[Description("Количество")]
+		[Description("РљРѕР»РёС‡РµСЃС‚РІРѕ")]
 		Quantity,
-		[Description("Примечание")]
+		[Description("РџСЂРёРјРµС‡Р°РЅРёРµ")]
 		Note,
-		[Description("Срок годности")]
+		[Description("РЎСЂРѕРє РіРѕРґРЅРѕСЃС‚Рё")]
 		Period,
-		[Description("Документ")]
+		[Description("Р”РѕРєСѓРјРµРЅС‚")]
 		Doc,
-		[Description("Цена производителя")]
+		[Description("Р¦РµРЅР° РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ")]
 		ProducerCost,
-		[Description("Ставка НДС")]
+		[Description("РЎС‚Р°РІРєР° РќР”РЎ")]
 		Nds,
-		[Description("Цена минимальная")]
+		[Description("Р¦РµРЅР° РјРёРЅРёРјР°Р»СЊРЅР°СЏ")]
 		MinBoundCost,
-		[Description("Срок")]
+		[Description("РЎСЂРѕРє")]
 		Junk,
-		[Description("Ожидается")]
+		[Description("РћР¶РёРґР°РµС‚СЃСЏ")]
 		Await,
-		[Description("Оригинальное наименование")]
+		[Description("РћСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ")]
 		OriginalName,
-		[Description("Жизненно важный")]
+		[Description("Р–РёР·РЅРµРЅРЅРѕ РІР°Р¶РЅС‹Р№")]
 		VitallyImportant,
-		[Description("Кратность")]
+		[Description("РљСЂР°С‚РЅРѕСЃС‚СЊ")]
 		RequestRatio,
-		[Description("Реестровая цена")]
+		[Description("Р РµРµСЃС‚СЂРѕРІР°СЏ С†РµРЅР°")]
 		RegistryCost,
-		[Description("Цена максимальная")]
+		[Description("Р¦РµРЅР° РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ")]
 		MaxBoundCost,
-		[Description("Минимальная сумма")]
+		[Description("РњРёРЅРёРјР°Р»СЊРЅР°СЏ СЃСѓРјРјР°")]
 		OrderCost,
-		[Description("Минимальное количество")]
+		[Description("РњРёРЅРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ")]
 		MinOrderCount
 	}
 
@@ -79,30 +79,30 @@ namespace Inforoom.Formalizer
 		MiltiFile = 1
 	}
 
-	//Статистические счетчики для формализации
+	//РЎС‚Р°С‚РёСЃС‚РёС‡РµСЃРєРёРµ СЃС‡РµС‚С‡РёРєРё РґР»СЏ С„РѕСЂРјР°Р»РёР·Р°С†РёРё
 	public class FormalizeStats
 	{
 		private ILog _logger = LogManager.GetLogger(typeof (FormalizeStats));
 
-		//найдены по первичным полям
+		//РЅР°Р№РґРµРЅС‹ РїРѕ РїРµСЂРІРёС‡РЅС‹Рј РїРѕР»СЏРј
 		public int FirstSearch;
-		//найдены по остальным полям
+		//РЅР°Р№РґРµРЅС‹ РїРѕ РѕСЃС‚Р°Р»СЊРЅС‹Рј РїРѕР»СЏРј
 		public int SecondSearch;
-		//кол-во обновленных записей
+		//РєРѕР»-РІРѕ РѕР±РЅРѕРІР»РµРЅРЅС‹С… Р·Р°РїРёСЃРµР№
 		public int UpdateCount;
-		//кол-во вставленных записей
+		//РєРѕР»-РІРѕ РІСЃС‚Р°РІР»РµРЅРЅС‹С… Р·Р°РїРёСЃРµР№
 		public int InsertCount;
-		//кол-во удаленных записей
+		//РєРѕР»-РІРѕ СѓРґР°Р»РµРЅРЅС‹С… Р·Р°РїРёСЃРµР№
 		public int DeleteCount;
-		//кол-во обновленных цен
+		//РєРѕР»-РІРѕ РѕР±РЅРѕРІР»РµРЅРЅС‹С… С†РµРЅ
 		public int UpdateCostCount;
-		//кол-во добавленных цен
+		//РєРѕР»-РІРѕ РґРѕР±Р°РІР»РµРЅРЅС‹С… С†РµРЅ
 		public int InsertCostCount;
-		//кол-во удаленных цен, не считаются цены, которые были удалены из удаления позиции из Core
+		//РєРѕР»-РІРѕ СѓРґР°Р»РµРЅРЅС‹С… С†РµРЅ, РЅРµ СЃС‡РёС‚Р°СЋС‚СЃСЏ С†РµРЅС‹, РєРѕС‚РѕСЂС‹Рµ Р±С‹Р»Рё СѓРґР°Р»РµРЅС‹ РёР· СѓРґР°Р»РµРЅРёСЏ РїРѕР·РёС†РёРё РёР· Core
 		public int DeleteCostCount;
-		//общее кол-во SQL-команд при обновлении прайс-листа
+		//РѕР±С‰РµРµ РєРѕР»-РІРѕ SQL-РєРѕРјР°РЅРґ РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р°
 		public int CommandCount;
-		//Среднее время поиска в миллисекундах записи в существующем прайсе
+		//РЎСЂРµРґРЅРµРµ РІСЂРµРјСЏ РїРѕРёСЃРєР° РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С… Р·Р°РїРёСЃРё РІ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРј РїСЂР°Р№СЃРµ
 		public int AvgSearchTime;
 
 		public int ProducerSynonymCreatedCount;
@@ -120,7 +120,7 @@ namespace Inforoom.Formalizer
 			return ProducerSynonymCreatedCount == 0 || ProducerSynonymCreatedCount < ProducerSynonymUsedExistCount || (ProducerSynonymUsedExistCount / (double)ProducerSynonymCreatedCount * 100 > 20);
 		}
 
-		//Сбросить счетчики, которые используются в статистике подготовки SQL-команд с update'ми
+		//РЎР±СЂРѕСЃРёС‚СЊ СЃС‡РµС‚С‡РёРєРё, РєРѕС‚РѕСЂС‹Рµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІ СЃС‚Р°С‚РёСЃС‚РёРєРµ РїРѕРґРіРѕС‚РѕРІРєРё SQL-РєРѕРјР°РЅРґ СЃ update'РјРё
 		public void ResetCountersForUpdate()
 		{ 
 			FirstSearch = 0;
@@ -141,7 +141,7 @@ namespace Inforoom.Formalizer
 			var statCounterValues = new List<string>();
 			foreach (var field in typeof(FormalizeStats).GetFields())
 				statCounterValues.Add(String.Format("{0} = {1}", field.Name, field.GetValue(this)));
-			return String.Format("Статистика обновления прайс-листа: {0}", String.Join("; ", statCounterValues.ToArray()));
+			return String.Format("РЎС‚Р°С‚РёСЃС‚РёРєР° РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂР°Р№СЃ-Р»РёСЃС‚Р°: {0}", String.Join("; ", statCounterValues.ToArray()));
 		}
 
 		public void PrintSearchStats()
@@ -172,25 +172,25 @@ namespace Inforoom.Formalizer
 	[Flags]
 	public enum UnrecExpStatus : byte
 	{
-		NotForm = 0, // Неформализованный
-		NameForm = 1, // Формализованный по названию
-		FirmForm = 2, // Формализованный по производителю
-		AssortmentForm = 4, // Формализованный по ассортименту
-		FullForm = NameForm | FirmForm | AssortmentForm, // Полностью формализован по наименованию, производителю и ассортименту
-		MarkForb = 8, // Помеченый как запрещенное
-		MarkExclude = 16,// Помеченый как исключение
+		NotForm = 0, // РќРµС„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹Р№
+		NameForm = 1, // Р¤РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹Р№ РїРѕ РЅР°Р·РІР°РЅРёСЋ
+		FirmForm = 2, // Р¤РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹Р№ РїРѕ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЋ
+		AssortmentForm = 4, // Р¤РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹Р№ РїРѕ Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚Сѓ
+		FullForm = NameForm | FirmForm | AssortmentForm, // РџРѕР»РЅРѕСЃС‚СЊСЋ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅ РїРѕ РЅР°РёРјРµРЅРѕРІР°РЅРёСЋ, РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЋ Рё Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚Сѓ
+		MarkForb = 8, // РџРѕРјРµС‡РµРЅС‹Р№ РєР°Рє Р·Р°РїСЂРµС‰РµРЅРЅРѕРµ
+		MarkExclude = 16,// РџРѕРјРµС‡РµРЅС‹Р№ РєР°Рє РёСЃРєР»СЋС‡РµРЅРёРµ
 	}
 
-	// Типы ПЛ
+	// РўРёРїС‹ РџР›
 	[Flags]
 	public enum PricePurpose
 	{
-		Normal = 0, // обычный
-		Assortment = 1, // ассортиментный
-		Helper = 2      // справочный
+		Normal = 0, // РѕР±С‹С‡РЅС‹Р№
+		Assortment = 1, // Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚РЅС‹Р№
+		Helper = 2      // СЃРїСЂР°РІРѕС‡РЅС‹Р№
 	}
 
-	//Класс содержит название полей из таблицы FormRules
+	//РљР»Р°СЃСЃ СЃРѕРґРµСЂР¶РёС‚ РЅР°Р·РІР°РЅРёРµ РїРѕР»РµР№ РёР· С‚Р°Р±Р»РёС†С‹ FormRules
 	public sealed class FormRules
 	{
 		public static string colParserClassName = "ParserClassName";
@@ -225,9 +225,9 @@ namespace Inforoom.Formalizer
 		public int txtBegin = -1;
 		public int txtEnd = -1;
 		public decimal? cost;
-		//кол-во позиций с неустановленной ценой для данной ценовой колонки
+		//РєРѕР»-РІРѕ РїРѕР·РёС†РёР№ СЃ РЅРµСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕР№ С†РµРЅРѕР№ РґР»СЏ РґР°РЅРЅРѕР№ С†РµРЅРѕРІРѕР№ РєРѕР»РѕРЅРєРё
 		public int undefinedCostCount;
-		//кол-во позиций с нулевой ценой для данной ценовой колонки
+		//РєРѕР»-РІРѕ РїРѕР·РёС†РёР№ СЃ РЅСѓР»РµРІРѕР№ С†РµРЅРѕР№ РґР»СЏ РґР°РЅРЅРѕР№ С†РµРЅРѕРІРѕР№ РєРѕР»РѕРЅРєРё
 		public int zeroCostCount;
 
 		public CoreCost(Int64 ACostCode, string ACostName, bool ABaseCost, 
@@ -254,26 +254,23 @@ namespace Inforoom.Formalizer
 	/// </summary>
 	public abstract class BasePriceParser : IPriceFormalizer
 	{
-		//таблица с прайсом
+		//С‚Р°Р±Р»РёС†Р° СЃ РїСЂР°Р№СЃРѕРј
 		protected DataTable dtPrice;
 
-		//Соедиение с базой данных
+		//РЎРѕРµРґРёРµРЅРёРµ СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С…
 		protected MySqlConnection MyConn;
 
-		//Таблица со списком запрещенных названий
+		//РўР°Р±Р»РёС†Р° СЃРѕ СЃРїРёСЃРєРѕРј Р·Р°РїСЂРµС‰РµРЅРЅС‹С… РЅР°Р·РІР°РЅРёР№
 		protected MySqlDataAdapter daForbidden;
 		protected DataTable dtForbidden;
-		//Таблица со списком синонимов товаров
+		//РўР°Р±Р»РёС†Р° СЃРѕ СЃРїРёСЃРєРѕРј СЃРёРЅРѕРЅРёРјРѕРІ С‚РѕРІР°СЂРѕРІ
 		protected MySqlDataAdapter daSynonym;
 		protected DataTable dtSynonym;
-		//Таблица со списоком синонимов производителей
+		//РўР°Р±Р»РёС†Р° СЃРѕ СЃРїРёСЃРѕРєРѕРј СЃРёРЅРѕРЅРёРјРѕРІ РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµР№
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
 		protected DataTable dtNewSynonymFirmCr;
-		//Таблица с ассортиментом
-		protected MySqlDataAdapter daAssortment;
-		protected DataTable dtAssortment;
-		//Таблица с исключениями
+		//РўР°Р±Р»РёС†Р° СЃ РёСЃРєР»СЋС‡РµРЅРёСЏРјРё
 		protected MySqlDataAdapter daExcludes;
 		protected DataTable dtExcludes;
 		protected MySqlCommandBuilder cbExcludes;
@@ -306,72 +303,72 @@ namespace Inforoom.Formalizer
 
 		protected int CurrPos = -1;
 
-		//Кол-во успешно формализованных
+		//РљРѕР»-РІРѕ СѓСЃРїРµС€РЅРѕ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹С…
 		public int formCount { get; set; }
-		//Кол-во "нулей"
+		//РљРѕР»-РІРѕ "РЅСѓР»РµР№"
 		public int zeroCount { get; set; }
-		//Кол-во нераспознанных событий
+		//РљРѕР»-РІРѕ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹С… СЃРѕР±С‹С‚РёР№
 		public int unformCount { get; set; }
-		//Кол-во "запрещенных" позиций
+		//РљРѕР»-РІРѕ "Р·Р°РїСЂРµС‰РµРЅРЅС‹С…" РїРѕР·РёС†РёР№
 		public int forbCount { get; set; }
 
-		//Максимальное кол-во рестартов транзакций при применении прайс-листа в базу данных
+		//РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»-РІРѕ СЂРµСЃС‚Р°СЂС‚РѕРІ С‚СЂР°РЅР·Р°РєС†РёР№ РїСЂРё РїСЂРёРјРµРЅРµРЅРёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р° РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С…
 		public int maxLockCount { get; set; }
 
 		protected string priceFileName;
 
 		//FormalizeSettings
-		//имя прайса
+		//РёРјСЏ РїСЂР°Р№СЃР°
 		public string priceName { get; set; }
-		//Имя клиента
+		//РРјСЏ РєР»РёРµРЅС‚Р°
 		public string firmShortName { get; set; }
-		//Код клиента
+		//РљРѕРґ РєР»РёРµРЅС‚Р°
 		public long firmCode { get; set; }
-		//ключ прайса
+		//РєР»СЋС‡ РїСЂР°Р№СЃР°
 		public long priceCode { get; set; }
-		//код ценовой колонки, может быть не установлен
+		//РєРѕРґ С†РµРЅРѕРІРѕР№ РєРѕР»РѕРЅРєРё, РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		public long? costCode;
 
-		//список прайс-листов, на которых будет использоваться update
+		//СЃРїРёСЃРѕРє РїСЂР°Р№СЃ-Р»РёСЃС‚РѕРІ, РЅР° РєРѕС‚РѕСЂС‹С… Р±СѓРґРµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ update
 		private List<long> priceCodesUseUpdate;
 
-		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
+		//СЃРїРёСЃРѕРє РїРµСЂРІРёС‡РЅС‹С… РїРѕР»РµР№, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ СѓС‡Р°СЃС‚РІРѕРІР°С‚СЊ РІ СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРёРё РїРѕР·РёС†РёР№ РІ РїСЂР°Р№СЃР°С…
 		private List<string> primaryFields;
 
-		//Список полей из Core, по которых происходит вторичное сравнение
+		//РЎРїРёСЃРѕРє РїРѕР»РµР№ РёР· Core, РїРѕ РєРѕС‚РѕСЂС‹С… РїСЂРѕРёСЃС…РѕРґРёС‚ РІС‚РѕСЂРёС‡РЅРѕРµ СЃСЂР°РІРЅРµРЅРёРµ
 		private List<string> compareFields;
 
 		private FormalizeStats _stats = new FormalizeStats();
 
-		//Является ли обрабатываемый прайс-лист загруженным?
+		//РЇРІР»СЏРµС‚СЃСЏ Р»Рё РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјС‹Р№ РїСЂР°Р№СЃ-Р»РёСЃС‚ Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рј?
 		public bool downloaded;
 
-		//ключ для priceitems
+		//РєР»СЋС‡ РґР»СЏ priceitems
 		public long priceItemId;
-		//родительский синоним : прайс-родитель, нужен для выбора различных параметров
+		//СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ СЃРёРЅРѕРЅРёРј : РїСЂР°Р№СЃ-СЂРѕРґРёС‚РµР»СЊ, РЅСѓР¶РµРЅ РґР»СЏ РІС‹Р±РѕСЂР° СЂР°Р·Р»РёС‡РЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
 		protected long parentSynonym;
-		//Кол-во распознаных позиций в прошлый раз
+		//РљРѕР»-РІРѕ СЂР°СЃРїРѕР·РЅР°РЅС‹С… РїРѕР·РёС†РёР№ РІ РїСЂРѕС€Р»С‹Р№ СЂР°Р·
 		protected long prevRowCount;
-		//производить формализацию по коду
+		//РїСЂРѕРёР·РІРѕРґРёС‚СЊ С„РѕСЂРјР°Р»РёР·Р°С†РёСЋ РїРѕ РєРѕРґСѓ
 		protected bool formByCode;
 
-		//Маска, которая накладывается на имя позиции
+		//РњР°СЃРєР°, РєРѕС‚РѕСЂР°СЏ РЅР°РєР»Р°РґС‹РІР°РµС‚СЃСЏ РЅР° РёРјСЏ РїРѕР·РёС†РёРё
 		protected string nameMask;
-		//Запрещенные слова, которые могут быть в имени
+		//Р—Р°РїСЂРµС‰РµРЅРЅС‹Рµ СЃР»РѕРІР°, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ РІ РёРјРµРЅРё
 		protected string forbWords;
 		protected string[] forbWordsList;
-		//как в прайсе поставщика метятся ожидаемые позиции
+		//РєР°Рє РІ РїСЂР°Р№СЃРµ РїРѕСЃС‚Р°РІС‰РёРєР° РјРµС‚СЏС‚СЃСЏ РѕР¶РёРґР°РµРјС‹Рµ РїРѕР·РёС†РёРё
 		protected string awaitPos;
-		//как в прайсе поставщика метятся "плохие" позиции
+		//РєР°Рє РІ РїСЂР°Р№СЃРµ РїРѕСЃС‚Р°РІС‰РёРєР° РјРµС‚СЏС‚СЃСЏ "РїР»РѕС…РёРµ" РїРѕР·РёС†РёРё
 		protected string junkPos;
-		//как в прайсе поставщика метятся жизненно-важные позиции
+		//РєР°Рє РІ РїСЂР°Р№СЃРµ РїРѕСЃС‚Р°РІС‰РёРєР° РјРµС‚СЏС‚СЃСЏ Р¶РёР·РЅРµРЅРЅРѕ-РІР°Р¶РЅС‹Рµ РїРѕР·РёС†РёРё
 		protected string vitallyImportantMask;
-		//Тип прайса : ассортиментный
+		//РўРёРї РїСЂР°Р№СЃР° : Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚РЅС‹Р№
 		protected int priceType;
-		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
+		//РўРёРї С†РµРЅРѕРІС‹С… РєРѕР»РѕРЅРѕРє РїСЂР°Р№СЃР°-СЂРѕРґРёС‚РµР»СЏ: 0 - РјСѓР»СЊС‚РёРєРѕР»РѕРЅРѕС‡РЅС‹Р№, 1 - РјРЅРѕРіРѕС„Р°Р№Р»РѕРІС‹Р№
 		protected CostTypes costType;
 
-		//Надо ли конвертировать полученную строку в ANSI
+		//РќР°РґРѕ Р»Рё РєРѕРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕР»СѓС‡РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РІ ANSI
 		protected bool convertedToANSI;
 
 		private ProducerResolver _producerResolver;
@@ -389,15 +386,15 @@ namespace Inforoom.Formalizer
 
 
 		/// <summary>
-		/// Конструктор парсера
+		/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РїР°СЂСЃРµСЂР°
 		/// </summary>
 		public BasePriceParser(string priceFileName, MySqlConnection connection, DataTable data)
 		{
 			_logger = LogManager.GetLogger(GetType());
-			_logger.DebugFormat("Создали класс для обработки файла {0}", priceFileName);
-			//TODO: Все необходимые проверки вынести в конструкторы, чтобы не пытаться открыть прайс-файл
+			_logger.DebugFormat("РЎРѕР·РґР°Р»Рё РєР»Р°СЃСЃ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё С„Р°Р№Р»Р° {0}", priceFileName);
+			//TODO: Р’СЃРµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РїСЂРѕРІРµСЂРєРё РІС‹РЅРµСЃС‚Рё РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹, С‡С‚РѕР±С‹ РЅРµ РїС‹С‚Р°С‚СЊСЃСЏ РѕС‚РєСЂС‹С‚СЊ РїСЂР°Р№СЃ-С„Р°Р№Р»
 
-			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
+			//TODO: РїРµСЂРµРґРµР»Р°С‚СЊ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ, С‡С‚РѕР±С‹ РѕРЅ РЅРµ Р·Р°РІРёСЃРµР» РѕС‚ Р±Р°Р·С‹ РґР°РЅРЅС‹С…, С‚.Рµ. РїРµСЂРµРґР°РІР°С‚СЊ РµРјСѓ РІСЃРµ, С‡С‚Рѕ РЅСѓР¶РЅРѕ РґР»СЏ С‡С‚РµРЅРёСЏ С„Р°Р№Р»Р°, С‡С‚РѕР±С‹ РїР°СЂСЃРµСЂ Р±С‹Р» СЃР°РјРѕРґРѕСЃС‚Р°С‚РѕС‡РЅС‹Рј
 
 			priceCodesUseUpdate = new List<long>();
 			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
@@ -429,7 +426,7 @@ namespace Inforoom.Formalizer
 			
 			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
 
-			//Производим попытку разобрать строку с "запрещенными выражениями"
+			//РџСЂРѕРёР·РІРѕРґРёРј РїРѕРїС‹С‚РєСѓ СЂР°Р·РѕР±СЂР°С‚СЊ СЃС‚СЂРѕРєСѓ СЃ "Р·Р°РїСЂРµС‰РµРЅРЅС‹РјРё РІС‹СЂР°Р¶РµРЅРёСЏРјРё"
 			forbWords = data.Rows[0][FormRules.colForbWords] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colForbWords];
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords)
@@ -473,7 +470,7 @@ namespace Inforoom.Formalizer
 			var daPricesCost = new MySqlDataAdapter( selectCostFormRulesSQL, MyConn );
 			var dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
-			_logger.DebugFormat("Загрузили цены {0}.{1}", priceCode, costCode);
+			_logger.DebugFormat("Р—Р°РіСЂСѓР·РёР»Рё С†РµРЅС‹ {0}.{1}", priceCode, costCode);
 
 			if ((0 == dtPricesCost.Rows.Count) && (Settings.Default.ASSORT_FLG != priceType))
 				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, firmCode, priceCode, firmShortName, priceName);
@@ -489,7 +486,7 @@ namespace Inforoom.Formalizer
 					)
 				);
 
-			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
+			//Р•СЃР»Рё РїСЂР°Р№СЃ СЏРІР»СЏРµС‚СЃСЏ РЅРµ Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚РЅС‹Рј РїСЂР°Р№СЃРѕРј-СЂРѕРґРёС‚РµР»РµРј СЃ РјСѓР»СЊС‚РёРєРѕР»РѕРЅРѕС‡РЅС‹РјРё С†РµРЅР°РјРё, С‚Рѕ РµРіРѕ РЅР°РґРѕ РїСЂРѕРІРµСЂРёС‚СЊ РЅР° Р±Р°Р·РѕРІСѓСЋ С†РµРЅСѓ
 			if ((Settings.Default.ASSORT_FLG != priceType) && (costType == CostTypes.MultiColumn))
 			{
 				if (1 == currentCoreCosts.Count)
@@ -524,12 +521,12 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Производит специализированное открытие прайса в зависимости от типа
+		/// РџСЂРѕРёР·РІРѕРґРёС‚ СЃРїРµС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅРѕРµ РѕС‚РєСЂС‹С‚РёРµ РїСЂР°Р№СЃР° РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР°
 		/// </summary>
 		public abstract void Open();
 
 		/// <summary>
-		/// Производится вставка данных в таблицу Core
+		/// РџСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІСЃС‚Р°РІРєР° РґР°РЅРЅС‹С… РІ С‚Р°Р±Р»РёС†Сѓ Core
 		/// </summary>
 		public void InsertToCore(FormalizationPosition position)
 		{
@@ -576,12 +573,12 @@ namespace Inforoom.Formalizer
 
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
-			//если получилось преобразовать в дату, то сохраняем в формате даты
+			//РµСЃР»Рё РїРѕР»СѓС‡РёР»РѕСЃСЊ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ РІ РґР°С‚Сѓ, С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј РІ С„РѕСЂРјР°С‚Рµ РґР°С‚С‹
 			if (dt is DateTime)
 				st = ((DateTime)dt).ToString("dd'.'MM'.'yyyy");
 			else
 			{
-				//Если не получилось преобразовать, то смотрим на "сырое" значение поле, если оно не пусто, то пишем в базу
+				//Р•СЃР»Рё РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ, С‚Рѕ СЃРјРѕС‚СЂРёРј РЅР° "СЃС‹СЂРѕРµ" Р·РЅР°С‡РµРЅРёРµ РїРѕР»Рµ, РµСЃР»Рё РѕРЅРѕ РЅРµ РїСѓСЃС‚Рѕ, С‚Рѕ РїРёС€РµРј РІ Р±Р°Р·Сѓ
 				st = GetFieldRawValue(PriceFields.Period);
 				if (String.IsNullOrEmpty(st))
 					st = null;
@@ -603,7 +600,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Вставка в таблицу запрещенных предложений
+		/// Р’СЃС‚Р°РІРєР° РІ С‚Р°Р±Р»РёС†Сѓ Р·Р°РїСЂРµС‰РµРЅРЅС‹С… РїСЂРµРґР»РѕР¶РµРЅРёР№
 		/// </summary>
 		/// <param name="PosName"></param>
 		public void InsertIntoForb(string PosName)
@@ -621,7 +618,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Вставка записи в Zero
+		/// Р’СЃС‚Р°РІРєР° Р·Р°РїРёСЃРё РІ Zero
 		/// </summary>
 		public void InsertToZero()
 		{
@@ -645,7 +642,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Вставка в нераспознанные позиции
+		/// Р’СЃС‚Р°РІРєР° РІ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹Рµ РїРѕР·РёС†РёРё
 		/// </summary>
 		public void InsertToUnrec(FormalizationPosition position)
 		{
@@ -689,16 +686,16 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Подготовка к разбору прайса, чтение таблиц
+		/// РџРѕРґРіРѕС‚РѕРІРєР° Рє СЂР°Р·Р±РѕСЂСѓ РїСЂР°Р№СЃР°, С‡С‚РµРЅРёРµ С‚Р°Р±Р»РёС†
 		/// </summary>
 		public void Prepare()
 		{
-			_logger.Debug("начало Prepare");
+			_logger.Debug("РЅР°С‡Р°Р»Рѕ Prepare");
 			daForbidden = new MySqlDataAdapter(
 				String.Format("SELECT PriceCode, LOWER(Forbidden) AS Forbidden FROM farm.Forbidden WHERE PriceCode={0}", priceCode), MyConn);
 			daForbidden.Fill(dsMyDB, "Forbidden");
 			dtForbidden = dsMyDB.Tables["Forbidden"];
-			_logger.Debug("загрузили Forbidden");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Forbidden");
 
 			daSynonym = new MySqlDataAdapter(
 				String.Format(@"
@@ -719,17 +716,7 @@ and (products.Id = Synonym.ProductId)
 				parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
-			_logger.Debug("загрузили Synonym");
-
-			daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", MyConn);
-			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
-			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
-			daAssortment.InsertCommand.CommandTimeout = 0;
-			daAssortment.Fill(dsMyDB, "Assortment");
-			dtAssortment = dsMyDB.Tables["Assortment"];
-			_logger.Debug("загрузили Assortment");
-			dtAssortment.PrimaryKey = new[] { dtAssortment.Columns["CatalogId"], dtAssortment.Columns["ProducerId"] };
-			_logger.Debug("построили индекс по Assortment");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Synonym");
 
 			daExcludes = new MySqlDataAdapter(
 				String.Format("SELECT Id, CatalogId, ProducerSynonym, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), MyConn);
@@ -738,9 +725,9 @@ and (products.Id = Synonym.ProductId)
 			daExcludes.InsertCommand.CommandTimeout = 0;
 			daExcludes.Fill(dsMyDB, "Excludes");
 			dtExcludes = dsMyDB.Tables["Excludes"];
-			_logger.Debug("загрузили Excludes");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Excludes");
 			dtExcludes.Constraints.Add("ProducerSynonymKey", new[] { dtExcludes.Columns["CatalogId"], dtExcludes.Columns["ProducerSynonym"] }, false);
-			_logger.Debug("построили индекс по Excludes");
+			_logger.Debug("РїРѕСЃС‚СЂРѕРёР»Рё РёРЅРґРµРєСЃ РїРѕ Excludes");
 
 			daSynonymFirmCr = new MySqlDataAdapter(
 				String.Format(@"
@@ -770,7 +757,10 @@ select @LastSynonymFirmCrCode;");
 			dtSynonymFirmCr.Columns.Add("OriginalSynonym", typeof(string));
 			dtSynonymFirmCr.Columns.Add("InternalProducerSynonymId", typeof(long));
 			dtSynonymFirmCr.Columns["InternalProducerSynonymId"].AutoIncrement = true;
-			_logger.Debug("загрузили SynonymFirmCr");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё SynonymFirmCr");
+
+			_producerResolver = new ProducerResolver(_info, _stats, dtExcludes, dtSynonymFirmCr);
+			_producerResolver.Load(MyConn);
 
 			daCore = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Core0 WHERE PriceCode={0} LIMIT 0", priceCode), MyConn);
@@ -778,7 +768,7 @@ select @LastSynonymFirmCrCode;");
 			dtCore = dsMyDB.Tables["Core"];
 			dtCore.Columns.Add("InternalProducerSynonymId", typeof(long));
 			dtCore.Columns.Add("CatalogId", typeof(long));
-			_logger.Debug("загрузили Core");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Core");
 
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -792,7 +782,7 @@ select @LastSynonymFirmCrCode;");
 			dtUnrecExp = dsMyDB.Tables["UnrecExp"];
 			dtUnrecExp.Columns["AddDate"].DataType = typeof(DateTime);
 			dtUnrecExp.Columns.Add("InternalProducerSynonymId", typeof(long));
-			_logger.Debug("загрузили UnrecExp");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё UnrecExp");
 
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Zero WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -801,7 +791,7 @@ select @LastSynonymFirmCrCode;");
 			daZero.InsertCommand.CommandTimeout = 0;
 			daZero.Fill(dsMyDB, "Zero");
 			dtZero = dsMyDB.Tables["Zero"];
-			_logger.Debug("загрузили Zero");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Zero");
 
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Forb WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
@@ -811,12 +801,12 @@ select @LastSynonymFirmCrCode;");
 			daForb.Fill(dsMyDB, "Forb");
 			dtForb = dsMyDB.Tables["Forb"];
 			dtForb.Constraints.Add("ForbName", new DataColumn[] {dtForb.Columns["Forb"]}, false);
-			_logger.Debug("загрузили Forb");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Forb");
 
 			daCoreCosts = new MySqlDataAdapter("SELECT * FROM farm.CoreCosts LIMIT 0", MyConn);
 			daCoreCosts.Fill(dsMyDB, "CoreCosts");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
-			_logger.Debug("загрузили CoreCosts");
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё CoreCosts");
 
 			if (priceCodesUseUpdate.Contains(priceCode))
 			{
@@ -834,7 +824,7 @@ select @LastSynonymFirmCrCode;");
 				foreach (DataColumn column in dtExistsCore.Columns)
 					if (!primaryFields.Contains(column.ColumnName) && !(column.ColumnName.Equals("Id", StringComparison.OrdinalIgnoreCase)))
 						compareFields.Add(column.ColumnName);
-				_logger.Debug("загрузили ExistsCore");
+				_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё ExistsCore");
 
 				string existsCoreCostsSQL;
 				if (costType == CostTypes.MultiColumn)
@@ -859,7 +849,7 @@ order by Core0.Id", priceCode);
 				dtExistsCoreCosts.Columns["PC_CostCode"].DataType = typeof(long);
 				dsMyDB.Tables.Add(dtExistsCoreCosts);
 				daExistsCoreCosts.Fill(dtExistsCoreCosts);
-				_logger.Debug("загрузили ExistsCoreCosts");
+				_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё ExistsCoreCosts");
 
 				Stopwatch ModifyCoreCostsWatch = Stopwatch.StartNew();
 				relationExistsCoreToCosts = new DataRelation("ExistsCoreToCosts", dtExistsCore.Columns["Id"], dtExistsCoreCosts.Columns["Core_Id"]);
@@ -868,12 +858,11 @@ order by Core0.Id", priceCode);
 
 				LoadExistsWatch.Stop();
 
-				_logger.InfoFormat("Загрузка и подготовка существующего прайса : {0}", LoadExistsWatch.Elapsed);
-				_logger.InfoFormat("Изменить CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
+				_logger.InfoFormat("Р—Р°РіСЂСѓР·РєР° Рё РїРѕРґРіРѕС‚РѕРІРєР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ РїСЂР°Р№СЃР° : {0}", LoadExistsWatch.Elapsed);
+				_logger.InfoFormat("РР·РјРµРЅРёС‚СЊ CoreCosts : {0}", ModifyCoreCostsWatch.Elapsed);
 			}
 
-			_logger.Debug("конец Prepare");
-			_producerResolver = new ProducerResolver(_info, _stats, dtAssortment, dtExcludes, dtSynonymFirmCr);
+			_logger.Debug("РєРѕРЅРµС† Prepare");
 		}
 
 		public string StatCommand(MySqlCommand command)
@@ -914,13 +903,13 @@ order by Core0.Id", priceCode);
 
 				DataRow drNewProducerSynonym = null;
 
-				//Добавляем в список используемых синонимов
+				//Р”РѕР±Р°РІР»СЏРµРј РІ СЃРїРёСЃРѕРє РёСЃРїРѕР»СЊР·СѓРµРјС‹С… СЃРёРЅРѕРЅРёРјРѕРІ
 				if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
 					synonymCodes.Add(drCore["SynonymCode"].ToString());
 
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
-				//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
+				//Р•СЃР»Рё СЃРёРЅРѕРЅРёРј РЅРµ РІРЅРѕРІСЊ СЃРѕР·РґР°РЅРЅС‹Р№, С‚Рѕ РґРѕР±Р°РІР»СЏРµРј РІ СЃРїРёСЃРѕРє РёСЃРїРѕР»СЊР·СѓРµРјС‹С… СЃРёРЅРѕРЅРёРјРѕРІ РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµР№
 				else if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) && !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 					synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 
@@ -955,7 +944,7 @@ order by Core0.Id", priceCode);
 		{
 			var drNewSynonym = dtNewSynonymFirmCr.Select("InternalProducerSynonymId = " + drCore["InternalProducerSynonymId"])[0];
 
-			//Если это вновь созданных синоним, то возвращаем ссылку на него, иначе изменяем Core
+			//Р•СЃР»Рё СЌС‚Рѕ РІРЅРѕРІСЊ СЃРѕР·РґР°РЅРЅС‹С… СЃРёРЅРѕРЅРёРј, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј СЃСЃС‹Р»РєСѓ РЅР° РЅРµРіРѕ, РёРЅР°С‡Рµ РёР·РјРµРЅСЏРµРј Core
 			if (drNewSynonym.RowState == DataRowState.Added)
 				return drNewSynonym;
 
@@ -973,16 +962,16 @@ order by Core0.Id", priceCode);
 			var synonymCodes = new List<string>();
 			var synonymFirmCrCodes = new List<string>();
 
-			//Если чего-либо формализовали, то делаем синхронизацию, иначе все позиции просто удалятся
+			//Р•СЃР»Рё С‡РµРіРѕ-Р»РёР±Рѕ С„РѕСЂРјР°Р»РёР·РѕРІР°Р»Рё, С‚Рѕ РґРµР»Р°РµРј СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЋ, РёРЅР°С‡Рµ РІСЃРµ РїРѕР·РёС†РёРё РїСЂРѕСЃС‚Рѕ СѓРґР°Р»СЏС‚СЃСЏ
 			if (dtCore.Rows.Count == 0)
 				return new string[0];
 
 			string lastCommand;
 			var sb = new StringBuilder();
 
-			//формализованная строка
+			//С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅР°СЏ СЃС‚СЂРѕРєР°
 
-			//найденная строка из существующего прайса
+			//РЅР°Р№РґРµРЅРЅР°СЏ СЃС‚СЂРѕРєР° РёР· СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРіРѕ РїСЂР°Р№СЃР°
 			DataRow drExistsCore;
 
 			int AllCommandCount = 0;
@@ -993,14 +982,14 @@ order by Core0.Id", priceCode);
 
 				DataRow drNewProducerSynonym = null;
 
-				//Добавляем в список используемых синонимов
+				//Р”РѕР±Р°РІР»СЏРµРј РІ СЃРїРёСЃРѕРє РёСЃРїРѕР»СЊР·СѓРµРјС‹С… СЃРёРЅРѕРЅРёРјРѕРІ
 				if (!synonymCodes.Contains(drCore["SynonymCode"].ToString()))
 					synonymCodes.Add(drCore["SynonymCode"].ToString());
 
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
 				else
-					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
+					//Р•СЃР»Рё СЃРёРЅРѕРЅРёРј РЅРµ РІРЅРѕРІСЊ СЃРѕР·РґР°РЅРЅС‹Р№, С‚Рѕ РґРѕР±Р°РІР»СЏРµРј РІ СЃРїРёСЃРѕРє РёСЃРїРѕР»СЊР·СѓРµРјС‹С… СЃРёРЅРѕРЅРёРјРѕРІ РїСЂРѕРёР·РІРѕРґРёС‚РµР»РµР№
                     if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
 						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
@@ -1030,19 +1019,19 @@ order by Core0.Id", priceCode);
 						UpdateCoreCosts(drExistsCore, sb, CoreCosts[i]);
 				}
 
-				//Если мы нашли запись в существующем Core, то удаляем ее из кэша существующих предложений, 
-				//чтобы при следующем поиске она не учитывалась
+				//Р•СЃР»Рё РјС‹ РЅР°С€Р»Рё Р·Р°РїРёСЃСЊ РІ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРј Core, С‚Рѕ СѓРґР°Р»СЏРµРј РµРµ РёР· РєСЌС€Р° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… РїСЂРµРґР»РѕР¶РµРЅРёР№, 
+				//С‡С‚РѕР±С‹ РїСЂРё СЃР»РµРґСѓСЋС‰РµРј РїРѕРёСЃРєРµ РѕРЅР° РЅРµ СѓС‡РёС‚С‹РІР°Р»Р°СЃСЊ
 				if (drExistsCore != null)
 					drExistsCore.Delete();
 
-				//Производим отсечку по кол-во сформированных команд
+				//РџСЂРѕРёР·РІРѕРґРёРј РѕС‚СЃРµС‡РєСѓ РїРѕ РєРѕР»-РІРѕ СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅС‹С… РєРѕРјР°РЅРґ
 				if (_stats.CommandCount >= 200)
 				{
-					_logger.DebugFormat("Отсечка: {0}", _stats.CommandCount);
+					_logger.DebugFormat("РћС‚СЃРµС‡РєР°: {0}", _stats.CommandCount);
 					AllCommandCount += _stats.CommandCount;
 					lastCommand = sb.ToString();
 #if SQLDUMP
-						_logger.DebugFormat("SQL-команда: {0}", lastCommand);
+						_logger.DebugFormat("SQL-РєРѕРјР°РЅРґР°: {0}", lastCommand);
 #endif
 					if (!String.IsNullOrEmpty(lastCommand))
 						commandList.Add(lastCommand);
@@ -1056,18 +1045,18 @@ order by Core0.Id", priceCode);
 			lastCommand = sb.ToString();
 			if (!String.IsNullOrEmpty(lastCommand))
 			{
-				_logger.DebugFormat("Отсечка: {0}", _stats.CommandCount);
+				_logger.DebugFormat("РћС‚СЃРµС‡РєР°: {0}", _stats.CommandCount);
 #if SQLDUMP
-					_logger.DebugFormat("SQL-команда: {0}", lastCommand);
+					_logger.DebugFormat("SQL-РєРѕРјР°РЅРґР°: {0}", lastCommand);
 #endif
 				commandList.Add(lastCommand);
 				AllCommandCount += _stats.CommandCount;
 				_stats.CommandCount = AllCommandCount;
 			}
 
-			//Производим поиск записей в кэше существующих предложений,
-			//которые не были помечены как удаленные, что говорит о том, 
-			//что эти записи не рассматривались при синхронизации, следовательно их нужно удалить
+			//РџСЂРѕРёР·РІРѕРґРёРј РїРѕРёСЃРє Р·Р°РїРёСЃРµР№ РІ РєСЌС€Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… РїСЂРµРґР»РѕР¶РµРЅРёР№,
+			//РєРѕС‚РѕСЂС‹Рµ РЅРµ Р±С‹Р»Рё РїРѕРјРµС‡РµРЅС‹ РєР°Рє СѓРґР°Р»РµРЅРЅС‹Рµ, С‡С‚Рѕ РіРѕРІРѕСЂРёС‚ Рѕ С‚РѕРј, 
+			//С‡С‚Рѕ СЌС‚Рё Р·Р°РїРёСЃРё РЅРµ СЂР°СЃСЃРјР°С‚СЂРёРІР°Р»РёСЃСЊ РїСЂРё СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё, СЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ РёС… РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ
 			var deleteCore = new List<string>();
 			foreach (DataRow deleted in dtExistsCore.Rows)
 				if ((deleted.RowState != DataRowState.Deleted))
@@ -1077,15 +1066,15 @@ order by Core0.Id", priceCode);
 				}
 			if (deleteCore.Count > 0)
 			{
-				//Если есть записи, которые нужно удалить из Core, то сначала формируем
+				//Р•СЃР»Рё РµСЃС‚СЊ Р·Р°РїРёСЃРё, РєРѕС‚РѕСЂС‹Рµ РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ РёР· Core, С‚Рѕ СЃРЅР°С‡Р°Р»Р° С„РѕСЂРјРёСЂСѓРµРј
 				var costsList = new List<string>();
 				foreach (var c in currentCoreCosts)
 					costsList.Add(c.costCode.ToString());
 
 				var costCodeFilter = String.Join(", ", costsList.ToArray());
 
-				//формируем команды на удаление из CoreCosts по указанному CoreId
-				//для позиций из Core, которые не нашли в формализованном прайс-листе
+				//С„РѕСЂРјРёСЂСѓРµРј РєРѕРјР°РЅРґС‹ РЅР° СѓРґР°Р»РµРЅРёРµ РёР· CoreCosts РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ CoreId
+				//РґР»СЏ РїРѕР·РёС†РёР№ РёР· Core, РєРѕС‚РѕСЂС‹Рµ РЅРµ РЅР°С€Р»Рё РІ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕРј РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ
 				var deleteCommandList = new List<string>();
 				foreach(string coreId in deleteCore)
 					deleteCommandList.Add(String.Format(@"
@@ -1097,8 +1086,8 @@ where
 and CoreCosts.PC_CostCode in ({1});",
 									coreId, costCodeFilter));
 
-					//формируем команду на удаление из Core по указанному CoreId
-					//для позиций, которые не нашли в формализованном прайс-листе
+					//С„РѕСЂРјРёСЂСѓРµРј РєРѕРјР°РЅРґСѓ РЅР° СѓРґР°Р»РµРЅРёРµ РёР· Core РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ CoreId
+					//РґР»СЏ РїРѕР·РёС†РёР№, РєРѕС‚РѕСЂС‹Рµ РЅРµ РЅР°С€Р»Рё РІ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕРј РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ
 					deleteCommandList.Add(String.Format(@"
 delete
 from
@@ -1107,8 +1096,8 @@ where
   Core0.Id in ({0});",
 					String.Join(", ", deleteCore.ToArray())));
 
-				//Добавляем данные команды в начало списка команд, 
-				//чтобы удаление из Core и CoreCosts выполнилось первым
+				//Р”РѕР±Р°РІР»СЏРµРј РґР°РЅРЅС‹Рµ РєРѕРјР°РЅРґС‹ РІ РЅР°С‡Р°Р»Рѕ СЃРїРёСЃРєР° РєРѕРјР°РЅРґ, 
+				//С‡С‚РѕР±С‹ СѓРґР°Р»РµРЅРёРµ РёР· Core Рё CoreCosts РІС‹РїРѕР»РЅРёР»РѕСЃСЊ РїРµСЂРІС‹Рј
 				commandList.InsertRange(0, deleteCommandList);
 			}
 
@@ -1128,10 +1117,10 @@ where
 			DataRow drCurrent;
 
 			foreach (CoreCost c in costs)
-				//Если значение формализованной цены больше нуля, то будет ее обновлять или вставлять, иначе существующая должна быть удалена
+				//Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕР№ С†РµРЅС‹ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ, С‚Рѕ Р±СѓРґРµС‚ РµРµ РѕР±РЅРѕРІР»СЏС‚СЊ РёР»Рё РІСЃС‚Р°РІР»СЏС‚СЊ, РёРЅР°С‡Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰Р°СЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ СѓРґР°Р»РµРЅР°
 				if (c.cost.HasValue && (c.cost > 0))
 				{
-					//Попытка поиска цены в списке
+					//РџРѕРїС‹С‚РєР° РїРѕРёСЃРєР° С†РµРЅС‹ РІ СЃРїРёСЃРєРµ
 					drCurrent = null;
 					foreach (DataRow find in drExistsCosts)
 						if ((find.RowState != DataRowState.Deleted) && (long)find["PC_CostCode"] == c.costCode)
@@ -1140,7 +1129,7 @@ where
 							break;
 						}
 
-					//Если цена не найдена, то производим вставку
+					//Р•СЃР»Рё С†РµРЅР° РЅРµ РЅР°Р№РґРµРЅР°, С‚Рѕ РїСЂРѕРёР·РІРѕРґРёРј РІСЃС‚Р°РІРєСѓ
 					if (drCurrent == null)
 					{
 						_stats.InsertCostCount++;
@@ -1150,7 +1139,7 @@ where
 					}
 					else
 					{
-						//Если цена найдена и значение цены другое, то обновляем цену в таблице
+						//Р•СЃР»Рё С†РµРЅР° РЅР°Р№РґРµРЅР° Рё Р·РЅР°С‡РµРЅРёРµ С†РµРЅС‹ РґСЂСѓРіРѕРµ, С‚Рѕ РѕР±РЅРѕРІР»СЏРµРј С†РµРЅСѓ РІ С‚Р°Р±Р»РёС†Рµ
 						if (c.cost.Value.CompareTo(Convert.ToDecimal(drCurrent["Cost"])) != 0)
 						{
 							_stats.UpdateCostCount++;
@@ -1158,7 +1147,7 @@ where
 							sb.AppendFormat("update farm.CoreCosts set Cost = {0} where Core_Id = {1} and PC_CostCode = {2};\r\n",
 								c.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat), drExistsCore["Id"], c.costCode);
 						}
-						//Удаляем цену из кэша таблицы, чтобы при следующем поиске ее не рассматривать
+						//РЈРґР°Р»СЏРµРј С†РµРЅСѓ РёР· РєСЌС€Р° С‚Р°Р±Р»РёС†С‹, С‡С‚РѕР±С‹ РїСЂРё СЃР»РµРґСѓСЋС‰РµРј РїРѕРёСЃРєРµ РµРµ РЅРµ СЂР°СЃСЃРјР°С‚СЂРёРІР°С‚СЊ
 						drCurrent.Delete();
 					}
 				}
@@ -1166,8 +1155,8 @@ where
 			var deleteCosts = new List<string>();
 			foreach (var deleted in drExistsCosts)
 			{
-				//Пробегаемся по всем неудаленным ценам и считаем их ненайденными в формализованном прайс-листе,
-				//следовательно данную цену нужно удалить из CoreCosts
+				//РџСЂРѕР±РµРіР°РµРјСЃСЏ РїРѕ РІСЃРµРј РЅРµСѓРґР°Р»РµРЅРЅС‹Рј С†РµРЅР°Рј Рё СЃС‡РёС‚Р°РµРј РёС… РЅРµРЅР°Р№РґРµРЅРЅС‹РјРё РІ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕРј РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ,
+				//СЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ РґР°РЅРЅСѓСЋ С†РµРЅСѓ РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ РёР· CoreCosts
 				if (deleted.RowState != DataRowState.Deleted)
 				{
 					_stats.DeleteCostCount++;
@@ -1311,11 +1300,11 @@ where
 		}
 
 		/// <summary>
-		/// Окончание разбора прайса, с последующим логированием статистики
+		/// РћРєРѕРЅС‡Р°РЅРёРµ СЂР°Р·Р±РѕСЂР° РїСЂР°Р№СЃР°, СЃ РїРѕСЃР»РµРґСѓСЋС‰РёРј Р»РѕРіРёСЂРѕРІР°РЅРёРµРј СЃС‚Р°С‚РёСЃС‚РёРєРё
 		/// </summary>
 		public void FinalizePrice()
 		{
-			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
+			//РџСЂРѕРІРµСЂРєСѓ Рё РѕС‚РїСЂР°РІРєСѓ СѓРІРµРґРѕРјР»РµРЅРёР№ РїСЂРѕРёР·РІРѕРґРёРј С‚РѕР»СЊРєРѕ РґР»СЏ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РїСЂР°Р№СЃ-Р»РёСЃС‚РѕРІ
 			if (downloaded)
 			{
 				ProcessUndefinedCost();
@@ -1330,10 +1319,10 @@ where
 
 			string[] insertCoreAndCoreCostsCommandList;
 
-			//Производим транзакцию с применением главного прайса и таблицы цен
+			//РџСЂРѕРёР·РІРѕРґРёРј С‚СЂР°РЅР·Р°РєС†РёСЋ СЃ РїСЂРёРјРµРЅРµРЅРёРµРј РіР»Р°РІРЅРѕРіРѕ РїСЂР°Р№СЃР° Рё С‚Р°Р±Р»РёС†С‹ С†РµРЅ
 			bool res = false;
 			int tryCount = 0;
-			//Для логирования статистики
+			//Р”Р»СЏ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ СЃС‚Р°С‚РёСЃС‚РёРєРё
 			StringBuilder sbLog;
 			do
 			{
@@ -1351,7 +1340,7 @@ where
 					Stopwatch GetSQLWatch = Stopwatch.StartNew();
 					insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out updateUsedSynonymLogs);
 					GetSQLWatch.Stop();
-					_logger.InfoFormat("Общее время подготовки update SQL-команд : {0}", GetSQLWatch.Elapsed);
+					_logger.InfoFormat("РћР±С‰РµРµ РІСЂРµРјСЏ РїРѕРґРіРѕС‚РѕРІРєРё update SQL-РєРѕРјР°РЅРґ : {0}", GetSQLWatch.Elapsed);
 				}
 				else
 					insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out updateUsedSynonymLogs);
@@ -1365,7 +1354,7 @@ where
 
 					mcClear.Parameters.Clear();
 
-					//Производим данные действия, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
+					//РџСЂРѕРёР·РІРѕРґРёРј РґР°РЅРЅС‹Рµ РґРµР№СЃС‚РІРёСЏ, РµСЃР»Рё РЅРµ РЅР°РґРѕ РґРµР»Р°С‚СЊ update Рё РѕС‡РёС‰Р°РµРј РїСЂР°Р№СЃ-Р»РёСЃС‚С‹, РёР»Рё РµСЃР»Рё РЅРµ С„РѕСЂРјР°Р»РёР·РѕРІР°Р»Рё РїСЂР°Р№СЃ-Р»РёСЃС‚ Рё РЅР°РґРѕ РµРіРѕ РѕС‡РёСЃС‚РёС‚СЊ
 					if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0))
 					{
 						if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG))
@@ -1386,7 +1375,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 						{
 							if (priceType != Settings.Default.ASSORT_FLG)
 							{
-								//Удаляем цены из CoreCosts
+								//РЈРґР°Р»СЏРµРј С†РµРЅС‹ РёР· CoreCosts
 								var sbDelCoreCosts = new StringBuilder();
 								sbDelCoreCosts.Append("delete from farm.CoreCosts where pc_costcode in (");
 								bool FirstInsertCoreCosts = true;
@@ -1401,20 +1390,20 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 
 								if (currentCoreCosts.Count > 0)
 								{
-									//Производим удаление цен
+									//РџСЂРѕРёР·РІРѕРґРёРј СѓРґР°Р»РµРЅРёРµ С†РµРЅ
 									mcClear.CommandText = sbDelCoreCosts.ToString();
 									sbLog.AppendFormat("DelFromCoreCosts={0}  ", StatCommand(mcClear));
 								}
 							}
 
-							//Добавляем команду на удаление данных из Core
+							//Р”РѕР±Р°РІР»СЏРµРј РєРѕРјР°РЅРґСѓ РЅР° СѓРґР°Р»РµРЅРёРµ РґР°РЅРЅС‹С… РёР· Core
 							mcClear.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", priceCode);
 							sbLog.AppendFormat("DelFromCore={0}  ", StatCommand(mcClear));
 						}
 
 					}
 
-					//выполняем команды с обновлением данных в Core и CoreCosts
+					//РІС‹РїРѕР»РЅСЏРµРј РєРѕРјР°РЅРґС‹ СЃ РѕР±РЅРѕРІР»РµРЅРёРµРј РґР°РЅРЅС‹С… РІ Core Рё CoreCosts
 					if (insertCoreAndCoreCostsCommandList.Length > 0)
 					{
 						DateTime tmInsertCoreAndCoreCosts = DateTime.UtcNow;
@@ -1470,12 +1459,11 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 					sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(finalizeTransaction));
-					//Исключения обновляем после нераспознанных, т.к. все может измениться
+					//РСЃРєР»СЋС‡РµРЅРёСЏ РѕР±РЅРѕРІР»СЏРµРј РїРѕСЃР»Рµ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹С…, С‚.Рє. РІСЃРµ РјРѕР¶РµС‚ РёР·РјРµРЅРёС‚СЊСЃСЏ
 					sbLog.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), finalizeTransaction));
-					sbLog.AppendFormat("UpdateAssortment={0}", TryUpdate(daAssortment, dtAssortment.Copy(), finalizeTransaction));
 
-					//Производим обновление PriceDate и LastFormalization в информации о формализации
-					//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
+					//РџСЂРѕРёР·РІРѕРґРёРј РѕР±РЅРѕРІР»РµРЅРёРµ PriceDate Рё LastFormalization РІ РёРЅС„РѕСЂРјР°С†РёРё Рѕ С„РѕСЂРјР°Р»РёР·Р°С†РёРё
+					//Р•СЃР»Рё РїСЂР°Р№СЃ-Р»РёСЃС‚ Р·Р°РіСЂСѓР¶РµРЅ, С‚Рѕ РѕР±РЅРѕРІР»СЏРµРј РїРѕР»Рµ PriceDate, РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕР±РЅРѕРІР»СЏРµРј РґР°РЅРЅС‹Рµ РІ intersection_update_info
 					mcClear.Parameters.Clear();
 					if (downloaded)
 					{
@@ -1500,7 +1488,7 @@ and a.FirmCode = p.FirmCode;", priceCode);
 					_logger.InfoFormat("Statistica: {0}", sbLog);
 					_stats.PrintSearchStats();
 
-					//Производим проверку, что в Core существует такое же кол-во позиций, что и в переменной formCount
+					//РџСЂРѕРёР·РІРѕРґРёРј РїСЂРѕРІРµСЂРєСѓ, С‡С‚Рѕ РІ Core СЃСѓС‰РµСЃС‚РІСѓРµС‚ С‚Р°РєРѕРµ Р¶Рµ РєРѕР»-РІРѕ РїРѕР·РёС†РёР№, С‡С‚Рѕ Рё РІ РїРµСЂРµРјРµРЅРЅРѕР№ formCount
 					int existsCoreCount;
 					if (costType == CostTypes.MiltiFile)
 					{
@@ -1530,9 +1518,9 @@ where
 					if (existsCoreCount != formCount)
 						throw new FormalizeException(
 							String.Format(
-								"При сохранении прайс-листа в базу данных реальное количество позиций в Core " +
-								"не соответствует количеству формализованных позиций. Кол-во в Core: {0}  " + 
-								"Кол-во формализованных позиций: {1}",
+								"РџСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р° РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… СЂРµР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№ РІ Core " +
+								"РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РєРѕР»РёС‡РµСЃС‚РІСѓ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹С… РїРѕР·РёС†РёР№. РљРѕР»-РІРѕ РІ Core: {0}  " + 
+								"РљРѕР»-РІРѕ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹С… РїРѕР·РёС†РёР№: {1}",
 								existsCoreCount,
 								formCount),
 							firmCode, priceCode, firmShortName, priceName);
@@ -1557,7 +1545,7 @@ where
 					{
 						tryCount++;
 						_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, MyError.Number, MyError.Message);
-						//Производим откат в счетчиках и в Core, CoreCosts, чтобы при перезапуске транзакции было с чем синхронизировать
+						//РџСЂРѕРёР·РІРѕРґРёРј РѕС‚РєР°С‚ РІ СЃС‡РµС‚С‡РёРєР°С… Рё РІ Core, CoreCosts, С‡С‚РѕР±С‹ РїСЂРё РїРµСЂРµР·Р°РїСѓСЃРєРµ С‚СЂР°РЅР·Р°РєС†РёРё Р±С‹Р»Рѕ СЃ С‡РµРј СЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°С‚СЊ
 						if (priceCodesUseUpdate.Contains(priceCode))
 						{
 								_stats.ResetCountersForUpdate();
@@ -1602,25 +1590,25 @@ where
 					var drsProducerSynonyms = dtNewSynonymFirmCr.Select("OriginalSynonym = '" + drUnrecExp["FirmCr"].ToString().Replace("'", "''") + "'");
 
 					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
-						throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
+						throw new Exception(String.Format("РќРµ РЅР°С€Р»Рё РЅРѕРІС‹С… СЃРёРЅРѕРЅРёРјРѕРІ С…РѕС‚СЏ СЃСЃС‹Р»РєР° СЃСѓС‰РµСЃС‚РІСѓРµС‚: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
 					else
 						if (drsProducerSynonyms.Length == 1)
 						{
 							drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
-							//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
-						    //и если не сбрасывали ссылку на новый синоним
+							//Р•СЃР»Рё РЅР°Р№РґРµРЅРЅС‹Р№ СЃРёРЅРѕРЅРёРј РЅРѕРІС‹Р№ Рё Р±С‹Р» РѕР±РЅРѕРІР»РµРЅ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р° РІ Р±Р°Р·Сѓ
+						    //Рё РµСЃР»Рё РЅРµ СЃР±СЂР°СЃС‹РІР°Р»Рё СЃСЃС‹Р»РєСѓ РЅР° РЅРѕРІС‹Р№ СЃРёРЅРѕРЅРёРј
 							if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
 							{
 								drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
-								//Если синоним не автоматический, то будем выставлять CodeFirmCr
+								//Р•СЃР»Рё СЃРёРЅРѕРЅРёРј РЅРµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№, С‚Рѕ Р±СѓРґРµРј РІС‹СЃС‚Р°РІР»СЏС‚СЊ CodeFirmCr
 								if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"]))
 								{
-									//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
+									//Р•СЃР»Рё CodeFirmCr РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ, С‚Рѕ СЃРёРЅРѕРЅРёРј РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ СЃРѕРїРѕСЃС‚Р°РІР»РµРЅ СЃ "РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ РЅРµ РёР·РІРµСЃС‚РµРЅ"
 									if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"]))
 									{
 										if (!Convert.IsDBNull(drUnrecExp["PriorProductId"]))
 										{
-											//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
+											//Р•СЃР»Рё СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРѕ РїРѕ РЅР°РёРјРµРЅРѕРІР°РЅРёСЋ, С‚Рѕ РѕРЅР° РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРѕРїРѕСЃС‚Р°РІР»РµРЅР° Рё СѓРґР°Р»СЏРµРј РёР· РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹С…
 											drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
 											drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
 											continue;
@@ -1653,9 +1641,9 @@ where
 						}
 						else
 							if (drsProducerSynonyms.Length > 1)
-								throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
+								throw new Exception(String.Format("РџРѕР»СѓС‡РёР»Рё РЅРѕРІС‹С… СЃРёРЅРѕРЅРёРјРѕРІ Р±РѕР»СЊС€Рµ 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
 
-					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
+					//Р•СЃР»Рё РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ, С‡С‚Рѕ РїРѕР·РёС†РёСЏ РёР·-Р·Р° РІРЅРѕРІСЊ СЃРѕР·РґР°РЅРЅС‹С… СЃРёРЅРѕРЅРёРјРѕРІ Р±С‹Р»Р° РїРѕР»РЅРѕСЃС‚СЊСЋ СЂР°СЃРїРѕР·РЅР°РЅР°, С‚Рѕ РѕР±РЅРѕРІР»СЏРµРј РµРµ РІ Р±Р°Р·Рµ
 					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm))
 					{
 						daUnrecExp.Update(new DataRow[] { drUnrecExp });
@@ -1685,8 +1673,8 @@ where
 			foreach (DataRow drNewProducerSynonym in dtNewSynonymFirmCr.Rows)
 			{
 				if (!Convert.IsDBNull(drNewProducerSynonym["SynonymFirmCrCode"]))
-					//Если код синонима производителя существует, то он был создан не PriceProcessor и 
-					//получен из базы при сохранении прайса
+					//Р•СЃР»Рё РєРѕРґ СЃРёРЅРѕРЅРёРјР° РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РѕРЅ Р±С‹Р» СЃРѕР·РґР°РЅ РЅРµ PriceProcessor Рё 
+					//РїРѕР»СѓС‡РµРЅ РёР· Р±Р°Р·С‹ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РїСЂР°Р№СЃР°
 					drNewProducerSynonym.AcceptChanges();
 				else
 				{
@@ -1707,7 +1695,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 						new MySqlParameter("?OriginalSynonym", drNewProducerSynonym["OriginalSynonym"]));
 					if ((dsExistsProducerSynonym.Tables.Count == 1) && (dsExistsProducerSynonym.Tables[0].Rows.Count == 1))
 					{
-						//Если уже синоним существует, то обноляем его у себя
+						//Р•СЃР»Рё СѓР¶Рµ СЃРёРЅРѕРЅРёРј СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РѕР±РЅРѕР»СЏРµРј РµРіРѕ Сѓ СЃРµР±СЏ
 						drNewProducerSynonym["SynonymFirmCrCode"] = dsExistsProducerSynonym.Tables[0].Rows[0]["SynonymFirmCrCode"];
 						drNewProducerSynonym["CodeFirmCr"] = dsExistsProducerSynonym.Tables[0].Rows[0]["CodeFirmCr"];
 						drNewProducerSynonym["IsAutomatic"] = dsExistsProducerSynonym.Tables[0].Rows[0]["IsAutomatic"];
@@ -1729,51 +1717,51 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 		}
 
 		/// <summary>
-		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
+		/// Р°РЅР°Р»РёР·РёСЂСѓРµРј С†РµРЅС‹ Рё С„РѕСЂРјРёСЂСѓРµРј СЃРїРёСЃРѕРє, РµСЃР»Рё С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° РёРјРµРµС‚ Р±РѕР»РµРµ 5% РїРѕР·РёС†РёР№ СЃ РЅРµСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕР№ С†РµРЅРѕР№
 		/// </summary>
 		private void ProcessUndefinedCost()
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (var cost in currentCoreCosts)
 				if (cost.undefinedCostCount > formCount * 0.05)
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.costName, cost.undefinedCostCount);
+					stringBuilder.AppendFormat("С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° \"{0}\" РёРјРµРµС‚ {1} РїРѕР·РёС†РёР№ СЃ РЅРµР·Р°РїРѕР»РЅРµРЅРЅРѕР№ С†РµРЅРѕР№\n", cost.costName, cost.undefinedCostCount);
 
 			if (stringBuilder.Length > 0)
 				SendAlertToUserFail(
 					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
+					"PriceProcessor: Р’ РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ {0} РїРѕСЃС‚Р°РІС‰РёРєР° {1} РёРјРµСЋС‚СЃСЏ РїРѕР·РёС†РёРё СЃ РЅРµР·Р°РїРѕР»РЅРµРЅРЅС‹РјРё С†РµРЅР°РјРё",
 					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
-  Список ценовых колонок:
+Р—РґСЂР°РІСЃС‚РІСѓР№С‚Рµ!
+  Р’ РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ {0} РїРѕСЃС‚Р°РІС‰РёРєР° {1} РёРјРµСЋС‚СЃСЏ РїРѕР·РёС†РёРё СЃ РЅРµР·Р°РїРѕР»РЅРµРЅРЅС‹РјРё С†РµРЅР°РјРё.
+  РЎРїРёСЃРѕРє С†РµРЅРѕРІС‹С… РєРѕР»РѕРЅРѕРє:
 {2}
 
-С уважением,
+РЎ СѓРІР°Р¶РµРЅРёРµРј,
   PriceProcessor.");
 
 		}
 
 		/// <summary>
-		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
+		/// Р°РЅР°Р»РёР·РёСЂСѓРµРј С†РµРЅС‹ Рё С„РѕСЂРјРёСЂСѓРµРј СЃРѕРѕР±С‰РµРЅРёРµ, РµСЃР»Рё С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° РёРјРµРµС‚ РІСЃРµ РїРѕР·РёС†РёРё СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹РјРё РІ 0
 		/// </summary>
 		private void ProcessZeroCost()
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			foreach (var cost in currentCoreCosts)
 				if ((cost.zeroCostCount > 0) && ((formCount == 0) || (cost.zeroCostCount == formCount)))
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.costName);
+					stringBuilder.AppendFormat("С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° \"{0}\" РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅР° '0'\n", cost.costName);
 
 			if (stringBuilder.Length > 0)
 				SendAlertToUserFail(
 					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
+					"PriceProcessor: Р’ РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ {0} РїРѕСЃС‚Р°РІС‰РёРєР° {1} РёРјРµСЋС‚СЃСЏ С†РµРЅРѕРІС‹Рµ РєРѕР»РѕРЅРєРё, РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Рµ С†РµРЅРѕР№ \"0\"",
 					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
-  Список ценовых колонок:
+Р—РґСЂР°РІСЃС‚РІСѓР№С‚Рµ!
+  Р’ РїСЂР°Р№СЃ-Р»РёСЃС‚Рµ {0} РїРѕСЃС‚Р°РІС‰РёРєР° {1} РёРјРµСЋС‚СЃСЏ С†РµРЅРѕРІС‹Рµ РєРѕР»РѕРЅРєРё, РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°РїРѕР»РЅРµРЅРЅС‹Рµ С†РµРЅРѕР№ '0'.
+  РЎРїРёСЃРѕРє С†РµРЅРѕРІС‹С… РєРѕР»РѕРЅРѕРє:
 {2}
 
-С уважением,
+РЎ СѓРІР°Р¶РµРЅРёРµРј,
   PriceProcessor.");
 
 		}
@@ -1782,7 +1770,7 @@ and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
 		{
 			var drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
 select
-  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
+  if(pd.CostType = 1, concat('[РљРѕР»РѕРЅРєР°] ', pc.CostName), pd.PriceName) PriceName,
   concat(cd.ShortName, ' - ', r.Region) ShortFirmName
 from
 usersettings.pricescosts pc,
@@ -1803,17 +1791,17 @@ and r.RegionCode = cd.RegionCode",
 					drProvider["ShortFirmName"],
 					stringBuilder);
 
-			_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
+			_logger.DebugFormat("РЎС„РѕСЂРјРёСЂРѕРІР°Р»Рё РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ Рѕ РЅР°СЃС‚СЂРѕР№РєР°С… С„РѕСЂРјР°Р»РёР·Р°С†РёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р°: {0}", body);
 			Mailer.SendUserFail(subject, body);
 		}
 
 		/// <summary>
-		/// Формализование прайса
+		/// Р¤РѕСЂРјР°Р»РёР·РѕРІР°РЅРёРµ РїСЂР°Р№СЃР°
 		/// </summary>
 		public void Formalize()
 		{
 			log4net.NDC.Push(String.Format("{0}.{1}", priceCode, costCode));
-			_logger.Debug("начало Formalize");
+			_logger.Debug("РЅР°С‡Р°Р»Рѕ Formalize");
 			try
 			{
 				DateTime tmOpen = DateTime.UtcNow;
@@ -1830,15 +1818,15 @@ and r.RegionCode = cd.RegionCode",
 
 				try
 				{
-					_logger.Debug("попытка открыть соединение с базой");
+					_logger.Debug("РїРѕРїС‹С‚РєР° РѕС‚РєСЂС‹С‚СЊ СЃРѕРµРґРёРЅРµРЅРёРµ СЃ Р±Р°Р·РѕР№");
 					MyConn.Open();
-					_logger.Debug("соединение с базой установлено");
+					_logger.Debug("СЃРѕРµРґРёРЅРµРЅРёРµ СЃ Р±Р°Р·РѕР№ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ");
 
 					if (dtPrice.Rows.Count > 0)
 					{
-						_logger.Debug("попытка открыть транзакцию");
+						_logger.Debug("РїРѕРїС‹С‚РєР° РѕС‚РєСЂС‹С‚СЊ С‚СЂР°РЅР·Р°РєС†РёСЋ");
 						MySqlTransaction _prepareTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
-						_logger.Debug("транзакция открыта");
+						_logger.Debug("С‚СЂР°РЅР·Р°РєС†РёСЏ РѕС‚РєСЂС‹С‚Р°");
 
 						DateTime tmPrepare = DateTime.UtcNow;
 						try
@@ -1886,7 +1874,7 @@ and r.RegionCode = cd.RegionCode",
 			}
 			finally
 			{
-				_logger.Debug("конец Formalize");
+				_logger.Debug("РєРѕРЅРµС† Formalize");
 				log4net.NDC.Pop();
 			}
 		}
@@ -1917,8 +1905,8 @@ and r.RegionCode = cd.RegionCode",
 					var costCount = ProcessCosts();
 					var currentQuantity = GetFieldValueObject(PriceFields.Quantity);
 
-					//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
-					//или если количество определенно и оно равно 0
+					//Р•СЃР»Рё РєРѕР»-РІРѕ РЅРµРЅСѓР»РµРІС‹С… С†РµРЅ = 0, С‚Рѕ С‚РѕРіРґР° РїСЂРѕРёР·РІРѕРґРёРј РІСЃС‚Р°РІРєСѓ РІ Zero
+					//РёР»Рё РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РѕРїСЂРµРґРµР»РµРЅРЅРѕ Рё РѕРЅРѕ СЂР°РІРЅРѕ 0
 					if (0 == costCount || (currentQuantity is int && (int)currentQuantity == 0))
 					{
 						InsertToZero();
@@ -1936,11 +1924,11 @@ and r.RegionCode = cd.RegionCode",
 				GetProductId(position);
 				_producerResolver.ResolveProducer(position);
 
-				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
+				//РџРѕР»СѓС‡Р°РµС‚СЃСЏ, С‡С‚Рѕ РµСЃР»Рё С„РѕСЂРјР°Р»РёР·РѕРІР°Р»Рё РїРѕ РЅР°РёРјРµРЅРѕРІР°РЅРёСЋ, С‚Рѕ СЌС‚Рѕ РїРѕР·РёС†РёСЏ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅР° РєР»РёРµРЅС‚Сѓ
 				if (position.IsSet(UnrecExpStatus.NameForm))
 				{
 					if (!position.IsHealth())
-						throw new Exception(String.Format("Не верное состояние формализуемой позиции {0}, программист допустил ошибку", position.PositionName));
+						throw new Exception(String.Format("РќРµ РІРµСЂРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ С„РѕСЂРјР°Р»РёР·СѓРµРјРѕР№ РїРѕР·РёС†РёРё {0}, РїСЂРѕРіСЂР°РјРјРёСЃС‚ РґРѕРїСѓСЃС‚РёР» РѕС€РёР±РєСѓ", position.PositionName));
 
 					InsertToCore(position);
 				}
@@ -1955,7 +1943,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Установить название поля, которое будет считано из набора данных
+		/// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р·РІР°РЅРёРµ РїРѕР»СЏ, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ СЃС‡РёС‚Р°РЅРѕ РёР· РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С…
 		/// </summary>
 		public void SetFieldName(PriceFields PF, string Value)
 		{
@@ -1963,7 +1951,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить название поля
+		/// РџРѕР»СѓС‡РёС‚СЊ РЅР°Р·РІР°РЅРёРµ РїРѕР»СЏ
 		/// </summary>
 		public string GetFieldName(PriceFields PF)
 		{
@@ -1971,9 +1959,9 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Перейти на следующую позици набора данных
+		/// РџРµСЂРµР№С‚Рё РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ РїРѕР·РёС†Рё РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С…
 		/// </summary>
-		/// <returns>Удачно ли выполнен переход?</returns>
+		/// <returns>РЈРґР°С‡РЅРѕ Р»Рё РІС‹РїРѕР»РЅРµРЅ РїРµСЂРµС…РѕРґ?</returns>
 		public virtual bool Next()
 		{
 			CurrPos++;
@@ -1987,9 +1975,9 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Перейти на предыдущую позицию
+		/// РџРµСЂРµР№С‚Рё РЅР° РїСЂРµРґС‹РґСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ
 		/// </summary>
-		/// <returns>Удачно ли выполнен переход?</returns>
+		/// <returns>РЈРґР°С‡РЅРѕ Р»Рё РІС‹РїРѕР»РЅРµРЅ РїРµСЂРµС…РѕРґ?</returns>
 		public virtual bool Prior()
 		{
 			CurrPos--;
@@ -2000,7 +1988,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить сырое значение текущего поля
+		/// РџРѕР»СѓС‡РёС‚СЊ СЃС‹СЂРѕРµ Р·РЅР°С‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЏ
 		/// </summary>
 		/// <param name="field"></param>
 		/// <returns></returns>
@@ -2008,7 +1996,7 @@ and r.RegionCode = cd.RegionCode",
 		{
 			try
 			{
-				//Если имя столбца для поля не определено, то возвращаем null
+				//Р•СЃР»Рё РёРјСЏ СЃС‚РѕР»Р±С†Р° РґР»СЏ РїРѕР»СЏ РЅРµ РѕРїСЂРµРґРµР»РµРЅРѕ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј null
 				if (String.IsNullOrEmpty(GetFieldName(field)))
 					return null;
 
@@ -2024,9 +2012,9 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// строки в базе данных хранятся в 1251, если мы засунем в базу символ которого нет в 1251 
-		/// то назад мы получим не этот же символ а что то "близкое" по этому строки нужно очищать от 
-		/// таких символов
+		/// СЃС‚СЂРѕРєРё РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… С…СЂР°РЅСЏС‚СЃСЏ РІ 1251, РµСЃР»Рё РјС‹ Р·Р°СЃСѓРЅРµРј РІ Р±Р°Р·Сѓ СЃРёРјРІРѕР» РєРѕС‚РѕСЂРѕРіРѕ РЅРµС‚ РІ 1251 
+		/// С‚Рѕ РЅР°Р·Р°Рґ РјС‹ РїРѕР»СѓС‡РёРј РЅРµ СЌС‚РѕС‚ Р¶Рµ СЃРёРјРІРѕР» Р° С‡С‚Рѕ С‚Рѕ "Р±Р»РёР·РєРѕРµ" РїРѕ СЌС‚РѕРјСѓ СЃС‚СЂРѕРєРё РЅСѓР¶РЅРѕ РѕС‡РёС‰Р°С‚СЊ РѕС‚ 
+		/// С‚Р°РєРёС… СЃРёРјРІРѕР»РѕРІ
 		/// </summary>
 		public string CleanupCharsThatNotFitIn1251(string value)
 		{
@@ -2037,19 +2025,19 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить значение поля в обработанном виде
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ РІ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРј РІРёРґРµ
 		/// </summary>
 		public virtual string GetFieldValue(PriceFields PF)
 		{
 			string res = null;
 
-			//Сначала пытаемся вытянуть данные из toughMask
+			//РЎРЅР°С‡Р°Р»Р° РїС‹С‚Р°РµРјСЃСЏ РІС‹С‚СЏРЅСѓС‚СЊ РґР°РЅРЅС‹Рµ РёР· toughMask
 			if (null != toughMask)
 			{
 				res = toughMask.GetFieldValue(PF);
 				if (null != res)
 				{
-					//Удаляем опасные слова только из наименований
+					//РЈРґР°Р»СЏРµРј РѕРїР°СЃРЅС‹Рµ СЃР»РѕРІР° С‚РѕР»СЊРєРѕ РёР· РЅР°РёРјРµРЅРѕРІР°РЅРёР№
 					if ((PriceFields.Name1 == PF) || (PriceFields.Name2 == PF) || (PriceFields.Name2 == PF) || (PriceFields.OriginalName == PF))
 						res = RemoveForbWords(res);
 					if ((PriceFields.Note != PF) && (PriceFields.Doc != PF))
@@ -2057,7 +2045,7 @@ and r.RegionCode = cd.RegionCode",
 				}
 			}
 
-			//Если у нас это не получилось, что пытаемся вытянуть данные из самого поля
+			//Р•СЃР»Рё Сѓ РЅР°СЃ СЌС‚Рѕ РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ, С‡С‚Рѕ РїС‹С‚Р°РµРјСЃСЏ РІС‹С‚СЏРЅСѓС‚СЊ РґР°РЅРЅС‹Рµ РёР· СЃР°РјРѕРіРѕ РїРѕР»СЏ
 			if ((null == res) || ("" == res.Trim()))
 			{
 				res = GetFieldRawValue(PF);
@@ -2082,7 +2070,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить значение поле в нижнем регистре
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»Рµ РІ РЅРёР¶РЅРµРј СЂРµРіРёСЃС‚СЂРµ
 		/// </summary>
 		/// <param name="PF"></param>
 		/// <param name="LowerCase"></param>
@@ -2096,7 +2084,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить значение поля как объект
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ РєР°Рє РѕР±СЉРµРєС‚
 		/// </summary>
 		/// <param name="PF"></param>
 		/// <returns></returns>
@@ -2150,7 +2138,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Обработать значение цены
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ С†РµРЅС‹
 		/// </summary>
 		/// <param name="CostValue"></param>
 		/// <returns></returns>
@@ -2173,7 +2161,7 @@ and r.RegionCode = cd.RegionCode",
 						}
 					}
 
-					//Если результирующая строка пуста, то возвращаем DBNull
+					//Р•СЃР»Рё СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰Р°СЏ СЃС‚СЂРѕРєР° РїСѓСЃС‚Р°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј DBNull
 					if (String.IsNullOrEmpty(res))
 						return DBNull.Value;
 
@@ -2190,7 +2178,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Обработать значение IntValue и получить результать как целое число
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ IntValue Рё РїРѕР»СѓС‡РёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚СЊ РєР°Рє С†РµР»РѕРµ С‡РёСЃР»Рѕ
 		/// </summary>
 		/// <param name="IntValue"></param>
 		/// <returns></returns>
@@ -2214,7 +2202,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Обработать значение срока годности
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ СЃСЂРѕРєР° РіРѕРґРЅРѕСЃС‚Рё
 		/// </summary>
 		/// <param name="PeriodValue"></param>
 		/// <returns></returns>
@@ -2245,7 +2233,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Убрать лишние пробелы в имени
+		/// РЈР±СЂР°С‚СЊ Р»РёС€РЅРёРµ РїСЂРѕР±РµР»С‹ РІ РёРјРµРЅРё
 		/// </summary>
 		/// <param name="Value"></param>
 		/// <returns></returns>
@@ -2262,7 +2250,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Удалить запрещенные слова
+		/// РЈРґР°Р»РёС‚СЊ Р·Р°РїСЂРµС‰РµРЅРЅС‹Рµ СЃР»РѕРІР°
 		/// </summary>
 		/// <param name="Value"></param>
 		/// <returns></returns>
@@ -2285,14 +2273,14 @@ and r.RegionCode = cd.RegionCode",
 			return null;
 		}
 
-		//Содержится ли название в таблице запрещенных слов
+		//РЎРѕРґРµСЂР¶РёС‚СЃСЏ Р»Рё РЅР°Р·РІР°РЅРёРµ РІ С‚Р°Р±Р»РёС†Рµ Р·Р°РїСЂРµС‰РµРЅРЅС‹С… СЃР»РѕРІ
 		public bool IsForbidden(string PosName)
 		{
 			DataRow[] dr = dtForbidden.Select(String.Format("Forbidden = '{0}'", PosName.Replace("'", "''")));
 			return dr.Length > 0;
 		}
 
-		//Смогли ли мы распознать позицию по коду, имени и оригинальному названию?
+		//РЎРјРѕРіР»Рё Р»Рё РјС‹ СЂР°СЃРїРѕР·РЅР°С‚СЊ РїРѕР·РёС†РёСЋ РїРѕ РєРѕРґСѓ, РёРјРµРЅРё Рё РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРјСѓ РЅР°Р·РІР°РЅРёСЋ?
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow[] dr = null;
@@ -2324,8 +2312,8 @@ and r.RegionCode = cd.RegionCode",
 		{
 			bool value = false;
 
-			var trueValues = new[] { "истина", "true"};
-			var falseValues = new[] { "ложь", "false" };
+			var trueValues = new[] { "РёСЃС‚РёРЅР°", "true"};
+			var falseValues = new[] { "Р»РѕР¶СЊ", "false" };
 
 			string[] selectedValues = null;
 
@@ -2341,7 +2329,7 @@ and r.RegionCode = cd.RegionCode",
 
 				string fieldValue = GetFieldValue(priceField);
 
-				//Если в столбце значение пусто, то возвращаем значение по умолчанию
+				//Р•СЃР»Рё РІ СЃС‚РѕР»Р±С†Рµ Р·РЅР°С‡РµРЅРёРµ РїСѓСЃС‚Рѕ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 				if (String.IsNullOrEmpty(fieldValue))
 					return value;
 
@@ -2368,7 +2356,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить значение поля Junk
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ Junk
 		/// </summary>
 		/// <returns></returns>
 		public bool GetJunkValue()
@@ -2390,7 +2378,7 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Обрабатывает цены и возврашает кол-во не нулевых цен
+		/// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ С†РµРЅС‹ Рё РІРѕР·РІСЂР°С€Р°РµС‚ РєРѕР»-РІРѕ РЅРµ РЅСѓР»РµРІС‹С… С†РµРЅ
 		/// </summary>
 		/// <returns></returns>
 		public int ProcessCosts()
@@ -2423,10 +2411,10 @@ and r.RegionCode = cd.RegionCode",
 					}
 				}
 
-				//если неустановленная цена, то увеличиваем счетчик
+				//РµСЃР»Рё РЅРµСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅР°СЏ С†РµРЅР°, С‚Рѕ СѓРІРµР»РёС‡РёРІР°РµРј СЃС‡РµС‚С‡РёРє
 				if (!c.cost.HasValue)
 					c.undefinedCostCount++;
-				//если нулевая цена, то увеличиваем счетчик
+				//РµСЃР»Рё РЅСѓР»РµРІР°СЏ С†РµРЅР°, С‚Рѕ СѓРІРµР»РёС‡РёРІР°РµРј СЃС‡РµС‚С‡РёРє
 				if (c.cost == 0)
 					c.zeroCostCount++;
 			}

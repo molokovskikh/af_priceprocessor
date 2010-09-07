@@ -32,9 +32,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
 
-		//Таблица с ассортиментом
-		protected MySqlDataAdapter daAssortment;
-		protected DataTable dtAssortment;
 		//Таблица с исключениями
 		protected MySqlDataAdapter daExcludes;
 		protected DataTable dtExcludes;
@@ -238,16 +235,6 @@ and (products.Id = Synonym.ProductId)
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
 
-			daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", _connection);
-			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
-			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
-			daAssortment.InsertCommand.CommandTimeout = 0;
-			daAssortment.Fill(dsMyDB, "Assortment");
-			dtAssortment = dsMyDB.Tables["Assortment"];
-			_logger.Debug("загрузили Assortment");
-			dtAssortment.PrimaryKey = new[] { dtAssortment.Columns["CatalogId"], dtAssortment.Columns["ProducerId"] };
-			_logger.Debug("построили индекс по Assortment");
-
 			daExcludes = new MySqlDataAdapter(
 				String.Format("SELECT Id, CatalogId, ProducerSynonym, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), _connection);
 			cbExcludes = new MySqlCommandBuilder(daExcludes);
@@ -288,6 +275,9 @@ select @LastSynonymFirmCrCode;");
 			dtSynonymFirmCr.Columns.Add("InternalProducerSynonymId", typeof(long));
 			dtSynonymFirmCr.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 			_logger.Debug("загрузили SynonymFirmCr");
+
+			_producerResolver = new ProducerResolver(PriceInfo, _stats, dtExcludes, dtSynonymFirmCr);
+			_producerResolver.Load(_connection);
 
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), _connection);
@@ -336,8 +326,6 @@ select @LastSynonymFirmCrCode;");
 				loadExistsWatch.Stop();
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса, {0}с", loadExistsWatch.Elapsed.TotalSeconds);
 			}
-
-			_producerResolver = new ProducerResolver(PriceInfo, _stats, dtAssortment, dtExcludes, dtSynonymFirmCr);
 
 			_logger.Debug("конец Prepare");
 		}
@@ -633,7 +621,6 @@ order by c.Id", _priceInfo.PriceCode);
 			logMessage.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(finalizeTransaction));
 			//Исключения обновляем после нераспознанных, т.к. все может измениться
 			logMessage.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), finalizeTransaction));
-			logMessage.AppendFormat("UpdateAssortment={0}", TryUpdate(daAssortment, dtAssortment.Copy(), finalizeTransaction));
 
 			//Производим обновление PriceDate и LastFormalization в информации о формализации
 			//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info

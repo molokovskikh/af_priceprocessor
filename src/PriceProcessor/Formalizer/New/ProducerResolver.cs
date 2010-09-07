@@ -1,12 +1,16 @@
-using System;
+п»їusing System;
 using System.Data;
 using System.Linq;
 using Inforoom.Formalizer;
+using log4net;
+using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class ProducerResolver
 	{
+		private ILog _logger = LogManager.GetLogger(typeof (ProducerResolver));
+
 		private PriceFormalizationInfo _priceInfo;
 		private FormalizeStats _stats;
 
@@ -14,11 +18,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
 
-		public ProducerResolver(PriceFormalizationInfo priceInfo, FormalizeStats stats, DataTable assortment, DataTable excludes, DataTable producerSynonyms)
+		public ProducerResolver(PriceFormalizationInfo priceInfo, FormalizeStats stats, DataTable excludes, DataTable producerSynonyms)
 		{
 			_priceInfo = priceInfo;
 			_stats = stats;
-			_assortment = assortment;
 			_excludes = excludes;
 			_producerSynonyms = producerSynonyms;
 		}
@@ -93,7 +96,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 					position.CatalogId,
 					position.FirmCr.Replace("'", "''")));
 
-			//Если мы ничего не нашли, то добавляем в исключение
+			//Р•СЃР»Рё РјС‹ РЅРёС‡РµРіРѕ РЅРµ РЅР°С€Р»Рё, С‚Рѕ РґРѕР±Р°РІР»СЏРµРј РІ РёСЃРєР»СЋС‡РµРЅРёРµ
 			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
 				CreateExclude(position);
 			position.AddStatus(UnrecExpStatus.AssortmentForm);
@@ -125,6 +128,19 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			_producerSynonyms.Rows.Add(synonym);
 			_stats.ProducerSynonymCreatedCount++;
 			return synonym;
+		}
+
+		public void Load(MySqlConnection connection)
+		{
+			var daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment where Checked = 1", connection);
+			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
+			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
+			daAssortment.InsertCommand.CommandTimeout = 0;
+			_assortment = new DataTable();
+			daAssortment.Fill(_assortment);
+			_logger.Debug("Р·Р°РіСЂСѓР·РёР»Рё Assortment");
+			_assortment.PrimaryKey = new[] { _assortment.Columns["CatalogId"], _assortment.Columns["ProducerId"] };
+			_logger.Debug("РїРѕСЃС‚СЂРѕРёР»Рё РёРЅРґРµРєСЃ РїРѕ Assortment");
 		}
 	}
 }
