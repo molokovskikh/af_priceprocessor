@@ -7,6 +7,79 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
+	public class HeaderBodyParser : IDisposable
+	{
+		public enum Part
+		{
+			None,
+			Header,
+			Body
+		}
+
+		private bool _disposeReader;
+		private string _commentMark;
+		private StreamReader _reader;
+		private Part part;
+
+		public HeaderBodyParser(StreamReader reader, string commentMark)
+		{
+			_reader = reader;
+			_commentMark = commentMark;
+		}
+
+		public HeaderBodyParser(string file, string commentMark)
+		{
+			_reader = new StreamReader(file, Encoding.GetEncoding(1251));
+			_disposeReader = true;
+			_commentMark = commentMark;
+		}
+
+		public IEnumerable<string> Lines()
+		{
+			string line;
+			while ((line = _reader.ReadLine()) != null)
+			{
+				yield return line;
+			}
+		}
+
+		public IEnumerable<string> Header()
+		{
+			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
+			{
+				if (part == Part.None && line.ToLower() == "[header]")
+				{
+					part = Part.Header;
+					continue;
+				}
+
+				if (part == Part.Header)
+					yield return line;
+			}
+		}
+
+		public IEnumerable<string> Body()
+		{
+			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
+			{
+				if (part == Part.Header && line.ToLower() == "[body]")
+				{
+					part = Part.Body;
+					continue;
+				}
+
+				if (part == Part.Body)
+					yield return line;
+			}
+		}
+
+		public void Dispose()
+		{
+			if (_disposeReader && _reader != null)
+				_reader.Dispose();
+		}
+	}
+
 	public abstract class BaseIndexingParser : IDocumentParser
 	{
 		protected int ProviderDocumentIdIndex = 0;
@@ -84,48 +157,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
-		public enum Part
-		{
-			None,
-			Header,
-			Body
-		}
-
-		public static IEnumerable<string> Lines(string file)
-		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
-				string line;
-				while ((line = reader.ReadLine()) != null)
-				{
-					yield return line;
-				}
-			}
-		}
-
 		public virtual Document Parse(string file, Document document)
 		{
 			SetIndexes();
-			var part = Part.None;
-			foreach (var line in Lines(file).Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(CommentMark) || !l.StartsWith(CommentMark)))
+
+			using(var parser = new HeaderBodyParser(file, CommentMark))
 			{
-				if (part == Part.None && line.ToLower() == "[header]")
-				{
-					part = Part.Header;
-					continue;
-				}
-
-				if (part == Part.Header && line.ToLower() == "[body]")
-				{
-					part = Part.Body;
-					continue;
-				}
-
-				if (part == Part.Header)
-					ReadHeader(document, line);
-				if (part == Part.Body)
-					ReadBody(document, line);
+				ReadHeader(document, parser.Header().First());
+				foreach (var body in parser.Body())
+					ReadBody(document, body);
 			}
+
 			return document;
 		}
 
@@ -183,38 +225,26 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if (Path.GetExtension(file).ToLower() != ".txt")
 				return false;
 
-			var part = Part.None;
-			foreach (var line in Lines(file).Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(commentMark) || !l.StartsWith(commentMark)))
+			using (var parser = new HeaderBodyParser(file, commentMark))
 			{
-				if (part == Part.None && line.ToLower() == "[header]")
-				{
-					part = Part.Header;
-					continue;
-				}
+				var header = parser.Header().FirstOrDefault();
+				if (header == null)
+					return false;
+				var parts = header.Split(';');
+				if (parts.Length < 4)
+					return false;
+				if (name.All(n => !parts[3].Equals(n, StringComparison.CurrentCultureIgnoreCase)))
+					return false;
 
-				if (part == Part.Header && line.ToLower() == "[body]")
-				{
-					part = Part.Body;
-					continue;
-				}
+				var line = parser.Body().FirstOrDefault();
+				if (line == null)
+					return false;
 
-				if (part == Part.Header)
-				{
-					var parts = line.Split(';');
-					if (parts.Length < 4)
-						return false;
-					if (name.All(n => !parts[3].Equals(n, StringComparison.CurrentCultureIgnoreCase)))
-						return false;
-				}
-				if (part == Part.Body)
-				{
-					var parts = line.Split(';');
-					if (GetDecimal(parts[6]) == null)
-						return false;
-					return true;
-				}
+				parts = line.Split(';');
+				if (GetDecimal(parts[6]) == null)
+					return false;
+				return true;
 			}
-			return false;
 		}
 
 		public static bool CheckByHeaderPart(string file, IEnumerable<string> name)

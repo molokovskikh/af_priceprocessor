@@ -312,5 +312,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("РОСС PL ИМ09 В 02246"));
 		}
+
+		//странный файл приводил к зацыкливанию
+		[Test]
+		public void Read_broken_file()
+		{
+			try
+			{
+				var doc = WaybillParser.Parse("122447_11215092-001.sst");
+			}
+			catch (Exception)
+			{}
+		}
 	}
 }

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
@@ -95,27 +97,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			reader.BaseStream.Seek(0, SeekOrigin.Begin);
 			reader.DiscardBufferedData();
-			var line = ReadSimpleHeader(reader, HeaderCaption);
-			if (String.IsNullOrEmpty(line))
-				throw new Exception("Не найден заголовок накладной (чтение методом индексации).");
 
-			var header = reader.ReadLine().Split(';');
+			var parser = new HeaderBodyParser(reader, CommentSymbol.ToString());
+			var line = parser.Header().FirstOrDefault();
+			if (line == null)
+				throw new Exception("Не найден заголовок накладной (чтение методом индексации).");
+			var header = line.Split(';');
 			document.ProviderDocumentId = header[0];
 			if (!String.IsNullOrEmpty(header[1]))
 				document.DocumentDate = Convert.ToDateTime(header[1]);
 
-			line = reader.ReadLine();
-			while (IsCommentLine(line) || !IsBodyCaption(line))
-				line = reader.ReadLine();
-
-			if (String.IsNullOrEmpty(line))
-				throw new Exception("Не найдено тело накладной (чтение методом индексации).");
-
-			while ((line = reader.ReadLine()) != null)
+			foreach (var body in parser.Body())
 			{
-				if (String.IsNullOrEmpty(line))
-					continue;
-				var parts = line.Split(';');
+				var parts = body.Split(';');
 				var docLine = document.NewLine();
 				docLine.Code = parts[0];
 				docLine.Product = parts[1];
@@ -132,7 +126,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.ProducerCost = ToDecimal(parts[6]);
 				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
 					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
-				//авеста хранит в колонке 11 хранит признак жизненно важный
+					//авеста хранит в колонке 11 хранит признак жизненно важный
 				else if (parts[10] == "0" || parts[10] == "1")
 					docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
 			}
