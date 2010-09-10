@@ -95,11 +95,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				dr = _excludes.Select(String.Format("CatalogId = {0} and ProducerSynonym = '{1}'",
 					position.CatalogId,
 					position.FirmCr.Replace("'", "''")));
-
+/*
 			//Если мы ничего не нашли, то добавляем в исключение
 			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
 				CreateExclude(position);
-			position.AddStatus(UnrecExpStatus.AssortmentForm);
+ */
+			if (dr.Length > 1)
+				position.AddStatus(UnrecExpStatus.AssortmentForm);
 		}
 
 		private void CreateExclude(FormalizationPosition position)
