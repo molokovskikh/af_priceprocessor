@@ -194,14 +194,17 @@ from
   farm.formrules fr,
   farm.pricefmts pf
 where
-    ((pd.PriceCode = ?priceId) or (pd.ParentSynonym = ?priceId))
+    (pd.PriceCode = ?priceId or pd.ParentSynonym = ?priceId)
 and pd.AgencyEnabled = 1
 and cd.FirmCode = pd.FirmCode
 and cd.FirmStatus = 1
 and pc.PriceCode = pd.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and (pd.CostType = 1 or pc.BaseCost = 1)
 and pim.Id = pc.PriceItemId
-and (pim.UnformCount > 0)
+and exists(
+  select * from Farm.UnrecExp ue
+  where ue.PriceItemId = pim.Id
+)
 and fr.Id = pim.FormRuleId
 and pf.Id = fr.PriceFormatId", c);
 				adapter.SelectCommand.Parameters.AddWithValue("?priceId", priceId);

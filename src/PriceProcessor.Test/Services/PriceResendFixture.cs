@@ -11,6 +11,7 @@ using System.Net.Security;
 using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
+using Test.Support.Catalog;
 
 namespace PriceProcessor.Test.Services
 {
@@ -211,10 +212,8 @@ namespace PriceProcessor.Test.Services
 			var rootPrice = TestOldClient.CreateTestSupplierWithPrice();
 			var childPrice = TestOldClient.CreateTestSupplierWithPrice();
 
-			childPrice.Costs[0].PriceItem.UnformCount = 10;
-			childPrice.Costs[0].PriceItem.Update();
-			rootPrice.Costs[0].PriceItem.UnformCount = 10;
-			rootPrice.Costs[0].PriceItem.Update();
+			new TestUnrecExp("test", "test", childPrice).Save();
+			new TestUnrecExp("test", "test", rootPrice).Save();
 			childPrice.ParentSynonym = rootPrice.Id;
 			childPrice.Save();
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
