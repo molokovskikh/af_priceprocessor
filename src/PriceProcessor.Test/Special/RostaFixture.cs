@@ -39,7 +39,11 @@ namespace PriceProcessor.Test.Special
 			Setup.Initialize();
 
 			SystemTime.Now = () => DateTime.Now;
-			price = CreatePriceForRosta();
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				price = CreatePriceForRosta();
+				scope.VoteCommit();
+			}
 
 			client = TestOldClient.CreateTestClient(524288UL);
 		}
@@ -141,6 +145,41 @@ where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 			}
 
 			handler.StopWork();
+		}
+
+		[Test]
+		public void Configure_client_from_future()
+		{
+			var futureClient = TestClient.Create(TestRegion.Inforoom);
+
+			TestHelper.Execute(@"
+update Future.Intersection set AvailableForClient = 0 where PriceId = {0};
+update Future.Intersection i
+join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+set i.AvailableForClient = 1, SupplierClientId = '20100111151207-390-12', ai.SupplierDeliveryId = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', i.SupplierPaymentId = '02/05/2007-I945-6A79TG0AC-00'
+where i.PriceId = {0} and i.ClientId = {1}", price.Id, futureClient.Id);
+
+			ProcessOnce();
+
+			using (new SessionScope())
+			{
+				price = TestPrice.Find(price.Id);
+				Assert.That(price.Costs.Count, Is.EqualTo(2), "не создали ценовую колонку");
+				Assert.That(price.Costs[1].BaseCost, Is.False);
+				Assert.That(price.Costs[1].Name, Is.EqualTo("20100111151207-390-12"));
+
+				var intersection = TestIntersection.Queryable.First(i => i.Client == futureClient && i.Price == price);
+				Assert.That(intersection.AvailableForClient, Is.True);
+				Assert.That(intersection.Cost, Is.EqualTo(price.Costs[1]));
+			}
+		}
+
+		private void ProcessOnce()
+		{
+			var downloader = new FakeDownloader();
+			var handler = new RostaHandler(price.Id, downloader);
+
+			handler.Process();
 		}
 
 		private void AssertThatFormalized()

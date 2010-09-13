@@ -14,13 +14,15 @@ namespace Inforoom.PriceProcessor.Rosta
 	public class Plan
 	{
 		public uint PriceItemId { get; set; }
+		public uint CostId { get; set; }
 		public DateTime PlanedOn { get; set; }
 		public string Key { get; set; }
 		public string Hwinfo { get; set; }
 
-		public Plan(uint priceItemId, string key, string hwinfo, DateTime lastDownload)
+		public Plan(uint priceItemId, uint costId, string key, string hwinfo, DateTime lastDownload)
 		{
 			PriceItemId = priceItemId;
+			CostId = costId;
 			Key = key;
 			Hwinfo = hwinfo;
 			if (lastDownload.Year == 2000)
@@ -43,7 +45,8 @@ namespace Inforoom.PriceProcessor.Rosta
 
 	public class ToConfigure
 	{
-		public uint ClientId { get; set; }
+		public uint ClientId;
+		public uint LegalEntityId;
 		public string Key;
 		public string Hwinfo;
 	}
@@ -66,6 +69,11 @@ namespace Inforoom.PriceProcessor.Rosta
 		{
 			get { return base.SleepTime; }
 			set { base.SleepTime = value; }
+		}
+
+		public void Process()
+		{
+			ProcessData();
 		}
 
 		protected override void ProcessData()
@@ -119,36 +127,48 @@ namespace Inforoom.PriceProcessor.Rosta
 
 			var existPlan = _plans.FirstOrDefault(p => p.Key == configure.Key);
 			if (existPlan != null)
-				MySqlUtils.InTransaction(c => UpdateClient(c, configure.ClientId, existPlan.PriceItemId, existPlan.Key, existPlan.Hwinfo));
+			{
+				configure.Key = existPlan.Key;
+				configure.Hwinfo = existPlan.Hwinfo;
+				MySqlUtils.InTransaction(c => UpdateClient(c, existPlan, configure));
+			}
 			else
 				_plans.Add(CreateNewPlan(configure));
 		}
 
-		private void UpdateClient(MySqlConnection connection, uint clientId, uint priceItemId, string key, string hwinfo)
+		private void UpdateClient(MySqlConnection connection, Plan plan, ToConfigure configure)
 		{
 			var motherboard = "";
-			var parts = hwinfo.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
+			var parts = plan.Hwinfo.Split(new[] {"\r\n"}, StringSplitOptions.RemoveEmptyEntries);
 			var cpuid = parts[0];
 			if (parts.Length > 1)
 				motherboard = parts[1];
 
-			var command = new MySqlCommand(@"
-select CostCode
-into @costCode
-from usersettings.PricesCosts
-where PriceItemId = ?PriceItemId
-limit 1;
-
+			MySqlCommand command = null;
+			if (configure.LegalEntityId == 0)
+			{
+				command = new MySqlCommand(@"
 update Usersettings.Intersection i
-set i.FirmClientCode = ?Key, i.FirmClientCode2 = ?cpuid, i.FirmClientCode3 = ?Motherboard, i.CostCode = @costCode
+set i.FirmClientCode = ?Key, i.FirmClientCode2 = ?cpuid, i.FirmClientCode3 = ?Motherboard, i.CostCode = ?CostId
 where PriceCode = ?PriceId and (i.ClientCode = ?ClientId or i.clientcode in (
 select IncludeClientCode
 from Usersettings.IncludeRegulation ir
 where ir.PrimaryClientCode = ?ClientId));", connection);
-			command.Parameters.AddWithValue("?ClientId", clientId);
-			command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+			}
+			else
+			{
+				command = new MySqlCommand(@"
+update Future.Intersection i
+join Future.AddressIntersection ai on ai.IntersectionId = i.id
+set i.SupplierClientId = ?Key, ai.SupplierDeliveryId = ?cpuid, i.SupplierPaymentId = ?Motherboard, i.CostId = ?CostId
+where i.PriceId = ?PriceId and i.ClientId = ?ClientId and i.LegalEntityId = ?LegalEntityId;", connection);
+				command.Parameters.AddWithValue("?LegalEntityId", configure.LegalEntityId);
+			}
+
+			command.Parameters.AddWithValue("?ClientId", configure.ClientId);
+			command.Parameters.AddWithValue("?CostId", plan.CostId);
 			command.Parameters.AddWithValue("?PriceId", _priceId);
-			command.Parameters.AddWithValue("?Key", key);
+			command.Parameters.AddWithValue("?Key", plan.Key);
 			command.Parameters.AddWithValue("?CpuId", cpuid);
 			command.Parameters.AddWithValue("?Motherboard", motherboard);
 			command.ExecuteNonQuery();
@@ -175,7 +195,7 @@ limit 1;", connection);
 
 		private Plan CreateNewPlan(ToConfigure configure)
 		{
-			uint priceItemId = 0;
+			Plan plan = null;
 			MySqlUtils.InTransaction(c => {
 				var readCommand = new MySqlCommand(@"
 select pi.FormRuleId, pi.SourceId
@@ -202,16 +222,23 @@ insert into Usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnab
 set @costCode = LAST_INSERT_ID();
 
 insert into Farm.CostFormRules(CostCode, FieldName) values (@CostCode, 'F3');
-select @priceItemId;", c);
+select @priceItemId, @costCode;", c);
 				command.Parameters.AddWithValue("?FormRuleId", formRuleId);
 				command.Parameters.AddWithValue("?SourceId", sourceId);
 				command.Parameters.AddWithValue("?PriceCode", _priceId);
-				command.Parameters.AddWithValue("?ClientId", configure.ClientId);
 				command.Parameters.AddWithValue("?Key", configure.Key);
-				priceItemId = Convert.ToUInt32(command.ExecuteScalar());
-				UpdateClient(c, configure.ClientId, priceItemId, configure.Key, configure.Hwinfo);
+				uint priceItemId;
+				uint costId;
+				using (var reader = command.ExecuteReader())
+				{
+					reader.Read();
+					priceItemId = reader.GetUInt32(0);
+					costId = reader.GetUInt32(1);
+				}
+				plan = new Plan(priceItemId, costId, configure.Key, configure.Hwinfo, new DateTime(2000, 01, 01));
+				UpdateClient(c, plan, configure);
 			});
-			return new Plan(priceItemId, configure.Key, configure.Hwinfo, new DateTime(2000, 01, 01));
+			return plan;
 		}
 
 		private List<Plan> GetExistsPlans()
@@ -220,7 +247,7 @@ select @priceItemId;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostName, i.FirmClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3, pi.PriceDate
+SELECT pc.PriceItemId, pc.CostCode, pc.CostName, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3, pi.PriceDate
 FROM usersettings.Intersection I
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
 	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
@@ -243,13 +270,47 @@ group by pc.PriceItemId;", connection);
 				{
 					plans.Add(new Plan(
 						Convert.ToUInt32(row["PriceItemId"]),
+						Convert.ToUInt32(row["CostCode"]),
 						Convert.ToString(row["FirmClientCode"]),
 						Convert.ToString(row["FirmClientCode2"]) + "\r\n" + Convert.ToString(row["FirmClientCode3"]),
 						Convert.ToDateTime(row["PriceDate"])
 					));
 				}
+
+				adapter.SelectCommand.CommandText = @"
+SELECT pc.PriceItemId, pc.CostName, pc.CostCode, i.ClientId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId, pi.PriceDate
+FROM Future.Intersection I
+  join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientId
+	join Usersettings.PricesCosts pc on pc.CostCode = i.CostId
+	join Usersettings.priceitems pi on pi.Id = pc.PriceItemId
+where i.PriceId = ?PriceId
+	and i.AvailableForClient = 1
+	and rcs.ServiceClient = 0
+	and i.SupplierClientId is not null
+	and i.SupplierClientId <> ''
+	and i.SupplierPaymentId is not null
+	and i.SupplierPaymentId <> ''
+	and ai.SupplierDeliveryId is not null
+	and ai.SupplierDeliveryId <> ''
+	and pc.BaseCost = 0
+group by pc.PriceItemId;";
+				var futurePlans = new DataTable();
+				adapter.Fill(futurePlans);
+
+				return plans.Concat(
+					futurePlans
+						.Rows
+						.Cast<DataRow>()
+						.Select(r => new Plan (
+							Convert.ToUInt32(r["PriceItemId"]),
+							Convert.ToUInt32(r["CostCode"]),
+							Convert.ToString(r["SupplierClientId"]),
+							Convert.ToString(r["SupplierDeliveryId"]) + "\r\n" + r["SupplierPaymentId"],
+							Convert.ToDateTime(r["PriceDate"])
+						))
+					).ToList();
 			}
-			return plans;
 		}
 
 		private List<ToConfigure> GetPartialConfiguredClients()
@@ -284,8 +345,39 @@ group by i.ClientCode", connection);
 						Hwinfo = Convert.ToString(row["FirmClientCode2"]) + "\r\n" + row["FirmClientCode3"],
 					});
 				}
+
+				adapter.SelectCommand.CommandText = @"
+SELECT i.ClientId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId
+FROM Future.Intersection I
+  join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientId
+	join Usersettings.PricesCosts pc on pc.CostCode = i.CostId
+where i.PriceId = ?PriceId
+	and i.AvailableForClient = 1
+	and rcs.ServiceClient = 0
+	and i.SupplierClientId is not null
+	and i.SupplierClientId <> ''
+	and i.SupplierPaymentId is not null
+	and i.SupplierPaymentId <> ''
+	and ai.SupplierDeliveryId is not null
+	and ai.SupplierDeliveryId <> ''
+	and pc.BaseCost = 1
+group by i.ClientId, i.LegalEntityId;";
+				var futurePlans = new DataTable();
+				adapter.Fill(futurePlans);
+
+				return toConfigure.Concat(
+					futurePlans
+						.Rows
+						.Cast<DataRow>()
+						.Select(r => new ToConfigure {
+							ClientId = Convert.ToUInt32(r["ClientId"]),
+							LegalEntityId = Convert.ToUInt32(r["LegalEntityId"]),
+							Key = Convert.ToString(r["SupplierClientId"]),
+							Hwinfo = Convert.ToString(r["SupplierDeliveryId"]) + "\r\n" + r["SupplierPaymentId"],
+						})
+					).ToList();
 			}
-			return toConfigure;
 		}
 
 		private List<uint> GetNotConfiguredClients()
