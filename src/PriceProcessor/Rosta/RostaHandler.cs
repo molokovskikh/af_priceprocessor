@@ -289,8 +289,6 @@ where i.PriceId = ?PriceId
 	and rcs.ServiceClient = 0
 	and i.SupplierClientId is not null
 	and i.SupplierClientId <> ''
-	and i.SupplierPaymentId is not null
-	and i.SupplierPaymentId <> ''
 	and ai.SupplierDeliveryId is not null
 	and ai.SupplierDeliveryId <> ''
 	and pc.BaseCost = 0
@@ -357,8 +355,6 @@ where i.PriceId = ?PriceId
 	and rcs.ServiceClient = 0
 	and i.SupplierClientId is not null
 	and i.SupplierClientId <> ''
-	and i.SupplierPaymentId is not null
-	and i.SupplierPaymentId <> ''
 	and ai.SupplierDeliveryId is not null
 	and ai.SupplierDeliveryId <> ''
 	and pc.BaseCost = 1
