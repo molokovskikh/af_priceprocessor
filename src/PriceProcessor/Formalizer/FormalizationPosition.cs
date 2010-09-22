@@ -27,10 +27,6 @@ namespace Inforoom.Formalizer
 		public void AddStatus(UnrecExpStatus status)
 		{
 			Status |= status;
-			//Если CodeFirmCr не выставлено, но позиция распознана по производителю и наименованию, 
-			//то считаем, что формализовано по ассортименту
-			if (!CodeFirmCr.HasValue && IsSet(UnrecExpStatus.NameForm) && IsSet(UnrecExpStatus.FirmForm))
-				Status |= UnrecExpStatus.AssortmentForm;
 		}
 
 		public bool IsSet(UnrecExpStatus checkStatus)
@@ -41,13 +37,6 @@ namespace Inforoom.Formalizer
 		public bool IsNotSet(UnrecExpStatus checkStatus)
 		{
 			return ((Status & checkStatus) != checkStatus);
-		}
-
-		public bool IsHealth()
-		{
-			return (IsNotSet(UnrecExpStatus.FirmForm) ||
-				IsSet(UnrecExpStatus.AssortmentForm) ||
-				IsSet(UnrecExpStatus.MarkExclude));
 		}
 	}
 }

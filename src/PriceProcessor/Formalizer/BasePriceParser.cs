@@ -175,8 +175,7 @@ namespace Inforoom.Formalizer
 		NotForm = 0, // Неформализованный
 		NameForm = 1, // Формализованный по названию
 		FirmForm = 2, // Формализованный по производителю
-		AssortmentForm = 4, // Формализованный по ассортименту
-		FullForm = NameForm | FirmForm | AssortmentForm, // Полностью формализован по наименованию, производителю и ассортименту
+		FullForm = NameForm | FirmForm, // Полностью формализован по наименованию, производителю и ассортименту
 		MarkForb = 8, // Помеченый как запрещенное
 		MarkExclude = 16,// Помеченый как исключение
 	}
@@ -1673,40 +1672,9 @@ where
 					drNewProducerSynonym.AcceptChanges();
 				else
 				{
-/*					var dsExistsProducerSynonym = MySqlHelper.ExecuteDataset(MyConn, @"
-SELECT
-  SynonymFirmCrCode,
-  CodeFirmCr,
-  LOWER(Synonym) AS Synonym,
-  (aps.ProducerSynonymId is not null) as IsAutomatic
-FROM
-  farm.SynonymFirmCr
-  left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
-WHERE 
-    (SynonymFirmCr.PriceCode = ?PriceCode)
-and (SynonymFirmCr.Synonym = ?OriginalSynonym)"
-						,
-						new MySqlParameter("?PriceCode", parentSynonym),
-						new MySqlParameter("?OriginalSynonym", drNewProducerSynonym["OriginalSynonym"]));
-					if ((dsExistsProducerSynonym.Tables.Count == 1) && (dsExistsProducerSynonym.Tables[0].Rows.Count == 1))
-					{
-						//Если уже синоним существует, то обноляем его у себя
-						drNewProducerSynonym["SynonymFirmCrCode"] = dsExistsProducerSynonym.Tables[0].Rows[0]["SynonymFirmCrCode"];
-						drNewProducerSynonym["CodeFirmCr"] = dsExistsProducerSynonym.Tables[0].Rows[0]["CodeFirmCr"];
-						drNewProducerSynonym["IsAutomatic"] = dsExistsProducerSynonym.Tables[0].Rows[0]["IsAutomatic"];
-						drNewProducerSynonym.AcceptChanges();
-						var drExistsProducerSynonym = dtSynonymFirmCr.Select("InternalProducerSynonymId = " + drNewProducerSynonym["InternalProducerSynonymId"])[0];
-						drExistsProducerSynonym["SynonymFirmCrCode"] = drNewProducerSynonym["SynonymFirmCrCode"];
-						drExistsProducerSynonym["CodeFirmCr"] = drNewProducerSynonym["CodeFirmCr"];
-						drExistsProducerSynonym["IsAutomatic"] = drNewProducerSynonym["IsAutomatic"];
-						drExistsProducerSynonym.AcceptChanges();
-					}
-					else
-					{*/
-						daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
-						daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
-						drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
-/*					}*/
+					daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
+					daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
+					drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
 				}
 			}
 		}
@@ -1921,12 +1889,7 @@ and r.RegionCode = cd.RegionCode",
 
 				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
 				if (position.IsSet(UnrecExpStatus.NameForm))
-				{
-					if (!position.IsHealth())
-						throw new Exception(String.Format("Не верное состояние формализуемой позиции {0}, программист допустил ошибку", position.PositionName));
-
 					InsertToCore(position);
-				}
 				else
 					unformCount++;
 

@@ -74,10 +74,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			var synonym = synonyms.FirstOrDefault();
-			if (synonym != null)
-				position.AddStatus(UnrecExpStatus.AssortmentForm);
-			return synonym;
+			return synonyms.FirstOrDefault();
 		}
 
 		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
@@ -92,10 +89,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				using (_stats.AssortmentSearch())
 				{
 					if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
-					{
-						position.AddStatus(UnrecExpStatus.AssortmentForm);
 						return productSynonym;
-					}
 				}
 			}
 			return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
@@ -117,8 +111,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
 				CreateExclude(position);
  */
-			if (dr.Length > 1 || !position.Pharmacie.Value)
-				position.AddStatus(UnrecExpStatus.AssortmentForm);
+			//если подходящего исключения нет, то значит позиция должна быть
+			//обработана оператором или это не фармацевтика для которой нашелся 
+			//только синоним без производителя
+			if (dr.Length == 0 || !position.Pharmacie.Value)
+				position.Status &= ~UnrecExpStatus.FirmForm;
 		}
 
 		private void CreateExclude(FormalizationPosition position)
