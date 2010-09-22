@@ -37,7 +37,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				return;
 			}
 
-			var synonym = ResolveSynonym(position);
+			var synonym = Resolve(position);
 			if (synonym == null)
 				synonym = CreateProducerSynonym(position);
 
@@ -63,7 +63,24 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				CheckExclude(position);
 		}
 
-		private DataRow ResolveSynonym(FormalizationPosition position)
+		public DataRow Resolve(FormalizationPosition position)
+		{
+			if (position.Pharmacie.Value)
+				return ResolveWithAssortmentRespect(position);
+			else
+				return ResolveIgnoreAssortment(position);
+		}
+
+		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
+		{
+			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+			var synonym = synonyms.FirstOrDefault();
+			if (synonym != null)
+				position.AddStatus(UnrecExpStatus.AssortmentForm);
+			return synonym;
+		}
+
+		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
 			var assortment = _assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
@@ -100,7 +117,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
 				CreateExclude(position);
  */
-			if (dr.Length > 1)
+			if (dr.Length > 1 || !position.Pharmacie.Value)
 				position.AddStatus(UnrecExpStatus.AssortmentForm);
 		}
 

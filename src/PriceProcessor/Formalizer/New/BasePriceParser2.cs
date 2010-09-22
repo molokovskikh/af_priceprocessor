@@ -214,23 +214,18 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 			_logger.Debug("загрузили Forbidden");
 
-			daSynonym = new MySqlDataAdapter(
-				String.Format(@"
+			daSynonym = new MySqlDataAdapter(String.Format(@"
 SELECT 
-  Synonym.SynonymCode, 
-  LOWER(Synonym.Synonym) AS Synonym, 
-  Synonym.ProductId, 
-  Synonym.Junk,
-  products.CatalogId
-FROM 
-  farm.Synonym, 
-  catalogs.products 
-WHERE 
-	(Synonym.PriceCode={0}) 
-and (products.Id = Synonym.ProductId)
-"
-					, 
-					parentSynonym), _connection);
+	s.SynonymCode,
+	LOWER(s.Synonym) AS Synonym,
+	s.ProductId,
+	s.Junk,
+	p.CatalogId,
+	c.Pharmacie
+FROM farm.Synonym s
+	join catalogs.products p on p.Id = s.ProductId
+		join Catalogs.Catalog c on c.Id = p.CatalogId
+WHERE  s.PriceCode = {0}", parentSynonym), _connection);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
@@ -903,10 +898,12 @@ and SynonymFirmCr.Synonym = ?OriginalSynonym"
 
 			if ((null != dr) && (dr.Length > 0))
 			{
-				position.ProductId = Convert.ToInt64(dr[0]["ProductId"]);
-				position.CatalogId = Convert.ToInt64(dr[0]["CatalogId"]);
-				position.SynonymCode = Convert.ToInt64(dr[0]["SynonymCode"]);
-				position.Junk = Convert.ToBoolean(dr[0]["Junk"]);
+				var row = dr[0];
+				position.ProductId = Convert.ToInt64(row["ProductId"]);
+				position.CatalogId = Convert.ToInt64(row["CatalogId"]);
+				position.SynonymCode = Convert.ToInt64(row["SynonymCode"]);
+				position.Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
+				position.Junk = Convert.ToBoolean(row["Junk"]);
 				position.AddStatus(UnrecExpStatus.NameForm);
 			}
 		}

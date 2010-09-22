@@ -16,6 +16,7 @@ namespace Inforoom.Formalizer
 
 		public long? ProductId { get; set; }
 		public long? CatalogId { get; set; }
+		public bool? Pharmacie { get; set; }
 		public long? SynonymCode { get; set; }
 		public long? CodeFirmCr { get; set; }
 		public long? SynonymFirmCrCode { get; set; }
