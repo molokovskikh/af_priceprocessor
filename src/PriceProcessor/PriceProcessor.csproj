@@ -210,6 +210,7 @@
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\BssSpbXlsParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllinceHealthcareParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AntKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSingleParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSingleParser2.cs" />
