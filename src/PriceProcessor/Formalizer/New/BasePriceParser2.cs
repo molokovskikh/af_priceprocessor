@@ -588,7 +588,7 @@ order by c.Id", _priceInfo.PriceCode);
 			yield break;
 		}
 
-		private void Maintain(MySqlTransaction finalizeTransaction, StringBuilder logMessage)
+		private void Maintain(MySqlTransaction transaction, StringBuilder logMessage)
 		{
 			var cleanUpCommand = new MySqlCommand {
 				Connection = _connection,
@@ -601,7 +601,7 @@ order by c.Id", _priceInfo.PriceCode);
 			logMessage.AppendFormat("DelFromForb={0}  ", StatCommand(cleanUpCommand));
 
 			var daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), _connection);
-			daBlockedPrice.SelectCommand.Transaction = finalizeTransaction;
+			daBlockedPrice.SelectCommand.Transaction = transaction;
 			var dtBlockedPrice = new DataTable();
 			daBlockedPrice.Fill(dtBlockedPrice);
 
@@ -611,11 +611,12 @@ order by c.Id", _priceInfo.PriceCode);
 				logMessage.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
 			}
 
-			logMessage.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), finalizeTransaction));
-			logMessage.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), finalizeTransaction));
-			logMessage.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(finalizeTransaction));
+			_producerResolver.Update(transaction.Connection);
+			logMessage.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), transaction));
+			logMessage.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), transaction));
+			logMessage.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(transaction));
 			//Исключения обновляем после нераспознанных, т.к. все может измениться
-			logMessage.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), finalizeTransaction));
+			logMessage.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), transaction));
 
 			//Производим обновление PriceDate и LastFormalization в информации о формализации
 			//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info

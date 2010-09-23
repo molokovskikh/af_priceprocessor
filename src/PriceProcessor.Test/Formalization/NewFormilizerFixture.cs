@@ -421,6 +421,26 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
+		[Test]
+		public void Create_assortment_if_product_not_pharmacie()
+		{
+			using (new TransactionScope())
+			{
+				price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
+				price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
+				price.Save();
+			}
+
+			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
+
+			using (new SessionScope())
+			{
+				price.Refresh();
+				Assert.That(price.ProductSynonyms[0].Product.CatalogProduct.Producers,
+					Is.EquivalentTo(new [] {price.ProducerSynonyms[0].Producer }));
+			}
+		}
+
 		private void Price(string contents)
 		{
 			File.WriteAllText(file, contents, Encoding.GetEncoding(1251));

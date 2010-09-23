@@ -87,9 +87,16 @@ namespace Inforoom.PriceProcessor.Rosta
 			if (SystemTime.Now() < plan.PlanedOn)
 				return;
 
-			Process(plan);
+			try
+			{
+				Process(plan);
 
-			plan.PlanNextUpdate();
+				plan.PlanNextUpdate();
+			}
+			catch (Exception e)
+			{
+				throw new Exception(String.Format("Ошибка при обработке ценовой колонки № {0}", plan.CostId), e);
+			}
 		}
 
 		private void DoSyncIfNeeded()

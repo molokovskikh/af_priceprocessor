@@ -59,8 +59,36 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (!position.IsAutomaticProducerSynonym)
 				position.AddStatus(UnrecExpStatus.FirmForm);
 
+			if (position.CodeFirmCr != null && !position.Pharmacie.Value)
+				CheckAndCreateAssortment(position);
+
 			if (position.CodeFirmCr == null)
 				CheckExclude(position);
+		}
+
+		private void CheckAndCreateAssortment(FormalizationPosition position)
+		{
+			if (_assortment.Rows
+				.Cast<DataRow>()
+				.Any(r => Convert.ToUInt32(r["CatalogId"]) == Convert.ToUInt32(position.CatalogId.Value)
+					&& Convert.ToUInt32(r["ProducerId"]) == Convert.ToUInt32(position.CodeFirmCr.Value)))
+				return;
+
+			var assortment = _assortment.NewRow();
+			assortment["CatalogId"] = position.CatalogId;
+			assortment["ProducerId"] = position.CodeFirmCr;
+			assortment["Checked"] = false;
+			_assortment.Rows.Add(assortment);
+		}
+
+
+		public void Update(MySqlConnection connection)
+		{
+			var da = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", connection);
+			var excludesBuilder  = new MySqlCommandBuilder(da);
+			da.InsertCommand = excludesBuilder.GetInsertCommand();
+			da.InsertCommand.CommandTimeout = 0;
+			da.Update(_assortment);
 		}
 
 		public DataRow Resolve(FormalizationPosition position)
@@ -80,7 +108,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			var assortment = _assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+			var assortment = _assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 			foreach (var productSynonym in synonyms)
 			{
 				if (productSynonym["CodeFirmCr"] is DBNull)
@@ -148,7 +176,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public void Load(MySqlConnection connection)
 		{
-			var daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment where Checked = 1", connection);
+			var daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment", connection);
 			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
 			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
 			daAssortment.InsertCommand.CommandTimeout = 0;

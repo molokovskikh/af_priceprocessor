@@ -1450,6 +1450,7 @@ and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 						sbLog.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(mcClear));
 					}
 
+					_producerResolver.Update(finalizeTransaction.Connection);
 					sbLog.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), finalizeTransaction));
 					sbLog.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(finalizeTransaction));
