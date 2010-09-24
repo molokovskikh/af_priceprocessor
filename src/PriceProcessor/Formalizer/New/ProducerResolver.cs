@@ -59,8 +59,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (!position.IsAutomaticProducerSynonym)
 				position.AddStatus(UnrecExpStatus.FirmForm);
 
+/*
 			if (position.CodeFirmCr != null && !position.Pharmacie.Value)
 				CheckAndCreateAssortment(position);
+*/
 
 			if (position.CodeFirmCr == null)
 				CheckExclude(position);
@@ -142,7 +144,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			//если подходящего исключения нет, то значит позиция должна быть
 			//обработана оператором или это не фармацевтика для которой нашелся 
 			//только синоним без производителя
-			if (dr.Length == 0 || !position.Pharmacie.Value)
+			if (dr.Length == 0)
 				position.Status &= ~UnrecExpStatus.FirmForm;
 		}
 
