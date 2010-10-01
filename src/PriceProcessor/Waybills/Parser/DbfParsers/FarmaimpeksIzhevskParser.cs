@@ -4,7 +4,7 @@ using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class FarmaimpeksIzhevskParser : IDocumentParser
+	public class SIAInternationalOmskParser : IDocumentParser
 	{
 		protected Encoding Encoding = Encoding.GetEncoding(866);
 

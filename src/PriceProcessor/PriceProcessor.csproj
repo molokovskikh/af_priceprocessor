@@ -220,6 +220,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Avesta_6256_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SIAInternationalOmskP.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmakonPlusParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmGroupParser.cs" />

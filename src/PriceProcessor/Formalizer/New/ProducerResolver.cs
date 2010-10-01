@@ -104,6 +104,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+			//предпочитаем синонимы с производителем
+			var synonym = synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull));
+			if (synonym != null)
+				return synonym;
+
 			return synonyms.FirstOrDefault();
 		}
 

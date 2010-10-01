@@ -436,8 +436,29 @@ namespace PriceProcessor.Test.Formalization
 			using (new SessionScope())
 			{
 				price.Refresh();
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(price.ProductSynonyms[0].Product.CatalogProduct.Producers,
 					Is.EquivalentTo(new [] {price.ProducerSynonyms[0].Producer }));
+			}
+		}
+
+		[Test]
+		public void Prefer_producer_synonym_with_producer()
+		{
+			using (new TransactionScope())
+			{
+				price.AddProducerSynonym("Вектор", null);
+				price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
+				price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
+				price.Save();
+			}
+
+			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
+
+			using (new SessionScope())
+			{
+				price = TestPrice.Find(price.Id);
+				Assert.That(price.Core[0].Producer, Is.Not.Null);
 			}
 		}
 
