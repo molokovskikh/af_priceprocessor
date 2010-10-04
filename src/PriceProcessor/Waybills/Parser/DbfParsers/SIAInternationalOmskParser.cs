@@ -1,6 +1,4 @@
 ﻿using System.Data;
-using System.Text;
-using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -33,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
             return document;
         }
         */
-    public class SiaInternationalOmskPParser : BaseDbfParser
+    public class SiaInternationalOmskParser : BaseDbfParser
     {
         public override DbfParser GetParser()
         {

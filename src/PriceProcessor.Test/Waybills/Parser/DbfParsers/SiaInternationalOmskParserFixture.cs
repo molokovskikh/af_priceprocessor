@@ -5,7 +5,7 @@ using Inforoom.PriceProcessor.Waybills;
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
     [TestFixture]
-    public class SiaInternationalOmskPParserFixture
+    public class SiaInternationalOmskParserFixture
     {
         [Test]
         public void Parse() {
