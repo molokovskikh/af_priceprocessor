@@ -33,10 +33,10 @@ namespace PriceProcessor.Test.Loader
 					},
 				};
 
-				var firmCode = TestOldClient.CreateTestSupplier().Id;
+				var supplier = TestOldClient.CreateTestSupplier();
 				var price = new TestPrice {
 					CostType = CostType.MultiColumn,
-					FirmCode = firmCode,
+					Supplier = supplier,
 					ParentSynonym = 4745,
 					PriceName = "2"
 				};
@@ -49,7 +49,7 @@ namespace PriceProcessor.Test.Loader
 
 				price = new TestPrice {
 					CostType = CostType.MultiColumn,
-					FirmCode = firmCode,
+					Supplier = supplier,
 					ParentSynonym = 4745,
 					PriceName = "11"
 				};

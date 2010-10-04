@@ -165,6 +165,7 @@
     <Compile Include="Waybills\Parser\BssSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\BssSpbXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AntKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalOmskPParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenesisNNParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
