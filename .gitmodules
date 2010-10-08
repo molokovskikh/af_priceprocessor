@@ -7,3 +7,6 @@
 [submodule "src/Test.Support"]
 	path = src/Test.Support
 	url = ssh://kvasov@git.analit.net/var/www/git/Test.Support
+[submodule "PriceProcessor"]
+	path = PriceProcessor
+	url = ssh://kvasov@git.analit.net/var/www/git/PriceProcessor
