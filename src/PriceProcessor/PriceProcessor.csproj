@@ -221,6 +221,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\Avesta_6256_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Moron_SpbParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SIAInternationalOmskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmakonPlusParser.cs" />

@@ -10,7 +10,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
             var doc = WaybillParser.Parse("00815575.dbf");
             Assert.That(doc.ProviderDocumentId, Is.EqualTo("815575"));
-			//Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.09.2010"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.09.2010"));
 			var line = doc.Lines[0];
             //Assert.That(.S, Is.EqualTo("815575"));
             Assert.That(line.Product, Is.EqualTo("Оциллококцинум гран. 1г №6доз"));
