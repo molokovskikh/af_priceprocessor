@@ -205,7 +205,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
 				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
 
+			if ((SerialNumberIndex > 0) && (parts.Length>SerialNumberIndex))
 			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
+
+			if ((SerialNumberIndex > 0) && (parts.Length > SerialNumberIndex))
 			docLine.Period = GetString(parts[PeriodIndex]);
 
 			if ((CertificatesIndex > 0) && (parts.Length > CertificatesIndex))

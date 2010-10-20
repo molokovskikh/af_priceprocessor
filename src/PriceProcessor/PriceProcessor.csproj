@@ -249,6 +249,7 @@
     <Compile Include="Waybills\Parser\DbfParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BiolainParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\ShafievParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\Shafiev_KalugaParser.cs" />
     <Compile Include="Waybills\Parser\UnsafeBaseDbfParser.cs" />
     <Compile Include="Waybills\Parser\Helpers\ParseHelper.cs" />
     <Compile Include="Waybills\Parser\IDocumentParser.cs" />
