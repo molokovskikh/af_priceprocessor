@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		[OperationContract(Action = "urn:closeBladingSession", ReplyAction = "urn:closeBladingSessionResponse")]
 		[XmlSerializerFormat(SupportFaults = true)]
 		[return: MessageParameter(Name = "return")]
-		bool closeBladingSession(closeBladingSessionRequest request);
+		closeBladingSessionResponse closeBladingSession(closeBladingSessionRequest request);
 	}
 
 	[ActiveRecord("OrdersHead", Schema = "Orders")]

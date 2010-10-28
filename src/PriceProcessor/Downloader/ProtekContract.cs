@@ -335,4 +335,20 @@ namespace Inforoom.PriceProcessor.Downloader
 			this.instCode = instCode;
 		}
 	}
+
+	[MessageContractAttribute(WrapperName="closeBladingSessionResponse", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
+	public class closeBladingSessionResponse {
+
+		[MessageBodyMemberAttribute(Namespace="http://service.ezakaz.protek.ru", Order=0)]
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public bool @return;
+
+		public closeBladingSessionResponse() {
+		}
+
+		public closeBladingSessionResponse(bool @return) {
+			this.@return = @return;
+		}
+	}
+
 }
