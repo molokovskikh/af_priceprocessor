@@ -118,6 +118,11 @@ group by pi.Id",
 				&& item.ParentSynonym == PriceCode)
 				return true;
 
+			if (item.ParentSynonym == null &&
+				ParentSynonym == null &&
+				item.PriceCode == PriceCode)
+				return true;
+
 			return false;
 		}
 
