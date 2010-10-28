@@ -99,6 +99,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string Parser { get; set; }
 
+		[Property]
+		public uint? OrderId { get; set; }
+
 		[BelongsTo("DownloadId")]
 		public DocumentReceiveLog Log { get; set; }
 

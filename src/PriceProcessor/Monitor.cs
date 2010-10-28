@@ -49,6 +49,7 @@ namespace Inforoom.PriceProcessor
 				new WaybillLANSourceHandler(),
 				new ClearArchivedPriceSourceHandler(),
 				new RostaHandler(4820, new RostaDownloader()),
+				new ProtekWaybillHandler()
 #endif
 			};
 

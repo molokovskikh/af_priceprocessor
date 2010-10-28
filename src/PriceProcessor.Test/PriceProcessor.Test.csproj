@@ -103,6 +103,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Rhino.Mocks">
+      <HintPath>..\..\Lib\Rhino.Mocks.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -126,6 +129,7 @@
     <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
+    <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
     <Compile Include="Loader\XmlReaderFixture.cs" />
