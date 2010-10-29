@@ -69,13 +69,13 @@ namespace Inforoom.PriceProcessor.Downloader
 		public string baseId { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 3)]
-		public int bladingId { get; set; }
+		public int? bladingId { get; set; }
 
 		[XmlElement("bladingItems", Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 4)]
 		public BladingItem[] bladingItems { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 5)]
-		public int bladingSid { get; set; }
+		public int? bladingSid { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 6)]
 		public int? bladingType { get; set; }

@@ -80,7 +80,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				{
 					foreach (var blading in responce.@return.blading)
 					{
-						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId));
+						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId.Value));
 						using (var scope = new TransactionScope(OnDispose.Rollback))
 						{
 							var document = ToDocument(blanding.@return.blading[0]);
@@ -111,6 +111,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			var document = new Document(log) {
 				OrderId = (uint?) blading.clientOrderId,
+				ProviderDocumentId = blading.baseId,
+				DocumentDate = blading.date0,
 				Parser = "ProtekHandler"
 			};
 			foreach (var bladingItem in blading.bladingItems)
@@ -128,6 +130,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Nds = (uint?) bladingItem.vat;
 				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
+				line.ProducerCost = (decimal?) bladingItem.prodPriceWonds;
 				line.VitallyImportant = bladingItem.vitalMed.Value == 1;
 				line.SerialNumber = bladingItem.prodseria;
 			}
