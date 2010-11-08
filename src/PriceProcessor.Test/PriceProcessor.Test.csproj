@@ -256,6 +256,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Data\EmailSourceHandlerTest\Good.eml" />
+    <None Include="Data\Waybills\00000049080.sst" />
     <None Include="Rosta\611.dbf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

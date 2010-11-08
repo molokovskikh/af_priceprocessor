@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		private static ProtekDocumentHeader ReadHeader(StreamReader reader, string headerName)
 		{
 			var line = reader.ReadLine();
-			while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
+            while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
 				line = reader.ReadLine();
 			if (!IsStartLineForHeaders(line))
 				return null;
@@ -102,7 +102,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			var line = parser.Header().FirstOrDefault();
 
             if (line == null)
-                return document;
+                return null; 
 
             var header = line.Split(';');
             document.ProviderDocumentId = header[0];

@@ -274,9 +274,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			var docsForParsing = MultifileDocument.Merge(logs);
 
 			var docs = docsForParsing.Select(d => {
-				try
+                
+                try
 				{
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
+
 					if (d.DocumentLog.DocumentType == DocType.Reject)
 						return null;
 					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
@@ -285,7 +287,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				catch (Exception e)
 				{
-					var filename = d.FileName;
+				    var filename = d.FileName;
 					_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
 					SaveWaybill(filename);
 					return null;
@@ -306,8 +308,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
 				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
 
-			if (File.Exists(filename))
-				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
+            if (File.Exists(filename))
+                File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
 		}
 
 		public static void ParserDocument(DocumentReceiveLog log)
@@ -331,9 +333,10 @@ namespace Inforoom.PriceProcessor.Waybills
 						return;
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
-						document.Save();
-						transaction.VoteCommit();
-					}
+
+                            document.Save();
+                            transaction.VoteCommit();
+                    }
 				}
 			}
 			catch(Exception e)

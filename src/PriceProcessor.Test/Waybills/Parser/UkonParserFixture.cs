@@ -107,9 +107,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_without_header()
 		{
-			var parser = new UkonParser();
+            var parser = new UkonParser();
 			var doc = new Document();
-			try
+
+            try
 			{
 				parser.Parse(@"..\..\Data\Waybills\without_header.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
@@ -118,22 +119,26 @@ namespace PriceProcessor.Test.Waybills.Parser
 			{
 				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
 			}
-		}
+             
+        }
 
 		[Test]
 		public void Parse_only_comments()
 		{
 			var parser = new UkonParser();
 			var doc = new Document();
+            
 			try
 			{
-				parser.Parse(@"..\..\Data\Waybills\only_comments.sst", doc);
+                parser.Parse(@"..\..\Data\Waybills\00000049080.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
 			}
 			catch (Exception e)
 			{
 				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
 			}
+              
+            
 		}
 
 		[Test]
@@ -324,5 +329,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			catch (Exception)
 			{}
 		}
+        
 	}
 }

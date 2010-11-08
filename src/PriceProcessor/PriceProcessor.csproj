@@ -292,7 +292,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="app.release.config" />
+    <None Include="app.release.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Formalizer\Resources\CommerceML.xsd" />
     <None Include="Formalizer\Resources\CommerceML.xsx">
       <DependentUpon>CommerceML.xsd</DependentUpon>
