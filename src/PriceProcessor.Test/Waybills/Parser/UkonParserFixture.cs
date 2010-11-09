@@ -130,7 +130,7 @@ namespace PriceProcessor.Test.Waybills.Parser
             
 			try
 			{
-                parser.Parse(@"..\..\Data\Waybills\only_comments.sst", doc);
+				parser.Parse(@"..\..\Data\Waybills\only_comments.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
 			}
 			catch (Exception e)

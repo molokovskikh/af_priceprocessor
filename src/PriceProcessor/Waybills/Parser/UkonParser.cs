@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		private static ProtekDocumentHeader ReadHeader(StreamReader reader, string headerName)
 		{
 			var line = reader.ReadLine();
-            while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
+			while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
 				line = reader.ReadLine();
 			if (!IsStartLineForHeaders(line))
 				return null;
@@ -102,8 +102,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			var line = parser.Header().FirstOrDefault();
 
             if (line == null)
-                return null; 
-
+            {
+				throw new Exception("Не найден заголовок накладной");
+            }
+			
             var header = line.Split(';');
             document.ProviderDocumentId = header[0];
             if (!String.IsNullOrEmpty(header[1]))
