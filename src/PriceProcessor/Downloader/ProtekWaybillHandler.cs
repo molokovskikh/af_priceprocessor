@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ServiceModel;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Formalizer;
@@ -73,6 +73,14 @@ namespace Inforoom.PriceProcessor.Downloader
 			var clientId = 79888;
 			var instanceId = 1024847;
 
+			//калуга
+			Load(clientId, instanceId);
+			//воронеж
+			Load(123108, 1064974);
+		}
+
+		private void Load(int clientId, int instanceId)
+		{
 			WithService(service => {
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
