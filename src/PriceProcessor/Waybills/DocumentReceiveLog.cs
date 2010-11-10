@@ -44,6 +44,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public long? DocumentSize { get; set; }
 
+		[Property]
+		public bool IsFake { get; set; }
+
 		private string _localFile;
 
 		//файл документа может быть локальным (если он прошел через PriceProcessor и лежит в temp) или пришедшим от клиента тогда он лежит на ftp

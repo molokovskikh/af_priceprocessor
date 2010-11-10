@@ -5,6 +5,7 @@ using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 using Rhino.Mocks;
+using Test.Support;
 
 namespace PriceProcessor.Test.Handlers
 {
@@ -34,6 +35,12 @@ namespace PriceProcessor.Test.Handlers
 		public void Process_protek_waybills()
 		{
 			var begin = DateTime.Now;
+			uint orderId;
+			using (new SessionScope())
+			{
+				orderId = TestOrder.Queryable.First().Id;
+			}
+
 			var fake = new FakeProtekHandler();
 
 			fake.headerResponce = new getBladingHeadersResponse {
@@ -51,7 +58,7 @@ namespace PriceProcessor.Test.Handlers
 					blading = new [] {
 						new Blading {
 							bladingId = 1,
-							clientOrderId = 1,
+							clientOrderId = (int?) orderId,
 							bladingItems = new [] {
 								new BladingItem {
 									itemId = 3345,
@@ -74,7 +81,7 @@ namespace PriceProcessor.Test.Handlers
 
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(d => d.WriteTime > begin).ToList();
+				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));

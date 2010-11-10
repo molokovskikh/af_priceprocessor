@@ -107,6 +107,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				ClientCode = order.ClientCode,
 				AddressId = order.AddressId,
 				Supplier = order.Price.Supplier,
+				IsFake = true,
 			};
 
 			var document = new Document(log) {
