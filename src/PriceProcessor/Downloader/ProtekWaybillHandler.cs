@@ -43,9 +43,10 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	public class ProtekWaybillHandler : AbstractHandler
 	{
+		private string uri;
 		public virtual void WithService(Action<ProtekService> action)
 		{
-			var endpoint = new EndpointAddress("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/");
+			var endpoint = new EndpointAddress(uri);
 			var binding = new BasicHttpBinding {
 				SendTimeout = TimeSpan.FromMinutes(10),
 				ReceiveTimeout = TimeSpan.FromMinutes(10),
@@ -70,12 +71,12 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		protected override void ProcessData()
 		{
-			var clientId = 79888;
-			var instanceId = 1024847;
-
 			//калуга
-			Load(clientId, instanceId);
+			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(79888, 1024847);
+
 			//воронеж
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(123108, 1064974);
 		}
 
@@ -84,17 +85,23 @@ namespace Inforoom.PriceProcessor.Downloader
 			WithService(service => {
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
+				_logger.InfoFormat("Получили накладные, всего {0} для сесии {1}", responce.@return.blading.Length, sessionId);
 				try
 				{
 					foreach (var blading in responce.@return.blading)
 					{
 						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId.Value));
-						using (var scope = new TransactionScope(OnDispose.Rollback))
+						_logger.InfoFormat("Загрузил накладную {0}", blading.bladingId.Value);
+						foreach (var body in blanding.@return.blading)
 						{
-							var document = ToDocument(blanding.@return.blading[0]);
-							document.Log.Save();
-							document.Save();
-							scope.VoteCommit();
+							using (var scope = new TransactionScope(OnDispose.Rollback))
+							{
+								var document = ToDocument(body);
+								document.Log.Save();
+								document.Save();
+								scope.VoteCommit();
+								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.clientOrderId);
+							}
 						}
 					}
 				}
