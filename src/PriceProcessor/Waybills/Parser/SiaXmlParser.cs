@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -10,6 +11,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public Document Parse(string file, Document document)
 		{
 			var xDocument = XDocument.Load(file);
+			var xElement = XElement.Load(file);
+			bool hasOpt = xElement.Descendants(@"ТоварнаяПозиция").Descendants("НаценОпт").Any();
 			document.ProviderDocumentId = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок").Value;
 			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
 			if (!String.IsNullOrEmpty(docDate))
@@ -25,7 +28,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 				line.ProducerCost = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
-				line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
+				if (!hasOpt) line.SupplierPriceMarkup = null;
+					else line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
 				line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;

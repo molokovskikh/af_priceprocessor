@@ -108,5 +108,28 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(116.17));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 		}
+
+		[Test]
+		public void Parse_PharmaImp()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\ПР-ЧЛН05419.xml");
+
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("12.11.2010")));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ПР-ЧЛН05419"));
+			Assert.That(doc.Lines.Count, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("Бахилы п/эт. 1,9г гладкие одн.нестер."));
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("23562"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Xiantao Fortune Medical Supplies Co., Ltd"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Китай"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(100.00));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(0.74f));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС CN.ИМ22.В01471"));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo(""));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(null));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(0.77f));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+		}
 	}
 }
