@@ -62,10 +62,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				action(service);
 				communicationObject.Close();
 			}
+			catch (FaultException e)
+			{
+				_logger.Warn("Ошибка в сервисе протека", e);
+			}
 			catch (Exception)
 			{
 				if (communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
+				throw;
 			}
 		}
 
@@ -75,14 +80,17 @@ namespace Inforoom.PriceProcessor.Downloader
 			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(79888, 1024847);
 
+/*
 			//воронеж
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(123108, 1064974);
+*/
 		}
 
 		private void Load(int clientId, int instanceId)
 		{
 			WithService(service => {
+				_logger.InfoFormat("Запрос накладных");
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
 				_logger.InfoFormat("Получили накладные, всего {0} для сесии {1}", responce.@return.blading.Length, sessionId);
@@ -97,6 +105,8 @@ namespace Inforoom.PriceProcessor.Downloader
 							using (var scope = new TransactionScope(OnDispose.Rollback))
 							{
 								var document = ToDocument(body);
+								if (document == null)
+									continue;
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
@@ -114,6 +124,12 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private Document ToDocument(Blading blading)
 		{
+			if (blading.clientOrderId == null)
+			{
+ 				_logger.ErrorFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
+				return null;
+			}
+
 			var order = Order.Find((uint) blading.clientOrderId.Value);
 
 			var log = new DocumentReceiveLog {
@@ -140,14 +156,14 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Quantity = (uint?) bladingItem.bitemQty;
 				line.Country = bladingItem.country;
 				line.Certificates = bladingItem.seria;
-				line.Period = bladingItem.prodexpiry.Value.ToShortDateString();
+				line.Period = bladingItem.prodexpiry != null ? bladingItem.prodexpiry.Value.ToShortDateString() : null;
 				line.RegistryCost = (decimal?) bladingItem.reestrPrice;
 				line.SupplierPriceMarkup = (decimal?) bladingItem.distrProc;
 				line.Nds = (uint?) bladingItem.vat;
 				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
 				line.ProducerCost = (decimal?) bladingItem.prodPriceWonds;
-				line.VitallyImportant = bladingItem.vitalMed.Value == 1;
+				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
 				line.SerialNumber = bladingItem.prodseria;
 			}
 			return document;
