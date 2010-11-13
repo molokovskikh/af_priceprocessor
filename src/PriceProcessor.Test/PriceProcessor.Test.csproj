@@ -171,6 +171,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AntKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\MoronSaratovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Moron_SpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalOmskParserFixture.cs" />
@@ -257,6 +258,7 @@
     </None>
     <None Include="Data\EmailSourceHandlerTest\Good.eml" />
     <None Include="Data\Waybills\00000049080.sst" />
+    <None Include="Data\Waybills\00841624.dbf" />
     <None Include="Rosta\611.dbf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
