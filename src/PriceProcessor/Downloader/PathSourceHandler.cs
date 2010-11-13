@@ -179,12 +179,12 @@ where src.Id = pim.SourceId", PriceItemId);
 								LogDownloadedPrice(priceSource.SourceTypeId, Path.GetFileName(CurrFileName), extractFile);
 								FileProcessed();
 							}
-							catch(PricePreprocessingException e)
+							catch (PricePreprocessingException e)
 							{
 								LogDownloaderFail(priceSource.SourceTypeId, e.Message, e.FileName);
 								FileProcessed();
 							}
-							catch(Exception e)
+							catch (Exception e)
 							{
 								LogDownloaderFail(priceSource.SourceTypeId, e.Message, extractFile);
 							}
@@ -200,14 +200,13 @@ where src.Id = pim.SourceId", PriceItemId);
 						foreach (var drDel in drLS)
 							drDel.Delete();
 					}
-					dtSources.AcceptChanges();
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					var error = String.Empty;
 					if (drLS != null && drLS.Length > 1)
 					{
-						error +=String.Join(", ", drLS.Select(r => r[SourcesTableColumns.colPriceCode].ToString()).ToArray());
+						error += String.Join(", ", drLS.Select(r => r[SourcesTableColumns.colPriceCode].ToString()).ToArray());
 						drLS.Each(r => FileHelper.Safe(r.Delete));
 						error = "Источники : " + error;
 					}
@@ -218,6 +217,9 @@ where src.Id = pim.SourceId", PriceItemId);
 					}
 					error += Environment.NewLine + Environment.NewLine + ex;
 					LoggingToService(error);
+				}
+				finally
+				{
 					FileHelper.Safe(() => dtSources.AcceptChanges());
 				}
 			}

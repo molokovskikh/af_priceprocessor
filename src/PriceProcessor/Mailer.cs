@@ -43,13 +43,12 @@ namespace Inforoom.PriceProcessor
 			     body);
 		}
 
-		public static void SendFromServiceToService(string subject, string body)
+		public static void SendFromServiceToService(string message, string body)
 		{
 			Send(Settings.Default.ServiceMail,
-			     Settings.Default.ServiceMail,
-			     subject,
-			     body);
-
+				Settings.Default.ServiceMail,
+				"Ошибка в сервисе обработки прайс листов",
+				message + "\r\n" + body);
 		}
 	}
 }

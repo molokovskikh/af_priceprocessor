@@ -31,11 +31,6 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 			Log(sourceTypeId, null, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
 		}
 
-		public static void Log(ulong sourceTypeId, string addition, string shortErrorMessage)
-		{
-			Log(sourceTypeId, null, addition, shortErrorMessage, DownPriceResultCode.ErrorDownload, null, null, null);
-		}
-
 		public static void Log(ulong sourceTypeId, ulong priceItemId, string addition)
 		{
 			Log(sourceTypeId, priceItemId, addition, null, DownPriceResultCode.ErrorDownload, null, null, null);
