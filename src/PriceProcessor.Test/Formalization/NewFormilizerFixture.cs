@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Setup()
 		{
 			file = "test.txt";
-			using(new SessionScope())
+			using(var scope = new TransactionScope(OnDispose.Rollback))
 			{
 				price = TestOldClient.CreateTestSupplierWithPrice(p => {
 					var rules = p.Costs.Single().PriceItem.Format;
@@ -41,6 +41,7 @@ namespace PriceProcessor.Test.Formalization
 					p.Costs.Single().FormRule.FieldName = "F4";
 				});
 				priceItem = price.Costs.First().PriceItem;
+				scope.VoteCommit();
 			}
 			table = TestHelper.GetParseRules((int) priceItem.Id);
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());

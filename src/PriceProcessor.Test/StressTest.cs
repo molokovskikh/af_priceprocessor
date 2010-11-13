@@ -307,7 +307,6 @@ select @LastSynonymFirmCrCode;");
 			var daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), MyConn);
 			var cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
-			cbUnrecExp.ReturnGeneratedIdentifiers = false;
 			daUnrecExp.AcceptChangesDuringUpdate = false;
 			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.UpdatedRowSource = UpdateRowSource.None;
