@@ -126,11 +126,19 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			if (blading.clientOrderId == null)
 			{
- 				_logger.ErrorFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
+ 				_logger.WarnFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
 				return null;
 			}
 
-			var order = Order.Find((uint) blading.clientOrderId.Value);
+			var order = Order.TryFind((uint) blading.clientOrderId.Value);
+
+			if (order == null)
+			{
+				_logger.WarnFormat("Не найден заказ {0} для накладнлй {1}",
+					blading.clientOrderId.Value,
+					blading.bladingId);
+				return null;
+			}
 
 			var log = new DocumentReceiveLog {
 				DocumentType = DocType.Waybill,
