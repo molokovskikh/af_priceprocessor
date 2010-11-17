@@ -142,6 +142,7 @@
     <Compile Include="Downloader\ProtekContract.cs" />
     <Compile Include="Downloader\ProtekWaybillHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
+    <Compile Include="Formalizer\BuyingMatrixProcessor.cs" />
     <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Formalizer\New\ProducerResolver.cs" />

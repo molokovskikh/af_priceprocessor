@@ -111,7 +111,8 @@ select
   ifnull(pd.ParentSynonym, pd.PriceCode)                as ParentSynonym,
   PFR.*,
   pricefmts.FileExtention,
-  pricefmts.ParserClassName
+  pricefmts.ParserClassName,
+  pd.BuyingMatrix
 from
   usersettings.PriceItems pi,
   usersettings.pricescosts pc,

@@ -366,6 +366,8 @@ namespace Inforoom.Formalizer
 		protected int priceType;
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
+		protected bool buyingMatrix;
+
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI;
@@ -422,6 +424,7 @@ namespace Inforoom.Formalizer
 			costCode = (data.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(data.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(data.Rows[0][FormRules.colParentSynonym]); 
 			costType = (CostTypes)Convert.ToInt32(data.Rows[0][FormRules.colCostType]);
+			buyingMatrix = Convert.ToBoolean(data.Rows[0]["BuyingMatrix"]);
 			
 			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
 
@@ -1833,6 +1836,11 @@ and r.RegionCode = cd.RegionCode",
 				finally
 				{
 					MyConn.Close();
+				}
+
+				if (buyingMatrix)
+				{
+					new BuyingMatrixProcessor().UpdateBuyingMatrix((uint) priceCode);
 				}
 			}
 			finally
