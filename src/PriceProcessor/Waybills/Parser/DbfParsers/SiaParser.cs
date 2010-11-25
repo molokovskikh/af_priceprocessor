@@ -59,7 +59,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
-				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
+				if (data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("GVLS"))
+					line.SupplierCost = Convert.IsDBNull(r["PR_S_NDS"])
+					                    	? null
+					                    	: (decimal?) Convert.ToDecimal(r["PR_S_NDS"], CultureInfo.InvariantCulture);
+				else
+					line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				if (data.Columns.Contains("NACENKA"))
 					line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
