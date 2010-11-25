@@ -59,27 +59,27 @@ namespace Inforoom.PriceProcessor
 		//запускаем монитор с обработчиками
 		public void Start()
 		{
-            try
-            {
+			try
+			{
 				StartServices();
 
-            	foreach (var handler in _handlers)
-                    try
-                    {
-                        handler.StartWork();
-                        _logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
-                    }
-                    catch (Exception exHan)
-                    {
-                        _logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
-                    }
-                _monitor.Start();
-                _logger.Info("PriceProcessor запущен.");
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal("Ошибка при старте монитора", ex);
-            }
+				foreach (var handler in _handlers)
+					try
+					{
+						handler.StartWork();
+						_logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
+					}
+					catch (Exception exHan)
+					{
+						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
+					}
+				_monitor.Start();
+				_logger.Info("PriceProcessor запущен.");
+			}
+			catch (Exception ex)
+			{
+				_logger.Fatal("Ошибка при старте монитора", ex);
+			}
 		}
 
 		private void StartServices()
@@ -108,31 +108,31 @@ namespace Inforoom.PriceProcessor
 		//Остановливаем монитор
 		public void Stop()
 		{
-            try
-            {
-                Stopped = true;
-                Thread.Sleep(3000);
-                _monitor.Abort();
+			try
+			{
+				Stopped = true;
+				Thread.Sleep(3000);
+				_monitor.Abort();
 				foreach (var handler in _handlers)
-                    try
-                    {
+					try
+					{
 						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
 						handler.StopWork();
 						_logger.InfoFormat("Обработчик {0} остановлен.", handler.GetType().Name);
 					}
-                    catch (Exception exHan)
-                    {
+					catch (Exception exHan)
+					{
 						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
-                    }
+					}
 				PriceProcessorWcfHelper.StopService(_priceProcessorHost);
 				PriceProcessorWcfHelper.StopService(_waybillServiceHost);
 			}
-            catch (Exception ex)
-            {
+			catch (Exception ex)
+			{
 				_logger.Fatal("Ошибка при останове монитора", ex);
 			}
 			_logger.Info("PriceProcessor остановлен.");
-        }
+		}
 
 		private void MonitorWork()
 		{
