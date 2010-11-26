@@ -2065,10 +2065,12 @@ and r.RegionCode = cd.RegionCode",
 					return GetJunkValue();
 
 				case (int)PriceFields.VitallyImportant:
-					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask); ;
+					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
 
 				case (int)PriceFields.RequestRatio:
-					return ProcessInt(GetFieldRawValue(PF));
+					if ((decimal)ProcessInt(GetFieldRawValue(PF)) <= ushort.MinValue || (decimal)ProcessInt(GetFieldRawValue(PF)) >= ushort.MaxValue)
+						return DBNull.Value;
+						return ProcessInt(GetFieldRawValue(PF));
 
 				case (int)PriceFields.Code:
 				case (int)PriceFields.CodeCr:
