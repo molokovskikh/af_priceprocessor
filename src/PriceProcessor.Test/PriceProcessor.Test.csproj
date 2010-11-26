@@ -249,7 +249,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\PriceProcessor\app.config">
-      <Link>Waybills\app.config</Link>
+      <Link>app.config</Link>
     </None>
     <None Include="Data\552.dbf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
