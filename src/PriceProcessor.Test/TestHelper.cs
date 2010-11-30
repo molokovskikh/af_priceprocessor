@@ -71,7 +71,8 @@ namespace PriceProcessor.Test
 		public static void Formalize(string file, int priceItemId)
 		{
 			//var priceItemId = Convert.ToInt32(Path.GetFileNameWithoutExtension(file));
-			var data = GetParseRules(priceItemId);
+			//var data = GetParseRules(priceItemId);
+			var data = LoadFormRules((uint)priceItemId);
 			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
 			var parserType = Type.GetType(typeName);
 			
@@ -90,7 +91,8 @@ namespace PriceProcessor.Test
 
 		public static void Formalize(Type formatType, string file, int priceItemId)
 		{
-			Formalize(formatType, GetParseRules(priceItemId), file, priceItemId);
+			//Formalize(formatType, GetParseRules(priceItemId), file, priceItemId);
+			Formalize(formatType, LoadFormRules((uint)priceItemId), file, priceItemId);
 		}
 
 		public static void Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
@@ -421,6 +423,56 @@ Content-Disposition: attachment;
 					Inforoom.Common.FileHelper.DeleteDir(d);
 				Directory.CreateDirectory(d);
 			});
+		}
+
+		public static DataTable LoadFormRules(uint priceItemId)
+		{
+			var query = String.Format(@"
+select
+  pi.Id as PriceItemId,
+  pi.RowCount,
+  pd.PriceCode,
+  PD.PriceName as SelfPriceName,
+  PD.PriceType,
+  pd.CostType,
+  if(pd.CostType = 1, pc.CostCode, null) CostCode,
+  CD.FirmCode,
+  CD.ShortName as FirmShortName,
+  CD.FirmStatus,
+  CD.FirmSegment,
+  FR.JunkPos                                            as SelfJunkPos,
+  FR.AwaitPos                                           as SelfAwaitPos,
+  FR.VitallyImportantMask                               as SelfVitallyImportantMask,
+  ifnull(pd.ParentSynonym, pd.PriceCode)                as ParentSynonym,
+  PFR.*,
+  pricefmts.FileExtention,
+  pricefmts.ParserClassName,
+  pd.BuyingMatrix
+from
+  usersettings.PriceItems pi,
+  usersettings.pricescosts pc,
+  UserSettings.PricesData pd,
+  UserSettings.ClientsData cd,
+  Farm.formrules FR,
+  Farm.FormRules PFR,
+  farm.pricefmts 
+where
+    pi.Id = {0}
+and pc.PriceItemId = pi.Id
+and pd.PriceCode = pc.PriceCode
+and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and cd.FirmCode = pd.FirmCode
+and FR.Id = pi.FormRuleId
+and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
+and pricefmts.ID = PFR.PriceFormatId", priceItemId);
+
+			var dtFormRules = new DataTable("FromRules");
+			With.Connection(c =>
+			{
+				var daFormRules = new MySqlDataAdapter(query, c);
+				daFormRules.Fill(dtFormRules);
+			});
+			return dtFormRules;
 		}
 	}
 }

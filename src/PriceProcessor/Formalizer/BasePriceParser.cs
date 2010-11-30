@@ -2068,7 +2068,9 @@ and r.RegionCode = cd.RegionCode",
 					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
 
 				case (int)PriceFields.RequestRatio:
-					if ((decimal)ProcessInt(GetFieldRawValue(PF)) <= ushort.MinValue || (decimal)ProcessInt(GetFieldRawValue(PF)) >= ushort.MaxValue)
+					if ((ProcessInt(GetFieldRawValue(PF)) != DBNull.Value) && 
+						(Convert.ToDecimal(ProcessInt(GetFieldRawValue(PF))) <= ushort.MinValue 
+						|| Convert.ToDecimal(ProcessInt(GetFieldRawValue(PF))) >= ushort.MaxValue))
 						return DBNull.Value;
 						return ProcessInt(GetFieldRawValue(PF));
 
