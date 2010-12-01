@@ -124,18 +124,19 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private Document ToDocument(Blading blading)
 		{
-			if (blading.clientOrderId == null)
+			var orderId = (uint?) blading.@uint;
+			if (orderId == null)
 			{
- 				_logger.WarnFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
+ 				_logger.ErrorFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
 				return null;
 			}
 
-			var order = Order.TryFind((uint) blading.clientOrderId.Value);
+			var order = Order.TryFind(orderId.Value);
 
 			if (order == null)
 			{
-				_logger.WarnFormat("Не найден заказ {0} для накладнлй {1}",
-					blading.clientOrderId.Value,
+				_logger.WarnFormat("Не найден заказ {0} для накладной {1}",
+					orderId,
 					blading.bladingId);
 				return null;
 			}
@@ -150,7 +151,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			};
 
 			var document = new Document(log) {
-				OrderId = (uint?) blading.clientOrderId,
+				OrderId = orderId,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
 				Parser = "ProtekHandler"
