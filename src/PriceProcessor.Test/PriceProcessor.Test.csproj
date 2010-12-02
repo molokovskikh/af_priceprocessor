@@ -175,10 +175,12 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronSaratovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Moron_SpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ProfitmedMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenesisNNParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\DetstvoOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\FarmaimpeksIzhevskParserFixture.cs" />
@@ -192,6 +194,7 @@
     <Compile Include="Waybills\Parser\KatrenOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenOrelDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenOrelTxtParserFixture.cs" />
+    <Compile Include="Waybills\Parser\KrepyshXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\MedicineSpbDfbParserFixture.cs" />
     <Compile Include="Waybills\Parser\MoronDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Moron_338_SpecialParserFixture.cs" />

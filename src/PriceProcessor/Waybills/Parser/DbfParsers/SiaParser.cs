@@ -61,8 +61,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				if (data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("GVLS"))
 					line.SupplierCost = Convert.IsDBNull(r["PR_S_NDS"])
-					                    	? null
-					                    	: (decimal?) Convert.ToDecimal(r["PR_S_NDS"], CultureInfo.InvariantCulture);
+											? null
+											: (decimal?)Convert.ToDecimal(r["PR_S_NDS"], CultureInfo.InvariantCulture);
 				else
 					line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				if (data.Columns.Contains("NACENKA"))
@@ -79,6 +79,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
+				if (data.Columns.Contains("BARCODE") && (!data.Columns.Contains("srok_prep"))) 
+				{
+					line.SupplierCostWithoutNDS = Convert.IsDBNull(r["PRICE"])
+														? null
+														: (decimal?)Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
+					line.SupplierCost = null;
+				}
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
 				return line;

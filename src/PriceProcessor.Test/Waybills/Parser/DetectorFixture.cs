@@ -1,5 +1,6 @@
 ﻿using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 using System;
 
@@ -26,6 +27,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			}
 			catch(Exception) { return; }
 			Assert.Fail("Не бросили исключение, хотя должны были");
+		}
+
+		[Test]
+		public void detect()
+		{
+			var detector = new WaybillFormatDetector();
+			var parser = detector.DetectParser(@"..\..\Data\Waybills\5189569_ФораФарм_лоджик-Москва_506462_.dbf", null);
+			Assert.That(parser, Is.InstanceOf<SiaParser>());
 		}
 	}
 }

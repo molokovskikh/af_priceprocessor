@@ -227,6 +227,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronSaratovParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Moron_SpbParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ProfitmedMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SIAInternationalOmskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmaimpeksIzhevskParser.cs" />
@@ -252,6 +253,8 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaPermParser.cs" />
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParser.cs" />
+    <Compile Include="Waybills\Parser\KrepyshXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BiolainParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\ShafievParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\Shafiev_KalugaParser.cs" />

@@ -155,8 +155,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Моск. ф-ка влажных салфеток"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("РОССИЯ"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
-			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(7.50));
-			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(6.36));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(null));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(7.5));
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(0));
 			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(document.Lines[0].RegistryCost, Is.Null);
@@ -165,6 +165,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.АЕ51.В13746"));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("1209"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("08/04/2010")));
+		}
+
+		[Test]
+		public void Parse_ForaFarmLogic_Moscow1()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\5189569_ФораФарм_лоджик-Москва_506462_.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(11));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("506462"));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("18024"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Гематоген Народный детский 40г (БАД)"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Сибирское здоровье 2000"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("РОССИЯ"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(50));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(null));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(3.91));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].RegistryCost, Is.Null);
+			Assert.That(document.Lines[0].Period, Is.EqualTo("04.05.2011"));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.АИ42.Д01672"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("0910"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.11.2010")));
 		}
 
 		[Test]
