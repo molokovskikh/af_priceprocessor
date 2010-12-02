@@ -110,7 +110,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
-								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.clientOrderId);
+								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
 						}
 					}
@@ -127,7 +127,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			var orderId = (uint?) blading.@uint;
 			if (orderId == null)
 			{
- 				_logger.ErrorFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
+ 				_logger.ErrorFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
@@ -135,9 +135,10 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			if (order == null)
 			{
-				_logger.WarnFormat("Не найден заказ {0} для накладной {1}",
+				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
 					orderId,
-					blading.bladingId);
+					blading.bladingId,
+					blading.baseId);
 				return null;
 			}
 

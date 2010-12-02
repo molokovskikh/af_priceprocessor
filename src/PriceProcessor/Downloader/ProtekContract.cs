@@ -62,157 +62,157 @@ namespace Inforoom.PriceProcessor.Downloader
 	[XmlTypeAttribute(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class Blading
 	{
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 0)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string NPost { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 1)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string baseId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 3)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? bladingId { get; set; }
 
-		[XmlElement("bladingItems", Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 4)]
+		[XmlElement("bladingItems", Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public BladingItem[] bladingItems { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 5)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? bladingSid { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 6)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? bladingType { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 7)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string bladingTypeName { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 8)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? buyerId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 9)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string buyerName { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 10)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? clientOrderId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 11)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string currency { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 12)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? date0 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 13)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? dated { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 14)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? dbd { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 15)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? dkd { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 16)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? ksMin { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 17)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? moddate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 18)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string moddateAsString { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 19)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string nPost { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 20)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string ncontr2 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 21)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? nds10 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 22)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? nds20 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 23)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? orderDate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 24)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? orderId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 25)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? orgId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 26)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? paydate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 27)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string payerAddr { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 28)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string payerEmail { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 29)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? payerId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 30)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string payerInn { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 31)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string payerName { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 32)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? poscount { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 33)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? rate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 34)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string recipientAddr { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 35)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? recipientId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 36)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string recipientInn { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 37)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string recipientName { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 38)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? rprice { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 39)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? sellerId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 40)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string sellerInn { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 41)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string sellerName { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 42)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? shipdate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 43)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? sumbyNdsrate10 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 44)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? sumbyNdsrate18 { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 45)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? sumbyWonds { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 46)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string tenderLotNumber { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 47)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string tenderNumber { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 48)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? udat { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 49)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? udec { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 50)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? @uint { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 51)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string ustr { get; set; }
 	}
 
