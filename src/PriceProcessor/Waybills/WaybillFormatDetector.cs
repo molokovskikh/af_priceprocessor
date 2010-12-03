@@ -37,14 +37,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				else if (extention == ".xls")
 					type = DetectXlsParser(file);
 				else if ((extention == ".xml") || (extention == ".data"))
-				{
-					if (new SiaXmlParser().IsInCorrectFormat(file))
-						type = typeof (SiaXmlParser);
-					else if (new ProtekXmlParser().IsInCorrectFormat(file))
-						type = typeof (ProtekXmlParser);
-					else if (new KrepyshXmlParser().IsInCorrectFormat(file))
-						type = typeof (KrepyshXmlParser);
-				}
+					type = DetectXmlParser(file);
 				else if (extention == ".pd")
 					type = typeof (ProtekParser);
 				else if (extention == ".txt")
@@ -130,6 +123,17 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof(Protek9Parser);
 			if (OACXlsParser.CheckFileFormat(file))
 				return typeof (OACXlsParser);
+			return null;
+		}
+
+		private static Type DetectXmlParser(string file)
+		{
+			if (new SiaXmlParser().IsInCorrectFormat(file))
+				return typeof (SiaXmlParser);
+			if (new ProtekXmlParser().IsInCorrectFormat(file))
+				return typeof (ProtekXmlParser);
+			if (new KrepyshXmlParser().IsInCorrectFormat(file))
+				return typeof (KrepyshXmlParser);
 			return null;
 		}
 
