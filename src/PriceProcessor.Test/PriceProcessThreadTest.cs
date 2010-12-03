@@ -17,7 +17,7 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
-		[Test(Description = "тестирование методов AbortThread и IsAbortingLong")]
+		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
 			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
@@ -216,7 +216,7 @@ InnoDB Status            =
 			}
 		}
 
-		[Test(Description = "в результате действий подвреждаем MySqlConnection, что в нем запросы перестают возвращать данные"), Ignore("запрещаем выполнение, т.к. тест подвисает приложение")]
+		[Test, Ignore("в результате действий подвреждаем MySqlConnection, что в нем запросы перестают возвращать данные, запрещаем выполнение, т.к. тест подвисает приложение")]
 		public void CorruptConnectionTest()
 		{
 			BasicConfigurator.Configure(
