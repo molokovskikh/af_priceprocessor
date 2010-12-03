@@ -42,6 +42,8 @@ namespace Inforoom.PriceProcessor.Waybills
 						type = typeof (SiaXmlParser);
 					else if (new ProtekXmlParser().IsInCorrectFormat(file))
 						type = typeof (ProtekXmlParser);
+					else if (new KrepyshXmlParser().IsInCorrectFormat(file))
+						type = typeof (KrepyshXmlParser);
 				}
 				else if (extention == ".pd")
 					type = typeof (ProtekParser);
