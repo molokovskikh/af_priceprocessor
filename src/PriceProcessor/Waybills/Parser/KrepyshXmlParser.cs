@@ -14,8 +14,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var xDocument = XDocument.Load(file);
 			bool hasOpt = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("НаценОпт").Any();
+			bool hasCode = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("КодТовара").Any();
 			document.ProviderDocumentId = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок").Value;
-			document.ClientCode = Convert.ToUInt32(xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/КодПолучателя").Value);
 			
 			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
 			if (!String.IsNullOrEmpty(docDate))
@@ -27,16 +27,24 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
 				if (position.XPathSelectElement("СтранаИзготовителя") != null)
 					line.Country = position.XPathSelectElement("СтранаИзготовителя").Value;
-				line.Code = (position.XPathSelectElement("КодТовара") == null) ? null : position.XPathSelectElement("КодТовара").Value;
+				if (hasCode) 
+					line.Code = (position.XPathSelectElement("КодТовара") == null) ? null : position.XPathSelectElement("КодТовара").Value;
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-				if (!hasOpt) line.SupplierPriceMarkup = null;
-				else 
+				if (!hasOpt || String.IsNullOrEmpty(position.XPathSelectElement("НаценОпт").Value)) 
+					line.SupplierPriceMarkup = null;
+				else
 					line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
+				if (xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаИзг").Any())
+					line.ProducerCost = position.Get("ЦенаИзг");
+				else line.ProducerCost = null;
 				
 				line.Nds = (uint?) position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
+
+				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("СрокГодностиТовара").Any())
+					line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;
 
 				if (position.XPathSelectElement("ЖНВЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖНВЛС").Value))
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
