@@ -110,7 +110,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
-								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.clientOrderId);
+								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
 						}
 					}
@@ -124,19 +124,21 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private Document ToDocument(Blading blading)
 		{
-			if (blading.clientOrderId == null)
+			var orderId = (uint?) blading.@uint;
+			if (orderId == null)
 			{
- 				_logger.WarnFormat("Для накладной {0} не задан номер заказа", blading.bladingId);
+ 				_logger.ErrorFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
-			var order = Order.TryFind((uint) blading.clientOrderId.Value);
+			var order = Order.TryFind(orderId.Value);
 
 			if (order == null)
 			{
-				_logger.WarnFormat("Не найден заказ {0} для накладнлй {1}",
-					blading.clientOrderId.Value,
-					blading.bladingId);
+				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
+					orderId,
+					blading.bladingId,
+					blading.baseId);
 				return null;
 			}
 
@@ -150,7 +152,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			};
 
 			var document = new Document(log) {
-				OrderId = (uint?) blading.clientOrderId,
+				OrderId = orderId,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
 				Parser = "ProtekHandler"
