@@ -81,6 +81,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			return DetectParser(file, "Txt");
 		}
 
+		private static Type DetectXmlParser(string file)
+		{
+			return DetectParser(file, "Xml");
+		}
+
 		private static Type DetectParser(string file, string group)
 		{
 			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
@@ -95,9 +100,13 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			foreach (var type in types)
 			{
-				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+				string s;
+				if (group != "Xml") s = "CheckFileFormat";
+				else
+					s = "IsInCorrectFormat";
+				var detectFormat = type.GetMethod(s, BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
+					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод {1}", type, s));
 				object[] args;
 				if (group == "Dbf")
 				{
@@ -123,17 +132,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				return typeof(Protek9Parser);
 			if (OACXlsParser.CheckFileFormat(file))
 				return typeof (OACXlsParser);
-			return null;
-		}
-
-		private static Type DetectXmlParser(string file)
-		{
-			if (new SiaXmlParser().IsInCorrectFormat(file))
-				return typeof (SiaXmlParser);
-			if (new ProtekXmlParser().IsInCorrectFormat(file))
-				return typeof (ProtekXmlParser);
-			if (new KrepyshXmlParser().IsInCorrectFormat(file))
-				return typeof (KrepyshXmlParser);
 			return null;
 		}
 

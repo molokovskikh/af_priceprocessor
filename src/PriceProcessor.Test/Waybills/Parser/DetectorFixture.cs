@@ -1,6 +1,7 @@
 ﻿using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using Inforoom.PriceProcessor.Waybills.Parser.XmlParsers;
 using NUnit.Framework;
 using System;
 

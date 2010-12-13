@@ -254,7 +254,7 @@
     <Compile Include="Waybills\MultifileDocument.cs" />
     <Compile Include="Waybills\Parser\DbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParser.cs" />
-    <Compile Include="Waybills\Parser\KrepyshXmlParser.cs" />
+    <Compile Include="Waybills\Parser\XmlParsers\KrepyshXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BiolainParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\ShafievParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\Shafiev_KalugaParser.cs" />
@@ -271,8 +271,8 @@
     <Compile Include="Waybills\Parser\Protek9Parser.cs" />
     <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
     <Compile Include="Waybills\Parser\ProtekParser.cs" />
-    <Compile Include="Waybills\Parser\ProtekXmlParser.cs" />
-    <Compile Include="Waybills\Parser\SiaXmlParser.cs" />
+    <Compile Include="Waybills\Parser\XmlParsers\ProtekXmlParser.cs" />
+    <Compile Include="Waybills\Parser\XmlParsers\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaMskParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\TredifarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\TxtParser.cs" />
