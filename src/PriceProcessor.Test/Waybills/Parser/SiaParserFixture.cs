@@ -284,11 +284,32 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(9.46));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(8.6));
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.05.2012"));
-			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ03.Д04467"));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("030410"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("10/12/2010")));
+		}
+
+		[Test]
+		public void Parse_FixFile()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\78934_0.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(16));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("78934/0"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Аевит капс 0.2г N10"));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(11.22));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(10.2));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.10.2012"));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ03.Д20073"));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("170910"));
+			Assert.That(document.Lines[0].Code, Is.EqualTo("151"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("Россия"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(50));
+			Assert.That(document.Lines[9].Nds, Is.EqualTo(null));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("13.12.2010")));
 		}
 	}
 }

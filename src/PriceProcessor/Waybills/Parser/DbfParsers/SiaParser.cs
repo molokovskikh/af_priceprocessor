@@ -78,7 +78,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
-				line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
+				if (!Convert.IsDBNull(r["PCT_NDS"])) 
+					line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (data.Columns.Contains("BARCODE") && (!data.Columns.Contains("srok_prep"))) 
 				{
 					line.SupplierCostWithoutNDS = Convert.IsDBNull(r["PRICE"])
