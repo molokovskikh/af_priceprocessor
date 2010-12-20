@@ -37,7 +37,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("GOODE")
 				&& data.Columns.Contains("SERIAL")
 				&& data.Columns.Contains("PPRICEWT")
-				&& data.Columns.Contains("PRICE");
+				&& data.Columns.Contains("PRICE")
+				&& data.Columns.Contains("PRODUSER");
 		}
 	}
 }
