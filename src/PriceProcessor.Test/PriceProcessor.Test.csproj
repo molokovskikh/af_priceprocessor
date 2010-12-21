@@ -217,6 +217,7 @@
     <Compile Include="Waybills\Parser\SiaPermParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaVrnParserFixture.cs" />
     <Compile Include="Waybills\Parser\SiaXmlParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\AptekaHoldingKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\BiolainFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\MoronFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\ShafievParserFixture.cs" />
