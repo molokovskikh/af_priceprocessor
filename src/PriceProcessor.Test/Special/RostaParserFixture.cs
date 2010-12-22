@@ -8,6 +8,7 @@ using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Rosta;
+using log4net.Config;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
@@ -46,7 +47,7 @@ namespace PriceProcessor.Test.Special
 		[Test]
 		public void Read_extended_columns()
 		{
-			var data = RostaReader.ReadAddtions(@"..\..\Data\rosta\ex");
+			var data = RostaReader.ReadAdditions(@"..\..\Data\rosta\ex");
 
 			//Супрастин амп.р-р д/ин.  20мг/1мл х 5
 			var addition = data[132];
@@ -55,6 +56,15 @@ namespace PriceProcessor.Test.Special
 			Assert.That(addition.Pack, Is.EqualTo(225));
 			Assert.That(addition.RegistryCost, Is.EqualTo(105.509f));
 			Assert.That(addition.VitallyImportant, Is.True);
+		}
+
+		[Test]
+		public void Read_extended_columns_for_kazan()
+		{
+			var additions = RostaReader.ReadAdditions2(@"..\..\Data\rosta\ex_kazan");
+			var addition = additions.First(a => a.Id == 16718);
+			Assert.That(addition.VitallyImportant, Is.True);
+			Assert.That(Math.Round(addition.RegistryCost, 2), Is.EqualTo(55.67));
 		}
 
 		[Test]

@@ -80,18 +80,26 @@ namespace Inforoom.PriceProcessor.Rosta
 	public class FakeRostaParser : InterPriceParser
 	{
 		private string _producersFilename;
-		private string _addtionDataFileName;
+		private string _additionDataFileName;
 
-		public FakeRostaParser(string priceFileName, string groupsFileName, string addtionDataFileName, MySqlConnection connection, DataTable data)
+		public FakeRostaParser(string priceFileName, string groupsFileName, string additionDataFileName, MySqlConnection connection, DataTable data)
 			: base(priceFileName, connection, data)
 		{
 			_producersFilename = groupsFileName;
-			_addtionDataFileName = addtionDataFileName;
+			_additionDataFileName = additionDataFileName;
 		}
 
 		public override void Open()
 		{
 			convertedToANSI = true;
+			var table = Parse();
+			dtPrice = table;
+			CurrPos = 0;
+			base.Open();
+		}
+
+		public DataTable Parse()
+		{
 			var table = new DataTable();
 			table.Columns.Add("Id", typeof (int));
 			table.Columns.Add("ProductName", typeof (string));
@@ -112,7 +120,7 @@ namespace Inforoom.PriceProcessor.Rosta
 				}
 			}
 
-			var additions = RostaReader.ReadAddtions(_addtionDataFileName);
+			var additions = RostaReader.ReadAdditions(_additionDataFileName);
 
 			using(var file = File.OpenRead(priceFileName))
 			{
@@ -142,9 +150,7 @@ namespace Inforoom.PriceProcessor.Rosta
 			table.Columns["Quantity"].ColumnName = "F4";
 			table.Columns["Cost"].ColumnName = "F3";
 			table.Columns["Cost1"].ColumnName = "F7";
-			dtPrice = table;
-			CurrPos = 0;
-			base.Open();
+			return table;
 		}
 	}
 
@@ -167,10 +173,10 @@ namespace Inforoom.PriceProcessor.Rosta
 		//c 88, 4 байта - float предельная зарегистрированная цена
 		//c 92, 5 байт может больше - строка, ЖНВЛС
 		//c 232, 8 байт - double в виде TDateTime
-		public static List<AditionData> ReadAddtions(string s)
+		public static List<AditionData> ReadAdditions(string filename)
 		{
 			var result = new List<AditionData>();
-			using(var file = File.OpenRead(s))
+			using(var file = File.OpenRead(filename))
 			{
 				var buffer = new byte[244];
 				while(file.Read(buffer, 0, buffer.Length) > 0)
@@ -184,6 +190,37 @@ namespace Inforoom.PriceProcessor.Rosta
 						Pack = BitConverter.ToUInt32(buffer, 84),
 						RegistryCost = BitConverter.ToSingle(buffer, 88),
 						VitallyImportant = Encoding.GetEncoding(1251).GetString(buffer, 92, 5) == "ЖНВЛС"
+					});
+				}
+			}
+			return result;
+		}
+
+		//4 байта - идентификатор
+		//80 байт - наименование строка заканчивается 0, оставшиеся данные забиты мусором
+		//4 байта - упаковка
+		//10 байт - признак жизненно важный если начинается с 0x31 ("1") то значит жизненно важный, остальное мусор
+		//8 байт - срок годности
+		//20 байт - штрих код
+		//4 байта - цена гос реестра
+		//4 байта - код товара
+		//4 байта - кратность
+		public static List<AditionData> ReadAdditions2(string filename)
+		{
+			var result = new List<AditionData>();
+			using (var file = File.OpenRead(filename))
+			{
+				var buffer = new byte[138];
+				while (file.Read(buffer, 0, buffer.Length) > 0)
+				{
+					var id = BitConverter.ToUInt32(buffer, 0);
+					var days = BitConverter.ToDouble(buffer, 98);
+					result.Add(new AditionData {
+						Id = id,
+						Period = new DateTime(1899, 12, 30) + TimeSpan.FromDays(days),
+						VitallyImportant = buffer[88] == 0x31,
+						Pack = BitConverter.ToUInt32(buffer, 84),
+						RegistryCost = BitConverter.ToSingle(buffer, 126),
 					});
 				}
 			}
