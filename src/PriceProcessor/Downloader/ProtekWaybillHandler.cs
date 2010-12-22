@@ -127,7 +127,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			var orderId = (uint?) blading.@uint;
 			if (orderId == null)
 			{
- 				_logger.ErrorFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
+ 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
