@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using System.IO;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -12,6 +13,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file);
+			var fileName = Path.GetFileNameWithoutExtension(file);
+			document.ProviderDocumentId = fileName;
 			new DbfParser()
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "GOODE")
@@ -27,8 +30,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Producer, "PRODUSER")
 				.Line(l => l.ProducerCost, "PPRICENDS")
+				.Line(l => l.VitallyImportant, "GV")
 				.ToDocument(document, data);
-			return document;;
+			return document;
 		}
 
 		public static bool CheckFileFormat(DataTable data)
