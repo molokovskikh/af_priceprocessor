@@ -25,6 +25,13 @@ namespace Inforoom.PriceProcessor.Rosta
 		private string priceFile;
 		private string producersFile;
 
+		public RostaDownloader()
+		{
+			Host = "77.233.165.8";
+		}
+
+		public string Host { get; set; }
+
 		public void DownloadPrice(string key, string hwinfo,  string price, string producers, string ex)
 		{
 			priceFile = price;
@@ -33,7 +40,7 @@ namespace Inforoom.PriceProcessor.Rosta
 			{
 				tcpClient.SendTimeout = (int) 60.Second().TotalMilliseconds;
 				tcpClient.ReceiveTimeout = (int) 60.Second().TotalMilliseconds;
-				tcpClient.Connect(new IPEndPoint(IPAddress.Parse("77.233.165.8"), 215));
+				tcpClient.Connect(new IPEndPoint(IPAddress.Parse(Host), 215));
 				using(stream = tcpClient.GetStream())
 				using(writer = new StreamWriter(stream, encoding, 1))
 				using(reader = new StreamReader(stream, encoding, false, 1))
@@ -46,6 +53,9 @@ namespace Inforoom.PriceProcessor.Rosta
 						var serverKey = Convert.ToInt32(parts[4].Trim());
 						ReadResponce("HWINFO {0}", RostaDecoder.CryptHwinfo(hwinfo, serverKey));
 					}
+					var columns = "FORCESHOW FULLNAME PACKSTOCK PREDELPRICE ZNVLS ARTICULSID ARTICULSGROUP ABATEDATE MULTIPLY";
+					//роста казань
+					//columns = "FORCESHOW FULLNAME PACKSTOCK ICONS ABATEDATE BARCODE REESTRPRICE710000001 ARTICULSID MULTIPLY";
 					ReadResponce("SET CODEPAGE WIN1251");
 					ReadResponce("GET EXPORT_PERMISSION");
 					RequestAndDownload("GETZ PRICELISTS");
@@ -60,8 +70,8 @@ namespace Inforoom.PriceProcessor.Rosta
 					RequestAndDownload("GETZ PRICES 7", price + "_source");
 					RequestAndDownload("GETZ PRICES 8", price + "_source");
 					RequestAndDownload("GETZ DOC_TYPES");
-					RequestAndDownload("GETZ COLUMNS FORCESHOW FULLNAME PACKSTOCK PREDELPRICE ZNVLS ARTICULSID ARTICULSGROUP ABATEDATE MULTIPLY");
-					RequestAndDownload("GETZ EXTENDED FORCESHOW FULLNAME PACKSTOCK PREDELPRICE ZNVLS ARTICULSID ARTICULSGROUP ABATEDATE MULTIPLY", ex + "_source");
+					RequestAndDownload("GETZ COLUMNS " + columns);
+					RequestAndDownload("GETZ EXTENDED " + columns, ex + "_source");
 					RequestAndDownload("GETZ CATEGORIES");
 					RequestAndDownload("GETZ CERTIFICATES");
 					RequestAndDownload("GETZ REPORT_LIST");
@@ -77,7 +87,7 @@ namespace Inforoom.PriceProcessor.Rosta
 			Unpack(new[] {
 				producersFile + "_source",
 				priceFile + "_source",
-				ex + "_source"
+				ex + "_source",
 			});
 		}
 
