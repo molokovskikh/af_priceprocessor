@@ -213,6 +213,7 @@ namespace Inforoom.Formalizer
 		public static string colFirmStatus = "FirmStatus";
 		public static string colCostType = "CostType";
 		public static string colFirmSegment = "FirmSegment";
+		public static string colBuyingMatrix = "FBuyingMatrix";
 	}
 
 	public class CoreCost : ICloneable
@@ -367,7 +368,7 @@ namespace Inforoom.Formalizer
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
 		protected bool buyingMatrix;
-
+		protected int firmSegment;
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI;
@@ -416,6 +417,7 @@ namespace Inforoom.Formalizer
 
 			_info = new PriceFormalizationInfo(data.Rows[0]);
 			priceName = data.Rows[0][FormRules.colSelfPriceName].ToString();
+			if (!(data.Rows[0][FormRules.colFirmSegment] is DBNull)) firmSegment = Convert.ToInt16(data.Rows[0][FormRules.colFirmSegment]);
 			firmShortName = data.Rows[0][FormRules.colFirmShortName].ToString();
 			firmCode = Convert.ToInt64(data.Rows[0][FormRules.colFirmCode]); 
 			formByCode = Convert.ToBoolean(data.Rows[0][FormRules.colFormByCode]);
@@ -424,7 +426,7 @@ namespace Inforoom.Formalizer
 			costCode = (data.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(data.Rows[0][FormRules.colCostCode]);
 			parentSynonym = Convert.ToInt64(data.Rows[0][FormRules.colParentSynonym]); 
 			costType = (CostTypes)Convert.ToInt32(data.Rows[0][FormRules.colCostType]);
-			buyingMatrix = Convert.ToBoolean(data.Rows[0]["BuyingMatrix"]);
+			if (!(data.Rows[0][FormRules.colBuyingMatrix] is DBNull)) buyingMatrix = Convert.ToBoolean(data.Rows[0][FormRules.colBuyingMatrix]);
 			
 			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
 

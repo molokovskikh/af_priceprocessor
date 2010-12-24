@@ -187,7 +187,6 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));
 			var excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
-
 			// Каталожная запись не проверена, производитель не проверен. Должны вставить в ассортимент
 			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
 			TestHelper.Execute(@"update catalogs.producers set Checked = 0 where Id = {0}", producerId);
@@ -209,7 +208,7 @@ insert into catalogs.assortment values({1}, {0}, {1}, 1)", catalogId, notChecked
  * assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));
 			Assert.That(assortment.Tables[0].Rows.Count, Is.EqualTo(0));*/
 			excludes = TestHelper.Fill(String.Format("select * from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
-			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));			
+			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
 		}
 	}
 }

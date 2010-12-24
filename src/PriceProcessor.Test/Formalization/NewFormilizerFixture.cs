@@ -418,7 +418,7 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(excludes.Count, Is.EqualTo(1));
 				var exclude = excludes[0];
 				Assert.That(exclude.ProducerSynonym, Is.EqualTo("Вектор"));
-				Assert.That(exclude.CatalogProduct.Id, Is.EqualTo(product1.CatalogProduct.Id));
+				Assert.That(exclude.CatalogProduct.Id, Is.EqualTo(product1.CatalogProduct.Id)); 
 			}
 		}
 

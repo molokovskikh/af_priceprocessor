@@ -17,7 +17,7 @@
                 <xs:element name="FirmCode" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FirmShortName" type="xs:string" minOccurs="0" />
                 <xs:element name="FirmStatus" type="xs:unsignedByte" minOccurs="0" />
-		<xs:element name="FirmSegment" type="xs:unsignedByte" minOccurs="0" />		
+				<xs:element name="FirmSegment" type="xs:unsignedByte" minOccurs="0" />		
                 <xs:element name="SelfJunkPos" type="xs:string" minOccurs="0" />
                 <xs:element name="SelfAwaitPos" type="xs:string" minOccurs="0" />
                 <xs:element name="SelfVitallyImportantMask" type="xs:string" minOccurs="0" />
@@ -113,6 +113,7 @@
                 <xs:element name="TxtMinOrderCountEnd" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
                 <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
+				<xs:element name="FBuyingMatrix" type="xs:string" minOccurs="0" />
               </xs:sequence>
             </xs:complexType>
           </xs:element>

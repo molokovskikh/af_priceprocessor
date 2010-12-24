@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--This file represents the results of running a test suite-->
+<test-results name="C:\projects\1\PriceProcessor\build\test\lumisoft.test\bin\debug\lumisoft.test.dll" total="4" errors="0" failures="1" not-run="4" inconclusive="0" ignored="4" skipped="0" invalid="0" date="2010-12-24" time="16:09:45">
+  <environment nunit-version="2.5.9.10348" clr-version="2.0.50727.4952" os-version="Microsoft Windows NT 6.1.7600.0" platform="Win32NT" cwd="C:\projects\1\PriceProcessor" machine-name="PRG4" user="giorgadze" user-domain="ANALIT" />
+  <culture-info current-culture="ru-RU" current-uiculture="ru-RU" />
+  <test-suite type="Assembly" name="C:\projects\1\PriceProcessor\build\test\lumisoft.test\bin\debug\lumisoft.test.dll" executed="True" result="Failure" success="False" time="0.461" asserts="0">
+    <results>
+      <test-suite type="Namespace" name="LumiSoftTest" executed="True" result="Failure" success="False" time="0.448" asserts="0">
+        <results>
+          <test-suite type="TestFixture" name="LumiSoftFtpFixture" executed="True" result="Inconclusive" success="False" time="0.009" asserts="0" />
+          <test-suite type="TestFixture" name="LumiSoftImapFixture" executed="True" result="Failure" success="False" time="0.432" asserts="0">
+            <results>
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestConnectToImapServer" executed="False" result="Ignored">
+                <reason>
+                  <message><![CDATA[Не реализовано]]></message>
+                </reason>
+              </test-case>
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestDeleteMessageFromImapFolder" executed="False" result="Ignored">
+                <reason>
+                  <message><![CDATA[Не реализовано]]></message>
+                </reason>
+              </test-case>
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestGetHeaderFrom_EmlFile" executed="True" result="Success" success="True" time="0.210" asserts="10" />
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestGetHeaderTo_EmlFile" executed="True" result="Success" success="True" time="0.035" asserts="10" />
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestLoginToMailBox" executed="False" result="Ignored">
+                <reason>
+                  <message><![CDATA[Не реализовано]]></message>
+                </reason>
+              </test-case>
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestParseMailFromFile" executed="True" result="Success" success="True" time="0.039" asserts="0" />
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile" description="Предполагается, что каждый eml файл имеет не менее 1 вложения" executed="True" result="Failure" success="False" time="0.138" asserts="1">
+                <failure>
+                  <message><![CDATA[4 Exceptions:
+File: ..\..\Data\7115337.eml Exception:
+LumiSoft.Net.ParseException: Header field 'ContentType' parsing failed.
+   at LumiSoft.Net.MIME.MIME_Entity.get_ContentType()
+   at LumiSoft.Net.Mail.Mail_Message.get_Attachments()
+   at LumiSoftTest.Extensions.MailMessageExtension.GetValidAttachements(Mail_Message message) in c:\projects\1\PriceProcessor\src\LumiSoft.Test\Extensions\MailMessageExtension.cs:line 33
+   at LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile() in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 104
+File: ..\..\Data\7122984.eml Exception:
+LumiSoft.Net.ParseException: Header field 'ContentDisposition' parsing failed.
+   at LumiSoft.Net.MIME.MIME_Entity.get_ContentDisposition()
+   at LumiSoft.Net.Mail.Mail_Message.get_Attachments()
+   at LumiSoftTest.Extensions.MailMessageExtension.GetValidAttachements(Mail_Message message) in c:\projects\1\PriceProcessor\src\LumiSoft.Test\Extensions\MailMessageExtension.cs:line 33
+   at LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile() in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 104
+File: ..\..\Data\7128880.eml Exception:
+LumiSoft.Net.ParseException: Header field 'ContentType' parsing failed.
+   at LumiSoft.Net.MIME.MIME_Entity.get_ContentType()
+   at LumiSoft.Net.Mail.Mail_Message.get_Attachments()
+   at LumiSoftTest.Extensions.MailMessageExtension.GetValidAttachements(Mail_Message message) in c:\projects\1\PriceProcessor\src\LumiSoft.Test\Extensions\MailMessageExtension.cs:line 33
+   at LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile() in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 104
+File: ..\..\Data\7130610.eml Exception:
+LumiSoft.Net.ParseException: Header field 'ContentDisposition' parsing failed.
+   at LumiSoft.Net.MIME.MIME_Entity.get_ContentDisposition()
+   at LumiSoft.Net.Mail.Mail_Message.get_Attachments()
+   at LumiSoftTest.Extensions.MailMessageExtension.GetValidAttachements(Mail_Message message) in c:\projects\1\PriceProcessor\src\LumiSoft.Test\Extensions\MailMessageExtension.cs:line 33
+   at LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile() in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 104
+]]></message>
+                  <stack-trace><![CDATA[at LumiSoftTest.LumiSoftImapFixture.CheckErrorList(IList`1 errorList) in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 31
+at LumiSoftTest.LumiSoftImapFixture.TestSaveAttachments_EmlFile() in c:\projects\1\PriceProcessor\src\LumiSoft.Test\LumiSoftImapFixture.cs:line 125
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case name="LumiSoftTest.LumiSoftImapFixture.TestStoreMessageToImapFolder" executed="False" result="Ignored">
+                <reason>
+                  <message><![CDATA[Не реализовано]]></message>
+                </reason>
+              </test-case>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>

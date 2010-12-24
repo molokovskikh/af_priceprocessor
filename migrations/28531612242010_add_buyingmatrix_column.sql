@@ -1,0 +1,1 @@
+alter table farm.FormRules add column FBuyingMatrix tinyint(1) not null default 0;
