@@ -30,6 +30,10 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("POCC RU.ФМ05.Д69302"));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(193.32));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(true));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(-11.01));
+
+			Assert.That(doc.Lines[1].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[2].SupplierPriceMarkup, Is.EqualTo(0));
 		}
 	}
 }

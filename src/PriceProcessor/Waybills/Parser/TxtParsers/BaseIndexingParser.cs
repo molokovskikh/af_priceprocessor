@@ -199,9 +199,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((NdsIndex > 0) && (parts.Length > NdsIndex))
 				docLine.Nds = (uint?)GetDecimal(parts[NdsIndex]);
 
-			if ((SupplierPriceMarkupIndex > 0) && (parts.Length > SupplierPriceMarkupIndex))
-				docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
-
 			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
 				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
 
@@ -219,6 +216,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
 				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+
+			if ((SupplierPriceMarkupIndex > 0) && (parts.Length > SupplierPriceMarkupIndex))
+				docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
+			else
+			{
+				docLine.SupplierPriceMarkup = docLine.SupplierCostWithoutNDS - docLine.ProducerCost;
+			}
 
 			docLine.SetValues();
 		}

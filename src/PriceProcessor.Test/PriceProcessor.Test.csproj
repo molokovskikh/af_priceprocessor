@@ -299,7 +299,9 @@
     <Content Include="Data\688-deadlock.txt" />
     <Content Include="Data\688-empty_list_with_producersynonym.txt" />
     <Content Include="Data\688-not_exists_producersynonym.txt" />
-    <Content Include="Data\688-assortment-rules.xml" />
+    <Content Include="Data\688-assortment-rules.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Data\688-assortment.txt" />
     <Content Include="Data\688-etalon.xml" />
     <Content Include="Data\688-rules.xml" />
