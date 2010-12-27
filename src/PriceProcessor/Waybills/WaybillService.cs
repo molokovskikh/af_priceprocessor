@@ -231,6 +231,16 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (SupplierCostWithoutNDS.HasValue && Nds.HasValue)
 				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value*(1 + ((decimal) Nds.Value/100)), 2);
 		}
+
+		public void SetSupplierPriceMarkup()
+		{
+			if (!SupplierPriceMarkup.HasValue && ProducerCost.HasValue
+				&& SupplierCostWithoutNDS.HasValue && (ProducerCost.Value != 0))
+			{
+				SupplierPriceMarkup = null;
+				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value/ProducerCost.Value - 1)*100), 2);
+			}
+		}
 	}
 
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]

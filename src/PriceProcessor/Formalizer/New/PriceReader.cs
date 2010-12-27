@@ -31,7 +31,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private string junkPos;
 		private string awaitPos;
 		private string vitallyImportantMask;
-		private string buyingMatrix;
 
 		private string[] fieldNames;
 		private ToughDate toughDate;
@@ -62,7 +61,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			awaitPos = priceInfo[FormRules.colSelfAwaitPos].ToString();
 			junkPos  = priceInfo[FormRules.colSelfJunkPos].ToString();
 			vitallyImportantMask = priceInfo[FormRules.colSelfVitallyImportantMask].ToString();
-			buyingMatrix = priceInfo[FormRules.colBuyingMatrix].ToString();
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
 				toughMask = new ToughMask(nameMask, info);

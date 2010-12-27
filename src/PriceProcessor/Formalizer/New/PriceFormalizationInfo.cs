@@ -34,8 +34,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				PricePurpose |= PricePurpose.Assortment;
 			if (firmSegment == 1)
 				PricePurpose |= PricePurpose.Helper;
-			if (!(row[FormRules.colBuyingMatrix] is DBNull)) 
-				BuyingMatrix = Convert.ToBoolean(row[FormRules.colBuyingMatrix]);
 		}
 
 		public string PriceName { get; set; }
@@ -45,7 +43,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public long? CostCode { get; set; }
 
 		public uint PriceCode { get; set; }
-		public bool BuyingMatrix { get; set; }
+
 		public bool FormByCode { get; set; }
 		public bool IsAssortmentPrice { get; set; }
 		public CostTypes CostType { get; set; }

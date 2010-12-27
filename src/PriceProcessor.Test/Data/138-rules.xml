@@ -106,7 +106,7 @@
                 <xs:element name="TxtMinOrderCountEnd" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
                 <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
-				<xs:element name="FBuyingMatrix" type="xs:string" minOccurs="0" />
+				<xs:element name="BuyingMatrix" type="xs:unsignedByte" minOccurs="0" />
 				<xs:element name="FProducerCost" type="xs:string" minOccurs="0" />
 				<xs:element name="FNds" type="xs:string" minOccurs="0" />
 				<xs:element name="TxtProducerCostBegin" type="xs:string" minOccurs="0" />
@@ -144,6 +144,8 @@
     <TxtFirmCrEnd>116</TxtFirmCrEnd>
     <TxtBaseCostBegin>77</TxtBaseCostBegin>
     <TxtBaseCostEnd>85</TxtBaseCostEnd>
+	<BuyingMatrix>0</BuyingMatrix>
+	<FirmSegment>0</FirmSegment>
     <FCode>F16</FCode>
     <FName1>F4</FName1>
     <FFirmCr>F9</FFirmCr>

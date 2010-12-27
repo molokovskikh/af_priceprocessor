@@ -23,6 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CertificatesIndex = 12;
 			RegistryCostIndex = 22;
 			VitallyImportantIndex = 26;
+			CalculateSupplierPriceMarkup = true;
 		}
 
 		public static bool CheckFileFormat(string file)

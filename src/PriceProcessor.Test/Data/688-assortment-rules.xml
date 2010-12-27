@@ -113,7 +113,7 @@
                 <xs:element name="TxtMinOrderCountEnd" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
                 <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
-				<xs:element name="FBuyingMatrix" type="xs:string" minOccurs="0" />
+				<xs:element name="BuyingMatrix" type="xs:unsignedByte" minOccurs="0" />
               </xs:sequence>
             </xs:complexType>
           </xs:element>
@@ -132,7 +132,7 @@
     <FirmCode>3287</FirmCode>
     <FirmShortName>Протек</FirmShortName>
     <FirmStatus>1</FirmStatus>
-		<FirmSegment>0</FirmSegment>
+	<FirmSegment>0</FirmSegment>
     <ParentSynonym>5</ParentSynonym>
     <Id>4609</Id>
     <PriceFormatId>1</PriceFormatId>
@@ -149,6 +149,7 @@
     <FPeriod>F7</FPeriod>
     <Currency>руб.</Currency>
     <FileExtention>.txt</FileExtention>
+	<BuyingMatrix>0</BuyingMatrix>
     <ParserClassName>TXTWinDelimiterPriceParser</ParserClassName>
   </Table>
 </NewDataSet>

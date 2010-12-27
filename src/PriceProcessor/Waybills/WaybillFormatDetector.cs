@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,8 +17,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 
-			// Если это накладная в формате DBF от Авеста-Фармацевтика,
-			// обрабатываем ее специальным парсером
+			// Р•СЃР»Рё СЌС‚Рѕ РЅР°РєР»Р°РґРЅР°СЏ РІ С„РѕСЂРјР°С‚Рµ DBF РѕС‚ РђРІРµСЃС‚Р°-Р¤Р°СЂРјР°С†РµРІС‚РёРєР°,
+			// РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РµРµ СЃРїРµС†РёР°Р»СЊРЅС‹Рј РїР°СЂСЃРµСЂРѕРј
 			if ((documentLog != null) &&
 				(documentLog.Supplier.Id == 6256) &&
 				(extention == ".dbf"))
@@ -43,8 +43,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				else if (extention == ".txt")
 					type = DetectTxtParser(file);
 
-				// Если поставщик - это челябинский Морон, для него отдельный парсер 
-				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
+				// Р•СЃР»Рё РїРѕСЃС‚Р°РІС‰РёРє - СЌС‚Рѕ С‡РµР»СЏР±РёРЅСЃРєРёР№ РњРѕСЂРѕРЅ, РґР»СЏ РЅРµРіРѕ РѕС‚РґРµР»СЊРЅС‹Р№ РїР°СЂСЃРµСЂ 
+				// (РІРѕРѕР±С‰Рµ-С‚Рѕ С„РѕСЂРјР°С‚ С‚РѕС‚ Р¶Рµ С‡С‚Рѕ Рё Сѓ SiaParser, РЅРѕ РІ РєРѕР»РѕРЅРєРµ PRICE С†РµРЅР° Р‘Р•Р— РќРґСЃ)
 				if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
 				    (documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
 				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
@@ -57,17 +57,17 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			if (type == null)
 			{
-				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
+				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ С‚РёРї РїР°СЂСЃРµСЂР° РЅР°РєР»Р°РґРЅРѕР№. Р¤Р°Р№Р» {0}", file);
 #if !DEBUG
 				return null;
 #else
-				throw new Exception("Не удалось определить тип парсера");
+				throw new Exception("РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ С‚РёРї РїР°СЂСЃРµСЂР°");
 #endif
 			}
 
 			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
 			if (constructor == null)
-				throw new Exception("У типа {0} нет конструктора без аргументов");
+				throw new Exception("РЈ С‚РёРїР° {0} РЅРµС‚ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР° Р±РµР· Р°СЂРіСѓРјРµРЅС‚РѕРІ");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
 
@@ -100,13 +100,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			foreach (var type in types)
 			{
-				string s;
-				if (group != "Xml") s = "CheckFileFormat";
-				else
-					s = "IsInCorrectFormat";
-				var detectFormat = type.GetMethod(s, BindingFlags.Static | BindingFlags.Public);
+				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод {1}", type, s));
+					throw new Exception(String.Format("РЈ С‚РёРїР° {0} РЅРµС‚ РјРµС‚РѕРґР° РґР»СЏ РїСЂРѕРІРµСЂРєРё С„РѕСЂРјР°С‚Р°, СЂРµР°Р»РёР·СѓР№ РјРµС‚РѕРґ CheckFileFormat", type));
 				object[] args;
 				if (group == "Dbf")
 				{

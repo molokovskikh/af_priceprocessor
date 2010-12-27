@@ -107,7 +107,7 @@
                 <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
                 <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
 				<xs:element name="FirmSegment" type="xs:unsignedByte" minOccurs="0" />
-				<xs:element name="FBuyingMatrix" type="xs:string" minOccurs="0" />
+				<xs:element name="BuyingMatrix" type="xs:unsignedByte" minOccurs="0" />
 				<xs:element name="FProducerCost" type="xs:string" minOccurs="0" />
 				<xs:element name="FNds" type="xs:string" minOccurs="0" />
 				<xs:element name="TxtProducerCostBegin" type="xs:string" minOccurs="0" />
@@ -162,6 +162,8 @@
     <TxtRegistryCostBegin>137</TxtRegistryCostBegin>
     <TxtRegistryCostEnd>146</TxtRegistryCostEnd>
     <FileExtention>.txt</FileExtention>
+	<BuyingMatrix>0</BuyingMatrix>
+	<FirmSegment>0</FirmSegment>
     <ParserClassName>TXTDosFixedPriceParser</ParserClassName>
   </Table>
 </NewDataSet>

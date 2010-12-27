@@ -113,7 +113,7 @@
                 <xs:element name="TxtMinOrderCountEnd" type="xs:unsignedInt" minOccurs="0" />
                 <xs:element name="FileExtention" type="xs:string" minOccurs="0" />
                 <xs:element name="ParserClassName" type="xs:string" minOccurs="0" />
-				<xs:element name="FBuyingMatrix" type="xs:string" minOccurs="0" />
+				<xs:element name="BuyingMatrix" type="xs:unsignedByte" minOccurs="0" />
               </xs:sequence>
             </xs:complexType>
           </xs:element>
@@ -151,6 +151,7 @@
 	<FNds>F9</FNds>
     <Currency>руб.</Currency>
     <FileExtention>.txt</FileExtention>
+	<BuyingMatrix>0</BuyingMatrix>
     <ParserClassName>TXTWinDelimiterPriceParser</ParserClassName>
   </Table>
 </NewDataSet>

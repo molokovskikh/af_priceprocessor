@@ -66,37 +66,24 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			Assert.That(synonym, Is.EqualTo("5 дней ванна д/ног смягчающая №10 пак. 25г  "));
 		}
 
-		[Test, Ignore] 
+		[Test] 
 		public void FormalizeAssortmentPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-			try
-			{
-				TestFormalizeWithoutAssortmentInserting(
+			
+			TestFormalizeWithoutAssortmentInserting(
 					@"..\..\Data\688-create-net-assortment.txt",
 					String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
-			}
-			catch (Exception e)
-			{
-				Assert.That(e.Message, Text.Contains("Table 'Assortment_Backup' already exists"));
-			}
+			
 		}
 
-		[Test, Ignore] 
+		[Test] 
 		public void FormalizeHelpPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-			try
-			{
-				TestFormalizeWithoutAssortmentInserting(
+			TestFormalizeWithoutAssortmentInserting(
 					@"..\..\Data\688-create-net-assortment.txt",
 					String.Format(@"..\..\Data\{0}-helpprice-rules.xml", priceItemId));
-			}
-			catch (Exception e)
-			{
-				Assert.That(e.Message, Text.Contains("Table 'Assortment_Backup' already exists"));
-			}
-			
 		}
 
 		private void TestFormalizeWithoutAssortmentInserting(string dataPath, string rulesPath)
@@ -121,8 +108,8 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			}
 			finally
 			{
-				TestHelper.Execute(
-@"DROP TABLE catalogs.Assortment; RENAME TABLE catalogs.Assortment_Backup TO catalogs.Assortment;");
+				TestHelper.Execute("DROP TABLE catalogs.Assortment;");
+				TestHelper.Execute("RENAME TABLE catalogs.Assortment_Backup TO catalogs.Assortment;");
 			}
 			
 		}
