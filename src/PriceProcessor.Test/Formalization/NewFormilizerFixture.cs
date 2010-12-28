@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.Formalization
 				priceItem = price.Costs.First().PriceItem;
 				scope.VoteCommit();
 			}
-			table = TestHelper.GetParseRules((int) priceItem.Id);
+			table = TestHelper.LoadFormRules(priceItem.Id);
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 		}
 

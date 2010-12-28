@@ -118,7 +118,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 
 			etalonCore0.WriteXml(String.Format(@"..\..\Data\{0}-etalon.xml", priceItemId), XmlWriteMode.WriteSchema);
 
-			var rules = TestHelper.GetParseRules(priceItemId);
+			var rules = TestHelper.LoadFormRules((uint)priceItemId);
 			rules.WriteXml(String.Format(@"..\..\Data\{0}-rules.xml", priceItemId), XmlWriteMode.WriteSchema);
 		}
 	}

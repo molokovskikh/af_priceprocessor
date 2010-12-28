@@ -71,7 +71,6 @@ namespace PriceProcessor.Test
 		public static void Formalize(string file, int priceItemId)
 		{
 			//var priceItemId = Convert.ToInt32(Path.GetFileNameWithoutExtension(file));
-			//var data = GetParseRules(priceItemId);
 			var data = LoadFormRules((uint)priceItemId);
 			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
 			var parserType = Type.GetType(typeName);
@@ -91,7 +90,6 @@ namespace PriceProcessor.Test
 
 		public static void Formalize(Type formatType, string file, int priceItemId)
 		{
-			//Formalize(formatType, GetParseRules(priceItemId), file, priceItemId);
 			Formalize(formatType, LoadFormRules((uint)priceItemId), file, priceItemId);
 		}
 
@@ -111,54 +109,6 @@ namespace PriceProcessor.Test
 				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
 			}
-		}
-
-		public static DataTable GetParseRules(int priceItemId)
-		{
-			return With.Connection(c => {
-				var adapter = new MySqlDataAdapter(@"
-select
-  pi.Id as PriceItemId,
-  pi.RowCount,
-  pd.PriceCode,
-  PD.PriceName as SelfPriceName,
-  PD.PriceType,
-  pd.CostType,
-  if(pd.CostType = 1, pc.CostCode, null) CostCode,
-  CD.FirmCode,
-  CD.ShortName as FirmShortName,
-  CD.FirmStatus,
-  CD.FirmSegment,
-  FR.JunkPos as SelfJunkPos,
-  FR.AwaitPos as SelfAwaitPos,
-  FR.VitallyImportantMask as SelfVitallyImportantMask,
-  ifnull(pd.ParentSynonym, pd.PriceCode) as ParentSynonym,
-  PFR.*,
-  pricefmts.FileExtention,
-  pricefmts.ParserClassName
-from
-  usersettings.PriceItems pi,
-  usersettings.pricescosts pc,
-  UserSettings.PricesData pd,
-  UserSettings.ClientsData cd,
-  Farm.formrules FR,
-  Farm.FormRules PFR,
-  farm.pricefmts 
-where
-	pi.Id = ?PriceItemId
-and pc.PriceItemId = pi.Id
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and FR.Id = pi.FormRuleId
-and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
-and pricefmts.ID = PFR.PriceFormatId", c);
-
-				adapter.SelectCommand.Parameters.AddWithValue("?PriceItemId", priceItemId);
-				var data = new DataSet();
-				adapter.Fill(data);
-				return data.Tables[0];
-			});
 		}
 
 		public static void Verify(string priceItemId)
