@@ -311,5 +311,32 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[9].Nds, Is.EqualTo(null));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("13.12.2010")));
 		}
+
+		[Test]
+		public void Parse_LekRus()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00033418.DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(8));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("00033418"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("21.12.2010")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("76561"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Натрия хлорида раствор для инъекций 0,9%, р-р д/ин., 0,9 %, амп. 10 мл, №10, 0"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Сишуи Ксирканг Фармасьютикал Ко.Лтд/Китай"));
+			Assert.That(document.Lines[0].Country, Is.Empty);
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(7));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(18.78));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(23.70));
+			Assert.That(document.Lines[1].SupplierCost, Is.EqualTo(10.60));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("100703"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС CN.ФМ08 Д27703"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2015"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.EqualTo(true));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(18.78));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(21.55));
+			Assert.That(document.Lines[1].SupplierCostWithoutNDS, Is.EqualTo(8.98));
+		}
 	}
 }

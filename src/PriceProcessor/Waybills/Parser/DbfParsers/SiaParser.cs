@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -58,38 +59,38 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Product = r["NAME_TOVAR"].ToString();
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
-				line.ProducerCost = Convert.IsDBNull(r["PR_PROIZ"]) ? null : (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
+				line.ProducerCost = ParseHelper.GetDecimal(r["PR_PROIZ"].ToString());
 				if (data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("GVLS"))
-					line.SupplierCost = Convert.IsDBNull(r["PR_S_NDS"])
-											? null
-											: (decimal?)Convert.ToDecimal(r["PR_S_NDS"], CultureInfo.InvariantCulture);
+					line.SupplierCost = ParseHelper.GetDecimal(r["PR_S_NDS"].ToString());
 				else
 					line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				if (data.Columns.Contains("NACENKA"))
-					line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"]) ? null : (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
+					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r["NACENKA"].ToString());
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
 				
 				if (!String.IsNullOrEmpty(registryCostColumn))
-					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : 
-						(decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
+					line.RegistryCost = ParseHelper.GetDecimal(r[registryCostColumn].ToString());
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
-					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
+					line.Certificates = ParseHelper.GetString(r[certificatesColumn].ToString());
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				if (!Convert.IsDBNull(r["PCT_NDS"])) 
 					line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (data.Columns.Contains("BARCODE") && (!data.Columns.Contains("srok_prep"))) 
 				{
-					line.SupplierCostWithoutNDS = Convert.IsDBNull(r["PRICE"])
-														? null
-														: (decimal?)Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
+					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
 					line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				}
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
-				return line;
+				if (data.Columns.Contains("PRICE_NDS"))
+				{
+					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());
+					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
+				}
+			    return line;
 			}).ToList();
 			return document;
 		}
