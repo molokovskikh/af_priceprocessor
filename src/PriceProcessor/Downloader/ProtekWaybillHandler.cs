@@ -93,7 +93,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		private void Load(int clientId, int instanceId)
 		{
 			WithService(service => {
-				_logger.InfoFormat("Запрос накладных");
+				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
 				_logger.InfoFormat("Получили накладные, всего {0} для сесии {1}", responce.@return.blading.Length, sessionId);
