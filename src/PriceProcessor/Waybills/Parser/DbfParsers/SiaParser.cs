@@ -84,7 +84,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				}
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
-					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
+					line.VitallyImportant = ParseHelper.GetBoolean(r[vitallyImportantColumn].ToString());
 				if (data.Columns.Contains("PRICE_NDS"))
 				{
 					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());

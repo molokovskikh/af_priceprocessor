@@ -256,6 +256,7 @@
     <Compile Include="Waybills\Parser\DbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\AptekaHoldingKazanParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\KatrenVrnParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\KrepyshXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BiolainParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\ShafievParser.cs" />
