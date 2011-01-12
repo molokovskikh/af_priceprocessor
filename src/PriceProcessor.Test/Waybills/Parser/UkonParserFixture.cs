@@ -330,5 +330,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 			{}
 		}
         
+		[Test]
+		public void Parse_with_one_body_comment_line()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\_9591.sst");
+			var doc1 = WaybillParser.Parse(@"..\..\Data\Waybills\_997.sst");
+		}
 	}
 }

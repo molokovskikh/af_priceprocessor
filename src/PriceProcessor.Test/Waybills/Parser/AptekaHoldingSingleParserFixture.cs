@@ -83,5 +83,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\R1362131.DBF")));
 			Assert.IsTrue(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\А0973748.DBF")));
 		}
+
+		[Test]
+		public void Parse4()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\21796_1272844.dbf");
+		}
 	}
 }

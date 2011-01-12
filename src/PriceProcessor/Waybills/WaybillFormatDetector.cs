@@ -86,6 +86,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			return DetectParser(file, "Xml");
 		}
 
+		private static Type DetectXlsParser(string file)
+		{
+			return DetectParser(file, "Xls");
+		}
+
 		private static Type DetectParser(string file, string group)
 		{
 			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
@@ -117,17 +122,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (result)
 					return type;
 			}
-			return null;
-		}
-
-		private static Type DetectXlsParser(string file)
-		{
-			if (BssSpbXlsParser.CheckFileFormat(file))
-				return typeof (BssSpbXlsParser);
-			if (Protek9Parser.CheckFileFormat(file))
-				return typeof(Protek9Parser);
-			if (OACXlsParser.CheckFileFormat(file))
-				return typeof (OACXlsParser);
 			return null;
 		}
 

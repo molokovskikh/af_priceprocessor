@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 		[Test]
 		public void detect()
-		{
+		{	
 			var detector = new WaybillFormatDetector();
 			var parser = detector.DetectParser(@"..\..\Data\Waybills\5189569_ФораФарм_лоджик-Москва_506462_.dbf", null);
 			Assert.That(parser, Is.InstanceOf<SiaParser>());
@@ -41,10 +41,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var detector1 = new WaybillFormatDetector();
 			var parser1 = detector1.DetectParser(@"..\..\Data\Waybills\264002.txt", null);
 			Assert.That(parser1, Is.InstanceOf<KatrenVrnParser>());
-
-			var detector2 = new WaybillFormatDetector();
-			var parser2 = detector2.DetectParser(@"..\..\Data\Waybills\00033418.DBF", null);
-			Assert.That(parser2, Is.InstanceOf<SiaParser>());
 		}
 	}
 }
