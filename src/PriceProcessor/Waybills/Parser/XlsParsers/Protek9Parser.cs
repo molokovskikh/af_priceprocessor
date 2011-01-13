@@ -1,9 +1,10 @@
-using System;
+п»їusing System;
 using System.Linq;
 using ExcelLibrary.SpreadSheet;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 {
+/*
 	public class Protek9Parser : IDocumentParser
 	{
 		public Document Parse(string file, Document document)
@@ -13,9 +14,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 			var cell = sheet.Cells[2, 0];
 			var value = cell.StringValue;
 
-			var separator = value.IndexOf(" от ");
-			document.ProviderDocumentId = value.Substring(0, separator).Replace("Счет №", "");
-			document.DocumentDate = DateTime.Parse(value.Substring(separator, value.Length - separator).Replace(" от ", ""));
+			var separator = value.IndexOf(" РѕС‚ ");
+			document.ProviderDocumentId = value.Substring(0, separator).Replace("РЎС‡РµС‚ в„–", "");
+			document.DocumentDate = DateTime.Parse(value.Substring(separator, value.Length - separator).Replace(" РѕС‚ ", ""));
 			foreach(var row in sheet.Cells.Rows.Values.Skip(4))
 			{
 				var line = document.NewLine();
@@ -39,9 +40,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 		{
 			var workbook = Workbook.Load(file);
 			var sheet = workbook.Worksheets[0];
-			return (sheet.Cells[5, 1].StringValue.ToLower().Equals("наименование")) &&
-			       (sheet.Cells[5, 2].StringValue.ToLower().Equals("производитель")) &&
-			       (sheet.Cells[5, 4].StringValue.ToLower().Equals("цена с ндс"));
+			return (sheet.Cells[5, 1].StringValue.ToLower().Equals("РЅР°РёРјРµРЅРѕРІР°РЅРёРµ")) &&
+			       (sheet.Cells[5, 2].StringValue.ToLower().Equals("РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ")) &&
+			       (sheet.Cells[5, 4].StringValue.ToLower().Equals("С†РµРЅР° СЃ РЅРґСЃ"));
 		}
 	}
+*/
 }
