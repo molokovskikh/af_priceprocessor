@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.IO;
 using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
@@ -8,6 +9,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 	{
 		public Document Parse(string file, Document document)
 		{
+			var data = Dbf.Load(file);
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "DOCNAME", "NUM")
 				.DocumentHeader(h => h.DocumentDate, "DATEDOC")
@@ -26,7 +28,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
 				.Line(l => l.ProducerCost, "PRICEENT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS")
-				.ToDocument(document, Dbf.Load(file));
+				.ToDocument(document, data);
+			if (String.Equals(document.ProviderDocumentId.Substring(0, 8), Document.GenerateProviderDocumentId().Substring(0, 8)))
+				document.ProviderDocumentId = Path.GetFileNameWithoutExtension(file);
 			return document;
 		}
 

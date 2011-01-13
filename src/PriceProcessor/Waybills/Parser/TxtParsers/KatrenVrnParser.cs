@@ -35,7 +35,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
-				if ((header.Length != 7) || !header[4].ToLower().Equals("липецк, *липецкфармация аптека 1* огуп "))
+				if ((header.Length != 7) || !header[4].ToLower().Contains("липецк, *липецкфармация аптека "))
 					return false;
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))

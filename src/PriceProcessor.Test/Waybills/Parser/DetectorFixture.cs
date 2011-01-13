@@ -41,6 +41,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var detector1 = new WaybillFormatDetector();
 			var parser1 = detector1.DetectParser(@"..\..\Data\Waybills\264002.txt", null);
 			Assert.That(parser1, Is.InstanceOf<KatrenVrnParser>());
+
+			var detector2 = new WaybillFormatDetector();
+			var parser2 = detector2.DetectParser(@"..\..\Data\Waybills\6155143_Катрен(1849).txt", null);
+			Assert.That(parser2, Is.InstanceOf<KatrenVrnParser>());
+
+			var detect = new WaybillFormatDetector();
+			var parser3 = detect.DetectParser(@"..\..\Data\Waybills\6161231_Сиа Интернейшнл(Р2346542).DBF", null);
+			Assert.That(parser3, Is.InstanceOf<FarmGroupParser>());
 		}
 	}
 }

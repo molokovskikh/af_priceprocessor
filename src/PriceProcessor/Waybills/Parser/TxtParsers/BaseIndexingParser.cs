@@ -241,7 +241,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					return false;
 				if (name.All(n => !parts[3].Equals(n, StringComparison.CurrentCultureIgnoreCase)))
 					return false;
-				if (GetString(parts[4]) == "ЛИПЕЦК, *ЛИПЕЦКФАРМАЦИЯ Аптека 1* ОГУП ")
+				if (GetString(parts[4]) != null && GetString(parts[4]).Contains("ЛИПЕЦК, *ЛИПЕЦКФАРМАЦИЯ Аптека"))
 					return false;
 
 				var line = parser.Body().FirstOrDefault();
