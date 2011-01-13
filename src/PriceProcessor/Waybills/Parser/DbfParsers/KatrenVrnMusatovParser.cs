@@ -20,7 +20,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "GOODE")
 				.Line(l => l.SerialNumber, "SERIAL")
 				.Line(l => l.Period, "DATEB")
-				.Line(l => l.SupplierCostWithoutNDS, "PPRICEWT")
 				.Line(l => l.SupplierCost, "PRICE")
 				.Line(l => l.Quantity, "QUANT")
 				.Line(l => l.SupplierPriceMarkup, "MARGIN")
@@ -29,7 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Producer, "PRODUSER")
-				.Line(l => l.ProducerCost, "PPRICENDS")
+				.Line(l => l.ProducerCost, "PPRICEWT")
 				.Line(l => l.VitallyImportant, "GV")
 				.ToDocument(document, data);
 			return document;

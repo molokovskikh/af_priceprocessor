@@ -19,6 +19,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		private const string StartLineForHeaders = "В следующей строке перечислены";
 
+		private static bool isCorrectBody;
+
 		private static bool IsCommentLine(string line)
 		{
 			return (!String.IsNullOrEmpty(line)) && line[0].Equals(CommentSymbol);
@@ -50,7 +52,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
 				line = reader.ReadLine();
 			if (!IsStartLineForHeaders(line))
+			{
+				isCorrectBody = false;
 				return null;
+			}	
 			var headerParts = new List<string>();
 			while ((line != null) && !IsHeaderBeforeData(line, headerName))
 			{
@@ -140,6 +145,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public Document Parse(string file, Document document)
 		{
+			isCorrectBody = true;
 			using(var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
 			{
 				var line = String.Empty;
@@ -152,6 +158,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				document.DocumentDate = headerDescription.GetDocumentDate(header);
 
 				var bodyDescription = ReadHeader(reader, BodyCaption);
+				if (!isCorrectBody)
+					return null;
 				if (bodyDescription == null)
 					throw new Exception("Не найдено тело накладной");
 

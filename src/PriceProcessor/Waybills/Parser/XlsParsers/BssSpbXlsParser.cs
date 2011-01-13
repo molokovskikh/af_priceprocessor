@@ -5,7 +5,7 @@ using System.Text;
 using ExcelLibrary.BinaryFileFormat;
 using ExcelLibrary.SpreadSheet;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 {
 	public class BssSpbXlsParser : IDocumentParser
 	{

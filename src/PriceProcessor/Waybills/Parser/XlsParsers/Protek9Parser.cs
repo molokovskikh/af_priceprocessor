@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using ExcelLibrary.SpreadSheet;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 {
 	public class Protek9Parser : IDocumentParser
 	{

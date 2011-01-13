@@ -219,6 +219,7 @@
     <Compile Include="Waybills\Parser\SiaXmlParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\AptekaHoldingKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\BiolainFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\KatrenVrnParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\MoronFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\ShafievParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Shafiev_KalugaParserFixture.cs" />
