@@ -29,7 +29,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCost, "PRICEENT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS")
 				.ToDocument(document, data);
-			if (String.Equals(document.ProviderDocumentId.Substring(0, 8), Document.GenerateProviderDocumentId().Substring(0, 8)))
+			if (document.ProviderDocumentId.Length > 8 
+				&& String.Equals(document.ProviderDocumentId.Substring(0, 8), Document.GenerateProviderDocumentId().Substring(0, 8)))
 				document.ProviderDocumentId = Path.GetFileNameWithoutExtension(file);
 			return document;
 		}

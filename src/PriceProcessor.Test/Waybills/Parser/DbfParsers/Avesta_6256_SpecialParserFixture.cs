@@ -20,6 +20,16 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			var doc2 = WaybillParser.Parse("6161231_Сиа Интернейшнл(Р2346542).DBF");
 			Assert.That(doc2.ProviderDocumentId, Is.EqualTo("Р-2346542"));
+
+			var doc3 = WaybillParser.Parse("Р-1098578.DBF");
+			Assert.That(doc3.ProviderDocumentId, Is.EqualTo("2"));
+		}
+
+		[Test]
+		public void Parse()
+		{
+			var doc = WaybillParser.Parse("761517.dbf");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("761517"));
 		}
 	}
 }

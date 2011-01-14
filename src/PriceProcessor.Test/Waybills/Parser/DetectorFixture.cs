@@ -49,6 +49,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var detect = new WaybillFormatDetector();
 			var parser3 = detect.DetectParser(@"..\..\Data\Waybills\6161231_Сиа Интернейшнл(Р2346542).DBF", null);
 			Assert.That(parser3, Is.InstanceOf<FarmGroupParser>());
+
+			var detect1 = new WaybillFormatDetector();
+			var parser4 = detect1.DetectParser(@"..\..\Data\Waybills\761517.dbf", null);
+			Assert.That(parser4, Is.InstanceOf<FarmGroupParser>());
 		}
 	}
 }
