@@ -6,6 +6,7 @@ using System.Linq;
 using Common.Tools;
 using Common.Tools.Calendar;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Properties;
 using MySql.Data.MySqlClient;
 
@@ -15,14 +16,16 @@ namespace Inforoom.PriceProcessor.Rosta
 	{
 		public uint PriceItemId { get; set; }
 		public uint CostId { get; set; }
+		public ulong RegionId { get; set; }
 		public DateTime PlanedOn { get; set; }
 		public string Key { get; set; }
 		public string Hwinfo { get; set; }
 
-		public Plan(uint priceItemId, uint costId, string key, string hwinfo, DateTime lastDownload)
+		public Plan(uint priceItemId, uint costId, ulong regionId, string key, string hwinfo, DateTime lastDownload)
 		{
 			PriceItemId = priceItemId;
 			CostId = costId;
+			RegionId = regionId;
 			Key = key;
 			Hwinfo = hwinfo;
 			if (lastDownload.Year == 2000)
@@ -46,6 +49,7 @@ namespace Inforoom.PriceProcessor.Rosta
 	public class ToConfigure
 	{
 		public uint ClientId;
+		public ulong RegionId;
 		public uint LegalEntityId;
 		public string Key;
 		public string Hwinfo;
@@ -151,26 +155,12 @@ namespace Inforoom.PriceProcessor.Rosta
 			if (parts.Length > 1)
 				motherboard = parts[1];
 
-			MySqlCommand command = null;
-			if (configure.LegalEntityId == 0)
-			{
-				command = new MySqlCommand(@"
-update Usersettings.Intersection i
-set i.FirmClientCode = ?Key, i.FirmClientCode2 = ?cpuid, i.FirmClientCode3 = ?Motherboard, i.CostCode = ?CostId
-where PriceCode = ?PriceId and (i.ClientCode = ?ClientId or i.clientcode in (
-select IncludeClientCode
-from Usersettings.IncludeRegulation ir
-where ir.PrimaryClientCode = ?ClientId));", connection);
-			}
-			else
-			{
-				command = new MySqlCommand(@"
+			var command = new MySqlCommand(@"
 update Future.Intersection i
 join Future.AddressIntersection ai on ai.IntersectionId = i.id
 set i.SupplierClientId = ?Key, ai.SupplierDeliveryId = ?cpuid, i.SupplierPaymentId = ?Motherboard, i.CostId = ?CostId
 where i.PriceId = ?PriceId and i.ClientId = ?ClientId and i.LegalEntityId = ?LegalEntityId;", connection);
-				command.Parameters.AddWithValue("?LegalEntityId", configure.LegalEntityId);
-			}
+			command.Parameters.AddWithValue("?LegalEntityId", configure.LegalEntityId);
 
 			command.Parameters.AddWithValue("?ClientId", configure.ClientId);
 			command.Parameters.AddWithValue("?CostId", plan.CostId);
@@ -242,7 +232,7 @@ select @priceItemId, @costCode;", c);
 					priceItemId = reader.GetUInt32(0);
 					costId = reader.GetUInt32(1);
 				}
-				plan = new Plan(priceItemId, costId, configure.Key, configure.Hwinfo, new DateTime(2000, 01, 01));
+				plan = new Plan(priceItemId, costId, configure.RegionId, configure.Key, configure.Hwinfo, new DateTime(2000, 01, 01));
 				UpdateClient(c, plan, configure);
 			});
 			return plan;
@@ -254,38 +244,7 @@ select @priceItemId, @costCode;", c);
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT pc.PriceItemId, pc.CostCode, pc.CostName, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3, pi.PriceDate
-FROM usersettings.Intersection I
-	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
-	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
-	join Usersettings.priceitems pi on pi.Id = pc.PriceItemId
-	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
-where i.pricecode = ?PriceId
-	and i.InvisibleOnClient = 0
-	and rcs.ServiceClient = 0
-	and ir.Id is null
-	and i.FirmClientCode is not null
-	and i.FirmClientCode <> ''
-	and i.FirmClientCode2 is not null
-	and i.FirmClientCode2 <> ''
-	and pc.BaseCost = 0
-group by pc.PriceItemId;", connection);
-				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
-				var data = new DataSet();
-				adapter.Fill(data);
-				foreach (DataRow row in data.Tables[0].Rows)
-				{
-					plans.Add(new Plan(
-						Convert.ToUInt32(row["PriceItemId"]),
-						Convert.ToUInt32(row["CostCode"]),
-						Convert.ToString(row["FirmClientCode"]),
-						Convert.ToString(row["FirmClientCode2"]) + "\r\n" + Convert.ToString(row["FirmClientCode3"]),
-						Convert.ToDateTime(row["PriceDate"])
-					));
-				}
-
-				adapter.SelectCommand.CommandText = @"
-SELECT pc.PriceItemId, pc.CostName, pc.CostCode, i.ClientId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId, pi.PriceDate
+SELECT pc.PriceItemId, pc.CostName, pc.CostCode, i.ClientId, i.RegionId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId, pi.PriceDate
 FROM Future.Intersection I
   join Future.AddressIntersection ai on ai.IntersectionId = i.Id
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientId
@@ -299,8 +258,9 @@ where i.PriceId = ?PriceId
 	and ai.SupplierDeliveryId is not null
 	and ai.SupplierDeliveryId <> ''
 	and pc.BaseCost = 0
-group by pc.PriceItemId;";
+group by pc.PriceItemId;", connection);
 				var futurePlans = new DataTable();
+				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
 				adapter.Fill(futurePlans);
 
 				return plans.Concat(
@@ -310,6 +270,7 @@ group by pc.PriceItemId;";
 						.Select(r => new Plan (
 							Convert.ToUInt32(r["PriceItemId"]),
 							Convert.ToUInt32(r["CostCode"]),
+							Convert.ToUInt32(r["RegionId"]),
 							Convert.ToString(r["SupplierClientId"]),
 							Convert.ToString(r["SupplierDeliveryId"]) + "\r\n" + r["SupplierPaymentId"],
 							Convert.ToDateTime(r["PriceDate"])
@@ -324,35 +285,7 @@ group by pc.PriceItemId;";
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var adapter = new MySqlDataAdapter(@"
-SELECT i.ClientCode, i.FirmClientCode, i.FirmClientCode2, i.FirmClientCode3
-FROM usersettings.Intersection I
-	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientCode
-	join Usersettings.PricesCosts pc on pc.CostCode = i.CostCode
-	left join Usersettings.IncludeRegulation ir on ir.IncludeClientCode = i.ClientCode
-where i.pricecode = ?PriceId
-	and i.InvisibleOnClient = 0
-	and rcs.ServiceClient = 0
-	and ir.Id is null
-	and i.FirmClientCode is not null
-	and i.FirmClientCode <> ''
-	and i.FirmClientCode2 is not null
-	and i.FirmClientCode2 <> ''
-	and pc.BaseCost = 1
-group by i.ClientCode", connection);
-				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
-				var data = new DataSet();
-				adapter.Fill(data);
-				foreach (DataRow row in data.Tables[0].Rows)
-				{
-					toConfigure.Add(new ToConfigure {
-						ClientId = Convert.ToUInt32(row["ClientCode"]),
-						Key = Convert.ToString(row["FirmClientCode"]),
-						Hwinfo = Convert.ToString(row["FirmClientCode2"]) + "\r\n" + row["FirmClientCode3"],
-					});
-				}
-
-				adapter.SelectCommand.CommandText = @"
-SELECT i.ClientId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId
+SELECT i.ClientId, i.RegionId, i.LegalEntityId, i.SupplierClientId, i.SupplierPaymentId, ai.SupplierDeliveryId
 FROM Future.Intersection I
   join Future.AddressIntersection ai on ai.IntersectionId = i.Id
 	join Usersettings.RetClientsSet rcs on rcs.ClientCode = i.ClientId
@@ -365,8 +298,9 @@ where i.PriceId = ?PriceId
 	and ai.SupplierDeliveryId is not null
 	and ai.SupplierDeliveryId <> ''
 	and pc.BaseCost = 1
-group by i.ClientId, i.LegalEntityId;";
+group by i.ClientId, i.LegalEntityId;", connection);
 				var futurePlans = new DataTable();
+				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", _priceId);
 				adapter.Fill(futurePlans);
 
 				return toConfigure.Concat(
@@ -375,6 +309,7 @@ group by i.ClientId, i.LegalEntityId;";
 						.Cast<DataRow>()
 						.Select(r => new ToConfigure {
 							ClientId = Convert.ToUInt32(r["ClientId"]),
+							RegionId = Convert.ToUInt64(r["RegionId"]),
 							LegalEntityId = Convert.ToUInt32(r["LegalEntityId"]),
 							Key = Convert.ToString(r["SupplierClientId"]),
 							Hwinfo = Convert.ToString(r["SupplierDeliveryId"]) + "\r\n" + r["SupplierPaymentId"],
@@ -421,7 +356,7 @@ group by i.ClientCode;", connection);
 			var price = Path.Combine(Settings.Default.TempPath, "price");
 			var producers = Path.Combine(Settings.Default.TempPath, "producers");
 			var ex = Path.Combine(Settings.Default.TempPath, "ex");
-			try
+			using(var cleaner = new FileCleaner())
 			{
 				if (!Directory.Exists(Settings.Default.TempPath))
 					Directory.CreateDirectory(Settings.Default.TempPath);
@@ -435,11 +370,29 @@ group by i.ClientCode;", connection);
 				if (File.Exists(ex))
 					File.Delete(ex);
 
+				cleaner.Watch(
+					ex, ex + "_source",
+					producers, producers + "_source",
+					price, price + "_source"
+				);
+
+				if (plan.RegionId == 256)
+				{
+					_downloader.Host = "91.144.142.190";
+					_downloader.AdditionReader = new KazanAdditionReader();
+				}
+				else
+				{
+					_downloader.Host = "77.233.165.8";
+					_downloader.AdditionReader = new RostaReader();
+				}
+
 				_downloader.DownloadPrice(plan.Key, plan.Hwinfo, price, producers, ex);
 				using (var connection = new MySqlConnection(Literals.ConnectionString()))
 				{
 					var data = PricesValidator.LoadFormRules(plan.PriceItemId);
 					var parser = new FakeRostaParser(price, producers, ex, connection, data);
+					parser.AdditionReader = _downloader.AdditionReader;
 					connection.Close();
 					parser.Formalize();
 					if (connection.State == ConnectionState.Closed)
@@ -448,15 +401,6 @@ group by i.ClientCode;", connection);
 					command.Parameters.AddWithValue("?id", plan.PriceItemId);
 					command.ExecuteNonQuery();
 				}
-			}
-			finally
-			{
-				if (File.Exists(price))
-					File.Delete(price);
-				if (File.Exists(producers))
-					File.Delete(producers);
-				if (File.Exists(ex))
-					File.Delete(ex);
 			}
 		}
 	}

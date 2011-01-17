@@ -16,6 +16,10 @@ namespace PriceProcessor.Test.Special
 	{
 		public string Hwinfo;
 
+		public string Host { get; set; }
+
+		public IAdditionReader AdditionReader { get; set; }
+
 		public void DownloadPrice(string key, string hwinfo, string price, string producers, string ex)
 		{
 			Hwinfo = hwinfo;
