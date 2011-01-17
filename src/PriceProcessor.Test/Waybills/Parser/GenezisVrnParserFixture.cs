@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_SiaVrn()
 		{
 			var doc = WaybillParser.Parse("Р1926798.DBF");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р1926798"));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("12465"));

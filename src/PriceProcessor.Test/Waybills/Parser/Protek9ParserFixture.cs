@@ -3,10 +3,10 @@ using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
-	[TestFixture, Ignore("Накладные от протека забираются через сервис")]
+	[TestFixture]
 	public class Protek9ParserFixture
 	{
-		[Test]
+		[Test, Ignore("Накладные от протека забираются через сервис")]
 		public void Parse()
 		{
 			var document = WaybillParser.Parse("210734_204533_9487972_1.xls");

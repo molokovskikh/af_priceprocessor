@@ -15,7 +15,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse("14356_4.dbf");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("14356_4"));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			Assert.That(doc.Lines.Count, Is.EqualTo(1));
 			var line = doc.Lines[0];
@@ -40,7 +40,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse2()
 		{
 			var doc = WaybillParser.Parse("14326_4.dbf");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("14326_4"));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			Assert.That(doc.Lines.Count, Is.EqualTo(4));
 			var line = doc.Lines[0];
@@ -65,7 +65,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse3()
 		{
 			var doc = WaybillParser.Parse("14326_0.dbf");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("14326_0"));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			Assert.That(doc.Lines.Count, Is.EqualTo(6));
 			var line = doc.Lines[0];

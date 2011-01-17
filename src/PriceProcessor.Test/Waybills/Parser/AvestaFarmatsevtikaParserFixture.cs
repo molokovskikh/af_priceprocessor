@@ -64,8 +64,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var providerDocId = Document.GenerateProviderDocumentId();
 			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
 
-			Assert.IsTrue(doc.ProviderDocumentId.StartsWith(providerDocId));
+			Assert.IsFalse(doc.ProviderDocumentId.StartsWith(providerDocId));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("79011_10"));
 
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("48834"));
@@ -110,7 +111,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var providerDocId = Document.GenerateProviderDocumentId();
 			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
 
-			Assert.IsTrue(doc.ProviderDocumentId.StartsWith(providerDocId));
+			Assert.IsFalse(doc.ProviderDocumentId.StartsWith(providerDocId));
 			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("41215"));
