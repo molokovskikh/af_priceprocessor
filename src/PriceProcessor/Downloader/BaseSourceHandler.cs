@@ -130,6 +130,11 @@ namespace Inforoom.Downloader
 
 		protected virtual string GetSQLSources()
 		{
+			return GetSourcesCommand(SourceType);
+		}
+
+		public static string GetSourcesCommand(string type)
+		{
 			return String.Format(@"
 SELECT
   pi.Id as PriceItemId,
@@ -150,7 +155,9 @@ SELECT
   st.ArchivePassword,
   st.HTTPLogin, st.HTTPPassword,
   st.PriceMask, st.ExtrMask,
-  pi.LastDownload
+  pi.LastDownload,
+  st.RequestInterval,
+  st.LastSuccessfulCheck
 FROM   
   farm.sourcetypes,
   farm.Sources as st,
@@ -175,7 +182,7 @@ and fr.Id = pi.FormRuleId
 and pf.Id = fr.PriceFormatId
 and cd.FirmStatus   = 1
 and pd.AgencyEnabled= 1", 
-				SourceType);
+				type);
 		}
 
 		protected void CreateDirectoryPath()

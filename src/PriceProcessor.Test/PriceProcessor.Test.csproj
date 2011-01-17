@@ -131,6 +131,7 @@
     <Compile Include="Formalization\RequestTest.cs" />
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
+    <Compile Include="Handlers\HandlerFixture.cs" />
     <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
+    <Compile Include="PriceSourceFixture.cs" />
     <Compile Include="Services\ErrorHandlerFixture.cs" />
     <Compile Include="SetupFixture.cs" />
     <Compile Include="Handlers\PathSourceHandlerTest.cs" />

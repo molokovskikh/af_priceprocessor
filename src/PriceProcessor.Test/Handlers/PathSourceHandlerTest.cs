@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using Common.MySql;
 using NUnit.Framework;
@@ -25,39 +21,34 @@ namespace PriceProcessor.Test.Handlers
 			CreateDirectoryPath();
 		}
 
-		protected override void GetFileFromSource(PriceSource row)
-		{
-			throw new NotImplementedException();
-		}
-
 		[Test]
 		public void TestCheckDownloadInterval()
 		{
-			var source = new FakePriceSource {
+			var source = new PriceSource {
 				PriceDateTime = DateTime.Now,
-				Interval = 10
+				RequestInterval = 10
 			};
-			Assert.IsFalse(CheckDownloadInterval(source));
+			Assert.IsFalse(IsReadyForDownload(source));
 
-			source.Interval = 0;
-			Assert.IsTrue(CheckDownloadInterval(source));
+			source.RequestInterval = 0;
+			Assert.IsTrue(IsReadyForDownload(source));
 
 			source.PriceDateTime = DateTime.Now.Subtract(new TimeSpan(0, 1, 0));
-			source.Interval = 10;
-			Assert.IsTrue(CheckDownloadInterval(source));
+			source.RequestInterval = 10;
+			Assert.IsTrue(IsReadyForDownload(source));
 		}
 
 		[Test]
 		public void TestCheckDownloadInterval_IfFailed()
 		{
-			var source = new FakePriceSource {
+			var source = new PriceSource {
 				PriceDateTime = DateTime.Now,
-				Interval = 10,
+				RequestInterval = 10,
 				PriceItemId = 1,
 			};
 
 			FailedSources.Add(source.PriceItemId);
-			Assert.IsTrue(CheckDownloadInterval(source));
+			Assert.IsTrue(IsReadyForDownload(source));
 		}
 		
 		[Test]
@@ -73,13 +64,13 @@ namespace PriceProcessor.Test.Handlers
 				var likeRows = GetLikeSources(priceSource);
 				foreach (var likeRow in likeRows)
 					likeRow.Delete();
-				dtSources.AcceptChanges();				
+				dtSources.AcceptChanges();
 				listSources.Add(priceSource);
 			}
 			ProcessData();
 
 			foreach (PriceSource item in listSources)
-				Assert.IsTrue(FailedSources.Contains(item.PriceItemId));			
+				Assert.IsTrue(FailedSources.Contains(item.PriceItemId));
 		}
 
 		[Test]
@@ -108,17 +99,5 @@ update farm.sources set sourcetypeid = 3 where sourcetypeid = 2;";
 			With.Connection(connection => { count = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, sql)); });
 			Assert.That(count, Is.EqualTo(2));
 		}
-	}
-
-	public class FakePriceSource : PriceSource
-	{
-		public int Interval;
-
-		public override int RequestInterval
-		{
-			get { return Interval; }
-		}
-
-		public override DateTime PriceDateTime { get; set; }
 	}
 }

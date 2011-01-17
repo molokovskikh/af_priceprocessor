@@ -6,7 +6,8 @@ using System.Data;
 using System.Net.Sockets;
  using Common.Tools;
  using Inforoom.PriceProcessor;
-using LumiSoft.Net.FTP;
+ using log4net;
+ using LumiSoft.Net.FTP;
 using LumiSoft.Net.FTP.Client;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.Common;
@@ -51,6 +52,7 @@ namespace Inforoom.Downloader.Ftp
 	public class FtpDownloader
 	{
 		public IList<FailedFile> FailedFiles = new List<FailedFile>();
+		private static ILog _log = LogManager.GetLogger(typeof(FtpDownloader));
 
 		/// <summary>
 		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
@@ -115,14 +117,12 @@ namespace Inforoom.Downloader.Ftp
 						catch (Exception e)
 						{
 							FailedFiles.Add(new FailedFile(fileInDirectory, e));
-							var log = log4net.LogManager.GetLogger(GetType());
-							log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
+							_log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
 						}
 					}
 					else
 					{
-						var log = log4net.LogManager.GetLogger(GetType());
-						log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
+						_log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
 					}
 				}
 #if !DEBUG

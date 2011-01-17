@@ -161,7 +161,7 @@ GROUP BY SupplierId
 			return downloadedWaybills;
 		}
 
-		private bool IsNeedToDownload(WaybillSource source)
+		public bool IsNeedToDownload(WaybillSource source)
 		{
 			// downloadInterval - в секундах
 			var downloadInterval = source.DownloadInterval;

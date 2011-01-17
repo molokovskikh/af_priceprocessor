@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Downloader;
 using NUnit.Framework;
@@ -22,7 +23,8 @@ namespace PriceProcessor.Test.Handlers
 				var pricePath = (pricesPaths.Length > 0) ? pricesPaths[i] : String.Empty;
 				var priceMask = (pricesMasks.Length > 0) ? pricesMasks[i] : String.Empty;
 				var extrMask = (extrMasks.Length > 0) ? extrMasks[i] : String.Empty;
-				priceItems[i] = TestPriceSource.CreateHttpPriceSource(pricePath, priceMask, extrMask);
+				using(new SessionScope())
+					priceItems[i] = TestPriceSource.CreateHttpPriceSource(pricePath, priceMask, extrMask);
 				var sql = String.Format(@"delete from usersettings.priceitems where SourceId = {0} and Id <> {1}",
 				                        priceItems[i].Source.Id, priceItems[i].Id);
 				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, sql); });
@@ -89,5 +91,6 @@ namespace PriceProcessor.Test.Handlers
 				With.Connection(connection => { countDownlogId = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, querySelectDownlogId)); });
 				Assert.That(countDownlogId, Is.EqualTo(1));
 			}
-		}	}
+		}
+	}
 }
