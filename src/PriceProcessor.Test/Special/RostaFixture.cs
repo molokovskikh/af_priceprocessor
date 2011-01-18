@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Special
 	[TestFixture]
 	public class RostaFixture
 	{
-		private TestOldClient client;
+		private TestClient client;
 		private TestPrice price;
 		private RostaHandler handler;
 		private FakeDownloader downloader;
@@ -49,7 +49,7 @@ namespace PriceProcessor.Test.Special
 				scope.VoteCommit();
 			}
 
-			client = TestOldClient.CreateTestClient(524288UL);
+			client = TestClient.Create(TestRegion.Inforoom);
 		}
 
 		public static TestPrice CreatePriceForRosta()
@@ -98,12 +98,12 @@ namespace PriceProcessor.Test.Special
 		[Test]
 		public void Parser_should_read_period()
 		{
-			TestHelper.Execute(@"update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0}", price.Id);
 			TestHelper.Execute(@"
-update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
-update Usersettings.Intersection 
-set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = ''
-where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
+update Future.Intersection set AvailableForClient = 0 where PriceId = {0};
+update Future.Intersection i
+join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+set i.AvailableForClient = 1, SupplierClientId = '20100111151207-390-12', ai.SupplierDeliveryId = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', i.SupplierPaymentId = '02/05/2007-I945-6A79TG0AC-00'
+where i.PriceId = {0} and i.ClientId = {1}", price.Id, client.Id);
 
 			Process();
 			AssertThatFormalized();
@@ -115,10 +115,11 @@ where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 		public void Create_client_with_only_cpuid()
 		{
 			TestHelper.Execute(@"
-update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
-update Usersettings.Intersection 
-set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = ''
-where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
+update Future.Intersection set AvailableForClient = 0 where PriceId = {0};
+update Future.Intersection i
+join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+set i.AvailableForClient = 1, SupplierClientId = '20100111151207-390-12', ai.SupplierDeliveryId = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', i.SupplierPaymentId = ''
+where i.PriceId = {0} and i.ClientId = {1}", price.Id, client.Id);
 
 			Process();
 			AssertThatFormalized();
@@ -126,20 +127,17 @@ where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 		}
 
 		[Test]
-		public void Create_new_cost_column_if_rosta_uin_configured_but_base_cost_set()
+		public void Create_new_cost_column_if_rosta_uin_configured_but_base_cost_not_set()
 		{
 			TestHelper.Execute(@"
-update Usersettings.Intersection set InvisibleOnClient = 1 where pricecode = {0};
-update Usersettings.Intersection 
-set InvisibleOnClient = 0, FirmClientCode = '20100111151207-390-12', FirmClientCode2 = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', FirmClientCode3 = '02/05/2007-I945-6A79TG0AC-00'
-where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
+update Future.Intersection set AvailableForClient = 0 where PriceId = {0};
+update Future.Intersection i
+join Future.AddressIntersection ai on ai.IntersectionId = i.Id
+set i.AvailableForClient = 1, SupplierClientId = '20100111151207-390-12', ai.SupplierDeliveryId = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', i.SupplierPaymentId = '02/05/2007-I945-6A79TG0AC-00'
+where i.PriceId = {0} and i.ClientId = {1}", price.Id, client.Id);
 
-			var downloader = new FakeDownloader();
-			var handler = new RostaHandler(price.Id, downloader);
-			handler.SleepTime = 1;
+			ProcessOnce();
 
-			handler.StartWork();
-			Thread.Sleep(3.Second());
 			using (new SessionScope())
 			{
 				price = TestPrice.Find(price.Id);
@@ -148,20 +146,17 @@ where pricecode = {0} and clientcode = {1}", price.Id, client.Id);
 				Assert.That(price.Costs[1].Name, Is.EqualTo("20100111151207-390-12"));
 			}
 
-			handler.StopWork();
 		}
 
 		[Test]
 		public void Configure_client_from_future()
 		{
-			var futureClient = TestClient.Create(TestRegion.Inforoom);
-
 			TestHelper.Execute(@"
 update Future.Intersection set AvailableForClient = 0 where PriceId = {0};
 update Future.Intersection i
 join Future.AddressIntersection ai on ai.IntersectionId = i.Id
 set i.AvailableForClient = 1, SupplierClientId = '20100111151207-390-12', ai.SupplierDeliveryId = '00000F65-00020800-0000E49D-BFEBFBFF-605B5101-007D7040-GenuineIntel', i.SupplierPaymentId = '02/05/2007-I945-6A79TG0AC-00'
-where i.PriceId = {0} and i.ClientId = {1}", price.Id, futureClient.Id);
+where i.PriceId = {0} and i.ClientId = {1}", price.Id, client.Id);
 
 			ProcessOnce();
 
@@ -172,7 +167,7 @@ where i.PriceId = {0} and i.ClientId = {1}", price.Id, futureClient.Id);
 				Assert.That(price.Costs[1].BaseCost, Is.False);
 				Assert.That(price.Costs[1].Name, Is.EqualTo("20100111151207-390-12"));
 
-				var intersection = TestIntersection.Queryable.First(i => i.Client == futureClient && i.Price == price);
+				var intersection = TestIntersection.Queryable.First(i => i.Client == client && i.Price == price);
 				Assert.That(intersection.AvailableForClient, Is.True);
 				Assert.That(intersection.Cost, Is.EqualTo(price.Costs[1]));
 			}
