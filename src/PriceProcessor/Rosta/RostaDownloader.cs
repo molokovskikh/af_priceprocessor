@@ -11,6 +11,8 @@ namespace Inforoom.PriceProcessor.Rosta
 {
 	public interface IDownloader
 	{
+		string Host { get; set; }
+		IAdditionReader AdditionReader { get; set; }
 		void DownloadPrice(string key, string hwinfo, string price, string producers, string ex);
 	}
 
@@ -31,6 +33,8 @@ namespace Inforoom.PriceProcessor.Rosta
 		}
 
 		public string Host { get; set; }
+
+		public IAdditionReader AdditionReader { get; set; }
 
 		public void DownloadPrice(string key, string hwinfo,  string price, string producers, string ex)
 		{
@@ -53,9 +57,7 @@ namespace Inforoom.PriceProcessor.Rosta
 						var serverKey = Convert.ToInt32(parts[4].Trim());
 						ReadResponce("HWINFO {0}", RostaDecoder.CryptHwinfo(hwinfo, serverKey));
 					}
-					var columns = "FORCESHOW FULLNAME PACKSTOCK PREDELPRICE ZNVLS ARTICULSID ARTICULSGROUP ABATEDATE MULTIPLY";
-					//роста казань
-					//columns = "FORCESHOW FULLNAME PACKSTOCK ICONS ABATEDATE BARCODE REESTRPRICE710000001 ARTICULSID MULTIPLY";
+					var columns = AdditionReader.AdditionRequest;
 					ReadResponce("SET CODEPAGE WIN1251");
 					ReadResponce("GET EXPORT_PERMISSION");
 					RequestAndDownload("GETZ PRICELISTS");

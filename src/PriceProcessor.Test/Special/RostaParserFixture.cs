@@ -22,24 +22,24 @@ namespace PriceProcessor.Test.Special
 		public void Plan_next_update()
 		{
 			SystemTime.Now = () => DateTime.Parse("11.02.2010 17:19");
-			var plan = new Plan(1, 1, "123", "", DateTime.Now);
+			var plan = new Plan(1, 1, 1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("12.02.2010 6:10")).And.LessThan(DateTime.Parse("12.02.2010 7:40")));
 
 			//если загрузили в пятницу по следующая загрузка в понедельник
 			SystemTime.Now = () => DateTime.Parse("12.02.2010 17:19");
-			plan = new Plan(1, 1, "123", "", DateTime.Now);
+			plan = new Plan(1, 1, 1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 
 			//если priceprocessor остановили и запустили в субботу то грузим а следующая загрузка в подедельник
 			SystemTime.Now = () => DateTime.Parse("13.02.2010 17:19");
-			plan = new Plan(1, 1, "123", "", DateTime.Now);
+			plan = new Plan(1, 1, 1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 
 			SystemTime.Now = () => DateTime.Parse("14.02.2010 17:19");
-			plan = new Plan(1, 1, "123", "", DateTime.Now);
+			plan = new Plan(1, 1, 1, "123", "", DateTime.Now);
 			plan.PlanNextUpdate();
 			Assert.That(plan.PlanedOn, Is.GreaterThan(DateTime.Parse("15.02.2010 6:10")).And.LessThan(DateTime.Parse("15.02.2010 7:40")));
 		}
@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Special
 		[Test]
 		public void Read_extended_columns()
 		{
-			var data = RostaReader.ReadAdditions(@"..\..\Data\rosta\ex");
+			var data = new RostaReader().ReadAdditions(@"..\..\Data\rosta\ex");
 
 			//Супрастин амп.р-р д/ин.  20мг/1мл х 5
 			var addition = data[132];
@@ -61,7 +61,7 @@ namespace PriceProcessor.Test.Special
 		[Test]
 		public void Read_extended_columns_for_kazan()
 		{
-			var additions = RostaReader.ReadAdditions2(@"..\..\Data\rosta\ex_kazan");
+			var additions = new KazanAdditionReader().ReadAdditions(@"..\..\Data\rosta\ex_kazan");
 			var addition = additions.First(a => a.Id == 16718);
 			Assert.That(addition.VitallyImportant, Is.True);
 			Assert.That(Math.Round(addition.RegistryCost, 2), Is.EqualTo(55.67));
@@ -121,6 +121,7 @@ namespace PriceProcessor.Test.Special
 					connection, 
 					data);
 				connection.Close();
+				parser.AdditionReader = new RostaReader();
 				parser.Formalize();
 				if (connection.State == ConnectionState.Closed)
 					connection.Open();

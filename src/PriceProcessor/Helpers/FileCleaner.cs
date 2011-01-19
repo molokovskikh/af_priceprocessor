@@ -15,6 +15,11 @@ namespace Inforoom.PriceProcessor.Helpers
 			_files.Add(file);
 		}
 
+		public void Watch(params string[] files)
+		{
+			_files.AddRange(files);
+		}
+
 		public void Watch(IEnumerable<string> files)
 		{
 			_files.AddRange(files);

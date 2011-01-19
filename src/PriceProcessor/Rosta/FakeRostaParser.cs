@@ -81,6 +81,7 @@ namespace Inforoom.PriceProcessor.Rosta
 	{
 		private string _producersFilename;
 		private string _additionDataFileName;
+		public IAdditionReader AdditionReader;
 
 		public FakeRostaParser(string priceFileName, string groupsFileName, string additionDataFileName, MySqlConnection connection, DataTable data)
 			: base(priceFileName, connection, data)
@@ -120,7 +121,7 @@ namespace Inforoom.PriceProcessor.Rosta
 				}
 			}
 
-			var additions = RostaReader.ReadAdditions(_additionDataFileName);
+			var additions = AdditionReader.ReadAdditions(_additionDataFileName);
 
 			using(var file = File.OpenRead(priceFileName))
 			{
@@ -164,8 +165,22 @@ namespace Inforoom.PriceProcessor.Rosta
 	}
 
 
-	public class RostaReader
+	public interface IAdditionReader
 	{
+		string AdditionRequest{ get; }
+		List<AditionData> ReadAdditions(string filename);
+	}
+
+	public class RostaReader : IAdditionReader
+	{
+		public string AdditionRequest
+		{
+			get
+			{
+				return "FORCESHOW FULLNAME PACKSTOCK PREDELPRICE ZNVLS ARTICULSID ARTICULSGROUP ABATEDATE MULTIPLY";
+			}
+		}
+
 		//длинна 244 байта
 		//4 байта - код из прайса
 		//80 байт (возможно меньше) - наименование
@@ -173,7 +188,7 @@ namespace Inforoom.PriceProcessor.Rosta
 		//c 88, 4 байта - float предельная зарегистрированная цена
 		//c 92, 5 байт может больше - строка, ЖНВЛС
 		//c 232, 8 байт - double в виде TDateTime
-		public static List<AditionData> ReadAdditions(string filename)
+		public List<AditionData> ReadAdditions(string filename)
 		{
 			var result = new List<AditionData>();
 			using(var file = File.OpenRead(filename))
@@ -195,6 +210,17 @@ namespace Inforoom.PriceProcessor.Rosta
 			}
 			return result;
 		}
+	}
+
+	public class KazanAdditionReader : IAdditionReader
+	{
+		public string AdditionRequest
+		{
+			get
+			{
+				return "FORCESHOW FULLNAME PACKSTOCK ICONS ABATEDATE BARCODE REESTRPRICE710000001 ARTICULSID MULTIPLY";
+			}
+		}
 
 		//4 байта - идентификатор
 		//80 байт - наименование строка заканчивается 0, оставшиеся данные забиты мусором
@@ -205,7 +231,7 @@ namespace Inforoom.PriceProcessor.Rosta
 		//4 байта - цена гос реестра
 		//4 байта - код товара
 		//4 байта - кратность
-		public static List<AditionData> ReadAdditions2(string filename)
+		public List<AditionData> ReadAdditions(string filename)
 		{
 			var result = new List<AditionData>();
 			using (var file = File.OpenRead(filename))
