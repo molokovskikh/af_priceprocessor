@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Handlers
 				@return = new EZakazXML {
 					blading = new[] {
 						new Blading {
-							bladingId = 1
+							bladingId = 1,
 						},
 					}
 				}
@@ -58,7 +58,7 @@ namespace PriceProcessor.Test.Handlers
 					blading = new [] {
 						new Blading {
 							bladingId = 1,
-							clientOrderId = (int?) orderId,
+							@uint = (int?) orderId,
 							bladingItems = new [] {
 								new BladingItem {
 									itemId = 3345,
@@ -76,13 +76,13 @@ namespace PriceProcessor.Test.Handlers
 					}
 				}
 			};
-
+			
 			fake.Process();
 
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
-				Assert.That(documents.Count, Is.EqualTo(1));
+				Assert.That(documents.Count, Is.EqualTo(2));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.That(documents[0].Log, Is.Not.Null);

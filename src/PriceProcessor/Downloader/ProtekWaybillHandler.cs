@@ -96,7 +96,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
-				_logger.InfoFormat("Получили накладные, всего {0} для сесии {1}", responce.@return.blading.Length, sessionId);
+				_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 				try
 				{
 					foreach (var blading in responce.@return.blading)
