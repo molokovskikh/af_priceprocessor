@@ -179,6 +179,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVrnMusatovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronSaratovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Moron_SpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\NormanVrnParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalOmskParserFixture.cs" />

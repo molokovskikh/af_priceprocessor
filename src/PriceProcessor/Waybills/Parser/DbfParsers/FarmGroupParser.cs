@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
-				.Line(l => l.ProducerCost, "PRICEENT")
+				.Line(l => l.ProducerCost, "PRICEENT", "PPRICEWT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS")
 				.ToDocument(document, data);
 			if (document.ProviderDocumentId.Length > 8
