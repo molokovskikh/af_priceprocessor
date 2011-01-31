@@ -152,49 +152,93 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("DocumentId")]
 		public Document Document { get; set; }
 
+		/// <summary>
+		/// Наименование продукта
+		/// </summary>
 		[Property]
 		public string Product { get; set; }
 
+		/// <summary>
+		/// Код товара
+		/// </summary>
 		[Property]
 		public string Code { get; set; }
 
-		//Информация о сертификате это строка что то вроде РОСС.NL.ФМ09.Д00778
+		/// <summary>
+		/// Информация о сертификате это строка что то вроде РОСС.NL.ФМ09.Д00778
+		/// </summary>
 		[Property]
 		public string Certificates { get; set; }
 
+		/// <summary>
+		/// Срок годности
+		/// </summary>
 		[Property]
 		public string Period { get; set; }
 
+		/// <summary>
+		/// Производитель
+		/// </summary>
 		[Property]
 		public string Producer { get; set; }
 
+		/// <summary>
+		/// Страна производителя
+		/// </summary>
 		[Property]
 		public string Country { get; set; }
 
+		/// <summary>
+		/// Цена производителя без НДС
+		/// </summary>
 		[Property]
 		public decimal? ProducerCost { get; set; }
 
+		/// <summary>
+		/// Цена государственного реестра
+		/// </summary>
 		[Property]
 		public decimal? RegistryCost { get; set; }
 
+		/// <summary>
+		/// Наценка поставщика
+		/// </summary>
 		[Property]
 		public decimal? SupplierPriceMarkup { get; set; }
 
+		/// <summary>
+		/// Ставка налога на добавленную стоимость
+		/// </summary>
 		[Property]
 		public uint? Nds { get; set; }
 
+		/// <summary>
+		/// Цена поставщика без НДС
+		/// </summary>
 		[Property]
 		public decimal? SupplierCostWithoutNDS { get; set; }
 
+		/// <summary>
+		/// Цена поставщика с НДС
+		/// </summary>
 		[Property]
 		public decimal? SupplierCost { get; set; }
 
+		/// <summary>
+		/// Количество
+		/// </summary>
 		[Property]
 		public uint? Quantity { get; set; }
 
+		/// <summary>
+		/// Признак ЖНВЛС
+		/// </summary>
 		[Property]
 		public bool? VitallyImportant { get; set; }
 
+		/// <summary>
+		/// Серийный номер продукта
+		/// </summary>
 		[Property]
 		public string SerialNumber { get; set; }
 
