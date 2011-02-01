@@ -240,10 +240,14 @@ where i.SupplierClientId = ?id and i.PriceId = ?priceId";
 
 		private void FormalizePrice(PriceXmlReader reader, DataRow priceInfo, PriceCost cost)
 		{
-			priceInfo["PriceCode"] = cost.Price.Id;
-			priceInfo["CostCode"] = cost.Id;
-			priceInfo["PriceItemId"] = cost.PriceItemId;
-			var parser = new BasePriceParser2(reader, priceInfo);
+			var info = new PriceFormalizationInfo(priceInfo);
+
+			info.IsUpdating = true;
+			info.CostCode = cost.Id;
+			info.PriceItemId = cost.PriceItemId;
+			info.PriceCode = cost.Price.Id;
+
+			var parser = new BasePriceParser2(reader, info);
 			parser.Downloaded = Downloaded;
 			parser.Formalize();
 			formCount += parser.Stat.formCount;

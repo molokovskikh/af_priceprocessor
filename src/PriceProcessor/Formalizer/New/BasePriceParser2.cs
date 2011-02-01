@@ -89,36 +89,37 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private ProducerResolver _producerResolver;
 
-		/// <summary>
-		/// Конструктор парсера
-		/// </summary>
-		public BasePriceParser2(IReader reader, DataRow priceInfo)
+		public BasePriceParser2(IReader reader, PriceFormalizationInfo priceInfo)
 		{
 			_logger = LogManager.GetLogger(GetType());
 			_reader = reader;
 
-			_priceInfo = new PriceFormalizationInfo(priceInfo);
+			_priceInfo = priceInfo;
 
 			_connection = new MySqlConnection(Literals.ConnectionString());
 			dsMyDB = new DataSet();
 
 			priceItemId = _priceInfo.PriceItemId;
-			parentSynonym = _priceInfo.ParentSynonym; 
+			parentSynonym = _priceInfo.ParentSynonym;
 			costType = _priceInfo.CostType;
 
-			prevRowCount = priceInfo[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(priceInfo[FormRules.colPrevRowCount]);
+			prevRowCount = _priceInfo.PrevRowCount;
 
 			string selectCostFormRulesSQL;
 			if (costType == CostTypes.MultiColumn)
 				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", _priceInfo.PriceCode);
 			else
 				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", _priceInfo.PriceCode, _priceInfo.CostCode.Value);
-			var daPricesCost = new MySqlDataAdapter(selectCostFormRulesSQL, _connection );
+			var daPricesCost = new MySqlDataAdapter(selectCostFormRulesSQL, _connection);
 			var dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);
 			_reader.CostDescriptions = dtPricesCost.Rows.Cast<DataRow>().Select(r => new CostDescription(r)).ToList();
 			_logger.DebugFormat("Загрузили цены {0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode);
 		}
+
+		public BasePriceParser2(IReader reader, DataRow priceInfo)
+			: this(reader, new PriceFormalizationInfo(priceInfo))
+		{}
 
 		/// <summary>
 		/// Вставка в таблицу запрещенных предложений
