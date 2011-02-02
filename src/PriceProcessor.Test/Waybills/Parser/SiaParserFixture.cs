@@ -338,5 +338,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(21.55));
 			Assert.That(document.Lines[1].SupplierCostWithoutNDS, Is.EqualTo(8.98));
 		}
+
+		[Test]
+		public void Parse_suplier_cost_without_nds()
+		{
+			var doc = WaybillParser.Parse("6868203_СИА Интернейшнл-Казань(Р-646580).DBF");
+			var line = doc.Lines[6];
+			Assert.That(line.SupplierCost, Is.EqualTo(398.75));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(337.46));
+			Assert.That(line.ProducerCost, Is.EqualTo(362.50));
+		}
 	}
 }

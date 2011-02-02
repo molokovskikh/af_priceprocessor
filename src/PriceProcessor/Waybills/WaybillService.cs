@@ -254,9 +254,10 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public void SetNds(decimal nds)
 		{
-			SupplierCostWithoutNDS = null;
-			if (SupplierCost.HasValue)
-				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value/(1 + nds/100), 2);
+			if (SupplierCost.HasValue && !SupplierCostWithoutNDS.HasValue)
+				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value / (1 + nds / 100), 2);
+			else if (!SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue)
+				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value * (1 + nds / 100), 2);
 			Nds = (uint?) nds;
 		}
 
