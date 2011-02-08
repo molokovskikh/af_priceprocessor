@@ -344,7 +344,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var doc = WaybillParser.Parse("6868203_СИА Интернейшнл-Казань(Р-646580).DBF");
 			var line = doc.Lines[6];
-			Assert.That(line.SupplierCost, Is.EqualTo(398.75));
+			Assert.That(line.SupplierCost, Is.EqualTo(371.21));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(337.46));
 			Assert.That(line.ProducerCost, Is.EqualTo(362.50));
 		}

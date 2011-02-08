@@ -61,17 +61,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = ParseHelper.GetDecimal(r["PR_PROIZ"].ToString());
 
-				if (data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("PRICE") && data.Columns.Contains("GVLS"))
-				{
-					line.SupplierCost = ParseHelper.GetDecimal(r["PR_S_NDS"].ToString());
-					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
-				}
-				else if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE"))
+				if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE"))
 				{
 					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());
 					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
 				}
-				else if (data.Columns.Contains("BARCODE") && !data.Columns.Contains("srok_prep"))
+				else if ((data.Columns.Contains("BARCODE") && !data.Columns.Contains("srok_prep"))
+					|| data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("PRICE") && data.Columns.Contains("GVLS"))
 					line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				else
 					line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
