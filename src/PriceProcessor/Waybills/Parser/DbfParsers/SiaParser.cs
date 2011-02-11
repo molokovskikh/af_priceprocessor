@@ -60,10 +60,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = ParseHelper.GetDecimal(r["PR_PROIZ"].ToString());
-				if (data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("GVLS"))
-					line.SupplierCost = ParseHelper.GetDecimal(r["PR_S_NDS"].ToString());
+
+				if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE"))
+				{
+					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());
+					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
+				}
+				else if ((data.Columns.Contains("BARCODE") && !data.Columns.Contains("srok_prep"))
+					|| data.Columns.Contains("PR_S_NDS") && data.Columns.Contains("PRICE") && data.Columns.Contains("GVLS"))
+					line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				else
 					line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
+
 				if (data.Columns.Contains("NACENKA"))
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r["NACENKA"].ToString());
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
@@ -78,18 +86,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				if (!Convert.IsDBNull(r["PCT_NDS"])) 
 					line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
-				if (data.Columns.Contains("BARCODE") && (!data.Columns.Contains("srok_prep"))) 
-				{
-					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
-					line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
-				}
+
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = ParseHelper.GetBoolean(r[vitallyImportantColumn].ToString());
-				if (data.Columns.Contains("PRICE_NDS"))
-				{
-					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());
-					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
-				}
 			    return line;
 			}).ToList();
 			return document;

@@ -223,7 +223,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AralMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AralPlusParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\Avesta_6256_SpecialParser.cs" />
+    <Compile Include="Waybills\Parser\Avesta_6256_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser.cs" />

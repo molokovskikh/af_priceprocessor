@@ -10,6 +10,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	{
 		public long PriceItemId;
 		public long ParentSynonym;
+		public long PrevRowCount;
 
 		public PriceFormalizationInfo(DataRow row)
 		{
@@ -34,6 +35,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				PricePurpose |= PricePurpose.Assortment;
 			if (firmSegment == 1)
 				PricePurpose |= PricePurpose.Helper;
+			PrevRowCount = row[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(row[FormRules.colPrevRowCount]);
 		}
 
 		public string PriceName { get; set; }
@@ -47,7 +49,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public bool FormByCode { get; set; }
 		public bool IsAssortmentPrice { get; set; }
 		public CostTypes CostType { get; set; }
-		public bool IsUpdating { get; set;}
+		public bool IsUpdating { get; set; }
 
 		public PricePurpose PricePurpose { get; set; }
 	}

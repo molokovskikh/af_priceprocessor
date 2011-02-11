@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -93,16 +94,22 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private static Type DetectParser(string file, string group)
 		{
+			return GetSuitableParsers(file, group).FirstOrDefault();
+		}
+
+		public static IEnumerable<Type> GetSuitableParsers(string file, string group)
+		{
 			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
-			var types = typeof (WaybillFormatDetector)
+			var types = typeof(WaybillFormatDetector)
 				.Assembly
 				.GetTypes()
-				.Where(t => t.Namespace.EndsWith(@namespace) 
+				.Where(t => t.Namespace.EndsWith(@namespace)
 					&& t.IsPublic
 					&& !t.IsAbstract
 					&& typeof(IDocumentParser).IsAssignableFrom(t))
 				.ToList();
 
+			types = types.OrderBy(t => t.Name).ToList();
 			foreach (var type in types)
 			{
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
@@ -112,18 +119,19 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (group == "Dbf")
 				{
 					var data = Dbf.Load(file);
-					args = new [] {data};
+					args = new[] { data };
 				}
 				else
 				{
-					args = new[] {file};
+					args = new[] { file };
 				}
 				var result = (bool)detectFormat.Invoke(null, args);
 				if (result)
-					return type;
+					yield return type;
 			}
-			return null;
+			yield break;
 		}
+
 
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
 		{

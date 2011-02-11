@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.Linq;
+﻿using System.Data;
 using System.Text;
 using Common.Tools;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
+namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	public class Avesta_6256_SpecialParser : UnsafeBaseDbfParser
 	{

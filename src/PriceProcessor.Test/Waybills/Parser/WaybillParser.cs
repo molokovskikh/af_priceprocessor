@@ -9,6 +9,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
@@ -30,8 +31,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var detector = new WaybillFormatDetector();
 			if (!File.Exists(filePath))
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
-			CheckUniqueDbfParser(filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
+			if (!(parser is Avesta_6256_SpecialParser))
+				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;
 			return parser.Parse(filePath, new Document());
@@ -41,37 +43,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			if (Path.GetExtension(file.ToLower()) != ".dbf")
 				return;
-			var types = typeof(WaybillFormatDetector)
-				.Assembly
-				.GetTypes()
-				.Where(t => t.Namespace.EndsWith("Waybills.Parser.DbfParsers") && t.IsPublic)
-				.ToList();
 
-			var count = 0;
-			foreach (var type in types)
-			{
-				// Пропускаем этот парсер, потому что он определяется по коду поставщика
-				// и чтобы не возникала ошибка "Для разбора данного формата подходит более одного парсера"
-				if (type == typeof(Avesta_6256_SpecialParser))
-					continue;
-				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
-				if (detectFormat == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-				DataTable data = null;
-				try
-				{
-					data = Dbf.Load(file);
-				}
-				catch (DbfException)
-				{
-					data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
-				}
-				var result = (bool)detectFormat.Invoke(null, new object[] { data });
-				if (result)
-					count++;
-			}
-			if (count > 1)
-				throw new Exception("Для разбора данного формата подходит более одного парсера");
+			var parsers = WaybillFormatDetector.GetSuitableParsers(file, "Dbf").ToList();
+
+			if (parsers.Count > 1)
+				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));
 		}
 
 		public static IDocumentParser GetParserType(string filePath, DocumentReceiveLog documentLog)
