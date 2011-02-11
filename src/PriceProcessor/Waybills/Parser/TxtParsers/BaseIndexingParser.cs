@@ -158,6 +158,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
+		protected static DateTime? GetDateTime(string value)
+		{
+			var decimalVal = GetString(value);
+			if (decimalVal == null)
+				return null;
+			DateTime intVal;
+			if (!DateTime.TryParse(decimalVal, out intVal))
+				return null;
+			if (intVal != Convert.ToDateTime("01.01.0001 00:00:00"))
+				return intVal;
+			return null;
+		}
+
 		public virtual Document Parse(string file, Document document)
 		{
 			SetIndexes();
