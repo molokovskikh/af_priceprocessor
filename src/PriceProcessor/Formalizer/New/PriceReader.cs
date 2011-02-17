@@ -231,7 +231,7 @@ PriceProcessor.");
 
 			do
 			{
-				var name = GetFieldValue(PriceFields.Name1, true);
+				var name = GetFieldValue(PriceFields.Name1);
 
 				if (String.IsNullOrEmpty(name))
 					continue;
@@ -241,7 +241,7 @@ PriceProcessor.");
 				var position = new FormalizationPosition {
 					PositionName = name,
 					Code = GetFieldValue(PriceFields.Code),
-					OriginalName = GetFieldValue(PriceFields.OriginalName, true),
+					OriginalName = GetFieldValue(PriceFields.OriginalName),
 					FirmCr = GetFieldValue(PriceFields.FirmCr)
 				};
 
@@ -456,24 +456,8 @@ PriceProcessor.");
 		}
 
 		/// <summary>
-		/// Получить значение поле в нижнем регистре
-		/// </summary>
-		/// <param name="PF"></param>
-		/// <param name="LowerCase"></param>
-		/// <returns></returns>
-		public virtual string GetFieldValue(PriceFields PF, bool LowerCase)
-		{
-			string Value = GetFieldValue(PF);
-			if ((null != Value) && LowerCase)
-				return Value.ToLower();
-			return Value;
-		}
-
-		/// <summary>
 		/// Получить значение поля как объект
 		/// </summary>
-		/// <param name="PF"></param>
-		/// <returns></returns>
 		public virtual object GetFieldValueObject(PriceFields PF)
 		{
 			switch((int)PF)

@@ -1860,7 +1860,7 @@ and r.RegionCode = cd.RegionCode",
 		{
 			do
 			{
-				var posName = GetFieldValue(PriceFields.Name1, true);
+				var posName = GetFieldValue(PriceFields.Name1);
 
 				if (String.IsNullOrEmpty(posName))
 					continue;
@@ -1888,8 +1888,8 @@ and r.RegionCode = cd.RegionCode",
 				var position = new FormalizationPosition {
 					PositionName = posName,
 					Code = GetFieldValue(PriceFields.Code),
-					OriginalName = GetFieldValue(PriceFields.OriginalName, true),
-					FirmCr = GetFieldValue(PriceFields.FirmCr, true)
+					OriginalName = GetFieldValue(PriceFields.OriginalName),
+					FirmCr = GetFieldValue(PriceFields.FirmCr)
 				};
 
 				GetProductId(position);
@@ -2036,24 +2036,8 @@ and r.RegionCode = cd.RegionCode",
 		}
 
 		/// <summary>
-		/// Получить значение поле в нижнем регистре
-		/// </summary>
-		/// <param name="PF"></param>
-		/// <param name="LowerCase"></param>
-		/// <returns></returns>
-		public virtual string GetFieldValue(PriceFields PF, bool LowerCase)
-		{
-			string Value = GetFieldValue(PF);
-			if ((null != Value) && LowerCase)
-				return Value.ToLower();
-			return Value;
-		}
-
-		/// <summary>
 		/// Получить значение поля как объект
 		/// </summary>
-		/// <param name="PF"></param>
-		/// <returns></returns>
 		public virtual object GetFieldValueObject(PriceFields PF)
 		{
 			switch((int)PF)
