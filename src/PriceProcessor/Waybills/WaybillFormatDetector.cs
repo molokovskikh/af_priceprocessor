@@ -110,22 +110,25 @@ namespace Inforoom.PriceProcessor.Waybills
 				.ToList();
 
 			types = types.OrderBy(t => t.Name).ToList();
+            
+            object[] args;
+            if (group == "Dbf")
+            {
+                var data = Dbf.Load(file);
+                args = new[] { data };
+            }
+            else
+            {
+                args = new[] { file };
+            }
+
 			foreach (var type in types)
 			{
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-				object[] args;
-				if (group == "Dbf")
-				{
-					var data = Dbf.Load(file);
-					args = new[] { data };
-				}
-				else
-				{
-					args = new[] { file };
-				}
-				var result = (bool)detectFormat.Invoke(null, args);
+				
+                var result = (bool)detectFormat.Invoke(null, args);
 				if (result)
 					yield return type;
 			}

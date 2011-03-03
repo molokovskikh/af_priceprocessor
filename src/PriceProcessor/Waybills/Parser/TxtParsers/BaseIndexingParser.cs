@@ -126,7 +126,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			SupplierCostWithoutNdsIndex = -1;
 		}
 
-		protected static decimal? GetDecimal(string value)
+		protected static int ? GetInteger(string value)
+		{
+            if (String.IsNullOrEmpty(value))
+                return null;
+		    int res;
+            if (int.TryParse(value, out res))
+                return res;
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out res))
+                return res;
+		    return null;
+		}
+
+	    protected static decimal? GetDecimal(string value)
 		{
 			if (String.IsNullOrEmpty(value))
 				return null;

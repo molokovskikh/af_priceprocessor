@@ -213,6 +213,7 @@
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\KatrenLipezkParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\BssSpbXlsParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllinceHealthcareParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AntKazanParser.cs" />
