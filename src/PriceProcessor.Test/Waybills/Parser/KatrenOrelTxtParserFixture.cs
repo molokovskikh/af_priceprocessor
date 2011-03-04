@@ -94,7 +94,36 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[2].SupplierPriceMarkup, Is.EqualTo(205.64));
 		}
 
-		[Test]
+        [Test]
+        public void Parse_Katren_Lipezk()
+        {
+            var doc = WaybillParser.Parse(@"..\..\Data\Waybills\2569__1_.txt");
+            Assert.That(doc.Lines.Count, Is.EqualTo(5));
+            Assert.That(doc.ProviderDocumentId, Is.EqualTo("2569"));
+            Assert.That(doc.DocumentDate, Is.EqualTo((Convert.ToDateTime("18.10.2007"))));
+
+            Assert.That(doc.Lines[0].Code, Is.EqualTo("15949"));
+            Assert.That(doc.Lines[0].Product, Is.EqualTo("МАНИНИЛ 0,0035 N120 ТАБЛ"));
+            Assert.That(doc.Lines[0].Producer, Is.EqualTo("Берлин-Хеми АГ/Менарини Групп"));
+            Assert.That(doc.Lines[0].Country, Is.EqualTo("германия"));
+            Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+            Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(83.74));
+            Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(102.08));
+            Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(92.80));
+            Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+            Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("72560"));
+            Assert.That(doc.Lines[0].Period, Is.EqualTo("01.06.2010"));
+            Assert.That(doc.Lines[0].Certificates, Is.EqualTo("Б/Н"));
+            Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(124.39));
+
+            Assert.That(doc.Lines[1].VitallyImportant, Is.True);
+            Assert.That(doc.Lines[3].VitallyImportant, Is.False);
+            Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(9.06));
+            Assert.That(doc.Lines[4].SupplierPriceMarkup, Is.EqualTo(1.44));
+
+        }
+
+	    [Test]
 		public void CheckFileFormat()
 		{
 			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3633567_0_17202011.xml"));
@@ -105,6 +134,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\82936.txt"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3767013_Катрен(91136).txt"));
+            Assert.IsTrue(KatrenLipezkParser.CheckFileFormat(@"..\..\Data\Waybills\2569__1_.txt"));
 		}
 
 		[Test]
