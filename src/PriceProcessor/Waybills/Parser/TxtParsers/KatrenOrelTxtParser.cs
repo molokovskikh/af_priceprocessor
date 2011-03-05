@@ -23,15 +23,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				var header = reader.ReadLine().Split(';');
 				if ((header.Length != 7) || !header[3].ToLower().Contains("зао нпк катрен"))
 					return false;
+
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))
 					return false;
-				var body = reader.ReadLine().Split(';');
-				if (GetDecimal(body[6]) == null)
+				
+                var body = reader.ReadLine().Split(';');
+                if (GetDecimal(body[6]) == null)
 					return false;
-				if (GetDateTime(body[16]) != null)
-					return false;
-
+				//if (GetDateTime(body[16]) != null)
+					//return false;
+                if (GetDateTime(body[10]) == null)
+                    return false;
 			}
 			return true;
 		}

@@ -44,12 +44,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                 var body = reader.ReadLine().Split(';');
                 if (GetDecimal(body[6]) == null)
                     return false;
+                //если нет числа в колонке, то не подходит парсер
                 if (GetDecimal(body[7]) == null)
+                    return false;
+                //но если там есть число, то проверяем, чтобы оно не было целым, так как в этом случае должен сработать парсер
+                //KatrenVrnParser. Там нет колонки SupplierCostWithoutNdsIndex между SupplierCostIndex и NdsIndex. Остальное все тоже самое
+                if (GetDecimal(body[7]) != null && GetInteger(body[7]) != null)
                     return false;
                 if (GetInteger(body[8]) == null)
                     return false;
-                if (GetDecimal(body[18]) == null)
-                    return false;
+                //Убрал проверку по RegistryCostIndex, так как она не объективна. Потому что RegistryCost может быть и пустым значением.
+                //if (GetDecimal(body[18]) == null)
+                  //  return false;
 
             }
             return true;
