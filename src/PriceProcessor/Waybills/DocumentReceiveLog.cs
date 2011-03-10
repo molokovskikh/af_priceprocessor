@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
-using Castle.ActiveRecord.Linq;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
+using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
