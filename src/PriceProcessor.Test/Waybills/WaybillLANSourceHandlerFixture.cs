@@ -14,6 +14,8 @@ using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.log4net;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
+using WaybillSourceType = Test.Support.WaybillSourceType;
+using System.Data;
 
 namespace PriceProcessor.Test
 {
@@ -179,6 +181,20 @@ where a.Id = ?AddressId", connection);
 		{
 			var beign = DateTime.Now;
 			var filter = new EventFilter<WaybillSourceHandler>();
+			var supplier = TestOldClient.CreateTestSupplier();
+
+			const string email = "edata@msk.katren.ru";
+			uint firmId = 0;
+			
+			var query = string.Format("select FirmCode from documents.waybill_sources where EMailFrom LIKE '%{0}%' LIMIT 1;", email);
+			With.Connection(connection => { uint.TryParse(MySqlHelper.ExecuteScalar(connection, query).ToString(), out firmId);});
+			
+			if(firmId == 0)
+			{
+				var waybillsource = new TestWaybillSource() { EMailFrom = email, SourceType = WaybillSourceType.Email };
+				waybillsource.Id = supplier.Id;
+				waybillsource.Create();
+			}
 
 			var client = TestOldClient.CreateTestClient();
 			var settings = WaybillSettings.Find(client.Id);
@@ -188,7 +204,7 @@ where a.Id = ?AddressId", connection);
 			TestHelper.ClearImapFolder();
 			TestHelper.StoreMessageWithAttachToImapFolder(
 				String.Format("{0}@waybills.analit.net", client.Id),
-				"edata@msk.katren.ru",
+				email,
 				@"..\..\Data\Waybills\8916.dbf");
 
 			Process();

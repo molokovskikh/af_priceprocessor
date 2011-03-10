@@ -230,6 +230,7 @@
     <Compile Include="Waybills\Parser\UkonDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\UkonParserFixture.cs" />
     <Compile Include="Waybills\Parser\WaybillParser.cs" />
+    <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
