@@ -8,7 +8,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public Encoding Encdoing;
 
-		public Document Parse(string file, Document document)
+		public virtual Document Parse(string file, Document document)
 		{
 			DataTable data;
 			if (Encdoing == null)
