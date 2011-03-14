@@ -86,7 +86,7 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
-        }
+		}
 
 		[Test]
 		public void Parse_waybill_without_header()
@@ -119,5 +119,5 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-    }
+	}
 }
