@@ -43,13 +43,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				var body = reader.ReadLine().Split(';');
 				if (GetDecimal(body[6]) == null)
 					return false;
-                if (GetDateTime(body[11]) == null)
-                    return false;
-                //Так как в столбце с датами могут попадаться символы ".." ,
-                //то проверка по этому столбцу не всегда проходит корректно, хотя парсер подходит.
+				if (GetDateTime(body[11]) == null)
+					return false;
+				//Так как в столбце с датами могут попадаться символы ".." ,
+				//то проверка по этому столбцу не всегда проходит корректно, хотя парсер подходит.
 				//if (GetDateTime(body[16]) == null)
 					//return false;
-
 			}
 			return true;
 		}
