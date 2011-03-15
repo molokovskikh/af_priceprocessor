@@ -9,6 +9,7 @@ using Castle.ActiveRecord.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
+using NHibernate.Criterion;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -68,6 +69,19 @@ namespace Inforoom.PriceProcessor.Waybills
 			ClientCode = log.ClientCode.Value;
 			AddressId = log.AddressId;
 			DocumentType = DocType.Waybill;
+		}
+
+		public Document SetProductId()
+		{
+			var synonyms = SynonymProduct.Queryable
+										.Select(t => t.Synonym)
+										.Where(
+													synonym => Lines.Where(
+																			line => line.Product == synonym
+																			).Count() > 0
+												);
+			
+			return this;
 		}
 
 		[PrimaryKey]
@@ -150,6 +164,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("DocumentId")]
 		public Document Document { get; set; }
 
+		/// <summary>
+		/// Id продукта
+		/// </summary>
+		[Property]
+		public int ProductId { get; set; }
+		
 		/// <summary>
 		/// Наименование продукта
 		/// </summary>
@@ -284,6 +304,29 @@ namespace Inforoom.PriceProcessor.Waybills
 				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value/ProducerCost.Value - 1)*100), 2);
 			}
 		}
+	}
+
+	[ActiveRecord("Synonym", Schema = "farm")]
+	public class SynonymProduct : ActiveRecordLinqBase<SynonymProduct>
+	{
+		/// <summary>
+		/// Id Синонима. Ключевое поле.
+		/// </summary>
+		[PrimaryKey]
+		public int SynonymCode { get; set; }
+
+		/// <summary>
+		/// Id продукта
+		/// </summary>
+		//[BelongsTo("ProductId")]
+		[Property]
+		public int ProductId { get; set; }
+
+		/// <summary>
+		/// Синоним продукта
+		/// </summary>
+		[Property]
+		public string Synonym { get; set; }
 	}
 
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
