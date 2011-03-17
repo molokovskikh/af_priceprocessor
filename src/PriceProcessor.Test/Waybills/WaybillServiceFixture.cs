@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
@@ -155,14 +156,31 @@ namespace PriceProcessor.Test.Waybills
 				
 				var line = waybill.Lines[0];
 
+				var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == waybill.FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+				
+				if (priceCodes.Count < 0)
+				{
+					Assert.True(waybill.Lines.Where(l => l.ProductId == null).Count() == waybill.Lines.Count);
+					return;
+				}
+
 				var criteria = DetachedCriteria.For<TestSynonym>();
 				var list = new List<string>();
 				list.Add(line.Product);
 				criteria.Add(Expression.In("Synonym", list));
-
+				criteria.Add(Expression.In("PriceCode", priceCodes));
 				var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
-				Assert.IsTrue(synonym.Count > 0);
-				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+
+				if (synonym.Count > 0)
+				{
+					Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+				}
+				else
+				{
+					Assert.IsTrue(line.ProductId == null);
+				}
 			}
 		}
 

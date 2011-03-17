@@ -61,6 +61,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	public class Document : ActiveRecordLinqBase<Document>
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
+		private readonly int _batchSize = 100;
 
 		public Document()
 		{}
@@ -80,22 +81,26 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
+		///<summary>
+		/// сопоставление в накладной названию продуктов ProductId.
+		/// </summary>
 		public Document SetProductId()
 		{
 			try
 			{
+				// получаем Id прайсов, из которых мы будем брать синонимы.
 				var priceCodes = Price.Queryable
 									.Where(p => (p.Supplier.Id == FirmCode))
-									.Select(p => (p.ParentSynonym ?? p.Id)).ToList();
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 
 				if (priceCodes == null || priceCodes.Count <= 0)
 					return this;
 
-				// задаем количетсво строк, которое мы будем выбирать из списка продуктов в накладной.
+				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
 				// Если накладная большая, то будем выбирать из неё продукты блоками.
-				int batchSize = Lines.Count > 100 ? 100 : Lines.Count;
+				int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
 				int index = 0;
-				int count = GetCount(batchSize, index);
+				int count = GetCount(realBatchSize, index);
 
 				while ((count + index <= Lines.Count) && (count > 0))
 				{
@@ -122,21 +127,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					}
 
 					index = count;
-					count = GetCount(batchSize, index);
+					count = GetCount(realBatchSize, index);
 				}
-
-				//var synonyms = Lines.Select(i => i.Product).ToList();
-
-				//var criteria = DetachedCriteria.For<SynonymProduct>();
-				//criteria.Add(Expression.In("Synonym", synonyms));
-
-				//var s = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
-
-				//foreach (var line in Lines)
-				//{
-				//    var productName = line.Product;
-				//    line.ProductId = s.Where(product => product.Synonym == productName).Select(product => product.ProductId).Single();
-				//}
 			}
 			catch (Exception e)
 			{
