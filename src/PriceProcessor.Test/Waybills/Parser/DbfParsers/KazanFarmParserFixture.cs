@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Text;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
@@ -9,33 +12,38 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\P-751955.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(26));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("Рн-Kz0000751955"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.09.2010")));
+			//var dbf = Dbf.Load(@"..\..\Data\Waybills\00841174.dbf");
+			//var data = Dbf.Load(@"..\..\Data\Waybills\00841174.dbf", Encoding.GetEncoding(866), true, false);
+			
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00841174.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(8));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Рн-Kz0000841174"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("16.03.2011")));
 
 			var line = document.Lines[0];
-			Assert.That(line.Code, Is.EqualTo("771085185"));
-			Assert.That(line.Product, Is.EqualTo("Абактал 400мг таб п/об №10"));
-			Assert.That(line.Producer, Is.EqualTo("Лек д.д."));
-			Assert.That(line.Country, Is.EqualTo("Словения"));
-			Assert.That(line.Quantity, Is.EqualTo(1));
-			//Assert.That(line.ProducerCost, Is.EqualTo());
-			//Assert.That(line.RegistryCost, Is.EqualTo());
-			Assert.That(line.SupplierCost, Is.EqualTo(135.89));
-			//Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo());
-			Assert.That(line.Period, Is.EqualTo("13.06.1"));
-			Assert.That(line.VitallyImportant, Is.Null);
-			//Assert.That(line.Nds.Value, Is.EqualTo());
-			Assert.That(line.Certificates, Is.EqualTo("РОСС SI.ФМ08.Д59556"));
-			Assert.That(line.SerialNumber, Is.EqualTo("AC1716"));
-			//Assert.That(line.SupplierPriceMarkup, Is.EqualTo());
+			Assert.That(line.Code, Is.EqualTo("225251461"));
+			Assert.That(line.Product, Is.EqualTo("Анаферон детский таб д/рассасывания №20"));
+			Assert.That(line.Producer, Is.EqualTo("Материа Медика"));
+			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
+			Assert.That(line.Quantity, Is.EqualTo(10));
+			Assert.That(line.ProducerCost, Is.EqualTo(100));
+			Assert.That(line.RegistryCost, Is.EqualTo(103.67));
+			Assert.That(line.SupplierCost, Is.EqualTo(109.21));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(54.88));
+			Assert.That(line.Period, Is.Null);
+			Assert.That(line.VitallyImportant, Is.True);
+			Assert.That(line.Nds.Value, Is.EqualTo(99.28));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ05.Д48448"));
+			Assert.That(line.SerialNumber, Is.EqualTo("8741110"));
+			Assert.That(line.SupplierPriceMarkup, Is.Null);
+
+			Assert.That(document.Lines[1].VitallyImportant, Is.False);
 		}
 
 		[Test]
 		public void Check_file_format()
 		{
-			//Assert.IsTrue(BagautdinovKazanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\P-751955.dbf")));
+			Assert.IsTrue(KazanFarmDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\00841174.dbf")));
 		}
 	}
 }
