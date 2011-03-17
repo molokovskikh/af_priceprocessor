@@ -7,6 +7,8 @@ using System.ServiceModel;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
+using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using NHibernate.Criterion;
@@ -58,6 +60,8 @@ namespace Inforoom.PriceProcessor.Waybills
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
 	public class Document : ActiveRecordLinqBase<Document>
 	{
+		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
+
 		public Document()
 		{}
 
@@ -70,16 +74,74 @@ namespace Inforoom.PriceProcessor.Waybills
 			AddressId = log.AddressId;
 			DocumentType = DocType.Waybill;
 		}
+		
+		private int GetCount(int batchSize, int index)
+		{
+			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
+		}
 
 		public Document SetProductId()
 		{
-			var synonyms = SynonymProduct.Queryable
-										.Select(t => t.Synonym)
-										.Where(
-													synonym => Lines.Where(
-																			line => line.Product == synonym
-																			).Count() > 0
-												);
+			try
+			{
+				var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).ToList();
+
+				if (priceCodes == null || priceCodes.Count <= 0)
+					return this;
+
+				// задаем количетсво строк, которое мы будем выбирать из списка продуктов в накладной.
+				// Если накладная большая, то будем выбирать из неё продукты блоками.
+				int batchSize = Lines.Count > 100 ? 100 : Lines.Count;
+				int index = 0;
+				int count = GetCount(batchSize, index);
+
+				while ((count + index <= Lines.Count) && (count > 0))
+				{
+
+					// выбираем из накладной часть названия продуктов.
+					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
+
+					//получаем из базы данные для выбранной части продуктов из накладной.
+					var criteriaSynonymProduct = DetachedCriteria.For<SynonymProduct>();
+					criteriaSynonymProduct.Add(Expression.In("Synonym", synonyms));
+					criteriaSynonymProduct.Add(Expression.In("PriceCode", priceCodes));
+					var dbListSynonym = SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+
+					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+					foreach (var line in Lines)
+					{
+						var productName = line.Product;
+						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
+
+						if (listSynonym.Count > 0)
+						{
+							line.ProductId = listSynonym.Select(product => product.ProductId).Single().Value;
+						}
+					}
+
+					index = count;
+					count = GetCount(batchSize, index);
+				}
+
+				//var synonyms = Lines.Select(i => i.Product).ToList();
+
+				//var criteria = DetachedCriteria.For<SynonymProduct>();
+				//criteria.Add(Expression.In("Synonym", synonyms));
+
+				//var s = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+
+				//foreach (var line in Lines)
+				//{
+				//    var productName = line.Product;
+				//    line.ProductId = s.Where(product => product.Synonym == productName).Select(product => product.ProductId).Single();
+				//}
+			}
+			catch (Exception e)
+			{
+				_log.Error("Ошибка при сопоставлении ProductId", e);
+			}
 			
 			return this;
 		}
@@ -168,7 +230,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// Id продукта
 		/// </summary>
 		[Property]
-		public int ProductId { get; set; }
+		public int? ProductId { get; set; }
 		
 		/// <summary>
 		/// Наименование продукта
@@ -320,13 +382,19 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		//[BelongsTo("ProductId")]
 		[Property]
-		public int ProductId { get; set; }
+		public int? ProductId { get; set; }
 
 		/// <summary>
 		/// Синоним продукта
 		/// </summary>
 		[Property]
 		public string Synonym { get; set; }
+
+		/// <summary>
+		/// Код прайса
+		/// </summary>
+		[Property]
+		public int? PriceCode { get; set; }
 	}
 
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]

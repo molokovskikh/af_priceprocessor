@@ -5,6 +5,9 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
@@ -179,54 +182,70 @@ where a.Id = ?AddressId", connection);
 		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
-			var beign = DateTime.Now;
-			var filter = new EventFilter<WaybillSourceHandler>();
-			var supplier = TestOldClient.CreateTestSupplier();
-
-			const string email = "edata@msk.katren.ru";
-			uint firmId = 0;
-			
-			var query = string.Format("select FirmCode from documents.waybill_sources where EMailFrom LIKE '%{0}%' LIMIT 1;", email);
-			With.Connection(connection => { uint.TryParse(MySqlHelper.ExecuteScalar(connection, query).ToString(), out firmId);});
-			
-			if(firmId == 0)
+			var appender = new ConsoleAppender
 			{
-				var waybillsource = new TestWaybillSource() { EMailFrom = email, SourceType = WaybillSourceType.Email };
-				waybillsource.Id = supplier.Id;
-				waybillsource.Create();
+				Layout = new SimpleLayout1()
+			};
+
+			appender.ActivateOptions();
+			BasicConfigurator.Configure(appender);
+
+			try
+			{
+				var beign = DateTime.Now;
+				var filter = new EventFilter<WaybillSourceHandler>();
+				var supplier = TestOldClient.CreateTestSupplier();
+
+				const string email = "edata@msk.katren.ru";
+				uint firmId = 0;
+
+				var query = string.Format("select FirmCode from documents.waybill_sources where EMailFrom LIKE '%{0}%' LIMIT 1;", email);
+				With.Connection(connection => { uint.TryParse(MySqlHelper.ExecuteScalar(connection, query).ToString(), out firmId); });
+
+				if (firmId == 0)
+				{
+					var waybillsource = new TestWaybillSource() { EMailFrom = email, SourceType = WaybillSourceType.Email };
+					waybillsource.Id = supplier.Id;
+					waybillsource.Create();
+				}
+
+				var client = TestOldClient.CreateTestClient();
+				var settings = WaybillSettings.Find(client.Id);
+				settings.ParseWaybills = true;
+				settings.Update();
+
+				TestHelper.ClearImapFolder();
+				TestHelper.StoreMessageWithAttachToImapFolder(
+					String.Format("{0}@waybills.analit.net", client.Id),
+					email,
+					@"..\..\Data\Waybills\8916.dbf");
+
+				Process();
+
+				Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
+
+				var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));
+				Assert.That(Directory.Exists(ftp), "не обработали документ");
+				Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
+
+				using (new SessionScope())
+				{
+					var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
+					Assert.That(logs.Count, Is.EqualTo(1));
+					var log = logs.Single();
+					Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
+					Assert.That(log.DocumentSize, Is.GreaterThan(0));
+
+					var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
+					Assert.That(documents.Count, Is.EqualTo(1));
+					Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
+				}
+			}
+			finally
+			{
+				LogManager.ResetConfiguration();
 			}
 
-			var client = TestOldClient.CreateTestClient();
-			var settings = WaybillSettings.Find(client.Id);
-			settings.ParseWaybills = true;
-			settings.Update();
-
-			TestHelper.ClearImapFolder();
-			TestHelper.StoreMessageWithAttachToImapFolder(
-				String.Format("{0}@waybills.analit.net", client.Id),
-				email,
-				@"..\..\Data\Waybills\8916.dbf");
-
-			Process();
-
-			Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
-
-			var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));
-			Assert.That(Directory.Exists(ftp), "не обработали документ");
-			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
-
-			using(new SessionScope())
-			{
-				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				var log = logs.Single();
-				Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
-				Assert.That(log.DocumentSize, Is.GreaterThan(0));
-
-				var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
-				Assert.That(documents.Count, Is.EqualTo(1));
-				Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
-			}
 		}
 
 		private void Process()
