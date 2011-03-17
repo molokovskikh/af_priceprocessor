@@ -208,8 +208,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[3].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(doc.Lines[3].SupplierPriceMarkup, Is.EqualTo(1.70));
-
 		}
+
 
 
 		[Test]

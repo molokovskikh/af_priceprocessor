@@ -47,9 +47,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				// Если поставщик - это челябинский Морон, для него отдельный парсер 
 				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
 				if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
-				    (documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
-				     || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
-				     || documentLog.Supplier.Id == 21))
+					(documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
+					 || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
+					 || documentLog.Supplier.Id == 21))
 					type = typeof (Moron_338_SpecialParser);
 
 				if (type == typeof(PulsFKParser) && documentLog != null
@@ -110,17 +110,17 @@ namespace Inforoom.PriceProcessor.Waybills
 				.ToList();
 
 			types = types.OrderBy(t => t.Name).ToList();
-            
-            object[] args;
-            if (group == "Dbf")
-            {
-                var data = Dbf.Load(file);
-                args = new[] { data };
-            }
-            else
-            {
-                args = new[] { file };
-            }
+			
+			object[] args;
+			if (group == "Dbf")
+			{
+				var data = Dbf.Load(file);
+				args = new[] { data };
+			}
+			else
+			{
+				args = new[] { file };
+			}
 
 			foreach (var type in types)
 			{
@@ -128,7 +128,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
 				
-                var result = (bool)detectFormat.Invoke(null, args);
+				var result = (bool)detectFormat.Invoke(null, args);
 				if (result)
 					yield return type;
 			}
