@@ -19,15 +19,29 @@ namespace Inforoom.PriceProcessor.Waybills
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 
-			// Если это накладная в формате DBF от Авеста-Фармацевтика,
-			// обрабатываем ее специальным парсером
-			if ((documentLog != null) &&
-				(documentLog.Supplier.Id == 6256) &&
-				(extention == ".dbf"))
+			if ((documentLog != null) && (extention == ".dbf"))
 			{
-				var table = Avesta_6256_SpecialParser.Load(file);
-				if (Avesta_6256_SpecialParser.CheckFileFormat(table))
-					type = typeof(Avesta_6256_SpecialParser);
+				switch (documentLog.Supplier.Id)
+				{
+					// Если это накладная в формате DBF от Авеста-Фармацевтика,
+					// обрабатываем ее специальным парсером
+					case 6256:
+						{
+							var table = Avesta_6256_SpecialParser.Load(file);
+							if (Avesta_6256_SpecialParser.CheckFileFormat(table))
+								type = typeof(Avesta_6256_SpecialParser);
+							break;
+						}
+					//Накладная в формате dbf от Казань-Фарм.
+					case 2747:
+						{
+							var table = KazanFarmDbfParser.Load(file);
+							if (KazanFarmDbfParser.CheckFileFormat(table))
+								type = typeof (KazanFarmDbfParser);
+							break;
+						}
+					default: break;
+				}
 			}
 
 			if (type == null)

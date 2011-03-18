@@ -1,0 +1,2 @@
+ALTER TABLE documents.DocumentBodies
+ADD COLUMN SummaNds DECIMAL(12, 6) UNSIGNED DEFAULT NULL COMMENT 'Сумма НДС';

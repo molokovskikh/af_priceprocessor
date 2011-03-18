@@ -240,14 +240,24 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string SerialNumber { get; set; }
 
+
+		/// <summary>
+		/// Сумма НДС
+		/// </summary>
+		[Property]
+		public decimal? SummaNds { get; set; }
+
 		public void SetValues()
 		{
+			if (!SupplierCostWithoutNDS.HasValue && !Nds.HasValue && SupplierCost.HasValue && Quantity.HasValue)
+				SetSupplierCostWithoutNds();
 			if (!Nds.HasValue && SupplierCostWithoutNDS.HasValue)
 				SetSupplierCostWithoutNds(SupplierCostWithoutNDS.Value);
 			if (!SupplierCostWithoutNDS.HasValue && Nds.HasValue)
 				SetNds(Nds.Value);
 			if (!SupplierCost.HasValue && Nds.HasValue && SupplierCostWithoutNDS.HasValue)
 				SetSupplierCostByNds(Nds.Value);
+			
 		}
 
 		public void SetNds(decimal nds)
@@ -257,6 +267,15 @@ namespace Inforoom.PriceProcessor.Waybills
 			else if (!SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue)
 				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value * (1 + nds / 100), 2);
 			Nds = (uint?) nds;
+		}
+
+		public void SetSupplierCostWithoutNds()
+		{
+			if (SupplierCost.HasValue && SummaNds.HasValue && Quantity.HasValue &&
+				!SupplierCostWithoutNDS.HasValue)
+			{
+				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value - (SummaNds.Value/Quantity.Value), 2);
+			}
 		}
 
 		public void SetSupplierCostWithoutNds(decimal cost)

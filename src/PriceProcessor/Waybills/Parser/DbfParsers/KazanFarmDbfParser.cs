@@ -6,11 +6,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class KazanFarmDbfParser: IDocumentParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
+		public static DataTable Load(string file)
+		{
+			try
+			{
+				return Dbf.Load(file);
+			}
+			catch (DbfException)
+			{
+				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
+			}
+		}
 
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding, true, false);
+			var data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "NUM_NAKL")
@@ -21,14 +31,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.ProducerCost, "CENAFACT")
 				.Line(l => l.SupplierCost, "CENASNDS")
-				//.Line(l => l.SupplierCostWithoutNDS, "")
 				.Line(l => l.Quantity, "KOLVO")
-				//.Line(l => l.Period, "")
 				.Line(l => l.RegistryCost, "CENAREG")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.VitallyImportant, "JNVLS")
-				.Line(l => l.Nds, "SUMMANDS")
+				.Line(l => l.SummaNds, "SUMMANDS")
 				.ToDocument(document, data);
 
 			return document;
