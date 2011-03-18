@@ -206,6 +206,7 @@
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenLipezkParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelOldTxtParser.cs" />
