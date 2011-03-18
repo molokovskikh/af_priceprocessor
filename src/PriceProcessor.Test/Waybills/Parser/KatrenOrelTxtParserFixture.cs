@@ -95,6 +95,124 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_Katren_Lipezk()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\2569__1_.txt");
+			Assert.That(doc.Lines.Count, Is.EqualTo(5));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("2569"));
+			Assert.That(doc.DocumentDate, Is.EqualTo((Convert.ToDateTime("18.10.2007"))));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("15949"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("МАНИНИЛ 0,0035 N120 ТАБЛ"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Берлин-Хеми АГ/Менарини Групп"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("германия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(83.74));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(102.08));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(92.80));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("72560"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.06.2010"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("Б/Н"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(124.39));
+
+			Assert.That(doc.Lines[1].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[3].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(9.06));
+			Assert.That(doc.Lines[4].SupplierPriceMarkup, Is.EqualTo(1.44));
+
+		}
+
+		[Test]
+		public void Parse_Katren_Voronezh_LipezkVarmatcia()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7286067_Катрен(49073).txt");
+			Assert.That(doc.Lines.Count, Is.EqualTo(17));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("49073"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.03.2011")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("29398905"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("АКВАЛОР МИНИ 50МЛ СПРЕЙ"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("YS LAB Le Forum"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("франция"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(143.70));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(158.07));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(143.7));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("105221E"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.07.2013"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("POCC FR.ИМ25.А02510"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[1].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[1].SupplierPriceMarkup, Is.EqualTo(6.92));
+		}
+
+
+
+		[Test]
+		public void Parse_Katren_Voronezh_LipezkVarmatcia2()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7286069_Катрен(51346).txt");
+			Assert.That(doc.Lines.Count, Is.EqualTo(12));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("51346"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("03.03.2011")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("681877"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("АЛЬБАРЕЛ 0,001 N30 ТАБЛ"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Эгис Фармацевтический з-д ОАО/Лаборатории Сервье"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("венгрия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(323.50));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(355.85));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(323.50));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("8608A0810"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.08.2012"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС HU.ФМ08.Д63538"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[2].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[2].SupplierPriceMarkup, Is.EqualTo(3.32));
+		}
+
+
+		[Test]
+		public void Parse_Katren_Voronezh_LipezkVarmatcia3()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\57455.txt");
+			Assert.That(doc.Lines.Count, Is.EqualTo(12));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("57455"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("11.03.2011")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("11518462"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("RELAXSAN ГОЛЬФЫ COTSOCKS МУЖСКИЕ S5/NERO"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("G.T.CALZE s.r.l."));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("италия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(385.40));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(423.94));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(385.40));
+			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("02/10"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("2/1/2015"));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС IT.АЯ58.В35984"));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[3].VitallyImportant, Is.True);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[3].SupplierPriceMarkup, Is.EqualTo(1.70));
+
+		}
+
+
+		[Test]
 		public void CheckFileFormat()
 		{
 			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3633567_0_17202011.xml"));
@@ -105,6 +223,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\890579.dbf"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\82936.txt"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3767013_Катрен(91136).txt"));
+			Assert.IsTrue(KatrenLipezkParser.CheckFileFormat(@"..\..\Data\Waybills\2569__1_.txt"));
+			
+			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\7286067_Катрен(49073).txt"));
+			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7286067_Катрен(49073).txt"));
+			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7286069_Катрен(51346).txt"));
+			Assert.IsFalse(KatrenLipezkParser.CheckFileFormat(@"..\..\Data\Waybills\7286069_Катрен(51346).txt"));
+
+			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7286071_Катрен(50205).txt"));
+			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7288287_Катрен(52108).txt"));
+			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\57455.txt"));
 		}
 
 		[Test]

@@ -6,13 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Castle.ActiveRecord;
-using Castle.ActiveRecord.Linq;
 using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using MySql.Data.MySqlClient;
+using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {

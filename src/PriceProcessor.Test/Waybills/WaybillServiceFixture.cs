@@ -4,11 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
+using NHibernate.Criterion;
 using NUnit.Framework;
 using Test.Support;
+using Test.Support.Helpers;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -86,7 +89,7 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
-        }
+		}
 
 		[Test]
 		public void Parse_waybill_without_header()
@@ -119,5 +122,67 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-    }
+		[Test]
+		public void Check_SetProductId()
+		{
+			const string file = "14356_4.dbf";
+			var client = TestOldClient.CreateTestClient();
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			
+			Directory.CreateDirectory(waybillsPath);
+
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = 1179,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file,
+			};
+
+			using (new TransactionScope())
+				log.SaveAndFlush();
+
+			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
+
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] { log.Id });
+
+			using (new SessionScope())
+			{
+				var waybill = TestWaybill.Find(ids.Single());
+				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+				
+				var line = waybill.Lines[0];
+
+				var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == waybill.FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+				
+				if (priceCodes.Count < 0)
+				{
+					Assert.True(waybill.Lines.Where(l => l.ProductId == null).Count() == waybill.Lines.Count);
+					return;
+				}
+
+				var criteria = DetachedCriteria.For<TestSynonym>();
+				var list = new List<string>();
+				list.Add(line.Product);
+				criteria.Add(Expression.In("Synonym", list));
+				criteria.Add(Expression.In("PriceCode", priceCodes));
+				var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
+
+				if (synonym.Count > 0)
+				{
+					Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+				}
+				else
+				{
+					Assert.IsTrue(line.ProductId == null);
+				}
+			}
+		}
+
+	}
 }

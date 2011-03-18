@@ -1,9 +1,9 @@
 [submodule "src/Common.Tools"]
 	path = src/Common.Tools
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.Tools
+	url = ssh://git.analit.net/var/www/git/Common.Tools
 [submodule "src/Common.MySql"]
 	path = src/Common.MySql
-	url = ssh://kvasov@git.analit.net/var/www/git/Common.MySql
+	url = ssh://git.analit.net/var/www/git/Common.MySql
 [submodule "src/Test.Support"]
 	path = src/Test.Support
-	url = ssh://kvasov@git.analit.net/var/www/git/Test.Support
+	url = ssh://git.analit.net/var/www/git/Test.Support

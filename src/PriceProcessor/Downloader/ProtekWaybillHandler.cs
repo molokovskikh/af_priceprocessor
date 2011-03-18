@@ -80,11 +80,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(79888, 1024847);
 
-/*
 			//воронеж
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(123108, 1064974);
-*/
+
 			//тамбов
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(154376, 1052874);
@@ -96,9 +95,12 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
-				_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 				try
 				{
+					if (responce.@return.blading == null)
+						return;
+
+					_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 					foreach (var blading in responce.@return.blading)
 					{
 						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId.Value));

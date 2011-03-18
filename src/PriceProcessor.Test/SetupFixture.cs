@@ -26,7 +26,8 @@ namespace PriceProcessor.Test
 					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
 					{Environment.ConnectionStringName, "DB"},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
-					{Environment.Hbm2ddlKeyWords, "none"}
+					{Environment.Hbm2ddlKeyWords, "none"},
+					{Environment.ShowSql, "true"}
 				});
 			ActiveRecordStarter.Initialize(new[] {typeof (TestClient).Assembly, typeof (Document).Assembly}, config);
 		}

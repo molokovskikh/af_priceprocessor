@@ -4,13 +4,14 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
 using Castle.ActiveRecord;
-using Castle.ActiveRecord.Linq;
+using Castle.ActiveRecord.Framework;
 using Common.Tools;
-using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
+using NHibernate.Criterion;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -59,6 +60,9 @@ namespace Inforoom.PriceProcessor.Waybills
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
 	public class Document : ActiveRecordLinqBase<Document>
 	{
+		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
+		private readonly int _batchSize = 100;
+
 		public Document()
 		{}
 
@@ -70,6 +74,68 @@ namespace Inforoom.PriceProcessor.Waybills
 			ClientCode = log.ClientCode.Value;
 			AddressId = log.AddressId;
 			DocumentType = DocType.Waybill;
+		}
+		
+		private int GetCount(int batchSize, int index)
+		{
+			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
+		}
+
+		///<summary>
+		/// сопоставление в накладной названию продуктов ProductId.
+		/// </summary>
+		public Document SetProductId()
+		{
+			try
+			{
+				// получаем Id прайсов, из которых мы будем брать синонимы.
+				var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+
+				if (priceCodes == null || priceCodes.Count <= 0)
+					return this;
+
+				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
+				// Если накладная большая, то будем выбирать из неё продукты блоками.
+				int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
+				int index = 0;
+				int count = GetCount(realBatchSize, index);
+
+				while ((count + index <= Lines.Count) && (count > 0))
+				{
+
+					// выбираем из накладной часть названия продуктов.
+					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
+
+					//получаем из базы данные для выбранной части продуктов из накладной.
+					var criteriaSynonymProduct = DetachedCriteria.For<SynonymProduct>();
+					criteriaSynonymProduct.Add(Expression.In("Synonym", synonyms));
+					criteriaSynonymProduct.Add(Expression.In("PriceCode", priceCodes));
+					var dbListSynonym = SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+
+					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+					foreach (var line in Lines)
+					{
+						var productName = line.Product;
+						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
+
+						if (listSynonym.Count > 0)
+						{
+							line.ProductId = listSynonym.Select(product => product.ProductId).Single().Value;
+						}
+					}
+
+					index = count;
+					count = GetCount(realBatchSize, index);
+				}
+			}
+			catch (Exception e)
+			{
+				_log.Error("Ошибка при сопоставлении ProductId", e);
+			}
+			
+			return this;
 		}
 
 		[PrimaryKey]
@@ -152,6 +218,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("DocumentId")]
 		public Document Document { get; set; }
 
+		/// <summary>
+		/// Id продукта
+		/// </summary>
+		[Property]
+		public int? ProductId { get; set; }
+		
 		/// <summary>
 		/// Наименование продукта
 		/// </summary>
@@ -288,6 +360,35 @@ namespace Inforoom.PriceProcessor.Waybills
 		}
 	}
 
+	[ActiveRecord("Synonym", Schema = "farm")]
+	public class SynonymProduct : ActiveRecordLinqBase<SynonymProduct>
+	{
+		/// <summary>
+		/// Id Синонима. Ключевое поле.
+		/// </summary>
+		[PrimaryKey]
+		public int SynonymCode { get; set; }
+
+		/// <summary>
+		/// Id продукта
+		/// </summary>
+		//[BelongsTo("ProductId")]
+		[Property]
+		public int? ProductId { get; set; }
+
+		/// <summary>
+		/// Синоним продукта
+		/// </summary>
+		[Property]
+		public string Synonym { get; set; }
+
+		/// <summary>
+		/// Код прайса
+		/// </summary>
+		[Property]
+		public int? PriceCode { get; set; }
+	}
+
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
 	public class WaybillService : IWaybillService
 	{
@@ -329,8 +430,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			var docsForParsing = MultifileDocument.Merge(logs);
 
 			var docs = docsForParsing.Select(d => {
-                
-                try
+				
+				try
 				{
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
 
@@ -342,7 +443,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				catch (Exception e)
 				{
-				    var filename = d.FileName;
+					var filename = d.FileName;
 					_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
 					SaveWaybill(filename);
 					return null;
@@ -363,8 +464,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
 				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
 
-            if (File.Exists(filename))
-                File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
+			if (File.Exists(filename))
+				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
 		}
 
 		public static void ParserDocument(DocumentReceiveLog log)
@@ -389,9 +490,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
 
-                            document.Save();
-                            transaction.VoteCommit();
-                    }
+							document.Save();
+							transaction.VoteCommit();
+					}
 				}
 			}
 			catch(Exception e)
