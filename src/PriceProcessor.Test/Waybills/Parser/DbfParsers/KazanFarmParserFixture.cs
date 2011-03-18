@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
@@ -44,7 +44,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Check_file_format()
 		{
-			Assert.IsTrue(KazanFarmDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\00841174.dbf")));
+			Assert.IsTrue(KazanFarmDbfParser.CheckFileFormat(KazanFarmDbfParser.Load(@"..\..\Data\Waybills\00841174.dbf")));
 		}
 
 		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)

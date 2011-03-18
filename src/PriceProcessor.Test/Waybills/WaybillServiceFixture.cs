@@ -122,38 +122,6 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-
-		[Test]
-		public void Parse_waybill_without_header()
-		{
-			var file = "00000049080.sst";
-			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = 2207,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(@"..\..\Data\Waybills\00000049080.sst", Path.Combine(waybillsPath, String.Format("{0}_00000049080.sst", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
-
-			using (new SessionScope())
-			{
-				Assert.That(ids.Count(),Is.EqualTo(0));
-			}
-		}
-
 		[Test]
 		public void Check_SetProductId()
 		{
