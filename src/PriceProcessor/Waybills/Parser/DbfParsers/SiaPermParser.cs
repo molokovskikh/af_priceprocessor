@@ -42,6 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SupplierCost = Convert.ToDecimal(r["CENA_S_NDS"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["DG"]) ? null : Convert.ToDateTime(r["DG"]).ToShortDateString();
+				line.SummaNds = Convert.ToDecimal(r["SUM_NDS"], CultureInfo.InvariantCulture);
 
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null :

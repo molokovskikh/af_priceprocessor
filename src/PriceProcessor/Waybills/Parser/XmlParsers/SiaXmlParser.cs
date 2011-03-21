@@ -34,6 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;
 				line.Nds = (uint?) position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
+				line.SummaNds = position.Get("СуммаНДС");
 
 				if (position.XPathSelectElement("ЖНВЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖНВЛС").Value))
 					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
