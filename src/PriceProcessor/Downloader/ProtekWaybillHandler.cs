@@ -136,7 +136,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			var orderId = (uint?) blading.@uint;
 			if (orderId == null)
 			{
- 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
+				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
@@ -185,7 +185,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
 				line.SerialNumber = bladingItem.prodseria;
 			}
-			return document;
+			return document.SetProductId();
 		}
 	}
 }

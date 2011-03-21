@@ -153,34 +153,37 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-				
-				var line = waybill.Lines[0];
+				Check_DocumentLine_SetProductId(waybill);
+			}
+		}
 
-				var priceCodes = Price.Queryable
-									.Where(p => (p.Supplier.Id == waybill.FirmCode))
+		public void Check_DocumentLine_SetProductId(TestWaybill document)
+		{
+			var line = document.Lines[0];
+			
+			var listSynonym = new List<string> { line.Product };
+			var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == document.FirmCode))
 									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-				
-				if (priceCodes.Count < 0)
-				{
-					Assert.True(waybill.Lines.Where(l => l.ProductId == null).Count() == waybill.Lines.Count);
-					return;
-				}
 
-				var criteria = DetachedCriteria.For<TestSynonym>();
-				var list = new List<string>();
-				list.Add(line.Product);
-				criteria.Add(Expression.In("Synonym", list));
-				criteria.Add(Expression.In("PriceCode", priceCodes));
-				var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
+			if (priceCodes.Count < 0)
+			{
+				Assert.True(document.Lines.Where(l => l.ProductId == null).Count() == document.Lines.Count);
+				return;
+			}
+			
+			var criteria = DetachedCriteria.For<TestSynonym>();
+			criteria.Add(Restrictions.In("Synonym", listSynonym));
+			criteria.Add(Restrictions.In("PriceCode", priceCodes));
 
-				if (synonym.Count > 0)
-				{
-					Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
-				}
-				else
-				{
-					Assert.IsTrue(line.ProductId == null);
-				}
+			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
+			if (synonym.Count > 0)
+			{
+				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+			}
+			else
+			{
+				Assert.IsTrue(line.ProductId == null);
 			}
 		}
 
