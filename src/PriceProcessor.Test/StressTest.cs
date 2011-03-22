@@ -50,9 +50,9 @@ namespace PriceProcessor.Test
 		[Test]
 		public void t1()
 		{
-			var fileContent = @"
-
-";
+//			var fileContent = @"
+//
+//";
 			var result = String.Empty;
 			var i = 0;
 			var decodedContent = "013";
@@ -130,7 +130,7 @@ FROM
   farm.CoreCosts,
   usersettings.pricescosts
 WHERE 
-    Core0.PriceCode = 3779
+	Core0.PriceCode = 3779
 and pricescosts.PriceCode = 3779
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode
@@ -176,7 +176,7 @@ FROM
   farm.CoreCosts,
   usersettings.pricescosts
 WHERE 
-    Core0.PriceCode = 3779
+	Core0.PriceCode = 3779
 and pricescosts.PriceCode = 3779
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode
@@ -230,7 +230,7 @@ FROM
   farm.Synonym, 
   catalogs.products 
 WHERE 
-    (Synonym.PriceCode={0}) 
+	(Synonym.PriceCode={0}) 
 and (products.Id = Synonym.ProductId)
 "
 				, 
@@ -261,9 +261,9 @@ and (products.Id = Synonym.ProductId)
 			_logger.Debug("построили индекс по Excludes");
 
 			var assortmentSearchWatch = new Stopwatch();
-			var assortmentSearchCount = 0;
+			//var assortmentSearchCount = 0;
 			var excludesSearchWatch = new Stopwatch();
-			var excludesSearchCount = 0;
+			//var excludesSearchCount = 0;
 
 
 			var daSynonymFirmCr = new MySqlDataAdapter(
@@ -361,7 +361,7 @@ FROM
   farm.CoreCosts,
   usersettings.pricescosts
 WHERE 
-    Core0.PriceCode = {0} 
+	Core0.PriceCode = {0} 
 and pricescosts.PriceCode = {0}
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode 

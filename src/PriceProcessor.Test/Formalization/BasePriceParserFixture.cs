@@ -49,7 +49,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 		[Test]
 		public void Test_create_original_synonym_id()
 		{
-			var notCheckedProducerId = 3;
+			//var notCheckedProducerId = 3;
 			var file = @"..\..\Data\688-create-net-assortment.txt";
 			var rules = new DataTable();
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
@@ -162,10 +162,10 @@ values(
 insert into usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName, BaseCost) 
 values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			With.Connection(connection => {
-                var command = new MySqlCommand(sqlFormRules, connection);
-                command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
-                command.Parameters.AddWithValue("?PriceItemId", priceItemId);
-                command.ExecuteNonQuery();
+				var command = new MySqlCommand(sqlFormRules, connection);
+				command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
+				command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+				command.ExecuteNonQuery();
 			});
 
 			// Копируем файл в Inbound и запускаем формализацию

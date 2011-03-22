@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Castle.ActiveRecord;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Formalizer;
-using System.IO;
 using Test.Support;
 
 namespace PriceProcessor.Test.Formalization

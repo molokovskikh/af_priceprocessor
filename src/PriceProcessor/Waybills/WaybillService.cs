@@ -81,6 +81,14 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
+		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
+		{
+			var criteriaSynonymProduct = DetachedCriteria.For<T>();
+			criteriaSynonymProduct.Add(Restrictions.In("Synonym", synonyms));
+			criteriaSynonymProduct.Add(Restrictions.In("PriceCode", priceCodes));
+			return SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<T>()).ToList();
+		}
+
 		///<summary>
 		/// сопоставление в накладной названию продуктов ProductId.
 		/// </summary>
@@ -104,26 +112,34 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				while ((count + index <= Lines.Count) && (count > 0))
 				{
+					//выбираем из накладной часть названия производителей.
+					var synonymsFirm = Lines.ToList().GetRange(index, count).Select(i => i.Producer).ToList();
 
 					// выбираем из накладной часть названия продуктов.
 					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
 
 					//получаем из базы данные для выбранной части продуктов из накладной.
-					var criteriaSynonymProduct = DetachedCriteria.For<SynonymProduct>();
-					criteriaSynonymProduct.Add(Expression.In("Synonym", synonyms));
-					criteriaSynonymProduct.Add(Expression.In("PriceCode", priceCodes));
-					var dbListSynonym = SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(synonyms, priceCodes);
 
-					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+					//получаем из базы данные для выбранной части производителей для накладной.
+					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(synonymsFirm, priceCodes);
+					
+					
 					foreach (var line in Lines)
 					{
+						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						var productName = line.Product;
 						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
 
 						if (listSynonym.Count > 0)
-						{
-							line.ProductId = listSynonym.Select(product => product.ProductId).Single().Value;
-						}
+							line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
+
+						//заполняем Id производителя в накладной по данным полученным из базы.
+						var producerName = line.Producer;
+						var listSynonymFirm = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
+
+						if (listSynonymFirm.Count > 0)
+							line.ProducerId = listSynonymFirm.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
 					}
 
 					index = count;
@@ -247,6 +263,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		[Property]
 		public string Period { get; set; }
+
+		/// <summary>
+		/// Id производителя
+		/// </summary>
+		[Property]
+		public int? ProducerId { get; set; }
 
 		/// <summary>
 		/// Производитель
@@ -377,6 +399,34 @@ namespace Inforoom.PriceProcessor.Waybills
 				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value/ProducerCost.Value - 1)*100), 2);
 			}
 		}
+	}
+
+	[ActiveRecord("SynonymFirmCr", Schema = "farm")]
+	public class SynonymFirm : ActiveRecordLinqBase<SynonymFirm>
+	{
+		/// <summary>
+		/// Id Синонима. Ключевое поле.
+		/// </summary>
+		[PrimaryKey]
+		public int SynonymFirmCrCode { get; set; }
+
+		/// <summary>
+		/// Синоним производителя
+		/// </summary>
+		[Property]
+		public string Synonym { get; set; }
+
+		/// <summary>
+		/// Код прайса
+		/// </summary>
+		[Property]
+		public int? PriceCode { get; set; }
+
+		/// <summary>
+		/// Код производителя ProducerId
+		/// </summary>
+		[Property]
+		public int? CodeFirmCr { get; set; }
 	}
 
 	[ActiveRecord("Synonym", Schema = "farm")]

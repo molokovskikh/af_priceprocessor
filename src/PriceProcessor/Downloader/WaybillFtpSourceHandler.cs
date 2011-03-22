@@ -207,7 +207,7 @@ GROUP BY SupplierId
 						{
 							FileHelper.ExtractFromArhive(waybill.FileName, waybill.FileName + ExtrDirSuffix);
 						}
-						catch (ArchiveHelper.ArchiveException e)
+						catch (ArchiveHelper.ArchiveException)
 						{
 							_log.DebugFormat("Ошибка при извлечении файлов из архива {0}", waybill.FileName);
 							WaybillService.SaveWaybill(waybill.FileName);

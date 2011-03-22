@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
-using LumiSoft.Net.IMAP;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
-using System.Threading;
 using System.IO;
-using LumiSoft.Net.IMAP.Client;
-using Inforoom.Downloader.Documents;
 using MySql.Data.MySqlClient;
 using Test.Support;
-using Inforoom.PriceProcessor.Waybills;
 using Castle.ActiveRecord;
-using Inforoom.Common;
 
 namespace PriceProcessor.Test
 {

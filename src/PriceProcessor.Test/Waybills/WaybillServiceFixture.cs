@@ -125,7 +125,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Check_SetProductId()
 		{
-			const string file = "14356_4.dbf";
+			const string file = "14326_4.dbf";
 			var client = TestOldClient.CreateTestClient();
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -144,7 +144,7 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope())
 				log.SaveAndFlush();
 
-			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
+			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
 
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
@@ -152,7 +152,7 @@ namespace PriceProcessor.Test.Waybills
 			using (new SessionScope())
 			{
 				var waybill = TestWaybill.Find(ids.Single());
-				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+				Assert.That(waybill.Lines.Count, Is.EqualTo(4));
 				Check_DocumentLine_SetProductId(waybill);
 			}
 		}
@@ -179,11 +179,78 @@ namespace PriceProcessor.Test.Waybills
 			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
 			if (synonym.Count > 0)
 			{
-				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+				Assert.IsTrue(synonym.Where(s => s.ProductId != null).Select(s => s.ProductId).Contains(line.ProductId));
 			}
 			else
 			{
 				Assert.IsTrue(line.ProductId == null);
+			}
+		}
+
+
+
+		[Test]
+		public void Check_SetProducerId()
+		{
+			const string file = "14326_4.dbf";
+			var client = TestOldClient.CreateTestClient();
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+
+			Directory.CreateDirectory(waybillsPath);
+
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = 1179,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file,
+			};
+
+			using (new TransactionScope())
+				log.SaveAndFlush();
+
+			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
+
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] { log.Id });
+
+			using (new SessionScope())
+			{
+				var waybill = TestWaybill.Find(ids.Single());
+				Assert.That(waybill.Lines.Count, Is.EqualTo(4));
+				Check_DocumentLine_SetProducerId(waybill);
+			}
+		}
+
+		public void Check_DocumentLine_SetProducerId(TestWaybill document)
+		{
+			var line = document.Lines[0];
+
+			var listSynonym = new List<string> { line.Producer };
+			var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == document.FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+
+			if (priceCodes.Count < 0)
+			{
+				Assert.True(document.Lines.Where(l => l.ProducerId == null).Count() == document.Lines.Count);
+				return;
+			}
+
+			var criteria = DetachedCriteria.For<TestSynonymFirm>();
+			criteria.Add(Restrictions.In("Synonym", listSynonym));
+			criteria.Add(Restrictions.In("PriceCode", priceCodes));
+
+			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonymFirm>()).ToList();
+			if (synonym.Count > 0)
+			{
+				Assert.IsTrue(synonym.Where(s => s.CodeFirmCr != null).Select(s => s.CodeFirmCr).Contains(line.ProducerId));
+			}
+			else
+			{
+				Assert.IsTrue(line.ProducerId == null);
 			}
 		}
 
