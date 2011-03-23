@@ -91,6 +91,46 @@ namespace Inforoom.PriceProcessor.Downloader
 			//тамбов
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(154376, 1052874);
+
+			//Москва
+			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(83674, 1033812);
+
+			//Смоленск
+			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(83868, 1033815);
+
+			//Казань
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(231691, 1072909);
+
+			//Екатеринбург
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(261542, 1072994);
+
+			//Пермь
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(215115, 1072912);
+
+			//Челябинск
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(261543, 1072995);
+
+			//Киров
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(215116, 1072913);
+
+			//Орел
+			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(83472, 1033813);
+
+			//Тюмень
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(250434, 1072911);
+
+			//ХМАО-Югра
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(245011, 1072914);
 		}
 
 		private void Load(int clientId, int instanceId)

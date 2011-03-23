@@ -340,7 +340,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Сумма НДС
 		/// </summary>
-		[Property]
+		//[Property]
 		public decimal? SummaNds { get; set; }
 
 		public void SetValues()
