@@ -106,42 +106,42 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			var parser = new HeaderBodyParser(reader, CommentSymbol.ToString());
 			var line = parser.Header().FirstOrDefault();
 
-            if (line == null)
-            {
+			if (line == null)
+			{
 				throw new Exception("Не найден заголовок накладной");
-            }
+			}
 			
-            var header = line.Split(';');
-            document.ProviderDocumentId = header[0];
-            if (!String.IsNullOrEmpty(header[1]))
-                    document.DocumentDate = Convert.ToDateTime(header[1]);
+			var header = line.Split(';');
+			document.ProviderDocumentId = header[0];
+			if (!String.IsNullOrEmpty(header[1]))
+					document.DocumentDate = Convert.ToDateTime(header[1]);
 
-            foreach (var body in parser.Body())
-            {
+			foreach (var body in parser.Body())
+			{
 
-                var parts = body.Split(';');
-                var docLine = document.NewLine();
-                docLine.Code = parts[0];
-                docLine.Product = parts[1];
-                docLine.Producer = parts[2];
-                docLine.Country = parts[3];
-                docLine.Quantity = Convert.ToUInt32(ToDecimal(parts[4]));
-                docLine.Certificates = parts[12];
-                docLine.SerialNumber = parts[13];
-                docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : ToDecimal(parts[18]);
-                docLine.SupplierCost = ToDecimal(parts[5]);
-                docLine.SetSupplierCostWithoutNds(ToDecimal(parts[7]).Value);
-                docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
-                docLine.Period = parts[15];
-                docLine.ProducerCost = ToDecimal(parts[6]);
-                if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
-                    docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
-                    //авеста хранит в колонке 11 хранит признак жизненно важный
-                else if (parts[10] == "0" || parts[10] == "1")
-                    docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
-            }
-		    return document;
-       }
+				var parts = body.Split(';');
+				var docLine = document.NewLine();
+				docLine.Code = parts[0];
+				docLine.Product = parts[1];
+				docLine.Producer = parts[2];
+				docLine.Country = parts[3];
+				docLine.Quantity = Convert.ToUInt32(ToDecimal(parts[4]));
+				docLine.Certificates = parts[12];
+				docLine.SerialNumber = parts[13];
+				docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : ToDecimal(parts[18]);
+				docLine.SupplierCost = ToDecimal(parts[5]);
+				docLine.SetSupplierCostWithoutNds(ToDecimal(parts[7]).Value);
+				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
+				docLine.Period = parts[15];
+				docLine.ProducerCost = ToDecimal(parts[6]);
+				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
+					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
+					//авеста хранит в колонке 11 хранит признак жизненно важный
+				else if (parts[10] == "0" || parts[10] == "1")
+					docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
+			}
+			return document;
+	   }
 
 		public Document Parse(string file, Document document)
 		{
