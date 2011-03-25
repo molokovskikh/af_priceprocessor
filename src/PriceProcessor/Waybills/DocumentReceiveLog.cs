@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using Castle.ActiveRecord.Framework;
@@ -166,6 +167,16 @@ namespace Inforoom.PriceProcessor.Waybills
 			return fileName;
 		}
 
+		public string GetRemoteFileNameExt()
+		{
+			var clientDirectory = GetDocumentDir();
+
+			if (!Directory.Exists(clientDirectory))
+				Directory.CreateDirectory(clientDirectory);
+
+			return GetRemoteFileName();
+		}
+
 		public void CopyDocumentToClientDirectory()
 		{
 			var clientDirectory = GetDocumentDir();
@@ -177,8 +188,17 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
-			File.SetLastAccessTime(_localFile, DateTime.Now);
-			File.Copy(_localFile, destinationFileName, true);
+			
+			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
+			if (GetFileName() != destinationFileName)
+			{
+				File.SetLastAccessTime(_localFile, DateTime.Now);
+				File.Copy(_localFile, destinationFileName, true);
+			}
+			else
+			{
+				File.SetLastAccessTime(destinationFileName, DateTime.Now);
+			}
 
 			if (_logger.IsDebugEnabled)
 				WaybillService.SaveWaybill(_localFile);

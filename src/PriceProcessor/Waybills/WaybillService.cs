@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
@@ -37,6 +39,9 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		[PrimaryKey("ClientCode")]
 		public uint Id { get; set; }
+
+		[Property]
+		public bool IsConvertFormat { get; set; }
 
 		[Property]
 		public bool ParseWaybills { get; set; }
@@ -507,12 +512,21 @@ namespace Inforoom.PriceProcessor.Waybills
 				try
 				{
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
+					
+					if(!settings.IsConvertFormat)
+						d.DocumentLog.CopyDocumentToClientDirectory();
 
 					if (d.DocumentLog.DocumentType == DocType.Reject)
 						return null;
 					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
 						return null;
-					return detector.DetectAndParse(d.DocumentLog, d.FileName);
+					
+					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
+					
+					if (settings.IsConvertFormat)
+						ConvertAndSaveDbfFormat(doc, d.DocumentLog);
+
+					return doc;
 				}
 				catch (Exception e)
 				{
@@ -543,23 +557,28 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public static void ParserDocument(DocumentReceiveLog log)
 		{
-			ParserDocument(log.Id, log.GetFileName());
-		}
+			var file = log.GetFileName();
 
-		public static void ParserDocument(uint documentLogId, string file)
-		{
 			try
 			{
 				using(new SessionScope())
 				{
-					var log = DocumentReceiveLog.Find(documentLogId);
 					var settings = WaybillSettings.Find(log.ClientCode.Value);
+					
+					if (!settings.IsConvertFormat)
+						log.CopyDocumentToClientDirectory();
+
 					if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
 						return;
-
+					
 					var document = new WaybillFormatDetector().DetectAndParse(log, file);
 					if (document == null)
 						return;
+
+					//конвертируем накладную в новый формат dbf.
+					if(settings.IsConvertFormat)
+						ConvertAndSaveDbfFormat(document, log);
+
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
 
@@ -572,6 +591,99 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
 				SaveWaybill(file);
+			}
+		}
+
+		private static DataTable InitTableForFormatDbf(Document document)
+		{
+			var table = new DataTable();
+
+			table.Columns.AddRange(new DataColumn[]{
+									new DataColumn("ProviderDocumentId"), 
+									new DataColumn("DocumentDate"), 
+									new DataColumn("Code"),
+									new DataColumn("Product"),
+									new DataColumn("ProductId"),
+									new DataColumn("Producer"),
+									new DataColumn("ProducerId"),
+									new DataColumn("Country"),
+									new DataColumn("Quantity"),
+									new DataColumn("ProducerCost"),
+									new DataColumn("Nds"),
+									new DataColumn("SupplierCost"),
+									new DataColumn("SupplierCostWithoutNDS"),
+									new DataColumn("SupplierPriceMarkup"),
+									new DataColumn("SummaNds"),
+									new DataColumn("RegistryCost"),
+									new DataColumn("Period"),
+									new DataColumn("SerialNumber"),
+									new DataColumn("Certificates"),
+									new DataColumn("VitallyImportant")
+								});
+
+			foreach (var line in document.Lines)
+			{
+				var row = table.NewRow();
+				row["ProviderDocumentId"] = document.ProviderDocumentId;
+				row["DocumentDate"] = document.DocumentDate;
+				row["Code"] = line.Code;
+				row["Product"] = line.Product;
+				row["ProductId"] = line.ProductId;
+				row["Producer"] = line.Producer;
+				row["ProducerId"] = line.ProducerId;
+				row["Country"] = line.Country;
+				row["Quantity"] = line.Quantity;
+				row["ProducerCost"] = line.ProducerCost;
+				row["Nds"] = line.Nds;
+				row["SupplierCost"] = line.SupplierCost;
+				row["SupplierCostWithoutNDS"] = line.SupplierCostWithoutNDS;
+				row["SupplierPriceMarkup"] = line.SupplierPriceMarkup;
+				row["SummaNds"] = line.SummaNds;
+				row["RegistryCost"] = line.RegistryCost;
+				row["Period"] = line.Period;
+				row["SerialNumber"] = line.SerialNumber;
+				row["Certificates"] = line.Certificates;
+				row["VitallyImportant"] = line.VitallyImportant;
+				table.Rows.Add(row);
+			}
+
+			return table;
+		}
+		private static string GetDbfFileName(string file)
+		{
+			var sb = new StringBuilder();
+			sb.Append(Path.GetDirectoryName(file));
+			sb.Append("\\");
+			sb.Append(Path.GetFileNameWithoutExtension(file));
+			sb.Append(".dbf");
+			return sb.ToString();
+		}
+
+		protected static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
+		{
+			try
+			{
+				var table = InitTableForFormatDbf(document);
+
+				using (var scope = new TransactionScope(OnDispose.Rollback))
+				{
+					//сохраняем накладную в новом формате dbf.
+					Dbf.Save(table, log.GetRemoteFileNameExt());
+
+					//удаляем старый файл
+					//if (File.Exists(file))
+					//	File.Delete(file);
+
+					//изменяем расширение файла в логах.
+					log.FileName = Path.GetFileNameWithoutExtension(log.FileName) + ".dbf";
+					log.SaveAndFlush();
+					scope.VoteCommit();
+				}
+			}
+			catch (Exception exception)
+			{
+				_log.Error("Ошибка сохранения накладной в новый формат dbf. Ошибка: " + exception.Message);
+				throw;
 			}
 		}
 	}

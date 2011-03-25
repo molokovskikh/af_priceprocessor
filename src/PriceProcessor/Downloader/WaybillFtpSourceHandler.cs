@@ -233,7 +233,7 @@ GROUP BY SupplierId
 							addrId,
 							file,
 							documentType);
-						log.CopyDocumentToClientDirectory();
+						//log.CopyDocumentToClientDirectory();
 						documentLogs.Add(log);
 					}
 				}

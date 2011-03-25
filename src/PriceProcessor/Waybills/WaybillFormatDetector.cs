@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using Castle.ActiveRecord;
 using Common.Tools;
-using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
+using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -149,7 +149,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			yield break;
 		}
-
+		
+		
 
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
 		{
@@ -158,7 +159,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
-			return parser.Parse(file, document).SetProductId();
+			var doc = parser.Parse(file, document).SetProductId();
+
+			return doc;
 		}
 	}
 }

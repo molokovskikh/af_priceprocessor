@@ -283,7 +283,7 @@ and st.SourceID = 4";
 							_currentDocumentType.DocType);
 
 						documentReader.ImportDocument(log, fileName);
-						log.CopyDocumentToClientDirectory();
+						//log.CopyDocumentToClientDirectory();
 						WaybillService.ParserDocument(log);
 					}
 				}
