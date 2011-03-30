@@ -21,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("FirmCode")]
 		public Supplier Supplier { get; set; }
 
-		[Property(Insert = false)]
+		[Property(Insert = false, Update = false)]
 		public DateTime LogTime { get; set; }
 
 		[Property]
@@ -100,7 +100,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			return Log(supplierId, clientId, addressId, fileName, documentType, null, messageId);
 		}
 
-		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId)
+		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId, bool isFake = false)
 		{
 			fileName = CleanupFilename(fileName);
 			var localFile = fileName;
@@ -115,6 +115,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					DocumentType = documentType,
 					Comment = comment,
 					MessageUid = messageId,
+					IsFake = isFake
 				};
 
 				if (File.Exists(localFile))

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Waybills;
 
@@ -99,6 +100,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
+			    var settings = WaybillSettings.Find(clientId);
+
 				try
 				{
 					if (responce.@return.blading == null)
@@ -113,9 +116,14 @@ namespace Inforoom.PriceProcessor.Downloader
 						{
 							using (var scope = new TransactionScope(OnDispose.Rollback))
 							{
-								var document = ToDocument(body);
+								DocumentReceiveLog log = null;
+								var document = ToDocument(body, ref log);
 								if (document == null)
 									continue;
+
+								if(settings.IsConvertFormat)
+									WaybillService.ConvertAndSaveDbfFormat(document, log);
+
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
@@ -131,7 +139,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			});
 		}
 
-		private Document ToDocument(Blading blading)
+		private Document ToDocument(Blading blading, ref DocumentReceiveLog log)
 		{
 			var orderId = (uint?) blading.@uint;
 			if (orderId == null)
@@ -151,7 +159,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				return null;
 			}
 
-			var log = new DocumentReceiveLog {
+			log = new DocumentReceiveLog 
+			{
 				DocumentType = DocType.Waybill,
 				FileName = "fake.txt",
 				ClientCode = order.ClientCode,

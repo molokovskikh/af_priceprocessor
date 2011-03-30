@@ -5,15 +5,16 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using NHibernate.Criterion;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -32,6 +33,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public string ShortName { get; set; }
+		
+		[Property]
+		public string FullName { get; set; }
 	}
 
 	[ActiveRecord("RetClientsSet", Schema = "Usersettings")]
@@ -263,6 +267,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string Certificates { get; set; }
 
+		/// <summary>
+		/// Дата сертификата(в формате DD.MM.YYYY)
+		/// </summary>
+		//[Property]
+		//public DateTime CertificatesDate { get; set; }
+		
 		/// <summary>
 		/// Срок годности
 		/// </summary>
@@ -505,6 +515,21 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
 		{
 			var detector = new WaybillFormatDetector();
+			
+			//пробежать по logs и поставить Fake документам
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				logs.Each(l =>
+				          	{
+								if (WaybillSettings.Find(l.ClientCode.Value).IsConvertFormat)
+								{
+									l.IsFake = true;
+									l.SaveAndFlush();
+								}
+				          	});
+				scope.VoteCommit();
+			}
+
 			var docsForParsing = MultifileDocument.Merge(logs);
 
 			var docs = docsForParsing.Select(d => {
@@ -513,9 +538,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				{
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
 					
-					if(!settings.IsConvertFormat)
-						d.DocumentLog.CopyDocumentToClientDirectory();
-
 					if (d.DocumentLog.DocumentType == DocType.Reject)
 						return null;
 					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
@@ -523,6 +545,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
 					
+					// для мульти файла, мы сохраняем в источнике все файлы, 
+					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 					if (settings.IsConvertFormat)
 						ConvertAndSaveDbfFormat(doc, d.DocumentLog);
 
@@ -576,8 +600,12 @@ namespace Inforoom.PriceProcessor.Waybills
 						return;
 
 					//конвертируем накладную в новый формат dbf.
-					if(settings.IsConvertFormat)
+					if (settings.IsConvertFormat)
+					{
 						ConvertAndSaveDbfFormat(document, log);
+						SetIsFakeInDocumentReceiveLog(log);
+					}
+					
 
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
@@ -594,89 +622,142 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		private static DataTable InitTableForFormatDbf(Document document)
+		private static DataTable GetProductsName(string productIds)
+		{
+			var dataset = With.Connection(conection => MySqlHelper.ExecuteDataset(conection, string.Format(@"select Id,
+(
+select
+	concat(CatalogNames.Name, ' ', CatalogForms.Form, ' ', 
+  cast(GROUP_CONCAT(ifnull(PropertyValues.Value, '') 
+                    order by Properties.PropertyName, PropertyValues.Value
+						        SEPARATOR ', '
+						        ) as char)) as Name
+	from
+		(
+			catalogs.products,
+			catalogs.catalog,
+			catalogs.CatalogForms,
+			catalogs.CatalogNames
+		)
+		left join catalogs.ProductProperties on ProductProperties.ProductId = Products.Id
+		left join catalogs.PropertyValues on PropertyValues.Id = ProductProperties.PropertyValueId
+		left join catalogs.Properties on Properties.Id = PropertyValues.PropertyId
+	where
+		products.Id = p.Id
+	and catalog.Id = products.CatalogId
+	and CatalogForms.Id = catalog.FormId
+	and CatalogNames.Id = catalog.NameId
+) as Name
+from catalogs.Products p
+where p.Id in ({0});",productIds)));
+			
+			return dataset.Tables.Count > 0 ? dataset.Tables[0] : null;
+		}
+
+		private static DataTable InitTableForFormatDbf(Document document, Supplier supplier)
 		{
 			var table = new DataTable();
 
-			table.Columns.AddRange(new DataColumn[]{
-									new DataColumn("ProviderDocumentId"), 
-									new DataColumn("DocumentDate"), 
-									new DataColumn("Code"),
-									new DataColumn("Product"),
-									new DataColumn("ProductId"),
-									new DataColumn("Producer"),
-									new DataColumn("ProducerId"),
-									new DataColumn("Country"),
-									new DataColumn("Quantity"),
-									new DataColumn("ProducerCost"),
-									new DataColumn("Nds"),
-									new DataColumn("SupplierCost"),
-									new DataColumn("SupplierCostWithoutNDS"),
-									new DataColumn("SupplierPriceMarkup"),
-									new DataColumn("SummaNds"),
-									new DataColumn("RegistryCost"),
-									new DataColumn("Period"),
-									new DataColumn("SerialNumber"),
-									new DataColumn("Certificates"),
-									new DataColumn("VitallyImportant")
-								});
+			table.Columns.AddRange(new DataColumn[]
+			                       	{
+			                       		new DataColumn("postid_af"),
+			                       		new DataColumn("post_name_af"),
+			                       		new DataColumn("apt_af"),
+			                       		new DataColumn("aname_af"),
+			                       		new DataColumn("ttn"),
+			                       		new DataColumn("ttn_date"),
+			                       		new DataColumn("id_artis"),
+			                       		new DataColumn("name_artis"),
+			                       		new DataColumn("przv_artis"),
+			                       		new DataColumn("name_post"),
+			                       		new DataColumn("przv_post"),
+			                       		new DataColumn("seria"),
+			                       		new DataColumn("sgodn"),
+			                       		new DataColumn("sert"),
+			                       		new DataColumn("sert_date"),
+			                       		new DataColumn("prcena_bnds"),
+			                       		new DataColumn("gr_cena"),
+			                       		new DataColumn("pcena_bnds"),
+			                       		new DataColumn("nds"),
+			                       		new DataColumn("pcena_nds"),
+			                       		new DataColumn("kol_tov")
+			                       	});
+
+			var productIds = document.Lines.Where(p=> p.ProductId != null).Select(p => p.ProductId).ToArray();
+			var productsname = (productIds.Length > 0) ? GetProductsName(string.Join(",", productIds)) : new DataTable();
 
 			foreach (var line in document.Lines)
 			{
+				var productId = line.ProductId;
+				var producerId = line.ProducerId;
+
 				var row = table.NewRow();
-				row["ProviderDocumentId"] = document.ProviderDocumentId;
-				row["DocumentDate"] = document.DocumentDate;
-				row["Code"] = line.Code;
-				row["Product"] = line.Product;
-				row["ProductId"] = line.ProductId;
-				row["Producer"] = line.Producer;
-				row["ProducerId"] = line.ProducerId;
-				row["Country"] = line.Country;
-				row["Quantity"] = line.Quantity;
-				row["ProducerCost"] = line.ProducerCost;
-				row["Nds"] = line.Nds;
-				row["SupplierCost"] = line.SupplierCost;
-				row["SupplierCostWithoutNDS"] = line.SupplierCostWithoutNDS;
-				row["SupplierPriceMarkup"] = line.SupplierPriceMarkup;
-				row["SummaNds"] = line.SummaNds;
-				row["RegistryCost"] = line.RegistryCost;
-				row["Period"] = line.Period;
-				row["SerialNumber"] = line.SerialNumber;
-				row["Certificates"] = line.Certificates;
-				row["VitallyImportant"] = line.VitallyImportant;
+				row["postid_af"] = document.FirmCode;
+				row["post_name_af"] = supplier.FullName;
+				row["apt_af"] = document.AddressId;
+				row["aname_af"] = document.AddressId != null
+				                  	? With.Connection(connection =>
+				                  	                  MySqlHelper.ExecuteScalar(connection,
+				                  	                                            "select Address from future.Addresses where Id = " +
+				                  	                                            document.AddressId
+				                  	                  	))
+				                  	: "";
+				row["ttn"] = document.ProviderDocumentId;
+				row["ttn_date"] = document.DocumentDate;
+				row["id_artis"] = productId;
+				row["name_artis"] = productId != null ?  
+														productsname
+															.AsEnumerable()
+															.Where(r => Convert.ToInt32(r["Id"]) == productId).Select(r => r["Name"].ToString())
+															.SingleOrDefault() 
+														: "";
+				row["przv_artis"] = producerId != null ? With.Connection(c => 
+																		MySqlHelper.ExecuteScalar(c, "select Name from catalogs.Producers where Id = " + producerId).ToString()
+																		) 
+														:	"";
+				row["name_post"] = line.Product;
+				row["przv_post"] = line.Producer;
+				row["seria"] = line.SerialNumber;
+				row["sgodn"] = line.Period;
+				row["sert"] = line.Certificates;
+				row["sert_date"] = "";
+				row["prcena_bnds"] = line.ProducerCost;
+				row["gr_cena"] = line.RegistryCost;
+				row["pcena_bnds"] = line.SupplierCostWithoutNDS;
+				row["nds"] = line.Nds;
+				row["pcena_nds"] = line.SupplierCost;
+				row["kol_tov"] = line.Quantity;
+				
 				table.Rows.Add(row);
 			}
 
 			return table;
 		}
-		private static string GetDbfFileName(string file)
-		{
-			var sb = new StringBuilder();
-			sb.Append(Path.GetDirectoryName(file));
-			sb.Append("\\");
-			sb.Append(Path.GetFileNameWithoutExtension(file));
-			sb.Append(".dbf");
-			return sb.ToString();
-		}
-
-		protected static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
+		
+		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
 		{
 			try
 			{
-				var table = InitTableForFormatDbf(document);
+				var table = InitTableForFormatDbf(document, log.Supplier);
 
 				using (var scope = new TransactionScope(OnDispose.Rollback))
 				{
+					var log_dbf = DocumentReceiveLog.Log(	log.Supplier.Id,
+															log.ClientCode,
+															log.AddressId,
+															//Path.GetFileNameWithoutExtension(log.GetRemoteFileNameExt()) + ".dbf",
+															Path.GetFileNameWithoutExtension(log.FileName) + ".dbf",
+															log.DocumentType, 
+															"Сконвертированный Dbf файл"
+														);
+
+					var file = log_dbf.GetRemoteFileNameExt();
+					log_dbf.FileName = string.Format("{0}{1}", Path.GetFileNameWithoutExtension(file), ".dbf");
+					log_dbf.SaveAndFlush();
+
 					//сохраняем накладную в новом формате dbf.
-					Dbf.Save(table, log.GetRemoteFileNameExt());
+					Dbf.Save(table, Path.Combine(Path.GetDirectoryName(file), log_dbf.FileName));
 
-					//удаляем старый файл
-					//if (File.Exists(file))
-					//	File.Delete(file);
-
-					//изменяем расширение файла в логах.
-					log.FileName = Path.GetFileNameWithoutExtension(log.FileName) + ".dbf";
-					log.SaveAndFlush();
 					scope.VoteCommit();
 				}
 			}
@@ -684,6 +765,17 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				_log.Error("Ошибка сохранения накладной в новый формат dbf. Ошибка: " + exception.Message);
 				throw;
+			}
+		}
+		
+		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
+		private static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
+		{
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				log.IsFake = true;
+				log.SaveAndFlush();
+				scope.VoteCommit();
 			}
 		}
 	}

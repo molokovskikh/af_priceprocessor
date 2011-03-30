@@ -228,11 +228,12 @@ GROUP BY SupplierId
 							_log.DebugFormat("Файл {0} не является новой накладной, не обрабатываем его", file);
 							continue;
 						}
-						var log = DocumentReceiveLog.Log(waybillSource.SupplierId, 
+						var log = DocumentReceiveLog.Log(waybillSource.SupplierId,
 							clientId,
 							addrId,
 							file,
 							documentType);
+
 						//log.CopyDocumentToClientDirectory();
 						documentLogs.Add(log);
 					}
