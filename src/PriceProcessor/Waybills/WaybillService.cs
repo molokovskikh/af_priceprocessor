@@ -769,7 +769,7 @@ where p.Id in ({0});",productIds)));
 		}
 		
 		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
-		private static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
+		public static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
 		{
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{

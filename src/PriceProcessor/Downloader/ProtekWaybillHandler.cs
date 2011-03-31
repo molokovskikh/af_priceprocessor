@@ -121,8 +121,12 @@ namespace Inforoom.PriceProcessor.Downloader
 								if (document == null)
 									continue;
 
-								if(settings.IsConvertFormat)
+								if (settings.IsConvertFormat)
+								{
 									WaybillService.ConvertAndSaveDbfFormat(document, log);
+									WaybillService.SetIsFakeInDocumentReceiveLog(log);
+								}
+								
 
 								document.Log.Save();
 								document.Save();
