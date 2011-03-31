@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCost, Is.EqualTo(607.2300));
 			Assert.That(line.SerialNumber, Is.EqualTo("09J01/87"));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
-			Assert.That(line.SummaNds, Is.EqualTo(55.2));
+			Assert.That(line.NdsAmount, Is.EqualTo(55.2));
 		}
 
 		[Test]
@@ -54,7 +54,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);
-			Assert.That(line.SummaNds, Is.EqualTo(21.07));
+			Assert.That(line.NdsAmount, Is.EqualTo(21.07));
 		}
 
 		[Test]
@@ -79,7 +79,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);
-			Assert.That(line.SummaNds, Is.EqualTo(37.29));
+			Assert.That(line.NdsAmount, Is.EqualTo(37.29));
 		}
 	}
 }

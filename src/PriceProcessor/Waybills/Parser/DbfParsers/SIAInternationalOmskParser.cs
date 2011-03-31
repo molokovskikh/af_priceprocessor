@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.Nds, "NDSPOSTAV")
-				.Line(l => l.SummaNds, "SUMMANDS");
+				.Line(l => l.NdsAmount, "SUMMANDS");
 		}
 
 
