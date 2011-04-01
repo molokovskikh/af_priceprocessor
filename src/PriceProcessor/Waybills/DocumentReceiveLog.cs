@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using Castle.ActiveRecord.Framework;
@@ -20,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		[BelongsTo("FirmCode")]
 		public Supplier Supplier { get; set; }
 
-		[Property(Insert = false)]
+		[Property(Insert = false, Update = false)]
 		public DateTime LogTime { get; set; }
 
 		[Property]
@@ -99,7 +100,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			return Log(supplierId, clientId, addressId, fileName, documentType, null, messageId);
 		}
 
-		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId)
+		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId, bool isFake = false)
 		{
 			fileName = CleanupFilename(fileName);
 			var localFile = fileName;
@@ -114,6 +115,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					DocumentType = documentType,
 					Comment = comment,
 					MessageUid = messageId,
+					IsFake = isFake
 				};
 
 				if (File.Exists(localFile))
@@ -166,6 +168,16 @@ namespace Inforoom.PriceProcessor.Waybills
 			return fileName;
 		}
 
+		public string GetRemoteFileNameExt()
+		{
+			var clientDirectory = GetDocumentDir();
+
+			if (!Directory.Exists(clientDirectory))
+				Directory.CreateDirectory(clientDirectory);
+
+			return GetRemoteFileName();
+		}
+
 		public void CopyDocumentToClientDirectory()
 		{
 			var clientDirectory = GetDocumentDir();
@@ -177,8 +189,17 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
-			File.SetLastAccessTime(_localFile, DateTime.Now);
-			File.Copy(_localFile, destinationFileName, true);
+			
+			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
+			if (GetFileName() != destinationFileName)
+			{
+				File.SetLastAccessTime(_localFile, DateTime.Now);
+				File.Copy(_localFile, destinationFileName, true);
+			}
+			else
+			{
+				File.SetLastAccessTime(destinationFileName, DateTime.Now);
+			}
 
 			if (_logger.IsDebugEnabled)
 				WaybillService.SaveWaybill(_localFile);

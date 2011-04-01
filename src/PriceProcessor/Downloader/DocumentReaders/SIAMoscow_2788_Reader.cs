@@ -63,7 +63,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			public static string colQuantity = "Quantity";
 			public static string colCost = "Cost";
 			public static string colStavkaNDS = "StavkaNDS";
-			public static string colSummaNDS = "SummaNDS";
+			public static string colNdsAmount = "SummaNDS";
 			public static string colCostWithNDS = "CostWNDS";
 			public static string colSeria = "Seria";
 			public static string colPeriod = "Period";
@@ -294,7 +294,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				drResult[ResultTable.colQuantity] = Convert.ToInt32(drBody[BodyTable.colItemQty]);
 				drResult[ResultTable.colCost] = Convert.ToDecimal(drBody[BodyTable.colCatPrNV], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 				drResult[ResultTable.colStavkaNDS] = Convert.ToDecimal(drBody[BodyTable.colVAT], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
-				drResult[ResultTable.colSummaNDS] = Convert.ToDecimal(drBody[BodyTable.colCatVat], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+				drResult[ResultTable.colNdsAmount] = Convert.ToDecimal(drBody[BodyTable.colCatVat], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 				drResult[ResultTable.colCostWithNDS] = Convert.ToDecimal(drBody[BodyTable.colCatTot], System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 				drResult[ResultTable.colSeria] = drBody[BodyTable.colSeries];
 				drResult[ResultTable.colPeriod] = Convert.ToDateTime(drBody[BodyTable.colUseBefor]);
@@ -330,7 +330,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			dtResult.Columns.Add(ResultTable.colQuantity, typeof(int));
 			dtResult.Columns.Add(ResultTable.colCost, typeof(decimal));
 			dtResult.Columns.Add(ResultTable.colStavkaNDS, typeof(decimal));
-			dtResult.Columns.Add(ResultTable.colSummaNDS, typeof(decimal));
+			dtResult.Columns.Add(ResultTable.colNdsAmount, typeof(decimal));
 			dtResult.Columns.Add(ResultTable.colCostWithNDS, typeof(decimal));
 			dtResult.Columns.Add(ResultTable.colSeria, typeof(string));
 			dtResult.Columns[ResultTable.colSeria].MaxLength = 120;

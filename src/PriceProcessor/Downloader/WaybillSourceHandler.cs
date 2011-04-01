@@ -551,8 +551,12 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
 				addressId = null;
 			}
 
-			var log = DocumentReceiveLog.Log(Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
-				clientId, addressId, file, _currentDocumentType.DocType, currentUID);
+			var log = DocumentReceiveLog.Log(	Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
+												clientId,
+												addressId, 
+												file,
+												_currentDocumentType.DocType,
+												currentUID);
 			log.CopyDocumentToClientDirectory();
 			return log;
 		}

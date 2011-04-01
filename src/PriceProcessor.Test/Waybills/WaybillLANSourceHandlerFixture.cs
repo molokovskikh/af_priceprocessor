@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
@@ -141,6 +142,65 @@ where a.Id = ?AddressId", connection);
 			CheckClientDirectory(1, DocType.Waybill);
 			CheckDocumentLogEntry(1);
 		}
+
+		[Test]
+		public void Parse_waybills_Convert_Dbf_format()
+		{
+			var directory = Create_supplier_dir();
+			var filePath = @"..\..\Data\Waybills\890579.dbf";
+
+			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
+			Insert_waybill_source();
+			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
+
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == _summary.Client.Id).SingleOrDefault();
+			//запоминаем начальное состояние настройки
+			var source_IsConvertFormat = settings.IsConvertFormat;
+			//и если оно не включено, то включим принудительно для теста
+			if (!source_IsConvertFormat)
+			{
+				using (new TransactionScope())
+				{
+					settings.IsConvertFormat = true;
+					settings.SaveAndFlush();
+				}
+			}
+
+			Process_waybills();
+
+			CheckClientDirectory(1, DocType.Waybill);
+
+			using (new SessionScope())
+			{
+				var logs = TestDocumentLog.Queryable.Where(log =>
+					log.ClientCode == _summary.Client.Id &&
+					log.FirmCode == _summary.Supplier.Id &&
+					log.AddressId == _summary.Client.Addresses[0].Id);
+				
+				Assert.That(logs.Count(), Is.EqualTo(2));
+				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
+				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
+				
+				var _log = logs.Where(l => !l.IsFake).SingleOrDefault();
+				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(_log.FileName) > -1).SingleOrDefault();
+				
+				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+				Assert.IsTrue(data.Columns.Contains("postid_af"));
+				Assert.IsTrue(data.Columns.Contains("ttn"));
+				Assert.IsTrue(data.Columns.Contains("przv_post"));
+			}
+
+
+
+			
+			//если было включено принудительно, то вернем назад настройку.
+			if (!source_IsConvertFormat)
+			{
+				using (new TransactionScope())
+					settings.IsConvertFormat = false;
+			}
+		}
+
 
 		[Test]
 		public void TestSIAMoscow2788()

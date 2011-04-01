@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Properties;
 using log4net;
 using NHibernate.Criterion;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -30,6 +33,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public string ShortName { get; set; }
+		
+		[Property]
+		public string FullName { get; set; }
 	}
 
 	[ActiveRecord("RetClientsSet", Schema = "Usersettings")]
@@ -37,6 +43,9 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		[PrimaryKey("ClientCode")]
 		public uint Id { get; set; }
+
+		[Property]
+		public bool IsConvertFormat { get; set; }
 
 		[Property]
 		public bool ParseWaybills { get; set; }
@@ -259,6 +268,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string Certificates { get; set; }
 
 		/// <summary>
+		/// Дата сертификата(в формате DD.MM.YYYY)
+		/// </summary>
+		//[Property]
+		//public DateTime CertificatesDate { get; set; }
+		
+		/// <summary>
 		/// Срок годности
 		/// </summary>
 		[Property]
@@ -336,12 +351,32 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string SerialNumber { get; set; }
 
-
 		/// <summary>
 		/// Сумма НДС
 		/// </summary>
-		//[Property]
-		public decimal? SummaNds { get; set; }
+		[Property]
+		public decimal? NdsAmount { get; set; }
+
+		/// <summary>
+		/// Сумма с НДС
+		/// </summary>
+		[Property]
+		public decimal? Amount { get; set; }
+
+		public void SetAmount()
+		{
+			if(!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
+				Amount = SupplierCost*Quantity;
+		}
+
+		public void SetNdsAmount()
+		{
+			if (!NdsAmount.HasValue && SupplierCost.HasValue && 
+				SupplierCostWithoutNDS.HasValue && Quantity.HasValue)
+			{
+				NdsAmount = Math.Round((SupplierCost.Value - SupplierCostWithoutNDS.Value) * Quantity.Value, 2);
+			}
+		}
 
 		public void SetValues()
 		{
@@ -354,6 +389,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!SupplierCost.HasValue && Nds.HasValue && SupplierCostWithoutNDS.HasValue)
 				SetSupplierCostByNds(Nds.Value);
 			
+			SetAmount();
 		}
 
 		public void SetNds(decimal nds)
@@ -367,10 +403,10 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public void SetSupplierCostWithoutNds()
 		{
-			if (SupplierCost.HasValue && SummaNds.HasValue && Quantity.HasValue &&
+			if (SupplierCost.HasValue && NdsAmount.HasValue && Quantity.HasValue &&
 				!SupplierCostWithoutNDS.HasValue)
 			{
-				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value - (SummaNds.Value/Quantity.Value), 2);
+				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value - (NdsAmount.Value/Quantity.Value), 2);
 			}
 		}
 
@@ -500,6 +536,21 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
 		{
 			var detector = new WaybillFormatDetector();
+			
+			//пробежать по logs и поставить Fake документам
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				logs.Each(l =>
+				          	{
+								if (WaybillSettings.Find(l.ClientCode.Value).IsConvertFormat)
+								{
+									l.IsFake = true;
+									l.SaveAndFlush();
+								}
+				          	});
+				scope.VoteCommit();
+			}
+
 			var docsForParsing = MultifileDocument.Merge(logs);
 
 			var docs = docsForParsing.Select(d => {
@@ -507,12 +558,20 @@ namespace Inforoom.PriceProcessor.Waybills
 				try
 				{
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
-
+					
 					if (d.DocumentLog.DocumentType == DocType.Reject)
 						return null;
 					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
 						return null;
-					return detector.DetectAndParse(d.DocumentLog, d.FileName);
+					
+					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
+					
+					// для мульти файла, мы сохраняем в источнике все файлы, 
+					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
+					if (settings.IsConvertFormat)
+						ConvertAndSaveDbfFormat(doc, d.DocumentLog);
+
+					return doc;
 				}
 				catch (Exception e)
 				{
@@ -543,23 +602,32 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public static void ParserDocument(DocumentReceiveLog log)
 		{
-			ParserDocument(log.Id, log.GetFileName());
-		}
+			var file = log.GetFileName();
 
-		public static void ParserDocument(uint documentLogId, string file)
-		{
 			try
 			{
 				using(new SessionScope())
 				{
-					var log = DocumentReceiveLog.Find(documentLogId);
 					var settings = WaybillSettings.Find(log.ClientCode.Value);
+					
+					if (!settings.IsConvertFormat)
+						log.CopyDocumentToClientDirectory();
+
 					if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
 						return;
-
+					
 					var document = new WaybillFormatDetector().DetectAndParse(log, file);
 					if (document == null)
 						return;
+
+					//конвертируем накладную в новый формат dbf.
+					if (settings.IsConvertFormat)
+					{
+						ConvertAndSaveDbfFormat(document, log);
+						SetIsFakeInDocumentReceiveLog(log);
+					}
+					
+
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
 
@@ -572,6 +640,163 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
 				SaveWaybill(file);
+			}
+		}
+
+		private static DataTable GetProductsName(string productIds)
+		{
+			var dataset = With.Connection(conection => MySqlHelper.ExecuteDataset(conection, string.Format(@"select Id,
+(
+select
+	concat(CatalogNames.Name, ' ', CatalogForms.Form, ' ', 
+  cast(GROUP_CONCAT(ifnull(PropertyValues.Value, '') 
+                    order by Properties.PropertyName, PropertyValues.Value
+						        SEPARATOR ', '
+						        ) as char)) as Name
+	from
+		(
+			catalogs.products,
+			catalogs.catalog,
+			catalogs.CatalogForms,
+			catalogs.CatalogNames
+		)
+		left join catalogs.ProductProperties on ProductProperties.ProductId = Products.Id
+		left join catalogs.PropertyValues on PropertyValues.Id = ProductProperties.PropertyValueId
+		left join catalogs.Properties on Properties.Id = PropertyValues.PropertyId
+	where
+		products.Id = p.Id
+	and catalog.Id = products.CatalogId
+	and CatalogForms.Id = catalog.FormId
+	and CatalogNames.Id = catalog.NameId
+) as Name
+from catalogs.Products p
+where p.Id in ({0});",productIds)));
+			
+			return dataset.Tables.Count > 0 ? dataset.Tables[0] : null;
+		}
+
+		private static DataTable InitTableForFormatDbf(Document document, Supplier supplier)
+		{
+			var table = new DataTable();
+
+			table.Columns.AddRange(new DataColumn[]
+			                       	{
+			                       		new DataColumn("postid_af"),
+			                       		new DataColumn("post_name_af"),
+			                       		new DataColumn("apt_af"),
+			                       		new DataColumn("aname_af"),
+			                       		new DataColumn("ttn"),
+			                       		new DataColumn("ttn_date"),
+			                       		new DataColumn("id_artis"),
+			                       		new DataColumn("name_artis"),
+			                       		new DataColumn("przv_artis"),
+			                       		new DataColumn("name_post"),
+			                       		new DataColumn("przv_post"),
+			                       		new DataColumn("seria"),
+			                       		new DataColumn("sgodn"),
+			                       		new DataColumn("sert"),
+			                       		new DataColumn("sert_date"),
+			                       		new DataColumn("prcena_bnds"),
+			                       		new DataColumn("gr_cena"),
+			                       		new DataColumn("pcena_bnds"),
+			                       		new DataColumn("nds"),
+			                       		new DataColumn("pcena_nds"),
+			                       		new DataColumn("kol_tov")
+			                       	});
+
+			var productIds = document.Lines.Where(p=> p.ProductId != null).Select(p => p.ProductId).ToArray();
+			var productsname = (productIds.Length > 0) ? GetProductsName(string.Join(",", productIds)) : new DataTable();
+
+			foreach (var line in document.Lines)
+			{
+				var productId = line.ProductId;
+				var producerId = line.ProducerId;
+
+				var row = table.NewRow();
+				row["postid_af"] = document.FirmCode;
+				row["post_name_af"] = supplier.FullName;
+				row["apt_af"] = document.AddressId;
+				row["aname_af"] = document.AddressId != null
+				                  	? With.Connection(connection =>
+				                  	                  MySqlHelper.ExecuteScalar(connection,
+				                  	                                            "select Address from future.Addresses where Id = " +
+				                  	                                            document.AddressId
+				                  	                  	))
+				                  	: "";
+				row["ttn"] = document.ProviderDocumentId;
+				row["ttn_date"] = document.DocumentDate;
+				row["id_artis"] = productId;
+				row["name_artis"] = productId != null ?  
+														productsname
+															.AsEnumerable()
+															.Where(r => Convert.ToInt32(r["Id"]) == productId).Select(r => r["Name"].ToString())
+															.SingleOrDefault() 
+														: "";
+				row["przv_artis"] = producerId != null ? With.Connection(c => 
+																		MySqlHelper.ExecuteScalar(c, "select Name from catalogs.Producers where Id = " + producerId).ToString()
+																		) 
+														:	"";
+				row["name_post"] = line.Product;
+				row["przv_post"] = line.Producer;
+				row["seria"] = line.SerialNumber;
+				row["sgodn"] = line.Period;
+				row["sert"] = line.Certificates;
+				row["sert_date"] = "";
+				row["prcena_bnds"] = line.ProducerCost;
+				row["gr_cena"] = line.RegistryCost;
+				row["pcena_bnds"] = line.SupplierCostWithoutNDS;
+				row["nds"] = line.Nds;
+				row["pcena_nds"] = line.SupplierCost;
+				row["kol_tov"] = line.Quantity;
+				
+				table.Rows.Add(row);
+			}
+
+			return table;
+		}
+		
+		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
+		{
+			try
+			{
+				var table = InitTableForFormatDbf(document, log.Supplier);
+
+				using (var scope = new TransactionScope(OnDispose.Rollback))
+				{
+					var log_dbf = DocumentReceiveLog.Log(	log.Supplier.Id,
+															log.ClientCode,
+															log.AddressId,
+															//Path.GetFileNameWithoutExtension(log.GetRemoteFileNameExt()) + ".dbf",
+															Path.GetFileNameWithoutExtension(log.FileName) + ".dbf",
+															log.DocumentType, 
+															"Сконвертированный Dbf файл"
+														);
+
+					var file = log_dbf.GetRemoteFileNameExt();
+					log_dbf.FileName = string.Format("{0}{1}", Path.GetFileNameWithoutExtension(file), ".dbf");
+					log_dbf.SaveAndFlush();
+
+					//сохраняем накладную в новом формате dbf.
+					Dbf.Save(table, Path.Combine(Path.GetDirectoryName(file), log_dbf.FileName));
+
+					scope.VoteCommit();
+				}
+			}
+			catch (Exception exception)
+			{
+				_log.Error("Ошибка сохранения накладной в новый формат dbf. Ошибка: " + exception.Message);
+				throw;
+			}
+		}
+		
+		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
+		public static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
+		{
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				log.IsFake = true;
+				log.SaveAndFlush();
+				scope.VoteCommit();
 			}
 		}
 	}

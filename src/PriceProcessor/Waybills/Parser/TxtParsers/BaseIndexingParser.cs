@@ -100,9 +100,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int RegistryCostIndex = -1;
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
+		//protected int CertificatesDateIndex = -1;
 
 		protected string CommentMark;
 		protected bool CalculateSupplierPriceMarkup;
+		
 
 		protected virtual void SetIndexes()
 		{
@@ -124,6 +126,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			RegistryCostIndex = 16;
 			VitallyImportantIndex = 18;
 			SupplierCostWithoutNdsIndex = -1;
+			//CertificatesDateIndex = -1;
 		}
 
 		protected static int ? GetInteger(string value)

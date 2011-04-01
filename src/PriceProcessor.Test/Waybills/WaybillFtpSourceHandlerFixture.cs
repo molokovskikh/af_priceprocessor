@@ -191,7 +191,7 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 
 			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 			var clientCodes = CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
-
+			
 			var handler = new WaybillFtpSourceHandlerForTesting();
 			handler.Process();
 
@@ -246,6 +246,130 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
+		}
+
+		[Test]
+		public void Process_waybills_second_time_Convert_Dbf_format()
+		{
+			var ftpHost = "ftp.narod.ru";
+			var ftpPort = 21;
+			var ftpWaybillDirectory = "Waybills";
+			string ftpRejectDirectory = "Rejects";
+			var user = "test";
+			var password = "test";
+			var newClientDeliveryCode = 1234u;
+			var oldClientDeliveryCode = 12345u;
+
+			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
+			CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
+
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == 361).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.SaveAndFlush();
+			}
+
+			var handler = new WaybillFtpSourceHandlerForTesting();
+			handler.Process();
+			var countLogs = 0;
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
+				countLogs = logs.Count();
+			}
+
+			handler.Process();
+			using (new SessionScope())
+			{
+				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
+				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
+			}
+
+			//возвращаем назад для этого клиента значение IsConvertFormat, чтобы работали старые тесты.
+			// так как в старых тестах есть проверка на количество записей для поставщика и клиента в document_logs
+			//и когда создаем файл в новом формате dbf,то таких записей становится две.
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = false;
+				settings.SaveAndFlush();
+			}
+		}
+
+
+		[Test]
+		public void Process_waybills_convert_Dbf_format()
+		{
+			var ftpHost = "ftp.narod.ru";
+			var ftpPort = 21;
+			var ftpWaybillDirectory = "Waybills";
+			string ftpRejectDirectory = "Rejects";
+			var user = "test";
+			var password = "test";
+			var newClientDeliveryCode = 1234u;
+			var oldClientDeliveryCode = 12345u;
+
+			var supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
+			var clientCodes = CopyWaybillFiles(oldClientDeliveryCode, newClientDeliveryCode, supplier, ftpWaybillDirectory);
+
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == 361).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.SaveAndFlush();
+			}
+			
+			var handler = new WaybillFtpSourceHandlerForTesting();
+			handler.Process();
+
+			using (new SessionScope())
+			{
+				foreach (var clientCode in clientCodes)
+				{
+					// Проверяем наличие записей в document_logs
+					var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.ClientCode == clientCode);
+
+					Assert.That(logs.Count(), clientCode == 361 ? Is.EqualTo(2) : Is.EqualTo(1));
+
+					// Проверяем наличие записей в documentheaders для исходных документов.
+					foreach (var documentLog in logs)
+					{
+						var count = documentLog.IsFake
+						            	? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
+						            	: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
+						//у нас только одна запись в documentsheaders
+						Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
+					}
+					
+					// Проверяем наличие файлов в папках клиентов
+					var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
+					Assert.IsTrue(Directory.Exists(clientDir));
+
+					var files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
+					Assert.That(files.Count(), Is.GreaterThan(0));
+
+					//проверка на существование файла dbf в новом формате.
+					if (clientCode == 361)
+					{
+						var files_dbf = Directory.GetFiles(Path.Combine(clientDir, "Waybills"), "*.dbf");
+						Assert.That(files_dbf.Count(), Is.EqualTo(1));
+						var data = Dbf.Load(files_dbf[0], Encoding.GetEncoding(866));
+						Assert.IsTrue(data.Columns.Contains("postid_af"));
+						Assert.IsTrue(data.Columns.Contains("ttn"));
+						Assert.IsTrue(data.Columns.Contains("przv_post"));
+					}
+				}
+			}
+
+			//возвращаем назад для этого клиента значение IsConvertFormat, чтобы работали старые тесты.
+			// так как в старых тестах есть проверка на количество записей для поставщика и клиента в document_logs
+			//и когда создаем файл в новом формате dbf,то таких записей становится две.
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = false;
+				settings.SaveAndFlush();
+			}
+
 		}
 	}
 }

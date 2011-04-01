@@ -103,6 +103,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Management" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization">
@@ -203,10 +204,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Rosta\RostaDownloader.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KosmetikOptParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenLipezkParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelOldTxtParser.cs" />
