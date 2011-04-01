@@ -188,6 +188,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />
     <Compile Include="Waybills\Parser\DetstvoOmskParserFixture.cs" />
+    <Compile Include="Waybills\Parser\FailWaybillParse.cs" />
     <Compile Include="Waybills\Parser\FarmaimpeksIzhevskParserFixture.cs" />
     <Compile Include="Waybills\Parser\FarmakonPlusParserFixture.cs" />
     <Compile Include="Waybills\Parser\FarmGroupParserFixture.cs" />
