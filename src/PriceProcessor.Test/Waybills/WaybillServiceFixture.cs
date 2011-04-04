@@ -122,7 +122,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test]
+		[Test, Ignore("Сопоставление в данной версии отключено")]
 		public void Check_SetProductId()
 		{
 			const string file = "14326_4.dbf";
@@ -189,7 +189,7 @@ namespace PriceProcessor.Test.Waybills
 
 
 
-		[Test]
+		[Test, Ignore("Сопоставление в этой версии отключено")]
 		public void Check_SetProducerId()
 		{
 			const string file = "14326_4.dbf";
