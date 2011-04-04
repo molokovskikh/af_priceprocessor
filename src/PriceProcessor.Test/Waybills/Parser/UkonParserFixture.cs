@@ -34,7 +34,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].NdsAmount, Is.Null);
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.08.2015"));
 			Assert.That(doc.Lines[0].ProductId, Is.Null);
-			Assert.That(doc.Lines[0].ProducerId, Is.Null);
 		}
 
 		[Test]
