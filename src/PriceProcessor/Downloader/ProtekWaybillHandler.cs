@@ -238,7 +238,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
 				line.SerialNumber = bladingItem.prodseria;
 			}
-			return document.SetProductId();
+			return document;
 		}
 	}
 }

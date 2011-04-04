@@ -159,7 +159,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
-			var doc = parser.Parse(file, document).SetProductId();
+			var doc = parser.Parse(file, document);
 
 			return doc;
 		}

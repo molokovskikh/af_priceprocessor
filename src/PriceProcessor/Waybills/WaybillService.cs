@@ -90,102 +90,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
-		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
-		{
-			var criteriaSynonymProduct = DetachedCriteria.For<T>();
-			criteriaSynonymProduct.Add(Restrictions.In("Synonym", synonyms));
-			criteriaSynonymProduct.Add(Restrictions.In("PriceCode", priceCodes));
-			return SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<T>()).ToList();
-		}
-
-		///<summary>
-		/// сопоставление в накладной названию продуктов ProductId.
-		/// </summary>
-		public Document SetProductId()
-		{
-			try
-			{
-				// получаем Id прайсов, из которых мы будем брать синонимы.
-				var priceCodes = Price.Queryable
-									.Where(p => (p.Supplier.Id == FirmCode))
-									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-
-				if (priceCodes == null || priceCodes.Count <= 0)
-					return this;
-
-				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
-				// Если накладная большая, то будем выбирать из неё продукты блоками.
-				int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
-				int index = 0;
-				int count = GetCount(realBatchSize, index);
-
-				while ((count + index <= Lines.Count) && (count > 0))
-				{
-					//выбираем из накладной часть названия производителей.
-					var synonymsFirm = Lines.ToList().GetRange(index, count).Select(i => i.Producer).ToList();
-
-					// выбираем из накладной часть названия продуктов.
-					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
-
-					//получаем из базы данные для выбранной части продуктов из накладной.
-					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(synonyms, priceCodes);
-
-					//получаем из базы данные для выбранной части производителей для накладной.
-					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(synonymsFirm, priceCodes);
-					
-					
-					foreach (var line in Lines)
-					{
-						if (dbListSynonym.Count > 0)
-						{
-							//заполняем ProductId для продуктов в накладной по данным полученным из базы.
-							var productName = line.Product;
-							var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
-
-							if (listSynonym.Count > 0)
-							{
-								var ls = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).ToList();
-								if(ls.Count > 0)
-								{
-									line.ProductId = ls[0];
-									if(ls.Count > 1)
-										_log.Info(string.Format("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id));
-								}
-							}
-						}
-
-						if (dbListSynonymFirm.Count > 0)
-						{
-							//заполняем Id производителя в накладной по данным полученным из базы.
-							var producerName = line.Producer;
-							var listSynonymFirm = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
-
-							if (listSynonymFirm.Count > 0)
-							{
-								var lsf = listSynonymFirm.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).ToList();
-								if (lsf.Count > 0)
-								{
-									line.ProducerId = lsf[0];
-									if (lsf.Count > 1)
-										_log.Info(string.Format("В накладной при сопоставлении названия производителя оказалось более одного ProducerId для производителя: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", producerName, FirmCode, ClientCode, Log.FileName, Log.Id));
-								}
-							}
-						}
-					}
-
-					index = count;
-					count = GetCount(realBatchSize, index);
-				}
-			}
-			catch (Exception e)
-			{
-				var d = string.Format("ProviderDocumentId: {0}, DocumentDate: {1}, ClientCode: {2}, FirmCode: {3}, AddressId: {4}, FileName: {5}, Log.Id: {6}  ", ProviderDocumentId, DocumentDate, ClientCode, FirmCode, AddressId, Log.FileName, Log.Id);
-				_log.Error("Ошибка при сопоставлении ProductId в документе: " + e.Message + " StackTrace: " + e.StackTrace);
-			}
-			
-			return this;
-		}
-
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -269,7 +173,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Id продукта
 		/// </summary>
-		[Property]
+		//[Property]
 		public int? ProductId { get; set; }
 		
 		/// <summary>
@@ -305,7 +209,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Id производителя
 		/// </summary>
-		[Property]
+		//[Property]
 		public int? ProducerId { get; set; }
 
 		/// <summary>
