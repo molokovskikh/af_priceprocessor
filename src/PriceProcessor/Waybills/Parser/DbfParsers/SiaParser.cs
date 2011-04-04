@@ -61,6 +61,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCost = ParseHelper.GetDecimal(r["PR_PROIZ"].ToString());
 
+				if (data.Columns.Contains("SUMMA_NDS"))
+					line.NdsAmount = ParseHelper.GetDecimal(r["SUMMA_NDS"].ToString());
+
 				if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE"))
 				{
 					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());

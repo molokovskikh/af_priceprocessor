@@ -26,6 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.SerialNumber, "SERII");
+				.Line(l	=> l.NdsAmount, "SUMMANDS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

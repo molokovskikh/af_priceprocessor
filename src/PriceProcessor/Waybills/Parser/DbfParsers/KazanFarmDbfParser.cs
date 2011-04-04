@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.VitallyImportant, "JNVLS")
-				.Line(l => l.SummaNds, "SUMMANDS")
+				.Line(l => l.NdsAmount, "SUMMANDS")
 				.ToDocument(document, data);
 
 			return document;

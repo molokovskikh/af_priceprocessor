@@ -9,6 +9,34 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class UkonParserFixture
 	{
+		[Test, Description("Накладная с Ценой поставщика с НДС равной 0.")]
+		public void Parse_With_Zero_SupplierCost()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7455319.sst");
+			
+			Assert.That(doc.Lines.Count, Is.EqualTo(3));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("СМ-7455319/00"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("23.03.2011")));
+
+			Assert.That(doc.Lines[0].Code, Is.EqualTo("2753"));
+			Assert.That(doc.Lines[0].Product, Is.EqualTo("Супрастин табл. 25мг N20 Венгрия"));
+			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Egis Pharmaceuticals Plc"));
+			Assert.That(doc.Lines[0].Country, Is.EqualTo("Венгрия"));
+			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(30));
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(91.10));
+			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(93.73));
+			Assert.That(doc.Lines[0].Nds, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(93.89));
+			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС.HU.ФМ08.Д98806"));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].NdsAmount, Is.Null);
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.08.2015"));
+			Assert.That(doc.Lines[0].ProductId, Is.Null);
+			Assert.That(doc.Lines[0].ProducerId, Is.Null);
+		}
+
 		[Test]
 		public void Parse()
 		{
@@ -104,10 +132,22 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[1].Nds.Value, Is.EqualTo(10));
 		}
 
+
+		[Test, Description("В заголовке отсутствует строка '- В следующей строке перечислены:'")]
+		public void Parse_without_headerLine()
+		{
+			var parser = new UkonParser();
+			var doc = new Document();
+			
+			//не парсится, так как в заголовке отсутствует строка "- В следующей строке перечислены:"
+			var resultDoc = parser.Parse(@"..\..\Data\Waybills\00019418.sst", doc);
+			Assert.That(resultDoc, Is.Null);
+		}
+
 		[Test]
 		public void Parse_without_header()
 		{
-            var parser = new UkonParser();
+			var parser = new UkonParser();
 			var doc = new Document();
 
             try
@@ -335,6 +375,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\_9591.sst");
 			var doc1 = WaybillParser.Parse(@"..\..\Data\Waybills\_997.sst");
+
+			//накладная без заголовка. не парсится.
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00019418.sst");
 		}
 	}
 }
