@@ -136,19 +136,41 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					foreach (var line in Lines)
 					{
-						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
-						var productName = line.Product;
-						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
+						if (dbListSynonym.Count > 0)
+						{
+							//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+							var productName = line.Product;
+							var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
 
-						if (listSynonym.Count > 0)
-							line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
+							if (listSynonym.Count > 0)
+							{
+								var ls = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).ToList();
+								if(ls.Count > 0)
+								{
+									line.ProductId = ls[0];
+									if(ls.Count > 1)
+										_log.Info(string.Format("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id));
+								}
+							}
+						}
 
-						//заполняем Id производителя в накладной по данным полученным из базы.
-						var producerName = line.Producer;
-						var listSynonymFirm = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
+						if (dbListSynonymFirm.Count > 0)
+						{
+							//заполняем Id производителя в накладной по данным полученным из базы.
+							var producerName = line.Producer;
+							var listSynonymFirm = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
 
-						if (listSynonymFirm.Count > 0)
-							line.ProducerId = listSynonymFirm.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
+							if (listSynonymFirm.Count > 0)
+							{
+								var lsf = listSynonymFirm.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).ToList();
+								if (lsf.Count > 0)
+								{
+									line.ProducerId = lsf[0];
+									if (lsf.Count > 1)
+										_log.Info(string.Format("В накладной при сопоставлении названия производителя оказалось более одного ProducerId для производителя: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", producerName, FirmCode, ClientCode, Log.FileName, Log.Id));
+								}
+							}
+						}
 					}
 
 					index = count;
@@ -157,7 +179,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			catch (Exception e)
 			{
-				_log.Error("Ошибка при сопоставлении ProductId", e);
+				var d = string.Format("ProviderDocumentId: {0}, DocumentDate: {1}, ClientCode: {2}, FirmCode: {3}, AddressId: {4}, FileName: {5}, Log.Id: {6}  ", ProviderDocumentId, DocumentDate, ClientCode, FirmCode, AddressId, Log.FileName, Log.Id);
+				_log.Error("Ошибка при сопоставлении ProductId в документе: " + e.Message + " StackTrace: " + e.StackTrace);
 			}
 			
 			return this;
@@ -757,6 +780,8 @@ where p.Id in ({0});",productIds)));
 		
 		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
 		{
+			var path = string.Empty;
+
 			try
 			{
 				var table = InitTableForFormatDbf(document, log.Supplier);
@@ -776,15 +801,17 @@ where p.Id in ({0});",productIds)));
 					log_dbf.FileName = string.Format("{0}{1}", Path.GetFileNameWithoutExtension(file), ".dbf");
 					log_dbf.SaveAndFlush();
 
+					path = Path.Combine(Path.GetDirectoryName(file), log_dbf.FileName);
 					//сохраняем накладную в новом формате dbf.
-					Dbf.Save(table, Path.Combine(Path.GetDirectoryName(file), log_dbf.FileName));
+					Dbf.Save(table, path);
 
 					scope.VoteCommit();
 				}
 			}
 			catch (Exception exception)
 			{
-				_log.Error("Ошибка сохранения накладной в новый формат dbf. Ошибка: " + exception.Message);
+				var info = string.Format("Исходный файл: {0} , log.id = {1}. Сконвертированный: {2}. ClientCode = {3}. SupplierId = {4}.", log.FileName, log.Id, path, log.ClientCode, log.Supplier.Id);
+				_log.Error("Ошибка сохранения накладной в новый формат dbf. "+ info + " Ошибка: " + exception.Message + ". StackTrace:" + exception.StackTrace);
 				throw;
 			}
 		}
