@@ -23,16 +23,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.RegistryCost, "REGPRC")
 				.Line(l => l.VitallyImportant, "GNVLS")
-				.Line(l => l.SerialNumber, "SER");
+				.Line(l => l.SerialNumber, "SER")
+				.Line(l => l.Amount, "SUMPAY")
+				.Line(l => l.NdsAmount, "SUMNDS2")
+				.Line(l => l.SupplierPriceMarkup, "PROCNDB");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NDOC")
-				&& data.Columns.Contains("CNTR")
-				&& data.Columns.Contains("SERTIF")
-				&& data.Columns.Contains("GDATE")
-				&& data.Columns.Contains("QNT");
+			       && data.Columns.Contains("CNTR")
+			       && data.Columns.Contains("SERTIF")
+			       && data.Columns.Contains("GDATE")
+			       && data.Columns.Contains("QNT");
 		}
 	}
 }
