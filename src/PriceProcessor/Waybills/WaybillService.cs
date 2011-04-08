@@ -353,6 +353,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				SetSupplierCostByNds(Nds.Value);
 			
 			SetAmount();
+			SetNdsAmount();
 		}
 
 		public void SetNds(decimal nds)
