@@ -505,11 +505,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public static void SaveWaybill(string filename)
 		{
-			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
-				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
+			if (!Directory.Exists(Settings.Default.FTPOptBoxPath))
+				Directory.CreateDirectory(Settings.Default.FTPOptBoxPath);
 
 			if (File.Exists(filename))
-				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
+				File.Copy(filename, Path.Combine(Settings.Default.FTPOptBoxPath, Path.GetFileName(filename)), true);
 		}
 
 		public static void ParserDocument(DocumentReceiveLog log)
