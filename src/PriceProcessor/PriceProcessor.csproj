@@ -210,6 +210,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KosmetikOptParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SmileParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenLipezkParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelOldTxtParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\BssSpbXlsParser.cs" />
