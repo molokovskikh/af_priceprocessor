@@ -78,7 +78,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id
 					documentLogId = Convert.ToUInt32(cmdInsert.ExecuteScalar());
 				});
 				resultList.Add(documentLogId);
-				var clientDir = Path.Combine(Settings.Default.WaybillsPath, clientCode.ToString().PadLeft(3, '0'));
+				var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");
 				var name = String.Format("{0}_{1}({2}){3}",
 					documentLogId,
