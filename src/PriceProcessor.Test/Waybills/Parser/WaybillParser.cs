@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (!File.Exists(filePath))
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
-			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser))
+			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser) && !(parser is TrediFarmCheboksarySpecialParser))
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;

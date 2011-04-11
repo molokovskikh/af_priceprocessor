@@ -1,8 +1,8 @@
 ﻿using System.Data;
-using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
+	// Парсер для накладной поставщика Смайл (требование 3663)
 	public class SmileParser: BaseDbfParser
 	{			
 		public override DbfParser GetParser()
@@ -29,6 +29,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			       && data.Columns.Contains("WARESCODE")
 			       && data.Columns.Contains("PRODNAME")
 			       && data.Columns.Contains("WARESVALID");
-		}		
+		}
 	}
 }

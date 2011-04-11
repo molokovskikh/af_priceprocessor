@@ -40,6 +40,14 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof (KazanFarmDbfParser);
 							break;
 						}
+					// Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
+					case 7999:
+						{
+							var table = TrediFarmCheboksarySpecialParser.Load(file);
+							if (TrediFarmCheboksarySpecialParser.CheckFileFormat(table))
+								type = typeof(TrediFarmCheboksarySpecialParser);
+							break;
+						}
 					default: break;
 				}
 			}
@@ -67,6 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					 || documentLog.Supplier.Id == 21))
 					type = typeof (Moron_338_SpecialParser);
 
+				// Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
 				if (type == typeof(PulsFKParser) && documentLog != null
 					&& documentLog.Supplier.Id == 1581)
 					type = typeof (ZdravServiceParser);
