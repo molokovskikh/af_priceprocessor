@@ -48,6 +48,14 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(TrediFarmCheboksarySpecialParser);
 							break;
 						}
+					// Если накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
+					case 7957:
+						{
+							var table = ZhdanovKazanSpecialParser.Load(file);
+							if (ZhdanovKazanSpecialParser.CheckFileFormat(table))
+								type = typeof(ZhdanovKazanSpecialParser);
+							break;
+						}
 					default: break;
 				}
 			}
