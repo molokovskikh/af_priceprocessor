@@ -52,5 +52,33 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU ФМ01 Д38736"));
 			Assert.That(line.SupplierCost, Is.EqualTo(250.57));
 		}
+
+		[Test]
+		public void Parse_AptekaHolding_Lipetsk()
+		{
+			var doc = WaybillParser.Parse("55154_2.dbf");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(6));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("00000455154/"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("08.04.2011"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("7976"));
+			Assert.That(line.Product, Is.EqualTo("Бинт эласт медиц ВР  5м х 8см Латвия"));
+			Assert.That(line.Producer, Is.EqualTo("Tonus Elast ООО"));
+			Assert.That(line.Country, Is.EqualTo("Латвия"));
+			Assert.That(line.Quantity, Is.EqualTo(2));
+			Assert.That(line.ProducerCost, Is.EqualTo(50.52));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(50.52));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
+			Assert.That(line.Period, Is.EqualTo("01.09.2015"));
+			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.SerialNumber, Is.EqualTo("-"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ИМ25.В02516 от 13.08.09 до 13.08.12 выдан ОС \"Энергия Плюс\" г."));
+			Assert.That(line.NdsAmount, Is.EqualTo(10.10));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
+		}
+
+
 	}
 }
