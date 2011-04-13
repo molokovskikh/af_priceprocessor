@@ -162,10 +162,10 @@ values(
 insert into usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName, BaseCost) 
 values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			With.Connection(connection => {
-                var command = new MySqlCommand(sqlFormRules, connection);
-                command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
-                command.Parameters.AddWithValue("?PriceItemId", priceItemId);
-                command.ExecuteNonQuery();
+				var command = new MySqlCommand(sqlFormRules, connection);
+				command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
+				command.Parameters.AddWithValue("?PriceItemId", priceItemId);
+				command.ExecuteNonQuery();
 			});
 
 			// Копируем файл в Inbound и запускаем формализацию
