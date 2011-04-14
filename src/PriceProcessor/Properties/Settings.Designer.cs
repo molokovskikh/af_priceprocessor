@@ -784,16 +784,7 @@ namespace Inforoom.PriceProcessor.Properties {
                 return ((string)(this["WaybillForParsePath"]));
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("FTPOptBox")]
-        public string WaybillsPath {
-            get {
-                return ((string)(this["WaybillsPath"]));
-            }
-        }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DownWaybills")]

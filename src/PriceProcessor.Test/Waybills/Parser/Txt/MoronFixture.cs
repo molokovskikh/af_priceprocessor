@@ -32,9 +32,19 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС.RU.ФМ10.Д26320"));
             Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
             Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(false));
-          
-            
         }
 
+		[Test]
+		public void Parse_new_moron_format()
+		{
+			var waybill = WaybillParser.Parse("7715039_Морон(226_Морон(660979)).txt");
+			Assert.That(waybill.Lines.Count, Is.EqualTo(3));
+			Assert.That(waybill.DocumentDate, Is.EqualTo(new DateTime(2011, 4, 6)));
+			Assert.That(waybill.ProviderDocumentId, Is.EqualTo("660979"));
+			var line = waybill.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("5743"));
+			Assert.That(line.Product, Is.EqualTo("Нистатин таб. п/о 500000ЕД №20/пачки"));
+			Assert.That(line.VitallyImportant, Is.True);
+		}
     }
 }

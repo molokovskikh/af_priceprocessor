@@ -16,6 +16,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var fileName = Path.GetFileNameWithoutExtension(file);
 			document.ProviderDocumentId = fileName;
 			new DbfParser()
+				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "GOODE")
 				.Line(l => l.SerialNumber, "SERIAL")
@@ -30,6 +31,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Producer, "PRODUSER")
 				.Line(l => l.ProducerCost, "PPRICEWT")
 				.Line(l => l.VitallyImportant, "GV")
+				.Line(l => l.NdsAmount, "NDSSUM")
+				.Line(l => l.Amount, "SUM")
 				.ToDocument(document, data);
 			return document;
 		}
@@ -37,11 +40,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("CODE")
-				&& data.Columns.Contains("GOODE")
-				&& data.Columns.Contains("SERIAL")
-				&& data.Columns.Contains("PPRICEWT")
-				&& data.Columns.Contains("PRICE")
-				&& data.Columns.Contains("PRODUSER");
+			       && data.Columns.Contains("GOODE")
+			       && data.Columns.Contains("SERIAL")
+			       && data.Columns.Contains("PPRICEWT")
+			       && data.Columns.Contains("PRICE")
+			       && data.Columns.Contains("PRODUSER");
 		}
 	}
 }

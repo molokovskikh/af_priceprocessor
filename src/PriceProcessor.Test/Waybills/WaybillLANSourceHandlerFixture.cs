@@ -94,7 +94,7 @@ where a.Id = ?AddressId", connection);
 
 		public string Create_supplier_dir()
 		{
-			var directory = Path.Combine(Settings.Default.WaybillsPath, _summary.Supplier.Id.ToString());
+			var directory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Supplier.Id.ToString());
 			directory = Path.Combine(directory, DocType.Waybill + "s");
 
 			if (Directory.Exists(directory))
@@ -111,7 +111,7 @@ where a.Id = ?AddressId", connection);
 
 		private string[] GetFileForAddress(DocType documentsType)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.WaybillsPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
 

@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
-			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));
+			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));			
 		}
 
 		[Test]

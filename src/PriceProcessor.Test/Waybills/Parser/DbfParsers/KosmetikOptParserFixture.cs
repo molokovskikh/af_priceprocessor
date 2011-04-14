@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCost, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
-			Assert.That(line.NdsAmount, Is.Null);
+			Assert.That(line.NdsAmount, Is.EqualTo(18.78));
 		}
 
 		[Test]

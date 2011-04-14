@@ -26,7 +26,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		}
 
 
-		public static bool CheckFileFormat(DataTable data) {
+		public static bool CheckFileFormat(DataTable data)
+		{
 			return data.Columns.Contains("NAME") &&
 				   data.Columns.Contains("PROIZV") &&
 				   data.Columns.Contains("KOLVO") &&

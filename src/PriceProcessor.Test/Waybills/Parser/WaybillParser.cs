@@ -32,7 +32,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (!File.Exists(filePath))
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
-			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser))
+			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser)
+				&& !(parser is TrediFarmCheboksarySpecialParser) && !(parser is ZhdanovKazanSpecialParser))
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;
@@ -78,7 +79,7 @@ VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id
 					documentLogId = Convert.ToUInt32(cmdInsert.ExecuteScalar());
 				});
 				resultList.Add(documentLogId);
-				var clientDir = Path.Combine(Settings.Default.WaybillsPath, clientCode.ToString().PadLeft(3, '0'));
+				var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");
 				var name = String.Format("{0}_{1}({2}){3}",
 					documentLogId,

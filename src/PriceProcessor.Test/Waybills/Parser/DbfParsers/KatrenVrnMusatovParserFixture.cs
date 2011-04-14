@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
@@ -10,7 +8,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 	public class KatrenVrnMusatovParserFixture
 	{
 		[Test]
-		public void Parse()
+		public void OldParse()
 		{
 			var doc = WaybillParser.Parse("203176.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(6));
@@ -62,5 +60,45 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line1.SupplierCostWithoutNDS, Is.EqualTo(33.90));
 			Assert.That(line1.Nds, Is.EqualTo(10));
 		}
+
+		[Test]
+		public void Parse()
+		{			
+			var doc = WaybillParser.Parse("50232.dbf");
+			Assert.That(doc.Lines.Count, Is.EqualTo(14));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("02.03.2011"));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("50232"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("474432"));
+			Assert.That(line.Product, Is.EqualTo("АЦИКЛОВИР 5% 5,0 МАЗЬ"));
+			Assert.That(line.Quantity, Is.EqualTo(5));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ03.Д91772"));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.Producer, Is.EqualTo("Вертекс ЗАО"));
+			Assert.That(line.Period, Is.EqualTo("01.09.2012"));
+			Assert.That(line.SerialNumber, Is.EqualTo("210810"));
+			Assert.That(line.SupplierCost, Is.EqualTo(14.19));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(12.90));
+			Assert.That(line.ProducerCost, Is.EqualTo(14.04));
+			Assert.That(line.RegistryCost, Is.EqualTo(15.16));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(line.Amount, Is.EqualTo(70.95));
+			Assert.That(line.NdsAmount, Is.EqualTo(6.45));
+			var line1 = doc.Lines[1];
+			Assert.That(line1.ProducerCost, Is.EqualTo(157.90));
+			Assert.That(line1.SupplierCostWithoutNDS, Is.EqualTo(157.90));
+			Assert.That(line1.Nds, Is.EqualTo(10));
+			Assert.That(line1.Amount, Is.EqualTo(868.45));
+			Assert.That(line1.NdsAmount, Is.EqualTo(78.95));
+		}
+
+		[Test]
+		public void Check_file_format()
+		{
+			Assert.IsTrue(KatrenVrnMusatovParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\50232.dbf")));
+		}
+
+		
 	}
 }
