@@ -76,7 +76,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("-"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ИМ25.В02516 от 13.08.09 до 13.08.12 выдан ОС \"Энергия Плюс\" г."));
 			Assert.That(line.NdsAmount, Is.EqualTo(10.10));
+			Assert.That(line.Amount, Is.EqualTo(111.14));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
+
+			line = doc.Lines[1];
+			Assert.That(line.NdsAmount, Is.EqualTo(11.53));
+			Assert.That(line.Amount, Is.EqualTo(126.78));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.45));
+
 		}
 
 

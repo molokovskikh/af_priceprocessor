@@ -23,6 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Period, "DATE_VALID")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.NdsAmount, "NDS_SUM")
+				.Line(l => l.Amount, "SUM")
 				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN");
 
 		}
