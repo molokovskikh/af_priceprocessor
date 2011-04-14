@@ -60,7 +60,8 @@ namespace PriceProcessor.Test.Waybills
 		private string GetDocumentDir(uint? AddressId, uint? ClientCode)
 		{
 			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
-			var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
+		//	var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
+			var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, code.ToString().PadLeft(3, '0'));
 			return Path.Combine(clientDir, "Waybill" + "s");
 		}
 
