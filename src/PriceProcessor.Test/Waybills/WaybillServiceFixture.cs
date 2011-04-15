@@ -130,7 +130,9 @@ namespace PriceProcessor.Test.Waybills
 			TestOldClient supplier;
 			TestPrice price;
 			TestDocumentLog log;
-			TestSynonym productSynonym;
+			TestProducer producer1;
+			TestProducer producer2;
+			TestProducer producer3;
 
 			using (new SessionScope())
 			{
@@ -153,13 +155,44 @@ namespace PriceProcessor.Test.Waybills
 					FileName = file,
 				};
 				log.SaveAndFlush();
+				var productSynonym = new TestSynonym
+				                     	{
+				                     		ProductId = 12345,
+				                     		Synonym = "Коринфар таб п/о 10мг № 50",
+				                     		PriceCode = (int?) price.Id
+				                     	};
+				
+				productSynonym.SaveAndFlush();
+
 				productSynonym = new TestSynonym
 				{
-					ProductId = 12345,
+					ProductId = null,
 					Synonym = "Коринфар таб п/о 10мг № 50",
 					PriceCode = (int?)price.Id
 				};
-				productSynonym.SaveAndFlush();
+
+				producer1 = new TestProducer
+				               	{
+									Name = "Тестовый производитель",
+				               	};
+				producer1.SaveAndFlush();
+
+			
+				var producerSynonym = new TestProducerSynonym
+				                      	{
+				                      		Price = price,
+				                      		Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+				                      		Producer = null
+										};
+				producerSynonym.SaveAndFlush();
+
+				producerSynonym = new TestProducerSynonym
+				                      	{
+				                      		Price = price,
+				                      		Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+				                      		Producer = producer1
+				                      	};
+				producerSynonym.SaveAndFlush();							
 			}
 
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
@@ -177,6 +210,8 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(waybill.Lines[0].ProductId != null);
 				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(12345));
+				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
+
 			}
 		}
 
@@ -227,6 +262,7 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(waybill.Lines[0].ProductId == null);
+				Assert.IsTrue(waybill.Lines[0].ProducerId == null);
 			}
 		}
 

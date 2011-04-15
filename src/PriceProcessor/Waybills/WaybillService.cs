@@ -90,6 +90,14 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
+		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
+		{
+			var criteriaSynonym = DetachedCriteria.For<T>();
+			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
+			criteriaSynonym.Add(Restrictions.In("PriceCode", priceCodes));
+			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
+		}
+
 		///<summary>
 		/// сопоставление в накладной названию продуктов ProductId.
 		/// </summary>
@@ -114,26 +122,32 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				while ((count + index <= Lines.Count) && (count > 0))
 				{
-
 					// выбираем из накладной часть названия продуктов.
 					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
 
-					//получаем из базы данные для выбранной части продуктов из накладной.
-					var criteriaSynonymProduct = DetachedCriteria.For<SynonymProduct>();
-					criteriaSynonymProduct.Add(Expression.In("Synonym", synonyms));
-					criteriaSynonymProduct.Add(Expression.In("PriceCode", priceCodes));
-					var dbListSynonym = SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+					//выбираем из накладной часть названия производителей.
+					var synonymsFirm = Lines.ToList().GetRange(index, count).Select(i => i.Producer).ToList();
 
+					//получаем из базы данные для выбранной части продуктов из накладной.
+					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(synonyms, priceCodes);
+					//получаем из базы данные для выбранной части производителей из накладной.
+					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(synonymsFirm, priceCodes);
+				
 					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 					foreach (var line in Lines)
 					{
 						var productName = line.Product;
+						var producerName = line.Producer;
 						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
+						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
 
-						if (listSynonym.Count > 0)
-						{
-							line.ProductId = listSynonym.Select(product => product.ProductId).Single().Value;
-						}
+						line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
+						line.ProducerId = listSynonymFirmCr.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
+
+						if (listSynonym.Count > 1)
+							_log.Info(string.Format("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id));
+						if(listSynonymFirmCr.Count > 1)
+							_log.Info(string.Format("В накладной при сопоставлении названия производителя оказалось более одного ProducerId для производителя: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", producerName, FirmCode, ClientCode, Log.FileName, Log.Id));																		
 					}
 
 					index = count;
@@ -142,9 +156,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			catch (Exception e)
 			{
-				_log.Error("Ошибка при сопоставлении ProductId", e);
+				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);				
 			}
-
 			return this;
 		}
 
@@ -267,7 +280,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Id производителя
 		/// </summary>
-		//[Property]
+		[Property]
 		public int? ProducerId { get; set; }
 
 		/// <summary>
