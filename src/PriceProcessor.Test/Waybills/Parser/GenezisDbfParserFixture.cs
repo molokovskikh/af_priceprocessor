@@ -1,5 +1,6 @@
 ﻿using System;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
@@ -38,7 +39,46 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
 			Assert.IsFalse(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
-			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));			
+			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\890579.dbf")));
+			Assert.IsTrue(GenezisDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\02000489.dbf")));
+		}
+
+		[Test]
+		public void Parse_without_period()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\02000489.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(48));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("000489"));
+			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("24.03.2011"));
+
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("1200000757"));
+			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 100 мл"));
+			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
+			Assert.That(line.ProducerCost, Is.EqualTo(66.84));
+			Assert.That(line.Nds, Is.EqualTo(0));
+			Assert.That(line.Quantity, Is.EqualTo(2));
+			Assert.That(line.Period, Is.EqualTo("07.02.2011"));
+			Assert.That(line.SerialNumber, Is.Empty);
+			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ПК05.В27822"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(66.84));
+			Assert.That(line.SupplierCost, Is.EqualTo(66.84));			
+
+			line = document.Lines[1];
+			Assert.That(line.Code, Is.EqualTo("1200000968"));
+			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 200 мл"));
+			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
+			Assert.That(line.ProducerCost, Is.EqualTo(127.89));
+			Assert.That(line.Nds, Is.EqualTo(0));
+			Assert.That(line.Quantity, Is.EqualTo(1));
+			Assert.That(line.Period, Is.EqualTo("07.02.2011"));
+			Assert.That(line.SerialNumber, Is.EqualTo("0913,"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ПК05.В27822"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(127.89));
+			Assert.That(line.SupplierCost, Is.EqualTo(127.89));			
+
+			line = document.Lines[22];
+			Assert.That(line.Period, Is.Null);
 		}
 
 		[Test]
