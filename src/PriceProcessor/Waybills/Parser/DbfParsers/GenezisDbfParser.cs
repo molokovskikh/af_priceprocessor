@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE_TAX"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["QNTY"]);
-				line.Period = Convert.ToDateTime(r["EXP_DATE"]).ToShortDateString();
+				line.Period = Convert.IsDBNull(r["EXP_DATE"]) ? null : Convert.ToDateTime(r["EXP_DATE"]).ToShortDateString();				
 				line.Certificates = r["CER_NUMBER"].ToString();
 				line.Nds = Convert.ToUInt32(r["TAX_RATE"], CultureInfo.InvariantCulture);
 				line.RegistryCost = Convert.IsDBNull(r["PRICE_RR"]) ? null : (decimal?)Convert.ToDecimal(r["PRICE_RR"]);
