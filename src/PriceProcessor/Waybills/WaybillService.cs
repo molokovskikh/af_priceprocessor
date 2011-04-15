@@ -90,6 +90,63 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
+		///<summary>
+		/// сопоставление в накладной названию продуктов ProductId.
+		/// </summary>
+		public Document SetProductId()
+		{
+			try
+			{
+				// получаем Id прайсов, из которых мы будем брать синонимы.
+				var priceCodes = Price.Queryable
+									.Where(p => (p.Supplier.Id == FirmCode))
+									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+
+				if (priceCodes == null || priceCodes.Count <= 0)
+					return this;
+
+				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
+				// Если накладная большая, то будем выбирать из неё продукты блоками.
+				int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
+				int index = 0;
+				int count = GetCount(realBatchSize, index);
+
+				while ((count + index <= Lines.Count) && (count > 0))
+				{
+
+					// выбираем из накладной часть названия продуктов.
+					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
+
+					//получаем из базы данные для выбранной части продуктов из накладной.
+					var criteriaSynonymProduct = DetachedCriteria.For<SynonymProduct>();
+					criteriaSynonymProduct.Add(Expression.In("Synonym", synonyms));
+					criteriaSynonymProduct.Add(Expression.In("PriceCode", priceCodes));
+					var dbListSynonym = SessionHelper.WithSession(c => criteriaSynonymProduct.GetExecutableCriteria(c).List<SynonymProduct>()).ToList();
+
+					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+					foreach (var line in Lines)
+					{
+						var productName = line.Product;
+						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
+
+						if (listSynonym.Count > 0)
+						{
+							line.ProductId = listSynonym.Select(product => product.ProductId).Single().Value;
+						}
+					}
+
+					index = count;
+					count = GetCount(realBatchSize, index);
+				}
+			}
+			catch (Exception e)
+			{
+				_log.Error("Ошибка при сопоставлении ProductId", e);
+			}
+
+			return this;
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -173,7 +230,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Id продукта
 		/// </summary>
-		//[Property]
+		[Property]
 		public int? ProductId { get; set; }
 		
 		/// <summary>
@@ -210,7 +267,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// Id производителя
 		/// </summary>
 		//[Property]
-		public int? ProducerId { get; set; }
+		//public int? ProducerId { get; set; }
 
 		/// <summary>
 		/// Производитель

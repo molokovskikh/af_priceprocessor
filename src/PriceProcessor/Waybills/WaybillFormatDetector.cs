@@ -166,9 +166,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			yield break;
 		}
-		
-		
-
+			
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
 		{
 			var parser = DetectParser(file, log);
@@ -177,7 +175,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
 			var doc = parser.Parse(file, document);
-
+			if(doc != null) 
+				doc.SetProductId();
 			return doc;
 		}
 	}
