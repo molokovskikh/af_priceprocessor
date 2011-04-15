@@ -93,6 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		///<summary>
 		/// сопоставление в накладной названию продуктов ProductId.
 		/// </summary>
+		/// 
 		public Document SetProductId()
 		{
 			try
@@ -267,7 +268,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// Id производителя
 		/// </summary>
 		//[Property]
-		//public int? ProducerId { get; set; }
+		public int? ProducerId { get; set; }
 
 		/// <summary>
 		/// Производитель
