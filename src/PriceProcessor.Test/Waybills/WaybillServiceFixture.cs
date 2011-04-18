@@ -267,7 +267,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 
-		[Test, Ignore("Сопоставление в данной версии отключено")]
+		[Test]
 		public void Check_SetProductId()
 		{
 			const string file = "14326_4.dbf";
@@ -334,7 +334,7 @@ namespace PriceProcessor.Test.Waybills
 
 
 
-		[Test, Ignore("Сопоставление в этой версии отключено")]
+		[Test]
 		public void Check_SetProducerId()
 		{
 			const string file = "14326_4.dbf";
@@ -400,6 +400,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]
+		[Ignore]
 		public void Parse_and_Convert_to_Dbf()
 		{
 				

@@ -140,7 +140,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
-			    var settings = WaybillSettings.Find(clientId);
+			    var settings = WaybillSettings.TryFind(Convert.ToUInt32(clientId));
 
 				try
 				{
@@ -161,7 +161,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								if (document == null)
 									continue;
 
-								if (settings.IsConvertFormat)
+								if (settings != null && settings.IsConvertFormat)
 								{
 									WaybillService.ConvertAndSaveDbfFormat(document, log);
 									WaybillService.SetIsFakeInDocumentReceiveLog(log);

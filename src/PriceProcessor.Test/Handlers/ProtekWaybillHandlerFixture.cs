@@ -10,6 +10,8 @@ using Rhino.Mocks;
 using Test.Support;
 using Test.Support.Helpers;
 using System.Collections.Generic;
+using System.IO;
+using Common.Tools;
 
 namespace PriceProcessor.Test.Handlers
 {
@@ -80,16 +82,49 @@ namespace PriceProcessor.Test.Handlers
 					}
 				}
 			};
-			
+
+			uint testClientId = 79888;
+			var settings = TestDrugstoreSettings.TryFind(Convert.ToUInt32(testClientId));
+			if (settings == null)
+			{
+				using (new SessionScope())
+				{
+					settings = new TestDrugstoreSettings
+					           	{
+									Id = testClientId,
+					           		IsConvertFormat = true
+					           	};
+					settings.SaveAndFlush();
+				}
+			}
+
+			DateTime log_time = DateTime.Now;
+
 			fake.Process();
 
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
-				Assert.That(documents.Count, Is.EqualTo(4));
+				Assert.That(documents.Count, Is.EqualTo(14));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.That(documents[0].Log, Is.Not.Null);
+				Assert.That(documents[0].Log.IsFake, Is.True);
+					
+				var log_dbf = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == documents[0].Log.Supplier.Id
+															  && l.ClientCode == documents[0].Log.ClientCode
+															  && l.AddressId == documents[0].Log.AddressId
+															  && l.LogTime >= log_time)
+														.OrderBy(l => l.Id)
+														.ToList().First();
+				var file = Path.Combine(Path.GetDirectoryName(log_dbf.GetRemoteFileNameExt()), log_dbf.FileName);
+
+				var table = Dbf.Load(file);
+
+				Assert.That(table.Rows.Count, Is.EqualTo(1));
+				Assert.That(Convert.ToUInt32(table.Rows[0]["postid_af"]), Is.EqualTo(105));
+				//Assert.That(table.Rows[0]["post_name_af"], Is.EqualTo("ООО \"ЮКОН-фарм\"")); //При сохранении в dbf имя колонки ограничено 10-ю символами
+
 
 				Check_DocumentLine_SetProductId(documents[0]);
 			}
