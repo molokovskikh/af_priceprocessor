@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Handlers
 
 		public void Process()
 		{
-			ProcessData();
+			Load(261543, 1072995);
 		}
 
 		public override void WithService(Action<ProtekService> action)
@@ -35,10 +35,10 @@ namespace PriceProcessor.Test.Handlers
 		public void Process_protek_waybills()
 		{
 			var begin = DateTime.Now;
-			uint orderId;
+			TestOrder order;
 			using (new SessionScope())
 			{
-				orderId = TestOrder.Queryable.First().Id;
+				order = TestOrder.Queryable.First();
 			}
 
 			var fake = new FakeProtekHandler();
@@ -58,7 +58,7 @@ namespace PriceProcessor.Test.Handlers
 					blading = new [] {
 						new Blading {
 							bladingId = 1,
-							@uint = (int?) orderId,
+							@uint = (int?) order.Id,
 							bladingItems = new [] {
 								new BladingItem {
 									itemId = 3345,
@@ -70,6 +70,7 @@ namespace PriceProcessor.Test.Handlers
 									distrPriceNds = 45.05,
 									distrPriceWonds = 40.95,
 									vitalMed = 1,
+									sumVat = 12.3
 								},
 							}
 						}
@@ -81,10 +82,12 @@ namespace PriceProcessor.Test.Handlers
 
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
-				Assert.That(documents.Count, Is.EqualTo(2));
+				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
-				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				var line = documents[0].Lines[0];
+				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
 				Assert.That(documents[0].Log, Is.Not.Null);
 			}
 		}
