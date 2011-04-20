@@ -52,6 +52,9 @@ namespace Inforoom.PriceProcessor.Downloader
 		public double? vat { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? sumVat { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public int? vitalMed { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]

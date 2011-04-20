@@ -134,7 +134,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			Load(245011, 1072914);
 		}
 
-		private void Load(int clientId, int instanceId)
+		protected void Load(int clientId, int instanceId)
 		{
 			WithService(service => {
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
@@ -238,12 +238,14 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Period = bladingItem.prodexpiry != null ? bladingItem.prodexpiry.Value.ToShortDateString() : null;
 				line.RegistryCost = (decimal?) bladingItem.reestrPrice;
 				line.SupplierPriceMarkup = (decimal?) bladingItem.distrProc;
+				line.NdsAmount = (decimal?) bladingItem.sumVat;
 				line.Nds = (uint?) bladingItem.vat;
 				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
 				line.ProducerCost = (decimal?) bladingItem.prodPriceWonds;
 				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
 				line.SerialNumber = bladingItem.prodseria;
+				line.SetValues();
 			}
 			document.SetProductId();
 

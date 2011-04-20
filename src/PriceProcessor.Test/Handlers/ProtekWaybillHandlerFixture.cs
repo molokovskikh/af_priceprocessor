@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Handlers
 
 		public void Process()
 		{
-			ProcessData();
+			Load(261543, 1072995);
 		}
 
 		public override void WithService(Action<ProtekService> action)
@@ -39,7 +39,8 @@ namespace PriceProcessor.Test.Handlers
 	public class ProtekWaybillHandlerFixture
 	{
 		private DateTime begin;
-		private uint orderId;
+		//private uint orderId;
+		private TestOrder order;
 		private FakeProtekHandler fake;
 
 		[SetUp]
@@ -48,7 +49,7 @@ namespace PriceProcessor.Test.Handlers
 			begin = DateTime.Now;
 			using (new SessionScope())
 			{
-				orderId = TestOrder.Queryable.First().Id;
+				order = TestOrder.Queryable.First();
 			}
 
 			fake = new FakeProtekHandler();
@@ -70,7 +71,7 @@ namespace PriceProcessor.Test.Handlers
 					blading = new[] {
 						new Blading {
 							bladingId = 1,
-							@uint = (int?) orderId,
+							@uint = (int?) order.Id,
 							bladingItems = new [] {
 								new BladingItem {
 									itemId = 3345,
@@ -82,6 +83,7 @@ namespace PriceProcessor.Test.Handlers
 									distrPriceNds = 45.05,
 									distrPriceWonds = 40.95,
 									vitalMed = 1,
+									sumVat = 12.3
 								},
 							}
 						}
@@ -96,10 +98,12 @@ namespace PriceProcessor.Test.Handlers
 			fake.Process();
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
-				Assert.That(documents.Count, Is.EqualTo(14));
+				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
-				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				var line = documents[0].Lines[0];
+				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
 				Assert.That(documents[0].Log, Is.Not.Null);
 				Assert.That(documents[0].Log.IsFake, Is.True);									
 				Check_DocumentLine_SetProductId(documents[0]);
@@ -138,8 +142,7 @@ namespace PriceProcessor.Test.Handlers
 
 		[Test]
 		public void Parse_and_Convert_to_Dbf()
-		{
-			TestOrder order = TestOrder.TryFind(orderId);
+		{			
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{
