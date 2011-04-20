@@ -399,8 +399,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]
-		[Ignore]
+		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]		
 		public void Parse_and_Convert_to_Dbf()
 		{
 			const string file = "14326_4.dbf";

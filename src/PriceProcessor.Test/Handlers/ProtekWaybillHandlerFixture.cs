@@ -160,7 +160,7 @@ namespace PriceProcessor.Test.Handlers
 				settings.SaveAndFlush();
 			}
 			var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
-			Assert.That(files_dbf.Count(), Is.GreaterThan(0));
+			Assert.That(files_dbf.Count(), Is.EqualTo(1));
 		}
 	}
 }

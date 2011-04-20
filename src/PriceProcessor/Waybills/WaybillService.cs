@@ -540,20 +540,6 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var detector = new WaybillFormatDetector();
 			
-			//пробежать по logs и поставить Fake документам
-			/*using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				logs.Each(l =>
-				          	{
-								if (WaybillSettings.Find(l.ClientCode.Value).IsConvertFormat)
-								{
-									l.IsFake = true;
-									l.SaveAndFlush();
-								}
-				          	});
-				scope.VoteCommit();
-			}*/
-
 			var docsForParsing = MultifileDocument.Merge(logs);
 
 			var docs = docsForParsing.Select(d => {
@@ -571,11 +557,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-					if (settings.IsConvertFormat)
-					{
-						ConvertAndSaveDbfFormat(doc, d.DocumentLog, true);
-						//doc.Log.IsFake = true;
-					}
+					if (settings.IsConvertFormat)					
+						ConvertAndSaveDbfFormat(doc, d.DocumentLog, true);											
 
 					return doc;
 				}
@@ -616,37 +599,28 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			try
 			{
-				//using(new SessionScope())
-			//	using (var transaction = new TransactionScope(OnDispose.Rollback))
-			//	{
-					var settings = WaybillSettings.Find(log.ClientCode.Value);
+				var settings = WaybillSettings.Find(log.ClientCode.Value);
 					
-					if (!settings.IsConvertFormat)
-						log.CopyDocumentToClientDirectory();
+				if (!settings.IsConvertFormat)
+					log.CopyDocumentToClientDirectory();
 
-					if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
-						return;
+				if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
+					return;
 					
-					var document = new WaybillFormatDetector().DetectAndParse(log, file);
-					if (document == null)
-						return;
+				var document = new WaybillFormatDetector().DetectAndParse(log, file);
+				if (document == null)
+					return;
 
-					//конвертируем накладную в новый формат dbf.
-					if (settings.IsConvertFormat)
-					{
-						ConvertAndSaveDbfFormat(document, log, true);
-						//log.IsFake = true;
-						//SetIsFakeInDocumentReceiveLog(log);
-					}
-					
-
-					using (var transaction = new TransactionScope(OnDispose.Rollback))
-					{
-							document.Log.Save();
-							document.Save();
-							transaction.VoteCommit();
-					}
-				//}
+				//конвертируем накладную в новый формат dbf.
+				if (settings.IsConvertFormat)
+					ConvertAndSaveDbfFormat(document, log, true);						
+										
+				using (var transaction = new TransactionScope(OnDispose.Rollback))
+				{
+						document.Log.Save();
+						document.Save();
+						transaction.VoteCommit();
+				}
 			}
 			catch(Exception e)
 			{
@@ -804,17 +778,6 @@ where p.Id in ({0});",productIds)));
 				_log.Error("Ошибка сохранения накладной в новый формат dbf. "+ info + " Ошибка: " + exception.Message + ". StackTrace:" + exception.StackTrace);
 				throw;
 			}
-		}
-		
-/*		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
-		public static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
-		{
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				log.IsFake = true;
-				log.SaveAndFlush();
-				scope.VoteCommit();
-			}
-		}*/
+		}		
 	}
 }

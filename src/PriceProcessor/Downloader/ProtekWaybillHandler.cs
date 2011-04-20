@@ -140,7 +140,6 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
-			   // var settings = WaybillSettings.TryFind(Convert.ToUInt32(clientId));
 
 				try
 				{
@@ -160,21 +159,6 @@ namespace Inforoom.PriceProcessor.Downloader
 								var document = ToDocument(body, ref log);
 								if (document == null)
 									continue;
-
-							/*	
-								if(document.OrderId != null)
-								{
-									var order = Order.TryFind(document.OrderId.Value);									
-									var settings = WaybillSettings.TryFind(order.ClientCode);
-									
-									if (settings != null && settings.IsConvertFormat)
-									{
-										WaybillService.ConvertAndSaveDbfFormat(document, log);
-										log.IsFake = true;
-										//WaybillService.SetIsFakeInDocumentReceiveLog(log); // этот вызов лишний
-									}
-								}								
-							 */
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
@@ -250,12 +234,8 @@ namespace Inforoom.PriceProcessor.Downloader
 			document.SetProductId();
 
 			var settings = WaybillSettings.TryFind(order.ClientCode);
-			if (settings != null && settings.IsConvertFormat)
-			{
-				WaybillService.ConvertAndSaveDbfFormat(document, log, true);
-			//	log.IsFake = true;
-				//WaybillService.SetIsFakeInDocumentReceiveLog(log); // этот вызов лишний
-			}
+			if (settings != null && settings.IsConvertFormat)			
+				WaybillService.ConvertAndSaveDbfFormat(document, log, true);						
 
 			return document;
 		}
