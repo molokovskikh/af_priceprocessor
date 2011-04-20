@@ -140,7 +140,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
-			    var settings = WaybillSettings.TryFind(Convert.ToUInt32(clientId));
+			   // var settings = WaybillSettings.TryFind(Convert.ToUInt32(clientId));
 
 				try
 				{
@@ -161,13 +161,20 @@ namespace Inforoom.PriceProcessor.Downloader
 								if (document == null)
 									continue;
 
-								if (settings != null && settings.IsConvertFormat)
+							/*	
+								if(document.OrderId != null)
 								{
-									WaybillService.ConvertAndSaveDbfFormat(document, log);
-									WaybillService.SetIsFakeInDocumentReceiveLog(log);
-								}
-								
-
+									var order = Order.TryFind(document.OrderId.Value);									
+									var settings = WaybillSettings.TryFind(order.ClientCode);
+									
+									if (settings != null && settings.IsConvertFormat)
+									{
+										WaybillService.ConvertAndSaveDbfFormat(document, log);
+										log.IsFake = true;
+										//WaybillService.SetIsFakeInDocumentReceiveLog(log); // этот вызов лишний
+									}
+								}								
+							 */
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
@@ -239,6 +246,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.SerialNumber = bladingItem.prodseria;
 			}
 			document.SetProductId();
+
+			var settings = WaybillSettings.TryFind(order.ClientCode);
+			if (settings != null && settings.IsConvertFormat)
+			{
+				WaybillService.ConvertAndSaveDbfFormat(document, log, true);
+			//	log.IsFake = true;
+				//WaybillService.SetIsFakeInDocumentReceiveLog(log); // этот вызов лишний
+			}
+
 			return document;
 		}
 	}

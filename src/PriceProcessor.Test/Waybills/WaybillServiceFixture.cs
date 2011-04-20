@@ -370,7 +370,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		public void Check_DocumentLine_SetProducerId(TestWaybill document)
-		{
+		{			
 			var line = document.Lines[0];
 
 			var listSynonym = new List<string> { line.Producer };
@@ -390,7 +390,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonymFirm>()).ToList();
 			if (synonym.Count > 0)
-			{
+			{				
 				Assert.IsTrue(synonym.Where(s => s.CodeFirmCr != null).Select(s => s.CodeFirmCr).Contains(line.ProducerId));
 			}
 			else
@@ -403,8 +403,59 @@ namespace PriceProcessor.Test.Waybills
 		[Ignore]
 		public void Parse_and_Convert_to_Dbf()
 		{
-				
-		}
+			const string file = "14326_4.dbf";
+			var client = TestOldClient.CreateTestClient();
+			var supplier = TestOldClient.CreateTestSupplier();
 
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+
+			Directory.CreateDirectory(waybillsPath);
+
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,				
+				FirmCode = supplier.Id,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file,
+			};
+
+			using (new TransactionScope())
+				log.SaveAndFlush();
+
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.SaveAndFlush();
+			}
+
+			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
+
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] { log.Id });
+
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id);
+				Assert.That(logs.Count(), Is.EqualTo(2));
+				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
+				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
+
+				// Проверяем наличие записей в documentheaders для исходных документов.
+				foreach (var documentLog in logs)
+				{
+					var count = documentLog.IsFake
+									? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
+									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();					
+					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
+				}
+				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
+				Assert.That(files_dbf.Count(), Is.EqualTo(2));
+				settings.IsConvertFormat = false;
+				settings.SaveAndFlush();			
+			}
+		}
 	}
 }

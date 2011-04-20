@@ -138,11 +138,15 @@ namespace Inforoom.PriceProcessor.Waybills
 					{
 						var productName = line.Product;
 						var producerName = line.Producer;
-						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName).ToList();
-						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym == producerName).ToList();
+						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName && product.ProductId != null).ToList();
+						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym == producerName && producer.CodeFirmCr != null).ToList();
 
-						line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
-						line.ProducerId = listSynonymFirmCr.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
+						//line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
+						//line.ProducerId = listSynonymFirmCr.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
+						if(listSynonym.Count > 0)
+							line.ProductId = listSynonym.Select(product => product.ProductId).Single();
+						if(listSynonymFirmCr.Count > 0)
+							line.ProducerId = listSynonymFirmCr.Select(producer => producer.CodeFirmCr).Single();
 
 						if (listSynonym.Count > 1)
 							_log.Info(string.Format("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id));
@@ -537,7 +541,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var detector = new WaybillFormatDetector();
 			
 			//пробежать по logs и поставить Fake документам
-			using (var scope = new TransactionScope(OnDispose.Rollback))
+			/*using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
 				logs.Each(l =>
 				          	{
@@ -548,7 +552,7 @@ namespace Inforoom.PriceProcessor.Waybills
 								}
 				          	});
 				scope.VoteCommit();
-			}
+			}*/
 
 			var docsForParsing = MultifileDocument.Merge(logs);
 
@@ -568,7 +572,10 @@ namespace Inforoom.PriceProcessor.Waybills
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 					if (settings.IsConvertFormat)
-						ConvertAndSaveDbfFormat(doc, d.DocumentLog);
+					{
+						ConvertAndSaveDbfFormat(doc, d.DocumentLog, true);
+						//doc.Log.IsFake = true;
+					}
 
 					return doc;
 				}
@@ -584,7 +591,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				docs.Each(d => d.Save());
+
+				docs.Each(d => { 
+								d.Log.Save();
+				               	d.Save();
+				});
 				scope.VoteCommit();
 			}
 			return docs;
@@ -605,8 +616,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			try
 			{
-				using(new SessionScope())
-				{
+				//using(new SessionScope())
+			//	using (var transaction = new TransactionScope(OnDispose.Rollback))
+			//	{
 					var settings = WaybillSettings.Find(log.ClientCode.Value);
 					
 					if (!settings.IsConvertFormat)
@@ -622,18 +634,19 @@ namespace Inforoom.PriceProcessor.Waybills
 					//конвертируем накладную в новый формат dbf.
 					if (settings.IsConvertFormat)
 					{
-						ConvertAndSaveDbfFormat(document, log);
-						SetIsFakeInDocumentReceiveLog(log);
+						ConvertAndSaveDbfFormat(document, log, true);
+						//log.IsFake = true;
+						//SetIsFakeInDocumentReceiveLog(log);
 					}
 					
 
 					using (var transaction = new TransactionScope(OnDispose.Rollback))
 					{
-
+							document.Log.Save();
 							document.Save();
 							transaction.VoteCommit();
 					}
-				}
+				//}
 			}
 			catch(Exception e)
 			{
@@ -754,7 +767,7 @@ where p.Id in ({0});",productIds)));
 			return table;
 		}
 		
-		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log)
+		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log, bool isfake = false)
 		{
 			var path = string.Empty;
 
@@ -783,6 +796,7 @@ where p.Id in ({0});",productIds)));
 
 					scope.VoteCommit();
 				}
+				log.IsFake = isfake;
 			}
 			catch (Exception exception)
 			{
@@ -792,7 +806,7 @@ where p.Id in ({0});",productIds)));
 			}
 		}
 		
-		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
+/*		//ставим оригинальному файлу, что он fake, чтобы он не загружался.
 		public static void SetIsFakeInDocumentReceiveLog(DocumentReceiveLog log)
 		{
 			using (var scope = new TransactionScope(OnDispose.Rollback))
@@ -801,6 +815,6 @@ where p.Id in ({0});",productIds)));
 				log.SaveAndFlush();
 				scope.VoteCommit();
 			}
-		}
+		}*/
 	}
 }

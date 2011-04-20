@@ -12,6 +12,7 @@ using Test.Support.Helpers;
 using System.Collections.Generic;
 using System.IO;
 using Common.Tools;
+using Inforoom.PriceProcessor.Properties;
 
 namespace PriceProcessor.Test.Handlers
 {
@@ -37,17 +38,20 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class ProtekWaybillHandlerFixture
 	{
-		[Test]
-		public void Process_protek_waybills()
+		private DateTime begin;
+		private uint orderId;
+		private FakeProtekHandler fake;
+
+		[SetUp]
+		public void SetUp()
 		{
-			var begin = DateTime.Now;
-			uint orderId;
+			begin = DateTime.Now;
 			using (new SessionScope())
 			{
 				orderId = TestOrder.Queryable.First().Id;
 			}
 
-			var fake = new FakeProtekHandler();
+			fake = new FakeProtekHandler();
 
 			fake.headerResponce = new getBladingHeadersResponse {
 				@return = new EZakazXML {
@@ -59,9 +63,11 @@ namespace PriceProcessor.Test.Handlers
 				}
 			};
 
-			fake.bodyResponce = new getBladingBodyResponse {
-				@return = new EZakazXML {
-					blading = new [] {
+			fake.bodyResponce = new getBladingBodyResponse
+			{
+				@return = new EZakazXML
+				{
+					blading = new[] {
 						new Blading {
 							bladingId = 1,
 							@uint = (int?) orderId,
@@ -82,26 +88,12 @@ namespace PriceProcessor.Test.Handlers
 					}
 				}
 			};
+		}
 
-			uint testClientId = 79888;
-			var settings = TestDrugstoreSettings.TryFind(Convert.ToUInt32(testClientId));
-			if (settings == null)
-			{
-				using (new SessionScope())
-				{
-					settings = new TestDrugstoreSettings
-					           	{
-									Id = testClientId,
-					           		IsConvertFormat = true
-					           	};
-					settings.SaveAndFlush();
-				}
-			}
-
-			DateTime log_time = DateTime.Now;
-
+		[Test]
+		public void Process_protek_waybills()
+		{
 			fake.Process();
-
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(d => d.WriteTime >= begin).ToList();
@@ -109,23 +101,7 @@ namespace PriceProcessor.Test.Handlers
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines[0].Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.That(documents[0].Log, Is.Not.Null);
-				Assert.That(documents[0].Log.IsFake, Is.True);
-					
-				var log_dbf = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == documents[0].Log.Supplier.Id
-															  && l.ClientCode == documents[0].Log.ClientCode
-															  && l.AddressId == documents[0].Log.AddressId
-															  && l.LogTime >= log_time)
-														.OrderBy(l => l.Id)
-														.ToList().First();
-				var file = Path.Combine(Path.GetDirectoryName(log_dbf.GetRemoteFileNameExt()), log_dbf.FileName);
-
-				var table = Dbf.Load(file);
-
-				Assert.That(table.Rows.Count, Is.EqualTo(1));
-				Assert.That(Convert.ToUInt32(table.Rows[0]["postid_af"]), Is.EqualTo(105));
-				//Assert.That(table.Rows[0]["post_name_af"], Is.EqualTo("ООО \"ЮКОН-фарм\"")); //При сохранении в dbf имя колонки ограничено 10-ю символами
-
-
+				Assert.That(documents[0].Log.IsFake, Is.True);									
 				Check_DocumentLine_SetProductId(documents[0]);
 			}
 		}
@@ -158,6 +134,30 @@ namespace PriceProcessor.Test.Handlers
 			{
 				Assert.IsTrue(line.ProductId == null);
 			}
+		}
+
+		[Test]
+		public void Parse_and_Convert_to_Dbf()
+		{
+			TestOrder order = TestOrder.TryFind(orderId);
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.SaveAndFlush();
+			}
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, order.Client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
+			Directory.CreateDirectory(waybillsPath);
+			fake.Process();			
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = false;
+				settings.SaveAndFlush();
+			}
+			var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
+			Assert.That(files_dbf.Count(), Is.GreaterThan(0));
 		}
 	}
 }
