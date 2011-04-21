@@ -48,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public bool IsConvertFormat { get; set; }
 
 //		[Property]
-//		public int? AssortimentPriceCode { get; set; }
+		public int? AssortimentPriceCode { get; set; }
 
 		[Property]
 		public bool ParseWaybills { get; set; }
@@ -99,6 +99,48 @@ namespace Inforoom.PriceProcessor.Waybills
 			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
 			criteriaSynonym.Add(Restrictions.In("PriceCode", priceCodes));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
+		}
+
+		public void SetCodesForClient()
+		{
+			try
+			{
+				var settings = WaybillSettings.TryFind(ClientCode);
+				if (settings == null) return;
+
+				if (settings.AssortimentPriceCode == null) return;
+
+				// список id товаров из накладной
+				var productIds = Lines.Where(l => l.ProductId != null).Select(l => l.ProductId).ToList();
+
+				var criteria = DetachedCriteria.For<Core>();
+				criteria.Add(Restrictions.Eq("Price.Id", settings.AssortimentPriceCode));
+				criteria.Add(Restrictions.In("ProductId", productIds));
+
+				List<Core> cores = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<Core>()).ToList();
+				
+				foreach (var line in Lines)
+				{
+					{
+						var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).ToList();
+						foreach (var core in ls)
+						{
+							uint res;
+							line.CodeForClient = null;
+							if (UInt32.TryParse(core.Code, out res))
+							{
+								line.CodeForClient = res;
+								break;
+							}
+						}
+					}
+				}
+
+			}
+			catch (Exception e)
+			{
+				_log.Error(String.Format("Ошибка при задании клиентских кодов для товаров в накладной {0}", Log.FileName), e);
+			}
 		}
 
 		///<summary>
@@ -443,6 +485,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value/ProducerCost.Value - 1)*100), 2);
 			}
 		}
+
+		public uint? CodeForClient { get; set; }		
 	}
 
 	[ActiveRecord("SynonymFirmCr", Schema = "farm")]
@@ -525,6 +569,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[Property]
 		public int? CodeFirmCr { get; set; }
+
+		[Property]
+		public string Code { get; set; }
 	}
 
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]

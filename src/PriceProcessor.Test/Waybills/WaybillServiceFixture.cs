@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
 using NHibernate.Criterion;
+using NHibernate.SqlCommand;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Helpers;
@@ -132,6 +133,7 @@ namespace PriceProcessor.Test.Waybills
 			TestDocumentLog log;
 			TestProducer producer1;
 			TestProducer producer2;
+			TestProduct product;
 
 			using (new SessionScope())
 			{
@@ -154,9 +156,13 @@ namespace PriceProcessor.Test.Waybills
 					FileName = file,
 				};
 				log.SaveAndFlush();
+
+				product = new TestProduct("тестовый товар");
+				product.SaveAndFlush();
+
 				var productSynonym = new TestSynonym
 				                     	{
-				                     		ProductId = 12345,
+				                     		ProductId = (int?)product.Id,
 				                     		Synonym = "Коринфар таб п/о 10мг № 50",
 				                     		PriceCode = (int?) price.Id
 				                     	};
@@ -225,7 +231,7 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(waybill.Lines[0].ProductId != null);
-				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(12345));
+				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
 				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
 
 			}
@@ -472,5 +478,61 @@ namespace PriceProcessor.Test.Waybills
 				settings.SaveAndFlush();			
 			}
 		}
+
+		[Test(Description = "Проверка сопоставления кода клиента по ассортиментному прайс листу")]
+		public void Check_SetCodeForClient()
+		{
+			const string file = "14356_4.dbf";
+			TestOldClient client;
+			TestOldClient supplier;
+			TestPrice price;
+			TestDocumentLog log;			
+			TestProducer producer;
+			TestProduct product;
+
+			using (new SessionScope())
+			{
+				client = TestOldClient.CreateTestClient();
+				supplier = TestOldClient.CreateTestSupplier();
+				price = new TestPrice{CostType = CostType.MultiColumn, Supplier = supplier, ParentSynonym = null, PriceName = "тестовый прайс"};
+				price.SaveAndFlush();
+				log = new TestDocumentLog{ClientCode = client.Id, FirmCode = supplier.Id, LogTime = DateTime.Now, DocumentType = DocumentType.Waybill, FileName = file,};
+				log.SaveAndFlush();
+				product = new TestProduct("тестовый товар");
+				product.SaveAndFlush();
+				var productSynonym = new TestProductSynonym("Коринфар таб п/о 10мг № 50", product, price);				
+				productSynonym.SaveAndFlush();
+
+				producer = new TestProducer{Name = "Тестовый производитель"};
+				producer.SaveAndFlush();
+
+				var producerSynonym = new TestProducerSynonym{ Price = price, Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ", Producer = producer };
+				producerSynonym.SaveAndFlush();
+
+				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0"};
+				core.SaveAndFlush();
+			}
+
+			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+
+			Directory.CreateDirectory(waybillsPath);
+			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
+
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] { log.Id });
+			
+			using (new SessionScope())
+			{
+				var waybill = TestWaybill.Find(ids.Single());
+				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+				Assert.IsTrue(waybill.Lines[0].ProductId != null);
+				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
+				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer.Id));
+
+				Document doc = Document.Find(ids.Single());
+				doc.SetCodesForClient();				
+			}
+		}		
 	}
 }
