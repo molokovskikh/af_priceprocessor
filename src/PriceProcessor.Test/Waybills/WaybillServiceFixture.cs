@@ -132,7 +132,6 @@ namespace PriceProcessor.Test.Waybills
 			TestDocumentLog log;
 			TestProducer producer1;
 			TestProducer producer2;
-			TestProducer producer3;
 
 			using (new SessionScope())
 			{
@@ -171,11 +170,19 @@ namespace PriceProcessor.Test.Waybills
 					PriceCode = (int?)price.Id
 				};
 
+
+
 				producer1 = new TestProducer
 				               	{
 									Name = "Тестовый производитель",
 				               	};
 				producer1.SaveAndFlush();
+
+				producer2 = new TestProducer
+				{
+					Name = "Тестовый производитель",
+				};
+				producer2.SaveAndFlush();
 
 			
 				var producerSynonym = new TestProducerSynonym
@@ -192,7 +199,16 @@ namespace PriceProcessor.Test.Waybills
 				                      		Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
 				                      		Producer = producer1
 				                      	};
-				producerSynonym.SaveAndFlush();							
+				producerSynonym.SaveAndFlush();
+
+				producerSynonym = new TestProducerSynonym
+				{
+					Price = price,
+					Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+					Producer = producer2
+				};
+				producerSynonym.SaveAndFlush();
+
 			}
 
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());

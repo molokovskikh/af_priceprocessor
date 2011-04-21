@@ -47,6 +47,9 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public bool IsConvertFormat { get; set; }
 
+//		[Property]
+//		public int? AssortimentPriceCode { get; set; }
+
 		[Property]
 		public bool ParseWaybills { get; set; }
 
@@ -140,18 +143,16 @@ namespace Inforoom.PriceProcessor.Waybills
 						var producerName = line.Producer;
 						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName && product.ProductId != null).ToList();
 						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym == producerName && producer.CodeFirmCr != null).ToList();
-
-						//line.ProductId = listSynonym.Where(product => product.ProductId != null).Select(product => product.ProductId).Single();
-						//line.ProducerId = listSynonymFirmCr.Where(producer => producer.CodeFirmCr != null).Select(producer => producer.CodeFirmCr).Single();
-						if(listSynonym.Count > 0)
-							line.ProductId = listSynonym.Select(product => product.ProductId).Single();
-						if(listSynonymFirmCr.Count > 0)
-							line.ProducerId = listSynonymFirmCr.Select(producer => producer.CodeFirmCr).Single();
+						
+						if(listSynonym.Count > 0)							
+							line.ProductId = listSynonym.Select(product => product.ProductId).FirstOrDefault();
+						if(listSynonymFirmCr.Count > 0)							
+							line.ProducerId = listSynonymFirmCr.Select(producer => producer.CodeFirmCr).FirstOrDefault();
 
 						if (listSynonym.Count > 1)
-							_log.Info(string.Format("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id));
-						if(listSynonymFirmCr.Count > 1)
-							_log.Info(string.Format("В накладной при сопоставлении названия производителя оказалось более одного ProducerId для производителя: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", producerName, FirmCode, ClientCode, Log.FileName, Log.Id));																		
+							_log.InfoFormat("В накладной при сопоставлении названия продукта оказалось более одного ProductId для продукта: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", productName, FirmCode, ClientCode, Log.FileName, Log.Id);
+						if (listSynonymFirmCr.Count > 1)
+							_log.InfoFormat("В накладной при сопоставлении названия производителя оказалось более одного ProducerId для производителя: {0}, FirmCode = {1}, ClientCode = {2}, Log.FileName = {3}, Log.Id = {4}", producerName, FirmCode, ClientCode, Log.FileName, Log.Id);
 					}
 
 					index = count;
@@ -499,6 +500,31 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		[Property]
 		public int? PriceCode { get; set; }
+	}
+
+	[ActiveRecord("Core0", Schema = "Farm")]
+	public class Core : ActiveRecordLinqBase<Core>
+	{
+		[PrimaryKey]
+		public ulong Id { get; set; }
+
+		[Property]
+		public string Quantity { get; set; }
+
+		[BelongsTo("PriceCode")]
+		public Price Price { get; set; }
+
+		[BelongsTo("SynonymCode")]
+		public SynonymProduct ProductSynonym { get; set; }
+
+		[BelongsTo("SynonymFirmCrCode")]
+		public SynonymFirm ProducerSynonym { get; set; }
+
+		[Property]
+		public int? ProductId { get; set; }
+
+		[Property]
+		public int? CodeFirmCr { get; set; }
 	}
 
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
