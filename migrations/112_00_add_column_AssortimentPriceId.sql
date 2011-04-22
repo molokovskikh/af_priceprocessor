@@ -1,0 +1,1 @@
+﻿ALTER TABLE `usersettings`.`RetClientsSet` CHANGE COLUMN `AssortimentPriceCode` `AssortimentPriceId` INTEGER UNSIGNED COMMENT 'Ассортиментный прайс-лист';

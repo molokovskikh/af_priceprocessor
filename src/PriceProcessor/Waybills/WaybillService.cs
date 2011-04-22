@@ -48,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public bool IsConvertFormat { get; set; }
 
 		[Property]
-		public int? AssortimentPriceCode { get; set; }
+		public int? AssortimentPriceId { get; set; }
 
 		[Property]
 		public bool ParseWaybills { get; set; }
@@ -119,7 +119,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					return false;
 				}
 
-				if (settings.AssortimentPriceCode == null)
+				if (settings.AssortimentPriceId == null)
 				{
 					_log.InfoFormat("Не задан ассортиментный прайс-лист: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
 					return false;
@@ -129,7 +129,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				var productIds = Lines.Where(l => l.ProductId != null).Select(l => l.ProductId).ToList();
 
 				var criteria = DetachedCriteria.For<Core>();
-				criteria.Add(Restrictions.Eq("Price.Id", (uint)settings.AssortimentPriceCode.Value));
+				criteria.Add(Restrictions.Eq("Price.Id", (uint)settings.AssortimentPriceId.Value));
 				criteria.Add(Restrictions.In("ProductId", productIds));
 
 				List<Core> cores = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<Core>()).ToList();

@@ -141,6 +141,14 @@ namespace PriceProcessor.Test.Waybills
 				DocumentType = DocumentType.Waybill,
 				FileName = file,
 			};
+
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client_dbf.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{			
+				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.SaveAndFlush();
+			}
+
 			using (new TransactionScope())
 				document.Save();
 
@@ -265,6 +273,13 @@ namespace PriceProcessor.Test.Waybills
 				using (new TransactionScope())
 					document.Save();
 				documentLogs.Add(document);
+
+				var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client_dbf.Id).SingleOrDefault();
+				using (new TransactionScope())
+				{
+					settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+					settings.SaveAndFlush();
+				}
 
 				File.Copy(file, Path.Combine(waybillsPath_dbf,
 					String.Format("{0}_{1}{2}", document.Id, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));
