@@ -162,6 +162,7 @@ where a.Id = ?AddressId", connection);
 				using (new TransactionScope())
 				{
 					settings.IsConvertFormat = true;
+					settings.AssortimentPriceCode = (int)Core.Queryable.First().Price.Id;
 					settings.SaveAndFlush();
 				}
 			}
@@ -197,7 +198,10 @@ where a.Id = ?AddressId", connection);
 			if (!source_IsConvertFormat)
 			{
 				using (new TransactionScope())
+				{
 					settings.IsConvertFormat = false;
+					settings.AssortimentPriceCode = null;
+				}
 			}
 		}
 

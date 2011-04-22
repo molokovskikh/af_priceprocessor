@@ -146,6 +146,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
+				settings.AssortimentPriceCode = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, order.Client.Id.ToString());
@@ -156,6 +157,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = false;
+				settings.AssortimentPriceCode = null;
 				settings.SaveAndFlush();
 			}
 			var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
