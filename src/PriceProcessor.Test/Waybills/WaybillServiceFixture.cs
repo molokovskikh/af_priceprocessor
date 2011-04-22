@@ -13,6 +13,7 @@ using NHibernate.SqlCommand;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Helpers;
+using Common.Tools;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -480,7 +481,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		[Test(Description = "Проверка сопоставления кода клиента по ассортиментному прайс листу")]
-		public void Check_SetCodeForClient()
+		public void Check_SetAssortimentInfo()
 		{
 			const string file = "14356_4.dbf";
 			TestOldClient client;
@@ -512,27 +513,37 @@ namespace PriceProcessor.Test.Waybills
 				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0"};
 				core.SaveAndFlush();
 			}
-
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
-
 			Directory.CreateDirectory(waybillsPath);
 			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
-
+			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.AssortimentPriceCode = (int?)price.Id;
+				settings.SaveAndFlush();
+			}
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
-			
 			using (new SessionScope())
 			{
-				var waybill = TestWaybill.Find(ids.Single());
-				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-				Assert.IsTrue(waybill.Lines[0].ProductId != null);
-				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
-				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer.Id));
-
 				Document doc = Document.Find(ids.Single());
-				doc.SetCodesForClient();				
+				Assert.That(doc.Lines.Count, Is.EqualTo(1));
+				Assert.IsTrue(doc.Lines[0].ProductId != null);
+				Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
+				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
+				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
+				Assert.That(files_dbf.Count(), Is.EqualTo(2));
+				var file_dbf = files_dbf.Where(f => f.Contains(supplier.ShortName)).Select(f => f).First();					
+				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+				Assert.IsTrue(data.Columns.Contains("id_artis"));
+				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("1234567"));
+				Assert.IsTrue(data.Columns.Contains("name_artis"));
+				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));				
+				Assert.IsTrue(data.Columns.Contains("przv_artis"));
+				Assert.That(data.Rows[0]["przv_artis"], Is.EqualTo("Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ"));
 			}
-		}		
+		}
 	}
 }

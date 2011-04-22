@@ -38,8 +38,7 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class ProtekWaybillHandlerFixture
 	{
-		private DateTime begin;
-		//private uint orderId;
+		private DateTime begin;		
 		private TestOrder order;
 		private FakeProtekHandler fake;
 

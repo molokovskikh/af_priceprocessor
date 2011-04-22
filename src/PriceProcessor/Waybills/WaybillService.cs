@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public bool IsConvertFormat { get; set; }
 
-//		[Property]
+		[Property]
 		public int? AssortimentPriceCode { get; set; }
 
 		[Property]
@@ -67,6 +67,13 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		[Description("Накладная")] Waybill = 1,
 		[Description("Отказ")] Reject = 2
+	}
+
+	public class AssortimentPriceInfo
+	{
+		public uint? Code { get; set; }
+		public string Synonym { get; set; }
+		public string SynonymFirmCr { get; set; }
 	}
 
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
@@ -101,20 +108,24 @@ namespace Inforoom.PriceProcessor.Waybills
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
 
-		public void SetCodesForClient()
-		{
+		public void SetAssortimentInfo()
+		{			
 			try
-			{
+			{				
 				var settings = WaybillSettings.TryFind(ClientCode);
 				if (settings == null) return;
 
-				if (settings.AssortimentPriceCode == null) return;
+				if (settings.AssortimentPriceCode == null)
+				{
+					_log.InfoFormat("Не задан ассортиментный прайс-лист: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
+					return;
+				}
 
 				// список id товаров из накладной
 				var productIds = Lines.Where(l => l.ProductId != null).Select(l => l.ProductId).ToList();
 
 				var criteria = DetachedCriteria.For<Core>();
-				criteria.Add(Restrictions.Eq("Price.Id", settings.AssortimentPriceCode));
+				criteria.Add(Restrictions.Eq("Price.Id", (uint)settings.AssortimentPriceCode.Value));
 				criteria.Add(Restrictions.In("ProductId", productIds));
 
 				List<Core> cores = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<Core>()).ToList();
@@ -122,25 +133,24 @@ namespace Inforoom.PriceProcessor.Waybills
 				foreach (var line in Lines)
 				{
 					{
-						var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).ToList();
-						foreach (var core in ls)
+						var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).Select(c => c).ToList();
+						if(ls.Count() > 0)
 						{
+							var core = ls.FirstOrDefault();
+							var info = new AssortimentPriceInfo();
 							uint res;
-							line.CodeForClient = null;
-							if (UInt32.TryParse(core.Code, out res))
-							{
-								line.CodeForClient = res;
-								break;
-							}
-						}
+							info.Code = UInt32.TryParse(core.Code, out res) == true ? (uint?)res : null;
+							info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
+							info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
+							line.AssortimentPriceInfo = info;
+						}						
 					}
-				}
-
+				}				
 			}
 			catch (Exception e)
 			{
-				_log.Error(String.Format("Ошибка при задании клиентских кодов для товаров в накладной {0}", Log.FileName), e);
-			}
+				_log.Error(String.Format("Ошибка при заполнении данных из ассортиментного прайс-листа для накладной {0}", Log.FileName), e);				
+			}			
 		}
 
 		///<summary>
@@ -486,7 +496,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public uint? CodeForClient { get; set; }		
+		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }		
 	}
 
 	[ActiveRecord("SynonymFirmCr", Schema = "farm")]
@@ -702,7 +712,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		private static DataTable GetProductsName(string productIds)
+		/*private static DataTable GetProductsName(string productIds)
 		{
 			var dataset = With.Connection(conection => MySqlHelper.ExecuteDataset(conection, string.Format(@"select Id,
 (
@@ -732,7 +742,7 @@ from catalogs.Products p
 where p.Id in ({0});",productIds)));
 			
 			return dataset.Tables.Count > 0 ? dataset.Tables[0] : null;
-		}
+		}*/
 
 		private static DataTable InitTableForFormatDbf(Document document, Supplier supplier)
 		{
@@ -764,13 +774,10 @@ where p.Id in ({0});",productIds)));
 			                       	});
 
 			var productIds = document.Lines.Where(p=> p.ProductId != null).Select(p => p.ProductId).ToArray();
-			var productsname = (productIds.Length > 0) ? GetProductsName(string.Join(",", productIds)) : new DataTable();
+			//var productsname = (productIds.Length > 0) ? GetProductsName(string.Join(",", productIds)) : new DataTable();
 
 			foreach (var line in document.Lines)
 			{
-				var productId = line.ProductId;
-				var producerId = line.ProducerId;
-
 				var row = table.NewRow();
 				row["postid_af"] = document.FirmCode;
 				row["post_name_af"] = supplier.FullName;
@@ -783,18 +790,13 @@ where p.Id in ({0});",productIds)));
 				                  	                  	))
 				                  	: "";
 				row["ttn"] = document.ProviderDocumentId;
-				row["ttn_date"] = document.DocumentDate;
-				row["id_artis"] = productId;
-				row["name_artis"] = productId != null ?  
-														productsname
-															.AsEnumerable()
-															.Where(r => Convert.ToInt32(r["Id"]) == productId).Select(r => r["Name"].ToString())
-															.SingleOrDefault() 
-														: "";
-				row["przv_artis"] = producerId != null ? With.Connection(c => 
-																		MySqlHelper.ExecuteScalar(c, "select Name from catalogs.Producers where Id = " + producerId).ToString()
-																		) 
-														:	"";
+				row["ttn_date"] = document.DocumentDate;				
+				if(line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.Code != null)
+					row["id_artis"] = line.AssortimentPriceInfo.Code;				
+				if (line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.Synonym != null)
+					row["name_artis"] = line.AssortimentPriceInfo.Synonym;
+				if (line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.SynonymFirmCr != null)
+					row["przv_artis"] = line.AssortimentPriceInfo.SynonymFirmCr;
 				row["name_post"] = line.Product;
 				row["przv_post"] = line.Producer;
 				row["seria"] = line.SerialNumber;
@@ -820,6 +822,7 @@ where p.Id in ({0});",productIds)));
 
 			try
 			{
+				document.SetAssortimentInfo();
 				var table = InitTableForFormatDbf(document, log.Supplier);
 
 				using (var scope = new TransactionScope(OnDispose.Rollback))
