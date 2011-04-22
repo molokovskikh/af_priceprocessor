@@ -1,1 +1,1 @@
-ALTER TABLE `usersettings`.`RetClientsSet` ADD COLUMN `AssortimentPriceCode` INTEGER UNSIGNED COMMENT 'Ассортиментный прайс-лист' AFTER `IsConvertFormat`;
+﻿ALTER TABLE `usersettings`.`RetClientsSet` ADD COLUMN `AssortimentPriceCode` INTEGER UNSIGNED COMMENT 'Ассортиментный прайс-лист' AFTER `IsConvertFormat`;

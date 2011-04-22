@@ -450,7 +450,6 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceCode = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 
@@ -477,7 +476,6 @@ namespace PriceProcessor.Test.Waybills
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(2));
 				settings.IsConvertFormat = false;
-				settings.AssortimentPriceCode = null;
 				settings.SaveAndFlush();			
 			}
 		}

@@ -108,22 +108,17 @@ namespace Inforoom.PriceProcessor.Waybills
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
 
-		public bool SetAssortimentInfo()
-		{
-			bool result = false;
+		public void SetAssortimentInfo()
+		{			
 			try
 			{				
 				var settings = WaybillSettings.TryFind(ClientCode);
-				if (settings == null)
-				{
-					_log.InfoFormat("Не найдены настройки: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
-					return false;
-				}
+				if (settings == null) return;
 
 				if (settings.AssortimentPriceCode == null)
 				{
 					_log.InfoFormat("Не задан ассортиментный прайс-лист: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
-					return false;
+					return;
 				}
 
 				// список id товаров из накладной
@@ -150,14 +145,12 @@ namespace Inforoom.PriceProcessor.Waybills
 							line.AssortimentPriceInfo = info;
 						}						
 					}
-				}
-				result = true;
+				}				
 			}
 			catch (Exception e)
 			{
 				_log.Error(String.Format("Ошибка при заполнении данных из ассортиментного прайс-листа для накладной {0}", Log.FileName), e);				
-			}
-			return result;
+			}			
 		}
 
 		///<summary>
@@ -719,6 +712,38 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
+		/*private static DataTable GetProductsName(string productIds)
+		{
+			var dataset = With.Connection(conection => MySqlHelper.ExecuteDataset(conection, string.Format(@"select Id,
+(
+select
+	concat(CatalogNames.Name, ' ', CatalogForms.Form, ' ', 
+  cast(GROUP_CONCAT(ifnull(PropertyValues.Value, '') 
+                    order by Properties.PropertyName, PropertyValues.Value
+						        SEPARATOR ', '
+						        ) as char)) as Name
+	from
+		(
+			catalogs.products,
+			catalogs.catalog,
+			catalogs.CatalogForms,
+			catalogs.CatalogNames
+		)
+		left join catalogs.ProductProperties on ProductProperties.ProductId = Products.Id
+		left join catalogs.PropertyValues on PropertyValues.Id = ProductProperties.PropertyValueId
+		left join catalogs.Properties on Properties.Id = PropertyValues.PropertyId
+	where
+		products.Id = p.Id
+	and catalog.Id = products.CatalogId
+	and CatalogForms.Id = catalog.FormId
+	and CatalogNames.Id = catalog.NameId
+) as Name
+from catalogs.Products p
+where p.Id in ({0});",productIds)));
+			
+			return dataset.Tables.Count > 0 ? dataset.Tables[0] : null;
+		}*/
+
 		private static DataTable InitTableForFormatDbf(Document document, Supplier supplier)
 		{
 			var table = new DataTable();
@@ -747,7 +772,10 @@ namespace Inforoom.PriceProcessor.Waybills
 			                       		new DataColumn("pcena_nds"),
 			                       		new DataColumn("kol_tov")
 			                       	});
-	
+
+			var productIds = document.Lines.Where(p=> p.ProductId != null).Select(p => p.ProductId).ToArray();
+			//var productsname = (productIds.Length > 0) ? GetProductsName(string.Join(",", productIds)) : new DataTable();
+
 			foreach (var line in document.Lines)
 			{
 				var row = table.NewRow();
@@ -790,10 +818,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		
 		public static void ConvertAndSaveDbfFormat(Document document, DocumentReceiveLog log, bool isfake = false)
 		{
-			if (document.SetAssortimentInfo() == false) return;
 			var path = string.Empty;
+
 			try
-			{				
+			{
+				document.SetAssortimentInfo();
 				var table = InitTableForFormatDbf(document, log.Supplier);
 
 				using (var scope = new TransactionScope(OnDispose.Rollback))

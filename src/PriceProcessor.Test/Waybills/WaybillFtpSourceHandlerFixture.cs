@@ -267,7 +267,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceCode = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 
@@ -293,7 +292,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = false;
-				settings.AssortimentPriceCode = null;
 				settings.SaveAndFlush();
 			}
 		}
@@ -318,7 +316,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceCode = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 			
@@ -370,7 +367,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = false;
-				settings.AssortimentPriceCode = null;
 				settings.SaveAndFlush();
 			}
 
