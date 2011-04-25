@@ -266,7 +266,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == 361).SingleOrDefault();
 			using (new TransactionScope())
 			{
-				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
@@ -287,12 +286,8 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
 
-			//возвращаем назад для этого клиента значение IsConvertFormat, чтобы работали старые тесты.
-			// так как в старых тестах есть проверка на количество записей для поставщика и клиента в document_logs
-			//и когда создаем файл в новом формате dbf,то таких записей становится две.
 			using (new TransactionScope())
 			{
-				settings.IsConvertFormat = false;
 				settings.AssortimentPriceId = null;
 				settings.SaveAndFlush();
 			}
@@ -317,7 +312,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == 361).SingleOrDefault();
 			using (new TransactionScope())
 			{
-				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
@@ -369,7 +363,6 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			//и когда создаем файл в новом формате dbf,то таких записей становится две.
 			using (new TransactionScope())
 			{
-				settings.IsConvertFormat = false;
 				settings.AssortimentPriceId = null;
 				settings.SaveAndFlush();
 			}

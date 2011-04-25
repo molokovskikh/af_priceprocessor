@@ -232,11 +232,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.SetValues();
 			}
 			document.SetProductId();
-
-			var settings = WaybillSettings.TryFind(order.ClientCode);
-			if (settings != null && settings.IsConvertFormat)			
-				WaybillService.ConvertAndSaveDbfFormat(document, log, true);						
-
+			WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);
 			return document;
 		}
 	}

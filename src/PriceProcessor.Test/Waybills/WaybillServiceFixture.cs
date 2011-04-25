@@ -448,8 +448,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
 			using (new TransactionScope())
-			{
-				settings.IsConvertFormat = true;
+			{				
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
@@ -475,8 +474,7 @@ namespace PriceProcessor.Test.Waybills
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
-				Assert.That(files_dbf.Count(), Is.EqualTo(2));
-				settings.IsConvertFormat = false;
+				Assert.That(files_dbf.Count(), Is.EqualTo(2));				
 				settings.AssortimentPriceId = null;
 				settings.SaveAndFlush();			
 			}
@@ -521,8 +519,7 @@ namespace PriceProcessor.Test.Waybills
 			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
 			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
 			using (new TransactionScope())
-			{
-				settings.IsConvertFormat = true;
+			{				
 				settings.AssortimentPriceId = (int?)price.Id;
 				settings.SaveAndFlush();
 			}
