@@ -155,12 +155,13 @@ where a.Id = ?AddressId", connection);
 
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == _summary.Client.Id).SingleOrDefault();
 			//запоминаем начальное состояние настройки
-			var assort_price_id = settings.AssortimentPriceId;
+			var source_IsConvertFormat = settings.IsConvertFormat;
 			//и если оно не включено, то включим принудительно для теста
-			if (assort_price_id == null)
+			if (!source_IsConvertFormat)
 			{
 				using (new TransactionScope())
 				{
+					settings.IsConvertFormat = true;
 					settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 					settings.SaveAndFlush();
 				}
@@ -190,11 +191,15 @@ where a.Id = ?AddressId", connection);
 				Assert.IsTrue(data.Columns.Contains("przv_post"));
 			}
 
+
+
+			
 			//если было включено принудительно, то вернем назад настройку.
-			if (assort_price_id == null)
+			if (!source_IsConvertFormat)
 			{
 				using (new TransactionScope())
 				{
+					settings.IsConvertFormat = false;
 					settings.AssortimentPriceId = null;
 				}
 			}

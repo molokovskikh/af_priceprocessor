@@ -145,7 +145,7 @@ namespace PriceProcessor.Test.Handlers
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{
-			//	settings.IsConvertFormat = true;
+				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
@@ -156,7 +156,7 @@ namespace PriceProcessor.Test.Handlers
 			fake.Process();			
 			using (new TransactionScope())
 			{
-				//settings.IsConvertFormat = false;
+				settings.IsConvertFormat = false;
 				settings.AssortimentPriceId = null;
 				settings.SaveAndFlush();
 			}

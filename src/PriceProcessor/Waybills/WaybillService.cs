@@ -646,8 +646,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-
-					ConvertAndSaveDbfFormatIfNeeded(doc, d.DocumentLog, true);											
+					if (settings.IsConvertFormat)					
+						ConvertAndSaveDbfFormatIfNeeded(doc, d.DocumentLog, true);											
 
 					return doc;
 				}
@@ -690,7 +690,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				var settings = WaybillSettings.Find(log.ClientCode.Value);
 					
-				if(settings.AssortimentPriceId == null)
+				if (!settings.IsConvertFormat)
 					log.CopyDocumentToClientDirectory();
 
 				if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
@@ -701,7 +701,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					return;
 
 				//конвертируем накладную в новый формат dbf.
-				//if (settings.IsConvertFormat)
+				if (settings.IsConvertFormat)
 					ConvertAndSaveDbfFormatIfNeeded(document, log, true);						
 										
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
