@@ -28,5 +28,10 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCost, Is.EqualTo(25.40));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 		}
-	}
+		[Test]
+		public void Test()
+		{
+			var doc = WaybillParser.Parse("7967575.dbf");
+		}
+	}	
 }

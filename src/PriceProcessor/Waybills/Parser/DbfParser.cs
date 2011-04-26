@@ -143,11 +143,38 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			if (Convert.IsDBNull(value))
 				return null;
 			if (type == typeof(uint) || type == typeof(uint?))
+			{
+				if (value is String)
+				{
+					uint res;
+					if (UInt32.TryParse((String)value, out res))
+						return res;
+					return null;
+				}
 				return Convert.ToUInt32(value);
+			}
 			if (type == typeof(int) || type == typeof(int?))
+			{
+				if (value is String)
+				{
+					int res;
+					if (Int32.TryParse((String) value, out res))
+						return res;
+					return null;
+				}
 				return Convert.ToInt32(value);
+			}
 			if (type == typeof(decimal) || type == typeof(decimal?))
+			{
+				if (value is String)
+				{
+					decimal res;
+					if (Decimal.TryParse((String)value, out res))
+						return res;
+					return null;
+				}
 				return Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+			}
 			if (type == typeof(string))
 			{
 				DateTime res;
