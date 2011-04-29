@@ -775,7 +775,17 @@ namespace Inforoom.PriceProcessor.Properties {
                 return ((string)(this["FTPOptBoxPath"]));
             }
         }
-        
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("DocumentPath")]
+        public string DocumentPath {
+            get {
+                return ((string)(this["DocumentPath"]));
+            }
+        }
+
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("FtpRoot")]
