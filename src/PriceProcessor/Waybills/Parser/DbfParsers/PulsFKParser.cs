@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.Amount, "SUMPAY")
-				.Line(l => l.NdsAmount, "SUMNDS2")
+				//.Line(l => l.NdsAmount, "SUMNDS2")
 				.Line(l => l.SupplierPriceMarkup, "PROCNDB");
 		}
 
