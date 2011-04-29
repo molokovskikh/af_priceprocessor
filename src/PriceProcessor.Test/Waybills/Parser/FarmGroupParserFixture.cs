@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using NUnit.Framework;
+using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
@@ -51,6 +53,27 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Country, Is.EqualTo("Франция"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(429.6900));
 			Assert.That(line.ProducerCost, Is.EqualTo(390.6300));
+		}
+
+		[Test]
+		public void Parse_PulsBryansk()
+		{
+			var doc = WaybillParser.Parse("7997577_PulsBryansk(N_11121_11126_00031791).dbf");
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("00015"));
+			Assert.That(line.Product, Is.EqualTo("Аджисепт /ментол-эвкалипт/ табл. д/рассас. х24"));
+			Assert.That(line.Producer, Is.EqualTo("AGIO"));
+			Assert.That(line.SerialNumber, Is.EqualTo("10/14/0022"));
+			Assert.That(line.Period, Is.EqualTo("01.09.2013"));
+			Assert.That(line.SupplierCost, Is.EqualTo(25.76));
+			Assert.That(line.Quantity, Is.EqualTo(2));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС IN.ФM08.Д58735"));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.Country, Is.EqualTo("Индия"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(23.42));
+			Assert.That(line.ProducerCost, Is.EqualTo(23.42));
 		}
 	}
 }

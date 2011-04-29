@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
@@ -144,35 +145,20 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				return null;
 			if (type == typeof(uint) || type == typeof(uint?))
 			{
-				if (value is String)
-				{
-					uint res;
-					if (UInt32.TryParse((String)value, out res))
-						return res;
-					return null;
-				}
+				if (value is String)				
+					return ParseHelper.GetUInt((String) value);
 				return Convert.ToUInt32(value);
 			}
 			if (type == typeof(int) || type == typeof(int?))
 			{
-				if (value is String)
-				{
-					int res;
-					if (Int32.TryParse((String) value, out res))
-						return res;
-					return null;
-				}
+				if (value is String)				
+					return ParseHelper.GetInt((String) value);
 				return Convert.ToInt32(value);
 			}
 			if (type == typeof(decimal) || type == typeof(decimal?))
 			{
 				if (value is String)
-				{
-					decimal res;
-					if (Decimal.TryParse((String)value, out res))
-						return res;
-					return null;
-				}
+					return ParseHelper.GetDecimal((String)value);
 				return Convert.ToDecimal(value, CultureInfo.InvariantCulture);
 			}
 			if (type == typeof(string))

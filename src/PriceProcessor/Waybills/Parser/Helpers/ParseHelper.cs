@@ -29,6 +29,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Helpers
 			return null;
 		}
 
+		public static int? GetInt(string val)
+		{
+			var value = GetDecimal(val);
+			if (value.HasValue)
+				return Convert.ToInt32(value);
+			int value2;
+			if (!String.IsNullOrEmpty(val) && int.TryParse(val, out value2))
+				return value2;
+			return null;
+		}
+
 		public static bool? GetBoolean(string val)
 		{
 			int value;
