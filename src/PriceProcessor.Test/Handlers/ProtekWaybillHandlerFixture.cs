@@ -149,7 +149,8 @@ namespace PriceProcessor.Test.Handlers
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);

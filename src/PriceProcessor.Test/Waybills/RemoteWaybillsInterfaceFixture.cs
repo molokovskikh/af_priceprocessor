@@ -38,7 +38,8 @@ namespace PriceProcessor.Test.Waybills
 			service = factory.CreateChannel();
 
 			client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			waybillsPath = Path.Combine(docRoot, "Waybills");
 			rejectsPath = Path.Combine(docRoot, "Rejects");
 			Directory.CreateDirectory(rejectsPath);
@@ -50,7 +51,8 @@ namespace PriceProcessor.Test.Waybills
 		private void Setup_Parse_Convert_Dbf_format()
 		{
 			client_dbf = TestOldClient.CreateTestClient(1UL, true);
-			var _docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
+			//var _docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
+			var _docRoot = Path.Combine(Settings.Default.DocumentPath, client_dbf.Id.ToString());
 			waybillsPath_dbf = Path.Combine(_docRoot, "Waybills");
 			rejectsPath_dbf = Path.Combine(_docRoot, "Rejects");
 			Directory.CreateDirectory(rejectsPath_dbf);
@@ -61,7 +63,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
 		//	var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
-			var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, code.ToString().PadLeft(3, '0'));
+			//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, code.ToString().PadLeft(3, '0'));
+			var clientDir = Path.Combine(Settings.Default.DocumentPath, code.ToString().PadLeft(3, '0'));
 			return Path.Combine(clientDir, "Waybill" + "s");
 		}
 
@@ -312,7 +315,8 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(count, Is.EqualTo(1));
 				
 				// Проверяем наличие файлов в папках клиентов
-				var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
+				//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
+				var clientDir = Path.Combine(Settings.Default.DocumentPath, client_dbf.Id.ToString());
 				Assert.IsTrue(Directory.Exists(clientDir));
 				var _files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
 				Assert.That(_files.Count(), Is.GreaterThan(0));

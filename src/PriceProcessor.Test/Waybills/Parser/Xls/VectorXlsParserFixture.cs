@@ -34,6 +34,6 @@ namespace PriceProcessor.Test.Waybills.Parser.Xls
 			Assert.That(line.VitallyImportant, Is.Null);
 
 			Assert.That(document.Lines[1].SupplierCost, Is.EqualTo(25.48));
-		}
+		}		
 	}
 }

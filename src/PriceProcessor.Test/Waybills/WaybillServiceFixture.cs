@@ -25,7 +25,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var file = "1008fo.pd";
 			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
 			var log = new TestDocumentLog {
@@ -56,7 +57,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var file = "1008fo.pd";
 			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
 			var log = new TestDocumentLog
@@ -218,7 +220,8 @@ namespace PriceProcessor.Test.Waybills
 
 			}
 
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
 			Directory.CreateDirectory(waybillsPath);
@@ -271,7 +274,8 @@ namespace PriceProcessor.Test.Waybills
 				log.SaveAndFlush();
 			}
 
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
 			Directory.CreateDirectory(waybillsPath);
@@ -295,7 +299,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			const string file = "14326_4.dbf";
 			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			
 			Directory.CreateDirectory(waybillsPath);
@@ -362,7 +367,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			const string file = "14326_4.dbf";
 			var client = TestOldClient.CreateTestClient();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
 			Directory.CreateDirectory(waybillsPath);
@@ -429,7 +435,8 @@ namespace PriceProcessor.Test.Waybills
 			var client = TestOldClient.CreateTestClient();
 			var supplier = TestOldClient.CreateTestSupplier();
 
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
 			Directory.CreateDirectory(waybillsPath);
@@ -515,7 +522,8 @@ namespace PriceProcessor.Test.Waybills
 				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0"};
 				core.SaveAndFlush();
 			}
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
 			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
@@ -546,6 +554,18 @@ namespace PriceProcessor.Test.Waybills
 				Assert.IsTrue(data.Columns.Contains("przv_artis"));
 				Assert.That(data.Rows[0]["przv_artis"], Is.EqualTo("Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ"));
 			}
+		}
+
+		[Test]
+		public void TestSaveWaybills()
+		{
+			string waybillpath = @"..\..\Data\Waybills\";
+			string file = "1039428.xml";
+			string savefilename = Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(file));
+			string waybillfilename = Path.Combine(waybillpath, Path.GetFileName(file));
+			WaybillService.SaveWaybill(waybillfilename);
+			Assert.That(File.Exists(savefilename), Is.True);
+			File.Delete(savefilename);
 		}
 	}
 }

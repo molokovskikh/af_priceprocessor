@@ -165,7 +165,7 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 		private IList<uint> CopyWaybillFiles(uint oldClientDeliveryCode, uint newClientDeliveryCode, TestOldClient supplier, string ftpWaybillDirectory)
 		{
 			var clientCodes = SetDeliveryCodes(oldClientDeliveryCode, newClientDeliveryCode, supplier.Id);
-			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);
+			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);			
 			if (!Directory.Exists(waybillsDir))
 				Directory.CreateDirectory(waybillsDir);
 
@@ -208,7 +208,8 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 						Assert.That(Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id).Count(), Is.EqualTo(1));
 
 					// Проверяем наличие файлов в папках клиентов
-					var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
+					//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
+					var clientDir = Path.Combine(Settings.Default.DocumentPath, clientCode.ToString());
 					Assert.IsTrue(Directory.Exists(clientDir));
 					var files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
 					Assert.That(files.Count(), Is.GreaterThan(0));
@@ -345,7 +346,8 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 					}
 					
 					// Проверяем наличие файлов в папках клиентов
-					var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
+					//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
+					var clientDir = Path.Combine(Settings.Default.DocumentPath, clientCode.ToString());
 					Assert.IsTrue(Directory.Exists(clientDir));
 
 					var files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
