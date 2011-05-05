@@ -239,6 +239,7 @@
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\WayBillRetransFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />
   </ItemGroup>
