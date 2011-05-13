@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Properties;
 using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
+using Test.Support.Suppliers;
 using Castle.ActiveRecord;
 
 namespace PriceProcessor.Test
@@ -18,7 +19,8 @@ namespace PriceProcessor.Test
 	{
 		public TestClient Client { get; set; }
 
-		public TestOldClient Supplier { get; set; }
+		//public TestOldClient Supplier { get; set; }
+		public TestSupplier Supplier { get; set; }
 	}
 
 	public class WaybillSourceHandlerForTesting : WaybillSourceHandler
@@ -50,7 +52,7 @@ namespace PriceProcessor.Test
 			TestHelper.RecreateDirectories();
 		}
 
-		private static void CreateWaybillSource(TestClient client, TestOldClient supplier)
+		private static void CreateWaybillSource(TestClient client, TestSupplier supplier)
 		{
 			With.Connection(connection =>
 			{
@@ -70,8 +72,10 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			TestHelper.RecreateDirectories();
 
-			var client = TestClient.CreateSimple();
-			var supplier = TestOldClient.CreateTestSupplier();
+			//var client = TestClient.CreateSimple();
+			//var supplier = TestOldClient.CreateTestSupplier();
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();
 
 			CreateWaybillSource(client, supplier);
 			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
@@ -169,7 +173,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
 			SetUp(fileNames);
 
-			var supplier = TestOldClient.CreateTestSupplier(64UL);
+		//	var supplier = TestOldClient.CreateTestSupplier(64UL);
+			var supplier = TestSupplier.Create(64UL);
 			CreateWaybillSource(_summary.Client, supplier);
 			Process_waybills();
 

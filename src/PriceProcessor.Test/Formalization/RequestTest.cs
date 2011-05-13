@@ -5,6 +5,7 @@ using Castle.ActiveRecord;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Formalizer;
 using Test.Support;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Formalization
 {
@@ -19,7 +20,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				price = TestOldClient.CreateTestSupplierWithPrice(p =>
+				price = TestSupplier.CreateTestSupplierWithPrice(p =>
 				{
 					var rules = p.Costs.Single().PriceItem.Format;
 					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;

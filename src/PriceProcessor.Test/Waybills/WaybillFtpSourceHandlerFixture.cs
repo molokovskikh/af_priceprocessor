@@ -15,6 +15,7 @@ using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor.Waybills;
 using Test.Support;
+using Test.Support.Suppliers;
 using WaybillSourceType = Test.Support.WaybillSourceType;
 using Castle.ActiveRecord;
 using Common.Tools;
@@ -133,12 +134,13 @@ WHERE Id = (
 			return clientCodes;
 		}
 
-		private TestOldClient CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
+		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
 		{
-			TestOldClient supplier = null;
+			TestSupplier supplier = null;
 			using (var scope = new TransactionScope())
 			{
-				supplier = TestOldClient.CreateTestSupplier();
+				//supplier = TestOldClient.CreateTestSupplier();
+				supplier = TestSupplier.Create();
 				var source = new TestWaybillSource()
 				{
 					Id = supplier.Id,
@@ -162,7 +164,7 @@ UPDATE documents.waybill_sources SET FirmCode = ?SupplierId WHERE FirmCode = 0;
 			return supplier;
 		}
 
-		private IList<uint> CopyWaybillFiles(uint oldClientDeliveryCode, uint newClientDeliveryCode, TestOldClient supplier, string ftpWaybillDirectory)
+		private IList<uint> CopyWaybillFiles(uint oldClientDeliveryCode, uint newClientDeliveryCode, TestSupplier supplier, string ftpWaybillDirectory)
 		{
 			var clientCodes = SetDeliveryCodes(oldClientDeliveryCode, newClientDeliveryCode, supplier.Id);
 			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);			

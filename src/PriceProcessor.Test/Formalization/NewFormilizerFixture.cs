@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Properties;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Catalog;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Formalization
 {
@@ -28,7 +29,7 @@ namespace PriceProcessor.Test.Formalization
 			file = "test.txt";
 			using(var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				price = TestOldClient.CreateTestSupplierWithPrice(p => {
+				price = TestSupplier.CreateTestSupplierWithPrice(p => {
 					var rules = p.Costs.Single().PriceItem.Format;
 					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
 					rules.Delimiter = ";";

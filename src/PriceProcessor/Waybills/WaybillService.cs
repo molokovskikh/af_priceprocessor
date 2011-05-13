@@ -199,8 +199,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					{
 						var productName = line.Product;
 						var producerName = line.Producer;
-						var listSynonym = dbListSynonym.Where(product => product.Synonym == productName && product.ProductId != null).ToList();
-						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym == producerName && producer.CodeFirmCr != null).ToList();
+						
+						var listSynonym = dbListSynonym.Where(product => product.Synonym.Trim() == productName && product.ProductId != null).ToList();
+						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym.Trim() == producerName && producer.CodeFirmCr != null).ToList();
 						
 						if(listSynonym.Count > 0)							
 							line.ProductId = listSynonym.Select(product => product.ProductId).FirstOrDefault();

@@ -6,6 +6,7 @@ using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Properties;
 using NUnit.Framework;
 using Test.Support;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Loader
 {
@@ -33,7 +34,8 @@ namespace PriceProcessor.Test.Loader
 					},
 				};
 
-				var supplier = TestOldClient.CreateTestSupplier();
+				//var supplier = TestOldClient.CreateTestSupplier();
+				var supplier = TestSupplier.Create();
 				var price = new TestPrice {
 					CostType = CostType.MultiColumn,
 					Supplier = supplier,
@@ -77,8 +79,8 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Enable_price_for_client_with_supplier_client_id()
 		{
-			var trustedClient = TestClient.CreateSimple();
-			var normalClient = TestClient.CreateSimple();
+			var trustedClient = TestClient.Create();
+			var normalClient = TestClient.Create();
 			var price = prices[1];
 			using(new SessionScope())
 			{

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,7 @@ using NHibernate.Criterion;
 using NHibernate.SqlCommand;
 using NUnit.Framework;
 using Test.Support;
+using Test.Support.Suppliers;
 using Test.Support.Helpers;
 using Common.Tools;
 
@@ -24,7 +26,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_waybill()
 		{
 			var file = "1008fo.pd";
-			var client = TestOldClient.CreateTestClient();
+			//var client = TestOldClient.CreateTestClient();
+			var client = TestClient.Create();
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -56,7 +59,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_waybill_with_ShortName_in_fileName()
 		{
 			var file = "1008fo.pd";
-			var client = TestOldClient.CreateTestClient();
+			//var client = TestOldClient.CreateTestClient();
+			var client = TestClient.Create();
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -70,7 +74,8 @@ namespace PriceProcessor.Test.Waybills
 				FileName = file,
 			};
 
-			var supplier = TestOldClient.Find(log.FirmCode);
+			//var supplier = TestOldClient.Find(log.FirmCode);
+			var supplier = TestSupplier.Find(log.FirmCode);
 
 			using (new TransactionScope())
 				log.SaveAndFlush();
@@ -81,7 +86,7 @@ namespace PriceProcessor.Test.Waybills
 					String.Format(
 						"{0}_{1}({2}){3}", 
 						log.Id,
-						supplier.ShortName,
+						supplier.Name,
 						Path.GetFileNameWithoutExtension(file),
 						Path.GetExtension(file))));
 
@@ -99,7 +104,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_waybill_without_header()
 		{
 			var file = "00000049080.sst";
-			var client = TestOldClient.CreateTestClient();
+			var client = TestClient.Create();
 			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
@@ -130,8 +135,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetProductId_if_synonym_exists()
 		{
 			const string file = "14356_4.dbf";
-			TestOldClient client;
-			TestOldClient supplier;
+			TestClient client;
+			TestSupplier supplier;
 			TestPrice price;
 			TestDocumentLog log;
 			TestProducer producer1;
@@ -140,8 +145,8 @@ namespace PriceProcessor.Test.Waybills
 
 			using (new SessionScope())
 			{
-				client = TestOldClient.CreateTestClient();
-				supplier = TestOldClient.CreateTestSupplier();
+				client = TestClient.Create();
+				supplier = TestSupplier.Create();
 				price = new TestPrice	// прайс, по которому будут определяться синонимы
 				{
 					CostType = CostType.MultiColumn,
@@ -245,16 +250,16 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetProductId_if_synonym_not_exists()
 		{
 			const string file = "14356_4.dbf";
-			TestOldClient client;
-			TestOldClient supplier;
+			TestClient client;
+			TestSupplier supplier;
 			TestPrice price;
 			TestDocumentLog log;
 			TestSynonym productSynonym;
 
 			using (new SessionScope())
 			{
-				client = TestOldClient.CreateTestClient();
-				supplier = TestOldClient.CreateTestSupplier();
+				client = TestClient.Create();
+				supplier = TestSupplier.Create();
 				price = new TestPrice
 				{
 					CostType = CostType.MultiColumn,
@@ -298,7 +303,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetProductId()
 		{
 			const string file = "14326_4.dbf";
-			var client = TestOldClient.CreateTestClient();
+			var client = TestClient.Create();
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -366,7 +371,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetProducerId()
 		{
 			const string file = "14326_4.dbf";
-			var client = TestOldClient.CreateTestClient();
+			var client = TestClient.Create();
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -432,8 +437,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_and_Convert_to_Dbf()
 		{
 			const string file = "14326_4.dbf";
-			var client = TestOldClient.CreateTestClient();
-			var supplier = TestOldClient.CreateTestSupplier();
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();
 
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
@@ -493,8 +498,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetAssortimentInfo()
 		{
 			const string file = "14356_4.dbf";
-			TestOldClient client;
-			TestOldClient supplier;
+			TestClient client;
+			TestSupplier supplier;
 			TestPrice price;
 			TestDocumentLog log;			
 			TestProducer producer;
@@ -502,8 +507,8 @@ namespace PriceProcessor.Test.Waybills
 
 			using (new SessionScope())
 			{
-				client = TestOldClient.CreateTestClient();
-				supplier = TestOldClient.CreateTestSupplier();
+				client = TestClient.Create();
+				supplier = TestSupplier.Create();
 				price = new TestPrice{CostType = CostType.MultiColumn, Supplier = supplier, ParentSynonym = null, PriceName = "тестовый прайс"};
 				price.SaveAndFlush();
 				log = new TestDocumentLog{ClientCode = client.Id, FirmCode = supplier.Id, LogTime = DateTime.Now, DocumentType = DocumentType.Waybill, FileName = file,};
@@ -545,7 +550,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(2));
-				var file_dbf = files_dbf.Where(f => f.Contains(supplier.ShortName)).Select(f => f).First();					
+				var file_dbf = files_dbf.Where(f => f.Contains(supplier.Name)).Select(f => f).First();					
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
 				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("1234567"));

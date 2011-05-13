@@ -20,6 +20,7 @@ using NUnit.Framework;
 using System.Threading;
 using System.IO;
 using Test.Support;
+using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
@@ -54,8 +55,10 @@ namespace PriceProcessor.Test
 		{
 			TestHelper.RecreateDirectories();
 
-			var client = TestClient.CreateSimple();
-			var supplier = TestOldClient.CreateTestSupplier();
+			//var client = TestClient.CreateSimple();
+			//var supplier = TestOldClient.CreateTestSupplier();
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();
 			_summary.Client = client;
 			_summary.Supplier = supplier;
 

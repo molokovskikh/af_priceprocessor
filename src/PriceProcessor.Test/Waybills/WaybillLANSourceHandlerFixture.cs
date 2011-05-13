@@ -17,6 +17,7 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.log4net;
+using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using WaybillSourceType = Test.Support.WaybillSourceType;
 using System.Data;
@@ -49,8 +50,10 @@ namespace PriceProcessor.Test
 		public void SetUp()
 		{
 			TestHelper.RecreateDirectories();
-			_summary.Client = TestClient.CreateSimple();
-			_summary.Supplier = TestOldClient.CreateTestSupplier();
+			//_summary.Client = TestClient.CreateSimple();
+			//_summary.Supplier = TestOldClient.CreateTestSupplier();
+			_summary.Client = TestClient.Create();
+			_summary.Supplier = TestSupplier.Create();
 		}
 
 		private void Process_waybills()
@@ -258,7 +261,7 @@ where a.Id = ?AddressId", connection);
 			{
 				var beign = DateTime.Now;
 				var filter = new EventFilter<WaybillSourceHandler>();
-				var supplier = TestOldClient.CreateTestSupplier();
+				var supplier = TestSupplier.Create();
 
 				const string email = "edata@msk.katren.ru";
 				uint firmId = 0;
@@ -273,7 +276,7 @@ where a.Id = ?AddressId", connection);
 					waybillsource.Create();
 				}
 
-				var client = TestOldClient.CreateTestClient();
+				var client = TestClient.Create();
 				var settings = WaybillSettings.Find(client.Id);
 				settings.ParseWaybills = true;
 				settings.Update();

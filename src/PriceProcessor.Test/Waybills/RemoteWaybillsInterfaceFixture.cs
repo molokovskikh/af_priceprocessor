@@ -18,11 +18,11 @@ namespace PriceProcessor.Test.Waybills
 	{
 		IWaybillService service;
 		ServiceHost host;
-		TestOldClient client;
+		TestClient client;
 		string waybillsPath;
 		string rejectsPath;
 		
-		TestOldClient client_dbf;
+		TestClient client_dbf;
 		string waybillsPath_dbf;
 		string rejectsPath_dbf;
 
@@ -37,7 +37,7 @@ namespace PriceProcessor.Test.Waybills
 			var factory = new ChannelFactory<IWaybillService>(binding, "net.tcp://localhost:9846/Waybill");
 			service = factory.CreateChannel();
 
-			client = TestOldClient.CreateTestClient();
+			client = TestClient.Create();
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -50,7 +50,8 @@ namespace PriceProcessor.Test.Waybills
 
 		private void Setup_Parse_Convert_Dbf_format()
 		{
-			client_dbf = TestOldClient.CreateTestClient(1UL, true);
+			//client_dbf = TestOldClient.CreateTestClient(1UL, true);
+			client_dbf = TestClient.Create();
 			//var _docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
 			var _docRoot = Path.Combine(Settings.Default.DocumentPath, client_dbf.Id.ToString());
 			waybillsPath_dbf = Path.Combine(_docRoot, "Waybills");

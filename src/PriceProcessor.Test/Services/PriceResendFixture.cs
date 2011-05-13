@@ -12,6 +12,7 @@ using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
 using Test.Support.Catalog;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Services
 {
@@ -209,8 +210,8 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Smart_resend_should_resend_price_and_all_related_prices()
 		{
-			var rootPrice = TestOldClient.CreateTestSupplierWithPrice();
-			var childPrice = TestOldClient.CreateTestSupplierWithPrice();
+			var rootPrice = TestSupplier.CreateTestSupplierWithPrice();
+			var childPrice = TestSupplier.CreateTestSupplierWithPrice();
 
 			new TestUnrecExp("test", "test", childPrice).Save();
 			new TestUnrecExp("test", "test", rootPrice).Save();
