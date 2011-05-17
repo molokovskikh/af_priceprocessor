@@ -81,16 +81,26 @@ namespace Inforoom.Downloader
 		}
 
 		protected override void CheckMime(Mime m)
-		{
-			var emailList = String.Empty;
+		{			
+			var emailList = new List<string>();
+
 			_clientId = null;
 			_currentDocumentType = null;
 
 			// Получаем кол-во корректных адресов, т.е. отправленных 
-			// на @waybills.analit.net или на @refused.analit.net
-			var correctAddresCount = CorrectClientAddress(m.MainEntity.To, ref emailList);
+			// на @waybills.analit.net или на @refused.analit.net			
+			if(m.MainEntity.To != null)
+				CorrectClientAddress(m.MainEntity.To, ref emailList);
+			if(m.MainEntity.Cc != null)
+				CorrectClientAddress(m.MainEntity.Cc, ref emailList);
+
+			emailList  = emailList.ConvertAll(s => s.ToUpper()).Distinct().ToList();
+
+			var correctAddresCount = emailList.Count;
+			
+
 			// Все хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
-			// Если не сопоставили с клиентом
+			// Если не сопоставили с клиентом)
 			if (correctAddresCount == 0)
 			{
 				throw new EMailSourceHandlerException("Не найден клиент.",
@@ -193,8 +203,8 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
 
 			return testClientCode;
 		}
-
-		private int CorrectClientAddress(AddressList addressList, ref string emailList)
+		
+		private int CorrectClientAddress(AddressList addressList, ref List<string> emailList)
 		{
 			uint? currentClientCode;
 			var clientCodeCount = 0;
@@ -206,10 +216,8 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
 			{
 				currentClientCode = GetClientCode(GetCorrectEmailAddress(mailbox.EmailAddress));
 				if (currentClientCode.HasValue)
-				{
-					if (!String.IsNullOrEmpty(emailList))
-						emailList += Environment.NewLine;
-					emailList += GetCorrectEmailAddress(mailbox.EmailAddress);
+				{					
+					emailList.Add(GetCorrectEmailAddress(mailbox.EmailAddress));
 					clientCodeCount++;
 				}
 			}

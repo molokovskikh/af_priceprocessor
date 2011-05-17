@@ -92,6 +92,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = ParseHelper.GetBoolean(r[vitallyImportantColumn].ToString());
+				line.SetValues();
 			    return line;
 			}).ToList();
 			return document;

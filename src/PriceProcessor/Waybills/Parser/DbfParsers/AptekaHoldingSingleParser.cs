@@ -64,6 +64,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Nds = Convert.IsDBNull(r[ndsColumn]) ? null : (uint?)Convert.ToUInt32(r[ndsColumn], CultureInfo.InvariantCulture);
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
+				line.SetValues();
 				return line;
 			}).ToList();
 			return document;

@@ -4,6 +4,7 @@ using System.Linq;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
+using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Properties;
@@ -12,6 +13,7 @@ using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
+using LumiSoft.Net;
 
 namespace PriceProcessor.Test
 {
@@ -34,6 +36,11 @@ namespace PriceProcessor.Test
 		{
 			CreateDirectoryPath();
 			ProcessData();
+		}
+
+		public void CheckMimeTest(Mime m)
+		{
+			CheckMime(m);
 		}
 	}
 
@@ -101,7 +108,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 
 		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));			
 		}
@@ -157,7 +165,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			SetUp(fileNames);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
 				SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(1));
@@ -178,7 +187,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			CreateWaybillSource(_summary.Client, supplier);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
 				SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(1));
@@ -194,7 +204,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			SetUp(files);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 
@@ -223,7 +234,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			SetUp(files);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 		}
@@ -235,7 +247,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			SetUp(files);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(3));
 
@@ -254,7 +267,8 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			SetUp(files);
 			Process_waybills();
 
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 		}
@@ -319,6 +333,32 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			IsEmlFile = true;
 			SetUp(files);
 			Process_waybills();
+		}
+
+		[Test]
+		public void Check_destination_addresses()
+		{
+			string emailList = String.Empty;
+
+			TestClient client = TestClient.Create();
+
+			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			Mime message = Mime.Parse(@"..\..\Data\EmailSourceHandlerTest\WithCC.eml");
+
+			message.MainEntity.To.Clear();
+			message.MainEntity.Cc.Clear();
+
+			GroupAddress addrTo = new GroupAddress();		
+			addrTo.GroupMembers.Add(new MailboxAddress("klpuls@mail.ru"));
+			message.MainEntity.To.Add(addrTo);
+
+			GroupAddress addrCc = new GroupAddress();
+			addrCc.GroupMembers.Add(new MailboxAddress(String.Format("{0}@waybills.analit.net", client.Addresses[0].Id)));
+			addrCc.GroupMembers.Add(new MailboxAddress("a_andreychenkov@oryol.protek.ru"));
+			message.MainEntity.Cc.Add(addrCc);
+
+			handler.CheckMimeTest(message);
+			
 		}
 	}
 }

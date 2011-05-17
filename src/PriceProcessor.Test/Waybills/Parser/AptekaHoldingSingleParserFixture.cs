@@ -35,6 +35,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(101.01));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.41));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(101.01));
+
 		}
 
 		[Test]
@@ -70,6 +73,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(115.39));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(20.98));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(230.78));
 		}
 
 		[Test]
