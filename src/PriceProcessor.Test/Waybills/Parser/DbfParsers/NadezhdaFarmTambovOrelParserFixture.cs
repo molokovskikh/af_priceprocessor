@@ -19,6 +19,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("418312_0.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(4));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("418312"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("14.04.2011"));
 			var line = doc.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("1000 Трав от Мазнева крем-бальзам 85мл сбор N4 д/суставов и позвоночника"));
 			Assert.That(line.Code, Is.EqualTo("73715"));
