@@ -39,7 +39,7 @@ Global(
 
 Task @default, [@BuildService]
 
-Task @deploy, [@Production, @Migrate, @Backup, @DeployService, @SendDeployNotification]
+Task @deploy, [@StopServices, @Production, @Migrate, @Backup, @DeployService, @SendDeployNotification]
 
 def IsDocument(mime as Mime):
 	for box in mime.MainEntity.To.Mailboxes:
