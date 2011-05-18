@@ -1,6 +1,7 @@
 /bin
 /obj
 /*.suo
+/*.docstates
 /*.user
 /*.resharperoptions
 /*.resharper
