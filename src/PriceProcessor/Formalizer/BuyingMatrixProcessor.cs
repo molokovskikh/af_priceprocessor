@@ -14,12 +14,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				var command = new MySqlCommand(@"
 delete from farm.BuyingMatrix
 where priceId = ?priceId;
-insert into farm.BuyingMatrix(PriceId, Code, CatalogId, ProducerId)
-select c0.PriceCode, c0.Code, p.CatalogId, c0.CodeFirmCr
+insert into farm.BuyingMatrix(PriceId, Code, ProductId, ProducerId)
+select c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr
 from farm.Core0 c0
-join Catalogs.Products p on p.Id = c0.ProductId
 where pricecode = ?priceId
-group by p.CatalogId, c0.CodeFirmCr;
+group by c0.ProductId, c0.CodeFirmCr;
 ", c);
 				command.Parameters.AddWithValue("?PriceId", priceId);
 				command.ExecuteNonQuery();
