@@ -32,16 +32,19 @@ namespace PriceProcessor.Test.Waybills
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog {
+			/*var log = new TestDocumentLog {
 				ClientCode = client.Id,
 				FirmCode = 1179,
 				LogTime = DateTime.Now,
 				DocumentType = DocumentType.Waybill,
 				FileName = file,
-			};
+			};*/
 
-			using(new TransactionScope())
-				log.SaveAndFlush();
+			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
+
+			
+			/*using(new TransactionScope())
+				log.SaveAndFlush();*/
 
 			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", log.Id)));
 
@@ -53,6 +56,28 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
+		}
+
+		[Test]
+		[Ignore]
+		public void ParseDocument()
+		{
+			var file = "1008fo.pd";
+			var client = TestClient.Create();
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
+			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				//settings.IsConvertFormat = true;				
+				settings.ParseWaybills = true;
+				settings.SaveAndFlush();
+			}
+			//var service = new WaybillService();
+			WaybillService.ParserDocument(log);
+
 		}
 
 		[Test(Description = "тест разбора накладной с ShortName поставщика в имени файла")]
