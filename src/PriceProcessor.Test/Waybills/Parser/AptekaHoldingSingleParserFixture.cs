@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[3].RegistryCost, Is.EqualTo(238.69));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(101.01));
-			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(2));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.41));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(101.01));
 
@@ -72,7 +72,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(107.75));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(115.39));
-			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(20.98));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(230.78));
 		}
@@ -87,12 +87,41 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
 			Assert.IsFalse(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\R1362131.DBF")));
 			Assert.IsTrue(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\А0973748.DBF")));
+			Assert.IsTrue(AptekaHoldingSingleParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\7883837_Rosta_10213326_.DBF")));
 		}
 
 		[Test]
 		public void Parse4()
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\21796_1272844.dbf");
+		}
+
+		[Test]
+		public  void Parse5()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\7883837_Rosta_10213326_.dbf");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(14));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("10213326"));
+			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("19.04.2011"));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("34387"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("911 ОКОПНИК Г-БАЛЬЗ ПРИ БОЛИ10"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Твинс Тэк ЗАО - Россия"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("-"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(35.23));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(37.88));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("022011"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU АИ86 Д00149 Д"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.08.2012"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18.00));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(44.70));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(7.52));
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(34.09));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(223.49));
 		}
 	}
 }

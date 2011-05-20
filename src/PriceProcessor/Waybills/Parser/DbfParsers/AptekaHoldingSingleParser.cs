@@ -18,6 +18,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			string certificatesColumn = null;
 			string registryCostColumn = null;
 			string ndsColumn = null;
+			string AmountColumn = null;
+			string NdsAmountColumn = null;
+			string SupplierPriceMarkupColumn = null;
 
 			var data = Dbf.Load(file, Encoding);
 			if (data.Columns.Contains("PV"))
@@ -33,6 +36,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				ndsColumn = "NDSstavk";
 			else if (data.Columns.Contains("NDSstavk"))
 				ndsColumn = "NDSSTAVK";
+
+			if (data.Columns.Contains("SUMMANDS"))
+				AmountColumn = "SUMMANDS";
+			if (data.Columns.Contains("NDS"))
+				NdsAmountColumn = "NDS";
+			if (data.Columns.Contains("TORGNADB"))
+				SupplierPriceMarkupColumn = "TORGNADB";
+
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
 			{
@@ -64,6 +75,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Nds = Convert.IsDBNull(r[ndsColumn]) ? null : (uint?)Convert.ToUInt32(r[ndsColumn], CultureInfo.InvariantCulture);
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
+				if (!String.IsNullOrEmpty(AmountColumn))
+				{
+					line.Amount = ParseHelper.GetDecimal(r[AmountColumn].ToString());
+				}
+				if(!String.IsNullOrEmpty(NdsAmountColumn))
+				{
+					line.NdsAmount = ParseHelper.GetDecimal(r[NdsAmountColumn].ToString());
+				}
+				if (!String.IsNullOrEmpty(SupplierPriceMarkupColumn))
+				{
+					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r[SupplierPriceMarkupColumn].ToString());
+				}
+
 				line.SetValues();
 				return line;
 			}).ToList();
