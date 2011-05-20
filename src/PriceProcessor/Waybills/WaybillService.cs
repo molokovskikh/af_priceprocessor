@@ -197,8 +197,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 					foreach (var line in Lines)
 					{
-						var productName = line.Product.ToUpper();
-						var producerName = line.Producer.ToUpper();
+						var productName = line.Product != null ? line.Product.ToUpper() : String.Empty;
+						var producerName = line.Producer != null ? line.Producer.ToUpper() : String.Empty;
 						
 						var listSynonym = dbListSynonym.Where(product => product.Synonym.Trim().ToUpper() == productName && product.ProductId != null).ToList();
 						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym.Trim().ToUpper() == producerName && producer.CodeFirmCr != null).ToList();
