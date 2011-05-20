@@ -212,6 +212,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KosmetikOptParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\NadezhdaFarmTambovOrelParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\RostaChelyabinskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SmileParser.cs" />
     <Compile Include="Waybills\Parser\ZhdanovKazanSpecialParser.cs" />

@@ -150,6 +150,7 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope())
 			{			
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.IsConvertFormat = true;
 				settings.SaveAndFlush();
 			}
 
@@ -282,6 +283,7 @@ namespace PriceProcessor.Test.Waybills
 				using (new TransactionScope())
 				{
 					settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+					settings.IsConvertFormat = true;
 					settings.SaveAndFlush();
 				}
 

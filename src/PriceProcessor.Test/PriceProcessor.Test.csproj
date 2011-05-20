@@ -182,6 +182,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\NormanVrnParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Pulse_SpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\RostaChelyabinskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenesisNNParserFixture.cs" />
