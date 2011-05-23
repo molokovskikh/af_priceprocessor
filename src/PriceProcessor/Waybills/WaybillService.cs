@@ -665,8 +665,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
 
-				docs.Each(d => { 
-								d.Log.Save();
+				docs.Each(d => {
+								//d.Log.Save();
 				               	d.Save();
 				});
 				scope.VoteCommit();
