@@ -101,6 +101,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
 		//protected int CertificatesDateIndex = -1;
+		protected int AmountIndex = -1;
+		protected int NdsAmountIndex = -1;
 
 		protected string CommentMark;
 		protected bool CalculateSupplierPriceMarkup;
@@ -248,6 +250,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
 				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+
+			if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
+				docLine.Amount = GetDecimal(parts[AmountIndex]);
+
+			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))
+				docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
 
 			if (CalculateSupplierPriceMarkup) 
 				docLine.SetSupplierPriceMarkup();
