@@ -114,7 +114,8 @@ where a.Id = ?AddressId", connection);
 
 		private string[] GetFileForAddress(DocType documentsType)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
 
@@ -194,9 +195,6 @@ where a.Id = ?AddressId", connection);
 				Assert.IsTrue(data.Columns.Contains("przv_post"));
 			}
 
-
-
-			
 			//если было включено принудительно, то вернем назад настройку.
 			if (!source_IsConvertFormat)
 			{
@@ -222,15 +220,18 @@ where a.Id = ?AddressId", connection);
 
 			Process_waybills();
 
-			var path = Path.GetFullPath(Settings.Default.FTPOptBoxPath);
-			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.FTPOptBoxPath));
+			//var path = Path.GetFullPath(Settings.Default.FTPOptBoxPath);
+			//var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.FTPOptBoxPath));
+			var path = Path.GetFullPath(Settings.Default.DocumentPath);
+			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.DocumentPath));
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
 		}
 
 		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
-			FileHelper.DeleteDir(Settings.Default.FTPOptBoxPath);
+			//FileHelper.DeleteDir(Settings.Default.FTPOptBoxPath);
+			FileHelper.DeleteDir(Settings.Default.DocumentPath);
 
 			var filter = new EventFilter<WaybillSourceHandler>();
 
@@ -239,7 +240,8 @@ where a.Id = ?AddressId", connection);
 
 			Process();
 
-			var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, @"4147\rejects\");
+			//var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, @"4147\rejects\");
+			var ftp = Path.Combine(Settings.Default.DocumentPath, @"4147\rejects\");
 			Assert.That(Directory.Exists(ftp), "не обработали документ");
 			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
 
@@ -262,6 +264,7 @@ where a.Id = ?AddressId", connection);
 				var beign = DateTime.Now;
 				var filter = new EventFilter<WaybillSourceHandler>();
 				var supplier = TestSupplier.Create();
+				var client = TestClient.Create();
 
 				const string email = "edata@msk.katren.ru";
 				uint firmId = 0;
@@ -269,21 +272,27 @@ where a.Id = ?AddressId", connection);
 				var query = string.Format("select FirmCode from documents.waybill_sources where EMailFrom LIKE '%{0}%' LIMIT 1;", email);
 				With.Connection(connection => { uint.TryParse(MySqlHelper.ExecuteScalar(connection, query).ToString(), out firmId); });
 
-				if (firmId == 0)
+				using (new SessionScope())
 				{
-					var waybillsource = new TestWaybillSource() { EMailFrom = email, SourceType = WaybillSourceType.Email };
-					waybillsource.Id = supplier.Id;
-					waybillsource.Create();
-				}
 
-				var client = TestClient.Create();
-				var settings = WaybillSettings.Find(client.Id);
-				settings.ParseWaybills = true;
-				settings.Update();
+					if (firmId == 0)
+					{
+						var waybillsource = new TestWaybillSource() {EMailFrom = email, SourceType = WaybillSourceType.Email};
+						waybillsource.Id = supplier.Id;
+						waybillsource.Create();
+					}
+
+					//
+					var settings = WaybillSettings.Find(client.Id);
+					settings.ParseWaybills = true;
+					settings.Update();
+
+				}
 
 				TestHelper.ClearImapFolder();
 				TestHelper.StoreMessageWithAttachToImapFolder(
-					String.Format("{0}@waybills.analit.net", client.Id),
+					//String.Format("{0}@waybills.analit.net", client.Id),
+					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
 					email,
 					@"..\..\Data\Waybills\8916.dbf");
 
@@ -291,7 +300,8 @@ where a.Id = ?AddressId", connection);
 
 				Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
 
-				var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));
+				//var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));				
+				var ftp = Path.Combine(Settings.Default.DocumentPath, String.Format(@"{0}\waybills\", client.Addresses[0].Id));
 				Assert.That(Directory.Exists(ftp), "не обработали документ");
 				Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
 

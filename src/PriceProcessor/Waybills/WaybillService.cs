@@ -707,6 +707,8 @@ namespace Inforoom.PriceProcessor.Waybills
 										
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
+					if(log.IsFake == true) 
+						log.Save();
 						//document.Log.Save();
 						document.Save();
 						transaction.VoteCommit();
