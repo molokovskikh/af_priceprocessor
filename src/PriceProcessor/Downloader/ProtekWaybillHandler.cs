@@ -91,7 +91,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			//тамбов
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(154376, 1052874);
+			Load(261544, 1072996);
 
 			//Москва
 			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
