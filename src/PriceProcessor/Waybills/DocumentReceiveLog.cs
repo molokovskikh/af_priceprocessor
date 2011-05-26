@@ -130,6 +130,28 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
+		public static DocumentReceiveLog LogNoCommit(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId, bool isFake = false)
+		{
+			fileName = CleanupFilename(fileName);
+			var localFile = fileName;
+			fileName = Path.GetFileName(fileName);
+			var document = new DocumentReceiveLog
+			{
+				AddressId = addressId,
+				ClientCode = clientId,
+				FileName = fileName,
+				_localFile = localFile,
+				DocumentType = documentType,
+				Comment = comment,
+				MessageUid = messageId,
+				IsFake = isFake
+			};
+			if (File.Exists(localFile))
+				document.DocumentSize = new FileInfo(localFile).Length;
+			if (supplierId != null)				
+				document.Supplier = Supplier.Find(supplierId.Value);								
+			return document;
+		}
 		
 		public static void LogFail(uint supplierId, uint? clientId, uint? clientAddressId, DocType docType, string filename, string message)
 		{

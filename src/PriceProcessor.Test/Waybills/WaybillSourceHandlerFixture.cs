@@ -27,6 +27,8 @@ namespace PriceProcessor.Test
 
 	public class WaybillSourceHandlerForTesting : WaybillSourceHandler
 	{
+		public bool Result = false;
+
 		public WaybillSourceHandlerForTesting(string mailbox, string password)
 			: base(mailbox, password)
 		{
@@ -41,6 +43,14 @@ namespace PriceProcessor.Test
 		public void CheckMimeTest(Mime m)
 		{
 			CheckMime(m);
+		}
+
+		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
+		{
+			if (e is EmailFromUnregistredMail)
+			{
+				Result = true;
+			}
 		}
 	}
 
@@ -137,10 +147,12 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			}			
 		}
 
-		private void Process_waybills()
-		{
-			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+		//private void Process_waybills()
+		private WaybillSourceHandlerForTesting Process_waybills()
+		{			
+			WaybillSourceHandlerForTesting handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
+			return handler;
 		}
 
 		[Test, Description("Проверка вставки даты документа после разбора накладной")]
@@ -359,6 +371,22 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 
 			handler.CheckMimeTest(message);
 			
+		}
+
+		[Test]
+		public void test_process_waybill_if_supplier_disabled()
+		{
+			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
+			SetUp(fileNames);
+			var supplier = _summary.Supplier;
+			supplier.Disabled = true;
+			using (var transaction = new TransactionScope(OnDispose.Rollback))
+			{
+				supplier.Save();				
+				transaction.VoteCommit();
+			}		
+			var handler = Process_waybills();
+			Assert.That(handler.Result, Is.True);			
 		}
 	}
 }

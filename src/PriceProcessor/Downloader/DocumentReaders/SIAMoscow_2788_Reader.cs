@@ -374,6 +374,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				};
 				using(var transaction = new TransactionScope(OnDispose.Rollback))
 				{
+					log.Save();
 					doc.Save();
 					transaction.VoteCommit();
 				}

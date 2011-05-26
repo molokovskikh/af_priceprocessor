@@ -275,12 +275,14 @@ and st.SourceID = 4";
 							clientId = clientAddressId;
 							clientAddressId = null;
 						}
-
-						var log = DocumentReceiveLog.Log(supplierId,
-							clientId,
-							clientAddressId,
-							formatFile,
-							_currentDocumentType.DocType);
+				
+						var log = DocumentReceiveLog.LogNoCommit(supplierId,
+						    clientId,
+						    clientAddressId,
+						    formatFile,
+						    _currentDocumentType.DocType,
+						    null,
+						    null);
 
 						documentReader.ImportDocument(log, fileName);
 						//log.CopyDocumentToClientDirectory();
@@ -290,7 +292,7 @@ and st.SourceID = 4";
 				catch(Exception e)
 				{
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
+					//DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
 					return false;
 				}
 			}

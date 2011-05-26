@@ -232,16 +232,16 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
 		{
 			return @"
 SELECT
-  cd.FirmCode,
-  cd.ShortName,
+  s.Id AS FirmCode,
+  s.Name AS ShortName,
   r.Region as RegionName,
   st.EMailFrom
 FROM
 	Documents.Waybill_Sources AS st
-	INNER JOIN usersettings.ClientsData AS cd ON CD.FirmCode = st.FirmCode
-	INNER JOIN farm.regions AS r ON r.RegionCode = cd.RegionCode
+  INNER JOIN future.suppliers AS s ON s.Id = st.FirmCode
+  INNER JOIN farm.regions AS r ON r.RegionCode = s.HomeRegion
 WHERE
-cd.FirmStatus = 1
+s.Disabled = 0
 AND st.SourceID = 1
 ";
 		}
