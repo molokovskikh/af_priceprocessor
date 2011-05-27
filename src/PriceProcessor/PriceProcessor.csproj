@@ -209,6 +209,7 @@
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
+    <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KosmetikOptParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\NadezhdaFarmTambovOrelParser.cs" />

@@ -173,6 +173,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
+    <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVrnMusatovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KosmetikOptParserFixture.cs" />

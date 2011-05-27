@@ -4,10 +4,12 @@ using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Properties;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using System.IO;
 using Inforoom.Downloader.Documents;
@@ -232,18 +234,63 @@ WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
 		{
 			return @"
 SELECT
-  s.Id AS FirmCode,
-  s.Name AS ShortName,
-  r.Region as RegionName,
-  st.EMailFrom
+	s.Id FirmCode,
+	s.Name ShortName,
+	r.Region RegionName,
+	st.EMailFrom	
 FROM
-	Documents.Waybill_Sources AS st
-  INNER JOIN future.suppliers AS s ON s.Id = st.FirmCode
-  INNER JOIN farm.regions AS r ON r.RegionCode = s.HomeRegion
+	Documents.Waybill_Sources st
+	INNER JOIN future.suppliers s ON s.Id = st.FirmCode
+	INNER JOIN farm.regions r ON r.RegionCode = s.HomeRegion
 WHERE
-s.Disabled = 0
-AND st.SourceID = 1
+	s.Disabled = 0
+	AND st.SourceID = 1
 ";
+			/*return @"
+SELECT
+	s.Id FirmCode,
+	s.Name ShortName,
+	r.Region RegionName,
+	st.EMailFrom,
+	NULL BlockTime
+FROM
+	Documents.Waybill_Sources st
+	INNER JOIN future.suppliers s ON s.Id = st.FirmCode
+	INNER JOIN farm.regions r ON r.RegionCode = s.HomeRegion
+WHERE
+	s.Disabled = 0
+	AND st.SourceID = 1
+UNION
+SELECT
+	B.SupplierId FirmCode,
+	s.Name ShortName,
+	r.Region RegionName,
+	st.EMailFrom,
+	B.first_time_block BlockTime
+FROM
+	(SELECT
+	sl.SupplierId,
+	MIN(sl.LogTime) first_time_block
+	FROM
+	logs.supplierlogs sl
+	INNER JOIN
+	(SELECT supplierId, max(LogTime) last_time_active
+		FROM logs.supplierlogs
+		WHERE disabled = 0
+		GROUP BY supplierid
+		UNION
+		SELECT DISTINCT SupplierId, '1900-01-01'
+		FROM logs.supplierlogs s1
+		WHERE disabled = 1 AND NOT EXISTS(SELECT * FROM logs.supplierlogs s2 WHERE s1.SupplierId = s2.SupplierId AND s2.disabled = 0)
+	)A
+	ON sl.supplierId = A.supplierId AND sl.LogTime > A.last_time_active
+	WHERE sl.disabled = 1
+	GROUP BY sl.SupplierId)B
+INNER JOIN future.suppliers s ON B.SupplierId = s.Id
+INNER JOIN farm.Regions r ON s.HomeRegion = r.RegionCode
+INNER JOIN documents.waybill_sources st on B.SupplierId = st.FirmCode
+WHERE st.SourceId = 1
+";*/
 		}
 
 		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
@@ -265,6 +312,12 @@ AND st.SourceID = 1
 					body = Settings.Default.ResponseDocBodyTemplateOnUnknownProvider;
 					message = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
 				}
+				/*if (e is EmailFromBlockedMail)
+				{
+					subject = Settings.Default.ResponseDocSubjectTemplateOnBlockedProvider;
+					body = Settings.Default.ResponseDocBodyTemplateOnBlockedProvider;
+					message = "Поставщик с данным E-mail заблокирован более суток назад";
+				}*/
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				SendErrorLetterToProvider(
 					from, 
@@ -319,6 +372,7 @@ AND st.SourceID = 1
 				responseMime.MainEntity.From = _from;
 #if DEBUG
 				var toList = new AddressList { new MailboxAddress(Settings.Default.SMTPUserFail) };
+				//var toList = new AddressList { new MailboxAddress("a.tyutin@analit.net") };
 				responseMime.MainEntity.To = toList;
 #else
 				responseMime.MainEntity.To = FromList;
@@ -474,6 +528,22 @@ FROM
 					continue;
 				else
 					source = sources.Single();
+
+			/*	if(!(source[SourcesTableColumns.colBlockTime] is DBNull))
+				{
+					DateTime? blockTime = ParseHelper.GetDateTime(source[SourcesTableColumns.colBlockTime].ToString());
+					if(blockTime != null) // поставщик заблокирован
+					{
+						DateTime now = DateTime.Now;
+						TimeSpan diff = now - blockTime.Value;
+						if(diff.TotalHours >= 24)
+						{
+							// Поставщик был заблокирован более суток назад
+							throw new EmailFromBlockedMail("Источник заблокирован.");
+						}						
+					}
+				}*/
+
 				var attachments = m.GetValidAttachements();
 				//двойная очистка FileCleaner и Cleanup нужно оставить только одно
 				//думаю Cleaner подходит лучше

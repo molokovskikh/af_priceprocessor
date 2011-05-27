@@ -98,11 +98,23 @@ namespace Inforoom.PriceProcessor.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) невозможно доставить аптеке")]
-        public string ResponseDocSubjectTemplateOnUnknownProvider {
+		public string ResponseDocSubjectTemplateOnBlockedProvider
+		{
             get {
-                return ((string)(this["ResponseDocSubjectTemplateOnUnknownProvider"]));
+				return ((string)(this["ResponseDocSubjectTemplateOnBlockedProvider"]));
             }
         }
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("Документы (накладные, отказы) невозможно доставить аптеке")]
+		public string ResponseDocSubjectTemplateOnUnknownProvider
+		{
+			get
+			{
+				return ((string)(this["ResponseDocSubjectTemplateOnUnknownProvider"]));
+			}
+		}
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -421,6 +433,27 @@ namespace Inforoom.PriceProcessor.Properties {
                 return ((string)(this["ResponseDocBodyTemplateOnNothingAttachs"]));
             }
         }
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
+
+Документы (накладные, отказы) не были доставлены аптеке, т.к. в Вашем письме отсутствуют вложения.
+К обработке принимаются только сообщения, содержащие документы во вложении.
+
+Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
+
+Во вложении этого письма находится оригинал Вашего сообщения.
+
+С уважением,
+АК ""Инфорум"".")]
+		public string ResponseDocBodyTemplateOnBlockedProvider
+		{
+			get
+			{
+				return ((string)(this["ResponseDocBodyTemplateOnBlockedProvider"]));
+			}
+		}
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

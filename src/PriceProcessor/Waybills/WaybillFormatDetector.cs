@@ -56,6 +56,13 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(ZhdanovKazanSpecialParser);
 							break;
 						}
+					case 74:
+						{
+							var table = ImperiaFarmaSpecialParser.Load(file);
+							if (ImperiaFarmaSpecialParser.CheckFileFormat(table))
+								type = typeof(ImperiaFarmaSpecialParser);
+							break;
+						}
 					default: break;
 				}
 			}

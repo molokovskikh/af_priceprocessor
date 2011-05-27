@@ -33,7 +33,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
 			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser)
-				&& !(parser is TrediFarmCheboksarySpecialParser) && !(parser is ZhdanovKazanSpecialParser))
+				&& !(parser is TrediFarmCheboksarySpecialParser) && !(parser is ZhdanovKazanSpecialParser)
+				&& !(parser is ImperiaFarmaSpecialParser))
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;
