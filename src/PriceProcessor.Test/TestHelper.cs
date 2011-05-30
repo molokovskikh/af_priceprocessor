@@ -5,7 +5,7 @@ using System.Text;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;

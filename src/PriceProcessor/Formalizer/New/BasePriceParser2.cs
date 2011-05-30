@@ -8,7 +8,7 @@ using System.Threading;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Helpers;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using MySql.Data.MySqlClient;
 #if BUTCHER

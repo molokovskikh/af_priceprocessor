@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -102,6 +103,12 @@ WHERE
 		}
 
 		public virtual void ImportDocument(DocumentReceiveLog log, string filename)
-		{}
+		{
+			using (var transaction = new TransactionScope(OnDispose.Rollback))
+			{
+				log.Save();
+				transaction.VoteCommit();
+			}
+		}
 	}
 }

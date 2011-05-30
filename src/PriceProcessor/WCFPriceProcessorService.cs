@@ -3,7 +3,7 @@ using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;

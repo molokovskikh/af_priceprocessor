@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using Common.MySql;
 using Common.Tools;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;

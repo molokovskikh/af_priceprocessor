@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using Castle.ActiveRecord.Framework;
 

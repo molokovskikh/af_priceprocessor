@@ -10,10 +10,11 @@ using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;
 using ICSharpCode.SharpZipLib.Zip;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
+using FileHelper = Inforoom.Common.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 

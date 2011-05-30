@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Mail;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 
 namespace Inforoom.PriceProcessor

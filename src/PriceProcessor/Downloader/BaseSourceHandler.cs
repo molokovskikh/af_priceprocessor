@@ -1,7 +1,7 @@
 using System;
 using Common.MySql;
 using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using MySql.Data.MySqlClient;
 using System.IO;
@@ -48,8 +48,7 @@ namespace Inforoom.Downloader
 
 		public static string colPriceMask = "PriceMask";
 		public static string colExtrMask = "ExtrMask";
-
-		//public static string colBlockTime = "BlockTime";
+		
 	}
 
 	//Класс для хранения последней ошибки по каждому прайс-листу

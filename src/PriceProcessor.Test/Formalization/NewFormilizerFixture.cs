@@ -5,7 +5,7 @@ using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Catalog;

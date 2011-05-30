@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using log4net.Appender;
 using log4net.Config;

@@ -5,7 +5,7 @@ using NUnit.Framework;
 using System.IO;
 using System.ServiceModel;
 using System.Net;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor;
 using System.Net.Security;
 using RemotePriceProcessor;

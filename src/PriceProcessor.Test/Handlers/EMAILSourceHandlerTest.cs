@@ -11,7 +11,6 @@ using Common.Tools.Calendar;
 using Inforoom.Common;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Properties;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.SMTP.Client;

@@ -11,7 +11,7 @@ using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
 using Inforoom.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using System.Threading;
 using System.IO;
 using MySql.Data.MySqlClient;
@@ -21,6 +21,7 @@ using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using WaybillSourceType = Test.Support.WaybillSourceType;
 using System.Data;
+using FileHelper = Inforoom.Common.FileHelper;
 
 namespace PriceProcessor.Test
 {

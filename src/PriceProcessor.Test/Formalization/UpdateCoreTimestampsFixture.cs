@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test

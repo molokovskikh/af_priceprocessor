@@ -6,7 +6,7 @@ using System.Threading;
 using Inforoom.Downloader.Ftp;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using System.ServiceModel;
 using System.Net;
 using System.Text;

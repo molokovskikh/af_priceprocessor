@@ -1,7 +1,7 @@
 ﻿using System;
 using Common.MySql;
 using Inforoom.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using LumiSoft.Net.FTP.Server;
 using NUnit.Framework;
 using Test.Support;

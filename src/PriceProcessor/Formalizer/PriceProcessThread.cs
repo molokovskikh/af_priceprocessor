@@ -5,7 +5,7 @@ using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor;
 using System.Data;
 using System.Reflection;

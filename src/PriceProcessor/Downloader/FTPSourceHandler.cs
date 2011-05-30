@@ -9,7 +9,7 @@ using System.Net.Sockets;
  using log4net;
  using LumiSoft.Net.FTP;
 using LumiSoft.Net.FTP.Client;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.Common;
 using LumiSoft.Net;
 using System.Threading;

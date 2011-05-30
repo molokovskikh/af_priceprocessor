@@ -12,7 +12,7 @@ using Test.Support.Helpers;
 using System.Collections.Generic;
 using System.IO;
 using Common.Tools;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 
 namespace PriceProcessor.Test.Handlers
 {

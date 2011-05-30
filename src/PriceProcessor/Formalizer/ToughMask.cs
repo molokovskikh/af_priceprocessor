@@ -1,7 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 
 namespace Inforoom.Formalizer
 {

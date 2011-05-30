@@ -8,7 +8,7 @@ using System.Threading;
 using Common.MySql;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using LumiSoft.Net.FTP.Client;
 using LumiSoft.Net.FTP.Server;
 using NUnit.Framework;

@@ -2,15 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
 using System.Net.Mail;
 using System.Reflection;
 using Inforoom.Common;
+using FileHelper = Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -284,6 +286,7 @@ and st.SourceID = 4";
 						    null,
 						    null);
 
+						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
 						//log.CopyDocumentToClientDirectory();
 						WaybillService.ParserDocument(log);

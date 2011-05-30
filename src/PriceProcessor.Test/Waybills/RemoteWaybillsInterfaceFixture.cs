@@ -6,7 +6,7 @@ using System.ServiceModel;
 using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 using Test.Support;

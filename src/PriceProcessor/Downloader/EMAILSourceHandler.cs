@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using Inforoom.PriceProcessor;
@@ -407,12 +407,6 @@ namespace Inforoom.Downloader
 		public EmailFromUnregistredMail(string message, string subject, string body) : base(message, subject, body)
 		{}
 	}
-
-	/*public class EmailFromBlockedMail : EMailSourceHandlerException
-	{
-		public  EmailFromBlockedMail(string message) : base(message)
-		{}
-	}*/
 
 	public class EMailSourceHandlerException : Exception
 	{

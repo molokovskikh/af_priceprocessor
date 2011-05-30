@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using System.Threading;
 using System.Net.Mail;
 

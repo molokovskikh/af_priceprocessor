@@ -7,7 +7,7 @@ using Common.Tools;
 using Common.Tools.Calendar;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Rosta

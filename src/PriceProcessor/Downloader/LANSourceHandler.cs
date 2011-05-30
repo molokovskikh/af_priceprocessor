@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Data;
 using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.Common;
 using System.Threading;
+using FileHelper = Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader
 {

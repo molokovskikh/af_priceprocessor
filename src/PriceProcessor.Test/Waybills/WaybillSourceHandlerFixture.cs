@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Common.MySql;
 using Common.Tools;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
@@ -27,9 +27,7 @@ namespace PriceProcessor.Test
 	}
 
 	public class WaybillSourceHandlerForTesting : WaybillSourceHandler
-	{
-		public bool Result = false;
-
+	{		
 		public WaybillSourceHandlerForTesting(string mailbox, string password)
 			: base(mailbox, password)
 		{
@@ -44,20 +42,7 @@ namespace PriceProcessor.Test
 		public void CheckMimeTest(Mime m)
 		{
 			CheckMime(m);
-		}
-
-		/*protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
-		{
-			base.ErrorOnMessageProcessing(m, from, e);
-			if (e is EmailFromUnregistredMail)
-			{
-				Result = true;
-			}
-			if(e is EmailFromBlockedMail)
-			{
-				Result = true;
-			}
-		}*/
+		}	
 	}
 
 	[TestFixture]
@@ -378,117 +363,5 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			handler.CheckMimeTest(message);
 			
 		}
-
-	/*	[Test]
-		public void test_process_waybill_if_supplier_disabled_less_than_day_ago()
-		{
-			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
-			SetUp(fileNames);
-			var supplier = _summary.Supplier;
-			supplier.Disabled = true;
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
-				supplier.Save();				
-				transaction.VoteCommit();
-			}		
-			var handler = Process_waybills();
-			Assert.That(handler.Result, Is.False);
-
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
-				SearchOption.AllDirectories);
-			Assert.That(savedFiles.Count(), Is.EqualTo(1));
-
-			var tempFilePath = Path.Combine(Settings.Default.TempPath, "DownWAYBILL");
-			tempFilePath = Path.Combine(tempFilePath, "0000470553.dbf");
-			Assert.IsFalse(File.Exists(tempFilePath));
-		}
-		
-
-		[Test]
-		public void test_process_waybill_if_supplier_disabled_more_than_day_ago()
-		{
-			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
-			SetUp(fileNames);
-			var supplier = _summary.Supplier;
-			supplier.Disabled = true;
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
-				supplier.Save();
-				transaction.VoteCommit();
-			}
-
-			DateTime dt = DateTime.Now;
-			DateTime logTime = dt.AddHours(-30);
-			string logTimeStr = String.Format("{0}-{1}-{2} {3}:{4}:{5}", logTime.Year, logTime.Month, logTime.Day, logTime.Hour,
-											  logTime.Minute, logTime.Second);
-
-			With.Connection(connection =>
-			{
-				var command = new MySqlCommand(@"
-UPDATE `logs`.`supplierlogs` SET LogTime = ?LogTime WHERE SupplierId = ?SupplierId and Disabled = 0", connection);
-				command.Parameters.AddWithValue("?LogTime", logTimeStr);
-				command.Parameters.AddWithValue("?SupplierId", supplier.Id);
-				command.ExecuteNonQuery();
-			});
-
-			logTime = dt.AddHours(-25);
-			logTimeStr = String.Format("{0}-{1}-{2} {3}:{4}:{5}", logTime.Year, logTime.Month, logTime.Day, logTime.Hour,
-											  logTime.Minute, logTime.Second);
-
-			With.Connection(connection =>
-			{
-				var command = new MySqlCommand(@"
-UPDATE `logs`.`supplierlogs` SET LogTime = ?LogTime WHERE SupplierId = ?SupplierId and Disabled = 1", connection);
-				command.Parameters.AddWithValue("?LogTime", logTimeStr);
-				command.Parameters.AddWithValue("?SupplierId", supplier.Id);
-				command.ExecuteNonQuery();
-			});
-
-			var handler = Process_waybills();
-			Assert.That(handler.Result, Is.True);			
-		}
-
-
-
-		[Test]
-		public  void Temp()
-		{
-			DateTime dt = DateTime.Now;
-			DateTime logTime = dt.AddHours(-25);
-			string logTimeStr = String.Format("{0}-{1}-{2} {3}:{4}:{5}", logTime.Year, logTime.Month, logTime.Day, logTime.Hour,
-											  logTime.Minute, logTime.Second);
-
-			With.Connection(connection =>
-			{
-				var command = new MySqlCommand(@"
-UPDATE `logs`.`supplierlogs` SET LogTime = ?LogTime WHERE SupplierId = ?SupplierId and Disabled = 1", connection);
-				command.Parameters.AddWithValue("?LogTime", logTimeStr);
-				command.Parameters.AddWithValue("?SupplierId", 12290);
-				command.ExecuteNonQuery();
-			});
-
-
-
-			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
-			SetUp(fileNames);
-			var supplier = _summary.Supplier;
-			supplier.Disabled = true;
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
-				supplier.Save();
-				transaction.VoteCommit();
-			}
-
-			supplier.Name = "New name";
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
-				supplier.Save();
-				transaction.VoteCommit();
-			}
-
-
-		}*/
-
 	}
 }

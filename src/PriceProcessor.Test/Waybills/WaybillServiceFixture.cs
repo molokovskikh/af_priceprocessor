@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
 using log4net.Config;
 using NHibernate.Criterion;

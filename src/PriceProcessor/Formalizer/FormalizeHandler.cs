@@ -5,7 +5,7 @@ using System.Threading;
 using System.IO;
 using Inforoom.Formalizer;
 using System.Collections;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {

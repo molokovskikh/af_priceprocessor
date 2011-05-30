@@ -7,7 +7,7 @@ using Common.MySql;
 using System.ServiceProcess;
 #else
 using System.Windows.Forms;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 #endif
 using System.IO;
 using Inforoom.PriceProcessor.Waybills;

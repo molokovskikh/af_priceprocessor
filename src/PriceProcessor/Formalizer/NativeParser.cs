@@ -8,7 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer

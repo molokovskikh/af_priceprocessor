@@ -5,7 +5,7 @@ using System.Threading;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Test.Support;
 using PriceSourceType = Test.Support.PriceSourceType;

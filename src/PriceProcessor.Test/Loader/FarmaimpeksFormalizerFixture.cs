@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;

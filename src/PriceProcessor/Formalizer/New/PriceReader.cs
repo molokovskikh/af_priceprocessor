@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Common.Tools;
 using System.Linq;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using MySql.Data.MySqlClient;
 using Enumerable = System.Linq.Enumerable;

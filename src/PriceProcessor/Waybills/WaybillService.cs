@@ -11,7 +11,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using log4net;
 using NHibernate.Criterion;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;

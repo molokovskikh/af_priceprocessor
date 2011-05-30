@@ -9,7 +9,7 @@ using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Threading;
 using System.IO;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test

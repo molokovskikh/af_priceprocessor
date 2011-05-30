@@ -8,7 +8,7 @@ using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using FileHelper=Inforoom.PriceProcessor.FileHelper;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 
 namespace Inforoom.Downloader
 {

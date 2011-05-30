@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using System.Linq;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Properties;
+using Inforoom.PriceProcessor;
 
 namespace Inforoom.PriceProcessor.Formalizer.New
 {
