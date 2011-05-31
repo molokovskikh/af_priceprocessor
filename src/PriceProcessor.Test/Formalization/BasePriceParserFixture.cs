@@ -15,6 +15,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 namespace PriceProcessor.Test
 {
 	[TestFixture]
+	[Ignore]
 	public class BasePriceParserFixture
 	{
 		const int catalogId = 13468;
