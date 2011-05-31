@@ -96,11 +96,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int SupplierPriceMarkupIndex = -1;
 		protected int SerialNumberIndex = -1;
 		protected int PeriodIndex = -1;
-		protected int CertificatesIndex = -1;
+		protected int CertificatesIndex = -1;		
 		protected int RegistryCostIndex = -1;
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
-		//protected int CertificatesDateIndex = -1;
+		protected int CertificatesDateIndex = -1;
 		protected int AmountIndex = -1;
 		protected int NdsAmountIndex = -1;
 
@@ -239,11 +239,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((SerialNumberIndex > 0) && (parts.Length>SerialNumberIndex))
 			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
 
-			if ((SerialNumberIndex > 0) && (parts.Length > SerialNumberIndex))
+			if ((PeriodIndex > 0) && (parts.Length > PeriodIndex))
 			docLine.Period = GetString(parts[PeriodIndex]);
 
 			if ((CertificatesIndex > 0) && (parts.Length > CertificatesIndex))
 				docLine.Certificates = GetString(parts[CertificatesIndex]);
+
+			if ((CertificatesDateIndex > 0) && (parts.Length > CertificatesDateIndex))
+				docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
 
 			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
 				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);

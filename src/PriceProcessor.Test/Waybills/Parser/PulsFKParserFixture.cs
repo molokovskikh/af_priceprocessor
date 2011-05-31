@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.04.2012"));
-			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФM08.Д84457"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФM08.Д84457"));			
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(102.00));
 			Assert.That(line.SupplierCost, Is.EqualTo(112.20));
 			Assert.That(line.ProducerCost, Is.EqualTo(111.16));

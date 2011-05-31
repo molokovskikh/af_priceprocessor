@@ -330,10 +330,10 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string Certificates { get; set; }
 
 		/// <summary>
-		/// Дата сертификата(в формате DD.MM.YYYY)
+		/// Дата сертификата
 		/// </summary>
-		//[Property]
-		//public DateTime CertificatesDate { get; set; }
+		[Property]
+		public string CertificatesDate { get; set; }
 		
 		/// <summary>
 		/// Срок годности
@@ -666,7 +666,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 
 				docs.Each(d => {
-								//d.Log.Save();
+								if(d.Log.IsFake) d.Log.Save();
 				               	d.Save();
 				});
 				scope.VoteCommit();
@@ -707,9 +707,7 @@ namespace Inforoom.PriceProcessor.Waybills
 										
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
-					if(log.IsFake == true) 
-						log.Save();
-						//document.Log.Save();
+					if(log.IsFake) log.Save();
 						document.Save();
 						transaction.VoteCommit();
 				}
@@ -776,8 +774,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				row["przv_post"] = line.Producer;
 				row["seria"] = line.SerialNumber;
 				row["sgodn"] = line.Period;
-				row["sert"] = line.Certificates;
-				row["sert_date"] = "";
+				row["sert"] = line.Certificates;				
+				row["sert_date"] = line.CertificatesDate;
 				row["prcena_bnds"] = line.ProducerCost;
 				row["gr_cena"] = line.RegistryCost;
 				row["pcena_bnds"] = line.SupplierCostWithoutNDS;

@@ -28,6 +28,8 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("120710"));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.08.12"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("POCC RU.ФМ05.Д69302"));
+			Assert.That(doc.Lines[0].CertificatesDate, Is.EqualTo("03.08.10"));
+
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(193.32));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(true));
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(-6.15));

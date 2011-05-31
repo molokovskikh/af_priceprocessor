@@ -24,6 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.10.2011"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ФМ09.Д03420 ()"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("06.05.2010"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(552.0300));
 			Assert.That(line.SupplierCost, Is.EqualTo(607.2300));
 			Assert.That(line.SerialNumber, Is.EqualTo("09J01/87"));
@@ -48,6 +49,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.03.2014"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ФМ01.Д98043 ( ФГУ центр сертификации минестерства здравоохранения РФ)"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("26.04.2010"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(210.7400));
 			Assert.That(line.SupplierCost, Is.EqualTo(231.8100));
 			Assert.That(line.SerialNumber, Is.EqualTo("120310"));
@@ -73,6 +75,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(18));
 			Assert.That(line.Period, Is.EqualTo("01.02.2013"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС FR.ХП09.В01598 (НИИ дезинфектологии МЗ РФ)"));
+			Assert.That(line.CertificatesDate, Is.EqualTo(null));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(207.1800));
 			Assert.That(line.SupplierCost, Is.EqualTo(244.4700));
 			Assert.That(line.SerialNumber, Is.EqualTo("G 248"));

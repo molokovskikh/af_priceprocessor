@@ -596,6 +596,59 @@ namespace PriceProcessor.Test.Waybills
 			WaybillService.SaveWaybill(waybillfilename);
 			Assert.That(File.Exists(savefilename), Is.True);
 			File.Delete(savefilename);
-		}	
+		}
+
+		[Test]
+		public void Parse_and_Convert_to_Dbf_if_sert_date()
+		{
+			const string file = "20101119_8055_250829.xml";
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();			
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = supplier.Id,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file,
+			};
+			using (new TransactionScope())
+				log.SaveAndFlush();
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			using (new TransactionScope())
+			{
+				settings.IsConvertFormat = true;
+				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.SaveAndFlush();
+			}
+			File.Copy(@"..\..\Data\Waybills\20101119_8055_250829.xml", Path.Combine(waybillsPath, String.Format("{0}_20101119_8055_250829.xml", log.Id)));
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] { log.Id });
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id);
+				Assert.That(logs.Count(), Is.EqualTo(2));
+				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
+				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
+
+				// Проверяем наличие записей в documentheaders для исходных документов.
+				foreach (var documentLog in logs)
+				{
+					var count = documentLog.IsFake
+									? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
+									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
+					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
+				}
+				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
+				Assert.That(files_dbf.Count(), Is.EqualTo(1));
+				var file_dbf = files_dbf.Select(f => f).First();
+				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+				Assert.IsTrue(data.Columns.Contains("sert_date"));
+				Assert.That(data.Rows[0]["sert_date"], Is.EqualTo("10.08.2009"));
+			}
+		}
 	}
 }

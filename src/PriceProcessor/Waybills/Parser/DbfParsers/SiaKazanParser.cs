@@ -24,6 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCost, "CENAPROIZ")
 				.Line(l => l.Period, "SROK_GODN", "DATAEND")
 				.Line(l => l.Certificates, "SERTIF")
+				.Line(l => l.CertificatesDate, "DATAREGSE")
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l	=> l.NdsAmount, "SUMMANDS");

@@ -23,8 +23,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("KZ000130.dbf", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(19));
 			
-			Assert.That(doc.ProviderDocumentId, !Is.Empty);
-			Assert.That(doc.DocumentDate, !Is.Null);
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("КЗ000130"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("24.05.2011"));
 
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("121701944"));

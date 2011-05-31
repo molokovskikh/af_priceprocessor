@@ -38,6 +38,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
+
+				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("ДатаВыдачиСертиф").Any())
+					line.CertificatesDate = position.XPathSelectElement("Серии/Серия/ДатаВыдачиСертиф").Value;
+				
 				if (xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаИзг").Any())
 					line.ProducerCost = position.Get("ЦенаИзг");
 				else line.ProducerCost = null;

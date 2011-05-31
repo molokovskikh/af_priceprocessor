@@ -21,6 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			SerialNumberIndex = 9;
 			PeriodIndex = 10;
 			CertificatesIndex = 12;
+			CertificatesDateIndex = 14;
 			RegistryCostIndex = 22;
 			VitallyImportantIndex = 26;
 			CalculateSupplierPriceMarkup = true;

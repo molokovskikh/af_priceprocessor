@@ -21,12 +21,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д95450"));
+			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("05.06.2009"));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("70508"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.62));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(8));
-			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.24));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.24));			
 		}
 
 		[Test]
@@ -40,6 +41,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ10.Д50325"));
+			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("18.01.2010"));
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(4.71));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("24.03.10")));
@@ -54,6 +56,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01/02/2008")));
 			Assert.That(doc.Lines[5].VitallyImportant, Is.False);
+			Assert.That(doc.Lines[0].CertificatesDate, Is.EqualTo(null));
+			Assert.That(doc.Lines[4].CertificatesDate, Is.EqualTo("29.08.2007"));
 		}
 
 		[Test]
@@ -65,6 +69,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[2].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("ЗАМЕНИТЕЛЬ САХАРА\"РИО ГОЛД\" N1200 ТАБЛ"));
+			
 		}
 
 		[Test]

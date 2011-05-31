@@ -24,7 +24,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
-			new DbfParser()				
+			new DbfParser()
+				.DocumentHeader(d => d.DocumentDate, "D_NAKL")
+				.DocumentHeader(d => d.ProviderDocumentId, "N_NAKL")
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "PROIZV")
@@ -41,9 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.Period, "SROK")
-				.ToDocument(document, data);
-			document.ProviderDocumentId = Document.GenerateProviderDocumentId();
-			document.DocumentDate = DateTime.Now;
+				.ToDocument(document, data);			
 			return document;
 		}
 

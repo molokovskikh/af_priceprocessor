@@ -15,6 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var data = Dbf.Load(file);
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
+			string certificatesDateColumn = null;
 			string registryCostColumn = null;
 
 			if (data.Columns.Contains("ZHNVLS"))
@@ -49,6 +50,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				certificatesColumn = "DOCUMENT";
 			else if (data.Columns.Contains("CER_NUMBER"))
 				certificatesColumn = "CER_NUMBER";
+
+			if (data.Columns.Contains("REG_DATE"))
+				certificatesDateColumn = "REG_DATE";
+
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NUM_DOC"].ToString();
@@ -85,6 +90,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
 					line.Certificates = ParseHelper.GetString(r[certificatesColumn].ToString());
+
+				if (!String.IsNullOrEmpty(certificatesDateColumn))
+					line.CertificatesDate = Convert.IsDBNull(r[certificatesDateColumn])
+					                        	? null
+					                        	: Convert.ToDateTime(r[certificatesDateColumn]).ToShortDateString();
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				if (!Convert.IsDBNull(r["PCT_NDS"])) 

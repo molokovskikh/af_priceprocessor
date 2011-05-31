@@ -26,6 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС CN.АВ57.В05475"));
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(null));
 			Assert.That(document.Lines[0].Period, Is.EqualTo(null));
+			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("10.08.2009"));
 		}
 
 		[Test]
@@ -46,6 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(100));
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.11.2011"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д96848 "));
+			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("03.12.2009"));
 		}
 	}
 }
