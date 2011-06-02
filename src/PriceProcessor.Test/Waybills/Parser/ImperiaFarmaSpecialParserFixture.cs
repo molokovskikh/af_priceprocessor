@@ -43,6 +43,9 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("040111"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС.BG.ФМ09.Д15233"));
 			Assert.That(line.Period, Is.EqualTo("01.01.2013"));
+			Assert.That(line.VitallyImportant, Is.EqualTo(false));
+
+			Assert.That(doc.Lines[1].VitallyImportant, Is.EqualTo(true));
 		}
 
 		[Test]

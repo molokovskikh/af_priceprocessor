@@ -43,6 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.Period, "SROK")
+				.Line(l => l.VitallyImportant, "ISLIFE")
 				.ToDocument(document, data);			
 			return document;
 		}
