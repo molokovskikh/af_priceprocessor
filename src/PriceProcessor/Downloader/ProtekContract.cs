@@ -74,22 +74,22 @@ namespace Inforoom.PriceProcessor.Downloader
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? orderDate { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 3)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? orderId { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 4)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string orderNum { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 5)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public DateTime? orderUdat { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 6)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public double? orderUdec { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 7)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? orderUint { get; set; }
 
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 8)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string orderUstr { get; set; }
 	}
 
@@ -289,7 +289,9 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getBladingBody", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getBladingBodyRequest
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public string theUid;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public string theUid;
 
 		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 1)]
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
