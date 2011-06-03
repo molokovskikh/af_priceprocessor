@@ -62,9 +62,44 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	[SerializableAttribute]
+	[XmlTypeAttribute(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	public class BladingFolder
+	{
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
+		public int? bladingId { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public string folderNum { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public DateTime? orderDate { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 3)]
+		public int? orderId { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 4)]
+		public string orderNum { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 5)]
+		public DateTime? orderUdat { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 6)]
+		public double? orderUdec { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 7)]
+		public int? orderUint { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true, Order = 8)]
+		public string orderUstr { get; set; }
+	}
+
+	[SerializableAttribute]
 	[XmlTypeAttribute(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class Blading
 	{
+		[XmlElement(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
+		public BladingFolder[] bladingFolder { get; set; }
+
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string NPost { get; set; }
 

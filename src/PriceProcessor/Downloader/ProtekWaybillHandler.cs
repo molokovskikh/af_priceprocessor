@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.ServiceModel;
 using Castle.ActiveRecord;
 using Common.Tools;
@@ -177,6 +178,10 @@ namespace Inforoom.PriceProcessor.Downloader
 		private Document ToDocument(Blading blading, ref DocumentReceiveLog log)
 		{
 			var orderId = (uint?) blading.@uint;
+
+			if (orderId == null && blading.bladingFolder != null)
+				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null);
+
 			if (orderId == null)
 			{
 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
