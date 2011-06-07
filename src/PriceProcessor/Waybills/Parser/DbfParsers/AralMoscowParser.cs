@@ -12,8 +12,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
-				.DocumentHeader(d => d.DocumentDate, "")
-				.DocumentHeader(d => d.ProviderDocumentId, "")
+                .DocumentHeader(d => d.DocumentDate, "DATEM")
+                .DocumentHeader(d => d.ProviderDocumentId, "NOM")
 				.Line(l => l.Code, "STOREID")
 				.Line(l => l.Product, "GOODNAME")
 				.Line(l => l.Producer, "BUILDNAME")
@@ -23,6 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCost, "BUILDERPRI")
 				.Line(l => l.Period, "BESTBEFORE")
 				.Line(l => l.Certificates, "NUMSERTIF")
+                .Line(l => l.CertificatesDate, "DTASERTIF")
 				.Line(l => l.Nds, "NDSRATE")
 				.Line(l => l.RegistryCost, "GOSREG")
 				.Line(l => l.VitallyImportant, "GVLS")

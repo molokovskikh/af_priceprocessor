@@ -9,6 +9,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 namespace PriceProcessor.Test
 {
 	[TestFixture(Description = "тесты для проверки функциональности обновления UsedSynonymLogs и UsedSynonymFirmCrLogs")]
+    [Ignore("Починить")]
 	public class UsedSynonymLogsFixture
 	{
 		private int priceItemId = 688;

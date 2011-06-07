@@ -26,7 +26,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("KONTRAGENT") &&
 				data.Columns.Contains("NUMDOC") &&
 				data.Columns.Contains("DATE") &&
-				data.Columns.Contains("NAME");
+				data.Columns.Contains("NAME") &&
+                data.Columns.Contains("DATE_END") &&
+		        data.Columns.Contains("SERTIFICAT");
 		}
 	}
 }

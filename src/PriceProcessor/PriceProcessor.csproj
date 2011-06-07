@@ -202,6 +202,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\RostaChelyabinskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SmileParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\BizonKazan.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PharmelKazanParser.cs" />
     <Compile Include="Waybills\Parser\ZhdanovKazanSpecialParser.cs" />
     <Compile Include="Waybills\Parser\TrediFarmCheboksarySpecialParser.cs" />

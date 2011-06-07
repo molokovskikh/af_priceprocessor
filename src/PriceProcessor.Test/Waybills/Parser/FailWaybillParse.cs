@@ -9,6 +9,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
+    [Ignore]
 	public class FailWaybillParse
 	{
 		//в списке лежат нужные нам RowId
@@ -42,6 +43,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+        [Ignore]
 		public void Parse()
 		{
 			var logs = DocumentReceiveLog.LoadByIds(rowid.ToArray());
