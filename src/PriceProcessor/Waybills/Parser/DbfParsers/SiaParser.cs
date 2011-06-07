@@ -92,9 +92,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.Certificates = ParseHelper.GetString(r[certificatesColumn].ToString());
 
 				if (!String.IsNullOrEmpty(certificatesDateColumn))
-					line.CertificatesDate = Convert.IsDBNull(r[certificatesDateColumn])
-					                        	? null
-					                        	: Convert.ToDateTime(r[certificatesDateColumn]).ToShortDateString();
+				{
+                    if (Convert.IsDBNull(r[certificatesDateColumn]))
+                        line.CertificatesDate = null;
+                    else
+                    {
+                        DateTime? dt = ParseHelper.GetDateTime(r[certificatesDateColumn].ToString());
+                        line.CertificatesDate = (dt == null ? null : dt.Value.ToShortDateString());
+                    }
+				}					
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				if (!Convert.IsDBNull(r["PCT_NDS"])) 

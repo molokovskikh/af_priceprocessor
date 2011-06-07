@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor
@@ -83,6 +84,39 @@ group by pi.Id",
 
 			return item;
 		}
+
+        public static PriceProcessItem GetProcessItem(uint priceItemId)
+        {            
+            // TODO: нужно еще искать в Inbound
+            var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
+                                            String.Format(@"{0}.*", priceItemId));
+            string filename = String.Empty;
+            if (files.Count() > 0) filename = files[0];
+            else return null;
+            if (filename == String.Empty) return null;           
+            return TryToLoadPriceProcessItem(filename);
+        }
+
+        public IList<string> GetAllNames()
+        {
+            IList<string> names = null;
+          //  using (var cleaner = new FileCleaner())
+//            {              
+                var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
+                               PriceItemId.ToString() + "\\";
+                var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
+             //   cleaner.Watch(tempFileName);
+                if (Directory.Exists(tempPath))
+                    Common.FileHelper.DeleteDir(tempPath);
+                Directory.CreateDirectory(tempPath);
+                IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
+                _workPrice.Downloaded = Downloaded;
+                _workPrice.InputFileName = FilePath;
+                names = _workPrice.GetAllNames();
+                Directory.Delete(tempPath, true);
+        //    }
+            return names;
+        }
 
 		public bool IsReadyForProcessing(IEnumerable<PriceProcessThread> processList)
 		{

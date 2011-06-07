@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,8 @@ using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
+using Inforoom.Common;
+using FileHelper = Inforoom.Common.FileHelper;
 
 namespace PriceProcessor.Test.Loader
 {
@@ -114,5 +117,19 @@ namespace PriceProcessor.Test.Loader
 			var formalizer = PricesValidator.Validate(Path.Combine(@"..\..\Data\", file), Path.GetTempFileName(), priceItem.Id);
 			formalizer.Formalize();
 		}
+
+        [Test]
+        public void GetAllNamesTest()
+        {            
+            string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
+            if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
+            File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"));
+            File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),               
+                      Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
+            var names = item.GetAllNames();
+            File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+            Assert.That(names.Count(), Is.EqualTo(9286));
+        }
 	}
 }

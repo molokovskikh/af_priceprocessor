@@ -1856,6 +1856,23 @@ and r.RegionCode = cd.RegionCode",
 			set { downloaded = value; }
 		}
 
+        public IList<string> GetAllNames()
+        {
+            Open();
+            if ((dtPrice.Rows.Count > 0) && (null != toughMask))
+                toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
+            List<string> names = new List<string>();
+            do
+            {
+                var posName = GetFieldValue(PriceFields.Name1);
+                if (String.IsNullOrEmpty(posName))
+                    continue;
+                names.Add(posName);
+            } 
+            while (Next());
+            return names;
+        }
+
 		private void InternalFormalize()
 		{
 			do
