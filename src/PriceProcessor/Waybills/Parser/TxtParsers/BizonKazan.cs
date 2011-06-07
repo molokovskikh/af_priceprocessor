@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-    public class BizonKazan : BaseIndexingParser
+    /*public class BizonKazan : BaseIndexingParser
     {
         protected override void SetIndexes()
         {
@@ -18,6 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
             using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
             {
             }
+            return false;
         }
-    }
+    }*/
 }
