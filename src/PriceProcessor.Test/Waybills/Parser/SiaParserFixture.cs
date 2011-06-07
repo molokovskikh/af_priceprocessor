@@ -8,6 +8,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class SiaParserFixture
 	{
+        [Test]
+        public void Parse_with_incorrect_reg_date()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\8472653.dbf");
+            Assert.That(document.Lines[0].CertificatesDate, Is.Null);
+
+        }
+
 		[Test]
 		public void Parse()
 		{
