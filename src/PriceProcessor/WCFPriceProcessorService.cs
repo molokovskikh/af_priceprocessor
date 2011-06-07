@@ -445,5 +445,18 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 			}
 		}
+
+        public string[] FindSynonyms(uint priceItemId)
+        {            
+            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
+            if(item == null) return new string[0];
+            var names = item.GetAllNames();
+            names = names.Select(n => n.Trim().ToUpper()).Distinct().ToList();
+            foreach (var name in names)
+            {
+                // производим сопоставление
+            }
+            return names.ToArray();
+        }
 	}
 }

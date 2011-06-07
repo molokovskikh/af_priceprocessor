@@ -36,6 +36,27 @@ namespace PriceProcessor.Test.Services
 			StopWcfPriceProcessor();
 		}
 
+        private ChannelFactory<IRemotePriceProcessor> CreateFactory()
+        {
+            const string _strProtocol = @"net.tcp://";
+            var binding = new NetTcpBinding();
+            binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+            binding.Security.Mode = SecurityMode.None;
+            // Ипользуется потоковая передача данных в обе стороны 
+            binding.TransferMode = TransferMode.Streamed;
+            // Максимальный размер принятых данных
+            binding.MaxReceivedMessageSize = Int32.MaxValue;
+            // Максимальный размер одного пакета
+            binding.MaxBufferSize = 524288;    // 0.5 Мб
+            var sbUrlService = new StringBuilder();
+            sbUrlService.Append(_strProtocol)
+                .Append(Dns.GetHostName()).Append(":")
+                .Append(Settings.Default.WCFServicePort).Append("/")
+                .Append(Settings.Default.WCFServiceName);
+            return new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+        }
+
+
 		private void WcfCallResendPrice(uint downlogId)
 		{
 			WcfCall(r => {
@@ -52,7 +73,7 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
-			const string _strProtocol = @"net.tcp://";
+			/*const string _strProtocol = @"net.tcp://";
 			var binding = new NetTcpBinding();
 			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
 			binding.Security.Mode = SecurityMode.None;
@@ -67,7 +88,8 @@ namespace PriceProcessor.Test.Services
 				.Append(Dns.GetHostName()).Append(":")
 				.Append(Settings.Default.WCFServicePort).Append("/")
 				.Append(Settings.Default.WCFServiceName);
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());*/
+		    var factory = CreateFactory();
 			var priceProcessor = factory.CreateChannel();
 			var success = false;
 			try
@@ -85,6 +107,29 @@ namespace PriceProcessor.Test.Services
 			factory.Close();
 			Assert.IsTrue(success);
 		}
+
+        private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
+        {
+            var factory = CreateFactory();
+            var priceProcessor = factory.CreateChannel();
+            var success = false;
+            string[] res = new string[0];
+            try
+            {
+                res = action(priceProcessor);
+                ((ICommunicationObject)priceProcessor).Close();
+                success = true;
+            }
+            catch (FaultException)
+            {
+                if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
+                    ((ICommunicationObject)priceProcessor).Abort();
+                throw;
+            }
+            factory.Close();
+            Assert.IsTrue(success);
+            return res;
+        }
 
 		private void StartWcfPriceProcessor()
 		{
@@ -117,6 +162,16 @@ namespace PriceProcessor.Test.Services
 			}
 			catch { }
 		}
+
+        [Test]
+        public void FindSynonymTest()
+        {
+            var res = WcfCall(r =>
+            {
+                return r.FindSynonyms(100);
+            });
+        }
+
 
 		[Test, Description("Тест для перепосылки прайса, присланного по email")]
 		public void Resend_eml_price()

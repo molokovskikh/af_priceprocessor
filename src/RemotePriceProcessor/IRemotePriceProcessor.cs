@@ -155,5 +155,8 @@ namespace RemotePriceProcessor
 
 		[OperationContract]
 		void RetransErrorPrice(WcfCallParameter priceItemId);
+
+        [OperationContract]
+        string[] FindSynonyms(uint priceItemId);
 	}
 }
