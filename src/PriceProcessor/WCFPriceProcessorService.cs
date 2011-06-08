@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
@@ -449,13 +449,15 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
         public string[] FindSynonyms(uint priceItemId)
         {            
             PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
-            if(item == null) return new string[0];
+            if(item == null) //return new string[0];
+            {
+                throw new FaultException<string>("Файл прайс-листа не найден",
+                    new FaultReason("Файл прайс-листа не найден"));
+            }
             var names = item.GetAllNames();
             names = names.Select(n => n.Trim().ToUpper()).Distinct().ToList();
-            foreach (var name in names)
-            {
-                // производим сопоставление
-            }
+            IList<string> result = new List<string>();           
+            // производим сопоставление                      
             return names.ToArray();
         }
 	}

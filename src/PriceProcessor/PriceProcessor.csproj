@@ -81,6 +81,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Lucene.Net">
+      <HintPath>..\..\lib\Lucene.Net.dll</HintPath>
+    </Reference>
     <Reference Include="LumiSoft.Net, Version=2.5.2805.31317, Culture=neutral, PublicKeyToken=56e353737e921561, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
@@ -142,6 +145,7 @@
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
+    <Compile Include="IndexerHandler.cs" />
     <Compile Include="Rosta\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />

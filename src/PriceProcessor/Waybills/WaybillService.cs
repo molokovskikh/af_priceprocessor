@@ -556,11 +556,14 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string Synonym { get; set; }
 
-		/// <summary>
+		/*/// <summary>
 		/// Код прайса
 		/// </summary>
 		[Property]
-		public int? PriceCode { get; set; }
+		public int? PriceCode { get; set; }*/
+
+        [BelongsTo("PriceCode")]
+        public Price Price { get; set; }
 	}
 
 	[ActiveRecord("Core0", Schema = "Farm")]
