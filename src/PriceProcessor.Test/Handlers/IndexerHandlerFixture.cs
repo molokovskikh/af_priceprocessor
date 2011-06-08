@@ -36,9 +36,14 @@ namespace PriceProcessor.Test.Handlers
             ProcessData();
         }
 
-        public  void DoIndex()
+        public void DoIndex()
         {
             base.DoIndex();
+        }
+
+        public void DoMatching(IList<string> positions)
+        {
+            base.DoMatching(positions);
         }
 
         public bool CanExec()
@@ -86,7 +91,8 @@ namespace PriceProcessor.Test.Handlers
         [Test]
         public void DoIndexTest()
         {
-            Directory.Delete(_handler.IdxDir, true);
+            if (Directory.Exists(_handler.IdxDir))
+                Directory.Delete(_handler.IdxDir, true);
             _handler.DoIndex();
             Assert.That(Directory.Exists(_handler.IdxDir), Is.True);
             var files = Directory.GetFiles(_handler.IdxDir, "*.*");
@@ -98,6 +104,19 @@ namespace PriceProcessor.Test.Handlers
                 size += f.Length;
             }
             Assert.That(size, Is.GreaterThan(0));
-        }        
+        } 
+       
+        [Test]
+        public void DoMatchTest()
+        {     
+            if(!Directory.Exists(_handler.IdxDir))
+                DoIndexTest();
+            IList<string> names = new List<string>();
+            names.Add("90-60-90 (табл. N150");
+            names.Add("А Т Ф (р-р д/ин. 1% 1 мл N10 амп.");
+            names.Add("А-пар (аэроз. 125 г");
+            names = names.Select(n => n.Trim().ToUpper()).ToList();
+            _handler.DoMatching(names);
+        }
     }
 }

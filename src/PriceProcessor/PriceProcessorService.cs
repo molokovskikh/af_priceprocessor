@@ -15,7 +15,8 @@ namespace Inforoom.PriceProcessor
 		public PriceProcessorService()
 		{
 			InitializeComponent();
-			monitor = new Monitor();
+			//monitor = new Monitor();
+		    monitor = Monitor.GetInstance();
 		}
 
 		protected override void OnStart(string[] args)

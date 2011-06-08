@@ -56,7 +56,8 @@ namespace PriceProcessor.Test
 		private void DebugServiceThread()
 		{
 			_serviceStopped = false;
-			var monitor = new Monitor();
+			//var monitor = new Monitor();
+            var monitor = Monitor.GetInstance();
 			monitor.Start();
 			Thread.Sleep(2000);
 			monitor.Stop();

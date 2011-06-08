@@ -457,7 +457,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
             var names = item.GetAllNames();
             names = names.Select(n => n.Trim().ToUpper()).Distinct().ToList();
             IList<string> result = new List<string>();           
-            // производим сопоставление                      
+            // производим сопоставление
             return names.ToArray();
         }
 	}

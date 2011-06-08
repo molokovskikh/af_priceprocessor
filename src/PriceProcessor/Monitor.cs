@@ -35,10 +35,14 @@ namespace Inforoom.PriceProcessor
 		private ServiceHost _waybillServiceHost;
 		private const string _strProtocol = @"net.tcp://";
 
-		public Monitor()
+	    private static Monitor _instance = null;
+
+		//public Monitor()
+        private Monitor()
 		{
 			_handlers = new List<AbstractHandler> {
 				new FormalizeHandler(),
+                new IndexerHandler(),
 #if (!DEBUG)
 				new WaybillFtpSourceHandler(),
 				new LANSourceHandler(),
@@ -54,7 +58,22 @@ namespace Inforoom.PriceProcessor
 			};
 
 			_monitor = new Thread(MonitorWork) {Name = "MonitorThread"};
-		}
+		}      
+
+        public static Monitor GetInstance()
+        {
+            return _instance ?? (_instance = new Monitor());
+        }
+
+	    public AbstractHandler GetHandler(Type type)
+        {
+            foreach (var h in _handlers)
+            {
+                if (h.GetType() == type)
+                    return h;
+            }
+	        return null;
+        }
 
 		//запускаем монитор с обработчиками
 		public void Start()
