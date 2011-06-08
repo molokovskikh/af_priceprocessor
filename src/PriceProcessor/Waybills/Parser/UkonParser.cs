@@ -179,7 +179,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					docLine.SerialNumber = bodyDescription.GetSerialNumber(parts);
 					docLine.RegistryCost = bodyDescription.GetRegistryCost(parts);
 					docLine.SupplierCost = bodyDescription.GetSupplierCost(parts);
-					docLine.SetSupplierCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
+                    if (bodyDescription.GetSupplierCostWithoutNds(parts) != null)
+					    docLine.SetSupplierCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
 					docLine.SupplierPriceMarkup = bodyDescription.GetSupplierPriceMarkup(parts);
 					docLine.Period = bodyDescription.GetPeriod(parts);
 					docLine.ProducerCost = bodyDescription.GetProducerCost(parts);
