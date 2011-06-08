@@ -165,6 +165,7 @@
     <Compile Include="Waybills\Parser\AptekaHoldingSingleParserFixture.cs" />
     <Compile Include="Waybills\Parser\AralMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\AvestaFarmatsevtikaParserFixture.cs" />
+    <Compile Include="Waybills\Parser\BizonKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\BssSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\BssSpbXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParserFixture.cs" />

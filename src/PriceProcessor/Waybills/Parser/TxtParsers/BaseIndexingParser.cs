@@ -155,7 +155,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
-		private static string GetString(string value)
+		protected static string GetString(string value)
 		{
 			return String.IsNullOrEmpty(value) ? null : value;
 		}

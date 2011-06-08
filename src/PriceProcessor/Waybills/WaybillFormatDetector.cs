@@ -8,6 +8,7 @@ using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -49,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills
 							break;
 						}
 					case 7957: // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
-					case 8063: // Накладная от ООО "Бизон" (Казань)
+					case 8063: // Накладная (dbf) от ООО "Бизон" (Казань)
 						{
 							var table = ZhdanovKazanSpecialParser.Load(file);
 							if (ZhdanovKazanSpecialParser.CheckFileFormat(table))
@@ -66,6 +67,20 @@ namespace Inforoom.PriceProcessor.Waybills
 					default: break;
 				}
 			}
+
+            if ((documentLog != null) && (extention == ".txt"))
+            {
+                switch (documentLog.Supplier.Id)
+                {
+                    case 8063: // Накладная (txt) от  "Бизон" (Казань)
+                        {
+                            if (BizonKazanSpecialParser.CheckFileFormat(file))
+                                type = typeof (BizonKazanSpecialParser);
+                            break;
+                        }
+                    default: break;
+                }
+            }
 
 			if (type == null)
 			{
