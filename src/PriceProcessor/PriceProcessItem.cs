@@ -99,22 +99,19 @@ group by pi.Id",
 
         public IList<string> GetAllNames()
         {
-            IList<string> names = null;
-          //  using (var cleaner = new FileCleaner())
-//            {              
-                var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
-                               PriceItemId.ToString() + "\\";
-                var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
-             //   cleaner.Watch(tempFileName);
-                if (Directory.Exists(tempPath))
-                    Common.FileHelper.DeleteDir(tempPath);
-                Directory.CreateDirectory(tempPath);
-                IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
-                _workPrice.Downloaded = Downloaded;
-                _workPrice.InputFileName = FilePath;
-                names = _workPrice.GetAllNames();
-                Directory.Delete(tempPath, true);
-        //    }
+            IList<string> names = null;          
+            var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
+                            PriceItemId.ToString() + "\\";
+            var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
+             
+            if (Directory.Exists(tempPath))
+                Common.FileHelper.DeleteDir(tempPath);
+            Directory.CreateDirectory(tempPath);
+            IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
+            _workPrice.Downloaded = Downloaded;
+            _workPrice.InputFileName = FilePath;
+            names = _workPrice.GetAllNames();
+            Directory.Delete(tempPath, true);
             return names;
         }
 

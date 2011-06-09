@@ -199,8 +199,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
         public IList<string> GetAllNames()
         {
-            List<string> names = new List<string>();
-          //  PriceXmlReader reader = new PriceXmlReader(_fileName);           
+            List<string> names = new List<string>();          
             using (PriceXmlReader reader = new PriceXmlReader(_fileName))
             {
                 foreach (var parsedPrice in reader.Prices())

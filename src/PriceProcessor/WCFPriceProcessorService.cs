@@ -447,18 +447,19 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 		}
 
         public string[] FindSynonyms(uint priceItemId)
-        {            
+        {
             PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
-            if(item == null) //return new string[0];
+            if(item == null)
             {
                 throw new FaultException<string>("Файл прайс-листа не найден",
                     new FaultReason("Файл прайс-листа не найден"));
             }
             var names = item.GetAllNames();
-            names = names.Select(n => n.Trim().ToUpper()).Distinct().ToList();
-            IList<string> result = new List<string>();           
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof (IndexerHandler));
+            if (handler == null) return new string[0];
             // производим сопоставление
-            return names.ToArray();
+            var matches = handler.DoMatching(names);
+            return IndexerHandler.TransformToStringArray(matches);
         }
 	}
 }

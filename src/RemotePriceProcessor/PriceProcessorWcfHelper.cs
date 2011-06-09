@@ -395,10 +395,10 @@ namespace RemotePriceProcessor
         public string[] FindSynonyms(uint priceItemId)
         {
             LastErrorMessage = String.Empty;
-            var synonyms = new string[0];
+            string[] synonyms;
             try
             {
-                _clientProxy = _channelFactory.CreateChannel();
+                _clientProxy = _channelFactory.CreateChannel();               
                 synonyms = _clientProxy.FindSynonyms(priceItemId);
                 ((ICommunicationObject)_clientProxy).Close();
             }

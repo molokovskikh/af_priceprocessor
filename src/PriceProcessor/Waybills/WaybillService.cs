@@ -550,6 +550,12 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public int? ProductId { get; set; }
 
+        /// <summary>
+        /// Уцененный
+        /// </summary>
+        [Property]
+        public bool Junk { get; set; }
+
 		/// <summary>
 		/// Синоним продукта
 		/// </summary>

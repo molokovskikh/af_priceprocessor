@@ -18,14 +18,48 @@ namespace Inforoom.PriceProcessor
         protected TimeSpan _workTime;
         protected TimeSpan _now;
         protected string IdxDir;
-        protected Dictionary<string, IList<uint>> matches;
+
+        public struct SynonymInfo
+        {
+            public uint FirmCode;
+            public uint ProductId;
+            public bool Junk;
+        }
+
+        public struct SynonymSummary
+        {
+            public SynonymSummary(string name)
+            {
+                _originalName = name;
+                _summary = new List<SynonymInfo>();
+            }
+            public void AddInfo(uint code, uint productId, bool junk)
+            {
+                if (_summary.Where(i => i.FirmCode == code).Count() > 1) return;
+                var info = new SynonymInfo() { FirmCode = code, ProductId = productId, Junk = junk };
+                _summary.Add(info);
+            }
+            public IList<SynonymInfo> Summary()
+            {
+                return _summary;
+            }
+            public string OriginalName()
+            {
+                return _originalName;
+            }
+
+            private readonly string _originalName;
+            private readonly IList<SynonymInfo> _summary;
+        }
+    
+        protected Dictionary<string, SynonymSummary> matches;
 
         public IndexerHandler()
         {
             SleepTime = 60;
-            _workTime = TimeSpan.Parse("02:00:00");
-            IdxDir = "Idx";
-            matches = new Dictionary<string, IList<uint>>();
+            _workTime = TimeSpan.Parse("02:00:00");            
+            IdxDir = "Idx";            
+            matches = new Dictionary<string, SynonymSummary>();
         }
 
         protected bool CanExec()
@@ -38,6 +72,8 @@ namespace Inforoom.PriceProcessor
 
         protected override void ProcessData()
         {
+            if (!Directory.Exists(IdxDir)) // если при запуске индекса нет - делаем его
+                DoIndex();
             _now = DateTime.Now.TimeOfDay;
             if (!CanExec()) return;            
             // производим индексацию данных
@@ -48,7 +84,12 @@ namespace Inforoom.PriceProcessor
         {                        
             if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
             _logger.Info("Загрузка синонимов из БД...");
+//#if (DEBUG)            
+//            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Where(s => s.Synonym.StartsWith("Т")).ToList();
+//#else
             IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
+//#endif
+
             _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
 
             FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));         
@@ -68,9 +109,21 @@ namespace Inforoom.PriceProcessor
                             Field.Index.NO));
                     doc.Add(
                         new Field(
+                            "ProductId",
+                            synonym.ProductId.ToString(),
+                            Field.Store.YES,
+                            Field.Index.NO));
+                    doc.Add(
+                       new Field(
+                           "Junk",
+                           synonym.Junk.ToString(),
+                           Field.Store.YES,
+                           Field.Index.NO)); 
+                    doc.Add(
+                        new Field(
                             "Synonym",
                             synonym.Synonym.Trim().ToUpper(),
-                            Field.Store.YES,
+                            Field.Store.YES,                            
                             Field.Index.TOKENIZED));
                     writer.AddDocument(doc);
                 }
@@ -86,8 +139,9 @@ namespace Inforoom.PriceProcessor
             _logger.Info("Индексация завершена");
         }
 
-        public void DoMatching(IList<string> positions)
+        public Dictionary<string, SynonymSummary> DoMatching(IList<string> positions)
         {
+            _logger.InfoFormat("Старт сопоставления для {0} позиций", positions.Count());
             FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));
             IndexReader reader = IndexReader.Open(IdxDirectory, true);
             IndexSearcher searcher = new IndexSearcher(reader);
@@ -96,19 +150,22 @@ namespace Inforoom.PriceProcessor
             try
             {
                 foreach (var position in positions)
-                {                    
-                    Query query = parser.Parse(String.Format("Synonym:\"{0}\"", position));
+                {
+                    string name = position.Trim().ToUpper();
+                    if (matches.ContainsKey(name)) continue;
+                    Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
                     TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
                     searcher.Search(query, collector);
                     ScoreDoc[] hits = collector.TopDocs().scoreDocs;
                     foreach (var scoreDoc in hits)
                     {
                         Document document = searcher.Doc(scoreDoc.doc);
-                        if (!matches.ContainsKey(position))
-                            matches[position] = new List<uint>();
-                        matches[position].Add(Convert.ToUInt32(document.Get("FirmCode")));                        
-                    }
-                    matches[position] = matches[position].Distinct().ToList();
+                        if(!matches.ContainsKey(name))
+                            matches[name] = new SynonymSummary(position);                        
+                        matches[name].AddInfo(Convert.ToUInt32(document.Get("FirmCode")),
+                                              Convert.ToUInt32(document.Get("ProductId")),
+                                              Convert.ToBoolean(document.Get("Junk")));
+                    }                    
                 }
             }
             finally
@@ -118,6 +175,30 @@ namespace Inforoom.PriceProcessor
                 analyzer.Close();
                 IdxDirectory.Close();
             }
+            _logger.Info("Сопоставление завершено");
+            return matches;
+        }
+
+        public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)
+        {
+            string[] result = new string[matches.Count];
+            int i = 0;
+            foreach (var key in matches)
+            {
+                string res = String.Empty;
+                var summary = key.Value.Summary();
+                res += summary.Count.ToString(); res += ";";
+                foreach (var synonymInfo in summary)
+                {
+                    res += synonymInfo.FirmCode.ToString(); res += ";";
+                    res += synonymInfo.ProductId.ToString(); res += ";";
+                    res += synonymInfo.Junk.ToString(); res += ";";
+                }
+                res += key.Value.OriginalName(); res += ";";
+                result[i] = res;
+                i++;
+            }
+            return result;
         }
     }
 }
