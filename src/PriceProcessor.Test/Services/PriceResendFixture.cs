@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Castle.ActiveRecord;
 using NUnit.Framework;
 using System.IO;
@@ -186,10 +187,24 @@ namespace PriceProcessor.Test.Services
 
             TestIndexerHandler handler = new TestIndexerHandler();
             handler.DoIndex();
-            var res = WcfCall(r =>
+            var res1 = WcfCall(r =>
             {
                 return r.FindSynonyms(priceItem.Id);
             });
+
+            Assert.That(res1.Length, Is.EqualTo(2));
+            Assert.That(res1[0], Is.EqualTo("Success"));
+
+            long taskId = Convert.ToInt64(res1[1]);
+            
+
+            Thread.Sleep(5000);
+
+            var res2 = WcfCall(r =>
+                                   {
+                                       return r.FindSynonymsResult(taskId.ToString());
+                                   }
+                );
 
             File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));            
         }

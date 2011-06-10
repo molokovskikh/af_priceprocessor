@@ -395,23 +395,39 @@ namespace RemotePriceProcessor
         public string[] FindSynonyms(uint priceItemId)
         {
             LastErrorMessage = String.Empty;
-            string[] synonyms;
+            string[] result;
             try
             {
-                _clientProxy = _channelFactory.CreateChannel();               
-                synonyms = _clientProxy.FindSynonyms(priceItemId);
+                _clientProxy = _channelFactory.CreateChannel();
+                result = _clientProxy.FindSynonyms(priceItemId);
                 ((ICommunicationObject)_clientProxy).Close();
             }
             catch (FaultException faultException)
             {
                 LastErrorMessage = faultException.Reason.ToString();
-                return new string[0];
+                return new [] {"Error", LastErrorMessage};
             }
             finally
             {
                 AbortClientProxy();
             }
-            return synonyms;
+            return result;
+        }
+
+        public string[] FindSynonymsResult(string taskId)
+        {
+            string[] result;
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                result = _clientProxy.FindSynonymsResult(taskId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+            return result;
         }
 	}
 }

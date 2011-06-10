@@ -158,5 +158,8 @@ namespace RemotePriceProcessor
 
         [OperationContract]
         string[] FindSynonyms(uint priceItemId);
+
+	    [OperationContract]
+	    string[] FindSynonymsResult(string taskId);
 	}
 }

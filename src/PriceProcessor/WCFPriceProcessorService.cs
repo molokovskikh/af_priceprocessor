@@ -451,15 +451,34 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
             PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
             if(item == null)
             {
-                throw new FaultException<string>("Файл прайс-листа не найден",
-                    new FaultReason("Файл прайс-листа не найден"));
+                string er = String.Format("Файл прайс-листа не найден (priceItemId = {0})", priceItemId);
+                throw new FaultException<string>(er, new FaultReason(er));
             }
             var names = item.GetAllNames();
-            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof (IndexerHandler));
-            if (handler == null) return new string[0];
-            // производим сопоставление
-            var matches = handler.DoMatching(names);
-            return IndexerHandler.TransformToStringArray(matches);
+            if(names.Count == 0)
+            {
+                string er = String.Format("Не найдено ни одной позиции в прайс-листе (priceItemId = {0})", priceItemId);
+                throw new FaultException<string>(er, new FaultReason(er));
+            }
+            // создаем задачу
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            long taskId = handler.AddTask(names, (uint)item.PriceCode);
+            return new [] {"Success", taskId.ToString()}; // задача успешно создана           
         }
+
+        public string[] FindSynonymsResult(string taskId)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+            if(task == null)
+                return new [] {"Error", String.Format("Задача {0} не найдена", taskId)};
+            if(task.State == TaskState.Error)
+                return new[] { "Error", task.Error };
+            if (task.State == TaskState.Success)
+                return IndexerHandler.TransformToStringArray(task.Matches);   
+            if (task.State == TaskState.Running)
+                return new [] { "Running", task.Rate.ToString() };
+            return new[] {task.State.ToString()};
+        }        
 	}
 }

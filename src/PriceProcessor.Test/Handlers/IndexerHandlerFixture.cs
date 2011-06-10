@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
@@ -13,13 +14,13 @@ namespace PriceProcessor.Test.Handlers
     {
         public TimeSpan Now 
         {   
-            get { return _now; }
-            set { _now = value; }
+            get { return now; }
+            set { now = value; }
         }
         
         public TimeSpan WorkTime
         {
-            get { return _workTime; }
+            get { return workTime; }
         }
 
         public string IdxDir
@@ -37,14 +38,9 @@ namespace PriceProcessor.Test.Handlers
             base.DoIndex();
         }
 
-        public Dictionary<string, SynonymSummary> DoMatching(IList<string> positions)
+        public bool CanDoIndex()
         {
-            return base.DoMatching(positions);
-        }
-
-        public bool CanExec()
-        {
-            return base.CanExec();
+            return base.CanDoIndex();
         }
     }
 
@@ -64,23 +60,23 @@ namespace PriceProcessor.Test.Handlers
         {
             DateTime dt = new DateTime(_handler.WorkTime.Ticks).AddMinutes(-1);
             _handler.Now = dt.TimeOfDay;
-            bool res = _handler.CanExec();
+            bool res = _handler.CanDoIndex();
             Assert.That(res, Is.False);
             dt = dt.AddMinutes(1);
             _handler.Now = dt.TimeOfDay;
-            res = _handler.CanExec();
+            res = _handler.CanDoIndex();
             Assert.That(res, Is.False);
             dt = dt.AddSeconds(15);
             _handler.Now = dt.TimeOfDay;
-            res = _handler.CanExec();
+            res = _handler.CanDoIndex();
             Assert.That(res, Is.True);
             dt = dt.AddSeconds(45);
             _handler.Now = dt.TimeOfDay;
-            res = _handler.CanExec();
+            res = _handler.CanDoIndex();
             Assert.That(res, Is.True);
             dt = dt.AddSeconds(1);
             _handler.Now = dt.TimeOfDay;
-            res = _handler.CanExec();
+            res = _handler.CanDoIndex();
             Assert.That(res, Is.False);            
         }
        
@@ -95,11 +91,11 @@ namespace PriceProcessor.Test.Handlers
             DateTime now = DateTime.Now;
 
             IList<string> names = new List<string>();
-            names.Add(String.Format("Тестовое наименование 1 ({0})", now.ToString()));
-            names.Add(String.Format("Тестовое наименование 2 ({0})", now.ToString()));
-            names.Add(String.Format("Тестовое наименование 3 ({0})", now.ToString()));
-            names.Add(String.Format("Тестовое наименование 4 ({0})", now.ToString()));
-            names.Add(String.Format("Тестовое наименование 5 ({0})", now.ToString()));
+            names.Add(String.Format("Тестовое наименование 1 ({0})", now));
+            names.Add(String.Format("Тестовое наименование 2 ({0})", now));
+            names.Add(String.Format("Тестовое наименование 3 ({0})", now));
+            names.Add(String.Format("Тестовое наименование 4 ({0})", now));
+            names.Add(String.Format("Тестовое наименование 5 ({0})", now));
 
             using (new TransactionScope())
             {
@@ -123,10 +119,23 @@ namespace PriceProcessor.Test.Handlers
                 size += f.Length;
             }
             Assert.That(size, Is.GreaterThan(0));
+            
+            long taskId = _handler.AddTask(names, 0);
 
-            var matches = _handler.DoMatching(names);
+            Assert.That(_handler.GetTask(taskId), Is.Not.Null);
+
+            while(_handler.GetTask(taskId).State == TaskState.Running)
+            {
+                Thread.Sleep(1000);
+            }
+
+            var matches = _handler.GetTask(taskId).Matches;
+
+            var rate = _handler.GetTask(taskId).Rate;            
 
             var str_res = IndexerHandler.TransformToStringArray(matches);
+
+            Assert.That(rate, Is.EqualTo(100));
                        
             Assert.That(matches.Count, Is.EqualTo(5));
             for (int i = 1; i <= 5; i++ )
@@ -145,8 +154,8 @@ namespace PriceProcessor.Test.Handlers
             Assert.That(matches[names[4].Trim().ToUpper()].Summary()[0].FirmCode, Is.EqualTo(price2.Supplier.Id));
             Assert.That(matches[names[4].Trim().ToUpper()].Summary()[1].FirmCode, Is.EqualTo(price1.Supplier.Id));
 
-            Assert.That(str_res.Length, Is.EqualTo(5));
-            Assert.That(str_res[4], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};", 
+            Assert.That(str_res.Length, Is.EqualTo(6));
+            Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};", 
                 price2.Supplier.Id, product.Id, "False", price1.Supplier.Id, product.Id, "False", names[4])));
         }
 
@@ -158,25 +167,32 @@ namespace PriceProcessor.Test.Handlers
                 _handler.DoIndex();
 
             IList<string> names = new List<string>();
+
+            
+
             for (int i = 0; i < 2000; i++)
             {
                 names.Add(String.Format("Наименование {0}", i));
             }
 
             DateTime begin = DateTime.Now;
+            
+            var matches = new Dictionary<string, SynonymSummary>();
 
-            _handler.DoMatching(names);
+            _handler.StartWork();
+
+            long taskId = _handler.AddTask(names, 1);            
+
+            while (_handler.GetTask(taskId).State == TaskState.Running)
+            {
+                Thread.Sleep(1000);               
+            }
 
             DateTime end = DateTime.Now;
 
-            double diff = end.TimeOfDay.TotalSeconds - begin.TimeOfDay.TotalSeconds;
+            SynonymTask task = _handler.GetTask(taskId);
 
-        }
-
-        [Test]
-        public void Temp()
-        {
-
-        }
+            double diff = end.TimeOfDay.TotalSeconds - begin.TimeOfDay.TotalSeconds;            
+        }        
     }
 }

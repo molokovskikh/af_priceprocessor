@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Inforoom.PriceProcessor.Waybills;
+using log4net;
 using Lucene.Net.Analysis;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
@@ -13,58 +15,280 @@ using Document = Lucene.Net.Documents.Document;
 
 namespace Inforoom.PriceProcessor
 {
+    public struct SynonymInfo
+    {
+        public uint FirmCode;
+        public uint PriceCode;
+        public uint ProductId;
+        public bool Junk;
+    }
+
+    public class SynonymSummary
+    {
+        public SynonymSummary(string name)
+        {
+            _originalName = name;
+            _summary = new List<SynonymInfo>();
+        }
+        public void AddInfo(uint firmcode, uint pricecode, uint productId, bool junk)
+        {
+            if (_summary.Where(i => i.FirmCode == firmcode).Count() > 1) return;
+            var info = new SynonymInfo() { FirmCode = firmcode, PriceCode = pricecode, ProductId = productId, Junk = junk };
+            _summary.Add(info);
+        }
+        public IList<SynonymInfo> Summary()
+        {
+            return _summary;
+        }
+        public string OriginalName()
+        {
+            return _originalName;
+        }
+
+        private readonly string _originalName;
+        private readonly IList<SynonymInfo> _summary;
+    }
+
+    public enum TaskState
+    {
+        None,
+        Running,
+        Success,
+        Error,
+        Canceled
+    }
+  
+    public class SynonymTask
+    {
+        private readonly long id;
+        private readonly uint priceCode; // код прайс-листа
+        private readonly IList<string> names; // список позиций в прайс-листе
+       
+        
+        private readonly Dictionary<string, SynonymSummary> matches;    
+        private IndexerHandler handler;
+
+        private readonly Thread thread;
+
+        //время прерывания рабочей нитки 
+        private DateTime? _abortingTime = null;
+
+        private readonly ILog _logger = LogManager.GetLogger(typeof(SynonymTask));
+
+        public long Id { get { return id; } }
+        public Dictionary<string, SynonymSummary> Matches { get { return matches; } }
+        
+        public TaskState State { get; private set; }
+
+        public DateTime StartDate { get; private set; }
+
+        public DateTime? StopDate { get; private set; }
+
+        public string Error { get; private set; }
+
+        public uint Rate { get; private set; } // процент выполнения задачи
+
+        public SynonymTask(IList<string> _names, uint _pricecode, IndexerHandler _owner)
+        {
+            State = TaskState.None;
+            priceCode = _pricecode;
+            names = _names;
+            handler = _owner;
+            id = DateTime.Now.Ticks;
+            matches = new Dictionary<string, SynonymSummary>();
+            thread = new Thread(ThreadWork);
+            StartDate = DateTime.UtcNow;
+            Rate = 0;
+            thread.Start();
+            State = TaskState.Running;
+        }
+
+        public ThreadState ThreadState
+        {
+            get { return thread.ThreadState; }
+        }
+
+        public bool ThreadIsAlive
+        {
+            get { return thread.IsAlive; }
+        }
+
+        public void InterruptThread()
+        {
+            thread.Interrupt();
+        }
+
+        /// <summary>
+        /// останавливаем рабочую нитку и выставляем время останова, чтобы обрубить по таймауту
+        /// </summary>
+        public void AbortThread()
+        {
+            if (!_abortingTime.HasValue)
+            {
+                thread.Abort();
+                _abortingTime = DateTime.UtcNow;
+            }
+        }
+
+        public void ThreadWork()
+        {            
+            try
+            {
+                DoMatching();
+                State = TaskState.Success;
+            }
+            catch(Exception e)
+            {
+                Error = e.ToString();
+                State = TaskState.Error;                
+            }            
+        }
+       
+        private void DoMatching()
+        {
+            _logger.InfoFormat("Старт сопоставления для {0} позиций", names.Count());
+            FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(handler.IdxDir));
+            IndexReader reader = IndexReader.Open(IdxDirectory, true);
+            IndexSearcher searcher = new IndexSearcher(reader);
+            KeywordAnalyzer analyzer = new KeywordAnalyzer();
+            QueryParser parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "Synonym", analyzer);
+            uint counter = 0;
+            try
+            {
+                foreach (var position in names)
+                {
+                    string name = position.Trim().ToUpper();
+                    if (matches.ContainsKey(name)) continue;
+                    Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+                    searcher.Search(query, collector);
+                    ScoreDoc[] hits = collector.TopDocs().scoreDocs;
+                    foreach (var scoreDoc in hits)
+                    {
+                        Document document = searcher.Doc(scoreDoc.doc);
+                        uint pcode = Convert.ToUInt32(document.Get("PriceCode"));
+                        if(priceCode == pcode) // если уже существует синоним с таким PriceCode - не добавляем в результирующий набор
+                        {
+                            if (matches.ContainsKey(name))
+                                matches.Remove(name);
+                            break;
+                        }
+                        if (!matches.ContainsKey(name))
+                            matches[name] = new SynonymSummary(position);
+                        matches[name].AddInfo(Convert.ToUInt32(document.Get("FirmCode")),
+                                              Convert.ToUInt32(document.Get("PriceCode")),
+                                              Convert.ToUInt32(document.Get("ProductId")),
+                                              Convert.ToBoolean(document.Get("Junk")));
+                    }
+                    counter++;
+                    Rate = (uint)(counter*100/names.Count());
+                }
+            }
+            finally
+            {
+                reader.Close();
+                searcher.Close();
+                analyzer.Close();
+                IdxDirectory.Close();
+            }
+            _logger.Info("Сопоставление завершено");
+        }
+    }
+
     public class IndexerHandler : AbstractHandler
     {
-        protected TimeSpan _workTime;
-        protected TimeSpan _now;
-        protected string IdxDir;
+        protected TimeSpan workTime;
+        protected TimeSpan now;       
+        public string IdxDir { get; private set; }
 
-        public struct SynonymInfo
+        protected IList<SynonymTask> taskList;
+       
+        public long AddTask(IList<string> names, uint pricecode)
         {
-            public uint FirmCode;
-            public uint ProductId;
-            public bool Junk;
+            var task = new SynonymTask(names, pricecode, this);
+            lock (taskList)
+            {
+                taskList.Add(task);    
+            }
+            return task.Id;
         }
 
-        public struct SynonymSummary
+        public SynonymTask GetTask(long taskId)
         {
-            public SynonymSummary(string name)
+            SynonymTask res = null;
+            lock (taskList)
             {
-                _originalName = name;
-                _summary = new List<SynonymInfo>();
+                foreach (var task in taskList)
+                {
+                    if(task.Id == taskId)
+                    {
+                        res = task;
+                        break;
+                    }
+                }
             }
-            public void AddInfo(uint code, uint productId, bool junk)
-            {
-                if (_summary.Where(i => i.FirmCode == code).Count() > 1) return;
-                var info = new SynonymInfo() { FirmCode = code, ProductId = productId, Junk = junk };
-                _summary.Add(info);
-            }
-            public IList<SynonymInfo> Summary()
-            {
-                return _summary;
-            }
-            public string OriginalName()
-            {
-                return _originalName;
-            }
-
-            private readonly string _originalName;
-            private readonly IList<SynonymInfo> _summary;
+            return res;
         }
-    
-        protected Dictionary<string, SynonymSummary> matches;
+
+        private void ProcessTaskList()
+        {
+            //TODO
+        }
 
         public IndexerHandler()
         {
             SleepTime = 60;
-            _workTime = TimeSpan.Parse("02:00:00");            
-            IdxDir = "Idx";            
-            matches = new Dictionary<string, SynonymSummary>();
+            workTime = TimeSpan.Parse("02:00:00");            
+            IdxDir = "Idx";
+            taskList = new List<SynonymTask>();
         }
 
-        protected bool CanExec()
+        //Остановка обработчика
+        public override void StopWork()
+        {
+            base.StopWork();
+
+            if (!tWork.Join(maxJoinTime))
+                _logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
+
+            Thread.Sleep(600);
+
+            //Сначала для всех ниток вызваем Abort,
+            for (int i = taskList.Count - 1; i >= 0; i--)
+                //Если нитка работает, то останавливаем ее
+                if (taskList[i].ThreadIsAlive)
+                {
+                    taskList[i].AbortThread();
+                    _logger.InfoFormat("Вызвали Abort() для нитки {0}", taskList[i].Id);
+                }
+
+            //а потом ждем их завершения
+            for (int i = taskList.Count - 1; i >= 0; i--)
+            {
+                if (!taskList[i].ThreadIsAlive)
+                    continue;
+
+                //Если нитка работает, то ожидаем ее останов
+                _logger.InfoFormat("Ожидаем останов нитки {0}", taskList[i].Id);
+                taskList[i].AbortThread();
+                int _currentWaitTime = 0;
+                while ((_currentWaitTime < maxJoinTime) && ((taskList[i].ThreadState & ThreadState.Stopped) == 0))
+                {
+                    if ((taskList[i].ThreadState & ThreadState.WaitSleepJoin) > 0)
+                        taskList[i].InterruptThread();
+                    Thread.Sleep(1000);
+                    _currentWaitTime += 1000;
+                }
+                if ((taskList[i].ThreadState & ThreadState.Stopped) > 0)
+                    _logger.InfoFormat("Останов нитки выполнен {0}", taskList[i].Id);
+                else
+                    _logger.InfoFormat("Нитка сопоставления {0} не остановилась за {1} миллисекунд.", taskList[i].Id, maxJoinTime);
+            }
+        }
+
+        protected bool CanDoIndex()
         {            
-            double diff = _now.TotalSeconds - _workTime.TotalSeconds;
+            double diff = now.TotalSeconds - workTime.TotalSeconds;
             if (diff > 0 && diff <= SleepTime)
                 return true;
             return false;
@@ -74,8 +298,9 @@ namespace Inforoom.PriceProcessor
         {
             if (!Directory.Exists(IdxDir)) // если при запуске индекса нет - делаем его
                 DoIndex();
-            _now = DateTime.Now.TimeOfDay;
-            if (!CanExec()) return;            
+            now = DateTime.Now.TimeOfDay;
+            ProcessTaskList();
+            if (!CanDoIndex()) return;            
             // производим индексацию данных
             DoIndex();
         }
@@ -105,6 +330,12 @@ namespace Inforoom.PriceProcessor
                         new Field(
                             "FirmCode",
                             synonym.Price.Supplier.Id.ToString(),
+                            Field.Store.YES,
+                            Field.Index.NO));
+                    doc.Add(
+                        new Field(
+                            "PriceCode",
+                            synonym.Price.Id.ToString(),
                             Field.Store.YES,
                             Field.Index.NO));
                     doc.Add(
@@ -139,50 +370,11 @@ namespace Inforoom.PriceProcessor
             _logger.Info("Индексация завершена");
         }
 
-        public Dictionary<string, SynonymSummary> DoMatching(IList<string> positions)
-        {
-            _logger.InfoFormat("Старт сопоставления для {0} позиций", positions.Count());
-            FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));
-            IndexReader reader = IndexReader.Open(IdxDirectory, true);
-            IndexSearcher searcher = new IndexSearcher(reader);
-            KeywordAnalyzer analyzer = new KeywordAnalyzer();
-            QueryParser parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "Synonym", analyzer);
-            try
-            {
-                foreach (var position in positions)
-                {
-                    string name = position.Trim().ToUpper();
-                    if (matches.ContainsKey(name)) continue;
-                    Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
-                    searcher.Search(query, collector);
-                    ScoreDoc[] hits = collector.TopDocs().scoreDocs;
-                    foreach (var scoreDoc in hits)
-                    {
-                        Document document = searcher.Doc(scoreDoc.doc);
-                        if(!matches.ContainsKey(name))
-                            matches[name] = new SynonymSummary(position);                        
-                        matches[name].AddInfo(Convert.ToUInt32(document.Get("FirmCode")),
-                                              Convert.ToUInt32(document.Get("ProductId")),
-                                              Convert.ToBoolean(document.Get("Junk")));
-                    }                    
-                }
-            }
-            finally
-            {
-                reader.Close();
-                searcher.Close();
-                analyzer.Close();
-                IdxDirectory.Close();
-            }
-            _logger.Info("Сопоставление завершено");
-            return matches;
-        }
-
         public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)
         {
-            string[] result = new string[matches.Count];
-            int i = 0;
+            string[] result = new string[matches.Count + 1];
+            result[0] = "Success";
+            int i = 1;
             foreach (var key in matches)
             {
                 string res = String.Empty;

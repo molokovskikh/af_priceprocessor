@@ -86,10 +86,13 @@ group by pi.Id",
 		}
 
         public static PriceProcessItem GetProcessItem(uint priceItemId)
-        {            
-            // TODO: нужно еще искать в Inbound
+        {                        
             var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
                                             String.Format(@"{0}.*", priceItemId));
+            if(files.Count() == 0)
+                files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.InboundPath),
+                                            String.Format(@"{0}.*", priceItemId));
+
             string filename = String.Empty;
             if (files.Count() > 0) filename = files[0];
             else return null;
