@@ -478,7 +478,16 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
                 return IndexerHandler.TransformToStringArray(task.Matches);   
             if (task.State == TaskState.Running)
                 return new [] { "Running", task.Rate.ToString() };
+            if (task.State == TaskState.Canceled)
+                return new[] { "Canceled", task.Rate.ToString() };
             return new[] {task.State.ToString()};
-        }        
+        }
+
+        public void StopFindSynonyms(string taskId)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+            task.Stop();
+        }
 	}
 }

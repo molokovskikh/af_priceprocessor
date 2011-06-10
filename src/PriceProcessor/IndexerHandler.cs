@@ -63,7 +63,8 @@ namespace Inforoom.PriceProcessor
         private readonly long id;
         private readonly uint priceCode; // код прайс-листа
         private readonly IList<string> names; // список позиций в прайс-листе
-       
+        private volatile bool stopped = false;
+               
         
         private readonly Dictionary<string, SynonymSummary> matches;    
         private IndexerHandler handler;
@@ -118,6 +119,11 @@ namespace Inforoom.PriceProcessor
             thread.Interrupt();
         }
 
+        public void Stop()
+        {
+            stopped = true;
+        }
+
         /// <summary>
         /// останавливаем рабочую нитку и выставляем время останова, чтобы обрубить по таймауту
         /// </summary>
@@ -134,8 +140,7 @@ namespace Inforoom.PriceProcessor
         {            
             try
             {
-                DoMatching();
-                State = TaskState.Success;
+                DoMatching();                
             }
             catch(Exception e)
             {
@@ -157,6 +162,12 @@ namespace Inforoom.PriceProcessor
             {
                 foreach (var position in names)
                 {
+                    if(stopped)
+                    {
+                        _logger.Info("Сопоставление отменено");
+                        State = TaskState.Canceled;
+                        return;
+                    } 
                     string name = position.Trim().ToUpper();
                     if (matches.ContainsKey(name)) continue;
                     Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
@@ -191,6 +202,7 @@ namespace Inforoom.PriceProcessor
                 analyzer.Close();
                 IdxDirectory.Close();
             }
+            State = TaskState.Success;
             _logger.Info("Сопоставление завершено");
         }
     }

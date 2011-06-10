@@ -429,5 +429,19 @@ namespace RemotePriceProcessor
             }
             return result;
         }
+
+        public void StopFindSynonyms(string taskId)
+        {
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                _clientProxy.StopFindSynonyms(taskId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+        }
 	}
 }
