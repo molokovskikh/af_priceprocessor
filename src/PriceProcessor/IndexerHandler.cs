@@ -18,6 +18,7 @@ namespace Inforoom.PriceProcessor
     public struct SynonymInfo
     {
         public uint FirmCode;
+        public string FirmName;
         public uint PriceCode;
         public uint ProductId;
         public bool Junk;
@@ -30,10 +31,10 @@ namespace Inforoom.PriceProcessor
             _originalName = name;
             _summary = new List<SynonymInfo>();
         }
-        public void AddInfo(uint firmcode, uint pricecode, uint productId, bool junk)
+        public void AddInfo(uint firmcode, string firmname, uint pricecode, uint productId, bool junk)
         {
-            if (_summary.Where(i => i.FirmCode == firmcode).Count() > 1) return;
-            var info = new SynonymInfo() { FirmCode = firmcode, PriceCode = pricecode, ProductId = productId, Junk = junk };
+            if (_summary.Where(i => i.FirmCode == firmcode).Count() > 0) return;
+            var info = new SynonymInfo() { FirmCode = firmcode, FirmName = firmname, PriceCode = pricecode, ProductId = productId, Junk = junk };
             _summary.Add(info);
         }
         public IList<SynonymInfo> Summary()
@@ -119,6 +120,17 @@ namespace Inforoom.PriceProcessor
             thread.Interrupt();
         }
 
+        public bool IsAbortingLong
+        {
+            get
+            {
+                return (
+                    (((thread.ThreadState & ThreadState.AbortRequested) > 0) || ((thread.ThreadState & ThreadState.Aborted) > 0))
+                    && _abortingTime.HasValue
+                    && (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
+            }
+        }
+
         public void Stop()
         {
             stopped = true;
@@ -141,16 +153,18 @@ namespace Inforoom.PriceProcessor
             try
             {
                 DoMatching();                
-            }
-            catch(Exception e)
-            {
-                Error = e.ToString();
-                State = TaskState.Error;                
             }            
+            catch (Exception ex)
+            {
+                Error = ex.ToString();
+                State = TaskState.Error;
+                _logger.ErrorFormat("Ошибка при сопоставлении синонимов. {0}", ex.ToString());
+                Mailer.SendFromServiceToService("Ошибка при сопоставлении синонимов", ex.ToString());
+            }
         }
-       
+
         private void DoMatching()
-        {
+        {           
             _logger.InfoFormat("Старт сопоставления для {0} позиций", names.Count());
             FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(handler.IdxDir));
             IndexReader reader = IndexReader.Open(IdxDirectory, true);
@@ -162,12 +176,12 @@ namespace Inforoom.PriceProcessor
             {
                 foreach (var position in names)
                 {
-                    if(stopped)
+                    if (stopped)
                     {
                         _logger.Info("Сопоставление отменено");
                         State = TaskState.Canceled;
                         return;
-                    } 
+                    }
                     string name = position.Trim().ToUpper();
                     if (matches.ContainsKey(name)) continue;
                     Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
@@ -178,7 +192,8 @@ namespace Inforoom.PriceProcessor
                     {
                         Document document = searcher.Doc(scoreDoc.doc);
                         uint pcode = Convert.ToUInt32(document.Get("PriceCode"));
-                        if(priceCode == pcode) // если уже существует синоним с таким PriceCode - не добавляем в результирующий набор
+                        if (priceCode == pcode)
+                            // если уже существует синоним с таким PriceCode - не добавляем в результирующий набор
                         {
                             if (matches.ContainsKey(name))
                                 matches.Remove(name);
@@ -187,12 +202,13 @@ namespace Inforoom.PriceProcessor
                         if (!matches.ContainsKey(name))
                             matches[name] = new SynonymSummary(position);
                         matches[name].AddInfo(Convert.ToUInt32(document.Get("FirmCode")),
-                                              Convert.ToUInt32(document.Get("PriceCode")),
-                                              Convert.ToUInt32(document.Get("ProductId")),
-                                              Convert.ToBoolean(document.Get("Junk")));
+                                                document.Get("FirmName"),
+                                                Convert.ToUInt32(document.Get("PriceCode")),
+                                                Convert.ToUInt32(document.Get("ProductId")),
+                                                Convert.ToBoolean(document.Get("Junk")));
                     }
                     counter++;
-                    Rate = (uint)(counter*100/names.Count());
+                    Rate = (uint) (counter*100/names.Count());
                 }
             }
             finally
@@ -201,9 +217,10 @@ namespace Inforoom.PriceProcessor
                 searcher.Close();
                 analyzer.Close();
                 IdxDirectory.Close();
+                StopDate = DateTime.UtcNow;
             }
-            State = TaskState.Success;
-            _logger.Info("Сопоставление завершено");
+            State = TaskState.Success;            
+            _logger.Info("Сопоставление завершено");                        
         }
     }
 
@@ -244,7 +261,32 @@ namespace Inforoom.PriceProcessor
 
         private void ProcessTaskList()
         {
-            //TODO
+            lock (taskList)
+            {
+                for (int i = taskList.Count - 1; i >= 0; i--)
+                {
+                    var task = taskList[i];
+                    if (task.StopDate != null || !task.ThreadIsAlive || ((task.ThreadState & ThreadState.Stopped) > 0))
+                        taskList.RemoveAt(i);
+                    else
+                    {
+                        if ((DateTime.UtcNow.Subtract(task.StartDate).TotalMinutes > 90) &&
+                            ((task.ThreadState & ThreadState.AbortRequested) == 0))
+                        {
+                            task.AbortThread();
+                        }
+                        else if (task.IsAbortingLong)
+                        {
+                            taskList.RemoveAt(i);
+                        }
+                        else if (((task.ThreadState & ThreadState.AbortRequested) > 0) &&
+                                 ((task.ThreadState & ThreadState.WaitSleepJoin) > 0))
+                        {
+                            task.InterruptThread();
+                        }
+                    }
+                }
+            }
         }
 
         public IndexerHandler()
@@ -263,8 +305,12 @@ namespace Inforoom.PriceProcessor
             if (!tWork.Join(maxJoinTime))
                 _logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
 
-            Thread.Sleep(600);
+            //Пытаемся корректно остановить нитки
+            for (int i = taskList.Count - 1; i >= 0; i--)
+                taskList[i].Stop();
 
+            Thread.Sleep(1000);
+            
             //Сначала для всех ниток вызваем Abort,
             for (int i = taskList.Count - 1; i >= 0; i--)
                 //Если нитка работает, то останавливаем ее
@@ -346,6 +392,12 @@ namespace Inforoom.PriceProcessor
                             Field.Index.NO));
                     doc.Add(
                         new Field(
+                            "FirmName",
+                            synonym.Price.Supplier.FullName,
+                            Field.Store.YES,
+                            Field.Index.NO));
+                    doc.Add(
+                        new Field(
                             "PriceCode",
                             synonym.Price.Id.ToString(),
                             Field.Store.YES,
@@ -395,10 +447,11 @@ namespace Inforoom.PriceProcessor
                 foreach (var synonymInfo in summary)
                 {
                     res += synonymInfo.FirmCode.ToString(); res += ";";
+                    res += synonymInfo.FirmName; res += ";";
                     res += synonymInfo.ProductId.ToString(); res += ";";
                     res += synonymInfo.Junk.ToString(); res += ";";
                 }
-                res += key.Value.OriginalName(); res += ";";
+                res += key.Value.OriginalName();
                 result[i] = res;
                 i++;
             }

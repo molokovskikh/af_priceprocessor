@@ -155,8 +155,8 @@ namespace PriceProcessor.Test.Handlers
             Assert.That(matches[names[4].Trim().ToUpper()].Summary()[1].FirmCode, Is.EqualTo(price1.Supplier.Id));
 
             Assert.That(str_res.Length, Is.EqualTo(6));
-            Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};", 
-                price2.Supplier.Id, product.Id, "False", price1.Supplier.Id, product.Id, "False", names[4])));
+            Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};{7};{8}", 
+                price2.Supplier.Id, price2.Supplier.FullName, product.Id, "False", price1.Supplier.Id, price1.Supplier.FullName, product.Id, "False", names[4])));
         }
 
         [Test]
@@ -193,6 +193,7 @@ namespace PriceProcessor.Test.Handlers
             SynonymTask task = _handler.GetTask(taskId);
 
             double diff = end.TimeOfDay.TotalSeconds - begin.TimeOfDay.TotalSeconds;            
-        }        
+        }
+          
     }
 }
