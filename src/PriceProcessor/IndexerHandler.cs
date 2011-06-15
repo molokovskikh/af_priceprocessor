@@ -182,9 +182,10 @@ namespace Inforoom.PriceProcessor
                         State = TaskState.Canceled;
                         return;
                     }
-                    string name = position.Trim().ToUpper();
+                    string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки
                     if (matches.ContainsKey(name)) continue;
                     Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
+                    name = name.Replace("_QUOTE_", "\"");
                     TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
                     searcher.Search(query, collector);
                     ScoreDoc[] hits = collector.TopDocs().scoreDocs;
@@ -266,6 +267,11 @@ namespace Inforoom.PriceProcessor
                 for (int i = taskList.Count - 1; i >= 0; i--)
                 {
                     var task = taskList[i];
+                    if(task.StopDate != null)
+                    {
+                        if(DateTime.UtcNow.Subtract(task.StopDate.Value).TotalMinutes < 5)
+                            continue;
+                    }
                     if (task.StopDate != null || !task.ThreadIsAlive || ((task.ThreadState & ThreadState.Stopped) > 0))
                         taskList.RemoveAt(i);
                     else
@@ -363,26 +369,18 @@ namespace Inforoom.PriceProcessor
             DoIndex();
         }
 
-        protected void DoIndex()
-        {                        
-            if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
-            _logger.Info("Загрузка синонимов из БД...");
-//#if (DEBUG)            
-//            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Where(s => s.Synonym.StartsWith("Т")).ToList();
-//#else
-            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
-//#endif
-
-            _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
-
-            FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));         
+        protected bool DoIndex(IList<SynonymProduct> synonyms, bool append, bool optimize)
+        {            
+            if (append && !Directory.Exists(IdxDir)) return false;
+            FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));
             KeywordAnalyzer analyzer = new KeywordAnalyzer();
-            IndexWriter writer = new IndexWriter(IdxDirectory, analyzer, true, IndexWriter.MaxFieldLength.UNLIMITED);
+            IndexWriter writer = new IndexWriter(IdxDirectory, analyzer, !append, IndexWriter.MaxFieldLength.UNLIMITED);
             try
             {
                 _logger.Info("Старт индексации синонимов...");
                 foreach (var synonym in synonyms)
                 {
+                    string synstr = synonym.Synonym.Replace("\"", "_QUOTE_");
                     Document doc = new Document();
                     doc.Add(
                         new Field(
@@ -393,7 +391,7 @@ namespace Inforoom.PriceProcessor
                     doc.Add(
                         new Field(
                             "FirmName",
-                            synonym.Price.Supplier.FullName,
+                            synonym.Price.Supplier.Name + " (" + synonym.Price.Supplier.FullName + ")",
                             Field.Store.YES,
                             Field.Index.NO));
                     doc.Add(
@@ -413,17 +411,20 @@ namespace Inforoom.PriceProcessor
                            "Junk",
                            synonym.Junk.ToString(),
                            Field.Store.YES,
-                           Field.Index.NO)); 
+                           Field.Index.NO));
                     doc.Add(
                         new Field(
-                            "Synonym",
-                            synonym.Synonym.Trim().ToUpper(),
-                            Field.Store.YES,                            
+                            "Synonym",                            
+                            synstr.Trim().ToUpper(),
+                            Field.Store.YES,
                             Field.Index.TOKENIZED));
                     writer.AddDocument(doc);
                 }
-                _logger.Info("Оптимизация индекса...");
-                writer.Optimize();
+                if (optimize)
+                {
+                    _logger.Info("Оптимизация индекса...");
+                    writer.Optimize();
+                }
             }
             finally
             {
@@ -432,6 +433,27 @@ namespace Inforoom.PriceProcessor
                 IdxDirectory.Close();
             }
             _logger.Info("Индексация завершена");
+            return true;
+        }
+
+        protected void DoIndex()
+        {                        
+            if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
+            _logger.Info("Загрузка синонимов из БД...");
+            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
+            _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+            DoIndex(synonyms, false, true);
+        }
+
+        public void AppendToIndex(IList<int> ids)
+        {
+            if (ids.Count == 0) return;
+            _logger.Info("Добавление синонимов к индексу...");
+            _logger.Info("Загрузка синонимов из БД...");
+            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
+            _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+            DoIndex(synonyms, true, false);
+            _logger.Info("Добавление завершено...");
         }
 
         public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)

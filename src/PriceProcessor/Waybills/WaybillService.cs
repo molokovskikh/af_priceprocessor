@@ -25,14 +25,17 @@ namespace Inforoom.PriceProcessor.Waybills
 		uint[] ParseWaybill(uint[] uints);
 	}
 
-	[ActiveRecord("Clientsdata", Schema = "Usersettings")]
+	//[ActiveRecord("Clientsdata", Schema = "Usersettings")]
+    [ActiveRecord("Suppliers", Schema = "Future")]
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
-		[PrimaryKey("FirmCode")]
+		//[PrimaryKey("FirmCode")]
+        [PrimaryKey("Id")]
 		public uint Id { get; set; }
 
 		[Property]
-		public string ShortName { get; set; }
+		//public string ShortName { get; set; }
+        public string Name { get; set; }
 		
 		[Property]
 		public string FullName { get; set; }

@@ -443,5 +443,19 @@ namespace RemotePriceProcessor
                 AbortClientProxy();
             }
         }
+
+        public void AppendToIndex(string[] synonymsId)
+        {
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                _clientProxy.AppendToIndex(synonymsId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+        }
 	}
 }

@@ -489,5 +489,18 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
             SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
             task.Stop();
         }
+
+        public void AppendToIndex(string[] synonymsIds)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            IList<int> ids = new List<int>();
+            foreach (var sid in synonymsIds)
+            {
+                int val;
+                if(Int32.TryParse(sid, out val))                
+                    ids.Add(val);                
+            }
+            handler.AppendToIndex(ids);            
+        }
 	}
 }

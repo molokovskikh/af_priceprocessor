@@ -164,5 +164,8 @@ namespace RemotePriceProcessor
 
 	    [OperationContract]
 	    void StopFindSynonyms(string taskId);
+
+	    [OperationContract]
+	    void AppendToIndex(string[] synonymsId);
 	}
 }

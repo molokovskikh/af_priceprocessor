@@ -70,7 +70,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,
-					Supplier.ShortName,
+					//Supplier.ShortName,
+                    Supplier.Name,
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));
 				return Path.Combine(documentDir, file);
