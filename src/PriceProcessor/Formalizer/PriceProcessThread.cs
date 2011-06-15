@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Inforoom.PriceProcessor.Formalizer.New;
@@ -44,8 +45,8 @@ namespace Inforoom.Formalizer
 	public interface IPriceFormalizer
 	{
 		void Formalize();
-
-		bool Downloaded { get; set; }
+	    IList<string> GetAllNames();
+        bool Downloaded { get; set; }
 		string InputFileName { get; set; }
 		int formCount { get; }
 		int unformCount { get; }

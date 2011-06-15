@@ -33,6 +33,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }
+
+        [HasMany(ColumnKey = "PriceCode", Cascade = ManyRelationCascadeEnum.AllDeleteOrphan, Lazy = true)]
+        public virtual IList<SynonymProduct> ProductSynonyms { get; set; }
+
 	}
 
 	[ActiveRecord("PricesCosts", Schema = "Usersettings")]
@@ -63,12 +67,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public string Name;
 	}
 
-	public class PriceXmlReader : IReader
+
+	public class PriceXmlReader : IReader, IDisposable
 	{
 		private readonly string _filename;
 		private readonly XmlReader _reader;
 		private bool _inPrice;
 		private bool _readed;
+	    private Stream _stream;
 
 		public PriceXmlReader(string filename)
 		{
@@ -76,8 +82,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 			var settings = new XmlReaderSettings {
 				IgnoreWhitespace = true
 			};
-			_reader = XmlReader.Create(File.OpenRead(_filename), settings);
+		    //_reader = XmlReader.Create(File.OpenRead(_filename), settings);
+		    _stream = File.OpenRead(_filename);
+		    _reader = XmlReader.Create(_stream, settings);
 		}
+
+        public void Dispose()
+        {                
+            _reader.Close();
+            _stream.Close();
+        }
 
 		public IEnumerable<FarmaimpeksPrice> Prices()
 		{
@@ -182,6 +196,44 @@ namespace Inforoom.PriceProcessor.Formalizer
 			_data = data;
 			_priceInfo = new PriceFormalizationInfo(data.Rows[0]);
 		}
+
+        public IList<string> GetAllNames()
+        {
+            List<string> names = new List<string>();          
+            using (PriceXmlReader reader = new PriceXmlReader(_fileName))
+            {
+                foreach (var parsedPrice in reader.Prices())
+                {
+                    var priceInfo = _data.Rows[0];
+                    var supplierId = Convert.ToUInt32(priceInfo["FirmCode"]);
+                    PriceCost cost;
+                    using (new SessionScope(FlushAction.Never))
+                    {
+                        cost =
+                            PriceCost.Queryable.FirstOrDefault(
+                                c => c.Price.Supplier.Id == supplierId && c.CostName == parsedPrice.Id);
+                    }
+
+                    if (cost == null)
+                    {
+                        _log.WarnFormat(
+                            "Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс",
+                            _priceInfo.FirmShortName, parsedPrice.Id);
+                        continue;
+                    }
+
+                    var info = new PriceFormalizationInfo(priceInfo);
+
+                    var parser = new BasePriceParser2(reader, info);
+                    parser.Downloaded = Downloaded;
+
+                    IList<string> ls = parser.GetAllNames();
+                    if (ls != null)
+                        names.AddRange(ls);
+                }
+            }            
+            return names;
+        }
 
 		public void Formalize()
 		{

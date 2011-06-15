@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using Castle.ActiveRecord;
 using NUnit.Framework;
 using System.IO;
 using System.ServiceModel;
@@ -8,11 +10,14 @@ using System.Net;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor;
 using System.Net.Security;
+using PriceProcessor.Test.Handlers;
 using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
 using Test.Support.Catalog;
 using Test.Support.Suppliers;
+using Inforoom.Common;
+using FileHelper = Inforoom.Common.FileHelper;
 
 namespace PriceProcessor.Test.Services
 {
@@ -36,6 +41,27 @@ namespace PriceProcessor.Test.Services
 			StopWcfPriceProcessor();
 		}
 
+        private ChannelFactory<IRemotePriceProcessor> CreateFactory()
+        {
+            const string _strProtocol = @"net.tcp://";
+            var binding = new NetTcpBinding();
+            binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+            binding.Security.Mode = SecurityMode.None;
+            // Ипользуется потоковая передача данных в обе стороны 
+            binding.TransferMode = TransferMode.Streamed;
+            // Максимальный размер принятых данных
+            binding.MaxReceivedMessageSize = Int32.MaxValue;
+            // Максимальный размер одного пакета
+            binding.MaxBufferSize = 524288;    // 0.5 Мб
+            var sbUrlService = new StringBuilder();
+            sbUrlService.Append(_strProtocol)
+                .Append(Dns.GetHostName()).Append(":")
+                .Append(Settings.Default.WCFServicePort).Append("/")
+                .Append(Settings.Default.WCFServiceName);
+            return new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+        }
+
+
 		private void WcfCallResendPrice(uint downlogId)
 		{
 			WcfCall(r => {
@@ -52,22 +78,7 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
-			const string _strProtocol = @"net.tcp://";
-			var binding = new NetTcpBinding();
-			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-			binding.Security.Mode = SecurityMode.None;
-			// Ипользуется потоковая передача данных в обе стороны 
-			binding.TransferMode = TransferMode.Streamed;
-			// Максимальный размер принятых данных
-			binding.MaxReceivedMessageSize = Int32.MaxValue;
-			// Максимальный размер одного пакета
-			binding.MaxBufferSize = 524288;    // 0.5 Мб
-			var sbUrlService = new StringBuilder();
-			sbUrlService.Append(_strProtocol)
-				.Append(Dns.GetHostName()).Append(":")
-				.Append(Settings.Default.WCFServicePort).Append("/")
-				.Append(Settings.Default.WCFServiceName);
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+		    var factory = CreateFactory();
 			var priceProcessor = factory.CreateChannel();
 			var success = false;
 			try
@@ -85,6 +96,29 @@ namespace PriceProcessor.Test.Services
 			factory.Close();
 			Assert.IsTrue(success);
 		}
+
+        private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
+        {
+            var factory = CreateFactory();
+            var priceProcessor = factory.CreateChannel();
+            var success = false;
+            string[] res = new string[0];
+            try
+            {
+                res = action(priceProcessor);
+                ((ICommunicationObject)priceProcessor).Close();
+                success = true;
+            }
+            catch (FaultException)
+            {
+                if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
+                    ((ICommunicationObject)priceProcessor).Abort();
+                throw;
+            }
+            factory.Close();
+            Assert.IsTrue(success);
+            return res;
+        }
 
 		private void StartWcfPriceProcessor()
 		{
@@ -117,6 +151,64 @@ namespace PriceProcessor.Test.Services
 			}
 			catch { }
 		}
+
+        [Test]
+        [Ignore("Для ручного тестирования")]
+        public void FindSynonymTest()
+        {
+            TestPrice price;
+		    TestPriceItem priceItem;
+            using (var scope = new TransactionScope(OnDispose.Rollback))
+            {
+                price = TestSupplier.CreateTestSupplierWithPrice(p =>
+                {
+                    var rules = p.Costs.Single().PriceItem.Format;
+                    rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
+                    rules.Delimiter = ";";
+                    rules.FName1 = "F2";
+                    rules.FFirmCr = "F3";
+                    rules.FQuantity = "F5";
+                    p.Costs.Single().FormRule.FieldName = "F4";
+                    rules.FRequestRatio = "F6";
+                    p.ParentSynonym = 5;
+                });
+                priceItem = price.Costs.First().PriceItem;
+                scope.VoteCommit();
+            }
+            string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
+            if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
+
+            File.Copy(Path.GetFullPath(@"..\..\Data\223.txt"), Path.GetFullPath(@"..\..\Data\2223.txt"));
+            File.Move(Path.GetFullPath(@"..\..\Data\2223.txt"), Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
+
+            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
+            var names = item.GetAllNames();
+            Assert.That(names.Count(), Is.EqualTo(5));
+
+            TestIndexerHandler handler = new TestIndexerHandler();
+            handler.DoIndex();
+            var res1 = WcfCall(r =>
+            {
+                return r.FindSynonyms(priceItem.Id);
+            });
+
+            Assert.That(res1.Length, Is.EqualTo(2));
+            Assert.That(res1[0], Is.EqualTo("Success"));
+
+            long taskId = Convert.ToInt64(res1[1]);
+            
+
+            Thread.Sleep(5000);
+
+            var res2 = WcfCall(r =>
+                                   {
+                                       return r.FindSynonymsResult(taskId.ToString());
+                                   }
+                );
+
+            File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));            
+        }
+
 
 		[Test, Description("Тест для перепосылки прайса, присланного по email")]
 		public void Resend_eml_price()

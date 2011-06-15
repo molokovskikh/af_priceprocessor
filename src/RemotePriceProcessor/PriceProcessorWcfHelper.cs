@@ -391,5 +391,71 @@ namespace RemotePriceProcessor
 		}
 
 		public string LastErrorMessage { get; private set; }
+
+        public string[] FindSynonyms(uint priceItemId)
+        {
+            LastErrorMessage = String.Empty;
+            string[] result;
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                result = _clientProxy.FindSynonyms(priceItemId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            catch (FaultException faultException)
+            {
+                LastErrorMessage = faultException.Reason.ToString();
+                return new [] {"Error", LastErrorMessage};
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+            return result;
+        }
+
+        public string[] FindSynonymsResult(string taskId)
+        {
+            string[] result;
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                result = _clientProxy.FindSynonymsResult(taskId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+            return result;
+        }
+
+        public void StopFindSynonyms(string taskId)
+        {
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                _clientProxy.StopFindSynonyms(taskId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+        }
+
+        public void AppendToIndex(string[] synonymsId)
+        {
+            try
+            {
+                _clientProxy = _channelFactory.CreateChannel();
+                _clientProxy.AppendToIndex(synonymsId);
+                ((ICommunicationObject)_clientProxy).Close();
+            }
+            finally
+            {
+                AbortClientProxy();
+            }
+        }
 	}
 }

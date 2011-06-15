@@ -25,14 +25,17 @@ namespace Inforoom.PriceProcessor.Waybills
 		uint[] ParseWaybill(uint[] uints);
 	}
 
-	[ActiveRecord("Clientsdata", Schema = "Usersettings")]
+	//[ActiveRecord("Clientsdata", Schema = "Usersettings")]
+    [ActiveRecord("Suppliers", Schema = "Future")]
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
-		[PrimaryKey("FirmCode")]
+		//[PrimaryKey("FirmCode")]
+        [PrimaryKey("Id")]
 		public uint Id { get; set; }
 
 		[Property]
-		public string ShortName { get; set; }
+		//public string ShortName { get; set; }
+        public string Name { get; set; }
 		
 		[Property]
 		public string FullName { get; set; }
@@ -550,17 +553,26 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public int? ProductId { get; set; }
 
+        /// <summary>
+        /// Уцененный
+        /// </summary>
+        [Property]
+        public bool Junk { get; set; }
+
 		/// <summary>
 		/// Синоним продукта
 		/// </summary>
 		[Property]
 		public string Synonym { get; set; }
 
-		/// <summary>
+		/*/// <summary>
 		/// Код прайса
 		/// </summary>
 		[Property]
-		public int? PriceCode { get; set; }
+		public int? PriceCode { get; set; }*/
+
+        [BelongsTo("PriceCode")]
+        public Price Price { get; set; }
 	}
 
 	[ActiveRecord("Core0", Schema = "Farm")]

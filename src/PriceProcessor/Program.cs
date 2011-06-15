@@ -39,7 +39,8 @@ namespace Inforoom.PriceProcessor
 					Settings.Default.HistoryPath
 				});
 
-				var monitor = new Monitor();
+				//var monitor = new Monitor();
+			    var monitor = Monitor.GetInstance();
 				monitor.Start();
 				MessageBox.Show("Для остановки нажмите Ok...", "PriceProcessor");
 				monitor.Stop();

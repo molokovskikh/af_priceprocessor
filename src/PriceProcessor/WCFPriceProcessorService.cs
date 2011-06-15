@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
@@ -445,5 +445,62 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 			}
 		}
+
+        public string[] FindSynonyms(uint priceItemId)
+        {
+            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
+            if(item == null)
+            {
+                string er = String.Format("Файл прайс-листа не найден (priceItemId = {0})", priceItemId);
+                throw new FaultException<string>(er, new FaultReason(er));
+            }
+            var names = item.GetAllNames();
+            if(names.Count == 0)
+            {
+                string er = String.Format("Не найдено ни одной позиции в прайс-листе (priceItemId = {0})", priceItemId);
+                throw new FaultException<string>(er, new FaultReason(er));
+            }
+            // создаем задачу
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            long taskId = handler.AddTask(names, (uint)item.PriceCode);
+            return new [] {"Success", taskId.ToString()}; // задача успешно создана           
+        }
+
+        public string[] FindSynonymsResult(string taskId)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+            if(task == null)
+                return new [] {"Error", String.Format("Задача {0} не найдена", taskId)};
+            if(task.State == TaskState.Error)
+                return new[] { "Error", task.Error };
+            if (task.State == TaskState.Success)
+                return IndexerHandler.TransformToStringArray(task.Matches);   
+            if (task.State == TaskState.Running)
+                return new [] { "Running", task.Rate.ToString() };
+            if (task.State == TaskState.Canceled)
+                return new[] { "Canceled", task.Rate.ToString() };
+            return new[] {task.State.ToString()};
+        }
+
+        public void StopFindSynonyms(string taskId)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+            task.Stop();
+        }
+
+        public void AppendToIndex(string[] synonymsIds)
+        {
+            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+            IList<int> ids = new List<int>();
+            foreach (var sid in synonymsIds)
+            {
+                int val;
+                if(Int32.TryParse(sid, out val))                
+                    ids.Add(val);                
+            }
+            handler.AppendToIndex(ids);            
+        }
 	}
 }

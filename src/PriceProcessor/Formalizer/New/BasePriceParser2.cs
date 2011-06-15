@@ -790,6 +790,18 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 			});
 		}
 
+        public IList<string> GetAllNames()
+        {            
+            List<string> names = new List<string>();
+            foreach (var position in _reader.Read())
+            {
+                if (String.IsNullOrEmpty(position.PositionName))
+                    continue;
+                names.Add(position.PositionName); 
+            }
+            return names;
+        }
+
 		private void InternalFormalize()
 		{
 			foreach (var position in _reader.Read())
