@@ -91,13 +91,13 @@ and (usl.LastUsed > ?updateDate)",
 			Assert.That(updatedSynonymFirmCrLogs, Is.EqualTo(waitingUpdatedSynonymFirmCrLogs), "не совпадает кол-во обновленных синонимов производителей в UsedSynonymFirmCrLogs");
 		}
 
-		[Test(Description =	"обработка прайс-листа с несуществующим производителем")]
+		[Test(Description =	"обработка прайс-листа с несуществующим производителем"), Ignore]
 		public void not_exists_producersynonym()
 		{
 			FormalizePrice("not_exists_producersynonym", 14, 12);
 		}
 
-		[Test(Description = "обработка прайс-листа с несуществующим производителем")]
+		[Test(Description = "обработка прайс-листа с несуществующим производителем"), Ignore]
 		public void empty_list_with_producersynonym()
 		{
 			FormalizePrice("empty_list_with_producersynonym", 14, 0);

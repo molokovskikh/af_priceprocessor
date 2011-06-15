@@ -37,6 +37,9 @@ namespace Inforoom.PriceProcessor.Formalizer
         [HasMany(ColumnKey = "PriceCode", Cascade = ManyRelationCascadeEnum.AllDeleteOrphan, Lazy = true)]
         public virtual IList<SynonymProduct> ProductSynonyms { get; set; }
 
+        [HasMany(ColumnKey = "PriceCode", Cascade = ManyRelationCascadeEnum.AllDeleteOrphan, Lazy = true)]
+        public virtual IList<SynonymFirm> ProducerSynonyms { get; set; }
+
 	}
 
 	[ActiveRecord("PricesCosts", Schema = "Usersettings")]

@@ -12,7 +12,7 @@ namespace PriceProcessor.Test
 	[TestFixture, Ignore("Тест что бы разбирать проблемные ситуации")]
 	public class Troubleshoot
 	{
-		[Test]
+		[Test, Ignore]
 		public void shoot_it()
 		{
 			//7399851

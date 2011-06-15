@@ -47,7 +47,7 @@ namespace PriceProcessor.Test
 	{
 		private ILog _logger = LogManager.GetLogger(typeof (BasePriceParser));
 
-		[Test]
+		[Test, Ignore]
 		public void t1()
 		{
 //			var fileContent = @"
@@ -96,7 +96,7 @@ namespace PriceProcessor.Test
 
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void t()
 		{
 			Console.WriteLine("end {0}", DateTime.Now);
@@ -104,7 +104,7 @@ namespace PriceProcessor.Test
 			Console.WriteLine("end {0}", DateTime.Now);
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Load_data()
 		{
 			Console.WriteLine("begin {0}", DateTime.Now);
@@ -157,7 +157,7 @@ order by Core0.Id;", connection);
 			public float CostValue;
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Load_self()
 		{
 			var stopwatch = Stopwatch.StartNew();
@@ -387,7 +387,7 @@ order by Core0.Id", 3779);
 			_logger.Debug("конец Prepare");
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Formilize_test()
 		{
 			//@"..\..\Data\StressTest\517.dbf"
@@ -407,7 +407,7 @@ order by Core0.Id", 3779);
 			Console.WriteLine("being {0}", DateTime.Now);
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Mass_load()
 		{
 /*			var commandText = new StringBuilder();
@@ -436,7 +436,7 @@ order by Core0.Id", 3779);
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void butcher()	
 		{
 			using (var connection = new MySqlConnection("server=testsql.analit.net;user=system;password=newpass;Allow User Variables=true"))
@@ -467,7 +467,7 @@ order by Core0.Id", 3779);
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void compare()
 		{
 			var etalogn = File.ReadAllBytes(@"good\stream_dump_8");

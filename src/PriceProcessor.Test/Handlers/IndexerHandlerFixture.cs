@@ -161,6 +161,7 @@ namespace PriceProcessor.Test.Handlers
             Assert.That(str_res.Length, Is.EqualTo(6));
             Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};{7};{8}",
                 price2.Supplier.Id, price2.Supplier.Name + " (" + price2.Supplier.FullName + ")", product.Id, "False", price1.Supplier.Id, price1.Supplier.Name + " (" + price1.Supplier.FullName + ")", product.Id, "False", names[4])));
+             //price2.Supplier.Id, price2.Supplier.ShortName + " (" + price2.Supplier.FullName + ")", product.Id, "False", price1.Supplier.Id, price1.Supplier.ShortName + " (" + price1.Supplier.FullName + ")", product.Id, "False", names[4])));
 
             names.Add(String.Format("Тестовое наименование 6 ({0})", now));
             synonyms.Clear();
@@ -169,8 +170,13 @@ namespace PriceProcessor.Test.Handlers
             _handler.DoIndex(synonyms, true, false);
             
             taskId = _handler.AddTask(names, 0);
-            Assert.That(_handler.GetTask(taskId), Is.Not.Null);
-            while (_handler.GetTask(taskId).State == TaskState.Running) { Thread.Sleep(1000); }
+            Thread.Sleep(1000);
+            Assert.That(_handler.GetTask(taskId), Is.Not.Null);           
+            for (int i = 0; i < 10; i++ )
+            {
+                if (_handler.GetTask(taskId).State != TaskState.Running) break;
+                Thread.Sleep(10000);
+            }
             matches = _handler.GetTask(taskId).Matches;
             Assert.That(rate, Is.EqualTo(100));
             Assert.That(matches.Count, Is.EqualTo(6));
@@ -210,12 +216,16 @@ namespace PriceProcessor.Test.Handlers
 
             _handler.StartWork();
 
-            long taskId = _handler.AddTask(names, 1);            
+            long taskId = _handler.AddTask(names, 1);
 
-            while (_handler.GetTask(taskId).State == TaskState.Running)
+            Thread.Sleep(1000);
+
+            for (int i = 0; i < 10; i++)
             {
-                Thread.Sleep(1000);               
+                if (_handler.GetTask(taskId).State != TaskState.Running) break;
+                Thread.Sleep(10000);
             }
+            
 
             DateTime end = DateTime.Now;
 

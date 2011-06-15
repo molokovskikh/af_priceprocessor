@@ -29,12 +29,12 @@ namespace Inforoom.PriceProcessor.Waybills
     [ActiveRecord("Suppliers", Schema = "Future")]
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
-		//[PrimaryKey("FirmCode")]
-        [PrimaryKey("Id")]
+	//	[PrimaryKey("FirmCode")]        
+        [PrimaryKey]
 		public uint Id { get; set; }
 
 		[Property]
-		//public string ShortName { get; set; }
+//		public string ShortName { get; set; }
         public string Name { get; set; }
 		
 		[Property]
@@ -107,7 +107,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var criteriaSynonym = DetachedCriteria.For<T>();
 			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
-			criteriaSynonym.Add(Restrictions.In("PriceCode", priceCodes));
+			//criteriaSynonym.Add(Restrictions.In("PriceCode", priceCodes));
+            criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
 
@@ -527,8 +528,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Код прайса
 		/// </summary>
-		[Property]
-		public int? PriceCode { get; set; }
+		//[Property]
+		//public int? PriceCode { get; set; }
+
+        [BelongsTo("PriceCode")]
+        public Price Price { get; set; }
 
 		/// <summary>
 		/// Код производителя ProducerId
@@ -565,11 +569,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		[Property]
 		public string Synonym { get; set; }
 
-		/*/// <summary>
+		/// <summary>
 		/// Код прайса
 		/// </summary>
-		[Property]
-		public int? PriceCode { get; set; }*/
+		//[Property]
+		//public int? PriceCode { get; set; }
 
         [BelongsTo("PriceCode")]
         public Price Price { get; set; }

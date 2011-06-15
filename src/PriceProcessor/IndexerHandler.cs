@@ -392,6 +392,7 @@ namespace Inforoom.PriceProcessor
                         new Field(
                             "FirmName",
                             synonym.Price.Supplier.Name + " (" + synonym.Price.Supplier.FullName + ")",
+                           // synonym.Price.Supplier.ShortName + " (" + synonym.Price.Supplier.FullName + ")",
                             Field.Store.YES,
                             Field.Index.NO));
                     doc.Add(
@@ -440,7 +441,7 @@ namespace Inforoom.PriceProcessor
         {                        
             if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
             _logger.Info("Загрузка синонимов из БД...");
-            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
+            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();            
             _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
             DoIndex(synonyms, false, true);
         }

@@ -44,7 +44,7 @@ where priceitemid = {0}", priceItemId)).Tables[0].Rows[0][0]);
 
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Update_quantity_time_stamp_if_quantity_updated()
 		{
 			var begin = DateTime.Now;
@@ -59,7 +59,7 @@ where priceitemid = {0}", priceItemId)).Tables[0].Rows[0][0]);
 			Assert.That(core.Rows[0]["UpdateTime"], Is.EqualTo(DateTime.MinValue));
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Update_time_stamp_if_quantity_not_updated()
 		{
 			var begin = DateTime.Now;
