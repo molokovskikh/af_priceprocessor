@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
@@ -229,7 +231,7 @@ namespace Inforoom.PriceProcessor
     {
         protected TimeSpan workTime;
         protected TimeSpan now;       
-        public string IdxDir { get; private set; }
+        public string IdxDir { get; protected set; }
 
         protected IList<SynonymTask> taskList;
        
@@ -298,9 +300,9 @@ namespace Inforoom.PriceProcessor
         public IndexerHandler()
         {
             SleepTime = 60;
-            workTime = TimeSpan.Parse("02:00:00");            
-            IdxDir = "Idx";
+            workTime = TimeSpan.Parse("02:00:00");                        
             taskList = new List<SynonymTask>();
+            IdxDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "IdxDir");
         }
 
         //Остановка обработчика

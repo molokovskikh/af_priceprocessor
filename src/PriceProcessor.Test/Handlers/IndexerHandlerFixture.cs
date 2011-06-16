@@ -14,6 +14,10 @@ namespace PriceProcessor.Test.Handlers
 {
     public class TestIndexerHandler : IndexerHandler
     {
+        public TestIndexerHandler()
+        {
+            IdxDir = "Idx";
+        }
         public TimeSpan Now 
         {   
             get { return now; }
@@ -28,6 +32,7 @@ namespace PriceProcessor.Test.Handlers
         public string IdxDir
         {
             get { return base.IdxDir; }
+            set { base.IdxDir = value;  }
         }
 
         public void Process()
