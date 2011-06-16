@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using MySql.Data.MySqlClient;
 
@@ -110,11 +111,25 @@ group by pi.Id",
             if (Directory.Exists(tempPath))
                 Common.FileHelper.DeleteDir(tempPath);
             Directory.CreateDirectory(tempPath);
-            IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
-            _workPrice.Downloaded = Downloaded;
-            _workPrice.InputFileName = FilePath;
-            names = _workPrice.GetAllNames();
-            Directory.Delete(tempPath, true);
+            try
+            {
+                try
+                {
+                    IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
+                    _workPrice.Downloaded = Downloaded;
+                    _workPrice.InputFileName = FilePath;
+                    names = _workPrice.GetAllNames();                    
+                }
+                catch (WarningFormalizeException e)
+                {
+                    return null;
+                }
+            }
+            finally
+            {
+                Directory.Delete(tempPath, true);    
+            }
+
             return names;
         }
 

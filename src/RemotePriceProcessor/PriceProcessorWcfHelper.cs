@@ -444,12 +444,12 @@ namespace RemotePriceProcessor
             }
         }
 
-        public void AppendToIndex(string[] synonymsId)
+        public void AppendToIndex(string[] synonymsIds)
         {
             try
             {
                 _clientProxy = _channelFactory.CreateChannel();
-                _clientProxy.AppendToIndex(synonymsId);
+                _clientProxy.AppendToIndex(synonymsIds);
                 ((ICommunicationObject)_clientProxy).Close();
             }
             finally

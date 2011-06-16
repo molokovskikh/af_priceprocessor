@@ -455,6 +455,11 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
                 throw new FaultException<string>(er, new FaultReason(er));
             }
             var names = item.GetAllNames();
+            if(names == null)
+            {
+                string er = String.Format("Прайс-лист не формализован (priceItemId = {0})", priceItemId);
+                throw new FaultException<string>(er, new FaultReason(er));
+            }
             if(names.Count == 0)
             {
                 string er = String.Format("Не найдено ни одной позиции в прайс-листе (priceItemId = {0})", priceItemId);
@@ -487,7 +492,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
         {
             IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
             SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
-            task.Stop();
+            if(task != null) task.Stop();
         }
 
         public void AppendToIndex(string[] synonymsIds)

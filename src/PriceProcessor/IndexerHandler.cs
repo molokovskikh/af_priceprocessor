@@ -182,11 +182,11 @@ namespace Inforoom.PriceProcessor
                         State = TaskState.Canceled;
                         return;
                     }
-                    string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки
-                    if (matches.ContainsKey(name)) continue;
+                    string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки                    
                     Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
                     name = name.Replace("_QUOTE_", "\"");
-                    TopScoreDocCollector collector = TopScoreDocCollector.create(1000, true);
+                    if (matches.ContainsKey(name)) continue;
+                    TopScoreDocCollector collector = TopScoreDocCollector.create(10000, true);
                     searcher.Search(query, collector);
                     ScoreDoc[] hits = collector.TopDocs().scoreDocs;
                     foreach (var scoreDoc in hits)
@@ -391,8 +391,7 @@ namespace Inforoom.PriceProcessor
                     doc.Add(
                         new Field(
                             "FirmName",
-                            synonym.Price.Supplier.Name + " (" + synonym.Price.Supplier.FullName + ")",
-                           // synonym.Price.Supplier.ShortName + " (" + synonym.Price.Supplier.FullName + ")",
+                            synonym.Price.Supplier.Name + " (" + synonym.Price.Supplier.FullName + ")",                           
                             Field.Store.YES,
                             Field.Index.NO));
                     doc.Add(
@@ -453,8 +452,11 @@ namespace Inforoom.PriceProcessor
             _logger.Info("Загрузка синонимов из БД...");
             IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
             _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
-            DoIndex(synonyms, true, false);
-            _logger.Info("Добавление завершено...");
+            bool res = DoIndex(synonyms, true, false);
+            if(res)
+                _logger.Info("Добавление завершено...");
+            else
+                _logger.Info("Ошибка при добавлении");
         }
 
         public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)

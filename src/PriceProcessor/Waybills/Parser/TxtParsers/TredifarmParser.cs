@@ -15,13 +15,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			ProducerCostIndex = 5;
 			SupplierCostWithoutNdsIndex = 6;
 			SupplierCostIndex = 7;
-			NdsIndex = 8;
-			SupplierPriceMarkupIndex = 9;
+			NdsIndex = 8;			
+		    NdsAmountIndex = 9;
 			SerialNumberIndex = 10;
 			PeriodIndex = 11;
-			CertificatesIndex = 12;
-			RegistryCostIndex = -1;
-			VitallyImportantIndex = -1;
+			CertificatesIndex = 13;
+		    CertificatesDateIndex = 15;
+		    RegistryCostIndex = 17;			
+			VitallyImportantIndex = 20;
 		}
 
 		public static bool CheckFileFormat(string file)

@@ -432,7 +432,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Certificates, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(15.05));
+            Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(15.05));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+
 		}
 
 		[Test]

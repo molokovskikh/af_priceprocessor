@@ -47,7 +47,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);			
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Test_create_original_synonym_id()
 		{
 			//var notCheckedProducerId = 3;
@@ -67,7 +67,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			Assert.That(synonym, Is.EqualTo("5 дней ванна д/ног смягчающая №10 пак. 25г  "));
 		}
 
-		[Test] 
+        [Test, Ignore] 
 		public void FormalizeAssortmentPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
@@ -78,7 +78,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			
 		}
 
-		[Test] 
+        [Test, Ignore] 
 		public void FormalizeHelpPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
@@ -115,7 +115,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			
 		}
 
-		[Test, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
+        [Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
 		public void FormalizeProducerCost()
 		{
 			var fileName = @"formalize-producer-cost";
@@ -129,7 +129,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			CheckProducerCostInCore(corePriceCode);
 		}
 
-		[Test, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
+        [Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
 		public void FormalizeProducerCost2()
 		{
 			var sqlFormRules = @"
@@ -209,7 +209,7 @@ where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
 			});
 		}
 
-		[Test, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
+        [Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
 		public void FormalizeNds()
 		{
 			var fileName = @"formalize-nds";
@@ -239,7 +239,7 @@ where PriceCode = ?PriceCode and Nds is not null;", connection);
 			});
 		}
 
-		[Test, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из таблицы FormRules")]
+        [Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из таблицы FormRules")]
 		public void FormalizeNds2()
 		{
 			var sqlFormRules = @"

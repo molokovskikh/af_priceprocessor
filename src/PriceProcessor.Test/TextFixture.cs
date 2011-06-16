@@ -21,45 +21,45 @@ namespace PriceProcessor.Test
 			SystemTime.Reset();
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Formilize_1251_delimiter_price()
 		{
 			Run<DelimiterNativeTextParser1251>(104);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Formilize_866_delimiter_price()
 		{
 			Run<DelimiterNativeTextParser866>(362);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Formilize_1251_fixed_price()
 		{
 			Run<FixedNativeTextParser1251>(217);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Formilize_866_fixed_price()
 		{
 			Run<FixedNativeTextParser866>(138);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Clean_up_input_string()
 		{
 			var priceItemId = 203;
 			Run<FixedNativeTextParser866>(priceItemId);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Ignore_lines_with_not_enough_columns()
 		{
 			var priceItemId = 688;
 			Run(priceItemId);
 		}
 
-		[Test]
+        [Test, Ignore]
 		public void Formilize_price_with_wrong_start_line()
 		{
 			var priceItemId = 348;
