@@ -656,14 +656,14 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					if (d.DocumentLog.DocumentType == DocType.Reject)
 						return null;
-					if (shouldCheckClientSettings && !settings.ShouldParseWaybill())
+					if (shouldCheckClientSettings && settings != null && !settings.ShouldParseWaybill())
 						return null;
 					
 					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-					if (settings.IsConvertFormat)					
+					if (doc != null && settings != null && settings.IsConvertFormat)					
 						ConvertAndSaveDbfFormatIfNeeded(doc, d.DocumentLog, true);											
 
 					return doc;
