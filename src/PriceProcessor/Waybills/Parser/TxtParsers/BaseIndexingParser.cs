@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		{
 			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
 			{
-				if (part == Part.None && line.ToLower() == "[header]")
+				if (part == Part.None && (line.ToLower() == "[header]" || line.ToLower() == "[заголовок]"))
 				{
 					part = Part.Header;
 					continue;
@@ -62,7 +62,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		{
 			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
 			{
-				if (part == Part.Header && line.ToLower() == "[body]")
+				if (part == Part.Header && (line.ToLower() == "[body]" || line.ToLower() == "[таблица]"))
 				{
 					part = Part.Body;
 					continue;
@@ -202,7 +202,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return document;
 		}
 
-		private void ReadHeader(Document document, string line)
+		protected void ReadHeader(Document document, string line)
 		{
 			var header = line.Split(';');
 			document.ProviderDocumentId = header[ProviderDocumentIdIndex];
@@ -210,7 +210,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				document.DocumentDate = Convert.ToDateTime(header[DocumentDateIndex]);
 		}
 
-		private void ReadBody(Document document, string line)
+		protected void ReadBody(Document document, string line)
 		{
 			var parts = line.Split(';');
 			var docLine = document.NewLine();
@@ -251,10 +251,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
 				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
 
-			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
-				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+            if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
+            {
+                docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+                if (parts[VitallyImportantIndex].ToLower() == "да") docLine.VitallyImportant = true;
+                if (parts[VitallyImportantIndex].ToLower() == "нет") docLine.VitallyImportant = false;
+            }
 
-			if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
+		    if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
 				docLine.Amount = GetDecimal(parts[AmountIndex]);
 
 			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))
