@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
@@ -10,7 +6,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
     {
         protected override void SetIndexes()
         {
-            CodeIndex = 0;
+            CodeIndex = -1;
             ProductIndex = 1;
             QuantityIndex = 3;
             ProducerIndex = 4;

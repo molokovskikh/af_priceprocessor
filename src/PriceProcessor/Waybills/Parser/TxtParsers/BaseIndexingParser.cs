@@ -215,7 +215,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			var parts = line.Split(';');
 			var docLine = document.NewLine();
 
-			docLine.Code = parts[CodeIndex];
+            if(CodeIndex >= 0)
+			    docLine.Code = parts[CodeIndex];
 			docLine.Product = parts[ProductIndex];
 			docLine.Producer = parts[ProducerIndex];
 			docLine.Country = GetString(parts[CountryIndex]);

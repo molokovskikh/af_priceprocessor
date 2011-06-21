@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser.Txt
@@ -18,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.ProviderDocumentId, Is.EqualTo("2182"));
             Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("10.06.2011"));
 
-            Assert.That(doc.Lines[0].Code, Is.EqualTo("1"));
+            Assert.That(doc.Lines[0].Code, Is.Null);
             Assert.That(doc.Lines[0].Product, Is.EqualTo("Клинекс плат.Велти.персик"));
             Assert.That(doc.Lines[0].Quantity, Is.EqualTo(5));
             Assert.That(doc.Lines[0].Producer, Is.EqualTo("КИМБЕРЛИ-КЛАРК гигиена"));
@@ -35,6 +32,12 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].Country, Is.EqualTo("Польша"));
             Assert.That(doc.Lines[0].CertificatesDate, Is.EqualTo("17.01.2009"));
             Assert.That(doc.Lines[0].VitallyImportant, Is.False);            
+        }
+
+        [Test]
+        public void Check_file_format()
+        {
+            Assert.IsTrue(VectorGroupKalugaParser.CheckFileFormat(@"..\..\Data\Waybills\a2182.txt"));
         }
     }
 }

@@ -166,7 +166,6 @@ namespace PriceProcessor.Test.Handlers
             Assert.That(str_res.Length, Is.EqualTo(6));
             Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};{7};{8}",
                 price2.Supplier.Id, price2.Supplier.Name + " (" + price2.Supplier.FullName + ")", product.Id, "False", price1.Supplier.Id, price1.Supplier.Name + " (" + price1.Supplier.FullName + ")", product.Id, "False", names[4])));
-             //price2.Supplier.Id, price2.Supplier.ShortName + " (" + price2.Supplier.FullName + ")", product.Id, "False", price1.Supplier.Id, price1.Supplier.ShortName + " (" + price1.Supplier.FullName + ")", product.Id, "False", names[4])));
 
             names.Add(String.Format("Тестовое наименование 6 ({0})", now));
             synonyms.Clear();
@@ -231,7 +230,6 @@ namespace PriceProcessor.Test.Handlers
                 Thread.Sleep(10000);
             }
             
-
             DateTime end = DateTime.Now;
 
             SynonymTask task = _handler.GetTask(taskId);
