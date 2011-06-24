@@ -57,9 +57,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
             bool isHeader = false;
             bool isBody = false;
             bool isVectorGroup = false;
+            int counter = 0;
             using (var parser = new HeaderBodyParser(file, null))
             {
                 var content = parser.Lines();
+                
                 foreach(var line in content)
                 {
                     if (line.ToLower() == "[заголовок]") 
@@ -75,14 +77,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     var parts = line.Split(';');
                     if (parts.Length < 2) return false;
                     
-                    if (parts[0].ToLower().Contains("продавец") && parts[1].ToLower().Contains("\"вектор групп\""))
-                    {
-                        isVectorGroup = true;
-                        continue;
-                    }                    
+                    if (parts[0].ToLower().Contains("продавец")
+                        || parts[0].ToLower().Contains("номер накладной")
+                        || parts[0].ToLower().Contains("дата накладной"))
+                        counter++;
                 }                
             }
-            return isHeader & isBody & isVectorGroup;
+            return isHeader & isBody & (counter == 3);
         }
     }
 }
