@@ -163,7 +163,7 @@ usersettings.pricesdata pd,
 usersettings.clientsdata cd,
 farm.regions r
 where
-    pc.PriceItemId = ?PriceItemId
+	pc.PriceItemId = ?PriceItemId
 and pd.PriceCode = pc.PriceCode
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
 and cd.FirmCode = pd.FirmCode
@@ -466,7 +466,7 @@ PriceProcessor.");
 					return GetBoolValue(PriceFields.Await, awaitPos);
 
 				case (int)PriceFields.Junk:
-					return GetJunkValue();
+					return GetBoolValue(PriceFields.VitallyImportant, junkPos);
 
 				case (int)PriceFields.VitallyImportant:
 					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
@@ -676,28 +676,6 @@ PriceProcessor.");
 			}
 
 			return value;
-		}
-
-		/// <summary>
-		/// Получить значение поля Junk
-		/// </summary>
-		/// <returns></returns>
-		public bool GetJunkValue()
-		{
-			var JunkValue = false;
-			var t = GetFieldValueObject(PriceFields.Period);
-			if (t is DateTime)
-			{
-				var dt = (DateTime)t;
-				var ts = SystemTime.Now().Subtract(dt);
-				JunkValue = (Math.Abs(ts.Days) < 180);
-			}
-			if (!JunkValue)
-			{
-				JunkValue = GetBoolValue(PriceFields.Junk, junkPos);
-			}
-
-			return JunkValue;
 		}
 
 		/// <summary>
