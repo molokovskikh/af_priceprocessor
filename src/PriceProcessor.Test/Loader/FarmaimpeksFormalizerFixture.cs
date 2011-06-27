@@ -16,12 +16,13 @@ namespace PriceProcessor.Test.Loader
 	[TestFixture]
 	public class FarmaimpeksFormalizerFixture
 	{
-		private List<TestPrice> prices = new List<TestPrice>();
+		private List<TestPrice> prices;
 		private TestPriceItem priceItem;
 
 		[SetUp]
 		public void Setup()
 		{
+			prices = new List<TestPrice>();
 			using(new SessionScope())
 			{
 				priceItem = new TestPriceItem {
@@ -37,7 +38,6 @@ namespace PriceProcessor.Test.Loader
 					},
 				};
 
-				//var supplier = TestOldClient.CreateTestSupplier();
 				var supplier = TestSupplier.Create();
 				var price = new TestPrice {
 					CostType = CostType.MultiColumn,
@@ -118,18 +118,18 @@ namespace PriceProcessor.Test.Loader
 			formalizer.Formalize();
 		}
 
-        [Test]
-        public void GetAllNamesTest()
-        {            
-            string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
-            if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
-            File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"));
-            File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),               
-                      Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
-            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
-            var names = item.GetAllNames();
-            File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
-            Assert.That(names.Count(), Is.EqualTo(9286));
-        }
+		[Test]
+		public void GetAllNamesTest()
+		{
+			var basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
+			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
+			File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"));
+			File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),
+					  Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
+			var names = item.GetAllNames();
+			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+			Assert.That(names.Count(), Is.EqualTo(9286));
+		}
 	}
 }
