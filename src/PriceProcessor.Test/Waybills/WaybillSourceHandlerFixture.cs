@@ -80,8 +80,6 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			TestHelper.RecreateDirectories();
 
-			//var client = TestClient.CreateSimple();
-			//var supplier = TestOldClient.CreateTestSupplier();
 			var client = TestClient.Create();
 			var supplier = TestSupplier.Create();
 

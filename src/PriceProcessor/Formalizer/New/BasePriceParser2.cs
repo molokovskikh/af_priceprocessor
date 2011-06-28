@@ -806,6 +806,8 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 		{
 			foreach (var position in _reader.Read())
 			{
+				position.CalculateJunk();
+
 				if (IsForbidden(position.PositionName))
 				{
 					InsertIntoForb(position);

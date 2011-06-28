@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,6 @@ namespace PriceProcessor.Test.Formalization
 
 		private TestPrice price;
 		private TestPriceItem priceItem;
-		private DataTable table;
 
 		[SetUp]
 		public void Setup()
@@ -41,31 +41,23 @@ namespace PriceProcessor.Test.Formalization
 				priceItem = price.Costs.First().PriceItem;
 				scope.VoteCommit();
 			}
-			table = TestHelper.LoadFormRules(priceItem.Id);
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 		}
 
 		[Test]
 		public void Do_not_insert_empty_or_zero_costs()
 		{
-			using(new TransactionScope())
+			using (new TransactionScope())
 			{
 				price.NewPriceCost(priceItem, "F5");
 				price.NewPriceCost(priceItem, "F6");
+				var producer = TestProducer.Queryable.First();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
+				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 				price.Update();
 			}
 
-			File.WriteAllText(file, @"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;0;;73.88;", Encoding.GetEncoding(1251));
-
-			using (new TransactionScope())
-			{
-				var product = TestProduct.Queryable.First();
-				var producer = TestProducer.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
-				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
-			}
-
-			Formalize();
+			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;0;;73.88;");
 
 			using(new SessionScope())
 			{
@@ -78,16 +70,13 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Do_not_create_producer_synonym_if_most_price_unknown()
 		{
-			var priceContent =  @"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;";
-			File.WriteAllText(file, priceContent, Encoding.GetEncoding(1251));
-
 			using (new TransactionScope())
 			{
-				var product = TestProduct.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
+				price.Update();
 			}
 
-			Formalize();
+			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
 			using(new SessionScope())
 			{
@@ -104,16 +93,14 @@ namespace PriceProcessor.Test.Formalization
 		{
 			using (new TransactionScope())
 			{
-				var product = TestProduct.Queryable.First();
-				new TestProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", product, price).Save();
-
+				price.AddProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
 				price.CreateAssortmentBoundSynonyms(
 					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
 					"Санкт-Петербургская ф.ф.");
-
 				price.CreateAssortmentBoundSynonyms(
 					"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
 					"Валента Фармацевтика/Королев Ф");
+				price.Update();
 			}
 
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -129,7 +116,6 @@ namespace PriceProcessor.Test.Formalization
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				var core = cores.Single(c => c.ProductSynonym.Name == "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
 				Assert.That(core.ProducerSynonym, Is.EqualTo(createdSynonym), "создали синоним но не назначили его позиции в core");
-
 			}
 		}
 
@@ -140,10 +126,10 @@ namespace PriceProcessor.Test.Formalization
 
 			using (new TransactionScope())
 			{
-				var product = TestProduct.Queryable.First();
 				var producer = TestProducer.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
+				price.Update();
 			}
 
 			Formalize();
@@ -174,10 +160,10 @@ namespace PriceProcessor.Test.Formalization
 
 			using (new TransactionScope())
 			{
-				var product = TestProduct.Queryable.First();
 				var producer = TestProducer.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
+				price.Update();
 			}
 
 			Formalize();
@@ -211,9 +197,8 @@ namespace PriceProcessor.Test.Formalization
 				price.NewPriceCost(priceItem, "F5");
 				price.NewPriceCost(priceItem, "F6");
 				price.Update();
-				var product = TestProduct.Queryable.First();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
 				var producer = TestProducer.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 			}
 
@@ -251,9 +236,9 @@ namespace PriceProcessor.Test.Formalization
 		{
 			using(new TransactionScope())
 			{
-				var product = TestProduct.Queryable.First();
-				new TestProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г", product, price).Save();
+				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
 				new TestForbidden {Name = "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", Price = price}.Save();
+				price.Update();
 			}
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;
@@ -350,7 +335,11 @@ namespace PriceProcessor.Test.Formalization
 
 				var products = TestProduct.Queryable.Take(2).ToList();
 				product1 = products[0];
+				product1.CatalogProduct.Pharmacie = true;
+				product1.Save();
 				product2 = products[1];
+				product2.CatalogProduct.Pharmacie = true;
+				product2.Save();
 				new TestProductSynonym("5-нок 50мг Таб. П/о Х50", product1, price).Save();
 				new TestProductSynonym("Теотард 200мг Капс.пролонг.дейст. Х40", product2, price).Save();
 
@@ -374,13 +363,13 @@ namespace PriceProcessor.Test.Formalization
 			{
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(3));
-				var core1 = cores[1];
+				var core1 = cores.Single(c => c.ProductSynonym.Name == "5-нок 50мг Таб. П/о Х50");
 				Assert.That(core1.Product.Id, Is.EqualTo(product1.Id));
 				Assert.That(core1.ProducerSynonym.Id, Is.Not.EqualTo(synonym1.Id).And.Not.EqualTo(synonym2.Id));
 				Assert.That(core1.ProducerSynonym.Name, Is.EqualTo("Вектор"));
 				Assert.That(core1.Producer, Is.Null);
 
-				var core2 = cores[2];
+				var core2 = cores.Single(c => c.ProductSynonym.Name == "Теотард 200мг Капс.пролонг.дейст. Х40");
 				Assert.That(core2.Product.Id, Is.EqualTo(product2.Id));
 				Assert.That(core2.ProducerSynonym.Id, Is.Not.EqualTo(synonym1.Id).And.Not.EqualTo(synonym2.Id));
 				Assert.That(core2.ProducerSynonym.Name, Is.EqualTo("Вектор"));
@@ -390,7 +379,7 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
-		[Test]
+		[Test, Ignore("Все исключения создаются теперь в ручную")]
 		public void Create_exclude_if_synonym_without_producer_exist()
 		{
 			TestProduct product1;
@@ -420,7 +409,7 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
-		[Test]
+		[Test, Ignore("Больше не создаем ассортимент автоматически, все вручную")]
 		public void Create_assortment_if_product_not_pharmacie()
 		{
 			using (new TransactionScope())
@@ -461,6 +450,31 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
+		[Test]
+		public void Mark_position_as_junk_if_period_expired()
+		{
+			using (new TransactionScope())
+			{
+				var format = price.Costs.First().PriceItem.Format;
+				format.FPeriod = "F5";
+				format.Update();
+
+				price.AddProductSynonym("5-нок 50мг Таб. П/о Х50");
+				price.Update();
+			}
+
+			var bestUseFor = DateTime.Now.AddDays(60).ToShortDateString();
+			Formalize(String.Format(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;{0}", bestUseFor));
+
+			using (new SessionScope())
+			{
+				price = TestPrice.Find(price.Id);
+				var core = price.Core.First();
+				Assert.That(core.Period, Is.EqualTo(bestUseFor));
+				Assert.That(core.Junk, Is.True);
+			}
+		}
+
 		private void Price(string contents)
 		{
 			File.WriteAllText(file, contents, Encoding.GetEncoding(1251));
@@ -474,6 +488,7 @@ namespace PriceProcessor.Test.Formalization
 
 		private void Formalize()
 		{
+			var table = TestHelper.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, new PriceFormalizationInfo(row));
 			formalizer = new BasePriceParser2(reader, row);

@@ -1,4 +1,6 @@
-﻿using Inforoom.PriceProcessor.Formalizer.New;
+﻿using System;
+using Common.Tools;
+using Inforoom.PriceProcessor.Formalizer.New;
 
 namespace Inforoom.Formalizer
 {
@@ -37,6 +39,18 @@ namespace Inforoom.Formalizer
 		public bool IsNotSet(UnrecExpStatus checkStatus)
 		{
 			return ((Status & checkStatus) != checkStatus);
+		}
+
+		public void CalculateJunk()
+		{
+			DateTime periodAsDateTime;
+			if (DateTime.TryParse(Core.Period, out periodAsDateTime))
+			{
+				var isJunk = SystemTime.Now() >= periodAsDateTime
+					|| periodAsDateTime.Subtract(SystemTime.Now()).TotalDays < 180;
+				if (isJunk)
+					Core.Junk = isJunk;
+			}
 		}
 	}
 }
