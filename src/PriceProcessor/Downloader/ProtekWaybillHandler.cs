@@ -133,6 +133,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			//ХМАО-Югра
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(245011, 1072914);
+
+			//Омск
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(265488, 1077902);
 		}
 
 		protected void Load(int clientId, int instanceId)
