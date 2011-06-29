@@ -53,8 +53,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
             docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
             docLine.Amount = GetDecimal(parts[AmountIndex]);
             docLine.Producer = parts[ProducerIndex];
-            docLine.Period = GetString(parts[PeriodIndex]);
-
+            if (parts.Count() > PeriodIndex)
+                docLine.Period = GetString(parts[PeriodIndex]);            
             docLine.SetValues();
         }
 

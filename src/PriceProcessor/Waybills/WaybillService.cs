@@ -176,7 +176,7 @@ namespace Inforoom.PriceProcessor.Waybills
 									.Where(p => (p.Supplier.Id == FirmCode))
 									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 
-				if (priceCodes == null || priceCodes.Count <= 0)
+				if (priceCodes == null || priceCodes.Count <= 0 || Lines == null)
 					return this;
 
 				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.

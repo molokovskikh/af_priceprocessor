@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Waybills.Parser
             }
             Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\N000011720.txt", documentLog) is BizonKazanSpecialParser);
 
-            var doc = WaybillParser.Parse("N000011720.txt", documentLog);
+            var doc = WaybillParser.Parse("N000011720.txt", documentLog);          
             Assert.That(doc.Lines.Count, Is.EqualTo(15));
             Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-000011720"));
             Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("30.05.2011"));
@@ -43,6 +43,41 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(doc.Lines[0].RegistryCost, Is.Null);
             Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
             Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+        }
+
+        [Test]
+        public void Parse_without_period()
+        {
+            DocumentReceiveLog documentLog = null;
+            using (new SessionScope())
+            {
+                var supplier = Supplier.Find(8063u); // код поставщика "Бизон" (Казань)
+                documentLog = new DocumentReceiveLog { Supplier = supplier, };
+                documentLog.CreateAndFlush();
+            }
+            Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\13755.txt", documentLog) is BizonKazanSpecialParser);
+            var doc = WaybillParser.Parse("13755.txt", documentLog);
+            Assert.That(doc.Lines.Count, Is.EqualTo(11));
+            Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-000013755"));
+            Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("28.06.2011"));
+
+            Assert.That(doc.Lines[10].Code, Is.Null);
+            Assert.That(doc.Lines[10].Product, Is.EqualTo("Фурадонин (табл. 0,05 г №10 )"));
+            Assert.That(doc.Lines[10].SerialNumber, Is.EqualTo("360311"));
+            Assert.That(doc.Lines[10].Quantity, Is.EqualTo(20));
+            Assert.That(doc.Lines[10].SupplierCostWithoutNDS, Is.EqualTo(2.72));
+            Assert.That(doc.Lines[10].Nds, Is.EqualTo(10));
+            Assert.That(doc.Lines[10].NdsAmount, Is.EqualTo(5.44));
+            Assert.That(doc.Lines[10].Amount, Is.EqualTo(59.84));
+            Assert.That(doc.Lines[10].Producer, Is.EqualTo("Борисовский "));
+            Assert.That(doc.Lines[10].Period, Is.Null);
+
+            Assert.That(doc.Lines[10].Country, Is.Null);
+            Assert.That(doc.Lines[10].ProducerCost, Is.Null);            
+            Assert.That(doc.Lines[10].Certificates, Is.Null);
+            Assert.That(doc.Lines[10].RegistryCost, Is.Null);
+            Assert.That(doc.Lines[10].VitallyImportant, Is.Null);
+            Assert.That(doc.Lines[10].SupplierPriceMarkup, Is.Null);
         }
     }
 }

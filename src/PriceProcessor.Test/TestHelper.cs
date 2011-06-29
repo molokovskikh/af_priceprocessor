@@ -324,11 +324,13 @@ Content-Disposition: attachment;
 				sequenceSet.Parse("1:*", long.MaxValue);
 				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
 				if ((items != null) && (items.Length > 0))
-				{
+				{                 
 					foreach (var item in items)
 					{
+                        
 						var sequenceMessages = new IMAP_SequenceSet();
-						sequenceMessages.Parse(item.UID.ToString(), long.MaxValue);
+						//sequenceMessages.Parse(item.UID.ToString(), long.MaxValue);
+                        sequenceMessages.Parse(item.UID.ToString());
 						imapClient.DeleteMessages(sequenceMessages, true);
 					}
 				}
