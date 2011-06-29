@@ -220,6 +220,14 @@ namespace PriceProcessor.Test.Services
 			var emailTo = "KvasovTest@analit.net";
 			var priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName, externalFileName, password);
 
+            var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
+
+            using (new TransactionScope())
+            {
+                priceCost.BaseCost = true;
+                priceCost.Save();
+            }
+
 			var downloadLog = new PriceDownloadLog
 			{
 				Addition = String.Empty,
@@ -251,7 +259,16 @@ namespace PriceProcessor.Test.Services
 			var externalFileName = @"price.txt";
 
 			var priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
-			var downloadLog = new PriceDownloadLog {
+
+		    var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
+
+            using (new TransactionScope())
+            {
+                priceCost.BaseCost = true;
+                priceCost.Save();
+            }
+
+		    var downloadLog = new PriceDownloadLog {
 				Addition = String.Empty,
 				ArchFileName = archiveFileName,
 				ExtrFileName = externalFileName,
@@ -278,6 +295,15 @@ namespace PriceProcessor.Test.Services
 			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
 			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
+
+            var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
+
+            using (new TransactionScope())
+            {
+                priceCost.BaseCost = true;
+                priceCost.Save();
+            }
+
 			var downloadLog = new PriceDownloadLog {
 				Addition = String.Empty,
 				ArchFileName = archFileName,

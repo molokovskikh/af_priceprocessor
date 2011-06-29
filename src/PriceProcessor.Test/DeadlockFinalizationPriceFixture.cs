@@ -164,7 +164,7 @@ for update"
 			}
 		}
 
-		[Test(Description = "проверяем обработку deadlock'ов при использовании прайс-листом механизма синхронизации (update)")]
+		[Test(Description = "проверяем обработку deadlock'ов при использовании прайс-листом механизма синхронизации (update)"), Ignore]
 		public void test_deadlock_on_update()
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
@@ -219,7 +219,7 @@ and CoreCosts.PC_CostCode = {1}",
 
 		}
 
-		[Test(Description = "проверяем обработку deadlock'ов при использовании insert: полного удаления позиций, а потом вставка")]
+		[Test(Description = "проверяем обработку deadlock'ов при использовании insert: полного удаления позиций, а потом вставка"), Ignore]
 		public void test_deadlock_on_insert()
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);

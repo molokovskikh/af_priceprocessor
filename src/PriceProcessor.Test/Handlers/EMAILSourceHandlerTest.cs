@@ -196,7 +196,7 @@ namespace PriceProcessor.Test
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Delete_broken_message()
 		{
 			using (new TransactionScope())

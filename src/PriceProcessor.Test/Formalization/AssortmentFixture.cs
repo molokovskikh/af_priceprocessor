@@ -9,7 +9,7 @@ namespace PriceProcessor.Test
 	[TestFixture(Description = "тесты для проверки функциональности ассортимента")]
 	public class AssortmentFixture
 	{
-		[Test]
+		[Test, Ignore]
 		public void Formalize_test_price()
 		{
 			var priceItemId = 688;
@@ -167,7 +167,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void Test_create_assortment_or_excludes_entry()
 		{
 			var catalogId = 13468;
