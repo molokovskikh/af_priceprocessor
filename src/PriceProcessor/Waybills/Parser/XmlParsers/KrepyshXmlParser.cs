@@ -17,6 +17,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			bool hasCode = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("КодТовара").Any();
 			bool hasSerialNum = xDocument.Descendants(@"Серия").Descendants("СерияТовара").Any();
 			bool hasRegCost = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаГР").Any();
+		    bool hasProducerCost = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаИзг").Any();
+            bool hasNds = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("СтавкаНДС").Any();
+
 			document.ProviderDocumentId = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок").Value;
 			
 			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
@@ -41,12 +44,26 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("ДатаВыдачиСертиф").Any())
 					line.CertificatesDate = position.XPathSelectElement("Серии/Серия/ДатаВыдачиСертиф").Value;
+
+                if (hasProducerCost)
+                {
+                    if (String.IsNullOrEmpty(position.XPathSelectElement("ЦенаИзг").Value)) line.ProducerCost = null;
+                    else line.ProducerCost = position.Get("ЦенаИзг");
+                }
+                else line.ProducerCost = null;
 				
-				if (xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаИзг").Any())
-					line.ProducerCost = position.Get("ЦенаИзг");
-				else line.ProducerCost = null;
+                if(hasNds)
+                {
+                    string nds = position.XPathSelectElement("СтавкаНДС").Value;
+                    nds = nds.Replace('%', ' ');
+                    nds = nds.Trim();                  
+                    line.Nds = (uint?)Convert.ToDecimal(nds, CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    line.Nds = null;
+                }
 				
-				line.Nds = (uint?) position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
 
 				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("СрокГодностиТовара").Any())
@@ -63,6 +80,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.RegistryCost = position.GetOptional("ЦенаГР");
 				if (line.RegistryCost != null && line.RegistryCost > 0)
 					line.VitallyImportant = true;
+                line.SetValues();
 			}
 			return document;
 		}

@@ -231,6 +231,7 @@ and pd.AgencyEnabled= 1",
 
 		protected void FailMailSend(string Subject, string FromAddress, string ToAddress, DateTime LetterDate, Stream ms, string AttachNames, string cause)
 		{
+#if !DEBUG
 			ms.Position = 0;
 			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail, 
@@ -248,6 +249,7 @@ and pd.AgencyEnabled= 1",
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
+#endif
 		}
 
 		protected void SetCurrentPriceCode(DataRow dr)

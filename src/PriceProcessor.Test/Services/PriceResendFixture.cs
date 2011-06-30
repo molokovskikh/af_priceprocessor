@@ -219,11 +219,10 @@ namespace PriceProcessor.Test.Services
 			var emailFrom = "KvasovTest@analit.net";
 			var emailTo = "KvasovTest@analit.net";
 			var priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName, externalFileName, password);
-
-            var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
-
+            
             using (new TransactionScope())
             {
+                var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
                 priceCost.Save();
             }
@@ -259,11 +258,10 @@ namespace PriceProcessor.Test.Services
 			var externalFileName = @"price.txt";
 
 			var priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
-
-		    var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
-
+		   
             using (new TransactionScope())
             {
+                var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
                 priceCost.Save();
             }
@@ -288,18 +286,17 @@ namespace PriceProcessor.Test.Services
 		}
 
 		[Test, Description("Тест для перепосылки прайс-листа, который проверяет, правильный ли файл скопирован в DownHistory")]
-		public void Test_copy_source_file_resend_price()
+		public void Copy_source_file_resend_price()
 		{
 			var sourceFileName = "6905885.eml";
 			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
 			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
-			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
-
-            var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
+			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);            
 
             using (new TransactionScope())
             {
+                var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
                 priceCost.Save();
             }

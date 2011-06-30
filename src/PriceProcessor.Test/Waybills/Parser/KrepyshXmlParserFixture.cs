@@ -49,5 +49,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ08.Д96848 "));
 			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("03.12.2009"));
 		}
+
+        [Test]
+        public void Parse_without_producer_cost_and_nds_with_symbol_percent()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\8817928.xml");
+            document = WaybillParser.Parse(@"..\..\Data\Waybills\8817930.xml");
+            document = WaybillParser.Parse(@"..\..\Data\Waybills\8817942.xml");
+        }
 	}
 }

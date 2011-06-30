@@ -152,6 +152,7 @@ namespace Inforoom.Downloader
 			{
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
+#if !DEBUG
 				SmtpClientEx.QuickSendSmartHost(
 					Settings.Default.SMTPHost,
 					25,
@@ -159,6 +160,7 @@ namespace Inforoom.Downloader
 					Settings.Default.ServiceMail,
 					new[] { Settings.Default.UnrecLetterMail },
 					ms);
+#endif
 				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, exception.Message);
 				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
