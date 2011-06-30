@@ -264,6 +264,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public IList<DocumentLine> Lines { get; set; }
+        
 
 		public DocumentLine NewLine()
 		{
@@ -279,6 +280,19 @@ namespace Inforoom.PriceProcessor.Waybills
 			Lines.Add(line);
 			return line;
 		}
+
+        [OneToOne(Cascade = CascadeEnum.All)]
+        public Invoice Invoice { get; private set; }
+
+        public Invoice SetInvoice()
+        {
+            if (Invoice == null)
+            {
+                Invoice = new Invoice();
+                Invoice.Document = this;
+            }
+            return this.Invoice;
+        }
 
 		public void Parse(IDocumentParser parser, string file)
 		{
@@ -299,6 +313,154 @@ namespace Inforoom.PriceProcessor.Waybills
 				.Replace("/", String.Empty);
 		}
 	}
+
+    [ActiveRecord("InvoiceHeaders", Schema = "documents")]
+    public class Invoice: ActiveRecordLinqBase<Invoice>
+    {
+        [PrimaryKey(PrimaryKeyType.Foreign)]
+        public uint Id { get; set; }
+
+        [OneToOne]
+        public Document Document { get; set; }
+
+        /// <summary>
+        /// Номер счет-фактуры
+        /// </summary>
+        [Property]
+        public int? InvoiceNumber { get; set; }
+
+        /// <summary>
+        /// Дата счет-фактуры
+        /// </summary>
+        [Property]
+        public DateTime? InvoiceDate { get; set; }
+
+        /// <summary>
+        /// Наименование продавца
+        /// </summary>
+        [Property]
+        public string SellerName { get; set; }
+
+        /// <summary>
+        /// Адрес продавца
+        /// </summary>
+        [Property]
+        public string SellerAddress { get; set; }
+
+        /// <summary>
+        /// ИНН продавца
+        /// </summary>
+        [Property]
+        public string SellerINN { get; set; }
+
+        /// <summary>
+        /// КПП продавца
+        /// </summary>
+        [Property]
+        public string SellerKPP { get; set; }
+
+        /// <summary>
+        /// Грузоотправитель и его адрес
+        /// </summary>
+        [Property]
+        public string ShipperInfo { get; set; }
+
+        /// <summary>
+        /// Грузополучатель и его адрес
+        /// </summary>
+        [Property]
+        public string ConsigneeInfo { get; set; }
+
+        /// <summary>
+        /// Поле К платежно-расчетному документу N
+        /// </summary>
+        [Property]
+        public string PaymentDocumentInfo { get; set; }
+        
+        /// <summary>
+        /// Наименование покупателя
+        /// </summary>
+        [Property]
+        public string BuyerName { get; set; }
+
+        /// <summary>
+        /// Адрес покупателя
+        /// </summary>
+        [Property]
+        public string BuyerAddress { get; set; }
+
+        /// <summary>
+        /// ИНН покупателя
+        /// </summary>
+        [Property]
+        public string BuyerINN { get; set; }
+
+        /// <summary>
+        /// КПП покупателя
+        /// </summary>
+        [Property]
+        public string BuyerKPP { get; set; }
+
+        /// <summary>
+        /// Стоимость товаров без налога для группы товаров, облагаемых ставкой 0% НДС
+        /// </summary>
+        [Property]
+        public decimal? AmountWithoutNDS0 { get; set; }
+
+        /// <summary>
+        /// Стоимость товаров без налога для группы товаров, облагаемых ставкой 10% НДС
+        /// </summary>
+        [Property]
+        public decimal? AmountWithoutNDS10 { get; set; }
+
+        /// <summary>
+        /// Сумма налога для группы товаров, облагаемых ставкой 10% НДС
+        /// </summary>
+        [Property]
+        public decimal? NDSAmount10 { get; set; }
+
+        /// <summary>
+        /// Стоимость товаров для группы товаров, облагаемых ставкой 10% НДС всего с учётом налога
+        /// </summary>
+        [Property]
+        public decimal? Amount10 { get; set; }
+
+        /// <summary>
+        /// Стоимость товаров без налога для группы товаров, облагаемых ставкой 18% НДС
+        /// </summary>
+        [Property]
+        public decimal? AmountWithoutNDS18 { get; set; }
+
+        /// <summary>
+        /// Сумма налога для группы товаров, облагаемых ставкой 18% НДС
+        /// </summary>
+        [Property]
+        public decimal? NDSAmount18 { get; set; }
+
+        /// <summary>
+        /// Стоимость товаров для группы товаров , облагаемых ставкой 18% НДС всего с учётом налога
+        /// </summary>
+        [Property]
+        public decimal? Amount18 { get; set; }
+
+        /// <summary>
+        /// Общая стоимость товаров без налога (указывается в конце таблицы счёт-фактуры по строке «ИТОГО»)
+        /// </summary>
+        [Property]
+        public decimal? AmountWithoutNDS { get; set; }
+
+        /// <summary>
+        /// Общая сумма налога (указывается в конце таблицы счёт-фактуры по строке «ИТОГО»)
+        /// </summary>
+        [Property]
+        public decimal? NDSAmount { get; set; }
+
+        /// <summary>
+        /// Общая стоимость товаров с налогом (указывается в конце таблицы счёт-фактуры по строке «ИТОГО»)
+        /// </summary>
+        [Property]
+        public decimal? Amount { get; set; }
+    }
 
 	[ActiveRecord("DocumentBodies", Schema = "documents")]
 	public class DocumentLine

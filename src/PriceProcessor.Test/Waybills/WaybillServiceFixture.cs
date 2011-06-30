@@ -652,5 +652,57 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(data.Rows[0]["sert_date"], Is.EqualTo("10.08.2009"));
 			}
 		}
+
+        [Test]
+        public void Document_invoice_test()
+        {
+            Document doc;
+            using (new SessionScope())
+            {                
+                TestSupplier testsupplier = (TestSupplier)TestSupplier.FindFirst();
+                Supplier supplier = Supplier.Find(testsupplier.Id);
+                
+                TestDrugstoreSettings settings = TestDrugstoreSettings.FindFirst();
+                TestOrder order = TestOrder.FindFirst();
+
+                TestAddress address = TestAddress.FindFirst();
+                DocumentReceiveLog log = new DocumentReceiveLog()
+                {
+                    Supplier = supplier,
+                    ClientCode = settings.Id,
+                    AddressId = address.Id,
+                    MessageUid = 123,
+                    DocumentSize = 100
+                };
+
+                doc = new Document(log)
+                {
+                    OrderId = order.Id,
+                    AddressId = address.Id,
+                    DocumentDate = DateTime.Now                    
+                };
+                Invoice inv = doc.SetInvoice();
+                inv.BuyerName = "Тестовый покупатель";
+
+                log.Save();
+                doc.Save();
+            }
+
+            using (new SessionScope())
+            {
+                Document doc2 = Document.Find(doc.Id);
+                Assert.That(doc2, Is.Not.Null);
+                Assert.That(doc2.Invoice, Is.Not.Null);
+                Assert.That(doc2.Invoice.Id, Is.EqualTo(doc.Id));
+                Assert.That(doc2.Invoice.BuyerName, Is.EqualTo("Тестовый покупатель"));
+
+                Invoice inv2 = Invoice.Find(doc.Id);
+                Assert.That(inv2, Is.Not.Null);
+                Assert.That(inv2.Id, Is.EqualTo(doc.Id));
+                Assert.That(inv2.Document, Is.Not.Null);
+                Assert.That(inv2.Document.Id, Is.EqualTo(doc.Id));
+                Assert.That(inv2.Document.AddressId, Is.EqualTo(doc.AddressId));
+            }
+        }
 	}
 }

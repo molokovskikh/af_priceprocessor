@@ -99,7 +99,7 @@ namespace PriceProcessor.Test
 			Assert.AreEqual(true, IsMailAddress("<'prices@spb.analit.net'>"), "Адрес некорректен");
 		}
 
-		[Test(Description = "Тест для обработки прайсов, пришедших по email в запароленных архивах"), Ignore]
+		[Test(Description = "Тест для обработки прайсов, пришедших по email в запароленных архивах")]
 		public void EmailPriceInPasswordProtectedArchiveProcessingTest()
 		{
 			var email = "d.dorofeev@analit.net";
@@ -144,7 +144,7 @@ namespace PriceProcessor.Test
 			Assert.IsTrue(priceItemInQueue, "Ошибка обработки файла. Файл не поставлен в очередь на формализацию");
 		}
 
-		[Test, Description("Тест для обработки прайс-листа в письме"), Ignore("Тест для отладки обработчика писем")]
+		[Test, Description("Тест для обработки прайс-листа в письме ()") /*,Ignore("Тест для отладки обработчика писем")*/]
 		public void Process_price_in_message()
 		{
 			var files = new[] { @"..\..\Data\EmailSourceHandlerTest\Price_ProgTechnologi.eml" };
@@ -254,12 +254,24 @@ FROM
 	usersettings.PriceItems
 WHERE
 	SourceId = {0}", sourceId);
-
-			var reader = MySqlHelper.ExecuteReader(ConfigurationManager.ConnectionStrings["DB"].ConnectionString, query);
-			while (reader.Read())
-			{
-				list.Add(reader.GetUInt64(0));
-			}
+		   
+            var _connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            var command = new MySqlCommand(query, _connection);
+            try
+            {
+                _connection.Open();                
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(reader.GetUInt64(0));
+                    }
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
 			return list;
 		}
 
