@@ -207,6 +207,7 @@
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingLipetskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParser.cs" />

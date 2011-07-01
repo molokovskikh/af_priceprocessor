@@ -14,6 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		private List<Action<DocumentLine, DataRow>> _lineActions = new List<Action<DocumentLine, DataRow>>();
 		private List<Action<Document, DataRow>> _headerActions = new List<Action<Document, DataRow>>();
+        private List<Action<Invoice, DataRow>> _invoiceActions = new List<Action<Invoice, DataRow>>();
 
 		private static PropertyInfo GetInfo(Expression<Func<DocumentLine, object>> expression)
 		{
@@ -42,6 +43,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}
 			throw new Exception("Неизвестный тип выражения");
 		}
+
+        private static PropertyInfo GetInfo(Expression<Func<Invoice, object>> expression)
+        {
+            if (expression.Body.NodeType == ExpressionType.Convert)
+            {
+                var ex = (UnaryExpression)expression.Body;
+                return (PropertyInfo)((MemberExpression)ex.Operand).Member;
+            }
+            if (expression.Body.NodeType == ExpressionType.MemberAccess)
+            {
+                return (PropertyInfo)(((MemberExpression)expression.Body).Member);
+            }
+            throw new Exception("Неизвестный тип выражения");
+        }
+
 
 		// Если fieldName - это поле, из которого будет читаться ProviderDocumentId,
 		// то этот метод делает проверку на то, что в поле ProviderDocumentId содержатся не порядковые номера
@@ -101,6 +117,45 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			});
 			return this;
 		}
+
+        public DbfParser DocumentInvoice(Expression<Func<Invoice, object>> ex, params string[] names)
+        {
+            var propertyInfo = GetInfo(ex);
+            _invoiceActions.Add((line, dataRow) =>
+            {
+                foreach (var name in names)
+                {
+                    if (!dataRow.Table.Columns.Contains(name))
+                        continue;
+                    var value = dataRow[name];
+                    propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+                    break;
+                }
+            });
+            return this;
+        }
+
+        public DbfParser DocumentInvoice(Expression<Func<DocumentLine, bool>> expression)
+        {
+            if (expression.Body.NodeType == ExpressionType.Call)
+            {
+                var ex = (MethodCallExpression)expression.Body;
+                var methodInfo = ex.Method;
+                var argumentType = methodInfo.GetParameters()[0].ParameterType;
+                PropertyInfo argument = null;
+                foreach (var arg in ex.Arguments)
+                {
+                    var op = ((UnaryExpression)((UnaryExpression)arg).Operand).Operand;
+                    argument = ((PropertyInfo)((MemberExpression)op).Member);
+                    break;
+                }
+                if (argument != null)
+                    _invoiceActions.Add((line, dataRow) =>
+                        methodInfo.Invoke(line, new[] { ConvertIfNeeded(argument.GetValue(line, new object[] { }), argumentType) }));
+            }
+            return this;
+        }
+       
 
 		public DbfParser Line(Expression<Func<DocumentLine, object>> ex, params string[] names)
 		{
@@ -194,7 +249,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			foreach (var action in _headerActions)
 				action(document, table.Rows[0]);
 
-			foreach (var row in table.Rows.Cast<DataRow>())
+            if (_invoiceActions.Count != 0)
+            {
+                var invoice = document.SetInvoice();
+                foreach (var action in _invoiceActions)
+                {
+                    action(invoice, table.Rows[0]);
+                }
+            }
+
+		    foreach (var row in table.Rows.Cast<DataRow>())
 			{
 				var line = document.NewLine();
 				foreach (var action in _lineActions)

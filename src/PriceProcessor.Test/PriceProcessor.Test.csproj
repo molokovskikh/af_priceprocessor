@@ -171,6 +171,7 @@
     <Compile Include="Waybills\Parser\BssSpbXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AntKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingLipetskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Avesta_6256_SpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParserFixture.cs" />

@@ -681,7 +681,7 @@ namespace PriceProcessor.Test.Waybills
                     AddressId = address.Id,
                     DocumentDate = DateTime.Now                    
                 };
-                Invoice inv = doc.SetInvoice();
+                Invoice inv = doc.SetInvoice();                
                 inv.BuyerName = "Тестовый покупатель";
 
                 log.Save();
@@ -702,6 +702,7 @@ namespace PriceProcessor.Test.Waybills
                 Assert.That(inv2.Document, Is.Not.Null);
                 Assert.That(inv2.Document.Id, Is.EqualTo(doc.Id));
                 Assert.That(inv2.Document.AddressId, Is.EqualTo(doc.AddressId));
+                Assert.That(inv2.BuyerName, Is.EqualTo("Тестовый покупатель"));
             }
         }
 	}

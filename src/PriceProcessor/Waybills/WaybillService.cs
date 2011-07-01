@@ -291,7 +291,7 @@ namespace Inforoom.PriceProcessor.Waybills
                 Invoice = new Invoice();
                 Invoice.Document = this;
             }
-            return this.Invoice;
+            return Invoice;
         }
 
 		public void Parse(IDocumentParser parser, string file)
@@ -327,7 +327,7 @@ namespace Inforoom.PriceProcessor.Waybills
         /// Номер счет-фактуры
         /// </summary>
         [Property]
-        public int? InvoiceNumber { get; set; }
+        public string InvoiceNumber { get; set; }
 
         /// <summary>
         /// Дата счет-фактуры
@@ -590,6 +590,31 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		[Property]
 		public decimal? Amount { get; set; }
+
+        /// <summary>
+        /// Единица измерения
+        /// </summary>
+        [Property]
+        public string Unit { get; set; }
+
+        /// <summary>
+        /// В том числе акциз
+        /// </summary>
+        [Property]
+        public decimal? ExciseTax { get; set; }
+
+        /// <summary>
+        /// № Таможенной декларации
+        /// </summary>
+        [Property]
+        public string BillOfEntryNumber { get; set; }
+
+        /// <summary>
+        /// Код EAN-13 (штрих-код)
+        /// </summary>
+        [Property]
+        public string EAN13 { get; set; }
+
 
 		public void SetAmount()
 		{
