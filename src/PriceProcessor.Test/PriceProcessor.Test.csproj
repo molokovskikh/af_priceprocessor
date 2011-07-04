@@ -176,6 +176,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParserFixture.cs" />

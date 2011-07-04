@@ -210,6 +210,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingLipetskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
