@@ -103,6 +103,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int CertificatesDateIndex = -1;
 		protected int AmountIndex = -1;
 		protected int NdsAmountIndex = -1;
+	    protected int UnitIndex = -1;
+	    protected int ExciseTaxIndex = -1;
+	    protected int BillOfEntryNumberIndex = -1;
+	    protected int EAN13Index = -1;
+
 
 		protected string CommentMark;
 		protected bool CalculateSupplierPriceMarkup;
@@ -222,6 +227,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			docLine.Country = GetString(parts[CountryIndex]);
 			docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
 
+            if ((UnitIndex > 0) && parts.Length > UnitIndex)
+                docLine.Unit = GetString(parts[UnitIndex]);
+
 			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex)
 				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
 
@@ -236,6 +244,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
 				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
+
+            if ((ExciseTaxIndex > 0) && (parts.Length > ExciseTaxIndex))
+                docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
 
 			if ((SerialNumberIndex > 0) && (parts.Length>SerialNumberIndex))
 			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
@@ -252,12 +263,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
 				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
 
+            if ((BillOfEntryNumberIndex > 0) && (parts.Length > BillOfEntryNumberIndex))
+                docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
+
             if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
             {
                 docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
                 if (parts[VitallyImportantIndex].ToLower() == "да") docLine.VitallyImportant = true;
                 if (parts[VitallyImportantIndex].ToLower() == "нет") docLine.VitallyImportant = false;
             }
+
+            if ((EAN13Index > 0) && parts.Length > EAN13Index)
+                docLine.EAN13 = GetString(parts[EAN13Index]);
 
 		    if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
 				docLine.Amount = GetDecimal(parts[AmountIndex]);
