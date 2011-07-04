@@ -220,6 +220,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SmileParser.cs" />
     <Compile Include="Waybills\Parser\BizonKazanSpecialParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\KatrenVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PharmelKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\VectorGroupKalugaParser.cs" />
     <Compile Include="Waybills\Parser\ZhdanovKazanSpecialParser.cs" />

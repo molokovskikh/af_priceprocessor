@@ -195,6 +195,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\GenesisNNParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MoronKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SmileParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\KatrenVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\PharmelKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\TredifarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\VectorGroupKalugaParserFixture.cs" />
