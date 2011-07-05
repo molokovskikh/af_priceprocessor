@@ -11,8 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("PY362019.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ФК000362019"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("25.10.2010"));
-			var line = doc.Lines[0];
-            //Assert.That(.S, Is.EqualTo("815575"));
+			var line = doc.Lines[0];            
 			Assert.That(line.Code, Is.EqualTo("7045"));
 			Assert.That(line.Product, Is.EqualTo("Апилак 0,01г №10 таб."));
 			Assert.That(line.Producer, Is.EqualTo("Вифитех"));
@@ -27,6 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.ProducerCost, Is.EqualTo(10.4));
             Assert.That(line.RegistryCost, Is.EqualTo(0));
             Assert.That(line.VitallyImportant, !Is.True);
+            Assert.That(line.EAN13, Is.EqualTo("4605180002422"));
 		}
 	}
 }

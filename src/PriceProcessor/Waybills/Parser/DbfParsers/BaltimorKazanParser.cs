@@ -23,7 +23,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE")
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.RegistryCost, "CGR")
-				.Line(l => l.Amount, "SUMASNDS");
+				.Line(l => l.Amount, "SUMASNDS")
+                .Line(l => l.EAN13, "STRKOD");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
@@ -42,7 +43,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			       && data.Columns.Contains("PRICE")
 			       && data.Columns.Contains("GNVLS")
 			       && data.Columns.Contains("CGR")
-			       && data.Columns.Contains("SUMASNDS");
+			       && data.Columns.Contains("SUMASNDS")
+                   && data.Columns.Contains("STRKOD");
 		}
 	}
 }

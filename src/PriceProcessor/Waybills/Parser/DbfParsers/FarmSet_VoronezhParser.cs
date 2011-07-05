@@ -27,7 +27,7 @@
 					.Line(l => l.RegistryCost, "CENAREESTR")
 					.Line(l => l.ProducerCost, "CENAPROIZ")
 					.Line(l => l.VitallyImportant, "PV")
-					//.Line(l => l., "ST10")
+					.Line(l => l.EAN13, "SHTRIH")
 					.ToDocument(document, data);
 				return document;
 			}

@@ -27,7 +27,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.Amount, "SUMPAY")
 				//.Line(l => l.NdsAmount, "SUMNDS2")
-				.Line(l => l.SupplierPriceMarkup, "PROCNDB");
+				.Line(l => l.SupplierPriceMarkup, "PROCNDB")
+                .Line(l => l.EAN13, "EAN13");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

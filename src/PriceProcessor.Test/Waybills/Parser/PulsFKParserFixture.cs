@@ -32,6 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(122.11));
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.True);
+            Assert.That(line.EAN13, Is.Null);
 		}
 
 		[Test]
@@ -58,6 +59,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(311.22));
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.True);
+            Assert.That(line.EAN13, Is.EqualTo("3838989596446"));
 		}
 
 		[Test]
@@ -89,8 +91,37 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("POCC HU.ФM01.Д45323"));
 			Assert.That(line.Amount, Is.EqualTo(207.66));
 			Assert.That(line.NdsAmount, Is.EqualTo(18.88));
-			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(14.00));	
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(14.00));
+		    Assert.That(line.EAN13, Is.EqualTo("5997001393871"));            
 		}
+
+        [Test]
+        public void Parse_A_and_D_rus()
+        {
+            var doc = WaybillParser.Parse("Apteka2000_invoice.DBF");
+            Assert.That(doc.Lines.Count, Is.EqualTo(14));
+            Assert.That(doc.ProviderDocumentId, Is.EqualTo("РНАА061-00001"));
+            Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("01.10.2006"));
+            var line = doc.Lines[0];
+            Assert.That(line.Code, Is.EqualTo("Т00332"));
+            Assert.That(line.ProducerCost, Is.EqualTo(77.00000));
+            Assert.That(line.SupplierCost, Is.EqualTo(77.00000));
+            Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(77.00000));
+            Assert.That(line.Quantity, Is.EqualTo(2));
+            Assert.That(line.SerialNumber, Is.Null);
+            Assert.That(line.Period, Is.Null);
+            Assert.That(line.Product, Is.EqualTo("Термометр DT-501 A&D электронный"));
+            Assert.That(line.Country, Is.EqualTo("ЯПО"));
+            Assert.That(line.Producer, Is.EqualTo("A&D"));
+            Assert.That(line.Nds, Is.EqualTo(0));
+            Assert.That(line.VitallyImportant, Is.False);
+            Assert.That(line.RegistryCost, Is.Null);
+            Assert.That(line.Certificates, Is.EqualTo("POCC JP.ИM04.B05579"));
+            Assert.That(line.Amount, Is.EqualTo(154.00000));            
+            Assert.That(line.SupplierPriceMarkup, Is.Null);
+            Assert.That(line.EAN13, Is.EqualTo("4606339000818"));
+
+        }
 
 		[Test]
 		public void Check_file_format()

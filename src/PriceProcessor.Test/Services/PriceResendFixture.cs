@@ -56,7 +56,8 @@ namespace PriceProcessor.Test.Services
             var sbUrlService = new StringBuilder();
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
-                .Append(Settings.Default.WCFServicePort).Append("/")
+               // .Append(Settings.Default.WCFServicePort).Append("/")
+                .Append("902").Append("/")
                 .Append(Settings.Default.WCFServiceName);
             return new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
         }
@@ -78,44 +79,60 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
-		    var factory = CreateFactory();
-			var priceProcessor = factory.CreateChannel();
-			var success = false;
-			try
-			{
-				action(priceProcessor);
-				((ICommunicationObject)priceProcessor).Close();
-				success = true;
-			}
-			catch (FaultException)
-			{
-				if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
-					((ICommunicationObject)priceProcessor).Abort();
-				throw;
-			}
-			factory.Close();
+            var success = false;
+            ChannelFactory<IRemotePriceProcessor> factory = null;
+            try
+            {
+                factory = CreateFactory();
+                var priceProcessor = factory.CreateChannel();
+                
+                try
+                {
+                    action(priceProcessor);
+                    ((ICommunicationObject) priceProcessor).Close();
+                    success = true;
+                }
+                catch (FaultException)
+                {
+                    if (((ICommunicationObject) priceProcessor).State != CommunicationState.Closed)
+                        ((ICommunicationObject) priceProcessor).Abort();
+                    throw;
+                }
+            }
+            finally
+            {
+                factory.Close();
+            }
+		    factory.Close();
 			Assert.IsTrue(success);
 		}
 
         private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
         {
-            var factory = CreateFactory();
-            var priceProcessor = factory.CreateChannel();
             var success = false;
             string[] res = new string[0];
+            ChannelFactory<IRemotePriceProcessor> factory = null;
             try
             {
-                res = action(priceProcessor);
-                ((ICommunicationObject)priceProcessor).Close();
-                success = true;
+                factory = CreateFactory();
+                var priceProcessor = factory.CreateChannel();
+                try
+                {
+                    res = action(priceProcessor);
+                    ((ICommunicationObject)priceProcessor).Close();
+                    success = true;
+                }
+                catch (FaultException)
+                {
+                    if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
+                        ((ICommunicationObject)priceProcessor).Abort();
+                    throw;
+                }
             }
-            catch (FaultException)
+            finally
             {
-                if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
-                    ((ICommunicationObject)priceProcessor).Abort();
-                throw;
+                factory.Close();
             }
-            factory.Close();
             Assert.IsTrue(success);
             return res;
         }
@@ -127,7 +144,8 @@ namespace PriceProcessor.Test.Services
 			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
-				.Append(Settings.Default.WCFServicePort).Append("/")
+				//.Append(Settings.Default.WCFServicePort).Append("/")
+                .Append("902").Append("/")
 				.Append(Settings.Default.WCFServiceName);
 			NetTcpBinding binding = new NetTcpBinding();
 			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
