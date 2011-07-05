@@ -705,5 +705,49 @@ namespace PriceProcessor.Test.Waybills
                 Assert.That(inv2.BuyerName, Is.EqualTo("Тестовый покупатель"));
             }
         }
+
+        [Test]
+        public void Convert_if_exist_ean13_field()
+        {
+            var doc = WaybillParser.Parse("69565_0.dbf");
+            var invoice = doc.Invoice;
+            Assert.That(invoice, Is.Not.Null);
+            using (new SessionScope())
+            {
+                TestSupplier testsupplier = (TestSupplier) TestSupplier.FindFirst();
+                Supplier supplier = Supplier.Find(testsupplier.Id);
+                TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat == true && s.AssortimentPriceId != null).FirstOrDefault();
+                TestOrder order = TestOrder.FindFirst();
+                TestAddress address = TestAddress.FindFirst();
+                DocumentReceiveLog log = new DocumentReceiveLog()
+                                             {
+                                                 Supplier = supplier,
+                                                 ClientCode = settings.Id,
+                                                 AddressId = address.Id,
+                                                 MessageUid = 123,
+                                                 DocumentSize = 100
+                                             };
+
+                doc.Log = log;
+                doc.OrderId = order.Id;
+                doc.AddressId = address.Id;
+                doc.FirmCode = log.Supplier.Id;
+                doc.ClientCode = (uint) log.ClientCode;
+
+                doc.SetProductId();
+
+                var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
+                Directory.Delete(path, true);
+                
+                WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
+
+                var files_dbf = Directory.GetFiles(path, "*.dbf");
+                Assert.That(files_dbf.Count(), Is.EqualTo(1));
+                var file_dbf = files_dbf.Select(f => f).First();
+                var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+                Assert.IsTrue(data.Columns.Contains("ean13"));
+                Assert.That(data.Rows[0]["ean13"], Is.EqualTo("5944700100019"));
+            }            
+        }
 	}
 }

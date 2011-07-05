@@ -954,7 +954,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			                       		new DataColumn("pcena_bnds"),
 			                       		new DataColumn("nds"),
 			                       		new DataColumn("pcena_nds"),
-			                       		new DataColumn("kol_tov")
+			                       		new DataColumn("kol_tov"),
+                                        new DataColumn("ean13")
 			                       	});
 			
 
@@ -991,6 +992,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				row["nds"] = line.Nds;
 				row["pcena_nds"] = line.SupplierCost;
 				row["kol_tov"] = line.Quantity;
+			    row["ean13"] = line.EAN13;
 				
 				table.Rows.Add(row);
 			}

@@ -184,9 +184,10 @@ namespace Inforoom.PriceProcessor
                         State = TaskState.Canceled;
                         return;
                     }
-                    string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки                    
+                    string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_").Replace("\\", "_LSLASH_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки                    
+
                     Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
-                    name = name.Replace("_QUOTE_", "\"");
+                    name = name.Replace("_QUOTE_", "\"").Replace("_LSLASH_", "\\");
                     if (matches.ContainsKey(name)) continue;
                     TopScoreDocCollector collector = TopScoreDocCollector.create(10000, true);
                     searcher.Search(query, collector);
@@ -382,7 +383,7 @@ namespace Inforoom.PriceProcessor
                 _logger.Info("Старт индексации синонимов...");
                 foreach (var synonym in synonyms)
                 {
-                    string synstr = synonym.Synonym.Replace("\"", "_QUOTE_");
+                    string synstr = synonym.Synonym.Replace("\"", "_QUOTE_").Replace("\\", "_LSLASH_");
                     Document doc = new Document();
                     doc.Add(
                         new Field(
