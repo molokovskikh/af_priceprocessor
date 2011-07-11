@@ -190,7 +190,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return String.IsNullOrEmpty(value) ? null : value;
 		}
 
-		private static bool? GetBool(string value)
+		protected static bool? GetBool(string value)
 		{
 			var decimalVal = GetDecimal(value);
 			if (decimalVal == null)

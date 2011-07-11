@@ -43,6 +43,30 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(doc.Lines[0].RegistryCost, Is.Null);
             Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
             Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+
+            doc = WaybillParser.Parse("801_000011708.txt", documentLog);
+            Assert.That(doc.Lines.Count, Is.EqualTo(9));
+            Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-000011708"));
+            Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("30.05.2011"));
+
+            Assert.That(doc.Lines[0].Code, Is.Null);
+            Assert.That(doc.Lines[0].Product, Is.EqualTo("Алмагель А (сусп.  170 мл )"));
+            Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("250610"));
+            Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
+            Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(76.5));
+            Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
+            Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(7.65));
+            Assert.That(doc.Lines[0].Amount, Is.EqualTo(84.15));
+            Assert.That(doc.Lines[0].Producer, Is.EqualTo("Balkanpharma-Troyan AD"));
+            Assert.That(doc.Lines[0].Period, Is.EqualTo("01.06.12"));
+
+            Assert.That(doc.Lines[0].Country, Is.Null);
+            Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(87.66));
+            Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(84.15));
+            Assert.That(doc.Lines[0].Certificates, Is.EqualTo("ФМ09.Д09423"));
+            Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
+            Assert.That(doc.Lines[0].VitallyImportant, Is.False);
+            Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
         }
 
         [Test]

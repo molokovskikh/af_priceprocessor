@@ -65,7 +65,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		public void Check_file_format()
 		{
 			Assert.IsTrue(KosmetikOptParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\real_№УТKO0000566_from_16.03.2011.dbf")));
-            Assert.IsTrue(KosmetikOptParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\real_No.УТKO0001684_from_05.07.2011.dbf")));
+            Assert.IsTrue(KosmetikOptParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\real_No.0001684_from_05.07.2011.dbf")));
 		}
 	}
 }
