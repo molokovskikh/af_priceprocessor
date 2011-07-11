@@ -64,6 +64,13 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(ImperiaFarmaSpecialParser);
 							break;
 						}
+                    case 1581:
+				        {
+				            var table = ZdravServiceSpecialParser.Load(file);
+                            if (ZdravServiceSpecialParser.CheckFileFormat(table))
+                                type = typeof (ZdravServiceSpecialParser);
+				            break;
+				        }
 					default: break;
 				}
 			}
@@ -106,9 +113,11 @@ namespace Inforoom.PriceProcessor.Waybills
 					type = typeof (Moron_338_SpecialParser);
 
 				// Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
-				if (type == typeof(PulsFKParser) && documentLog != null
-					&& documentLog.Supplier.Id == 1581)
-					type = typeof (ZdravServiceParser);
+                if (type == typeof(PulsFKParser) && documentLog != null
+                    && documentLog.Supplier.Id == 1581)
+                {                  
+                    type = typeof(ZdravServiceParser);                 
+                }
 			}
 			if (type == null)
 			{
