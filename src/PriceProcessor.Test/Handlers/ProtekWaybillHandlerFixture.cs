@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
@@ -94,7 +95,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Process_protek_waybills()
 		{
-			fake.Process();
+			fake.Process();		    
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
@@ -140,7 +141,7 @@ namespace PriceProcessor.Test.Handlers
 		}
 
 		[Test]
-		public void Parse_and_Convert_to_Dbf()
+		public void Test_Parse_and_Convert_to_Dbf()
 		{			
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
 			using (new TransactionScope())

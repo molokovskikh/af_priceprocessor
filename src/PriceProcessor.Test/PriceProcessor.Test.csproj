@@ -179,6 +179,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVrnMusatovParserFixture.cs" />

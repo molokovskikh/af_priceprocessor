@@ -712,11 +712,11 @@ namespace PriceProcessor.Test.Waybills
             var doc = WaybillParser.Parse("69565_0.dbf");
             var invoice = doc.Invoice;
             Assert.That(invoice, Is.Not.Null);
-            using (new SessionScope())
+            using (new TransactionScope())
             {
                 TestSupplier testsupplier = (TestSupplier) TestSupplier.FindFirst();
                 Supplier supplier = Supplier.Find(testsupplier.Id);
-                TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat == true && s.AssortimentPriceId != null).FirstOrDefault();
+                TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
                 TestOrder order = TestOrder.FindFirst();
                 TestAddress address = TestAddress.FindFirst();
                 DocumentReceiveLog log = new DocumentReceiveLog()

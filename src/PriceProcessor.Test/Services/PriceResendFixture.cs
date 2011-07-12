@@ -236,9 +236,14 @@ namespace PriceProcessor.Test.Services
 			var password = "123";
 			var emailFrom = "KvasovTest@analit.net";
 			var emailTo = "KvasovTest@analit.net";
-			var priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName, externalFileName, password);
-            
+
+		    TestPriceItem priceItem;
             using (new TransactionScope())
+            {
+                priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName,
+                                                                       externalFileName, password);
+            }
+		    using (new TransactionScope())
             {
                 var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
@@ -275,9 +280,13 @@ namespace PriceProcessor.Test.Services
 			var archiveFileName = @"price_in_dir.zip";
 			var externalFileName = @"price.txt";
 
-			var priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
-		   
+		    TestPriceItem priceItem;
             using (new TransactionScope())
+            {
+                priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
+            }
+
+		    using (new TransactionScope())
             {
                 var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
@@ -310,9 +319,14 @@ namespace PriceProcessor.Test.Services
 			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
 			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
-			var priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);            
 
+		    TestPriceItem priceItem;
             using (new TransactionScope())
+            {
+                priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
+            }
+
+		    using (new TransactionScope())
             {
                 var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
