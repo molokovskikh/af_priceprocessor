@@ -110,7 +110,12 @@ namespace PriceProcessor.Test.Special
 		[Test]
 		public void Formilize_price()
 		{
-			var price = RostaFixture.CreatePriceForRosta();
+		    TestPrice price;
+		    using (new TransactionScope())
+		    {
+                price = RostaFixture.CreatePriceForRosta();    
+		    }
+			
 			var priceItemId = price.Costs[0].PriceItem.Id;
 			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{

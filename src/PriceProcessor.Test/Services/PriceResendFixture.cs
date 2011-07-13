@@ -41,7 +41,7 @@ namespace PriceProcessor.Test.Services
 			StopWcfPriceProcessor();
 		}
 
-        private ChannelFactory<IRemotePriceProcessor> CreateFactory()
+     /*   private ChannelFactory<IRemotePriceProcessor> CreateFactory()
         {
             const string _strProtocol = @"net.tcp://";
             var binding = new NetTcpBinding();
@@ -56,11 +56,10 @@ namespace PriceProcessor.Test.Services
             var sbUrlService = new StringBuilder();
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
-               // .Append(Settings.Default.WCFServicePort).Append("/")
-                .Append("902").Append("/")
+                .Append(Settings.Default.WCFServicePort).Append("/")               
                 .Append(Settings.Default.WCFServiceName);
             return new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
-        }
+        }*/
 
 
 		private void WcfCallResendPrice(uint downlogId)
@@ -79,11 +78,27 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
+            const string _strProtocol = @"net.tcp://";
+			var binding = new NetTcpBinding();
+			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+			binding.Security.Mode = SecurityMode.None;
+			// Ипользуется потоковая передача данных в обе стороны 
+			binding.TransferMode = TransferMode.Streamed;
+			// Максимальный размер принятых данных
+			binding.MaxReceivedMessageSize = Int32.MaxValue;
+			// Максимальный размер одного пакета
+			binding.MaxBufferSize = 524288;    // 0.5 Мб
+			var sbUrlService = new StringBuilder();
+			sbUrlService.Append(_strProtocol)
+				.Append(Dns.GetHostName()).Append(":")
+				.Append(Settings.Default.WCFServicePort).Append("/")
+				.Append(Settings.Default.WCFServiceName);
+			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
             var success = false;
-            ChannelFactory<IRemotePriceProcessor> factory = null;
+           // ChannelFactory<IRemotePriceProcessor> factory = null;
             try
             {
-                factory = CreateFactory();
+             //   factory = CreateFactory();
                 var priceProcessor = factory.CreateChannel();
                 
                 try
@@ -109,12 +124,28 @@ namespace PriceProcessor.Test.Services
 
         private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
         {
+            const string _strProtocol = @"net.tcp://";
+            var binding = new NetTcpBinding();
+            binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+            binding.Security.Mode = SecurityMode.None;
+            // Ипользуется потоковая передача данных в обе стороны 
+            binding.TransferMode = TransferMode.Streamed;
+            // Максимальный размер принятых данных
+            binding.MaxReceivedMessageSize = Int32.MaxValue;
+            // Максимальный размер одного пакета
+            binding.MaxBufferSize = 524288;    // 0.5 Мб
+            var sbUrlService = new StringBuilder();
+            sbUrlService.Append(_strProtocol)
+                .Append(Dns.GetHostName()).Append(":")
+                .Append(Settings.Default.WCFServicePort).Append("/")
+                .Append(Settings.Default.WCFServiceName);
+            var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
             var success = false;
             string[] res = new string[0];
-            ChannelFactory<IRemotePriceProcessor> factory = null;
+           // ChannelFactory<IRemotePriceProcessor> factory = null;
             try
             {
-                factory = CreateFactory();
+             //   factory = CreateFactory();
                 var priceProcessor = factory.CreateChannel();
                 try
                 {
@@ -144,8 +175,7 @@ namespace PriceProcessor.Test.Services
 			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
-				//.Append(Settings.Default.WCFServicePort).Append("/")
-                .Append("902").Append("/")
+				.Append(Settings.Default.WCFServicePort).Append("/")                
 				.Append(Settings.Default.WCFServiceName);
 			NetTcpBinding binding = new NetTcpBinding();
 			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
@@ -357,14 +387,21 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Smart_resend_should_resend_price_and_all_related_prices()
 		{
-			var rootPrice = TestSupplier.CreateTestSupplierWithPrice();
-			var childPrice = TestSupplier.CreateTestSupplierWithPrice();
+		    TestPrice rootPrice;
+		    TestPrice childPrice;
+            using (var scope = new TransactionScope(OnDispose.Rollback))
+            {
+                rootPrice = TestSupplier.CreateTestSupplierWithPrice();
+                childPrice = TestSupplier.CreateTestSupplierWithPrice();
 
-			new TestUnrecExp("test", "test", childPrice).Save();
-			new TestUnrecExp("test", "test", rootPrice).Save();
-			childPrice.ParentSynonym = rootPrice.Id;
-			childPrice.Save();
-			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+                new TestUnrecExp("test", "test", childPrice).Save();
+                new TestUnrecExp("test", "test", rootPrice).Save();
+                childPrice.ParentSynonym = rootPrice.Id;
+                childPrice.Save();
+                scope.VoteCommit();
+            }
+
+		    File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 
 			WcfCall(r => r.RetransPriceSmart(childPrice.Id));

@@ -51,14 +51,22 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
             var docLine = document.NewLine();
 
-            docLine.Product = GetString(parts[ProductIndex]);
-            docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
-            docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
-            docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
-            docLine.Nds = (uint?) GetDecimal(parts[NdsIndex]);
-            docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
-            docLine.Amount = GetDecimal(parts[AmountIndex]);
-            docLine.Producer = GetString(parts[ProducerIndex]);
+            if (parts.Count() > ProductIndex)
+                docLine.Product = GetString(parts[ProductIndex]);
+            if (parts.Count() > SerialNumberIndex)
+                docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
+            if (parts.Count() > QuantityIndex)
+                docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
+            if (parts.Count() > SupplierCostWithoutNdsIndex)
+                docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
+            if (parts.Count() > NdsIndex)
+                docLine.Nds = (uint?) GetDecimal(parts[NdsIndex]);
+            if (parts.Count() > NdsAmountIndex)
+                docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
+            if (parts.Count() > AmountIndex)
+                docLine.Amount = GetDecimal(parts[AmountIndex]);
+            if (parts.Count() > ProducerIndex)
+                docLine.Producer = GetString(parts[ProducerIndex]);
             if (parts.Count() > PeriodIndex)
                 docLine.Period = GetString(parts[PeriodIndex]);
             if(parts.Count() > CertificatesIndex)

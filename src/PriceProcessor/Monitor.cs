@@ -36,8 +36,7 @@ namespace Inforoom.PriceProcessor
 		private const string _strProtocol = @"net.tcp://";
 
 	    private static Monitor _instance = null;
-
-		//public Monitor()
+		
         private Monitor()
 		{
 			_handlers = new List<AbstractHandler> {
