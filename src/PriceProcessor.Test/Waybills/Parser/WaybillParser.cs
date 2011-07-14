@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser)
 				&& !(parser is TrediFarmCheboksarySpecialParser) && !(parser is ZhdanovKazanSpecialParser)
 				&& !(parser is ImperiaFarmaSpecialParser) && !(parser is BizonKazanSpecialParser)
-                && !(parser is ZdravServiceSpecialParser))
+                && !(parser is ZdravServiceSpecialParser) && !(parser is FarmPartnerKalugaParser))
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;

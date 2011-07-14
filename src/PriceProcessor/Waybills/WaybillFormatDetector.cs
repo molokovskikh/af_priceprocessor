@@ -71,9 +71,24 @@ namespace Inforoom.PriceProcessor.Waybills
                                 type = typeof (ZdravServiceSpecialParser);
 				            break;
 				        }
+                    
 					default: break;
 				}
 			}
+
+            if ((documentLog != null) && (extention == ".sst"))
+            {
+                switch (documentLog.Supplier.Id)
+                {
+                    case 4910: // Фармпартнер (Калуга)
+                        {
+                            if (FarmPartnerKalugaParser.CheckFileFormat(file))
+                                type = typeof(FarmPartnerKalugaParser);
+                            break;
+                        }
+                    default: break;
+                }
+            }
 
             if ((documentLog != null) && (extention == ".txt"))
             {
@@ -91,18 +106,18 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			if (type == null)
 			{
-				if (extention == ".dbf")
-					type = DetectDbfParser(file);
-				else if (extention == ".sst")
-					type = typeof (UkonParser);
-				else if (extention == ".xls")
-					type = DetectXlsParser(file);
-				else if ((extention == ".xml") || (extention == ".data"))
-					type = DetectXmlParser(file);
-				else if (extention == ".pd")
-					type = typeof (ProtekParser);
-				else if (extention == ".txt")
-					type = DetectTxtParser(file);
+                if (extention == ".dbf")
+                    type = DetectDbfParser(file);
+                else if (extention == ".sst")
+                    type = typeof (UkonParser);
+                else if (extention == ".xls")
+                    type = DetectXlsParser(file);
+                else if ((extention == ".xml") || (extention == ".data"))
+                    type = DetectXmlParser(file);
+                else if (extention == ".pd")
+                    type = typeof(ProtekParser);
+                else if (extention == ".txt")
+                    type = DetectTxtParser(file);
 
 				// Если поставщик - это челябинский Морон, для него отдельный парсер 
 				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)

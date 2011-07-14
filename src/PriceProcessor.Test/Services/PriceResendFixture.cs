@@ -91,7 +91,8 @@ namespace PriceProcessor.Test.Services
 			var sbUrlService = new StringBuilder();
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
-				.Append(Settings.Default.WCFServicePort).Append("/")
+				//.Append(Settings.Default.WCFServicePort).Append("/")
+                .Append("901").Append("/")
 				.Append(Settings.Default.WCFServiceName);
 			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
             var success = false;
@@ -137,7 +138,8 @@ namespace PriceProcessor.Test.Services
             var sbUrlService = new StringBuilder();
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
-                .Append(Settings.Default.WCFServicePort).Append("/")
+                //.Append(Settings.Default.WCFServicePort).Append("/")
+                .Append(901).Append("/")
                 .Append(Settings.Default.WCFServiceName);
             var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
             var success = false;
@@ -175,7 +177,8 @@ namespace PriceProcessor.Test.Services
 			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
-				.Append(Settings.Default.WCFServicePort).Append("/")                
+				//.Append(Settings.Default.WCFServicePort).Append("/")                
+                .Append("901").Append("/")
 				.Append(Settings.Default.WCFServiceName);
 			NetTcpBinding binding = new NetTcpBinding();
 			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
