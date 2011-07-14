@@ -553,6 +553,9 @@ namespace PriceProcessor.Test.Waybills
 
 				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015"};
 				core.SaveAndFlush();
+
+                core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
+                core.SaveAndFlush();
 			}
 			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
@@ -580,7 +583,8 @@ namespace PriceProcessor.Test.Waybills
 				var file_dbf = files_dbf.Where(f => f.Contains(supplier.Name)).Select(f => f).First();					
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
-				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("1234567"));
+				//Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("1234567"));
+                Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
 				Assert.IsTrue(data.Columns.Contains("name_artis"));
 				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));				
 				Assert.IsTrue(data.Columns.Contains("przv_artis"));

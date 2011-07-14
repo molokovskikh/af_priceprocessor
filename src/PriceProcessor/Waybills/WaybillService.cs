@@ -140,18 +140,18 @@ namespace Inforoom.PriceProcessor.Waybills
 				
 				foreach (var line in Lines)
 				{
-					{
-						var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).Select(c => c).ToList();
+				    {
+				        var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).Select(c => c).ToList();                        
 						if(ls.Count() > 0)
 						{
-							var core = ls.FirstOrDefault();
+                            var core = cores.OrderBy(c => c.Code).FirstOrDefault();
 							var info = new AssortimentPriceInfo();
 							uint res;
-							info.Code = UInt32.TryParse(core.Code, out res) == true ? (uint?)res : null;
+							info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
 							info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
 							info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
 							line.AssortimentPriceInfo = info;
-						}						
+						}
 					}
 				}
 				result = true;
