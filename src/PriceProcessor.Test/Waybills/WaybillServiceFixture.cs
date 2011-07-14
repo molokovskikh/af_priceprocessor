@@ -753,5 +753,22 @@ namespace PriceProcessor.Test.Waybills
                 Assert.That(data.Rows[0]["ean13"], Is.EqualTo("5944700100019"));
             }            
         }
+
+
+        [Test]
+        public void RemoveDoubleSpacesTest()
+        {
+            IList<string> ls = new List<string>();
+            ls.Add(" aaa         bbbb ccc       ddd ");
+            ls.Add(String.Empty);
+            ls.Add(null);
+  
+            for (int i = 0; i < ls.Count; i++)            
+                ls[i] = ls[i].RemoveDoubleSpaces();
+
+            Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));
+            Assert.That(ls[1], Is.EqualTo(String.Empty));
+            Assert.That(ls[2], Is.EqualTo(String.Empty));
+        }
 	}
 }

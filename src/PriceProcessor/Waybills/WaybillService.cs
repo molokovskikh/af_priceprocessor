@@ -106,8 +106,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
 		{
 			var criteriaSynonym = DetachedCriteria.For<T>();
-			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
-			//criteriaSynonym.Add(Restrictions.In("PriceCode", priceCodes));
+			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));			
             criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
@@ -176,7 +175,7 @@ namespace Inforoom.PriceProcessor.Waybills
 									.Where(p => (p.Supplier.Id == FirmCode))
 									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 
-				if (priceCodes == null || priceCodes.Count <= 0 || Lines == null)
+				if (priceCodes.Count <= 0 || Lines == null)
 					return this;
 
 				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
@@ -186,12 +185,16 @@ namespace Inforoom.PriceProcessor.Waybills
 				int count = GetCount(realBatchSize, index);
 
 				while ((count + index <= Lines.Count) && (count > 0))
-				{
+				{				    
 					// выбираем из накладной часть названия продуктов.
 					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
-
-					//выбираем из накладной часть названия производителей.
+                    for (int i = 0; i < synonyms.Count(); i++)                    
+                        synonyms[i] = synonyms[i].RemoveDoubleSpaces();
+                    
+				    //выбираем из накладной часть названия производителей.
 					var synonymsFirm = Lines.ToList().GetRange(index, count).Select(i => i.Producer).ToList();
+                    for (int i = 0; i < synonymsFirm.Count(); i++)
+                        synonymsFirm[i] = synonymsFirm[i].RemoveDoubleSpaces();
 
 					//получаем из базы данные для выбранной части продуктов из накладной.
 					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(synonyms, priceCodes);
@@ -201,15 +204,16 @@ namespace Inforoom.PriceProcessor.Waybills
 					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 					foreach (var line in Lines)
 					{
-						var productName = line.Product != null ? line.Product.ToUpper() : String.Empty;
-						var producerName = line.Producer != null ? line.Producer.ToUpper() : String.Empty;
+						var productName = (line.Product != null ? line.Product.ToUpper() : String.Empty).RemoveDoubleSpaces();
+
+						var producerName = (line.Producer != null ? line.Producer.ToUpper() : String.Empty).RemoveDoubleSpaces();
 						
 						var listSynonym = dbListSynonym.Where(product => product.Synonym.Trim().ToUpper() == productName && product.ProductId != null).ToList();
 						var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym.Trim().ToUpper() == producerName && producer.CodeFirmCr != null).ToList();
 						
-						if(listSynonym.Count > 0)							
+						if(listSynonym.Count > 0)
 							line.ProductId = listSynonym.Select(product => product.ProductId).FirstOrDefault();
-						if(listSynonymFirmCr.Count > 0)							
+						if(listSynonymFirmCr.Count > 0)
 							line.ProducerId = listSynonymFirmCr.Select(producer => producer.CodeFirmCr).FirstOrDefault();
 
 						if (listSynonym.Count > 1)
