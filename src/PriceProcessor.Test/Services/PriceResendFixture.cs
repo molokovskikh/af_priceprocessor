@@ -80,14 +80,14 @@ namespace PriceProcessor.Test.Services
 		{
             const string _strProtocol = @"net.tcp://";
 			var binding = new NetTcpBinding();
-			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-			binding.Security.Mode = SecurityMode.None;
+			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+			//binding.Security.Mode = SecurityMode.None;
 			// Ипользуется потоковая передача данных в обе стороны 
-			binding.TransferMode = TransferMode.Streamed;
+			//binding.TransferMode = TransferMode.Streamed;
 			// Максимальный размер принятых данных
-			binding.MaxReceivedMessageSize = Int32.MaxValue;
+			//binding.MaxReceivedMessageSize = Int32.MaxValue;
 			// Максимальный размер одного пакета
-			binding.MaxBufferSize = 524288;    // 0.5 Мб
+			//binding.MaxBufferSize = 524288;    // 0.5 Мб
 			var sbUrlService = new StringBuilder();
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
@@ -127,14 +127,14 @@ namespace PriceProcessor.Test.Services
         {
             const string _strProtocol = @"net.tcp://";
             var binding = new NetTcpBinding();
-            binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-            binding.Security.Mode = SecurityMode.None;
+            //binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+            //binding.Security.Mode = SecurityMode.None;
             // Ипользуется потоковая передача данных в обе стороны 
-            binding.TransferMode = TransferMode.Streamed;
+            //binding.TransferMode = TransferMode.Streamed;
             // Максимальный размер принятых данных
-            binding.MaxReceivedMessageSize = Int32.MaxValue;
+            //binding.MaxReceivedMessageSize = Int32.MaxValue;
             // Максимальный размер одного пакета
-            binding.MaxBufferSize = 524288;    // 0.5 Мб
+            //binding.MaxBufferSize = 524288;    // 0.5 Мб
             var sbUrlService = new StringBuilder();
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
@@ -181,14 +181,14 @@ namespace PriceProcessor.Test.Services
                 .Append("901").Append("/")
 				.Append(Settings.Default.WCFServiceName);
 			NetTcpBinding binding = new NetTcpBinding();
-			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-			binding.Security.Mode = SecurityMode.None;
+			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
+			//binding.Security.Mode = SecurityMode.None;
 			// Ипользуется потоковая передача данных в обе стороны 
-			binding.TransferMode = TransferMode.Streamed;
+			//binding.TransferMode = TransferMode.Streamed;
 			// Максимальный размер принятых данных
-			binding.MaxReceivedMessageSize = Int32.MaxValue;
+			//binding.MaxReceivedMessageSize = Int32.MaxValue;
 			// Максимальный размер одного пакета
-			binding.MaxBufferSize = 524288;    // 0.5 Мб 
+			//binding.MaxBufferSize = 524288;    // 0.5 Мб 
 			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding,
 				sbUrlService.ToString());
 			_serviceHost.Open();
