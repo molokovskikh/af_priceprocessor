@@ -139,18 +139,17 @@ namespace Inforoom.PriceProcessor.Waybills
 				
 				foreach (var line in Lines)
 				{
-				    {
-				        var ls = cores.Where(c => c.ProductId == line.ProductId).Where(c => c.CodeFirmCr == line.ProducerId).Select(c => c).ToList();                        
-						if(ls.Count() > 0)
-						{
-                            var core = cores.OrderBy(c => c.Code).FirstOrDefault();
-							var info = new AssortimentPriceInfo();
-							uint res;
-							info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
-							info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
-							info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
-							line.AssortimentPriceInfo = info;
-						}
+					var ls = cores.Where(c => c.ProductId == line.ProductId && c.CodeFirmCr == line.ProducerId).ToList();
+					if (ls.Count() > 0)
+					{
+						//Сортируем по Code, чтобы каждый раз при сопоставлении выбирать одну и ту же позицию из позиций с одинаковыми ProductId и ProducerId
+						var core = ls.OrderBy(c => c.Code).FirstOrDefault();
+						var info = new AssortimentPriceInfo();
+						uint res;
+						info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
+						info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
+						info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
+						line.AssortimentPriceInfo = info;
 					}
 				}
 				result = true;

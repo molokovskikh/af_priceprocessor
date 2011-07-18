@@ -770,5 +770,61 @@ namespace PriceProcessor.Test.Waybills
             Assert.That(ls[1], Is.EqualTo(String.Empty));
             Assert.That(ls[2], Is.EqualTo(String.Empty));
         }
+
+		[Test(Description = "Пытаемся разобрать накладную от СИА с возможностью конвертации накладной, в результирующем файле конвертируемой накладной должны быть корректно выставлены коды сопоставленных позиций")]
+		public void CheckDocument()
+		{
+			var doc = WaybillParser.Parse("9046752.DBF");
+			using (new TransactionScope())
+			{
+				var testsupplier = (TestSupplier)TestSupplier.Find(2779u);
+				var supplier = Supplier.Find(testsupplier.Id);
+				//var settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
+				var settings = TestDrugstoreSettings.Find(10365u);
+				Assert.That(settings.IsConvertFormat, Is.True);
+				Assert.That(settings.AssortimentPriceId, Is.Not.Null);
+				var client = (TestClient)TestClient.Find(settings.Id);
+				var order = TestOrder.FindFirst();
+				var address = client.Addresses[0];
+				DocumentReceiveLog log = new DocumentReceiveLog()
+				{
+					Supplier = supplier,
+					ClientCode = settings.Id,
+					AddressId = address.Id,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
+
+				doc.Log = log;
+				doc.OrderId = order.Id;
+				doc.AddressId = address.Id;
+				doc.FirmCode = log.Supplier.Id;
+				doc.ClientCode = (uint)log.ClientCode;
+
+				doc.SetProductId();
+
+				var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
+				Directory.Delete(path, true);
+
+				WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
+
+				var files_dbf = Directory.GetFiles(path, "*.dbf");
+				Assert.That(files_dbf.Count(), Is.EqualTo(1));
+				var file_dbf = files_dbf[0];
+				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+				Assert.That(data.Rows.Count, Is.EqualTo(45));
+				Assert.IsTrue(data.Columns.Contains("ID_ARTIS"));
+				Assert.IsTrue(data.Columns.Contains("NAME_ARTIS"));
+				Assert.IsTrue(data.Columns.Contains("NAME_POST"));
+				Assert.That(data.Rows[0]["NAME_POST"], Is.EqualTo("Амоксициллин 500мг таб. Х20 (R)"));
+				Assert.That(data.Rows[1]["NAME_POST"], Is.EqualTo("Андипал Таб Х10"));
+
+				Assert.That(data.Rows[0]["ID_ARTIS"], Is.Not.EqualTo("100208"));
+				Assert.That(data.Rows[0]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
+
+				Assert.That(data.Rows[1]["ID_ARTIS"], Is.Not.EqualTo("100208"));
+				Assert.That(data.Rows[1]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
+			}
+		}
 	}
 }
