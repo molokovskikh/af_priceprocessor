@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -772,7 +773,7 @@ namespace PriceProcessor.Test.Waybills
         }
 
 		[Test(Description = "Пытаемся разобрать накладную от СИА с возможностью конвертации накладной, в результирующем файле конвертируемой накладной должны быть корректно выставлены коды сопоставленных позиций")]
-		public void CheckDocument()
+		public void ConvertWaybillToDBFWithAssortmentCodes()
 		{
 			var doc = WaybillParser.Parse("9046752.DBF");
 			using (new TransactionScope())
@@ -826,5 +827,115 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(data.Rows[1]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
 			}
 		}
+
+		[Test(Description = "Повторная конвертация накладаных для клиента Таттехмедфарм-аптеки (10365) из-за ошибки конвертации")]
+		[Ignore("Это не тест")]
+		public void ReconvertWaybillsToDBF()
+		{
+			return;
+
+			/*
+			//Здесь надо прописать корректное подлкючение в рабочей базе данных
+			var dbConnection = "server=dbms2.adc.analit.net;username=; password=; database=farm; pooling=true; Convert Zero Datetime=true; Allow User Variables=true;";
+
+			//Данные действия делаем для определенного клиента: 10365
+			var docs = MySqlHelper.ExecuteDataset(
+				dbConnection,
+				@"
+SELECT 
+dl.*,
+dh.Id as DocumentId
+FROM 
+`Logs`.`document_logs` dl
+,
+documents.documentheaders dh
+#,
+#documents.documentbodies db
+where
+dl.LogTime > '2011-07-15 13:00'
+and dl.LogTime < '2011-07-18 12:25'
+and dl.ClientCode = 10365
+and dl.DocumentType = 1
+and dl.Addition is null
+and dh.DownloadId = dl.RowId
+");
+			Assert.That(docs.Tables.Count, Is.EqualTo(1));
+			Console.WriteLine("docs count = {0}", docs.Tables[0].Rows.Count);
+
+			foreach (DataRow originDoc in docs.Tables[0].Rows)
+			{
+				var originFileName = Path.GetFileNameWithoutExtension(originDoc["FileName"].ToString());
+
+				var filterFileName = originFileName.Length < 23 ? "%(" + originFileName + ").dbf" : "%(" + originFileName.Slice(23) + "%";
+
+				var convertDocs = MySqlHelper.ExecuteDataset(
+					dbConnection,
+					@"
+SELECT * 
+FROM 
+`Logs`.`document_logs` dl
+where
+dl.LogTime >= ?LogTime
+and dl.LogTime < ?LogTime + interval 3 minute
+and dl.ClientCode = 10365
+and dl.DocumentType = 1
+and dl.FirmCode = ?FirmCode
+and dl.AddressId = ?AddressId
+and dl.Addition = 'Сконвертированный Dbf файл'
+and dl.FileName like ?FileName
+"
+					,
+					new MySqlParameter("?LogTime", originDoc["LogTime"]),
+					new MySqlParameter("?FirmCode", originDoc["FirmCode"]),
+					new MySqlParameter("?AddressId", originDoc["AddressId"]),
+					new MySqlParameter("?FileName", filterFileName)
+					);
+				Assert.That(convertDocs.Tables.Count, Is.EqualTo(1));
+				Assert.That(convertDocs.Tables[0].Rows.Count, Is.EqualTo(1), "Не найден дубликат для документа {0} по фильтру {1}", originDoc["RowId"], filterFileName);
+
+				var convertedDoc = convertDocs.Tables[0].Rows[0];
+
+				using (new SessionScope())
+				{
+					var originLog = DocumentReceiveLog.Find(Convert.ToUInt32(originDoc["RowId"]));
+					var convertedLog = DocumentReceiveLog.Find(Convert.ToUInt32(convertedDoc["RowId"]));
+					var document = Document.Find(Convert.ToUInt32(originDoc["DocumentId"]));
+
+					if (document.SetAssortimentInfo())
+					{
+						var rootPath = Path.Combine(@"\\ADC.ANALIT.NET\Inforoom\AptBox", originLog.AddressId.ToString(), "Waybills");
+
+						//Метод InitTableForFormatDbf должен быть публичным
+						var table = WaybillService.InitTableForFormatDbf(document, originLog.Supplier);
+
+						var saveFileName = Path.Combine(rootPath, convertedLog.FileName);
+
+						//сохраняем накладную в новом формате dbf.
+						Dbf.Save(table, saveFileName);
+
+						using (var scope = new TransactionScope(OnDispose.Rollback))
+						{
+							var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+							try
+							{
+								session.CreateSQLQuery(@"
+update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where DocumentId = :DocId;
+")
+									.SetParameter("DocId", convertedLog.Id)
+									.ExecuteUpdate();
+							}
+							finally
+							{
+								ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
+							}
+							scope.VoteCommit();
+						}
+					}
+
+				}
+			}
+			 */ 
+		}
+
 	}
 }

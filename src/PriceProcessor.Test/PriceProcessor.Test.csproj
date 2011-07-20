@@ -336,7 +336,6 @@
     <Content Include="Data\688-rules.xml" />
     <Content Include="Data\688-wrong-column-for-producers.txt" />
     <Content Include="Data\688.txt" />
-    <None Include="Data\EmailSourceHandlerTest\app.config" />
     <None Include="Data\EmailSourceHandlerTest\Bad.eml" />
     <None Include="Data\HandlersTests\552.zip" />
     <None Include="Data\Rosta\price" />
