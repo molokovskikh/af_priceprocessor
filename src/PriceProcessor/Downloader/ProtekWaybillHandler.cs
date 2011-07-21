@@ -137,6 +137,22 @@ namespace Inforoom.PriceProcessor.Downloader
 			//Омск
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(265488, 1077902);
+
+			//Протек-02 Волгоград
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(266327, 1079618);
+
+			//Протек-12 Самара
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(266329, 1079620);
+
+			//Протек-16 Новосибирск
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(266337, 1079622);
+
+			//Протек-05 Нижний Новгород
+			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(86980, 1036488);
 		}
 
 		protected void Load(int clientId, int instanceId)
