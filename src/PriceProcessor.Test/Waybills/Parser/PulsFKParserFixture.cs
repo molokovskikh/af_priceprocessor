@@ -30,7 +30,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.ProducerCost, Is.EqualTo(111.16));
 			Assert.That(line.SerialNumber, Is.EqualTo("010310"));
 			Assert.That(line.RegistryCost, Is.EqualTo(122.11));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			//Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
+            Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.VitallyImportant, Is.True);
             Assert.That(line.EAN13, Is.Null);
 		}
@@ -78,7 +79,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.ProducerCost, Is.EqualTo(93.90));
 			Assert.That(line.SupplierCost, Is.EqualTo(103.83));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(94.39));
-			//Assert.That(line.NdsAmount, Is.EqualTo(9.44));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.SerialNumber, Is.EqualTo("G0A043A"));
 			Assert.That(line.Period, Is.EqualTo("01.10.2012"));
@@ -117,10 +117,39 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(line.VitallyImportant, Is.False);
             Assert.That(line.RegistryCost, Is.Null);
             Assert.That(line.Certificates, Is.EqualTo("POCC JP.ИM04.B05579"));
-            Assert.That(line.Amount, Is.EqualTo(154.00000));            
+            Assert.That(line.Amount, Is.EqualTo(154.00000));
+           // Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
             Assert.That(line.SupplierPriceMarkup, Is.Null);
             Assert.That(line.EAN13, Is.EqualTo("4606339000818"));
+        }
 
+        [Test]
+        public void Parse_FarmPartnerKaluga()
+        {
+            var doc = WaybillParser.Parse("13093.dbf");
+            Assert.That(doc.Lines.Count, Is.EqualTo(8));
+            Assert.That(doc.ProviderDocumentId, Is.EqualTo("013093"));
+            Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("14.07.2011"));
+            var line = doc.Lines[2];
+            Assert.That(line.Code, Is.EqualTo("127984"));
+            Assert.That(line.Product, Is.EqualTo("ПРОКЛАД УРОЛОГИЧ СЕНИ-ЛЕДИ ПЛЮС AIR N15"));
+            Assert.That(line.Producer, Is.EqualTo("ТЗМО"));
+            Assert.That(line.Country, Is.EqualTo("ПОЛЬША"));
+            Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(136.94));
+            Assert.That(line.SupplierCost, Is.EqualTo(150.63));
+            Assert.That(line.Quantity, Is.EqualTo(2));
+            Assert.That(line.ProducerCost, Is.EqualTo(136.94));
+            Assert.That(line.Nds, Is.EqualTo(10));
+            Assert.That(line.Period, Is.EqualTo("01.04.2014"));
+            Assert.That(line.Certificates, Is.EqualTo("РОСС PL ИМ09 В02637"));
+            Assert.That(line.RegistryCost, Is.EqualTo(0.00));
+            Assert.That(line.VitallyImportant, Is.False);
+            Assert.That(line.SerialNumber, Is.EqualTo(".."));
+            Assert.That(line.Amount, Is.EqualTo(301.26));
+           // Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
+            Assert.That(line.SupplierPriceMarkup, Is.Null);
+            Assert.That(line.EAN13, Is.EqualTo("0"));
+            Assert.That(line.BillOfEntryNumber, Is.EqualTo("10124030/270905/0009093/2"));
         }
 
 		[Test]
@@ -129,6 +158,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1843615.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1689520.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\3901847_Роста(300882R).dbf")));
+            Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\13093.dbf")));
 		}
 	}
 }

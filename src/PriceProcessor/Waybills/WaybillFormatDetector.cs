@@ -221,9 +221,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
 			var doc = parser.Parse(file, document);
-			if(doc != null) 
-				doc.SetProductId();
-			return doc;
+            if (doc != null)
+            {
+                doc.SetProductId();
+                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
+            }
+		    return doc;
 		}
 	}
 }

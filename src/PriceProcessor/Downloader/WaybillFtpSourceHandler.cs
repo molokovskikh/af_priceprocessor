@@ -233,7 +233,7 @@ GROUP BY SupplierId
 							addrId,
 							file,
 							documentType);
-
+                        _logger.InfoFormat("WaybillFtpSourceHandler: обработка файла {0}", file);
 						//log.CopyDocumentToClientDirectory();
 						documentLogs.Add(log);
 					}
