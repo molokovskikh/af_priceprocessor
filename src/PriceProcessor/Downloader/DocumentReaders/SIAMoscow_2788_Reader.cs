@@ -205,10 +205,13 @@ namespace Inforoom.Downloader.DocumentReaders
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			var list = new List<ulong>();
-			var SQL = GetFilterSQLHeader() + Environment.NewLine + 
+		/*	var SQL = GetFilterSQLHeader() + Environment.NewLine + 
 				" and (i.FirmClientCode = ?SupplierClientId) and (i.FirmClientCode2 = ?SupplierDeliveryId) " +
 				SqlGetClientAddressId(true, true, true) +
-				Environment.NewLine + GetFilterSQLFooter();
+				Environment.NewLine + GetFilterSQLFooter();*/
+
+            var SQL = SqlGetClientAddressId(true, true) +
+                Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
 			try

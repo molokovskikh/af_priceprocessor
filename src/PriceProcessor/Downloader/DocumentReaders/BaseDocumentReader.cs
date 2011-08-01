@@ -35,7 +35,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			return InputFiles;
 		}
 
-		protected string GetFilterSQLHeader()
+		/*protected string GetFilterSQLHeader()
 		{
 			return
 				@"
@@ -47,7 +47,7 @@ FROM
 WHERE
 	i.PriceCode = pd.PriceCode
 	AND pd.FirmCode = ?SupplierId";
-		}
+		}*/
 
 		protected string GetFilterSQLFooter()
 		{
@@ -55,13 +55,14 @@ WHERE
 GROUP BY AddressId";
 		}
 
-		protected string SqlGetClientAddressId(bool useUnion, bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
+		//protected string SqlGetClientAddressId(bool useUnion, bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
+        protected string SqlGetClientAddressId(bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
 		{
 			var sqlSupplierClientId = String.Empty;
 			var sqlSupplierDeliveryId = String.Empty;
-			var sqlUnion = String.Empty;
+		/*	var sqlUnion = String.Empty;
 			if (useUnion)
-				sqlUnion = " UNION ";
+				sqlUnion = " UNION ";*/
 
 			if (filterBySupplierClientId)
 				sqlSupplierClientId = " FutureInter.SupplierClientId = ?SupplierClientId ";
@@ -74,9 +75,10 @@ GROUP BY AddressId";
 			else
 				sqlCondition += sqlSupplierDeliveryId;
 
-			var sqlQuery = sqlUnion + @"
+			var sqlQuery = /*sqlUnion +*/ @"
 SELECT
-	IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId
+#IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId
+    Addr.Id as AddressId
 FROM
 	future.Addresses Addr
 JOIN future.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id

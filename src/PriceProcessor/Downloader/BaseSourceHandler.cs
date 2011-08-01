@@ -327,17 +327,17 @@ and pd.AgencyEnabled= 1",
 			var address = addressId;
 
 			var clientId = With.Connection<uint?>(c => {
-				var queryGetClientCodeByLegacyId = String.Format(@"
+			/*	var queryGetClientCodeByLegacyId = String.Format(@"
 SELECT Addr.ClientId
 FROM future.Addresses Addr
-WHERE Addr.LegacyId = {0}", address);
+WHERE Addr.LegacyId = {0}", address);*/
 
 			var queryGetClientCodeByAddressId = String.Format(@"
 SELECT Addr.ClientId
 FROM future.Addresses Addr
 WHERE Addr.Id = {0}", address);
 
-			var queryGetAddressIdByLegacyId = String.Format(@"
+			/*var queryGetAddressIdByLegacyId = String.Format(@"
 SELECT Addr.Id
 FROM future.Addresses Addr
 WHERE Addr.LegacyId = {0}", address);
@@ -355,6 +355,8 @@ WHERE Addr.LegacyId = {0}", address);
 				else
 					// ≈сли выбрали код клиента по LegacyID, выбираем код адреса по LegacyId
 					address = Convert.ToUInt32(MySqlHelper.ExecuteScalar(c, queryGetAddressIdByLegacyId));
+            */
+                var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
 				return Convert.ToUInt32(clientCode);
 			});
 			addressId = address;

@@ -45,8 +45,9 @@ namespace PriceProcessor.Test
 
 		private ulong[] _supplierCodes = new ulong[1] { 2788 };
 
-		private string[] _waybillFiles2788 = new string[3] { "523108940_20091202030542372.zip", "523108940_20091202090615283.zip", "523108940_20091202102538565.zip" };
-
+	//	private string[] _waybillFiles2788 = new string[3] { "523108940_20091202030542372.zip", "523108940_20091202090615283.zip", "523108940_20091202102538565.zip" };
+        private string[] _waybillFiles2788 = new string[3] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
+        
 		[SetUp]
 		public void SetUp()
 		{
@@ -210,7 +211,7 @@ where a.Id = ?AddressId", connection);
 
 		[Test]
 		public void TestSIAMoscow2788()
-		{
+		{            
 			var supplierCode = 2788;
 
 			PrepareDirectories();
@@ -220,14 +221,12 @@ where a.Id = ?AddressId", connection);
 			ClearDocumentHeadersTable(Convert.ToUInt64(supplierCode));
 
 			Process_waybills();
-
-			//var path = Path.GetFullPath(Settings.Default.FTPOptBoxPath);
-			//var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.FTPOptBoxPath));
+		
 			var path = Path.GetFullPath(Settings.Default.DocumentPath);
 			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.DocumentPath));
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
 		}
-
+ 
 		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
