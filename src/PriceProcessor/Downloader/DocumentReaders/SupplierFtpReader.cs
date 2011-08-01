@@ -19,11 +19,7 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var list = new List<ulong>();
-			/*string SQL = GetFilterSQLHeader() + Environment.NewLine +
-				" and (i.FirmClientCode2 = ?SupplierDeliveryId) " +
-				SqlGetClientAddressId(true, false, true) +
-				Environment.NewLine + GetFilterSQLFooter();*/
-
+			
             string SQL = SqlGetClientAddressId(false, true) +
                 Environment.NewLine + GetFilterSQLFooter();
 

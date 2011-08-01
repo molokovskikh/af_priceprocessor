@@ -35,34 +35,16 @@ namespace Inforoom.Downloader.DocumentReaders
 			return InputFiles;
 		}
 
-		/*protected string GetFilterSQLHeader()
-		{
-			return
-				@"
-SELECT
-	i.ClientCode AS AddressId
-FROM
-	usersettings.Intersection i,
-	usersettings.PricesData pd
-WHERE
-	i.PriceCode = pd.PriceCode
-	AND pd.FirmCode = ?SupplierId";
-		}*/
-
 		protected string GetFilterSQLFooter()
 		{
 			return @"
 GROUP BY AddressId";
 		}
-
-		//protected string SqlGetClientAddressId(bool useUnion, bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
+		
         protected string SqlGetClientAddressId(bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
 		{
 			var sqlSupplierClientId = String.Empty;
 			var sqlSupplierDeliveryId = String.Empty;
-		/*	var sqlUnion = String.Empty;
-			if (useUnion)
-				sqlUnion = " UNION ";*/
 
 			if (filterBySupplierClientId)
 				sqlSupplierClientId = " FutureInter.SupplierClientId = ?SupplierClientId ";
@@ -75,9 +57,8 @@ GROUP BY AddressId";
 			else
 				sqlCondition += sqlSupplierDeliveryId;
 
-			var sqlQuery = /*sqlUnion +*/ @"
+			var sqlQuery = @"
 SELECT
-#IF (Addr.LegacyId IS NULL, Addr.Id, Addr.LegacyId) as AddressId
     Addr.Id as AddressId
 FROM
 	future.Addresses Addr
