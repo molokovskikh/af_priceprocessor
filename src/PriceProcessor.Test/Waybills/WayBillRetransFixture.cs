@@ -41,8 +41,10 @@ namespace PriceProcessor.Test.Waybills
 		[SetUp]
 		public void Setup()
 		{
-			string conn = ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
-				 connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+			//string conn = ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
+            string conn = Literals.ConnectionString();
+				 //connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            connection = new MySqlConnection(Literals.ConnectionString());
 			command = new MySqlCommand();
 			command.Connection = connection;
 			dataAdapter = new MySqlDataAdapter(command);

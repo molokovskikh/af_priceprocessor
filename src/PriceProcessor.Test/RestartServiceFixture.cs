@@ -33,7 +33,7 @@ namespace PriceProcessor.Test
 #endif
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void RestartService()
 		{
 #if DEBUG

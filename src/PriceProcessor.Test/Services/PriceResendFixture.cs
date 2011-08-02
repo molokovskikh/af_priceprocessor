@@ -395,7 +395,12 @@ namespace PriceProcessor.Test.Services
             using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 rootPrice = TestSupplier.CreateTestSupplierWithPrice();
-                childPrice = TestSupplier.CreateTestSupplierWithPrice();
+                scope.VoteCommit();
+            }
+
+            using (var scope = new TransactionScope(OnDispose.Rollback))
+            {
+		        childPrice = TestSupplier.CreateTestSupplierWithPrice();
 
                 new TestUnrecExp("test", "test", childPrice).Save();
                 new TestUnrecExp("test", "test", rootPrice).Save();

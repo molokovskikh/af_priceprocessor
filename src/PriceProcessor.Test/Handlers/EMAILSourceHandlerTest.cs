@@ -255,7 +255,8 @@ FROM
 WHERE
 	SourceId = {0}", sourceId);
 		   
-            var _connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            //var _connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString);
+            var _connection = new MySqlConnection(Literals.ConnectionString());
             var command = new MySqlCommand(query, _connection);
             try
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 using Inforoom.Formalizer;
@@ -70,7 +71,8 @@ and CoreCosts.PC_CostCode = {1}",
 				costCode));
 			etalonRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(
-					ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+                    Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(etalonRowCount, Is.EqualTo(core.Tables[0].Rows.Count), "Не совпадает кол-во позиций в Core и RowCount в PriceItems.");
@@ -112,7 +114,8 @@ and CoreCosts.PC_CostCode = {1}"
 			{
 				try
 				{
-					using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+					//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+                    using (var connection = new MySqlConnection(Literals.ConnectionString()))
 					{
 						connection.Open();
 
@@ -170,7 +173,8 @@ for update"
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
 
-			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+            using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				
 				var parser = new DelimiterNativeTextParser1251(file, connection, rules);
@@ -197,7 +201,8 @@ for update"
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(
-					ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+                    Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(currentRowCount, Is.EqualTo(etalonRowCount), "Не совпадает новое значение RowCount и эталлонное значение RowCount в PriceItems.");
@@ -225,7 +230,8 @@ and CoreCosts.PC_CostCode = {1}",
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
 
-			using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+            using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 
 				var parser = new DelimiterNativeTextParser1251(file, connection, rules);
@@ -252,7 +258,8 @@ and CoreCosts.PC_CostCode = {1}",
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(
-					ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+                    Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(currentRowCount, Is.EqualTo(etalonRowCount), "Не совпадает новое значение RowCount и эталлонное значение RowCount в PriceItems.");
