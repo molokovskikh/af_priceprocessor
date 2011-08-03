@@ -26,8 +26,7 @@ namespace Inforoom.PriceProcessor
 			XmlConfigurator.Configure();
 			var log = LogManager.GetLogger(typeof(Program));
 			try
-			{
-				//With.DefaultConnectionStringName = "DB";
+			{				
 			    With.DefaultConnectionStringName = Literals.GetConnectionName();
 				InitActiveRecord();
 				//устанавливаем значение NullText для параметра %ndc и других
@@ -68,7 +67,6 @@ namespace Inforoom.PriceProcessor
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
 					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					//{Environment.ConnectionStringName, "DB"},
                     {Environment.ConnectionStringName, Literals.GetConnectionName()},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
 					{Environment.Hbm2ddlKeyWords, "none"}

@@ -9,6 +9,7 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.MySql;
 using Common.Tools;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor;
@@ -84,6 +85,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
 		private readonly int _batchSize = 100;
+	    //private readonly IList<OrderHead> _orders = new List<OrderHead>();
 
 		public Document()
 		{}
@@ -268,6 +270,19 @@ namespace Inforoom.PriceProcessor.Waybills
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public IList<DocumentLine> Lines { get; set; }
         
+
+      /*  public IList<OrderHead> Orders
+        {
+            get { return _orders; }   
+            set 
+            { 
+                _orders.Clear();
+                foreach (var order in value)
+                {
+                    if (order != null) _orders.Add(order);
+                }
+            }
+        }*/
 
 		public DocumentLine NewLine()
 		{
@@ -1040,6 +1055,32 @@ namespace Inforoom.PriceProcessor.Waybills
 				_log.Error("Ошибка сохранения накладной в новый формат dbf. "+ info + " Ошибка: " + exception.Message + ". StackTrace:" + exception.StackTrace);
 				throw;
 			}
-		}		
+		}
+
+	    public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
+        {
+            if (document == null) return;
+            if (document.OrderId == null) return;
+            if(orders.Count == 1)
+            {
+                
+            }
+
+
+	        /* With.Connection(c =>
+            {
+                var command = new MySqlCommand(@"
+delete from farm.BuyingMatrix
+where priceId = ?priceId;
+insert into farm.BuyingMatrix(PriceId, Code, ProductId, ProducerId)
+select c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr
+from farm.Core0 c0
+where pricecode = ?priceId
+group by c0.ProductId, c0.CodeFirmCr;
+", c);
+                command.Parameters.AddWithValue("?PriceId", priceId);
+                command.ExecuteNonQuery();
+            });*/
+        }
 	}
 }

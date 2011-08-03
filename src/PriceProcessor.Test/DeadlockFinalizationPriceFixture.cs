@@ -70,8 +70,7 @@ and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode));
 			etalonRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(
-					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+				MySqlHelper.ExecuteScalar(					
                     Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
@@ -114,7 +113,6 @@ and CoreCosts.PC_CostCode = {1}"
 			{
 				try
 				{
-					//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
                     using (var connection = new MySqlConnection(Literals.ConnectionString()))
 					{
 						connection.Open();
@@ -172,8 +170,7 @@ for update"
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
-
-			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			
             using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				
@@ -200,8 +197,7 @@ for update"
 
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(
-					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+				MySqlHelper.ExecuteScalar(					
                     Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
@@ -229,8 +225,7 @@ and CoreCosts.PC_CostCode = {1}",
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
-
-			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+			
             using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 
@@ -257,8 +252,7 @@ and CoreCosts.PC_CostCode = {1}",
 
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(
-					//ConfigurationManager.ConnectionStrings["DB"].ConnectionString,
+				MySqlHelper.ExecuteScalar(					
                     Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));

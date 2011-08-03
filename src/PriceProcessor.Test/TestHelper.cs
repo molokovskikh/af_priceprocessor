@@ -94,8 +94,7 @@ namespace PriceProcessor.Test
 		}
 
 		public static void Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
-		{
-			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+		{			
             using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var parser = (BasePriceParser) Activator.CreateInstance(formatType, file, connection, parseRules);
@@ -104,8 +103,7 @@ namespace PriceProcessor.Test
 		}
 
 		public static void FormalizeOld(Type formatType, DataTable parseRules, string file, int priceItemId)
-		{
-			//using (var connection = new MySqlConnection(ConfigurationManager.ConnectionStrings["DB"].ConnectionString))
+		{			
             using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);

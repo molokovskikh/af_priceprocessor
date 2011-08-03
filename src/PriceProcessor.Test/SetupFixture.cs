@@ -19,16 +19,14 @@ namespace PriceProcessor.Test
 		[SetUp]
 		public void Setup()
 		{
-			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
-			//With.DefaultConnectionStringName = "DB";
+			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";			
 		    With.DefaultConnectionStringName = Literals.GetConnectionName();
 			var config = new InPlaceConfigurationSource();
 			config.Add(typeof (ActiveRecordBase),
 				new Dictionary<string, string> {
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
-					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					//{Environment.ConnectionStringName, "DB"},
+					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},					
                     {Environment.ConnectionStringName, Literals.GetConnectionName()},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
 					{Environment.Hbm2ddlKeyWords, "none"},

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
 using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Waybills;
@@ -28,10 +30,13 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	[ActiveRecord("OrdersHead", Schema = "Orders")]
-	public class Order : ActiveRecordBase<Order>
+	public class OrderHead : ActiveRecordLinqBase<OrderHead>
 	{
 		[PrimaryKey("RowId")]
 		public virtual uint Id { get; set; }
+
+        [Property]
+        public DateTime WriteTime { get; set; }
 
 		[Property]
 		public virtual uint? AddressId { get; set; }
@@ -41,7 +46,33 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[BelongsTo("PriceCode")]
 		public virtual Price Price { get; set; }
+
+        [HasMany(ColumnKey = "OrderId", Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
+        public IList<OrderItem> Items { get; set; }
 	}
+
+    [ActiveRecord("OrdersList", Schema = "Orders")]
+	public class OrderItem : ActiveRecordLinqBase<OrderItem>
+    {
+        [PrimaryKey("RowId")]
+        public uint Id { get; set; }
+
+        [Property]
+        public uint? Quantity { get; set; }
+
+        [Property]
+        public ulong? CoreId { get; set; }
+
+        [Property]
+        public float? Cost { get; set; }
+
+        [Property]
+        public string Code { get; set; }
+
+        [BelongsTo("OrderId")]
+        public OrderHead Order { get; set; }
+    }
+
 
 	public class ProtekWaybillHandler : AbstractHandler
 	{
@@ -201,18 +232,25 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private Document ToDocument(Blading blading, ref DocumentReceiveLog log)
 		{
-			var orderId = (uint?) blading.@uint;
+			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
+		    
+            IList<uint> orderIds = new List<uint>();
 
-			if (orderId == null && blading.bladingFolder != null)
-				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null);
+            if(orderId != null) orderIds.Add(orderId.Value);
 
-			if (orderId == null)
+            if (orderId == null && blading.bladingFolder != null) // если заказы объединены (накладной соответствует несколько заказов)
+            {
+                orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
+                orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
+            }
+
+		    if (orderId == null)
 			{
 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
-			var order = Order.TryFind(orderId.Value);
+			var order = OrderHead.TryFind(orderId.Value);
 
 			if (order == null)
 			{
@@ -222,6 +260,13 @@ namespace Inforoom.PriceProcessor.Downloader
 					blading.baseId);
 				return null;
 			}
+
+            IList<OrderHead> orders = new List<OrderHead>();
+		    foreach (var id in orderIds)
+		    {
+		        var ord = OrderHead.TryFind(id);
+                if(ord != null) orders.Add(ord);
+		    }
 
 			log = new DocumentReceiveLog 
 			{
@@ -238,7 +283,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
 				Parser = "ProtekHandler"
-			};
+			};           
+
 			foreach (var bladingItem in blading.bladingItems)
 			{
 				var line = document.NewLine();
@@ -260,8 +306,9 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.SerialNumber = bladingItem.prodseria;
 				line.SetValues();
 			}
-			document.SetProductId();
-
+		    
+			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
+            WaybillService.ComparisonWithOrders(document, orders);
 			var settings = WaybillSettings.TryFind(order.ClientCode);
 			if (settings != null && settings.IsConvertFormat)			
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);

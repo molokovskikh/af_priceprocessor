@@ -41,9 +41,10 @@ namespace PriceProcessor.Test.Handlers
 	{
 		private DateTime begin;		
 		private TestOrder order;
+	    private TestOrder order2;
 		private FakeProtekHandler fake;
 
-		[SetUp]
+		//[SetUp]
 		public void SetUp()
 		{
 			begin = DateTime.Now;
@@ -63,6 +64,7 @@ namespace PriceProcessor.Test.Handlers
 					}
 				}
 			};
+
 
 			fake.bodyResponce = new getBladingBodyResponse
 			{
@@ -92,9 +94,89 @@ namespace PriceProcessor.Test.Handlers
 			};
 		}
 
+        public void SetUp2()
+        {            
+            begin = DateTime.Now;
+            using (new SessionScope())
+            {
+                order = TestOrder.Queryable.First();
+                order2 = TestOrder.Queryable.Where(o => o != order).First();
+            }            
+
+            fake = new FakeProtekHandler();
+
+            fake.headerResponce = new getBladingHeadersResponse
+            {
+                @return = new EZakazXML
+                {
+                    blading = new[] {
+						new Blading {
+							bladingId = 1,
+						},
+					}
+                }
+            };            
+
+            fake.bodyResponce = new getBladingBodyResponse
+            {
+                @return = new EZakazXML
+                {
+                    blading = new[] {
+						new Blading {
+							bladingId = 1,
+							//@uint = (int?) order.Id,
+                            @uint = null,
+							bladingItems = new [] {
+								new BladingItem {
+									itemId = 3345,
+									itemName = "Коринфар таб п/о 10мг № 50",
+									manufacturerName = "",
+									bitemQty = 3,
+									country = "Хорватия/Германия",
+									prodexpiry = DateTime.Parse("17.02.2012"),
+									distrPriceNds = 45.05,
+									distrPriceWonds = 40.95,
+									vitalMed = 1,
+									sumVat = 12.3
+								},
+							},
+
+                            bladingFolder = new [] {
+                                new BladingFolder
+                                    {
+                                        bladingId = null, 
+                                        folderNum  = "", 
+                                        orderDate = null, 
+                                        orderId = null, 
+                                        orderNum = "", 
+                                        orderUdat = null, 
+                                        orderUdec = null, 
+                                        orderUint = (int?)order.Id, 
+                                        orderUstr = ""
+                                    },
+                                new BladingFolder
+                                    {
+                                        bladingId = null, 
+                                        folderNum  = "", 
+                                        orderDate = null, 
+                                        orderId = null, 
+                                        orderNum = "", 
+                                        orderUdat = null, 
+                                        orderUdec = null, 
+                                        orderUint = (int?)order2.Id, 
+                                        orderUstr = ""
+                                    }                                       
+                               }
+						}
+					}
+                }
+            };
+        }
+
 		[Test]
 		public void Process_protek_waybills()
 		{
+		    SetUp();
 			fake.Process();		    
 			using (new SessionScope())
 			{
@@ -109,6 +191,26 @@ namespace PriceProcessor.Test.Handlers
 				Check_DocumentLine_SetProductId(documents[0]);
 			}
 		}
+
+        [Test]
+        public void Process_protek_waybills_with_blading_folder()
+        {            
+            SetUp2();
+            fake.Process();
+            using (new SessionScope())
+            {
+                var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+                Assert.That(documents.Count, Is.EqualTo(1));
+                Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
+                var line = documents[0].Lines[0];
+                Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+                Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+                Assert.That(documents[0].Log, Is.Not.Null);
+                Assert.That(documents[0].Log.IsFake, Is.True);
+                Check_DocumentLine_SetProductId(documents[0]);
+                Assert.That(documents[0].OrderId, Is.EqualTo(order.Id));
+            }
+        }
 
 		public void Check_DocumentLine_SetProductId(Document document)
 		{
@@ -142,7 +244,8 @@ namespace PriceProcessor.Test.Handlers
 
 		[Test]
 		public void Test_Parse_and_Convert_to_Dbf()
-		{			
+		{
+		    SetUp();
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{

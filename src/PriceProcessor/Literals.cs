@@ -5,11 +5,6 @@ namespace Inforoom.PriceProcessor
 {
 	public class Literals
 	{
-		/*public static string ConnectionString()
-		{
-			return ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
-		}*/
-
 #if DEBUG
         public static bool IsIntegration()
         {
