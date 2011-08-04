@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		[BelongsTo("PriceCode")]
 		public virtual Price Price { get; set; }
 
-        [HasMany(ColumnKey = "OrderId", Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
+        [HasMany(ColumnKey = "OrderId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
         public IList<OrderItem> Items { get; set; }
 	}
 
@@ -308,7 +308,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		    
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
-            WaybillService.ComparisonWithOrders(document, orders);
+            WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 			var settings = WaybillSettings.TryFind(order.ClientCode);
 			if (settings != null && settings.IsConvertFormat)			
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);

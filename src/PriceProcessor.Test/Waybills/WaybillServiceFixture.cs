@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
@@ -827,115 +828,97 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(data.Rows[1]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
 			}
 		}
+		
+        [Test]
+        public void ComparisonWithOrdersTest()
+        {            
+            Supplier supplier;
+            TestClient client = TestClient.Create();
+            OrderHead order1;
+            OrderHead order2;
+            Document document;          
 
-		[Test(Description = "Повторная конвертация накладаных для клиента Таттехмедфарм-аптеки (10365) из-за ошибки конвертации")]
-		[Ignore("Это не тест")]
-		public void ReconvertWaybillsToDBF()
-		{
-			return;
+            using (new SessionScope())
+            {
+                supplier = Supplier.FindFirst();
+                order1 = new OrderHead { ClientCode = client.Id }; order1.Save();                
+                var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 }; item.Save();
+                item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 }; item.Save();
+                item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 }; item.Save();
+                item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 }; item.Save();
 
-			/*
-			//Здесь надо прописать корректное подлкючение в рабочей базе данных
-			var dbConnection = "server=dbms2.adc.analit.net;username=; password=; database=farm; pooling=true; Convert Zero Datetime=true; Allow User Variables=true;";
+                order2 = new OrderHead { ClientCode = client.Id }; order2.Save();
+                item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 }; item.Save();
+                item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
+                item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
 
-			//Данные действия делаем для определенного клиента: 10365
-			var docs = MySqlHelper.ExecuteDataset(
-				dbConnection,
-				@"
-SELECT 
-dl.*,
-dh.Id as DocumentId
-FROM 
-`Logs`.`document_logs` dl
-,
-documents.documentheaders dh
-#,
-#documents.documentbodies db
-where
-dl.LogTime > '2011-07-15 13:00'
-and dl.LogTime < '2011-07-18 12:25'
-and dl.ClientCode = 10365
-and dl.DocumentType = 1
-and dl.Addition is null
-and dh.DownloadId = dl.RowId
-");
-			Assert.That(docs.Tables.Count, Is.EqualTo(1));
-			Console.WriteLine("docs count = {0}", docs.Tables[0].Rows.Count);
+                DocumentReceiveLog log = new DocumentReceiveLog
+                {
+                    Supplier = supplier,
+                    ClientCode = client.Id,
+                    AddressId = client.Addresses[0].Id,
+                    MessageUid = 123,
+                    DocumentSize = 100
+                };
+                document = new Document(log)
+                {
+                    OrderId = order1.Id,
+                    AddressId = client.Addresses[0].Id,
+                    DocumentDate = DateTime.Now
+                };
+                var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
+                document.NewLine(docline);                
+                docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 15 };
+                document.NewLine(docline);
+                docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 5 };
+                document.NewLine(docline);
+                docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 75 };
+                document.NewLine(docline);
+                docline = new DocumentLine { Document = document, Code = null, Quantity = 75 };
+                document.NewLine(docline);
+                docline = new DocumentLine { Document = document, Code = "Code5", Quantity = 10 };
+                document.NewLine(docline);                
+                log.Save();
+                document.Save();
+            }
 
-			foreach (DataRow originDoc in docs.Tables[0].Rows)
-			{
-				var originFileName = Path.GetFileNameWithoutExtension(originDoc["FileName"].ToString());
+            IList<OrderHead> orders = new List<OrderHead>();
 
-				var filterFileName = originFileName.Length < 23 ? "%(" + originFileName + ").dbf" : "%(" + originFileName.Slice(23) + "%";
+            using (new SessionScope())
+            {
+                orders.Add(OrderHead.Find(order1.Id));
+                orders.Add(OrderHead.Find(order2.Id));
 
-				var convertDocs = MySqlHelper.ExecuteDataset(
-					dbConnection,
-					@"
-SELECT * 
-FROM 
-`Logs`.`document_logs` dl
-where
-dl.LogTime >= ?LogTime
-and dl.LogTime < ?LogTime + interval 3 minute
-and dl.ClientCode = 10365
-and dl.DocumentType = 1
-and dl.FirmCode = ?FirmCode
-and dl.AddressId = ?AddressId
-and dl.Addition = 'Сконвертированный Dbf файл'
-and dl.FileName like ?FileName
-"
-					,
-					new MySqlParameter("?LogTime", originDoc["LogTime"]),
-					new MySqlParameter("?FirmCode", originDoc["FirmCode"]),
-					new MySqlParameter("?AddressId", originDoc["AddressId"]),
-					new MySqlParameter("?FileName", filterFileName)
-					);
-				Assert.That(convertDocs.Tables.Count, Is.EqualTo(1));
-				Assert.That(convertDocs.Tables[0].Rows.Count, Is.EqualTo(1), "Не найден дубликат для документа {0} по фильтру {1}", originDoc["RowId"], filterFileName);
+                document = Document.Find(document.Id);
+                order1 = OrderHead.Find(order1.Id);
+                order2 = OrderHead.Find(order2.Id);
+            }
+                        
+            WaybillService.ComparisonWithOrders(document, orders);
 
-				var convertedDoc = convertDocs.Tables[0].Rows[0];
-
-				using (new SessionScope())
-				{
-					var originLog = DocumentReceiveLog.Find(Convert.ToUInt32(originDoc["RowId"]));
-					var convertedLog = DocumentReceiveLog.Find(Convert.ToUInt32(convertedDoc["RowId"]));
-					var document = Document.Find(Convert.ToUInt32(originDoc["DocumentId"]));
-
-					if (document.SetAssortimentInfo())
-					{
-						var rootPath = Path.Combine(@"\\ADC.ANALIT.NET\Inforoom\AptBox", originLog.AddressId.ToString(), "Waybills");
-
-						//Метод InitTableForFormatDbf должен быть публичным
-						var table = WaybillService.InitTableForFormatDbf(document, originLog.Supplier);
-
-						var saveFileName = Path.Combine(rootPath, convertedLog.FileName);
-
-						//сохраняем накладную в новом формате dbf.
-						Dbf.Save(table, saveFileName);
-
-						using (var scope = new TransactionScope(OnDispose.Rollback))
-						{
-							var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
-							try
-							{
-								session.CreateSQLQuery(@"
-update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where DocumentId = :DocId;
-")
-									.SetParameter("DocId", convertedLog.Id)
-									.ExecuteUpdate();
-							}
-							finally
-							{
-								ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
-							}
-							scope.VoteCommit();
-						}
-					}
-
-				}
-			}
-			 */ 
-		}
-
+            string inStr = String.Empty;
+            foreach (var line in document.Lines)
+            {
+                if (!String.IsNullOrEmpty(inStr)) inStr += ",";
+                inStr += line.Id.ToString();
+            }
+            var ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
+            var table = ds.Tables[0];
+            Assert.That(table.Rows.Count, Is.EqualTo(7));
+            Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
+            Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
+            Assert.That(table.Rows[1]["DocumentLineId"], Is.EqualTo(document.Lines[1].Id));
+            Assert.That(table.Rows[1]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
+            Assert.That(table.Rows[2]["DocumentLineId"], Is.EqualTo(document.Lines[2].Id));
+            Assert.That(table.Rows[2]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
+            Assert.That(table.Rows[3]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+            Assert.That(table.Rows[3]["OrderLineId"], Is.EqualTo(order1.Items[2].Id));
+            Assert.That(table.Rows[4]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+            Assert.That(table.Rows[4]["OrderLineId"], Is.EqualTo(order2.Items[0].Id));
+            Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+            Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
+            Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
+            Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
+        }
 	}
 }

@@ -14,6 +14,7 @@ using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor;
 using log4net;
+using MySql.Data.MySqlClient;
 using NHibernate.Criterion;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
@@ -266,25 +267,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		[BelongsTo("DownloadId")]
 		public DocumentReceiveLog Log { get; set; }
-
+        
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public IList<DocumentLine> Lines { get; set; }
         
-
-      /*  public IList<OrderHead> Orders
-        {
-            get { return _orders; }   
-            set 
-            { 
-                _orders.Clear();
-                foreach (var order in value)
-                {
-                    if (order != null) _orders.Add(order);
-                }
-            }
-        }*/
-
-		public DocumentLine NewLine()
+        public DocumentLine NewLine()
 		{
 			return NewLine(new DocumentLine());
 		}
@@ -479,7 +466,7 @@ namespace Inforoom.PriceProcessor.Waybills
         [Property]
         public decimal? Amount { get; set; }
     }
-
+    
 	[ActiveRecord("DocumentBodies", Schema = "documents")]
 	public class DocumentLine
 	{
@@ -1061,26 +1048,63 @@ namespace Inforoom.PriceProcessor.Waybills
         {
             if (document == null) return;
             if (document.OrderId == null) return;
-            if(orders.Count == 1)
+            if (orders == null) return;
+            if (orders.Count == 0) return;
+            try
             {
-                
+                var waybillPositions = document.Lines.Where(l => l != null && !String.IsNullOrEmpty(l.Code)).ToList();
+
+                while (waybillPositions.Count > 0)
+                {
+                    var line = NextFirst(waybillPositions, false);                    
+                    var code = line.Code.Trim().ToLower();
+                    var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
+                    foreach (var waybillLine in waybillLines)
+                    {
+                        waybillPositions.Remove(waybillLine);
+                    }                  
+                    foreach (var itemW in waybillLines)
+                    {
+                        foreach (var order in orders)
+                        {
+                            var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
+                            foreach (var itemOrd in orderLines)
+                            {                                
+                                AddToAssociativeTable(itemW.Id, itemOrd.Id);
+                            }                            
+                        }
+                    }
+                }
             }
+            catch(Exception e)
+            {
+                _log.Error("Ошибка при сопоставлении заказов накладной", e);
+            }
+        }
 
+        private static T NextFirst<T> (IList<T> list, bool rem) where T : class
+        {
+            if (list.Count == 0) return null;                
+            if(rem)
+            {
+                list.Remove(list.First());
+            }
+            if (list.Count == 0) return null;
+            return list.First();
+        }
 
-	        /* With.Connection(c =>
+        private static void AddToAssociativeTable(uint docLineId, uint ordLineId)
+        {
+            With.Connection(c =>
             {
                 var command = new MySqlCommand(@"
-delete from farm.BuyingMatrix
-where priceId = ?priceId;
-insert into farm.BuyingMatrix(PriceId, Code, ProductId, ProducerId)
-select c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr
-from farm.Core0 c0
-where pricecode = ?priceId
-group by c0.ProductId, c0.CodeFirmCr;
+insert into documents.waybillorders(DocumentLineId, OrderLineId)
+values(?DocumentLineId, ?OrderLineId);
 ", c);
-                command.Parameters.AddWithValue("?PriceId", priceId);
+                command.Parameters.AddWithValue("?DocumentLineId", docLineId);
+                command.Parameters.AddWithValue("?OrderLineId", ordLineId);
                 command.ExecuteNonQuery();
-            });*/
+            });
         }
 	}
 }
