@@ -194,7 +194,8 @@ namespace PriceProcessor.Test.Handlers
 
         [Test]
         public void Process_protek_waybills_with_blading_folder()
-        {            
+        {
+            Thread.Sleep(3000);
             SetUp2();
             fake.Process();
             using (new SessionScope())

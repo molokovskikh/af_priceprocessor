@@ -77,6 +77,8 @@ namespace Inforoom.PriceProcessor.Downloader
 	public class ProtekWaybillHandler : AbstractHandler
 	{
 		private string uri;
+        private IList<OrderHead> orders = new List<OrderHead>();
+
 		public virtual void WithService(Action<ProtekService> action)
 		{
 			var endpoint = new EndpointAddress(uri);
@@ -218,8 +220,10 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
+                                WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
+                            
 						}
 					}
 				}
@@ -260,8 +264,7 @@ namespace Inforoom.PriceProcessor.Downloader
 					blading.baseId);
 				return null;
 			}
-
-            IList<OrderHead> orders = new List<OrderHead>();
+           
 		    foreach (var id in orderIds)
 		    {
 		        var ord = OrderHead.TryFind(id);
@@ -314,8 +317,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.SetValues();
 			}
 		    
-			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
-            WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
+			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной            
 			var settings = WaybillSettings.TryFind(order.ClientCode);
 			if (settings != null && settings.IsConvertFormat)			
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);
