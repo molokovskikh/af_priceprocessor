@@ -268,6 +268,13 @@ namespace Inforoom.PriceProcessor.Downloader
                 if(ord != null) orders.Add(ord);
 		    }
 
+		    string ordstr = String.Empty;
+		    foreach (var ord in orders)
+		    {
+		        ordstr += ord.Id + " ";
+		    }
+		    _logger.InfoFormat("Заказы в накладной Протека: {0}", ordstr);
+
 			log = new DocumentReceiveLog 
 			{
 				DocumentType = DocType.Waybill,

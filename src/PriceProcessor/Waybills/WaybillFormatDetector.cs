@@ -224,8 +224,7 @@ namespace Inforoom.PriceProcessor.Waybills
             if (doc != null)
             {
                 doc.SetProductId();
-                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
-                //WaybillService.ComparisonWithOrders(doc);
+                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;                
             }
 		    return doc;
 		}
