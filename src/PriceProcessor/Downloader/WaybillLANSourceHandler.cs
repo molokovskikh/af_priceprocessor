@@ -139,7 +139,8 @@ and st.SourceID = 4";
 							//Обрабатываем ошибку в случае обработки одного из типов документов
 							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
-							LoggingToService(Error);
+                            if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
+							    LoggingToService(Error);
 						}
 
 
@@ -155,7 +156,8 @@ and st.SourceID = 4";
 					}
 					catch { }
 					error += Environment.NewLine + Environment.NewLine + ex;
-					LoggingToService(error);
+                    if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
+					    LoggingToService(error);
 					try
 					{
 						dtSources.AcceptChanges();

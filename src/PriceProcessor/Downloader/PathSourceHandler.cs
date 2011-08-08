@@ -127,7 +127,8 @@ namespace Inforoom.Downloader
 						FileHelper.Safe(currentSource.Delete);
 					}
 					error += Environment.NewLine + Environment.NewLine + ex;
-					LoggingToService(error);
+                    if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
+					    LoggingToService(error);
 				}
 				finally
 				{

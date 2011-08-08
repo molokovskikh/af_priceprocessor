@@ -135,6 +135,65 @@ update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where Documen
 					});
 				}
 
-			}		
+		}
+
+        [Test, Ignore("Не тест! Вспомогательный функционал")]
+        public void CopyOrdersOldToLocal()
+        {
+            With.DefaultConnectionStringName = "Main";
+            var ds = TestHelper.Fill("select * from ordersold.ordershead where AddressId is null or UserId is null group by ClientCode;");
+
+            With.DefaultConnectionStringName = Literals.GetConnectionName();
+
+            var table = ds.Tables[0];
+            var rowCnt = table.Rows.Count;
+
+            With.Connection(c =>
+                                {
+                                    var command = new MySqlCommand(@"
+DROP TABLE IF EXISTS `OrdersOld`.`ordershead`;
+CREATE TABLE  `OrdersOld`.`ordershead` (
+  `RowID` int(10) unsigned NOT NULL DEFAULT '0',
+  `WriteTime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `ClientCode` int(10) unsigned NOT NULL DEFAULT '0',
+  `UserId` int(10) unsigned DEFAULT NULL,
+  `AddressId` int(10) unsigned DEFAULT NULL,
+  `PriceCode` int(10) unsigned NOT NULL DEFAULT '0',
+  `RegionCode` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `PriceDate` datetime DEFAULT NULL,
+  `SubmitDate` datetime DEFAULT NULL,
+  PRIMARY KEY (`WriteTime`,`RegionCode`,`PriceCode`,`RowID`) USING BTREE,
+  UNIQUE KEY `RowId` (`RowID`),
+  KEY `Clients` (`ClientCode`,`UserId`,`AddressId`)
+) ENGINE=InnoDB DEFAULT CHARSET=cp1251 ROW_FORMAT=DYNAMIC;
+", c);
+                                    command.ExecuteNonQuery();
+                                });               
+
+            foreach (DataRow row in ds.Tables[0].Rows)
+            {
+                With.Connection(c =>
+                                    {
+                                        var command =
+                                            new MySqlCommand(
+                                                @"
+insert into ordersold.ordershead(RowId, WriteTime, ClientCode, UserId, AddressId, PriceCode, RegionCode, 
+                                 PriceDate, SubmitDate) 
+values(?RowId, ?WriteTime, ?ClientCode, ?UserId, ?AddressId, ?PriceCode, ?RegionCode, 
+                                 ?PriceDate, ?SubmitDate)", c);
+                                        command.Parameters.AddWithValue("?RowId", row["RowId"]);
+                                        command.Parameters.AddWithValue("?WriteTime", row["WriteTime"]);
+                                        command.Parameters.AddWithValue("?ClientCode", row["ClientCode"]);
+                                        command.Parameters.AddWithValue("?UserId", row["UserId"]);
+                                        command.Parameters.AddWithValue("?AddressId", row["AddressId"]);
+                                        command.Parameters.AddWithValue("?PriceCode", row["PriceCode"]);
+                                        command.Parameters.AddWithValue("?RegionCode", row["RegionCode"]);
+                                        command.Parameters.AddWithValue("?PriceDate", row["PriceDate"]);
+                                        command.Parameters.AddWithValue("?SubmitDate", row["SubmitDate"]);
+                                        command.ExecuteNonQuery();
+                                    });
+
+            }
+        }
 	}
 }
