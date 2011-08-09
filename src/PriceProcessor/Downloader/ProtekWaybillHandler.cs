@@ -276,7 +276,6 @@ namespace Inforoom.PriceProcessor.Downloader
 		    {
 		        ordstr += ord.Id + " ";
 		    }
-		    _logger.InfoFormat("Заказы в накладной Протека: {0}", ordstr);
 
 			log = new DocumentReceiveLog 
 			{

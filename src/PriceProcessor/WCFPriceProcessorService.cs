@@ -89,6 +89,8 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
 			if (ArchiveHelper.IsArchive(filename))
 			{
+                if (File.Exists(tempDirectory))
+                    File.Delete(tempDirectory);
 				if (Directory.Exists(tempDirectory))
 					Directory.Delete(tempDirectory, true);
 				Directory.CreateDirectory(tempDirectory);
