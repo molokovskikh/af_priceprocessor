@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework.Config;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
@@ -85,8 +86,7 @@ where dl.LogTime > '2011-05-04 21:00:00' and dl.LogTime < '2011-05-05 10:00:00' 
 			}
 		}
 
-		[Test]	
-		[Ignore]
+		[Test, Ignore]			
 		public void ReparseWaybills()
 		{
 			FillLogs();
@@ -113,8 +113,7 @@ update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where Documen
 			}
 		}
 
-		[Test]
-		[Ignore]
+		[Test, Ignore]		
 		public void ReparseWaybill()
 		{
 			uint rowId = 8068636;				
@@ -194,6 +193,64 @@ values(?RowId, ?WriteTime, ?ClientCode, ?UserId, ?AddressId, ?PriceCode, ?Region
                                     });
 
             }
+        }
+
+        public struct WaybillOrders
+        {
+            public int wID { get; set; }
+            public int oID { get; set; }
+        }
+
+        [Test, Ignore("Не тест, вспомогательный функционал")]
+        public void Temp()
+        {
+            With.DefaultConnectionStringName = "Main";            
+            var ds = TestHelper.Fill(@"SELECT wo.DocumentLineId, wo.OrderLineId FROM documents.waybillorders wo
+join orders.orderslist ol on wo.OrderLineId = ol.RowId
+join documents.documentbodies db on wo.DocumentLineId = db.Id
+join documents.documentheaders dh on db.DocumentId = dh.Id
+join logs.document_logs dl on dl.RowId = dh.DownloadId and dl.LogTime >= '2011-08-12 16:00';");
+
+            List<WaybillOrders> woList = new List<WaybillOrders>();
+            foreach (DataRow row in ds.Tables[0].Rows)
+            {
+                WaybillOrders wo = new WaybillOrders();
+                wo.wID = Convert.ToInt32(row["DocumentLineId"]);
+                wo.oID = Convert.ToInt32(row["OrderLineId"]);
+                woList.Add(wo);
+            }
+            
+            using(new SessionScope())
+            {
+                int total = 0;
+                int success = 0;
+
+                while (woList.Count > 0)
+                {                    
+
+                    var orderlineId = woList.First().oID;
+
+                    var oline = TestOrderItem.TryFind(Convert.ToUInt32(orderlineId));
+
+                    if (oline == null)
+                        break;
+
+                    var wotmp = woList.Where(wo => wo.oID == orderlineId).ToList();
+
+                    var wlineIds = wotmp.Select(wo => wo.wID).Distinct().ToList();
+
+                    var wlines = wlineIds.Select(l => TestWaybillLine.TryFind(Convert.ToUInt32(l))).Where(w => w != null).ToList();
+
+                    var orderQnt = oline.Quantity; // количество в позиции заказа
+                    var waybillQnt = wlines.Sum(l => l.Quantity); // коичество в позиции накладной
+
+                    total++;
+                    if (orderQnt >= waybillQnt) success++;                    
+
+                    wotmp.Each(wo => woList.Remove(wo));
+                }
+            }
+
         }
 	}
 }

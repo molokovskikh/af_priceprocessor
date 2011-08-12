@@ -1062,16 +1062,16 @@ namespace Inforoom.PriceProcessor.Waybills
                     foreach (var waybillLine in waybillLines)
                     {
                         waybillPositions.Remove(waybillLine);
-                    }                  
+                    }
                     foreach (var itemW in waybillLines)
                     {
                         foreach (var order in orders)
                         {
                             var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
                             foreach (var itemOrd in orderLines)
-                            {                                
+                            {
                                 AddToAssociativeTable(itemW.Id, itemOrd.Id);
-                            }                            
+                            }
                         }
                     }
                 }

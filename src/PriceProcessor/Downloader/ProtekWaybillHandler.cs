@@ -241,6 +241,7 @@ namespace Inforoom.PriceProcessor.Downloader
             IList<uint> orderIds = new List<uint>();
 
             if(orderId != null) orderIds.Add(orderId.Value);
+            orders.Clear(); // очистка списка заказов
 
             if (orderId == null && blading.bladingFolder != null) // если заказы объединены (накладной соответствует несколько заказов)
             {
@@ -269,12 +270,6 @@ namespace Inforoom.PriceProcessor.Downloader
 		    {
 		        var ord = OrderHead.TryFind(id);
                 if(ord != null) orders.Add(ord);
-		    }
-
-		    string ordstr = String.Empty;
-		    foreach (var ord in orders)
-		    {
-		        ordstr += ord.Id + " ";
 		    }
 
 			log = new DocumentReceiveLog 
