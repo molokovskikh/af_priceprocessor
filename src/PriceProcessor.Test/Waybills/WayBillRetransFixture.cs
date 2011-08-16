@@ -202,7 +202,7 @@ values(?RowId, ?WriteTime, ?ClientCode, ?UserId, ?AddressId, ?PriceCode, ?Region
         }
 
         [Test, Ignore("Не тест, вспомогательный функционал")]
-        public void Temp()
+        public void WaybillOrdersCheck()
         {
             With.DefaultConnectionStringName = "Main";            
             var ds = TestHelper.Fill(@"SELECT wo.DocumentLineId, wo.OrderLineId FROM documents.waybillorders wo
@@ -226,8 +226,7 @@ join logs.document_logs dl on dl.RowId = dh.DownloadId and dl.LogTime >= '2011-0
                 int success = 0;
 
                 while (woList.Count > 0)
-                {                    
-
+                {
                     var orderlineId = woList.First().oID;
 
                     var oline = TestOrderItem.TryFind(Convert.ToUInt32(orderlineId));
@@ -241,16 +240,37 @@ join logs.document_logs dl on dl.RowId = dh.DownloadId and dl.LogTime >= '2011-0
 
                     var wlines = wlineIds.Select(l => TestWaybillLine.TryFind(Convert.ToUInt32(l))).Where(w => w != null).ToList();
 
-                    var orderQnt = oline.Quantity; // количество в позиции заказа
-                    var waybillQnt = wlines.Sum(l => l.Quantity); // коичество в позиции накладной
+                    long orderQnt = 0;
+                    long waybillQnt = 0;
 
-                    total++;
-                    if (orderQnt >= waybillQnt) success++;                    
+                    if(wlines.Count > 1) // позиции в заказе соответствует несколько позиций в накладных
+                    {
+                        orderQnt = oline.Quantity; // количество в позиции заказа
+                        waybillQnt = wlines.Sum(l => l.Quantity); // коичество в позиции накладной
+                    }
+                    else if(wlines.Count == 1)
+                    {
+                        var wline = TestWaybillLine.TryFind(wlines[0].Id);
+                        if (wline == null)
+                            break;
+                        
+                        wotmp = woList.Where(wo => wo.wID == wline.Id).ToList();
+
+                        var olineIds = wotmp.Select(wo => wo.oID).Distinct().ToList();
+                        var olines =
+                            olineIds.Select(l => TestOrderItem.TryFind(Convert.ToUInt32(l))).Where(w => w != null).
+                                ToList();
+
+                        waybillQnt = wline.Quantity;
+                        orderQnt = olines.Sum(l => l.Quantity);
+                    }
+
+                    if (orderQnt == waybillQnt) success++;
 
                     wotmp.Each(wo => woList.Remove(wo));
+                    total++;
                 }
             }
-
         }
 	}
 }

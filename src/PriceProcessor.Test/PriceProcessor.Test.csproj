@@ -180,6 +180,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\CSMedicaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\FarmPartnerKalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\SiaVoronezhParserFixture.cs" />
