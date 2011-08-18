@@ -286,8 +286,25 @@ namespace Inforoom.PriceProcessor.Downloader
 				OrderId = orderId,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
-				Parser = "ProtekHandler"
-			};           
+				Parser = "ProtekHandler",
+			};
+			document.SetInvoice();
+			var invoice = document.Invoice;
+			invoice.InvoiceDate = blading.date0;
+			invoice.InvoiceNumber = blading.baseId;
+			invoice.SellerName = blading.protekNameAddr;
+			invoice.SellerINN = blading.protekInnKpp;
+			invoice.ShipperInfo = blading.protekAddr;
+			invoice.ConsigneeInfo = blading.recipientAddr;
+			invoice.PaymentDocumentInfo = blading.baseId;
+			invoice.BuyerName = blading.payerName;
+			invoice.BuyerINN = blading.payerInn;
+			invoice.AmountWithoutNDS = (decimal?)blading.sumbyWonds;
+			invoice.AmountWithoutNDS10 = (decimal?)blading.sumbyNdsrate10;
+			invoice.NDSAmount10 = (decimal?)blading.nds10;
+			invoice.AmountWithoutNDS18 = (decimal?)blading.sumbyNdsrate18;
+			invoice.NDSAmount18 = (decimal?)blading.nds20;
+			invoice.Amount = (decimal?)blading.rprice;
 
 			foreach (var bladingItem in blading.bladingItems)
 			{
@@ -307,11 +324,13 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
 				line.ProducerCost = (decimal?) bladingItem.prodPriceWonds;
 				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
+				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
+				line.EAN13 = bladingItem.prodsbar;
 				line.SetValues();
 			}
-		    
-			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной            
+
+			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 			var settings = WaybillSettings.TryFind(order.ClientCode);
 			if (settings != null && settings.IsConvertFormat)			
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);

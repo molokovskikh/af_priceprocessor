@@ -59,6 +59,15 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public string seria { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string unit { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string prodsbar { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? positionsum { get; set; }
 	}
 
 	[SerializableAttribute]
@@ -252,6 +261,16 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public string ustr { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string protekAddr { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string protekNameAddr { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string protekInnKpp { get; set; }
+
 	}
 
 	[SerializableAttribute]
