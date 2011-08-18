@@ -64,7 +64,7 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(ImperiaFarmaSpecialParser);
 							break;
 						}
-                    case 1581:
+                    case 1581: // Накладная от Здравсервис, содержащая поля для счета-фактуры
 				        {
 				            var table = ZdravServiceSpecialParser.Load(file);
                             if (ZdravServiceSpecialParser.CheckFileFormat(table))

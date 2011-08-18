@@ -39,18 +39,17 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class ProtekWaybillHandlerFixture
 	{
-		private DateTime begin;		
 		private TestOrder order;
 	    private TestOrder order2;
 		private FakeProtekHandler fake;
 
-		//[SetUp]
+		[SetUp]
 		public void SetUp()
-		{
-			begin = DateTime.Now;
+		{			
 			using (new SessionScope())
 			{
 				order = TestOrder.Queryable.First();
+                order2 = TestOrder.Queryable.Where(o => o != order).First();
 			}
 
 			fake = new FakeProtekHandler();
@@ -64,7 +63,6 @@ namespace PriceProcessor.Test.Handlers
 					}
 				}
 			};
-
 
 			fake.bodyResponce = new getBladingBodyResponse
 			{
@@ -86,97 +84,18 @@ namespace PriceProcessor.Test.Handlers
 									distrPriceWonds = 40.95,
 									vitalMed = 1,
 									sumVat = 12.3
-								},
-							}
+								}                                
+							},                                                        
 						}
 					}
 				}
 			};
 		}
 
-        public void SetUp2()
-        {            
-            begin = DateTime.Now;
-            using (new SessionScope())
-            {
-                order = TestOrder.Queryable.First();
-                order2 = TestOrder.Queryable.Where(o => o != order).First();
-            }            
-
-            fake = new FakeProtekHandler();
-
-            fake.headerResponce = new getBladingHeadersResponse
-            {
-                @return = new EZakazXML
-                {
-                    blading = new[] {
-						new Blading {
-							bladingId = 1,
-						},
-					}
-                }
-            };            
-
-            fake.bodyResponce = new getBladingBodyResponse
-            {
-                @return = new EZakazXML
-                {
-                    blading = new[] {
-						new Blading {
-							bladingId = 1,
-							//@uint = (int?) order.Id,
-                            @uint = null,
-							bladingItems = new [] {
-								new BladingItem {
-									itemId = 3345,
-									itemName = "Коринфар таб п/о 10мг № 50",
-									manufacturerName = "",
-									bitemQty = 3,
-									country = "Хорватия/Германия",
-									prodexpiry = DateTime.Parse("17.02.2012"),
-									distrPriceNds = 45.05,
-									distrPriceWonds = 40.95,
-									vitalMed = 1,
-									sumVat = 12.3
-								},
-							},
-
-                            bladingFolder = new [] {
-                                new BladingFolder
-                                    {
-                                        bladingId = null, 
-                                        folderNum  = "", 
-                                        orderDate = null, 
-                                        orderId = null, 
-                                        orderNum = "", 
-                                        orderUdat = null, 
-                                        orderUdec = null, 
-                                        orderUint = (int?)order.Id, 
-                                        orderUstr = ""
-                                    },
-                                new BladingFolder
-                                    {
-                                        bladingId = null, 
-                                        folderNum  = "", 
-                                        orderDate = null, 
-                                        orderId = null, 
-                                        orderNum = "", 
-                                        orderUdat = null, 
-                                        orderUdec = null, 
-                                        orderUint = (int?)order2.Id, 
-                                        orderUstr = ""
-                                    }                                       
-                               }
-						}
-					}
-                }
-            };
-        }
-
 		[Test]
 		public void Process_protek_waybills()
 		{
-		    SetUp();
+            DateTime begin = DateTime.Now;
 			fake.Process();		    
 			using (new SessionScope())
 			{
@@ -195,8 +114,36 @@ namespace PriceProcessor.Test.Handlers
         [Test]
         public void Process_protek_waybills_with_blading_folder()
         {
-            Thread.Sleep(3000);
-            SetUp2();
+            Thread.Sleep(1000);                      
+        	fake.bodyResponce.@return.blading[0].@uint = null;
+			fake.bodyResponce.@return.blading[0].bladingFolder = new[]{
+                new BladingFolder
+                    {
+                        bladingId = null, 
+                        folderNum  = "", 
+                        orderDate = null, 
+                        orderId = null, 
+                        orderNum = "", 
+                        orderUdat = null, 
+                        orderUdec = null, 
+                        orderUint = (int?)order.Id, 
+                        orderUstr = ""
+                    },
+                new BladingFolder
+                    {
+                        bladingId = null, 
+                        folderNum  = "", 
+                        orderDate = null, 
+                        orderId = null, 
+                        orderNum = "", 
+                        orderUdat = null, 
+                        orderUdec = null, 
+                        orderUint = (int?)order2.Id, 
+                        orderUstr = ""
+                    }
+            };
+
+            DateTime begin = DateTime.Now;
             fake.Process();
             using (new SessionScope())
             {
@@ -246,15 +193,13 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Test_Parse_and_Convert_to_Dbf()
 		{
-		    SetUp();
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
-			}
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
+			}			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
