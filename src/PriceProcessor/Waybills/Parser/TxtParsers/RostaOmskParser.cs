@@ -32,7 +32,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					line.Certificates = txtParser.Certificates;
 					var vi = txtParser.VitallyImportantChar;
 					line.VitallyImportant = (vi == null) ? false : vi.Equals("*");
-					line.SetValues();
 				}
 			}
 			return document;

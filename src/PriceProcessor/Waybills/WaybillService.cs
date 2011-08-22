@@ -235,6 +235,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			return this;
 		}
 
+		public  void CalculateValues() 
+		{
+			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
+			if(Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -465,6 +471,104 @@ namespace Inforoom.PriceProcessor.Waybills
         /// </summary>
         [Property]
         public decimal? Amount { get; set; }
+
+		private int ToIntX100(decimal val)
+		{
+			return Convert.ToInt32(Math.Round(val, 2)*100);
+		}
+
+		public void CalculateValues()
+		{
+			if (!AmountWithoutNDS0.HasValue && AmountWithoutNDS.HasValue && AmountWithoutNDS10.HasValue && AmountWithoutNDS18.HasValue)
+			{
+				if (ToIntX100(AmountWithoutNDS10.Value) + ToIntX100(AmountWithoutNDS18.Value) <= ToIntX100(AmountWithoutNDS.Value))
+					AmountWithoutNDS0 = Math.Round(AmountWithoutNDS.Value, 2) - Math.Round(AmountWithoutNDS10.Value, 2) - Math.Round(AmountWithoutNDS18.Value, 2);
+			}
+			if(!AmountWithoutNDS0.HasValue)
+			{
+				AmountWithoutNDS0 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 0 && l.SupplierCostWithoutNDS.HasValue && 
+															l.Quantity.HasValue).Sum(l => l.SupplierCostWithoutNDS*l.Quantity).Value, 2);
+			}
+			if (!AmountWithoutNDS10.HasValue && NDSAmount10.HasValue && Amount10.HasValue)
+			{
+				if (ToIntX100(NDSAmount10.Value) <= ToIntX100(Amount10.Value))
+					AmountWithoutNDS10 = Amount10 - NDSAmount10;
+			}
+			if (!AmountWithoutNDS10.HasValue && AmountWithoutNDS.HasValue && AmountWithoutNDS18.HasValue)
+			{
+				if (ToIntX100(AmountWithoutNDS0.Value) + ToIntX100(AmountWithoutNDS18.Value) <= ToIntX100(AmountWithoutNDS.Value))
+					AmountWithoutNDS10 = Math.Round(AmountWithoutNDS.Value, 2) - Math.Round(AmountWithoutNDS0.Value, 2) - Math.Round(AmountWithoutNDS18.Value, 2);
+			}			
+			if(!AmountWithoutNDS10.HasValue)
+			{
+				AmountWithoutNDS10 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 10 && l.SupplierCostWithoutNDS.HasValue &&
+															l.Quantity.HasValue).Sum(l => l.SupplierCostWithoutNDS * l.Quantity).Value, 2);
+			}
+			if (!AmountWithoutNDS18.HasValue && NDSAmount18.HasValue && Amount18.HasValue)
+			{
+				if (ToIntX100(NDSAmount18.Value) <= ToIntX100(Amount18.Value))
+					AmountWithoutNDS18 = Math.Round(Amount18.Value, 2) - Math.Round(NDSAmount18.Value, 2);
+			}
+			if(!AmountWithoutNDS18.HasValue && AmountWithoutNDS.HasValue)
+			{
+				if (ToIntX100(AmountWithoutNDS10.Value) + ToIntX100(AmountWithoutNDS0.Value) <= ToIntX100(AmountWithoutNDS.Value))
+					AmountWithoutNDS18 = Math.Round(AmountWithoutNDS.Value, 2) - Math.Round(AmountWithoutNDS0.Value, 2) - Math.Round(AmountWithoutNDS10.Value, 2);
+			}			
+			if(!AmountWithoutNDS18.HasValue)
+			{
+				AmountWithoutNDS18 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 18 && l.SupplierCostWithoutNDS.HasValue &&
+															l.Quantity.HasValue).Sum(l => l.SupplierCostWithoutNDS * l.Quantity).Value, 2);	
+			}
+			if(!AmountWithoutNDS.HasValue && NDSAmount.HasValue && Amount.HasValue)
+			{
+				if (ToIntX100(NDSAmount.Value) <= ToIntX100(Amount.Value))
+					AmountWithoutNDS = Math.Round(Amount.Value, 2) - Math.Round(NDSAmount.Value, 2);
+			}
+			if (!AmountWithoutNDS.HasValue)
+				AmountWithoutNDS = AmountWithoutNDS0 + AmountWithoutNDS10 + AmountWithoutNDS18;
+
+			if(!NDSAmount10.HasValue && Amount10.HasValue)
+			{
+				if (ToIntX100(AmountWithoutNDS10.Value) <= Amount10.Value)
+					NDSAmount10 = Math.Round(Amount10.Value, 2) - Math.Round(AmountWithoutNDS10.Value, 2);
+			}
+			if (!NDSAmount10.HasValue && NDSAmount.HasValue && NDSAmount18.HasValue)
+			{
+				if(ToIntX100(NDSAmount18.Value) <= ToIntX100(NDSAmount.Value))
+					NDSAmount10 = Math.Round(NDSAmount.Value, 2) - Math.Round(NDSAmount18.Value, 2);
+			}
+			if(!NDSAmount10.HasValue)
+			{
+				NDSAmount10 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 10 && l.NdsAmount.HasValue)
+															.Sum(l => l.NdsAmount).Value, 2);
+			}
+			if(!NDSAmount18.HasValue && Amount18.HasValue)
+			{
+				if (ToIntX100(AmountWithoutNDS18.Value) <= ToIntX100(Amount18.Value))
+					NDSAmount18 = Math.Round(Amount18.Value, 2) - Math.Round(AmountWithoutNDS18.Value, 2);
+			}
+			if(!NDSAmount18.HasValue && NDSAmount.HasValue)
+			{
+				if (ToIntX100(NDSAmount10.Value) <= ToIntX100(NDSAmount.Value))
+					NDSAmount18 = Math.Round(NDSAmount.Value, 2) - Math.Round(NDSAmount10.Value, 2);
+			}
+			if(!NDSAmount18.HasValue)
+			{
+				NDSAmount18 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 18 && l.NdsAmount.HasValue)
+															.Sum(l => l.NdsAmount).Value, 2);
+			}
+			if (!NDSAmount.HasValue)
+				NDSAmount = NDSAmount10 + NDSAmount18;
+			
+			if (!Amount10.HasValue)
+				Amount10 = NDSAmount10 + AmountWithoutNDS10;
+
+			if (!Amount18.HasValue)
+				Amount18 = NDSAmount18 + AmountWithoutNDS18;
+
+			if (!Amount.HasValue)
+				Amount = NDSAmount + AmountWithoutNDS;
+		}
     }
     
 	[ActiveRecord("DocumentBodies", Schema = "documents")]
@@ -620,7 +724,6 @@ namespace Inforoom.PriceProcessor.Waybills
         [Property]
         public string EAN13 { get; set; }
 
-
 		public void SetAmount()
 		{
 			if(!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
@@ -635,8 +738,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				NdsAmount = Math.Round((SupplierCost.Value - SupplierCostWithoutNDS.Value) * Quantity.Value, 2);
 			}
 		}
-
-		public void SetValues()
+		
+		public void CalculateValues()
 		{
 			if (!SupplierCostWithoutNDS.HasValue && !Nds.HasValue && SupplierCost.HasValue && Quantity.HasValue)
 				SetSupplierCostWithoutNds();
@@ -651,6 +754,13 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 			    Nds = (uint?)Math.Round(NdsAmount.Value/Quantity.Value * 100 / SupplierCostWithoutNDS.Value);
 			    SetSupplierCostByNds(Nds.Value);
+			}
+			if (!SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && Nds.HasValue)
+				SetSupplierCostByNds(Nds.Value);
+			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && Nds.HasValue)
+			{
+				if (Convert.ToInt32(Math.Round(SupplierCost.Value, 2) * 100) < Convert.ToInt32(Math.Round(SupplierCostWithoutNDS.Value, 2)*100))
+					SetSupplierCostByNds(Nds.Value);
 			}
 
 			SetAmount();
@@ -683,8 +793,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				decimal nds = (Math.Round((SupplierCost.Value/SupplierCostWithoutNDS.Value - 1)*100));
 				Nds = nds < 0 ? 0 : (uint?)nds;
-			}
-			
+			}			
 		}
 
 		public void SetSupplierCostByNds(decimal? nds)

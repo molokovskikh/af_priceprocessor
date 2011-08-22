@@ -120,7 +120,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
                     docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
                     docLine.EAN13 = GetString(parts[EAN13Index]);
-                    docLine.SetValues();
                 }
             }
             return document;

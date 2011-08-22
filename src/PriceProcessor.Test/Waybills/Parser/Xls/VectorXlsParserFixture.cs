@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Xls
 			Assert.That(line.Producer, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.SupplierCost, Is.EqualTo(20.26));
-			Assert.That(line.SupplierCostWithoutNDS, Is.Null);
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(17.17));
 			Assert.That(line.Nds, Is.EqualTo(18));
 			Assert.That(line.Quantity, Is.EqualTo(5));
 			Assert.That(line.ProducerCost, Is.Null);

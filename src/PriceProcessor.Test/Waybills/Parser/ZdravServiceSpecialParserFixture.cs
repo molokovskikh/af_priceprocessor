@@ -47,13 +47,13 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(invoice.BuyerKPP, Is.Null);
             Assert.That(invoice.AmountWithoutNDS0, Is.EqualTo(0.00));
             Assert.That(invoice.AmountWithoutNDS10, Is.EqualTo(10365.77));
-            Assert.That(invoice.NDSAmount10, Is.Null);
+            Assert.That(invoice.NDSAmount10, Is.EqualTo(1036.59));
             Assert.That(invoice.Amount10, Is.EqualTo(11402.36));
             Assert.That(invoice.AmountWithoutNDS18, Is.EqualTo(0.00));
-            Assert.That(invoice.NDSAmount18, Is.Null);
+            Assert.That(invoice.NDSAmount18, Is.EqualTo(0.00));
             Assert.That(invoice.Amount18, Is.EqualTo(0.00));
-            Assert.That(invoice.AmountWithoutNDS, Is.Null);
-            Assert.That(invoice.NDSAmount, Is.EqualTo(11402.36));
+            Assert.That(invoice.AmountWithoutNDS, Is.EqualTo(0)); // ?
+            Assert.That(invoice.NDSAmount, Is.EqualTo(11402.36)); // ? 
             Assert.That(invoice.Amount, Is.EqualTo(11402.36));
 
             var line = document.Lines[0];

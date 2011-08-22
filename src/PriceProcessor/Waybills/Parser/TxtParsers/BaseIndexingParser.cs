@@ -399,7 +399,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			if (CalculateSupplierPriceMarkup) 
 				docLine.SetSupplierPriceMarkup();
-			docLine.SetValues();
 		}
 
 		public static bool CheckByHeaderPart(string file, IEnumerable<string> name, string commentMark)

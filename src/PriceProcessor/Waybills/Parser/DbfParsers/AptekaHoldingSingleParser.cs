@@ -87,8 +87,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				{
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r[SupplierPriceMarkupColumn].ToString());
 				}
-
-				line.SetValues();
 				return line;
 			}).ToList();
 			return document;

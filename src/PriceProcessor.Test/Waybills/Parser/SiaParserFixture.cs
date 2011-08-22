@@ -327,7 +327,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Code, Is.EqualTo("151"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("Россия"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(50));
-			Assert.That(document.Lines[9].Nds, Is.EqualTo(null));
+			Assert.That(document.Lines[9].Nds, Is.EqualTo(0));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("13.12.2010")));
 		}
 

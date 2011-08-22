@@ -223,8 +223,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			var doc = parser.Parse(file, document);
             if (doc != null)
             {
-                doc.SetProductId();
-                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;                
+				doc.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
+				doc.CalculateValues(); // расчет недостающих значений 
+                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;                				
             }
 		    return doc;
 		}

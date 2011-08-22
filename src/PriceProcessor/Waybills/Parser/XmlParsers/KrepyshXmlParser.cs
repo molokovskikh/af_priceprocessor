@@ -80,7 +80,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.RegistryCost = position.GetOptional("ЦенаГР");
 				if (line.RegistryCost != null && line.RegistryCost > 0)
 					line.VitallyImportant = true;
-                line.SetValues();
 			}
 			return document;
 		}

@@ -263,7 +263,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				var line = document.NewLine();
 				foreach (var action in _lineActions)
 					action(line, row);
-				line.SetValues();
 			}
 		}
 	}

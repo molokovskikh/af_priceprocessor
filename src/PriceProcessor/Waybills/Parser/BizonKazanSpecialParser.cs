@@ -81,7 +81,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
                 docLine.SupplierCost = GetDecimal(parts[SupplierCostIndex]);
             if (parts.Count() > VitallyImportantIndex)
                 docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
-            docLine.SetValues();
         }
 
         public override Document Parse(string file, Document document)

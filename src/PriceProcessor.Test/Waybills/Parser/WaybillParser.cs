@@ -23,7 +23,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 	{
 		public static Document Parse(string filePath)
 		{
-			return Parse(filePath, null);
+			var doc = Parse(filePath, null);
+			if(doc != null) doc.CalculateValues();
+			return doc;
 		}
 
 		public static Document Parse(string filePath, DocumentReceiveLog documentLog)
@@ -39,7 +41,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)
 				return null;
-			return parser.Parse(filePath, new Document());
+			var doc = parser.Parse(filePath, new Document());
+			if(doc != null) doc.CalculateValues();
+			return doc;
 		}
 
 		private static void CheckUniqueDbfParser(string file)

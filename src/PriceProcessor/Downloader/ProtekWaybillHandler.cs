@@ -327,10 +327,10 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
 				line.EAN13 = bladingItem.prodsbar;
-				line.SetValues();
 			}
 
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
+			document.CalculateValues(); // расчет недостающих значений
 			var settings = WaybillSettings.TryFind(order.ClientCode);
 			if (settings != null && settings.IsConvertFormat)			
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);
