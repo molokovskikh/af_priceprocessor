@@ -237,7 +237,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public  void CalculateValues() 
 		{
-			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
+			if(Lines != null) Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
 			if(Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
 		}
 
