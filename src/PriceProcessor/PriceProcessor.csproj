@@ -145,6 +145,7 @@
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
+    <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="Rosta\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />

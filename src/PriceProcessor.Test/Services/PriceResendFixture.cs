@@ -78,7 +78,7 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
-            const string _strProtocol = @"net.tcp://";
+           // const string _strProtocol = @"net.tcp://";
 			var binding = new NetTcpBinding();
 			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
 			//binding.Security.Mode = SecurityMode.None;
@@ -88,13 +88,13 @@ namespace PriceProcessor.Test.Services
 			//binding.MaxReceivedMessageSize = Int32.MaxValue;
 			// Максимальный размер одного пакета
 			//binding.MaxBufferSize = 524288;    // 0.5 Мб
-			var sbUrlService = new StringBuilder();
+			/*var sbUrlService = new StringBuilder();
 			sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
 				//.Append(Settings.Default.WCFServicePort).Append("/")
                 .Append("901").Append("/")
-				.Append(Settings.Default.WCFServiceName);
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+				.Append(Settings.Default.WCFServiceName);*/
+			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
             var success = false;
            // ChannelFactory<IRemotePriceProcessor> factory = null;
             try
@@ -125,7 +125,7 @@ namespace PriceProcessor.Test.Services
 
         private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
         {
-            const string _strProtocol = @"net.tcp://";
+           // const string _strProtocol = @"net.tcp://";
             var binding = new NetTcpBinding();
             //binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
             //binding.Security.Mode = SecurityMode.None;
@@ -135,13 +135,13 @@ namespace PriceProcessor.Test.Services
             //binding.MaxReceivedMessageSize = Int32.MaxValue;
             // Максимальный размер одного пакета
             //binding.MaxBufferSize = 524288;    // 0.5 Мб
-            var sbUrlService = new StringBuilder();
+            /*var sbUrlService = new StringBuilder();
             sbUrlService.Append(_strProtocol)
                 .Append(Dns.GetHostName()).Append(":")
                 //.Append(Settings.Default.WCFServicePort).Append("/")
                 .Append(901).Append("/")
-                .Append(Settings.Default.WCFServiceName);
-            var factory = new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
+                .Append(Settings.Default.WCFServiceName);*/
+			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
             var success = false;
             string[] res = new string[0];
            // ChannelFactory<IRemotePriceProcessor> factory = null;
@@ -172,15 +172,16 @@ namespace PriceProcessor.Test.Services
 
 		private void StartWcfPriceProcessor()
 		{
-			const string _strProtocol = @"net.tcp://";
-			var sbUrlService = new StringBuilder();
-			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
-			sbUrlService.Append(_strProtocol)
+			//const string _strProtocol = @"net.tcp://";
+			//var sbUrlService = new StringBuilder();
+			
+			/*sbUrlService.Append(_strProtocol)
 				.Append(Dns.GetHostName()).Append(":")
 				//.Append(Settings.Default.WCFServicePort).Append("/")                
                 .Append("901").Append("/")
-				.Append(Settings.Default.WCFServiceName);
+				.Append(Settings.Default.WCFServiceName);*/
 			NetTcpBinding binding = new NetTcpBinding();
+			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
 			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
 			//binding.Security.Mode = SecurityMode.None;
 			// Ипользуется потоковая передача данных в обе стороны 
@@ -189,8 +190,8 @@ namespace PriceProcessor.Test.Services
 			//binding.MaxReceivedMessageSize = Int32.MaxValue;
 			// Максимальный размер одного пакета
 			//binding.MaxBufferSize = 524288;    // 0.5 Мб 
-			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding,
-				sbUrlService.ToString());
+			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding, "net.tcp://localhost:9847/RemotePriceProcessor");
+				//sbUrlService.ToString());
 			_serviceHost.Open();
 		}
 

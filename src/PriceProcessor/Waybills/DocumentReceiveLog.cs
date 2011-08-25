@@ -50,6 +50,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private string _localFile;
 
+		public bool FileIsLocal()
+		{
+			return !String.IsNullOrEmpty(_localFile);
+		}
+
 		//файл документа может быть локальным (если он прошел через PriceProcessor и лежит в temp) или пришедшим от клиента тогда он лежит на ftp
 		public string GetFileName()
 		{
@@ -69,8 +74,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!File.Exists(fullName))
 			{
 				file = String.Format("{0}_{1}({2}){3}",
-					Id,
-					//Supplier.ShortName,
+					Id,					
                     Supplier.Name,
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));

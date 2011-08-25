@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Common.Tools;
 using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -168,8 +169,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				var log = LogManager.GetLogger(typeof(MultifileDocument));
 				log.Error("Ошибка при слиянии многофайловых накладных", e);
-				WaybillService.SaveWaybill(headerFile.GetFileName());
-				WaybillService.SaveWaybill(bodyFile.GetFileName());
+				if (headerFile != null) WaybillService.SaveWaybill(headerFile.GetFileName());
+				if (bodyFile != null) WaybillService.SaveWaybill(bodyFile.GetFileName());
 				return documents.Select(d => new DocumentForParsing(d)).ToList();
 			}
 		}

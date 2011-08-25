@@ -833,11 +833,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string Synonym { get; set; }
 
 		/// <summary>
-		/// Код прайса
+		/// Прайс-лист
 		/// </summary>
-		//[Property]
-		//public int? PriceCode { get; set; }
-
         [BelongsTo("PriceCode")]
         public Price Price { get; set; }
 
@@ -859,8 +856,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		/// <summary>
 		/// Id продукта
-		/// </summary>
-		//[BelongsTo("ProductId")]
+		/// </summary>		
 		[Property]
 		public int? ProductId { get; set; }
 
@@ -877,11 +873,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		public string Synonym { get; set; }
 
 		/// <summary>
-		/// Код прайса
-		/// </summary>
-		//[Property]
-		//public int? PriceCode { get; set; }
-
+		/// Прайс-лист
+		/// </summary>		
         [BelongsTo("PriceCode")]
         public Price Price { get; set; }
 	}
@@ -966,6 +959,12 @@ namespace Inforoom.PriceProcessor.Waybills
 					if (shouldCheckClientSettings && settings != null && !settings.ShouldParseWaybill())
 						return null;
 					
+					if(!d.DocumentLog.FileIsLocal())
+					{
+						// ждем пока файл появится в удаленной директории
+						ShareFileHelper.WaitFile(d.FileName, 5000);
+					}
+
 					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 

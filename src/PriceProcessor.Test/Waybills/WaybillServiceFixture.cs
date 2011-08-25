@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Castle.ActiveRecord;
+using Common.Tools;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
-using log4net.Config;
-using MySql.Data.MySqlClient;
 using NHibernate.Criterion;
-using NHibernate.SqlCommand;
 using NUnit.Framework;
 using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
-using Test.Support.Suppliers;
 using Test.Support.Helpers;
-using Common.Tools;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -30,26 +26,11 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_waybill()
 		{
 			var file = "1008fo.pd";
-			//var client = TestOldClient.CreateTestClient();
 			var client = TestClient.Create();
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
-			/*var log = new TestDocumentLog {
-				ClientCode = client.Id,
-				FirmCode = 1179,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};*/
-
 			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
-
-			
-			/*using(new TransactionScope())
-				log.SaveAndFlush();*/
-
 			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", log.Id)));
 
 			var service = new WaybillService();
@@ -74,23 +55,18 @@ namespace PriceProcessor.Test.Waybills
 			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
 			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
 			using (new TransactionScope())
-			{
-				//settings.IsConvertFormat = true;				
+			{				
 				settings.ParseWaybills = true;
 				settings.SaveAndFlush();
-			}
-			//var service = new WaybillService();
+			}			
 			WaybillService.ParserDocument(log);
-
 		}
 
 		[Test(Description = "тест разбора накладной с ShortName поставщика в имени файла")]
 		public void Parse_waybill_with_ShortName_in_fileName()
 		{
-			var file = "1008fo.pd";
-			//var client = TestOldClient.CreateTestClient();
-			var client = TestClient.Create();
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var file = "1008fo.pd";			
+			var client = TestClient.Create();			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
@@ -103,7 +79,6 @@ namespace PriceProcessor.Test.Waybills
 				FileName = file,
 			};
 
-			//var supplier = TestOldClient.Find(log.FirmCode);
 			var supplier = TestSupplier.Find(log.FirmCode);
 
 			using (new TransactionScope())
@@ -253,8 +228,7 @@ namespace PriceProcessor.Test.Waybills
 				producerSynonym.SaveAndFlush();
 
 			}
-
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
@@ -307,8 +281,7 @@ namespace PriceProcessor.Test.Waybills
 				};
 				log.SaveAndFlush();
 			}
-
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
@@ -332,8 +305,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Check_SetProductId()
 		{
 			const string file = "14326_4.dbf";
-			var client = TestClient.Create();
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
+			var client = TestClient.Create();			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			
@@ -394,14 +366,11 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-
-
 		[Test]
 		public void Check_SetProducerId()
 		{
 			const string file = "14326_4.dbf";
 			var client = TestClient.Create();
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
@@ -468,8 +437,6 @@ namespace PriceProcessor.Test.Waybills
 			const string file = "14326_4.dbf";
 			var client = TestClient.Create();
 			var supplier = TestSupplier.Create();
-
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 
@@ -498,7 +465,7 @@ namespace PriceProcessor.Test.Waybills
 			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
 
 			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			service.ParseWaybill(new[] { log.Id });
 
 			using (new SessionScope())
 			{
@@ -559,7 +526,6 @@ namespace PriceProcessor.Test.Waybills
                 core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
                 core.SaveAndFlush();
 			}
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
@@ -585,7 +551,6 @@ namespace PriceProcessor.Test.Waybills
 				var file_dbf = files_dbf.Where(f => f.Contains(supplier.Name)).Select(f => f).First();					
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
-				//Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("1234567"));
                 Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
 				Assert.IsTrue(data.Columns.Contains("name_artis"));
 				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));				
@@ -781,7 +746,6 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var testsupplier = (TestSupplier)TestSupplier.Find(2779u);
 				var supplier = Supplier.Find(testsupplier.Id);
-				//var settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
 				var settings = TestDrugstoreSettings.Find(10365u);
 				Assert.That(settings.IsConvertFormat, Is.True);
 				Assert.That(settings.AssortimentPriceId, Is.Not.Null);
@@ -920,5 +884,51 @@ namespace PriceProcessor.Test.Waybills
             Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
             Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
         }
+
+		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
+		public void check_parse_waybill_if_file_is_not_local()
+		{
+			const string file = "9229370.dbf";
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = supplier.Id,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file
+			};
+			using (new TransactionScope())
+				log.SaveAndFlush();	
+			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
+			var ids = service.ParseWaybill(new[] { log.Id });
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count(), Is.EqualTo(1));
+				Assert.That(ids.Length, Is.EqualTo(0));
+				// Проверяем наличие записей в documentheaders				
+				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(0));
+			}
+			Thread thread = new Thread(() =>
+			{
+			    Thread.Sleep(3000);
+				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
+													supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
+			});
+			thread.Start(); // подкладываем файл в процессе разбора накладной
+			ids = service.ParseWaybill(new[] {log.Id});
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count(), Is.EqualTo(1));
+				Assert.That(ids.Length, Is.EqualTo(1));
+				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1));
+			}		
+		}
 	}
 }
