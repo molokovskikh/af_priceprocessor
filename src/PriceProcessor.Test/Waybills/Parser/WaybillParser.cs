@@ -24,7 +24,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public static Document Parse(string filePath)
 		{
 			var doc = Parse(filePath, null);
-			if(doc != null) doc.CalculateValues();
 			return doc;
 		}
 
@@ -42,7 +41,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (parser == null)
 				return null;
 			var doc = parser.Parse(filePath, new Document());
-			if(doc != null) doc.CalculateValues();
+			if(doc != null)
+			{
+				doc.SetProductId();
+				doc.CalculateValues();
+			}
 			return doc;
 		}
 

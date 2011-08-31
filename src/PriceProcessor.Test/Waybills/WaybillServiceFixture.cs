@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills
 		[Ignore]
 		public void ParseDocument()
 		{
-			var file = "1008fo.pd";
+			var file = "4179_1445878.dbf";
 			var client = TestClient.Create();
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -403,7 +403,7 @@ namespace PriceProcessor.Test.Waybills
 
 		public void Check_DocumentLine_SetProducerId(TestWaybill document)
 		{			
-			var line = document.Lines[0];
+			var line = document.Lines[3];
 
 			var listSynonym = new List<string> { line.Producer };
 			var priceCodes = Price.Queryable
@@ -543,8 +543,10 @@ namespace PriceProcessor.Test.Waybills
 			{
 				Document doc = Document.Find(ids.Single());
 				Assert.That(doc.Lines.Count, Is.EqualTo(1));
-				Assert.IsTrue(doc.Lines[0].ProductId != null);
-				Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
+				//Assert.IsTrue(doc.Lines[0].ProductId != null);
+				Assert.IsTrue(doc.Lines[0].ProductEntity != null);
+				//Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
+				Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product.Id));
 				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(2));

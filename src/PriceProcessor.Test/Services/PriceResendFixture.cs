@@ -25,6 +25,8 @@ namespace PriceProcessor.Test.Services
 	public class PriceResendFixture
 	{
 		private ServiceHost _serviceHost;
+		private ChannelFactory<IRemotePriceProcessor> _channelFactory;
+//		private IRemotePriceProcessor priceProcessor;
 
 		private static readonly string DataDirectory = @"..\..\Data";
 
@@ -94,14 +96,14 @@ namespace PriceProcessor.Test.Services
 				//.Append(Settings.Default.WCFServicePort).Append("/")
                 .Append("901").Append("/")
 				.Append(Settings.Default.WCFServiceName);*/
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
+			//var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
             var success = false;
            // ChannelFactory<IRemotePriceProcessor> factory = null;
             try
             {
              //   factory = CreateFactory();
-                var priceProcessor = factory.CreateChannel();
-                
+                  var priceProcessor = _channelFactory.CreateChannel();
+					
                 try
                 {
                     action(priceProcessor);
@@ -117,16 +119,16 @@ namespace PriceProcessor.Test.Services
             }
             finally
             {
-                factory.Close();
+             //   factory.Close();
             }
-		    factory.Close();
+		   // factory.Close();
 			Assert.IsTrue(success);
 		}
 
         private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
         {
            // const string _strProtocol = @"net.tcp://";
-            var binding = new NetTcpBinding();
+           // var binding = new NetTcpBinding();
             //binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
             //binding.Security.Mode = SecurityMode.None;
             // Ипользуется потоковая передача данных в обе стороны 
@@ -141,14 +143,14 @@ namespace PriceProcessor.Test.Services
                 //.Append(Settings.Default.WCFServicePort).Append("/")
                 .Append(901).Append("/")
                 .Append(Settings.Default.WCFServiceName);*/
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
+		//	var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
             var success = false;
             string[] res = new string[0];
            // ChannelFactory<IRemotePriceProcessor> factory = null;
             try
             {
              //   factory = CreateFactory();
-                var priceProcessor = factory.CreateChannel();
+                var priceProcessor = _channelFactory.CreateChannel();
                 try
                 {
                     res = action(priceProcessor);
@@ -164,7 +166,7 @@ namespace PriceProcessor.Test.Services
             }
             finally
             {
-                factory.Close();
+              //  factory.Close();
             }
             Assert.IsTrue(success);
             return res;
@@ -193,15 +195,16 @@ namespace PriceProcessor.Test.Services
 			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding, "net.tcp://localhost:9847/RemotePriceProcessor");
 				//sbUrlService.ToString());
 			_serviceHost.Open();
+
+			_channelFactory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor");
+			//var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor");
+			//priceProcessor = factory.CreateChannel();
 		}
 
 		private void StopWcfPriceProcessor()
-		{
-			try
-			{
-				_serviceHost.Close();
-			}
-			catch { }
+		{			
+			_channelFactory.Close();
+			_serviceHost.Close();			
 		}
 
         [Test]
