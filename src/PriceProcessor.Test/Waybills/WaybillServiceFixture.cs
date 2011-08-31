@@ -723,7 +723,6 @@ namespace PriceProcessor.Test.Waybills
             }            
         }
 
-
         [Test]
         public void RemoveDoubleSpacesTest()
         {
@@ -731,9 +730,8 @@ namespace PriceProcessor.Test.Waybills
             ls.Add(" aaa         bbbb ccc       ddd ");
             ls.Add(String.Empty);
             ls.Add(null);
-  
-            for (int i = 0; i < ls.Count; i++)            
-                ls[i] = ls[i].RemoveDoubleSpaces();
+              
+        	ls = ls.Select(l => l.RemoveDoubleSpaces()).ToList();
 
             Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));
             Assert.That(ls[1], Is.EqualTo(String.Empty));
@@ -931,6 +929,85 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(ids.Length, Is.EqualTo(1));
 				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1));
 			}		
+		}
+
+		[Test(Description = "Тестируе сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]
+		public void resolve_product_and_producer_for_farmacie()
+		{
+			Document doc;
+			TestProduct product1;
+			TestProduct product2;
+			TestProducer producer1;
+			TestProducer producer2;
+			
+			using(new SessionScope())
+			{
+				var price = TestSupplier.CreateTestSupplierWithPrice();
+				var supplier = Supplier.Find(price.Supplier.Id);
+				var client = TestClient.Create();
+				var order = new TestOrder();
+
+				product1 = new TestProduct("Активированный уголь");
+				product1.CatalogProduct.Pharmacie = true;
+				product1.CreateAndFlush();
+				product2 = new TestProduct("Виагра");
+				product2.CatalogProduct.Pharmacie = true;
+				product2.CreateAndFlush();
+				
+				producer1 = new TestProducer("ВероФарм");
+				producer1.CreateAndFlush();
+				producer2 = new TestProducer("Пфайзер");
+				producer2.CreateAndFlush();
+
+				var syn1 = new TestSynonym() {Synonym = "Активированный уголь", ProductId = (int?)product1.Id, PriceCode = (int?)price.Id};
+				syn1.CreateAndFlush();
+				var syn2 = new TestSynonym() { Synonym = "Виагра", ProductId = (int?)product2.Id, PriceCode = (int?)price.Id };
+				syn2.CreateAndFlush();
+
+				var synFirm1 = new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id};
+				synFirm1.CreateAndFlush();
+				var synFirm2 = new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id };
+				synFirm2.CreateAndFlush();
+				var synFirm3 = new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id };
+				synFirm3.CreateAndFlush();
+				var synFirm4 = new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id };
+				synFirm4.CreateAndFlush();
+
+				TestAssortment.CheckAndCreate(product1, producer1);
+				TestAssortment.CheckAndCreate(product2, producer2);
+				var log = new DocumentReceiveLog()
+				{
+					Supplier = supplier,
+					ClientCode = client.Id,
+					AddressId = client.Addresses[0].Id,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
+
+				doc = new Document(log)
+				{
+					OrderId = order.Id,
+					AddressId = log.AddressId,
+					DocumentDate = DateTime.Now
+				};
+
+				var line = doc.NewLine();
+				line.Product = "Активированный уголь";
+				line.Producer = "ВероФарм";
+
+				line = doc.NewLine();
+				line.Product = "Виагра";
+				line.Producer = " Верофарм  ";
+			}
+
+			doc.SetProductId();
+
+			Assert.That(doc.Lines[0].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product1.Id));
+			Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
+			Assert.That(doc.Lines[1].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[1].ProductEntity.Id, Is.EqualTo(product2.Id));
+			Assert.That(doc.Lines[1].ProducerId, Is.EqualTo(producer2.Id));
 		}
 	}
 }

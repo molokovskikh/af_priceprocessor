@@ -9,12 +9,9 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.MySql;
 using Common.Tools;
-using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
-using Inforoom.PriceProcessor;
 using log4net;
 using MySql.Data.MySqlClient;
 using NHibernate.Criterion;
@@ -28,17 +25,14 @@ namespace Inforoom.PriceProcessor.Waybills
 		[OperationContract]
 		uint[] ParseWaybill(uint[] uints);
 	}
-
-	//[ActiveRecord("Clientsdata", Schema = "Usersettings")]
+	
     [ActiveRecord("Suppliers", Schema = "Future")]
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
-	//	[PrimaryKey("FirmCode")]        
         [PrimaryKey]
 		public uint Id { get; set; }
 
 		[Property]
-//		public string ShortName { get; set; }
         public string Name { get; set; }
 		
 		[Property]
@@ -88,7 +82,6 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
 		private readonly int _batchSize = 100;
-	    //private readonly IList<OrderHead> _orders = new List<OrderHead>();
 
 		public Document()
 		{}
@@ -133,8 +126,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					return false;
 				}
 
-				// список id товаров из накладной
-				//var productIds = Lines.Where(l => l.ProductId != null).Select(l => l.ProductId).ToList();
+				// список id товаров из накладной				
 				var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => l.ProductEntity.Id).ToList();
 
 				var criteria = DetachedCriteria.For<Core>();
@@ -145,7 +137,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				
 				foreach (var line in Lines)
 				{
-					//var ls = cores.Where(c => c.ProductId == line.ProductId && c.CodeFirmCr == line.ProducerId).ToList();
 					var ls = cores.Where(c => line.ProductEntity != null && c.ProductId == line.ProductEntity.Id && c.CodeFirmCr == line.ProducerId).ToList();
 					if (ls.Count() > 0)
 					{
@@ -189,34 +180,28 @@ namespace Inforoom.PriceProcessor.Waybills
 				while ((count + index <= Lines.Count) && (count > 0))
 				{				    
 					// выбираем из накладной часть названия продуктов.
-					var synonyms = Lines.ToList().GetRange(index, count).Select(i => i.Product).ToList();
-                    for (int i = 0; i < synonyms.Count(); i++)                    
-                        synonyms[i] = synonyms[i].RemoveDoubleSpaces();
-                    
+					var productNames = Lines.ToList().GetRange(index, count).Select(line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
 				    //выбираем из накладной часть названия производителей.
-					var synonymsFirm = Lines.ToList().GetRange(index, count).Select(i => i.Producer).ToList();
-                    for (int i = 0; i < synonymsFirm.Count(); i++)
-                        synonymsFirm[i] = synonymsFirm[i].RemoveDoubleSpaces();
-
+					var firmNames = Lines.ToList().GetRange(index, count).Select(i => i.Producer.Trim().RemoveDoubleSpaces()).ToList();
 					//получаем из базы данные для выбранной части продуктов из накладной.
-					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(synonyms, priceCodes);
+					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(productNames, priceCodes);
 					//получаем из базы данные для выбранной части производителей из накладной.
-					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(synonymsFirm, priceCodes);
+					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(firmNames, priceCodes);
 				
 					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 					foreach (var line in Lines)
 					{
-						var productName = (line.Product != null ? line.Product.ToUpper() : String.Empty).RemoveDoubleSpaces();						
+						var productName = (String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();						
 						var listSynonym = dbListSynonym.Where(syn => syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
 						if(listSynonym.Count > 0)
 						{
 							line.ProductEntity = listSynonym.Select(syn => syn.Product).FirstOrDefault();
 						}
 						if (line.ProductEntity == null) continue; // если сопоставили позицию по продукту, сопоставляем по производителю
-						var producerName = (line.Producer != null ? line.Producer.ToUpper() : String.Empty).RemoveDoubleSpaces();
+						var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 						if(!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
 						{								
-							var listSynonymFirmCr = dbListSynonymFirm.Where(producer => producer.Synonym.Trim().ToUpper() == producerName && producer.CodeFirmCr != null).ToList();
+							var listSynonymFirmCr = dbListSynonymFirm.Where(syn => syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
 							if (listSynonymFirmCr.Count > 0)
 								line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
 						}
@@ -919,10 +904,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		public int SynonymCode { get; set; }
 
 		/// <summary>
-		/// Id продукта
-		/// </summary>		
-		//[Property]
-		//public int? ProductId { get; set; }
+		/// Продукт
+		/// </summary>
 		[BelongsTo("ProductId")]
 		public Product Product { get; set; }
 

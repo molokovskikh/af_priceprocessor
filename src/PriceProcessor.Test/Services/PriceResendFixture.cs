@@ -32,36 +32,24 @@ namespace PriceProcessor.Test.Services
 		[SetUp]
 		public void SetUp()
 		{
-			TestHelper.RecreateDirectories();
-			StartWcfPriceProcessor();
+			TestHelper.RecreateDirectories();		
+			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
+			var binding = new NetTcpBinding();
+			binding.Security.Mode = SecurityMode.None;
+			var url = String.Format("net.tcp://{0}:9847/RemotePriceProcessor", Dns.GetHostName());
+			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding, url);
+			_serviceHost.Open();
+			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, url);
+			priceProcessor = factory.CreateChannel();			
 		}
 
 		[TearDown]
 		public void TearDown()
-		{
-			StopWcfPriceProcessor();
+		{			
+			Assert.That(((ICommunicationObject)priceProcessor).State, Is.EqualTo(CommunicationState.Opened));
+			((ICommunicationObject)priceProcessor).Close();
+			_serviceHost.Close();	
 		}
-
-     /*   private ChannelFactory<IRemotePriceProcessor> CreateFactory()
-        {
-            const string _strProtocol = @"net.tcp://";
-            var binding = new NetTcpBinding();
-            binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-            binding.Security.Mode = SecurityMode.None;
-            // Ипользуется потоковая передача данных в обе стороны 
-            binding.TransferMode = TransferMode.Streamed;
-            // Максимальный размер принятых данных
-            binding.MaxReceivedMessageSize = Int32.MaxValue;
-            // Максимальный размер одного пакета
-            binding.MaxBufferSize = 524288;    // 0.5 Мб
-            var sbUrlService = new StringBuilder();
-            sbUrlService.Append(_strProtocol)
-                .Append(Dns.GetHostName()).Append(":")
-                .Append(Settings.Default.WCFServicePort).Append("/")               
-                .Append(Settings.Default.WCFServiceName);
-            return new ChannelFactory<IRemotePriceProcessor>(binding, sbUrlService.ToString());
-        }*/
-
 
 		private void WcfCallResendPrice(uint downlogId)
 		{
@@ -79,148 +67,18 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
 		{
-           // const string _strProtocol = @"net.tcp://";
-			var binding = new NetTcpBinding();
-			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-			//binding.Security.Mode = SecurityMode.None;
-			// Ипользуется потоковая передача данных в обе стороны 
-			//binding.TransferMode = TransferMode.Streamed;
-			// Максимальный размер принятых данных
-			//binding.MaxReceivedMessageSize = Int32.MaxValue;
-			// Максимальный размер одного пакета
-			//binding.MaxBufferSize = 524288;    // 0.5 Мб
-			/*var sbUrlService = new StringBuilder();
-			sbUrlService.Append(_strProtocol)
-				.Append(Dns.GetHostName()).Append(":")
-				//.Append(Settings.Default.WCFServicePort).Append("/")
-                .Append("901").Append("/")
-				.Append(Settings.Default.WCFServiceName);*/
-			//var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
-            var success = false;
-           // ChannelFactory<IRemotePriceProcessor> factory = null;
-            try
-            {
-             //   factory = CreateFactory();
-            
-					
-
-               // var priceProcessor = factory.CreateChannel();
-                
-                try
-                {
-                    action(priceProcessor);
-              //      ((ICommunicationObject) priceProcessor).Close();
-                    success = true;
-                }
-                catch (FaultException)
-                {
-                /*    if (((ICommunicationObject) priceProcessor).State != CommunicationState.Closed)
-                        ((ICommunicationObject) priceProcessor).Abort();
-                    throw;*/
-                }
-            }
-            finally
-            {
-             //   factory.Close();
-            }
-		   // factory.Close();
-               // factory.Close();            
-		    //factory.Close();
-			Assert.IsTrue(success);
+            action(priceProcessor);
 		}
 
         private string[] WcfCall(Func<IRemotePriceProcessor, string[]> action)
-        {
-           // const string _strProtocol = @"net.tcp://";
-           // var binding = new NetTcpBinding();
-            //binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-            //binding.Security.Mode = SecurityMode.None;
-            // Ипользуется потоковая передача данных в обе стороны 
-            //binding.TransferMode = TransferMode.Streamed;
-            // Максимальный размер принятых данных
-            //binding.MaxReceivedMessageSize = Int32.MaxValue;
-            // Максимальный размер одного пакета
-            //binding.MaxBufferSize = 524288;    // 0.5 Мб
-            /*var sbUrlService = new StringBuilder();
-            sbUrlService.Append(_strProtocol)
-                .Append(Dns.GetHostName()).Append(":")
-                //.Append(Settings.Default.WCFServicePort).Append("/")
-                .Append(901).Append("/")
-                .Append(Settings.Default.WCFServiceName);*/
-		//	var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
-			//var factory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor"/*sbUrlService.ToString()*/);
-            var success = false;
+        {         
             string[] res = new string[0];
-           // ChannelFactory<IRemotePriceProcessor> factory = null;
-            try
-            {
-             //   factory = CreateFactory();
-
-//                var priceProcessor = _channelFactory.CreateChannel();
-
-              //  var priceProcessor = factory.CreateChannel();
-                try
-                {
-                    res = action(priceProcessor);
-                 //   ((ICommunicationObject)priceProcessor).Close();
-                    success = true;
-                }
-                catch (FaultException)
-                {
-                 //   if (((ICommunicationObject)priceProcessor).State != CommunicationState.Closed)
-               //         ((ICommunicationObject)priceProcessor).Abort();
-               //     throw;
-                }
-            }
-            finally
-            {
-              //  factory.Close();
-            //    factory.Close();
-            }
-            Assert.IsTrue(success);
+        	res = action(priceProcessor);
             return res;
         }
 
-		private void StartWcfPriceProcessor()
-		{
-			//const string _strProtocol = @"net.tcp://";
-			//var sbUrlService = new StringBuilder();
-			
-			/*sbUrlService.Append(_strProtocol)
-				.Append(Dns.GetHostName()).Append(":")
-				//.Append(Settings.Default.WCFServicePort).Append("/")                
-                .Append("901").Append("/")
-				.Append(Settings.Default.WCFServiceName);*/
-			
-			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
-			var binding = new NetTcpBinding();
-			binding.Security.Mode = SecurityMode.None;
-			var url = String.Format("net.tcp://{0}:9847/RemotePriceProcessor", Dns.GetHostName());
-			//binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
-			//binding.Security.Mode = SecurityMode.None;
-			// Ипользуется потоковая передача данных в обе стороны 
-			//binding.TransferMode = TransferMode.Streamed;
-			// Максимальный размер принятых данных
-			//binding.MaxReceivedMessageSize = Int32.MaxValue;
-			// Максимальный размер одного пакета
-			//binding.MaxBufferSize = 524288;    // 0.5 Мб 
-			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding, url);
-				//sbUrlService.ToString());
-			_serviceHost.Open();
-			//_channelFactory = new ChannelFactory<IRemotePriceProcessor>(binding, "net.tcp://localhost:9847/RemotePriceProcessor");
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, url);
-			priceProcessor = factory.CreateChannel();
-		}
-
-
-		private void StopWcfPriceProcessor()
-		{			
-			((ICommunicationObject)priceProcessor).Close();
-			_serviceHost.Close();			
-		}
-
         [Test]
-        [Ignore("Для ручного тестирования")]
+        [Ignore("Для ручного тестирования (строится индекс по всем синонимам, что довольно долго)")]
         public void FindSynonymTest()
         {
             TestPrice price;
@@ -258,6 +116,7 @@ namespace PriceProcessor.Test.Services
             {
                 return r.FindSynonyms(priceItem.Id);
             });
+        	
 
             Assert.That(res1.Length, Is.EqualTo(2));
             Assert.That(res1[0], Is.EqualTo("Success"));
@@ -271,7 +130,7 @@ namespace PriceProcessor.Test.Services
                                    {
                                        return r.FindSynonymsResult(taskId.ToString());
                                    }
-                );
+                );        	
 
             File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));            
         }
@@ -285,31 +144,35 @@ namespace PriceProcessor.Test.Services
 			var password = "123";
 			var emailFrom = "KvasovTest@analit.net";
 			var emailTo = "KvasovTest@analit.net";
+			PriceDownloadLog downloadLog;
 
 		    TestPriceItem priceItem;
-            using (new TransactionScope())
+            using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName,
                                                                        externalFileName, password);
+				scope.VoteCommit();
             }
-		    using (new TransactionScope())
+		    using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
                 priceCost.Save();
+				downloadLog = new PriceDownloadLog
+				{
+					Addition = String.Empty,
+					ArchFileName = archiveFileName,
+					ExtrFileName = externalFileName,
+					Host = Environment.MachineName,
+					LogTime = DateTime.Now,
+					PriceItemId = priceItem.Id,
+					ResultCode = 2
+				};
+				downloadLog.Save();
+				scope.VoteCommit();
             }
 
-			var downloadLog = new PriceDownloadLog
-			{
-				Addition = String.Empty,
-				ArchFileName = archiveFileName,
-				ExtrFileName = externalFileName,
-				Host = Environment.MachineName,
-				LogTime = DateTime.Now,
-				PriceItemId = priceItem.Id,
-				ResultCode = 2
-			};
-			downloadLog.Save();
+			
 			
 			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
 			{
@@ -329,35 +192,37 @@ namespace PriceProcessor.Test.Services
 			var archiveFileName = @"price_in_dir.zip";
 			var externalFileName = @"price.txt";
 
+			PriceDownloadLog downloadLog;
 		    TestPriceItem priceItem;
-            using (new TransactionScope())
+			using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
+				scope.VoteCommit();
             }
 
-		    using (new TransactionScope())
-            {
-                var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
-                priceCost.BaseCost = true;
-                priceCost.Save();
-            }
-
-		    var downloadLog = new PriceDownloadLog {
-				Addition = String.Empty,
-				ArchFileName = archiveFileName,
-				ExtrFileName = externalFileName,
-				Host = Environment.MachineName,
-				LogTime = DateTime.Now,
-				PriceItemId = priceItem.Id,
-				ResultCode = 2
-			};
-			downloadLog.Save();
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
+				priceCost.BaseCost = true;
+				priceCost.Save();
+				downloadLog = new PriceDownloadLog
+				{
+					Addition = String.Empty,
+					ArchFileName = archiveFileName,
+					ExtrFileName = externalFileName,
+					Host = Environment.MachineName,
+					LogTime = DateTime.Now,
+					PriceItemId = priceItem.Id,
+					ResultCode = 2
+				};
+				downloadLog.Save();
+				scope.VoteCommit();
+			}
 			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + archiveFileName;
 			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
 								Path.GetExtension(archiveFileName);
 			File.Copy(priceSrcPath, priceDestPath, true);
 			WcfCallResendPrice(downloadLog.Id);
-
 			Assert.That(PriceItemList.list.FirstOrDefault(i => i.PriceItemId == priceItem.Id), Is.Not.Null, "Прайса нет в очереди на формализацию");
 		}
 
@@ -368,30 +233,34 @@ namespace PriceProcessor.Test.Services
 			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
 			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
-
+			PriceDownloadLog downloadLog;
 		    TestPriceItem priceItem;
-            using (new TransactionScope())
+			using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
+				scope.VoteCommit();
             }
 
-		    using (new TransactionScope())
+			using (var scope = new TransactionScope(OnDispose.Rollback))
             {
                 var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == priceItem.Id).FirstOrDefault();
                 priceCost.BaseCost = true;
                 priceCost.Save();
+				downloadLog = new PriceDownloadLog
+				{
+					Addition = String.Empty,
+					ArchFileName = archFileName,
+					ExtrFileName = externalFileName,
+					Host = Environment.MachineName,
+					LogTime = DateTime.Now,
+					PriceItemId = priceItem.Id,
+					ResultCode = 2
+				};
+				downloadLog.Save();
+				scope.VoteCommit();
             }
 
-			var downloadLog = new PriceDownloadLog {
-				Addition = String.Empty,
-				ArchFileName = archFileName,
-				ExtrFileName = externalFileName,
-				Host = Environment.MachineName,
-				LogTime = DateTime.Now,
-				PriceItemId = priceItem.Id,
-				ResultCode = 2
-			};
-			downloadLog.Save();
+			
 			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + sourceFileName;
 			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
 								Path.GetExtension(sourceFileName);
@@ -428,7 +297,7 @@ namespace PriceProcessor.Test.Services
 		    File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 
-			WcfCall(r => r.RetransPriceSmart(childPrice.Id));
+			WcfCall(r => r.RetransPriceSmart(childPrice.Id));			
 
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
