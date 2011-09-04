@@ -99,7 +99,8 @@ namespace PriceProcessor.Test.Handlers
 
             Price price1 = Price.Queryable.FirstOrDefault();
             Price price2 = Price.Queryable.Where(p => p.Id != price1.Id && p.Supplier.Id != price1.Supplier.Id).FirstOrDefault();
-            TestProduct product = TestProduct.Queryable.FirstOrDefault();
+            //TestProduct product = TestProduct.Queryable.FirstOrDefault();
+			Product product = Product.Queryable.FirstOrDefault();
             
             DateTime now = DateTime.Now;
 
@@ -112,12 +113,19 @@ namespace PriceProcessor.Test.Handlers
 
 
             IList<SynonymProduct> synonyms = new List<SynonymProduct>();
-            synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[0] });
+            /*synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[0] });
             synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[1] });
             synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[2] });
             synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price2, Synonym = names[3] });
             synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price2, Synonym = names[4] });
-            synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[4] });
+            synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[4] });*/
+
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[0] });
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[1] });
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[2] });
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price2, Synonym = names[3] });
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price2, Synonym = names[4] });
+			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[4] });
 
             using (new TransactionScope())
             {
@@ -169,7 +177,7 @@ namespace PriceProcessor.Test.Handlers
 
             names.Add(String.Format("Тестовое наименование 6 ({0})", now));
             synonyms.Clear();
-            synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[5] });
+            synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[5] });
             using (new TransactionScope()){ synonyms[0].Save(); }
             _handler.DoIndex(synonyms, true, false);
             

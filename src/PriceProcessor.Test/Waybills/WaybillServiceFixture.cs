@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills
 		[Ignore]
 		public void ParseDocument()
 		{
-			var file = "1008fo.pd";
+			var file = "4179_1445878.dbf";
 			var client = TestClient.Create();
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -403,7 +403,7 @@ namespace PriceProcessor.Test.Waybills
 
 		public void Check_DocumentLine_SetProducerId(TestWaybill document)
 		{			
-			var line = document.Lines[0];
+			var line = document.Lines[3];
 
 			var listSynonym = new List<string> { line.Producer };
 			var priceCodes = Price.Queryable
@@ -543,8 +543,10 @@ namespace PriceProcessor.Test.Waybills
 			{
 				Document doc = Document.Find(ids.Single());
 				Assert.That(doc.Lines.Count, Is.EqualTo(1));
-				Assert.IsTrue(doc.Lines[0].ProductId != null);
-				Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
+				//Assert.IsTrue(doc.Lines[0].ProductId != null);
+				Assert.IsTrue(doc.Lines[0].ProductEntity != null);
+				//Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
+				Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product.Id));
 				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(2));
@@ -721,7 +723,6 @@ namespace PriceProcessor.Test.Waybills
             }            
         }
 
-
         [Test]
         public void RemoveDoubleSpacesTest()
         {
@@ -729,9 +730,8 @@ namespace PriceProcessor.Test.Waybills
             ls.Add(" aaa         bbbb ccc       ddd ");
             ls.Add(String.Empty);
             ls.Add(null);
-  
-            for (int i = 0; i < ls.Count; i++)            
-                ls[i] = ls[i].RemoveDoubleSpaces();
+              
+        	ls = ls.Select(l => l.RemoveDoubleSpaces()).ToList();
 
             Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));
             Assert.That(ls[1], Is.EqualTo(String.Empty));
@@ -929,6 +929,106 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(ids.Length, Is.EqualTo(1));
 				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1));
 			}		
+		}
+
+		[Test(Description = "Тестирует сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]
+		public void resolve_product_and_producer_for_farmacie()
+		{
+			Document doc;
+			TestProduct product1, product2, product3, product4;			
+			TestProducer producer1, producer2, producer3;
+			
+			using(new SessionScope())
+			{
+				var price = TestSupplier.CreateTestSupplierWithPrice();
+				var supplier = Supplier.Find(price.Supplier.Id);
+				var client = TestClient.Create();
+				var order = new TestOrder();
+	
+				product1 = new TestProduct("Активированный уголь (табл.)");
+				product1.CatalogProduct.Pharmacie = true;
+				product1.CreateAndFlush();
+				Thread.Sleep(1000);
+				product2 = new TestProduct("Виагра (табл.)");
+				product2.CatalogProduct.Pharmacie = true;
+				product2.CreateAndFlush();
+				Thread.Sleep(1000);
+				product3 = new TestProduct("Крем для кожи (гель.)");
+				product3.CatalogProduct.Pharmacie = false;
+				product3.CreateAndFlush();
+				Thread.Sleep(1000);
+				product4 = new TestProduct("Эластичный бинт");
+				product4.CatalogProduct.Pharmacie = false;
+				product4.CreateAndFlush();		
+				
+				producer1 = new TestProducer("ВероФарм");
+				producer1.CreateAndFlush();
+				producer2 = new TestProducer("Пфайзер");
+				producer2.CreateAndFlush();
+				producer3 = new TestProducer("Воронежская Фармацевтическая компания");
+				producer3.CreateAndFlush();
+
+				new TestSynonym() {Synonym = "Активированный уголь", ProductId = (int?)product1.Id, PriceCode = (int?)price.Id}.CreateAndFlush();			
+				new TestSynonym() {Synonym = "Виагра", ProductId = (int?)product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();				
+				new TestSynonym() {Synonym = "Крем для кожи", ProductId = (int?) product3.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = (int?)product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+
+				new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "ВоронежФарм", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+
+				TestAssortment.CheckAndCreate(product1, producer1);
+				TestAssortment.CheckAndCreate(product2, producer2);
+
+				var log = new DocumentReceiveLog()
+				{
+					Supplier = supplier,
+					ClientCode = client.Id,
+					AddressId = client.Addresses[0].Id,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
+
+				doc = new Document(log)
+				{
+					OrderId = order.Id,
+					AddressId = log.AddressId,
+					DocumentDate = DateTime.Now
+				};
+
+				var line = doc.NewLine();
+				line.Product = "Активированный уголь";
+				line.Producer = "ВероФарм";
+
+				line = doc.NewLine();
+				line.Product = "Виагра";
+				line.Producer = " Верофарм  ";
+
+				line = doc.NewLine();
+				line.Product = " КРЕМ ДЛЯ КОЖИ  ";
+				line.Producer = "Тестовый производитель";
+
+				line = doc.NewLine();
+				line.Product = "эластичный бинт";
+				line.Producer = "Воронежфарм";
+			}
+
+			doc.SetProductId();
+
+			Assert.That(doc.Lines[0].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product1.Id));
+			Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
+			Assert.That(doc.Lines[1].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[1].ProductEntity.Id, Is.EqualTo(product2.Id));
+			Assert.That(doc.Lines[1].ProducerId, Is.EqualTo(producer2.Id));
+			Assert.That(doc.Lines[2].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[2].ProductEntity.Id, Is.EqualTo(product3.Id));
+			Assert.That(doc.Lines[2].ProducerId, Is.Null);
+			Assert.That(doc.Lines[3].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[3].ProductEntity.Id, Is.EqualTo(product4.Id));
+			Assert.That(doc.Lines[3].ProducerId, Is.EqualTo(producer3.Id));
 		}
 	}
 }

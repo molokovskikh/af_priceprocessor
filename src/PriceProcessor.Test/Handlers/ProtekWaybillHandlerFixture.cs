@@ -171,7 +171,8 @@ namespace PriceProcessor.Test.Handlers
 
 			if (priceCodes.Count < 0)
 			{
-				Assert.True(document.Lines.Where(l => l.ProductId == null).Count() == document.Lines.Count);
+				//Assert.True(document.Lines.Where(l => l.ProductId == null).Count() == document.Lines.Count);
+				Assert.True(document.Lines.Where(l => l.ProductEntity == null).Count() == document.Lines.Count);
 				return;
 			}
 
@@ -182,11 +183,13 @@ namespace PriceProcessor.Test.Handlers
 			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
 			if (synonym.Count > 0)
 			{
-				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+				//Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
+				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains((int)line.ProductEntity.Id));
 			}
 			else
 			{
-				Assert.IsTrue(line.ProductId == null);
+				//Assert.IsTrue(line.ProductId == null);
+				Assert.IsTrue(line.ProductEntity == null);
 			}
 		}
 

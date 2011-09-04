@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		//Запуск обработчика
 		public override void StartWork()
 		{
-			//Получили список файдов и добавил его на обраобтку
+			//Получили список файлов и добавил его на обраобтку
 			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath))
 			{
 				_logger.InfoFormat("Загрузил файл {0} из очереди", priceFile);

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using Lucene.Net.Analysis;
@@ -406,7 +407,8 @@ namespace Inforoom.PriceProcessor
                     doc.Add(
                         new Field(
                             "ProductId",
-                            synonym.ProductId.ToString(),
+                            //synonym.ProductId.ToString(),
+							synonym.Product.Id.ToString(),
                             Field.Store.YES,
                             Field.Index.NO));
                     doc.Add(
@@ -443,8 +445,12 @@ namespace Inforoom.PriceProcessor
         {                        
             if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
             _logger.Info("Загрузка синонимов из БД...");
-            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Select(s => s).ToList();            
-            _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+        	IList<SynonymProduct> synonyms;
+			using(new SessionScope())
+			{
+				synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
+			}
+        	_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
             DoIndex(synonyms, false, true);
         }
 
@@ -453,8 +459,12 @@ namespace Inforoom.PriceProcessor
             if (ids.Count == 0) return;
             _logger.Info("Добавление синонимов к индексу...");
             _logger.Info("Загрузка синонимов из БД...");
-            IList<SynonymProduct> synonyms = SynonymProduct.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
-            _logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+        	IList<SynonymProduct> synonyms;
+			using (new SessionScope())
+			{
+				synonyms = SynonymProduct.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
+			}
+        	_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
             bool res = DoIndex(synonyms, true, false);
             if(res)
                 _logger.Info("Добавление завершено...");
