@@ -931,14 +931,12 @@ namespace PriceProcessor.Test.Waybills
 			}		
 		}
 
-		[Test(Description = "Тестируе сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]
+		[Test(Description = "Тестирует сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]
 		public void resolve_product_and_producer_for_farmacie()
 		{
 			Document doc;
-			TestProduct product1;
-			TestProduct product2;
-			TestProducer producer1;
-			TestProducer producer2;
+			TestProduct product1, product2, product3, product4;			
+			TestProducer producer1, producer2, producer3;
 			
 			using(new SessionScope())
 			{
@@ -946,35 +944,44 @@ namespace PriceProcessor.Test.Waybills
 				var supplier = Supplier.Find(price.Supplier.Id);
 				var client = TestClient.Create();
 				var order = new TestOrder();
-
-				product1 = new TestProduct("Активированный уголь");
+	
+				product1 = new TestProduct("Активированный уголь (табл.)");
 				product1.CatalogProduct.Pharmacie = true;
 				product1.CreateAndFlush();
-				product2 = new TestProduct("Виагра");
+				Thread.Sleep(1000);
+				product2 = new TestProduct("Виагра (табл.)");
 				product2.CatalogProduct.Pharmacie = true;
 				product2.CreateAndFlush();
+				Thread.Sleep(1000);
+				product3 = new TestProduct("Крем для кожи (гель.)");
+				product3.CatalogProduct.Pharmacie = false;
+				product3.CreateAndFlush();
+				Thread.Sleep(1000);
+				product4 = new TestProduct("Эластичный бинт");
+				product4.CatalogProduct.Pharmacie = false;
+				product4.CreateAndFlush();		
 				
 				producer1 = new TestProducer("ВероФарм");
 				producer1.CreateAndFlush();
 				producer2 = new TestProducer("Пфайзер");
 				producer2.CreateAndFlush();
+				producer3 = new TestProducer("Воронежская Фармацевтическая компания");
+				producer3.CreateAndFlush();
 
-				var syn1 = new TestSynonym() {Synonym = "Активированный уголь", ProductId = (int?)product1.Id, PriceCode = (int?)price.Id};
-				syn1.CreateAndFlush();
-				var syn2 = new TestSynonym() { Synonym = "Виагра", ProductId = (int?)product2.Id, PriceCode = (int?)price.Id };
-				syn2.CreateAndFlush();
+				new TestSynonym() {Synonym = "Активированный уголь", ProductId = (int?)product1.Id, PriceCode = (int?)price.Id}.CreateAndFlush();			
+				new TestSynonym() {Synonym = "Виагра", ProductId = (int?)product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();				
+				new TestSynonym() {Synonym = "Крем для кожи", ProductId = (int?) product3.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = (int?)product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 
-				var synFirm1 = new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id};
-				synFirm1.CreateAndFlush();
-				var synFirm2 = new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id };
-				synFirm2.CreateAndFlush();
-				var synFirm3 = new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id };
-				synFirm3.CreateAndFlush();
-				var synFirm4 = new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id };
-				synFirm4.CreateAndFlush();
+				new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "ВоронежФарм", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 
 				TestAssortment.CheckAndCreate(product1, producer1);
 				TestAssortment.CheckAndCreate(product2, producer2);
+
 				var log = new DocumentReceiveLog()
 				{
 					Supplier = supplier,
@@ -998,6 +1005,14 @@ namespace PriceProcessor.Test.Waybills
 				line = doc.NewLine();
 				line.Product = "Виагра";
 				line.Producer = " Верофарм  ";
+
+				line = doc.NewLine();
+				line.Product = " КРЕМ ДЛЯ КОЖИ  ";
+				line.Producer = "Тестовый производитель";
+
+				line = doc.NewLine();
+				line.Product = "эластичный бинт";
+				line.Producer = "Воронежфарм";
 			}
 
 			doc.SetProductId();
@@ -1008,6 +1023,12 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(doc.Lines[1].ProductEntity, Is.Not.Null);
 			Assert.That(doc.Lines[1].ProductEntity.Id, Is.EqualTo(product2.Id));
 			Assert.That(doc.Lines[1].ProducerId, Is.EqualTo(producer2.Id));
+			Assert.That(doc.Lines[2].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[2].ProductEntity.Id, Is.EqualTo(product3.Id));
+			Assert.That(doc.Lines[2].ProducerId, Is.Null);
+			Assert.That(doc.Lines[3].ProductEntity, Is.Not.Null);
+			Assert.That(doc.Lines[3].ProductEntity.Id, Is.EqualTo(product4.Id));
+			Assert.That(doc.Lines[3].ProducerId, Is.EqualTo(producer3.Id));
 		}
 	}
 }
