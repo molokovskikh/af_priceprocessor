@@ -180,9 +180,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				while ((count + index <= Lines.Count) && (count > 0))
 				{				    
 					// выбираем из накладной часть названия продуктов.
-					var productNames = Lines.ToList().GetRange(index, count).Select(line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
+					var productNames = Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Product)).Select(line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
 				    //выбираем из накладной часть названия производителей.
-					var firmNames = Lines.ToList().GetRange(index, count).Select(i => i.Producer.Trim().RemoveDoubleSpaces()).ToList();
+					var firmNames = Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
 					//получаем из базы данные для выбранной части продуктов из накладной.
 					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(productNames, priceCodes);
 					//получаем из базы данные для выбранной части производителей из накладной.
