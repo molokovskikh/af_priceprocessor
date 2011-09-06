@@ -314,9 +314,9 @@ and pd.AgencyEnabled= 1",
 
 		/// <summary>
 		/// ¬ыдает код клиента из таблицы future.Addresses по
-		/// Id или LegacyId
+		/// Id
 		/// </summary>
-		/// <param name="addressId">Id или LegacyId в таблице Addresses
+		/// <param name="addressId">Id в таблице Addresses
 		/// ≈сли будет передан LegacyId, то в эту переменную запишетс€ Addresses.Id</param>
 		/// <returns></returns>
 		protected uint? GetClientIdByAddress(ref uint? addressId)
@@ -327,36 +327,13 @@ and pd.AgencyEnabled= 1",
 			var address = addressId;
 
 			var clientId = With.Connection<uint?>(c => {
-			/*	var queryGetClientCodeByLegacyId = String.Format(@"
-SELECT Addr.ClientId
-FROM future.Addresses Addr
-WHERE Addr.LegacyId = {0}", address);*/
 
-			var queryGetClientCodeByAddressId = String.Format(@"
+				var queryGetClientCodeByAddressId = String.Format(@"
 SELECT Addr.ClientId
 FROM future.Addresses Addr
 WHERE Addr.Id = {0}", address);
 
-			/*var queryGetAddressIdByLegacyId = String.Format(@"
-SELECT Addr.Id
-FROM future.Addresses Addr
-WHERE Addr.LegacyId = {0}", address);
-
-				// ѕытаемс€ выбрать код клиента по Addresses.LegacyId
-				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByLegacyId);
-				if ((clientCode == null) || (clientCode is DBNull))
-				{
-					// ≈сли не выбрали по LegacyId, пытаемс€ выбрать по Addresses.Id
-					clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
-					// ≈сли ничего не выбрали, возвращаем null
-					if ((clientCode == null) || (clientCode is DBNull))
-						return null;
-				}
-				else
-					// ≈сли выбрали код клиента по LegacyID, выбираем код адреса по LegacyId
-					address = Convert.ToUInt32(MySqlHelper.ExecuteScalar(c, queryGetAddressIdByLegacyId));
-            */
-                var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
+				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
 				return Convert.ToUInt32(clientCode);
 			});
 			addressId = address;

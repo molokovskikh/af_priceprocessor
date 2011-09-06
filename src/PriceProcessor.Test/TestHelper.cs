@@ -50,18 +50,16 @@ namespace PriceProcessor.Test
 			});
 		}
 
-
 		public static DataSet Fill(string commandText)
 		{
 			return With.Connection(c =>
 			{
 				var adapter = new MySqlDataAdapter(commandText, c);
 				var data = new DataSet();
-			    adapter.Fill(data);
+				adapter.Fill(data);
 				return data;
 			});
 		}
-
 
 		public static void Formalize<T>(string file) where T : BasePriceParser
 		{
@@ -70,7 +68,6 @@ namespace PriceProcessor.Test
 
 		public static void Formalize(string file, int priceItemId)
 		{
-			//var priceItemId = Convert.ToInt32(Path.GetFileNameWithoutExtension(file));
 			var data = LoadFormRules((uint)priceItemId);
 			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
 			var parserType = Type.GetType(typeName);
@@ -95,7 +92,7 @@ namespace PriceProcessor.Test
 
 		public static void Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
 		{			
-            using (var connection = new MySqlConnection(Literals.ConnectionString()))
+			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var parser = (BasePriceParser) Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
@@ -104,7 +101,7 @@ namespace PriceProcessor.Test
 
 		public static void FormalizeOld(Type formatType, DataTable parseRules, string file, int priceItemId)
 		{			
-            using (var connection = new MySqlConnection(Literals.ConnectionString()))
+			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
@@ -158,14 +155,6 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 					var columnName = column.ColumnName.ToLower();
 					if (columnName == "id" || columnName == "Synonym")
 						continue;
-
-/*					if (column.ColumnName == "SynonymCode")
-					{
-						if (Convert.ToInt32(resultRow[column.ColumnName]) != Convert.ToInt32(etalonRow[column.ColumnName]))
-							Console.WriteLine(String.Format("Колонка {0}. Строка результата {1}. Строка эталона {2}. Результат {3} эталон {4}", column.ColumnName, resultRow["Id"], etalonRow["Id"], resultRow[column.ColumnName], etalonRow[column.ColumnName]));
-
-						continue;
-					}*/
 
 					if (FulVerification)
 					{
@@ -324,13 +313,11 @@ Content-Disposition: attachment;
 				sequenceSet.Parse("1:*", long.MaxValue);
 				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
 				if ((items != null) && (items.Length > 0))
-				{                 
+				{
 					foreach (var item in items)
 					{
-                        
 						var sequenceMessages = new IMAP_SequenceSet();
-						//sequenceMessages.Parse(item.UID.ToString(), long.MaxValue);
-                        sequenceMessages.Parse(item.UID.ToString());
+						sequenceMessages.Parse(item.UID.ToString());
 						imapClient.DeleteMessages(sequenceMessages, true);
 					}
 				}
@@ -409,7 +396,7 @@ from
   Farm.FormRules PFR,
   farm.pricefmts 
 where
-    pi.Id = {0}
+	pi.Id = {0}
 and pc.PriceItemId = pi.Id
 and pd.PriceCode = pc.PriceCode
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
