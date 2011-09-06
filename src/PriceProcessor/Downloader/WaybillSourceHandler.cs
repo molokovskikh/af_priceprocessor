@@ -149,13 +149,9 @@ namespace Inforoom.Downloader
 		private bool ClientExists(uint checkClientCode)
 		{
 			var queryGetClientCode = String.Format(@"
-SELECT cd.FirmCode 
-FROM usersettings.ClientsData cd
-WHERE cd.FirmType = 1 AND FirmCode = {0}
-UNION
 SELECT Addr.Id
 FROM Future.Addresses Addr
-WHERE Addr.Id = {0} OR Addr.LegacyId = {0}", checkClientCode);
+WHERE Addr.Id = {0}", checkClientCode);
 			return With.Connection(c => {
 				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCode);
 				return (clientCode != null);

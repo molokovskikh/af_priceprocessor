@@ -21,8 +21,6 @@ namespace PriceProcessor.Test
 	public class SummaryInfo
 	{
 		public TestClient Client { get; set; }
-
-		//public TestOldClient Supplier { get; set; }
 		public TestSupplier Supplier { get; set; }
 	}
 
@@ -58,33 +56,41 @@ namespace PriceProcessor.Test
 		public void DeleteDirectories()
 		{
 			TestHelper.RecreateDirectories();
+			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 		}
 
-		private static void CreateWaybillSource(TestClient client, TestSupplier supplier)
+		private static void PrepareSupplier(TestSupplier supplier, string from)
 		{
-			With.Connection(connection =>
-			{
-				var command = new MySqlCommand(@"
-INSERT INTO `documents`.`waybill_sources` (FirmCode, EMailFrom, SourceId) VALUES (?FirmCode, ?EmailFrom, ?SourceId);
-UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?ClientCode
-", connection);
+			With.Connection(c => {
+				var command = new MySqlCommand(
+					@"INSERT INTO `documents`.`waybill_sources` (FirmCode, EMailFrom, SourceId) VALUES (?FirmCode, ?EmailFrom, ?SourceId);",
+					c);
 				command.Parameters.AddWithValue("?FirmCode", supplier.Id);
-				command.Parameters.AddWithValue("?EmailFrom", String.Format("{0}@test.test", client.Id));
-				command.Parameters.AddWithValue("?ClientCode", client.Id);
+				command.Parameters.AddWithValue("?EmailFrom", from);
 				command.Parameters.AddWithValue("?SourceId", 1);
+				command.ExecuteNonQuery();
+			});
+		}
+
+		private static void PrepareClient(TestClient client)
+		{
+			With.Connection(c => {
+				var command = new MySqlCommand(
+					"UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?ClientCode",
+					c);
+				command.Parameters.AddWithValue("?ClientCode", client.Id);
 				command.ExecuteNonQuery();
 			});
 		}
 
 		public void SetUp(IList<string> fileNames)
 		{
-			TestHelper.RecreateDirectories();
-
 			var client = TestClient.Create();
 			var supplier = TestSupplier.Create();
 
-			CreateWaybillSource(client, supplier);
-			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			var from = String.Format("{0}@test.test", client.Id);
+			PrepareSupplier(supplier, from);
+			PrepareClient(client);
 
 			byte[] bytes;
 			if (IsEmlFile)
@@ -93,7 +99,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			{
 				var message = TestHelper.BuildMessageWithAttachments(
 					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
-					String.Format("{0}@test.test", client.Id), fileNames.ToArray());
+					from, fileNames.ToArray());
 				bytes = message.ToByteData();
 			}
 
@@ -107,7 +113,6 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 
 		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
 		{
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));			
@@ -136,8 +141,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			}			
 		}
 
-		//private void Process_waybills()
-		private WaybillSourceHandlerForTesting Process_waybills()
+		private WaybillSourceHandlerForTesting Process()
 		{			
 			WaybillSourceHandlerForTesting handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
@@ -148,7 +152,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		public void Check_document_date()
 		{
 			SetUp(new List<string> {@"..\..\Data\Waybills\0000470553.dbf"});
-			Process_waybills();
+			Process();
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
@@ -164,13 +168,9 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
 			SetUp(fileNames);
-			Process_waybills();
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
-				SearchOption.AllDirectories);
-			Assert.That(savedFiles.Count(), Is.EqualTo(1));
+			Assert.That(GetSavedFiles("*(0000470553).dbf").Count(), Is.EqualTo(1));
 
 			var tempFilePath = Path.Combine(Settings.Default.TempPath, "DownWAYBILL");
 			tempFilePath = Path.Combine(tempFilePath, "0000470553.dbf");
@@ -183,15 +183,11 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var fileNames = new List<string> { @"..\..\Data\Waybills\0000470553.dbf" };
 			SetUp(fileNames);
 
-		//	var supplier = TestOldClient.CreateTestSupplier(64UL);
 			var supplier = TestSupplier.Create(64UL);
-			CreateWaybillSource(_summary.Client, supplier);
-			Process_waybills();
+			PrepareSupplier(supplier, String.Format("{0}@test.test", _summary.Client));
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
-				SearchOption.AllDirectories);
+			var savedFiles = GetSavedFiles("*(0000470553).dbf");
 			Assert.That(savedFiles.Count(), Is.EqualTo(1));
 		}
 
@@ -203,19 +199,16 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 				@"..\..\Data\Waybills\multifile\h271433.dbf"
 			};
 			SetUp(files);
-			Process_waybills();
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 
-			var bodyFile = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(b271433).dbf",
-				SearchOption.AllDirectories);
+			var bodyFile = GetSavedFiles("*(b271433).dbf");
 			Assert.That(bodyFile.Count(), Is.EqualTo(1));
 
-			var headerFile = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(h271433).dbf",
-				SearchOption.AllDirectories);
+			var headerFile = GetSavedFiles("*(h271433).dbf");
 			Assert.That(headerFile.Count(), Is.EqualTo(1));
 			using (new SessionScope())
 			{
@@ -233,11 +226,9 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\multifile\apteka_holding.rar" };
 			SetUp(files);
-			Process_waybills();
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
+			var savedFiles = GetSavedFiles();
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 		}
 
@@ -246,16 +237,17 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\multifile\multifile_with_single.zip" };
 			SetUp(files);
-			Process_waybills();
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
+			var savedFiles = GetSavedFiles();
 			Assert.That(savedFiles.Count(), Is.EqualTo(3));
+			Assert.That(savedFiles.Where(f => f.EndsWith("(0000470553).dbf")).Count(), Is.EqualTo(1));
+		}
 
-			var singleFile = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*(0000470553).dbf",
-				SearchOption.AllDirectories);
-			Assert.That(singleFile.Count(), Is.EqualTo(1));			
+		private string[] GetSavedFiles(string mask = "*.*")
+		{
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			return Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), mask, SearchOption.AllDirectories);
 		}
 
 		[Test]
@@ -266,12 +258,9 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 				@"..\..\Data\Waybills\multifile\b1766399.dbf"
 			};
 			SetUp(files);
-			Process_waybills();
+			Process();
 
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
-			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
-			Assert.That(savedFiles.Count(), Is.EqualTo(2));
+			Assert.That(GetSavedFiles().Count(), Is.EqualTo(2));
 		}
 
 		[Test, Description("Накладная в формате dbf и первая буква в имени h (как у заголовка двухфайловой накладной)")]
@@ -280,7 +269,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var files = new List<string> {@"..\..\Data\Waybills\h1016416.DBF",};
 
 			SetUp(files);
-			Process_waybills();
+			Process();
 
 			CheckClientDirectory(1, DocType.Waybill);
 			CheckDocumentLogEntry(1);
@@ -293,7 +282,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var files = new List<string> { @"..\..\Data\Waybills\bi055540.DBF", };
 
 			SetUp(files);
-			Process_waybills();
+			Process();
 
 			CheckClientDirectory(1, DocType.Waybill);
 			CheckDocumentLogEntry(1);
@@ -306,7 +295,7 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
 
 			SetUp(files);
-			Process_waybills();
+			Process();
 
 			CheckClientDirectory(2, DocType.Waybill);
 			CheckDocumentLogEntry(2);
@@ -318,22 +307,11 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\multifile\h160410.dbf", @"..\..\Data\Waybills\multifile\b160410.dbf" };
 			SetUp(files);
-			Process_waybills();
+			Process();
 
 			CheckClientDirectory(2, DocType.Waybill);
 			CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
-		}
-
-		[Test, Ignore("Оставляю на случай если нужно положить письмо с накладной в ящик и подебажить")]
-		public void Parse_eml_file()
-		{
-			var files = new List<string> {
-				@"C:\Users\dorofeev\Desktop\WaybillUnparse.eml",
-			};
-			IsEmlFile = true;
-			SetUp(files);
-			Process_waybills();
 		}
 
 		[Test]
@@ -359,7 +337,32 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 			message.MainEntity.Cc.Add(addrCc);
 
 			handler.CheckMimeTest(message);
-			
+		}
+
+		[Test]
+		public void Ignore_document_for_wrong_address()
+		{
+			var begin = DateTime.Now;
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@test.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = TestHelper.BuildMessageWithAttachments(
+				String.Format("{0}@waybills.analit.net", "1"),
+				from,
+				new[] {@"..\..\Data\Waybills\bi055540.DBF"});
+			var bytes = message.ToByteData();
+
+			TestHelper.StoreMessage(
+				Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder, bytes);
+			_summary.Supplier = supplier;
+
+			Process();
+
+			var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
+			Assert.That(docs.Count, Is.EqualTo(0));
 		}
 	}
 }

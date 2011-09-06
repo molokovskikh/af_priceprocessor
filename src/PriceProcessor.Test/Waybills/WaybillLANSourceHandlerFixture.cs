@@ -45,15 +45,12 @@ namespace PriceProcessor.Test
 
 		private ulong[] _supplierCodes = new ulong[1] { 2788 };
 
-	//	private string[] _waybillFiles2788 = new string[3] { "523108940_20091202030542372.zip", "523108940_20091202090615283.zip", "523108940_20091202102538565.zip" };
-        private string[] _waybillFiles2788 = new string[3] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
-        
+		private string[] _waybillFiles2788 = new string[3] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
+		
 		[SetUp]
 		public void SetUp()
 		{
 			TestHelper.RecreateDirectories();
-			//_summary.Client = TestClient.CreateSimple();
-			//_summary.Supplier = TestOldClient.CreateTestSupplier();
 			_summary.Client = TestClient.Create();
 			_summary.Supplier = TestSupplier.Create();
 		}
@@ -116,7 +113,6 @@ where a.Id = ?AddressId", connection);
 
 		private string[] GetFileForAddress(DocType documentsType)
 		{
-			//var clientDirectory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
@@ -230,7 +226,6 @@ where a.Id = ?AddressId", connection);
 		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
-			//FileHelper.DeleteDir(Settings.Default.FTPOptBoxPath);
 			FileHelper.DeleteDir(Settings.Default.DocumentPath);
 
 			var filter = new EventFilter<WaybillSourceHandler>();
@@ -240,7 +235,6 @@ where a.Id = ?AddressId", connection);
 
 			Process();
 
-			//var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, @"4147\rejects\");
 			var ftp = Path.Combine(Settings.Default.DocumentPath, @"4147\rejects\");
 			Assert.That(Directory.Exists(ftp), "не обработали документ");
 			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
@@ -291,7 +285,6 @@ where a.Id = ?AddressId", connection);
 
 				TestHelper.ClearImapFolder();
 				TestHelper.StoreMessageWithAttachToImapFolder(
-					//String.Format("{0}@waybills.analit.net", client.Id),
 					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
 					email,
 					@"..\..\Data\Waybills\8916.dbf");
@@ -300,7 +293,6 @@ where a.Id = ?AddressId", connection);
 
 				Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
 
-				//var ftp = Path.Combine(Settings.Default.FTPOptBoxPath, String.Format(@"{0}\waybills\", client.Id));				
 				var ftp = Path.Combine(Settings.Default.DocumentPath, String.Format(@"{0}\waybills\", client.Addresses[0].Id));
 				Assert.That(Directory.Exists(ftp), "не обработали документ");
 				Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
