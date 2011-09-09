@@ -11,12 +11,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
+			DateTime dt1 = DateTime.Now;
 			var doc = WaybillParser.Parse("Ð-1873247.DBF");
+			DateTime dt2 = DateTime.Now;
 			var providerDocId = Document.GenerateProviderDocumentId();
 			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
 
 			Assert.IsFalse(doc.ProviderDocumentId.StartsWith(providerDocId));
-			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			Assert.That(doc.DocumentDate, Is.GreaterThanOrEqualTo(dt1));
+			Assert.That(doc.DocumentDate, Is.LessThanOrEqualTo(dt2));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Ð-1873247"));
 
 			var line = doc.Lines[0];

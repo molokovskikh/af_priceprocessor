@@ -71,7 +71,13 @@ namespace Inforoom.PriceProcessor.Waybills
                                 type = typeof (ZdravServiceSpecialParser);
 				            break;
 				        }
-                    
+					/*case 4138: // Накладная от Катрен Воронеж
+						{
+							var table = KatrenVrnSpecialParser.Load(file);
+							if (KatrenVrnSpecialParser.CheckFileFormat(table))
+								type = typeof(KatrenVrnSpecialParser);
+							break;
+						}*/
 					default: break;
 				}
 			}

@@ -298,6 +298,7 @@ and st.SourceID = 4";
 				{
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
 					//DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
+					LoggingToService(String.Format("Не удалось отформатировать документ.\nОшибка: {0}", e));
 					return false;
 				}
 			}

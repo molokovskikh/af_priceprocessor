@@ -217,6 +217,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParser.cs" />
     <Compile Include="Waybills\Parser\FarmPartnerKalugaParser.cs" />
+    <Compile Include="Waybills\Parser\KatrenVrnSpecialParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\CSMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\SiaVoronezhParser.cs" />
