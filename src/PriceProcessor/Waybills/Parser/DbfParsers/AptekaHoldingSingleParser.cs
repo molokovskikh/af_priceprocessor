@@ -51,8 +51,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				if (!Convert.IsDBNull(r["DOCDAT"]))
 					document.DocumentDate = Convert.ToDateTime(r["DOCDAT"]);
 				var line = document.NewLine();
-				line.Code = r["CODE"].ToString();
-				line.Product = r["TOVAR"].ToString();
+				line.Code = r["CODE"].ToString();				
+				if (data.Columns.Contains("CLEANNAME"))
+					line.Product = r["CLEANNAME"].ToString();
+				else
+				{
+					if (data.Columns.Contains("TOVAR"))
+						line.Product = r["TOVAR"].ToString();
+				}
 				line.Producer = r["PROIZV"].ToString();
 				line.Country = r["STRANA"].ToString();
 				line.ProducerCost = Convert.IsDBNull(r["ZAVOD"]) ? null : (decimal?)Convert.ToDecimal(r["ZAVOD"], CultureInfo.InvariantCulture);

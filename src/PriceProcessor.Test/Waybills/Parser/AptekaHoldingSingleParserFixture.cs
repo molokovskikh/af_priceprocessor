@@ -123,5 +123,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(34.09));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(223.49));
 		}
+
+		[Test]
+		public void Parse6()
+		{
+			var document = WaybillParser.Parse(@"9764791.DBF");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(149));
+			Assert.That(document.Lines[1].Product, Is.EqualTo("Аллохол табл. п/о N24"));
+		}
 	}
 }

@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(h => h.ProviderDocumentId, "DOCNAME", "NUM")
 				.DocumentHeader(h => h.DocumentDate, "DATEDOC")
 				.Line(l => l.Product, "GOOD")
-				.Line(l => l.Producer, "ENTERP")
+				.Line(l => l.Producer, "ENTERP", "PRODUSER")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.SerialNumber, "SERIAL")
 				.Line(l => l.Period, "DATEB", "DETEB")

@@ -291,14 +291,15 @@ and st.SourceID = 4";
 						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
 						//log.CopyDocumentToClientDirectory();
-						WaybillService.ParserDocument(log);
+						WaybillService.ParserDocument(log); 
 					}
 				}
 				catch(Exception e)
 				{
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
 					//DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
-					LoggingToService(String.Format("Не удалось отформатировать документ.\nОшибка: {0}", e));
+					//LoggingToService(String.Format("Не удалось отформатировать документ.\nОшибка: {0}", e));
+					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
 					return false;
 				}
 			}
