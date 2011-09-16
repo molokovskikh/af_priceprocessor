@@ -6,6 +6,7 @@ using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;

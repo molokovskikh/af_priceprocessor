@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor;
 using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader

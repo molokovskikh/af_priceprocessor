@@ -5,6 +5,7 @@ using System.IO;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor;
 using Inforoom.Downloader.DocumentReaders;
@@ -12,6 +13,7 @@ using Inforoom.Downloader.Documents;
 using System.Net.Mail;
 using System.Reflection;
 using Inforoom.Common;
+using Inforoom.PriceProcessor.Waybills.Models;
 using FileHelper = Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader

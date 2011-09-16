@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using Lucene.Net.Analysis;

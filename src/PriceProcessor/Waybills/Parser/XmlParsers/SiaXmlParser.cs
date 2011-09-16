@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 {

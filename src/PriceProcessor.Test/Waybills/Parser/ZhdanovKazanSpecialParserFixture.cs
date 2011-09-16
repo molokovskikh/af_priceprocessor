@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser;
-using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Castle.ActiveRecord;
-using Inforoom.PriceProcessor.Waybills;
-
 
 namespace PriceProcessor.Test.Waybills.Parser
 {

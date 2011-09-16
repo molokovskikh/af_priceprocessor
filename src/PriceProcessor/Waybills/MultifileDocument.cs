@@ -6,6 +6,7 @@ using System.Linq;
 using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills

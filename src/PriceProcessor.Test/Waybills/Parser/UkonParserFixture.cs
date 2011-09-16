@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-using System.Threading;
-using Inforoom.PriceProcessor.Waybills;
+﻿using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 using System;
@@ -63,13 +61,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 		}
 
-        [Test]
-        public void Parse_without_supplier_cost_without_nds()
-        {
-            var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8521183.sst");
-        }
+		[Test]
+		public void Parse_without_supplier_cost_without_nds()
+		{
+			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8521183.sst");
+		}
 
-	    [Test]
+		[Test]
 		public void Parse_with_zero_supplier_cost_without_nds()
 		{
 			var doc = WaybillParser.Parse(@"9907125-002.sst");

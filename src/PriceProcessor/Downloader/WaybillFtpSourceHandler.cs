@@ -10,8 +10,10 @@ using Common.Tools;
 using Inforoom.Common;
 using Inforoom.Downloader.Documents;
 using Inforoom.PriceProcessor.Downloader.DocumentReaders;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.Downloader.Ftp;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Downloader
 {

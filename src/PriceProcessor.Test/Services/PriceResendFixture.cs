@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Castle.ActiveRecord;
 using NUnit.Framework;
@@ -8,15 +7,12 @@ using System.IO;
 using System.ServiceModel;
 using System.Net;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor;
-using System.Net.Security;
 using PriceProcessor.Test.Handlers;
 using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
 using Test.Support.Catalog;
 using Test.Support.Suppliers;
-using Inforoom.Common;
 using FileHelper = Inforoom.Common.FileHelper;
 
 namespace PriceProcessor.Test.Services

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Castle.ActiveRecord;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;

@@ -4,7 +4,9 @@ using System.Threading;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using NHibernate.Criterion;
 using NUnit.Framework;
 using Rhino.Mocks;
@@ -40,7 +42,7 @@ namespace PriceProcessor.Test.Handlers
 	public class ProtekWaybillHandlerFixture
 	{
 		private TestOrder order;
-	    private TestOrder order2;
+		private TestOrder order2;
 		private FakeProtekHandler fake;
 
 		[SetUp]
@@ -49,7 +51,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new SessionScope())
 			{
 				order = TestOrder.Queryable.First();
-                order2 = TestOrder.Queryable.Where(o => o != order).First();
+				order2 = TestOrder.Queryable.Where(o => o != order).First();
 			}
 
 			fake = new FakeProtekHandler();
@@ -95,7 +97,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Process_protek_waybills()
 		{
-            DateTime begin = DateTime.Now;
+			DateTime begin = DateTime.Now;
 			fake.Process();		    
 			using (new SessionScope())
 			{
@@ -111,54 +113,54 @@ namespace PriceProcessor.Test.Handlers
 			}
 		}
 
-        [Test]
-        public void Process_protek_waybills_with_blading_folder()
-        {
-            Thread.Sleep(1000);                      
-        	fake.bodyResponce.@return.blading[0].@uint = null;
+		[Test]
+		public void Process_protek_waybills_with_blading_folder()
+		{
+			Thread.Sleep(1000);                      
+			fake.bodyResponce.@return.blading[0].@uint = null;
 			fake.bodyResponce.@return.blading[0].bladingFolder = new[]{
-                new BladingFolder
-                    {
-                        bladingId = null, 
-                        folderNum  = "", 
-                        orderDate = null, 
-                        orderId = null, 
-                        orderNum = "", 
-                        orderUdat = null, 
-                        orderUdec = null, 
-                        orderUint = (int?)order.Id, 
-                        orderUstr = ""
-                    },
-                new BladingFolder
-                    {
-                        bladingId = null, 
-                        folderNum  = "", 
-                        orderDate = null, 
-                        orderId = null, 
-                        orderNum = "", 
-                        orderUdat = null, 
-                        orderUdec = null, 
-                        orderUint = (int?)order2.Id, 
-                        orderUstr = ""
-                    }
-            };
+				new BladingFolder
+					{
+						bladingId = null, 
+						folderNum  = "", 
+						orderDate = null, 
+						orderId = null, 
+						orderNum = "", 
+						orderUdat = null, 
+						orderUdec = null, 
+						orderUint = (int?)order.Id, 
+						orderUstr = ""
+					},
+				new BladingFolder
+					{
+						bladingId = null, 
+						folderNum  = "", 
+						orderDate = null, 
+						orderId = null, 
+						orderNum = "", 
+						orderUdat = null, 
+						orderUdec = null, 
+						orderUint = (int?)order2.Id, 
+						orderUstr = ""
+					}
+			};
 
-            DateTime begin = DateTime.Now;
-            fake.Process();
-            using (new SessionScope())
-            {
-                var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
-                Assert.That(documents.Count, Is.EqualTo(1));
-                Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
-                var line = documents[0].Lines[0];
-                Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
-                Assert.That(line.NdsAmount, Is.EqualTo(12.3));
-                Assert.That(documents[0].Log, Is.Not.Null);
-                Assert.That(documents[0].Log.IsFake, Is.True);
-                Check_DocumentLine_SetProductId(documents[0]);
-                Assert.That(documents[0].OrderId, Is.EqualTo(order.Id));
-            }
-        }
+			DateTime begin = DateTime.Now;
+			fake.Process();
+			using (new SessionScope())
+			{
+				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
+				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
+				var line = documents[0].Lines[0];
+				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+				Assert.That(documents[0].Log, Is.Not.Null);
+				Assert.That(documents[0].Log.IsFake, Is.True);
+				Check_DocumentLine_SetProductId(documents[0]);
+				Assert.That(documents[0].OrderId, Is.EqualTo(order.Id));
+			}
+		}
 
 		public void Check_DocumentLine_SetProductId(Document document)
 		{

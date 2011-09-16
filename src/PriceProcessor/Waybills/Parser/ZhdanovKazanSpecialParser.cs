@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {

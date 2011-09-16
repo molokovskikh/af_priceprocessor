@@ -8,7 +8,9 @@ using System.Text;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using MySql.Data.MySqlClient;
@@ -36,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (!(parser is Avesta_6256_SpecialParser) && !(parser is KazanFarmDbfParser)
 				&& !(parser is TrediFarmCheboksarySpecialParser) && !(parser is ZhdanovKazanSpecialParser)
 				&& !(parser is ImperiaFarmaSpecialParser) && !(parser is BizonKazanSpecialParser)
-                && !(parser is ZdravServiceSpecialParser) && !(parser is FarmPartnerKalugaParser)
+				&& !(parser is ZdravServiceSpecialParser) && !(parser is FarmPartnerKalugaParser)
 				&& !(parser is KatrenVrnSpecialParser))
 				CheckUniqueDbfParser(filePath);
 			if (parser == null)

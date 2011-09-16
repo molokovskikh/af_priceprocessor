@@ -9,6 +9,8 @@ using Common.MySql;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.FTP.Client;
 using LumiSoft.Net.FTP.Server;
 using NUnit.Framework;

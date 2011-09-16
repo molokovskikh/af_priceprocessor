@@ -3,17 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Data;
 using System.Linq;
-using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
-using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP;
 using Inforoom.Common;
-using LumiSoft.Net.SMTP.Client;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
-using Inforoom.PriceProcessor;
 using System.Net.Mail;
 
 

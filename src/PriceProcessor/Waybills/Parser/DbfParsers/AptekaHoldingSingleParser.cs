@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers

@@ -1,4 +1,5 @@
 ﻿using System;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers

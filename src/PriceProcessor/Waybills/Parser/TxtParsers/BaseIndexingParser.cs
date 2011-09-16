@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
@@ -103,36 +104,36 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int CertificatesDateIndex = -1;
 		protected int AmountIndex = -1;
 		protected int NdsAmountIndex = -1;
-	    protected int UnitIndex = -1;
-	    protected int ExciseTaxIndex = -1;
-	    protected int BillOfEntryNumberIndex = -1;
-	    protected int EAN13Index = -1;
+		protected int UnitIndex = -1;
+		protected int ExciseTaxIndex = -1;
+		protected int BillOfEntryNumberIndex = -1;
+		protected int EAN13Index = -1;
 
-	    protected int InvoiceNumberIndex = -1;
-	    protected int InvoiceDateIndex = -1;
-	    protected int SellerNameIndex = -1;
-	    protected int SellerAddressIndex = -1;
-	    protected int SellerINNIndex = -1;
-	    protected int SellerKPPIndex = -1;
-	    protected int ShipperInfoIndex = -1;
-	    protected int ConsigneeInfoIndex = -1;
-	    protected int PaymentDocumentInfoIndex = -1;
-	    protected int BuyerNameIndex = -1;
-	    protected int BuyerAddressIndex = -1;
-	    protected int BuyerINNIndex = -1;
-	    protected int BuyerKPPIndex = -1;
-	    protected int AmountWithoutNDS0Index = -1;
-	    protected int AmountWithoutNDS10Index = -1;
-	    protected int NDSAmount10Index = -1;
-	    protected int Amount10Index = -1;
-	    protected int AmountWithoutNDS18Index = -1;
-	    protected int NDSAmount18Index = -1;
-	    protected int Amount18Index = -1;
-	    protected int AmountWithoutNDSIndex = -1;
-	    protected int InvoiceNDSAmountIndex = -1;
-	    protected int InvoiceAmountIndex = -1;
+		protected int InvoiceNumberIndex = -1;
+		protected int InvoiceDateIndex = -1;
+		protected int SellerNameIndex = -1;
+		protected int SellerAddressIndex = -1;
+		protected int SellerINNIndex = -1;
+		protected int SellerKPPIndex = -1;
+		protected int ShipperInfoIndex = -1;
+		protected int ConsigneeInfoIndex = -1;
+		protected int PaymentDocumentInfoIndex = -1;
+		protected int BuyerNameIndex = -1;
+		protected int BuyerAddressIndex = -1;
+		protected int BuyerINNIndex = -1;
+		protected int BuyerKPPIndex = -1;
+		protected int AmountWithoutNDS0Index = -1;
+		protected int AmountWithoutNDS10Index = -1;
+		protected int NDSAmount10Index = -1;
+		protected int Amount10Index = -1;
+		protected int AmountWithoutNDS18Index = -1;
+		protected int NDSAmount18Index = -1;
+		protected int Amount18Index = -1;
+		protected int AmountWithoutNDSIndex = -1;
+		protected int InvoiceNDSAmountIndex = -1;
+		protected int InvoiceAmountIndex = -1;
 
-	    protected string separator = ";";
+		protected string separator = ";";
 
 		protected string CommentMark;
 		protected bool CalculateSupplierPriceMarkup;
@@ -235,115 +236,115 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected void ReadHeader(Document document, string line)
 		{
 			//var header = line.Split(';');
-            var header = line.Split(separator.ToCharArray());
+			var header = line.Split(separator.ToCharArray());
 			document.ProviderDocumentId = header[ProviderDocumentIdIndex];
 			if (!String.IsNullOrEmpty(header[DocumentDateIndex]))
 				document.DocumentDate = Convert.ToDateTime(header[DocumentDateIndex]);
 
-            if ((InvoiceNumberIndex >= 0) && header.Length > InvoiceNumberIndex)
-                document.SetInvoice().InvoiceNumber = GetString(header[InvoiceNumberIndex]);
+			if ((InvoiceNumberIndex >= 0) && header.Length > InvoiceNumberIndex)
+				document.SetInvoice().InvoiceNumber = GetString(header[InvoiceNumberIndex]);
 
-            if ((InvoiceDateIndex >= 0) && header.Length > InvoiceDateIndex)
-            {
-                if (!String.IsNullOrEmpty(header[InvoiceDateIndex]))
-                    document.SetInvoice().InvoiceDate = Convert.ToDateTime(header[InvoiceDateIndex]);
-            }
+			if ((InvoiceDateIndex >= 0) && header.Length > InvoiceDateIndex)
+			{
+				if (!String.IsNullOrEmpty(header[InvoiceDateIndex]))
+					document.SetInvoice().InvoiceDate = Convert.ToDateTime(header[InvoiceDateIndex]);
+			}
 
-            if ((SellerNameIndex >= 0) && header.Length > SellerNameIndex)
-                document.SetInvoice().SellerName = GetString(header[SellerNameIndex]);
+			if ((SellerNameIndex >= 0) && header.Length > SellerNameIndex)
+				document.SetInvoice().SellerName = GetString(header[SellerNameIndex]);
 
-            if ((SellerAddressIndex >= 0) && header.Length > SellerAddressIndex)
-                document.SetInvoice().SellerAddress = GetString(header[SellerAddressIndex]);
+			if ((SellerAddressIndex >= 0) && header.Length > SellerAddressIndex)
+				document.SetInvoice().SellerAddress = GetString(header[SellerAddressIndex]);
 
-            if ((SellerINNIndex >= 0) && header.Length > SellerINNIndex)
-            {
-                string inn = GetString(header[SellerINNIndex]);
-                if (inn.Contains("/")) inn = inn.Split('/')[0];
-                document.SetInvoice().SellerINN = inn;
-            }
+			if ((SellerINNIndex >= 0) && header.Length > SellerINNIndex)
+			{
+				string inn = GetString(header[SellerINNIndex]);
+				if (inn.Contains("/")) inn = inn.Split('/')[0];
+				document.SetInvoice().SellerINN = inn;
+			}
 
-            if ((SellerKPPIndex >= 0) && header.Length > SellerKPPIndex)
-            {
-                string kpp = GetString(header[SellerKPPIndex]);
-                if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
-                document.SetInvoice().SellerKPP = kpp;
-            }
+			if ((SellerKPPIndex >= 0) && header.Length > SellerKPPIndex)
+			{
+				string kpp = GetString(header[SellerKPPIndex]);
+				if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
+				document.SetInvoice().SellerKPP = kpp;
+			}
 
-            if ((ShipperInfoIndex >= 0) && header.Length > ShipperInfoIndex)
-                document.SetInvoice().ShipperInfo = GetString(header[ShipperInfoIndex]);
+			if ((ShipperInfoIndex >= 0) && header.Length > ShipperInfoIndex)
+				document.SetInvoice().ShipperInfo = GetString(header[ShipperInfoIndex]);
 
-            if ((ConsigneeInfoIndex >= 0) && header.Length > ConsigneeInfoIndex)
-                document.SetInvoice().ConsigneeInfo = GetString(header[ConsigneeInfoIndex]);
+			if ((ConsigneeInfoIndex >= 0) && header.Length > ConsigneeInfoIndex)
+				document.SetInvoice().ConsigneeInfo = GetString(header[ConsigneeInfoIndex]);
 
-            if ((PaymentDocumentInfoIndex >= 0) && header.Length > PaymentDocumentInfoIndex)
-                document.SetInvoice().PaymentDocumentInfo = GetString(header[PaymentDocumentInfoIndex]);
+			if ((PaymentDocumentInfoIndex >= 0) && header.Length > PaymentDocumentInfoIndex)
+				document.SetInvoice().PaymentDocumentInfo = GetString(header[PaymentDocumentInfoIndex]);
 
-            if ((BuyerNameIndex >= 0) && header.Length > BuyerNameIndex)
-                document.SetInvoice().BuyerName = GetString(header[BuyerNameIndex]);
+			if ((BuyerNameIndex >= 0) && header.Length > BuyerNameIndex)
+				document.SetInvoice().BuyerName = GetString(header[BuyerNameIndex]);
 
-            if ((BuyerAddressIndex >= 0) && header.Length > BuyerAddressIndex)
-                document.SetInvoice().BuyerAddress = GetString(header[BuyerAddressIndex]);
+			if ((BuyerAddressIndex >= 0) && header.Length > BuyerAddressIndex)
+				document.SetInvoice().BuyerAddress = GetString(header[BuyerAddressIndex]);
 
-            if ((BuyerINNIndex >= 0) && header.Length > BuyerINNIndex)
-            {
-                string inn = GetString(header[BuyerINNIndex]);
-                if (inn.Contains("/")) inn = inn.Split('/')[0];
-                document.SetInvoice().BuyerINN = inn;
-            }
+			if ((BuyerINNIndex >= 0) && header.Length > BuyerINNIndex)
+			{
+				string inn = GetString(header[BuyerINNIndex]);
+				if (inn.Contains("/")) inn = inn.Split('/')[0];
+				document.SetInvoice().BuyerINN = inn;
+			}
 
-            if ((BuyerKPPIndex >= 0) && header.Length > BuyerKPPIndex)
-            {
-                string kpp = GetString(header[BuyerKPPIndex]);
-                if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
-                document.SetInvoice().BuyerKPP = kpp;
-            }
+			if ((BuyerKPPIndex >= 0) && header.Length > BuyerKPPIndex)
+			{
+				string kpp = GetString(header[BuyerKPPIndex]);
+				if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
+				document.SetInvoice().BuyerKPP = kpp;
+			}
 
-            if ((AmountWithoutNDS0Index >= 0) && header.Length > AmountWithoutNDS0Index)
-                document.SetInvoice().AmountWithoutNDS0 = GetDecimal(header[AmountWithoutNDS0Index]);
+			if ((AmountWithoutNDS0Index >= 0) && header.Length > AmountWithoutNDS0Index)
+				document.SetInvoice().AmountWithoutNDS0 = GetDecimal(header[AmountWithoutNDS0Index]);
 
-            if ((AmountWithoutNDS10Index >= 0) && header.Length > AmountWithoutNDS10Index)
-                document.SetInvoice().AmountWithoutNDS10 = GetDecimal(header[AmountWithoutNDS10Index]);
+			if ((AmountWithoutNDS10Index >= 0) && header.Length > AmountWithoutNDS10Index)
+				document.SetInvoice().AmountWithoutNDS10 = GetDecimal(header[AmountWithoutNDS10Index]);
 
-            if ((NDSAmount10Index >= 0) && header.Length > NDSAmount10Index)
-                document.SetInvoice().NDSAmount10 = GetDecimal(header[NDSAmount10Index]);
+			if ((NDSAmount10Index >= 0) && header.Length > NDSAmount10Index)
+				document.SetInvoice().NDSAmount10 = GetDecimal(header[NDSAmount10Index]);
 
-            if ((Amount10Index >= 0) && header.Length > Amount10Index)
-                document.SetInvoice().Amount10 = GetDecimal(header[Amount10Index]);
+			if ((Amount10Index >= 0) && header.Length > Amount10Index)
+				document.SetInvoice().Amount10 = GetDecimal(header[Amount10Index]);
 
-            if ((AmountWithoutNDS18Index >= 0) && header.Length > AmountWithoutNDS18Index)
-                document.SetInvoice().AmountWithoutNDS18 = GetDecimal(header[AmountWithoutNDS18Index]);
+			if ((AmountWithoutNDS18Index >= 0) && header.Length > AmountWithoutNDS18Index)
+				document.SetInvoice().AmountWithoutNDS18 = GetDecimal(header[AmountWithoutNDS18Index]);
 
-            if ((NDSAmount18Index >= 0) && header.Length > NDSAmount18Index)
-                document.SetInvoice().NDSAmount18 = GetDecimal(header[NDSAmount18Index]);
+			if ((NDSAmount18Index >= 0) && header.Length > NDSAmount18Index)
+				document.SetInvoice().NDSAmount18 = GetDecimal(header[NDSAmount18Index]);
 
-            if ((Amount18Index >= 0) && header.Length > Amount18Index)
-                document.SetInvoice().Amount18 = GetDecimal(header[Amount18Index]);
+			if ((Amount18Index >= 0) && header.Length > Amount18Index)
+				document.SetInvoice().Amount18 = GetDecimal(header[Amount18Index]);
 
-            if ((AmountWithoutNDSIndex >= 0) && header.Length > AmountWithoutNDSIndex)
-                document.SetInvoice().AmountWithoutNDS = GetDecimal(header[AmountWithoutNDSIndex]);
+			if ((AmountWithoutNDSIndex >= 0) && header.Length > AmountWithoutNDSIndex)
+				document.SetInvoice().AmountWithoutNDS = GetDecimal(header[AmountWithoutNDSIndex]);
 
-            if ((InvoiceNDSAmountIndex >= 0) && header.Length > InvoiceNDSAmountIndex)
-                document.SetInvoice().NDSAmount = GetDecimal(header[InvoiceNDSAmountIndex]);
+			if ((InvoiceNDSAmountIndex >= 0) && header.Length > InvoiceNDSAmountIndex)
+				document.SetInvoice().NDSAmount = GetDecimal(header[InvoiceNDSAmountIndex]);
 
-            if ((InvoiceAmountIndex >= 0) && header.Length > InvoiceAmountIndex)
-                document.SetInvoice().Amount = GetDecimal(header[InvoiceAmountIndex]);
+			if ((InvoiceAmountIndex >= 0) && header.Length > InvoiceAmountIndex)
+				document.SetInvoice().Amount = GetDecimal(header[InvoiceAmountIndex]);
 		}
 
 		protected void ReadBody(Document document, string line)
 		{
 			//var parts = line.Split(';');
-            var parts = line.Split(separator.ToCharArray());
+			var parts = line.Split(separator.ToCharArray());
 			var docLine = document.NewLine();
 
-            if(CodeIndex >= 0)
-			    docLine.Code = parts[CodeIndex];
+			if(CodeIndex >= 0)
+				docLine.Code = parts[CodeIndex];
 			docLine.Product = parts[ProductIndex];
 			docLine.Producer = parts[ProducerIndex];
 			docLine.Country = GetString(parts[CountryIndex]);
 			docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
 
-            if ((UnitIndex > 0) && parts.Length > UnitIndex)
-                docLine.Unit = GetString(parts[UnitIndex]);
+			if ((UnitIndex > 0) && parts.Length > UnitIndex)
+				docLine.Unit = GetString(parts[UnitIndex]);
 
 			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex)
 				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
@@ -360,8 +361,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
 				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
 
-            if ((ExciseTaxIndex > 0) && (parts.Length > ExciseTaxIndex))
-                docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
+			if ((ExciseTaxIndex > 0) && (parts.Length > ExciseTaxIndex))
+				docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
 
 			if ((SerialNumberIndex > 0) && (parts.Length>SerialNumberIndex))
 			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
@@ -378,20 +379,20 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
 				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
 
-            if ((BillOfEntryNumberIndex > 0) && (parts.Length > BillOfEntryNumberIndex))
-                docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
+			if ((BillOfEntryNumberIndex > 0) && (parts.Length > BillOfEntryNumberIndex))
+				docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
 
-            if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
-            {
-                docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
-                if (parts[VitallyImportantIndex].ToLower() == "да") docLine.VitallyImportant = true;
-                if (parts[VitallyImportantIndex].ToLower() == "нет") docLine.VitallyImportant = false;
-            }
+			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
+			{
+				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
+				if (parts[VitallyImportantIndex].ToLower() == "да") docLine.VitallyImportant = true;
+				if (parts[VitallyImportantIndex].ToLower() == "нет") docLine.VitallyImportant = false;
+			}
 
-            if ((EAN13Index > 0) && parts.Length > EAN13Index)
-                docLine.EAN13 = GetString(parts[EAN13Index]);
+			if ((EAN13Index > 0) && parts.Length > EAN13Index)
+				docLine.EAN13 = GetString(parts[EAN13Index]);
 
-		    if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
+			if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
 				docLine.Amount = GetDecimal(parts[AmountIndex]);
 
 			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))

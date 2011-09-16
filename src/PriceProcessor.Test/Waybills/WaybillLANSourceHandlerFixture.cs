@@ -4,15 +4,14 @@ using System.Text;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
-using Inforoom.Common;
-using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
-using System.Threading;
 using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
@@ -20,7 +19,6 @@ using Test.Support.log4net;
 using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using WaybillSourceType = Test.Support.WaybillSourceType;
-using System.Data;
 using FileHelper = Inforoom.Common.FileHelper;
 
 namespace PriceProcessor.Test
