@@ -71,6 +71,13 @@ namespace Inforoom.PriceProcessor.Waybills
                                 type = typeof (ZdravServiceSpecialParser);
 				            break;
 				        }
+					case 11427: // Накладная от ИП Покревский
+						{
+							var table = PokrevskySpecialParser.Load(file);
+							if (PokrevskySpecialParser.CheckFileFormat(table))
+								type = typeof(PokrevskySpecialParser);
+							break;
+						}
 					/*case 4138: // Накладная от Катрен Воронеж
 						{
 							var table = KatrenVrnSpecialParser.Load(file);

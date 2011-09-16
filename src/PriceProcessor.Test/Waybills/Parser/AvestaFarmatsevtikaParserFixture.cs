@@ -92,13 +92,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(supplierId);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier{ Id = supplierId } };
 			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
 			return documentLog;
 		}
@@ -144,14 +138,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse3()
 		{
-			DocumentReceiveLog documentLog = null;
-			var fileName = @"..\..\Data\Waybills\4049766_Авеста-Фармацевтика(118955).dbf";
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(6256u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			DocumentReceiveLog documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 6256u}};
+			var fileName = @"..\..\Data\Waybills\4049766_Авеста-Фармацевтика(118955).dbf";			
 			Assert.IsFalse(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
 
 			var doc = WaybillParser.Parse("4049766_Авеста-Фармацевтика(118955).dbf", documentLog);

@@ -15,13 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
         [Test]
         public void Parse()
         {
-            DocumentReceiveLog documentLog = null;
-            using (new SessionScope())
-            {
-                var supplier = Supplier.Find(4910u); // код поставщика Фармпартнер (Калуга)
-                documentLog = new DocumentReceiveLog { Supplier = supplier, };
-                documentLog.CreateAndFlush();
-            }
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 4910u } }; // код поставщика Фармпартнер (Калуга)            
             Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\06532.sst", documentLog) is FarmPartnerKalugaParser);
 
             var doc = WaybillParser.Parse("06532.sst", documentLog);

@@ -11,13 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(74u); // код поставщика Империя-Фарма
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 74 } }; // код поставщика Империя-Фарма						
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\KZ000130.dbf", documentLog) is ImperiaFarmaSpecialParser);
 
 			var doc = WaybillParser.Parse("KZ000130.dbf", documentLog);

@@ -14,12 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 	{
 		public DocumentReceiveLog CreateLogEntry(uint supplierId, string fileName)
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope()) {
-				var supplier = Supplier.Find(supplierId);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = supplierId}};
 			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is Moron_338_SpecialParser);
 			return documentLog;
 		}
@@ -28,12 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope()) {
-				var supplier = Supplier.Find(338u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 338u}};			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\3668585_5_00475628.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3668585_5_00475628.dbf", documentLog);
@@ -54,13 +44,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_null_period()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(338u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog{Supplier = new Supplier{Id = 338u}};			
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3676275_Морон(476832).dbf", documentLog);
 
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("476832"));
@@ -71,13 +55,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Ekaterinburg_farm()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(4001u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 4001u}};			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\bi055540.DBF", documentLog) is Moron_338_SpecialParser);
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\bi055540.DBF", documentLog);
 
@@ -101,13 +79,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Ufa()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(7146u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 7146u}};			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\K_69960.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\K_69960.dbf", documentLog);
@@ -134,13 +106,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_ForaFarm_Chelyabinsk()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(5802u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 5802u}};			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\44027.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\44027.dbf", documentLog);
@@ -167,13 +133,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Ufa_with_column_vital()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(7146u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 7146u}};			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\K_12345.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\K_12345.dbf", documentLog);
@@ -230,13 +190,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Moron_zhnvls()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(338u);
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 338u}};
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog);
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog) is Moron_338_SpecialParser);
 

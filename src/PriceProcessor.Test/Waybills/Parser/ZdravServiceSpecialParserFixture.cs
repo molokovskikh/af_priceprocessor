@@ -15,13 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser
         [Test]
         public void Parse()
         {
-            DocumentReceiveLog documentLog = null;
-            using (new SessionScope())
-            {
-                var supplier = Supplier.Find(1581u); // код поставщика Здравсервис
-                documentLog = new DocumentReceiveLog { Supplier = supplier, };
-                documentLog.CreateAndFlush();
-            }
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 1581u } }; // код поставщика Здравсервис            
             Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\2094247.dbf", documentLog) is ZdravServiceSpecialParser);
 
             var document = WaybillParser.Parse("2094247.dbf", documentLog);

@@ -11,13 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(7999u); // код поставщика Тредифарм, Чебоксары
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7999u } }; // код поставщика Тредифарм, Чебоксары			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\TrediFarmCheboksary.dbf", documentLog) is TrediFarmCheboksarySpecialParser);
 
 			var doc = WaybillParser.Parse("TrediFarmCheboksary.dbf", documentLog);

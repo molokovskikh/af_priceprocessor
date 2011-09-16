@@ -182,6 +182,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParserFixture.cs" />
+    <Compile Include="Waybills\Parser\PokrevskySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\CSMedicaKazanParserFixture.cs" />

@@ -17,14 +17,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 	{
 		[Test]
 		public void Parse()
-		{			
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(7957u); // код поставщика ИП Жданов, Казань
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+		{
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7957u } }; // код поставщика ИП Жданов, Казань
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\02000489.dbf", documentLog) is ZhdanovKazanSpecialParser);
 			
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\02000489.dbf", documentLog);
@@ -66,13 +60,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse2()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(8063u); // код поставщика ООО "Бизон", Казань
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 8063u } }; // код поставщика ООО "Бизон", Казань
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\7833642.dbf", documentLog) is ZhdanovKazanSpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\7833642.dbf", documentLog);

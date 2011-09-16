@@ -140,7 +140,7 @@ update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where Documen
 		public void ParseWorkWaybill()
 		{
 			var conn = Literals.ConnectionString();
-			uint rowId = 9746567;
+			uint rowId = 9835721;
 			DocumentReceiveLog doc_log = DocumentReceiveLog.TryFind(rowId);
 			WaybillService.ParserDocument(doc_log);
 		}

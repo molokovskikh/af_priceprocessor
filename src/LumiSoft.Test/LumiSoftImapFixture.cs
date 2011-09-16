@@ -80,7 +80,7 @@ namespace LumiSoftTest
 
         }
 
-        [Test(Description = "Предполагается, что каждый eml файл имеет не менее 1 вложения")]
+        [Test(Description = "Предполагается, что каждый eml файл имеет не менее 1 вложения"), Ignore]
         public void TestSaveAttachments_EmlFile()
         {
             var tmpDir = Path.GetTempPath() + @"TestSaveAttachment_EmlFile\";

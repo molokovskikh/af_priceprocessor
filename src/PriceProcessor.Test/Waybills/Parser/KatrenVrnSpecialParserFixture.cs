@@ -14,13 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test, Ignore]
 		public void Parse()
 		{
-			DocumentReceiveLog documentLog = null;
-			using (new SessionScope())
-			{
-				var supplier = Supplier.Find(4138u); // код Катрен Воронеж
-				documentLog = new DocumentReceiveLog { Supplier = supplier, };
-				documentLog.CreateAndFlush();
-			}
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 4138u } }; // код Катрен Воронеж			
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\275748.dbf", documentLog) is KatrenVrnSpecialParser);
 
 			var doc = WaybillParser.Parse("275748.dbf", documentLog);
