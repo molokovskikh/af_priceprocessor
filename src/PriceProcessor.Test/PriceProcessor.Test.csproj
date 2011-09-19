@@ -160,6 +160,7 @@
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
+    <Compile Include="Waybills\CertifacateModelsFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\AllinceHealthcareParserFixture.cs" />
     <Compile Include="Waybills\Parser\AptekaHoldingIzhevskParserFixture.cs" />

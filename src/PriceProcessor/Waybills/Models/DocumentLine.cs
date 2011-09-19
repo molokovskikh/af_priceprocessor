@@ -169,6 +169,27 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string EAN13 { get; set; }
 
+		[BelongsTo(Column = "CertificateId", Lazy = FetchWhen.OnInvoke)]
+		public Certificate Certificate { get; set; }
+
+		/// <summary>
+		/// Имя файла образа сертификата
+		/// </summary>
+		[Property]
+		public string CertificateFilename { get; set; }
+
+		/// <summary>
+		/// Имя файла образа протокола
+		/// </summary>
+		[Property]
+		public string ProtocolFilemame { get; set; }
+
+		/// <summary>
+		/// Имя файла образа паспорта
+		/// </summary>
+		[Property]
+		public string PassportFilename { get; set; }
+
 		public void SetAmount()
 		{
 			if(!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
