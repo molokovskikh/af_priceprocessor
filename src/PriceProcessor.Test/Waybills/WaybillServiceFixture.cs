@@ -1031,5 +1031,45 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(doc.Lines[3].ProductEntity.Id, Is.EqualTo(product4.Id));
 			Assert.That(doc.Lines[3].ProducerId, Is.EqualTo(producer3.Id));
 		}
+
+		[Test(Description = "разбор накладной с установленными файлами сертификатов")]
+		public void ParseCertificateFiles()
+		{
+			const string file = "9229370.dbf";
+			var client = TestClient.Create();
+			var supplier = TestSupplier.Create();
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = supplier.Id,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file
+			};
+			using (new TransactionScope())
+				log.SaveAndFlush();	
+
+			File.Copy(@"..\..\Data\Waybills\9832937_Аптека-Холдинг(3334_1459366).dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
+												supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
+
+			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
+			var ids = service.ParseWaybill(new[] { log.Id });
+
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count(), Is.EqualTo(1));
+				Assert.That(ids.Length, Is.EqualTo(1));
+
+				var docs = Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).ToList();
+				Assert.That(docs.Count, Is.EqualTo(1));
+
+				Assert.That(docs[0].Lines.ToList().TrueForAll(docLine => !String.IsNullOrEmpty(docLine.CertificateFilename)));
+			}
+		}
+
 	}
 }
