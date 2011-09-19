@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +7,7 @@ using Common.MySql;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using log4net.Config;
+using NHibernate.Criterion;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
@@ -14,7 +15,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
-	public class CertifacateModelsFixture
+	public class CertificateModelsFixture
 	{
 		private TestWaybillLine CreateBodyLine()
 		{
@@ -55,7 +56,7 @@ namespace PriceProcessor.Test.Waybills
 			return documentLine;
 		}
 
-		[Test(Description = "ÒÓÁ‰‡ÂÏ Á‡‰‡˜Û Ì‡ ‡Á·Ó ÒÂÚËÙËÍ‡Ú‡")]
+		[Test(Description = "—Å–æ–∑–¥–∞–µ–º –∑–∞–¥–∞—á—É –Ω–∞ —Ä–∞–∑–±–æ—Ä —Å–µ—Ä—Ç–∏—Ñ–∏–∫–∞—Ç–∞")]
 		public void SimpleCreateTask()
 		{
 			var documentLine = CreateBodyLine();
@@ -74,12 +75,12 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(task.Id, Is.GreaterThan(0));
 		}
 
-		[Test(Description = "ÒÓÁ‰‡ÂÏ Á‡‰‡˜Û Ì‡ ‡Á·Ó ÒÂÚËÙËÍ‡Ú‡ Ò ÔÓ‚ÚÓÂÌËÂÏ ÛÌËÍ‡Î¸ÌÓ„Ó ÍÎ˛˜‡")]
+		[Test(Description = "—Å–æ–∑–¥–∞–µ–º –∑–∞–¥–∞—á—É –Ω–∞ —Ä–∞–∑–±–æ—Ä —Å–µ—Ä—Ç–∏—Ñ–∏–∫–∞—Ç–∞ —Å –ø–æ–≤—Ç–æ—Ä–µ–Ω–∏–µ–º —É–Ω–∏–∫–∞–ª—å–Ω–æ–≥–æ –∫–ª—é—á–∞")]
 		public void CreateTaskOnUniqueKey()
 		{
 			var documentLine = CreateBodyLine();
 			var catalog = TestCatalogProduct.Queryable.First();
-			var serialNumber = "Ã‡Ï‡ Ï˚Î‡ ‡ÏÛ";
+			var serialNumber = "–ú–∞–º–∞ –º—ã–ª–∞ —Ä–∞–º—É";
 			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
 
 			using (new TransactionScope()) {
@@ -103,7 +104,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var doubleTask = new CertificateTask {
 				CatalogProduct = task.CatalogProduct,
-				SerialNumber = "Ï¿Ã¿ Ï˚Î‡ ¿Ã”",
+				SerialNumber = "–º–ê–ú–ê –º—ã–ª–∞ —Ä–ê–ú–£",
 				DocumentLine = doubleRealDocumentLine
 			};
 
@@ -112,7 +113,7 @@ namespace PriceProcessor.Test.Waybills
 					doubleTask.Create();
 				}
 
-				Assert.Fail("œË ÒÓı‡ÌÂÌËË ‰ÓÎÊÌ˚ ·˚ÎË ÔÓÎÛ˜ËÚ¸ ËÒÍÎ˛˜ÂÌËÂ Ò Ì‡Û¯ÂÌËÂÏ ÛÌËÍ‡Î¸ÌÓ„Ó ÍÎ˛˜‡");
+				Assert.Fail("–ü—Ä–∏ —Å–æ—Ö—Ä–∞–Ω–µ–Ω–∏–∏ –¥–æ–ª–∂–Ω—ã –±—ã–ª–∏ –ø–æ–ª—É—á–∏—Ç—å –∏—Å–∫–ª—é—á–µ–Ω–∏–µ —Å –Ω–∞—Ä—É—à–µ–Ω–∏–µ–º —É–Ω–∏–∫–∞–ª—å–Ω–æ–≥–æ –∫–ª—é—á–∞");
 			}
 			catch (Exception exception) {
 				if (!ExceptionHelper.IsDuplicateEntryExceptionInChain(exception))
@@ -120,8 +121,8 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test(Description = "ÒÓÁ‰‡ÂÏ ÒÂÚËÙËÍ‡Ú")]
-		public void SimpleCreateCertifacate()
+		[Test(Description = "—Å–æ–∑–¥–∞–µ–º —Å–µ—Ä—Ç–∏—Ñ–∏–∫–∞—Ç")]
+		public void SimpleCreateCertificate()
 		{
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = Path.GetRandomFileName();
@@ -147,16 +148,16 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
 		}
 
-		[Test(Description = "ÒÓÁ‰‡ÂÏ ÒÂÚËÙËÍ‡Ú Ò ÔÓ‚ÚÓÂÌËÂÏ ÛÌËÍ‡Î¸ÌÓ„Ó ÍÎ˛˜‡")]
-		public void CreateCertifacateOnUniqueKey()
+		[Test(Description = "—Å–æ–∑–¥–∞–µ–º —Å–µ—Ä—Ç–∏—Ñ–∏–∫–∞—Ç —Å –ø–æ–≤—Ç–æ—Ä–µ–Ω–∏–µ–º —É–Ω–∏–∫–∞–ª—å–Ω–æ–≥–æ –∫–ª—é—á–∞")]
+		public void CreateCertificateOnUniqueKey()
 		{
 			var catalog = TestCatalogProduct.Queryable.First();
-			var serialNumber = "Ã‡Ï‡ Ï˚Î‡ ‡ÏÛ";
+			var serialNumber = "–ú–∞–º–∞ –º—ã–ª–∞ —Ä–∞–º—É";
 
 			using (new TransactionScope()) {
-				var certifacates =
+				var certificates =
 					Certificate.Queryable.Where(c => c.SerialNumber.Equals(serialNumber)).ToList();
-				certifacates.ForEach(c => c.Delete());
+				certificates.ForEach(c => c.Delete());
 			}
 
 			var certificate = new Certificate();
@@ -179,22 +180,83 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(certificate.Id, Is.GreaterThan(0));
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
 
-			var double—ertificate = new Certificate {
+			var double–°ertificate = new Certificate {
 				CatalogProduct = certificate.CatalogProduct,
-				SerialNumber = "Ï¿Ã¿ Ï˚Î‡ ¿Ã”"
+				SerialNumber = "–º–ê–ú–ê –º—ã–ª–∞ —Ä–ê–ú–£"
 			};
 
 			try {
 				using (new TransactionScope()) {
-					double—ertificate.Create();
+					double–°ertificate.Create();
 				}
 
-				Assert.Fail("œË ÒÓı‡ÌÂÌËË ‰ÓÎÊÌ˚ ·˚ÎË ÔÓÎÛ˜ËÚ¸ ËÒÍÎ˛˜ÂÌËÂ Ò Ì‡Û¯ÂÌËÂÏ ÛÌËÍ‡Î¸ÌÓ„Ó ÍÎ˛˜‡");
+				Assert.Fail("–ü—Ä–∏ —Å–æ—Ö—Ä–∞–Ω–µ–Ω–∏–∏ –¥–æ–ª–∂–Ω—ã –±—ã–ª–∏ –ø–æ–ª—É—á–∏—Ç—å –∏—Å–∫–ª—é—á–µ–Ω–∏–µ —Å –Ω–∞—Ä—É—à–µ–Ω–∏–µ–º —É–Ω–∏–∫–∞–ª—å–Ω–æ–≥–æ –∫–ª—é—á–∞");
 			}
 			catch (Exception exception) {
 				if (!ExceptionHelper.IsDuplicateEntryExceptionInChain(exception))
 					throw;
 			}
+		}
+
+		[Test(Description = "—Å–æ–∑–¥–∞–µ–º —Å–µ—Ä—Ç–∏—Ñ–∏–∫–∞—Ç —Å –ø–æ–≤—Ç–æ—Ä–µ–Ω–∏–µ–º —É–Ω–∏–∫–∞–ª—å–Ω–æ–≥–æ –∫–ª—é—á–∞ –∏ –∏—Å–ø—Ä–∞–≤–ª—è–µ–º –æ—à–∏–±–∫—É –≤ –æ–¥–Ω–æ–π —Ç—Ä–∞–Ω–∑–∞–∫—Ü–∏–∏")]
+		public void CreateTaskWithUniqueKeyAndCorrect()
+		{
+			var documentLine = CreateBodyLine();
+			var catalog = TestCatalogProduct.Queryable.First();
+			var serialNumber = "–ú–∞–º–∞ –º—ã–ª–∞ —Ä–∞–º—É";
+			var anotherSerialNumber = "–ü–∞–ø–∞ –º—ã–ª–∞ —Ä–∞–º—É";
+			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			using (new TransactionScope()) {
+				var certificateTasks =
+					CertificateTask.Queryable.Where(c => c.SerialNumber.Equals(serialNumber)).ToList();
+				certificateTasks.ForEach(c => c.Delete());
+			}
+
+			using (new TransactionScope()) {
+				var certificateTasks =
+					CertificateTask.Queryable.Where(c => c.SerialNumber.Equals(anotherSerialNumber)).ToList();
+				certificateTasks.ForEach(c => c.Delete());
+			}
+
+			var task = new CertificateTask();
+			using (new TransactionScope()) {
+				task.CatalogProduct = Catalog.Find(catalog.Id);
+				task.SerialNumber = serialNumber;
+				task.DocumentLine = realDocumentLine;
+				task.Create();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+
+			var doubleDocumentLine = CreateBodyLine();
+			var doubleRealDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			var doubleTask = new CertificateTask {
+				CatalogProduct = task.CatalogProduct,
+				SerialNumber = "–º–ê–ú–ê –º—ã–ª–∞ —Ä–ê–ú–£",
+				DocumentLine = doubleRealDocumentLine
+			};
+
+			using (var transaction = new TransactionScope()) {
+
+				//–ï—Å–ª–∏ –≤ —Ç—Ä–∞–Ω–∑–∞–∫—Ü–∏–∏ –≤–æ–∑–Ω–∏–∫–∞–µ—Ç –æ—à–∏–±–∫–∞ DuplicateEntry, —Ç–æ —Ç—Ä–∞–Ω–∑–∞–∫—Ü–∏—è –æ—Ç–∫–∞—Ç—ã–≤–∞–µ—Ç—Å—è
+				//–ø–æ—ç—Ç–æ–º—É –ø–µ—Ä–µ–¥ —Å–æ—Ö—Ä–∞–Ω–µ–Ω–∏–µ–º –Ω–∞–¥–æ –ø—Ä–æ–≤–µ—Ä—è—Ç—å, —á—Ç–æ —Ç–∞–∫–æ–µ –∑–∞–¥–∞–Ω–∏–µ –Ω–µ —Å—É—â–µ—Å—Ç–≤—É–µ—Ç
+				var existsTask = CertificateTask.Exists(
+					DetachedCriteria.For<CertificateTask>()
+						.Add(Restrictions.Eq("CatalogProduct.Id", task.CatalogProduct.Id))
+						.Add(Restrictions.Eq("SerialNumber", doubleTask.SerialNumber)));
+
+				if (existsTask)
+					doubleTask.SerialNumber = anotherSerialNumber;
+
+				doubleTask.Create();
+
+				transaction.VoteCommit();
+			}
+
+			Assert.That(doubleTask.Id, Is.GreaterThan(0));
+			Assert.That(doubleTask.Id, Is.Not.EqualTo(task.Id));
 		}
 
 	}

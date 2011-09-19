@@ -1,4 +1,4 @@
-using Castle.ActiveRecord;
+п»їusing Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
 
@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public virtual Catalog CatalogProduct { get; set; }
 
 		/// <summary>
-		/// Серийный номер продукта
+		/// РЎРµСЂРёР№РЅС‹Р№ РЅРѕРјРµСЂ РїСЂРѕРґСѓРєС‚Р°
 		/// </summary>
 		[Property]
 		public string SerialNumber { get; set; }

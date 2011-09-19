@@ -1,4 +1,4 @@
-using Castle.ActiveRecord;
+п»їusing Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public virtual Certificate Certificate { get; set; }
 
 		/// <summary>
-		/// Оригинальное имя файла сертификата
+		/// РћСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° СЃРµСЂС‚РёС„РёРєР°С‚Р°
 		/// </summary>
 		[Property]
 		public string OriginFilename { get; set; }
