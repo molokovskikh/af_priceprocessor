@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
-using Common.Tools;
-using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using log4net;
 using Castle.ActiveRecord.Framework;
 
-namespace Inforoom.PriceProcessor.Waybills
+namespace Inforoom.PriceProcessor.Waybills.Models
 {
 	[ActiveRecord("Document_logs", Schema = "logs")]
 	public class DocumentReceiveLog : ActiveRecordLinqBase<DocumentReceiveLog>
@@ -75,7 +74,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,					
-                    Supplier.Name,
+					Supplier.Name,
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));
 				return Path.Combine(documentDir, file);

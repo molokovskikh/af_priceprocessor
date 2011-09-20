@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
     public class SiaVoronezhParser : BaseIndexingParser
     {
-        protected virtual void SetIndexes()
+        protected override void SetIndexes()
         {
             InvoiceNumberIndex = 0;
             InvoiceDateIndex = 1;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 {
@@ -12,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			document.ProviderDocumentId = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Номер").Value;
 			var docDate = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Дата").Value;
 			if (!String.IsNullOrEmpty(docDate))
-                document.DocumentDate = Convert.ToDateTime(docDate);
+				document.DocumentDate = Convert.ToDateTime(docDate);
 			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар"))
 			{
 				var line = document.NewLine();

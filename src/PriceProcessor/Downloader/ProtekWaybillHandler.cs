@@ -6,7 +6,9 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
@@ -35,8 +37,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		[PrimaryKey("RowId")]
 		public virtual uint Id { get; set; }
 
-        [Property]
-        public DateTime WriteTime { get; set; }
+		[Property]
+		public DateTime WriteTime { get; set; }
 
 		[Property]
 		public virtual uint? AddressId { get; set; }
@@ -47,37 +49,37 @@ namespace Inforoom.PriceProcessor.Downloader
 		[BelongsTo("PriceCode")]
 		public virtual Price Price { get; set; }
 
-        [HasMany(ColumnKey = "OrderId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
-        public IList<OrderItem> Items { get; set; }
+		[HasMany(ColumnKey = "OrderId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
+		public IList<OrderItem> Items { get; set; }
 	}
 
-    [ActiveRecord("OrdersList", Schema = "Orders")]
+	[ActiveRecord("OrdersList", Schema = "Orders")]
 	public class OrderItem : ActiveRecordLinqBase<OrderItem>
-    {
-        [PrimaryKey("RowId")]
-        public uint Id { get; set; }
+	{
+		[PrimaryKey("RowId")]
+		public uint Id { get; set; }
 
-        [Property]
-        public uint? Quantity { get; set; }
+		[Property]
+		public uint? Quantity { get; set; }
 
-        [Property]
-        public ulong? CoreId { get; set; }
+		[Property]
+		public ulong? CoreId { get; set; }
 
-        [Property]
-        public float? Cost { get; set; }
+		[Property]
+		public float? Cost { get; set; }
 
-        [Property]
-        public string Code { get; set; }
+		[Property]
+		public string Code { get; set; }
 
-        [BelongsTo("OrderId")]
-        public OrderHead Order { get; set; }
-    }
+		[BelongsTo("OrderId")]
+		public OrderHead Order { get; set; }
+	}
 
 
 	public class ProtekWaybillHandler : AbstractHandler
 	{
 		private string uri;
-        private IList<OrderHead> orders = new List<OrderHead>();
+		private IList<OrderHead> orders = new List<OrderHead>();
 
 		public virtual void WithService(Action<ProtekService> action)
 		{
@@ -220,10 +222,10 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.Log.Save();
 								document.Save();
 								scope.VoteCommit();
-                                WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
+								WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
-                            
+							
 						}
 					}
 				}
@@ -237,19 +239,19 @@ namespace Inforoom.PriceProcessor.Downloader
 		private Document ToDocument(Blading blading, ref DocumentReceiveLog log)
 		{
 			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
-		    
-            IList<uint> orderIds = new List<uint>();
+			
+			IList<uint> orderIds = new List<uint>();
 
-            if(orderId != null) orderIds.Add(orderId.Value);
-            orders.Clear(); // очистка списка заказов
+			if(orderId != null) orderIds.Add(orderId.Value);
+			orders.Clear(); // очистка списка заказов
 
-            if (orderId == null && blading.bladingFolder != null) // если заказы объединены (накладной соответствует несколько заказов)
-            {
-                orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
-                orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
-            }
+			if (orderId == null && blading.bladingFolder != null) // если заказы объединены (накладной соответствует несколько заказов)
+			{
+				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
+				orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
+			}
 
-		    if (orderId == null)
+			if (orderId == null)
 			{
 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
@@ -265,12 +267,12 @@ namespace Inforoom.PriceProcessor.Downloader
 					blading.baseId);
 				return null;
 			}
-           
-		    foreach (var id in orderIds)
-		    {
-		        var ord = OrderHead.TryFind(id);
-                if(ord != null) orders.Add(ord);
-		    }
+		   
+			foreach (var id in orderIds)
+			{
+				var ord = OrderHead.TryFind(id);
+				if(ord != null) orders.Add(ord);
+			}
 
 			log = new DocumentReceiveLog 
 			{

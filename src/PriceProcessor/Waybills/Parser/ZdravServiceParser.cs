@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
@@ -13,19 +14,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return new PulsFKParser{Encdoing = Encoding.GetEncoding(1251)}.Parse(file, document);
 		}
 
-        public static bool CheckFileFormat(string file)
-        {
-            if (Path.GetExtension(file.ToLower()) != ".dbf")
-                return false;
+		public static bool CheckFileFormat(string file)
+		{
+			if (Path.GetExtension(file.ToLower()) != ".dbf")
+				return false;
 
-            var data = Dbf.Load(file);
-            return data.Columns.Contains("NDOC")
-                    && data.Columns.Contains("CNTR")
-                    && data.Columns.Contains("SERTIF")
-                    && data.Columns.Contains("GDATE")
-                    && data.Columns.Contains("QNT")
-                    && !data.Columns.Contains("PROVIDER")
-                    && !data.Columns.Contains("CONSIGNOR");
-        }
+			var data = Dbf.Load(file);
+			return data.Columns.Contains("NDOC")
+					&& data.Columns.Contains("CNTR")
+					&& data.Columns.Contains("SERTIF")
+					&& data.Columns.Contains("GDATE")
+					&& data.Columns.Contains("QNT")
+					&& !data.Columns.Contains("PROVIDER")
+					&& !data.Columns.Contains("CONSIGNOR");
+		}
 	}
 }

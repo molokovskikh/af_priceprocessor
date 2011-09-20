@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
@@ -18,11 +19,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			var parser = GetParser();
 			parser.ToDocument(document, data);
-            PostParsing(document);
+			PostParsing(document);
 			return document;
 		}
 
 		public abstract DbfParser GetParser();
-	    public virtual void PostParsing(Document doc) { return; } // Если требуется дополнительная обработка документа после разбора
+		public virtual void PostParsing(Document doc) { return; } // Если требуется дополнительная обработка документа после разбора
 	}
 }

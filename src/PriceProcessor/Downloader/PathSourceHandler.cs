@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections;
 using System.Data;
 using System.IO;
@@ -8,7 +8,6 @@ using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using FileHelper=Inforoom.PriceProcessor.FileHelper;
-using Inforoom.PriceProcessor;
 
 namespace Inforoom.Downloader
 {
@@ -33,13 +32,13 @@ namespace Inforoom.Downloader
 	public abstract class PathSourceHandler : BasePriceSourceHandler
 	{
 		/// <summary>
-		/// Коллекция источников, поледнее обращение к которым завершилось неудачей
+		/// РљРѕР»Р»РµРєС†РёСЏ РёСЃС‚РѕС‡РЅРёРєРѕРІ, РїРѕР»РµРґРЅРµРµ РѕР±СЂР°С‰РµРЅРёРµ Рє РєРѕС‚РѕСЂС‹Рј Р·Р°РІРµСЂС€РёР»РѕСЃСЊ РЅРµСѓРґР°С‡РµР№
 		/// </summary>
 		protected ArrayList FailedSources = new ArrayList();
 
 		protected override void ProcessData()
 		{
-			//набор строк похожих источников
+			//РЅР°Р±РѕСЂ СЃС‚СЂРѕРє РїРѕС…РѕР¶РёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ
 			FillSourcesTable();
 			while (dtSources.Rows.Count > 0)
 			{
@@ -82,10 +81,10 @@ namespace Inforoom.Downloader
 							try
 							{
 								if (!correctArchive)
-									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'. Файл поврежден", CurrFileName);
+									throw new PricePreprocessingException("РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїР°РєРѕРІР°С‚СЊ С„Р°Р№Р» '" + Path.GetFileName(CurrFileName) + "'. Р¤Р°Р№Р» РїРѕРІСЂРµР¶РґРµРЅ", CurrFileName);
 
 								if (!ProcessPriceFile(CurrFileName, out extractFile, priceSource.SourceTypeId))
-									throw new PricePreprocessingException("Не удалось обработать файл '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
+									throw new PricePreprocessingException("РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р» '" + Path.GetFileName(CurrFileName) + "'", CurrFileName);
 
 								LogDownloadedPrice(priceSource.SourceTypeId, Path.GetFileName(CurrFileName), extractFile);
 								FileProcessed();
@@ -119,16 +118,16 @@ namespace Inforoom.Downloader
 					{
 						error += String.Join(", ", drLS.Select(r => r[SourcesTableColumns.colPriceCode].ToString()).ToArray());
 						drLS.Each(r => FileHelper.Safe(r.Delete));
-						error = "Источники : " + error;
+						error = "РСЃС‚РѕС‡РЅРёРєРё : " + error;
 					}
 					else
 					{
-						error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
+						error = String.Format("РСЃС‚РѕС‡РЅРёРє : {0}", currentSource[SourcesTableColumns.colPriceCode]);
 						FileHelper.Safe(currentSource.Delete);
 					}
 					error += Environment.NewLine + Environment.NewLine + ex;
-                    if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-					    LoggingToService(error);
+					if (!ex.ToString().Contains("РџРѕС‚РѕРє РЅР°С…РѕРґРёР»СЃСЏ РІ РїСЂРѕС†РµСЃСЃРµ РїСЂРµСЂС‹РІР°РЅРёСЏ"))
+						LoggingToService(error);
 				}
 				finally
 				{
@@ -138,15 +137,15 @@ namespace Inforoom.Downloader
 		}
 
 		/// <summary>
-		/// Проверяет, истек ли интервал, спустя который нужно обращаться к источнику
+		/// РџСЂРѕРІРµСЂСЏРµС‚, РёСЃС‚РµРє Р»Рё РёРЅС‚РµСЂРІР°Р», СЃРїСѓСЃС‚СЏ РєРѕС‚РѕСЂС‹Р№ РЅСѓР¶РЅРѕ РѕР±СЂР°С‰Р°С‚СЊСЃСЏ Рє РёСЃС‚РѕС‡РЅРёРєСѓ
 		/// </summary>
 		/// <returns>
-		/// true - интервал истек, нужно обратиться
-		/// false - интервал еще не истек, не нужно обращаться
+		/// true - РёРЅС‚РµСЂРІР°Р» РёСЃС‚РµРє, РЅСѓР¶РЅРѕ РѕР±СЂР°С‚РёС‚СЊСЃСЏ
+		/// false - РёРЅС‚РµСЂРІР°Р» РµС‰Рµ РЅРµ РёСЃС‚РµРє, РЅРµ РЅСѓР¶РЅРѕ РѕР±СЂР°С‰Р°С‚СЊСЃСЏ
 		/// </returns>
 		protected bool IsReadyForDownload(PriceSource source)
 		{
-			// downloadInterval - в секундах
+			// downloadInterval - РІ СЃРµРєСѓРЅРґР°С…
 			if (FailedSources.Contains(source.PriceItemId))
 			{
 				FailedSources.Remove(source.PriceItemId);
@@ -158,7 +157,7 @@ namespace Inforoom.Downloader
 		private bool ProcessArchiveIfNeeded(PriceSource priceSource)
 		{
 			bool CorrectArchive = true;
-			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+			//РЇРІР»СЏРµС‚СЃСЏ Р»Рё СЃРєР°С‡Р°РЅРЅС‹Р№ С„Р°Р№Р» РєРѕСЂСЂРµРєС‚РЅС‹Рј, РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РЅРµ Р±СѓРґРµРј
 			if (ArchiveHelper.IsArchive(CurrFileName))
 			{
 				if (ArchiveHelper.TestArchive(CurrFileName, priceSource.ArchivePassword))
@@ -187,18 +186,18 @@ namespace Inforoom.Downloader
 		protected override PriceProcessItem CreatePriceProcessItem(string normalName)
 		{
 			var item = base.CreatePriceProcessItem(normalName);
-			//устанавливаем время загрузки файла
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РІСЂРµРјСЏ Р·Р°РіСЂСѓР·РєРё С„Р°Р№Р»Р°
 			item.FileTime = CurrPriceDate;
 			return item;
 		}
 
 		/// <summary>
-		/// Получает файл из источника, взятого из таблицы первым
+		/// РџРѕР»СѓС‡Р°РµС‚ С„Р°Р№Р» РёР· РёСЃС‚РѕС‡РЅРёРєР°, РІР·СЏС‚РѕРіРѕ РёР· С‚Р°Р±Р»РёС†С‹ РїРµСЂРІС‹Рј
 		/// </summary>
 		protected abstract void GetFileFromSource(PriceSource row);
 
 		/// <summary>
-		/// Получить прайс-листы, у которых истоники совпадают с первым в списке
+		/// РџРѕР»СѓС‡РёС‚СЊ РїСЂР°Р№СЃ-Р»РёСЃС‚С‹, Сѓ РєРѕС‚РѕСЂС‹С… РёСЃС‚РѕРЅРёРєРё СЃРѕРІРїР°РґР°СЋС‚ СЃ РїРµСЂРІС‹Рј РІ СЃРїРёСЃРєРµ
 		/// </summary>
 		protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
 
@@ -207,9 +206,9 @@ namespace Inforoom.Downloader
 
 	public class PathSourceHandlerException : Exception
 	{
-		public static string NetworkErrorMessage = "Ошибка сетевого соединения";
+		public static string NetworkErrorMessage = "РћС€РёР±РєР° СЃРµС‚РµРІРѕРіРѕ СЃРѕРµРґРёРЅРµРЅРёСЏ";
 
-		public static string ThreadAbortErrorMessage = "Загрузка файла была прервана";
+		public static string ThreadAbortErrorMessage = "Р—Р°РіСЂСѓР·РєР° С„Р°Р№Р»Р° Р±С‹Р»Р° РїСЂРµСЂРІР°РЅР°";
 
 		public PathSourceHandlerException()
 		{ }

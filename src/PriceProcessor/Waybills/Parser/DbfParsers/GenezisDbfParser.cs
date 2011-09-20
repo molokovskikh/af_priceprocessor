@@ -3,6 +3,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using ExcelLibrary.BinaryFileFormat;
 using ExcelLibrary.SpreadSheet;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 {

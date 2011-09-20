@@ -9,7 +9,6 @@ using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using Inforoom.Common;
-using Inforoom.PriceProcessor;
 using FileHelper=Inforoom.Common.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 

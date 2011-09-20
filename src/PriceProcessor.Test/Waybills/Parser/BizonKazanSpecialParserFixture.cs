@@ -1,5 +1,7 @@
 ﻿using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 

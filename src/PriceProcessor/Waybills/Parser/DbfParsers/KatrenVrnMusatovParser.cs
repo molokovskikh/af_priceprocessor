@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Common.Tools;
 using System.IO;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {

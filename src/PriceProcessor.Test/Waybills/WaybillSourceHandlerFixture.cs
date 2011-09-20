@@ -4,17 +4,16 @@ using System.Linq;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using Inforoom.Downloader;
-using Inforoom.PriceProcessor;
 using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
-using LumiSoft.Net;
 
 namespace PriceProcessor.Test
 {

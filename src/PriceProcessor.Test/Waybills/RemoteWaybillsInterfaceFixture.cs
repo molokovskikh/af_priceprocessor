@@ -7,7 +7,9 @@ using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 using Test.Support;
 
@@ -181,7 +183,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(log.Count, Is.EqualTo(1));
 
 				//var Supplier_ShortName = Supplier.Queryable.Where(s => s.Id == 1179).Select(s => s.ShortName).Single().ToString();
-                var Supplier_ShortName = Supplier.Queryable.Where(s => s.Id == 1179).Select(s => s.Name).Single().ToString();
+				var Supplier_ShortName = Supplier.Queryable.Where(s => s.Id == 1179).Select(s => s.Name).Single().ToString();
 				var filename = GetRemoteFileNameExt(Supplier_ShortName, document.AddressId, document.ClientCode, file, log[0].Id);
 				Assert.That(log[0].FileName, Is.EqualTo(Path.GetFileNameWithoutExtension(filename) + ".dbf"));
 

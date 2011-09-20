@@ -1,4 +1,6 @@
-﻿using Inforoom.PriceProcessor.Waybills;
+﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser

@@ -1,8 +1,8 @@
-﻿using System;
-using Castle.ActiveRecord;
+﻿using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
-using Inforoom.PriceProcessor.Waybills;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {

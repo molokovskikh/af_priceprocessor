@@ -9,6 +9,7 @@ using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using MySql.Data.MySqlClient;

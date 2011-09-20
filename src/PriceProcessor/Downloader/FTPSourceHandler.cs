@@ -1,19 +1,14 @@
- using System;
- using System.Collections;
- using System.Collections.Generic;
- using System.IO;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Data;
 using System.Net.Sockets;
- using Common.Tools;
- using Inforoom.PriceProcessor;
- using log4net;
- using LumiSoft.Net.FTP;
-using LumiSoft.Net.FTP.Client;
+using Common.Tools;
 using Inforoom.PriceProcessor;
-using Inforoom.Common;
-using LumiSoft.Net;
+using log4net;
+using LumiSoft.Net.FTP.Client;
 using System.Threading;
- using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader.Ftp
 {

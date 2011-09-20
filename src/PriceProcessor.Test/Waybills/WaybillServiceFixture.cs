@@ -9,7 +9,9 @@ using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using NHibernate.Criterion;
 using NUnit.Framework;
 using PriceProcessor.Test.Waybills.Parser;
@@ -173,11 +175,11 @@ namespace PriceProcessor.Test.Waybills
 				product.SaveAndFlush();
 
 				var productSynonym = new TestSynonym
-				                     	{
-				                     		ProductId = (int?)product.Id,
-				                     		Synonym = "Коринфар таб п/о 10мг № 50",
-				                     		PriceCode = (int?) price.Id
-				                     	};
+										{
+											ProductId = (int?)product.Id,
+											Synonym = "Коринфар таб п/о 10мг № 50",
+											PriceCode = (int?) price.Id
+										};
 				
 				productSynonym.SaveAndFlush();
 
@@ -191,9 +193,9 @@ namespace PriceProcessor.Test.Waybills
 
 
 				producer1 = new TestProducer
-				               	{
+								{
 									Name = "Тестовый производитель",
-				               	};
+								};
 				producer1.SaveAndFlush();
 
 				producer2 = new TestProducer
@@ -204,19 +206,19 @@ namespace PriceProcessor.Test.Waybills
 
 			
 				var producerSynonym = new TestProducerSynonym
-				                      	{
-				                      		Price = price,
-				                      		Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
-				                      		Producer = null
+										{
+											Price = price,
+											Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+											Producer = null
 										};
 				producerSynonym.SaveAndFlush();
 
 				producerSynonym = new TestProducerSynonym
-				                      	{
-				                      		Price = price,
-				                      		Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
-				                      		Producer = producer1
-				                      	};
+										{
+											Price = price,
+											Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+											Producer = producer1
+										};
 				producerSynonym.SaveAndFlush();
 
 				producerSynonym = new TestProducerSynonym
@@ -257,7 +259,6 @@ namespace PriceProcessor.Test.Waybills
 			TestSupplier supplier;
 			TestPrice price;
 			TestDocumentLog log;
-			TestSynonym productSynonym;
 
 			using (new SessionScope())
 			{
@@ -523,8 +524,8 @@ namespace PriceProcessor.Test.Waybills
 				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015"};
 				core.SaveAndFlush();
 
-                core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
-                core.SaveAndFlush();
+				core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
+				core.SaveAndFlush();
 			}
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
@@ -553,7 +554,7 @@ namespace PriceProcessor.Test.Waybills
 				var file_dbf = files_dbf.Where(f => f.Contains(supplier.Name)).Select(f => f).First();					
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
-                Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
+				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
 				Assert.IsTrue(data.Columns.Contains("name_artis"));
 				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));				
 				Assert.IsTrue(data.Columns.Contains("przv_artis"));
@@ -626,117 +627,117 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-        [Test]
-        public void Document_invoice_test()
-        {
-            Document doc;
-            using (new SessionScope())
-            {                
-                TestSupplier testsupplier = (TestSupplier)TestSupplier.FindFirst();
-                Supplier supplier = Supplier.Find(testsupplier.Id);
-                
-                TestDrugstoreSettings settings = TestDrugstoreSettings.FindFirst();
-                TestOrder order = TestOrder.FindFirst();
+		[Test]
+		public void Document_invoice_test()
+		{
+			Document doc;
+			using (new SessionScope())
+			{                
+				TestSupplier testsupplier = (TestSupplier)TestSupplier.FindFirst();
+				Supplier supplier = Supplier.Find(testsupplier.Id);
+				
+				TestDrugstoreSettings settings = TestDrugstoreSettings.FindFirst();
+				TestOrder order = TestOrder.FindFirst();
 
-                TestAddress address = TestAddress.FindFirst();
-                DocumentReceiveLog log = new DocumentReceiveLog()
-                {
-                    Supplier = supplier,
-                    ClientCode = settings.Id,
-                    AddressId = address.Id,
-                    MessageUid = 123,
-                    DocumentSize = 100
-                };
+				TestAddress address = TestAddress.FindFirst();
+				DocumentReceiveLog log = new DocumentReceiveLog()
+				{
+					Supplier = supplier,
+					ClientCode = settings.Id,
+					AddressId = address.Id,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
 
-                doc = new Document(log)
-                {
-                    OrderId = order.Id,
-                    AddressId = address.Id,
-                    DocumentDate = DateTime.Now                    
-                };
-                Invoice inv = doc.SetInvoice();                
-                inv.BuyerName = "Тестовый покупатель";
+				doc = new Document(log)
+				{
+					OrderId = order.Id,
+					AddressId = address.Id,
+					DocumentDate = DateTime.Now                    
+				};
+				Invoice inv = doc.SetInvoice();                
+				inv.BuyerName = "Тестовый покупатель";
 
-                log.Save();
-                doc.Save();
-            }
+				log.Save();
+				doc.Save();
+			}
 
-            using (new SessionScope())
-            {
-                Document doc2 = Document.Find(doc.Id);
-                Assert.That(doc2, Is.Not.Null);
-                Assert.That(doc2.Invoice, Is.Not.Null);
-                Assert.That(doc2.Invoice.Id, Is.EqualTo(doc.Id));
-                Assert.That(doc2.Invoice.BuyerName, Is.EqualTo("Тестовый покупатель"));
+			using (new SessionScope())
+			{
+				Document doc2 = Document.Find(doc.Id);
+				Assert.That(doc2, Is.Not.Null);
+				Assert.That(doc2.Invoice, Is.Not.Null);
+				Assert.That(doc2.Invoice.Id, Is.EqualTo(doc.Id));
+				Assert.That(doc2.Invoice.BuyerName, Is.EqualTo("Тестовый покупатель"));
 
-                Invoice inv2 = Invoice.Find(doc.Id);
-                Assert.That(inv2, Is.Not.Null);
-                Assert.That(inv2.Id, Is.EqualTo(doc.Id));
-                Assert.That(inv2.Document, Is.Not.Null);
-                Assert.That(inv2.Document.Id, Is.EqualTo(doc.Id));
-                Assert.That(inv2.Document.AddressId, Is.EqualTo(doc.AddressId));
-                Assert.That(inv2.BuyerName, Is.EqualTo("Тестовый покупатель"));
-            }
-        }
+				Invoice inv2 = Invoice.Find(doc.Id);
+				Assert.That(inv2, Is.Not.Null);
+				Assert.That(inv2.Id, Is.EqualTo(doc.Id));
+				Assert.That(inv2.Document, Is.Not.Null);
+				Assert.That(inv2.Document.Id, Is.EqualTo(doc.Id));
+				Assert.That(inv2.Document.AddressId, Is.EqualTo(doc.AddressId));
+				Assert.That(inv2.BuyerName, Is.EqualTo("Тестовый покупатель"));
+			}
+		}
 
-        [Test]
-        public void Convert_if_exist_ean13_field()
-        {
-            var doc = WaybillParser.Parse("69565_0.dbf");
-            var invoice = doc.Invoice;
-            Assert.That(invoice, Is.Not.Null);
-            using (new TransactionScope())
-            {
-                TestSupplier testsupplier = (TestSupplier) TestSupplier.FindFirst();
-                Supplier supplier = Supplier.Find(testsupplier.Id);
-                TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
-                TestOrder order = TestOrder.FindFirst();
-                TestAddress address = TestAddress.FindFirst();
-                DocumentReceiveLog log = new DocumentReceiveLog()
-                                             {
-                                                 Supplier = supplier,
-                                                 ClientCode = settings.Id,
-                                                 AddressId = address.Id,
-                                                 MessageUid = 123,
-                                                 DocumentSize = 100
-                                             };
+		[Test]
+		public void Convert_if_exist_ean13_field()
+		{
+			var doc = WaybillParser.Parse("69565_0.dbf");
+			var invoice = doc.Invoice;
+			Assert.That(invoice, Is.Not.Null);
+			using (new TransactionScope())
+			{
+				TestSupplier testsupplier = (TestSupplier) TestSupplier.FindFirst();
+				Supplier supplier = Supplier.Find(testsupplier.Id);
+				TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
+				TestOrder order = TestOrder.FindFirst();
+				TestAddress address = TestAddress.FindFirst();
+				DocumentReceiveLog log = new DocumentReceiveLog()
+											 {
+												 Supplier = supplier,
+												 ClientCode = settings.Id,
+												 AddressId = address.Id,
+												 MessageUid = 123,
+												 DocumentSize = 100
+											 };
 
-                doc.Log = log;
-                doc.OrderId = order.Id;
-                doc.AddressId = address.Id;
-                doc.FirmCode = log.Supplier.Id;
-                doc.ClientCode = (uint) log.ClientCode;
+				doc.Log = log;
+				doc.OrderId = order.Id;
+				doc.AddressId = address.Id;
+				doc.FirmCode = log.Supplier.Id;
+				doc.ClientCode = (uint) log.ClientCode;
 
-                doc.SetProductId();
+				doc.SetProductId();
 
-                var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
-                Directory.Delete(path, true);
-                
-                WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
+				var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
+				Directory.Delete(path, true);
+				
+				WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
 
-                var files_dbf = Directory.GetFiles(path, "*.dbf");
-                Assert.That(files_dbf.Count(), Is.EqualTo(1));
-                var file_dbf = files_dbf.Select(f => f).First();
-                var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
-                Assert.IsTrue(data.Columns.Contains("ean13"));
-                Assert.That(data.Rows[0]["ean13"], Is.EqualTo("5944700100019"));
-            }            
-        }
+				var files_dbf = Directory.GetFiles(path, "*.dbf");
+				Assert.That(files_dbf.Count(), Is.EqualTo(1));
+				var file_dbf = files_dbf.Select(f => f).First();
+				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+				Assert.IsTrue(data.Columns.Contains("ean13"));
+				Assert.That(data.Rows[0]["ean13"], Is.EqualTo("5944700100019"));
+			}            
+		}
 
-        [Test]
-        public void RemoveDoubleSpacesTest()
-        {
-            IList<string> ls = new List<string>();
-            ls.Add(" aaa         bbbb ccc       ddd ");
-            ls.Add(String.Empty);
-            ls.Add(null);
-              
-        	ls = ls.Select(l => l.RemoveDoubleSpaces()).ToList();
+		[Test]
+		public void RemoveDoubleSpacesTest()
+		{
+			IList<string> ls = new List<string>();
+			ls.Add(" aaa         bbbb ccc       ddd ");
+			ls.Add(String.Empty);
+			ls.Add(null);
+			  
+			ls = ls.Select(l => l.RemoveDoubleSpaces()).ToList();
 
-            Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));
-            Assert.That(ls[1], Is.EqualTo(String.Empty));
-            Assert.That(ls[2], Is.EqualTo(String.Empty));
-        }
+			Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));
+			Assert.That(ls[1], Is.EqualTo(String.Empty));
+			Assert.That(ls[2], Is.EqualTo(String.Empty));
+		}
 
 		[Test(Description = "Пытаемся разобрать накладную от СИА с возможностью конвертации накладной, в результирующем файле конвертируемой накладной должны быть корректно выставлены коды сопоставленных позиций")]
 		public void ConvertWaybillToDBFWithAssortmentCodes()
@@ -793,97 +794,97 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 		
-        [Test]
-        public void ComparisonWithOrdersTest()
-        {            
-            Supplier supplier;
-            TestClient client = TestClient.Create();
-            OrderHead order1;
-            OrderHead order2;
-            Document document;          
+		[Test]
+		public void ComparisonWithOrdersTest()
+		{            
+			Supplier supplier;
+			TestClient client = TestClient.Create();
+			OrderHead order1;
+			OrderHead order2;
+			Document document;          
 
-            using (new SessionScope())
-            {
-                supplier = Supplier.FindFirst();
-                order1 = new OrderHead { ClientCode = client.Id }; order1.Save();                
-                var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 }; item.Save();
-                item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 }; item.Save();
-                item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 }; item.Save();
-                item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 }; item.Save();
+			using (new SessionScope())
+			{
+				supplier = Supplier.FindFirst();
+				order1 = new OrderHead { ClientCode = client.Id }; order1.Save();                
+				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 }; item.Save();
+				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 }; item.Save();
+				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 }; item.Save();
+				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 }; item.Save();
 
-                order2 = new OrderHead { ClientCode = client.Id }; order2.Save();
-                item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 }; item.Save();
-                item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
-                item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
+				order2 = new OrderHead { ClientCode = client.Id }; order2.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 }; item.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
+				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
 
-                DocumentReceiveLog log = new DocumentReceiveLog
-                {
-                    Supplier = supplier,
-                    ClientCode = client.Id,
-                    AddressId = client.Addresses[0].Id,
-                    MessageUid = 123,
-                    DocumentSize = 100
-                };
-                document = new Document(log)
-                {
-                    OrderId = order1.Id,
-                    AddressId = client.Addresses[0].Id,
-                    DocumentDate = DateTime.Now
-                };
-                var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
-                document.NewLine(docline);                
-                docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 15 };
-                document.NewLine(docline);
-                docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 5 };
-                document.NewLine(docline);
-                docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 75 };
-                document.NewLine(docline);
-                docline = new DocumentLine { Document = document, Code = null, Quantity = 75 };
-                document.NewLine(docline);
-                docline = new DocumentLine { Document = document, Code = "Code5", Quantity = 10 };
-                document.NewLine(docline);                
-                log.Save();
-                document.Save();
-            }
+				DocumentReceiveLog log = new DocumentReceiveLog
+				{
+					Supplier = supplier,
+					ClientCode = client.Id,
+					AddressId = client.Addresses[0].Id,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
+				document = new Document(log)
+				{
+					OrderId = order1.Id,
+					AddressId = client.Addresses[0].Id,
+					DocumentDate = DateTime.Now
+				};
+				var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
+				document.NewLine(docline);                
+				docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 15 };
+				document.NewLine(docline);
+				docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 5 };
+				document.NewLine(docline);
+				docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 75 };
+				document.NewLine(docline);
+				docline = new DocumentLine { Document = document, Code = null, Quantity = 75 };
+				document.NewLine(docline);
+				docline = new DocumentLine { Document = document, Code = "Code5", Quantity = 10 };
+				document.NewLine(docline);                
+				log.Save();
+				document.Save();
+			}
 
-            IList<OrderHead> orders = new List<OrderHead>();
+			IList<OrderHead> orders = new List<OrderHead>();
 
-            using (new SessionScope())
-            {
-                orders.Add(OrderHead.Find(order1.Id));
-                orders.Add(OrderHead.Find(order2.Id));
+			using (new SessionScope())
+			{
+				orders.Add(OrderHead.Find(order1.Id));
+				orders.Add(OrderHead.Find(order2.Id));
 
-                document = Document.Find(document.Id);
-                order1 = OrderHead.Find(order1.Id);
-                order2 = OrderHead.Find(order2.Id);
-            }
-                        
-            WaybillService.ComparisonWithOrders(document, orders);
+				document = Document.Find(document.Id);
+				order1 = OrderHead.Find(order1.Id);
+				order2 = OrderHead.Find(order2.Id);
+			}
+						
+			WaybillService.ComparisonWithOrders(document, orders);
 
-            string inStr = String.Empty;
-            foreach (var line in document.Lines)
-            {
-                if (!String.IsNullOrEmpty(inStr)) inStr += ",";
-                inStr += line.Id.ToString();
-            }
-            var ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
-            var table = ds.Tables[0];
-            Assert.That(table.Rows.Count, Is.EqualTo(7));
-            Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
-            Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
-            Assert.That(table.Rows[1]["DocumentLineId"], Is.EqualTo(document.Lines[1].Id));
-            Assert.That(table.Rows[1]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
-            Assert.That(table.Rows[2]["DocumentLineId"], Is.EqualTo(document.Lines[2].Id));
-            Assert.That(table.Rows[2]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
-            Assert.That(table.Rows[3]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-            Assert.That(table.Rows[3]["OrderLineId"], Is.EqualTo(order1.Items[2].Id));
-            Assert.That(table.Rows[4]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-            Assert.That(table.Rows[4]["OrderLineId"], Is.EqualTo(order2.Items[0].Id));
-            Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-            Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
-            Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
-            Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
-        }
+			string inStr = String.Empty;
+			foreach (var line in document.Lines)
+			{
+				if (!String.IsNullOrEmpty(inStr)) inStr += ",";
+				inStr += line.Id.ToString();
+			}
+			var ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
+			var table = ds.Tables[0];
+			Assert.That(table.Rows.Count, Is.EqualTo(7));
+			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
+			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
+			Assert.That(table.Rows[1]["DocumentLineId"], Is.EqualTo(document.Lines[1].Id));
+			Assert.That(table.Rows[1]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
+			Assert.That(table.Rows[2]["DocumentLineId"], Is.EqualTo(document.Lines[2].Id));
+			Assert.That(table.Rows[2]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
+			Assert.That(table.Rows[3]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+			Assert.That(table.Rows[3]["OrderLineId"], Is.EqualTo(order1.Items[2].Id));
+			Assert.That(table.Rows[4]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+			Assert.That(table.Rows[4]["OrderLineId"], Is.EqualTo(order2.Items[0].Id));
+			Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
+			Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
+			Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
+			Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
+		}
 
 		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
 		public void check_parse_waybill_if_file_is_not_local()
@@ -916,7 +917,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 			Thread thread = new Thread(() =>
 			{
-			    Thread.Sleep(3000);
+				Thread.Sleep(3000);
 				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
 													supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
 			});
@@ -1030,5 +1031,46 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(doc.Lines[3].ProductEntity.Id, Is.EqualTo(product4.Id));
 			Assert.That(doc.Lines[3].ProducerId, Is.EqualTo(producer3.Id));
 		}
+
+		[Test(Description = "разбор накладной с установленными файлами сертификатов")]
+		public void ParseCertificateFiles()
+		{
+			const string file = "9229370.dbf";
+			var client = TestClient.Create();
+			//Ищем воронежскую Аптеку-Холдинг, ЭТО ХАК!!!
+			var supplier = TestSupplier.Find(39u);
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
+			var waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+			var log = new TestDocumentLog
+			{
+				ClientCode = client.Id,
+				FirmCode = supplier.Id,
+				LogTime = DateTime.Now,
+				DocumentType = DocumentType.Waybill,
+				FileName = file
+			};
+			using (new TransactionScope())
+				log.SaveAndFlush();	
+
+			File.Copy(@"..\..\Data\Waybills\9832937_Аптека-Холдинг(3334_1459366).dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
+												supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
+
+			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
+			var ids = service.ParseWaybill(new[] { log.Id });
+
+			using (new SessionScope())
+			{
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count(), Is.EqualTo(1));
+				Assert.That(ids.Length, Is.EqualTo(1));
+
+				var docs = Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).ToList();
+				Assert.That(docs.Count, Is.EqualTo(1));
+
+				Assert.That(docs[0].Lines.ToList().TrueForAll(docLine => !String.IsNullOrEmpty(docLine.CertificateFilename)));
+			}
+		}
+
 	}
 }

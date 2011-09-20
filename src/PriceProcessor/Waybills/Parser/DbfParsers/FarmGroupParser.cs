@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.IO;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {

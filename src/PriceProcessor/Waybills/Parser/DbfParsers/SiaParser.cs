@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
@@ -93,14 +94,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				if (!String.IsNullOrEmpty(certificatesDateColumn))
 				{
-                    if (Convert.IsDBNull(r[certificatesDateColumn]))
-                        line.CertificatesDate = null;
-                    else
-                    {
-                        DateTime? dt = ParseHelper.GetDateTime(r[certificatesDateColumn].ToString());
-                        line.CertificatesDate = (dt == null ? null : dt.Value.ToShortDateString());
-                    }
-                }
+					if (Convert.IsDBNull(r[certificatesDateColumn]))
+						line.CertificatesDate = null;
+					else
+					{
+						DateTime? dt = ParseHelper.GetDateTime(r[certificatesDateColumn].ToString());
+						line.CertificatesDate = (dt == null ? null : dt.Value.ToShortDateString());
+					}
+				}
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
 				if (!Convert.IsDBNull(r["PCT_NDS"])) 
@@ -110,7 +111,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.VitallyImportant = ParseHelper.GetBoolean(r[vitallyImportantColumn].ToString());
 				line.SetAmount();
 				line.SetNdsAmount();
-			    return line;
+				return line;
 			}).ToList();
 			return document;
 		}

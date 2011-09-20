@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
 using System.Data;
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using NUnit.Framework;
 

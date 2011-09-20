@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor;
 #endif
 using System.IO;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using log4net.Config;
 using log4net.Util;

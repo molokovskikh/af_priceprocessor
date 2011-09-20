@@ -1,10 +1,11 @@
 ﻿using System.Data;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-    public class FarmaimpeksIzhevskParser : IDocumentParser
+	public class FarmaimpeksIzhevskParser : IDocumentParser
 	{
 		protected Encoding Encoding = Encoding.GetEncoding(866);
 

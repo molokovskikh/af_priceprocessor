@@ -12,7 +12,6 @@ using Inforoom.PriceProcessor.Formalizer.Helpers;
 using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
-using Inforoom.PriceProcessor;
 using System.ComponentModel;
 using System.Diagnostics;
 using log4net;

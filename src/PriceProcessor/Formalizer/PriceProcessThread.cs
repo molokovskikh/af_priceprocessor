@@ -5,11 +5,7 @@ using System.Threading;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
-using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor;
-using System.Data;
-using System.Reflection;
 using FileHelper=Inforoom.Common.FileHelper;
 
 namespace Inforoom.Formalizer
@@ -45,8 +41,8 @@ namespace Inforoom.Formalizer
 	public interface IPriceFormalizer
 	{
 		void Formalize();
-	    IList<string> GetAllNames();
-        bool Downloaded { get; set; }
+		IList<string> GetAllNames();
+		bool Downloaded { get; set; }
 		string InputFileName { get; set; }
 		int formCount { get; }
 		int unformCount { get; }

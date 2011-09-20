@@ -1,3 +1,5 @@
+using Inforoom.PriceProcessor.Waybills.Models;
+
 namespace Inforoom.PriceProcessor.Waybills
 {
 	public interface IDocumentParser

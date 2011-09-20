@@ -1,6 +1,7 @@
-﻿using NUnit.Framework;
+﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
+using NUnit.Framework;
 using Inforoom.PriceProcessor.Waybills.Parser;
-using Inforoom.PriceProcessor.Waybills;
 using Castle.ActiveRecord;
 
 namespace PriceProcessor.Test.Waybills.Parser

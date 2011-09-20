@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
@@ -21,6 +22,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			string AmountColumn = null;
 			string NdsAmountColumn = null;
 			string SupplierPriceMarkupColumn = null;
+
+			string certificateFilenameColumn = null;
+			string protocolFilemameColumn = null;
+			string passportFilenameColumn = null;
+
 
 			var data = Dbf.Load(file, Encoding);
 			if (data.Columns.Contains("PV"))
@@ -44,6 +50,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("TORGNADB"))
 				SupplierPriceMarkupColumn = "TORGNADB";
 
+			if (data.Columns.Contains("F_SERT"))
+				certificateFilenameColumn = "F_SERT";
+			if (data.Columns.Contains("F_PROT"))
+				protocolFilemameColumn = "F_PROT";
+			if (data.Columns.Contains("F_PASS"))
+				passportFilenameColumn = "F_PASS";
 
 			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
 			{
@@ -93,6 +105,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				{
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r[SupplierPriceMarkupColumn].ToString());
 				}
+
+				if (!String.IsNullOrEmpty(certificateFilenameColumn))
+					line.CertificateFilename = r[certificateFilenameColumn].ToString();
+				if (!String.IsNullOrEmpty(protocolFilemameColumn))
+					line.ProtocolFilemame = r[protocolFilemameColumn].ToString();
+				if (!String.IsNullOrEmpty(passportFilenameColumn))
+					line.PassportFilename = r[passportFilenameColumn].ToString();
+
 				return line;
 			}).ToList();
 			return document;

@@ -1,3 +1,4 @@
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 
 namespace Inforoom.Downloader.Documents

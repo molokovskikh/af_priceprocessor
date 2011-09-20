@@ -132,5 +132,47 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines.Count, Is.EqualTo(149));
 			Assert.That(document.Lines[1].Product, Is.EqualTo("Аллохол табл. п/о N24"));
 		}
+
+		[Test]
+		public void Parse7WithCertificateFiles()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\9832937_Аптека-Холдинг(3334_1459366).dbf");
+
+			Assert.That(document.Lines.Count, Is.EqualTo(26));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("АХ1-1459366"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("15.09.2011")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("28455"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Артро-актив капс. 300мг N36 Россия"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Диод ОАО"));
+			Assert.That(document.Lines[0].Country, Is.EqualTo("Россия"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(52.94));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(54.00));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("080711"));
+			Assert.That(document.Lines[1].SerialNumber, Is.EqualTo("24212051"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ11.Д35118 д"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.07.2012"));
+			Assert.That(document.Lines[0].VitallyImportant, Is.False);
+			Assert.That(document.Lines[1].VitallyImportant, Is.True);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00000));
+			Assert.That(document.Lines[1].RegistryCost, Is.EqualTo(100.41));
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(18));
+			Assert.That(document.Lines[1].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(63.72));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(2));
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(9.72));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(63.72));
+			Assert.That(document.Lines[0].CertificateFilename, Is.EqualTo("sLA9S"));
+			Assert.That(document.Lines[1].CertificateFilename, Is.EqualTo("sM9TM"));
+			Assert.That(document.Lines[8].CertificateFilename, Is.EqualTo("sFR06"));
+			Assert.IsNullOrEmpty(document.Lines[0].ProtocolFilemame);
+			Assert.IsNullOrEmpty(document.Lines[1].ProtocolFilemame);
+			Assert.That(document.Lines[8].ProtocolFilemame, Is.EqualTo("rFR06"));
+			Assert.That(document.Lines[0].PassportFilename, Is.EqualTo("pMAJO"));
+			Assert.That(document.Lines[1].PassportFilename, Is.EqualTo("pM9TM"));
+			Assert.IsNullOrEmpty(document.Lines[8].PassportFilename);
+		}
+
 	}
 }
