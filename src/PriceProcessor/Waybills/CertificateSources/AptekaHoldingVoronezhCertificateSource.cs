@@ -23,14 +23,22 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			var list = new List<CertificateFileEntry>();
 
-			if (!String.IsNullOrEmpty(certificateTask.DocumentLine.CertificateFilename))
-				AddFiles(certificatesPath, certificateTask.DocumentLine.CertificateFilename, list);
+			if (Directory.Exists(certificatesPath)) {
 
-			if (!String.IsNullOrEmpty(certificateTask.DocumentLine.ProtocolFilemame))
-				AddFiles(certificatesPath, certificateTask.DocumentLine.ProtocolFilemame, list);
+				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.CertificateFilename))
+					AddFiles(certificatesPath, certificateTask.DocumentLine.CertificateFilename, list);
 
-			if (!String.IsNullOrEmpty(certificateTask.DocumentLine.PassportFilename))
-				AddFiles(certificatesPath, certificateTask.DocumentLine.PassportFilename, list);
+				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.ProtocolFilemame))
+					AddFiles(certificatesPath, certificateTask.DocumentLine.ProtocolFilemame, list);
+
+				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.PassportFilename))
+					AddFiles(certificatesPath, certificateTask.DocumentLine.PassportFilename, list);
+
+			}
+			else 
+				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
+					certificatesPath,
+					certificateTask);
 
 			return list;
 		}

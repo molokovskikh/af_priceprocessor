@@ -156,6 +156,36 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
 		}
 
+		[Test(Description = "создаем сертификат")]
+		public void SimpleCreateCertificateWithSave()
+		{
+			var supplier = Supplier.Queryable.First();
+			var catalog = TestCatalogProduct.Queryable.First();
+			var serialNumber = Path.GetRandomFileName();
+
+			var certificate = new Certificate();
+			using (new TransactionScope()) {
+				certificate.CatalogProduct = Catalog.Find(catalog.Id);
+				certificate.SerialNumber = serialNumber;
+				certificate.NewFile(
+					new CertificateFile{
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
+					}
+				);
+				certificate.NewFile(
+					new CertificateFile{
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
+					}
+				);
+				certificate.Save();
+			}
+
+			Assert.That(certificate.Id, Is.GreaterThan(0));
+			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
+		}
+
 		[Test(Description = "создаем сертификат с повторением уникального ключа")]
 		public void CreateCertificateOnUniqueKey()
 		{

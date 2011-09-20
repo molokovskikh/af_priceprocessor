@@ -1,10 +1,20 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Core;
 using NUnit.Framework;
+using Test.Support;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -164,6 +174,116 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(document.Lines[0].Certificate.Id, Is.EqualTo(existsCertificate.Id));
 			Assert.That(document.Lines[4].Certificate.Id, Is.EqualTo(existsCertificate.Id));
+		}
+
+		private TestWaybillLine CreateBodyLine(uint supplierId)
+		{
+			var supplier = (TestSupplier)TestSupplier.Find(supplierId);
+			var user = TestUser.Queryable.First(u => u.AvaliableAddresses.Count > 0);
+
+			var documentLog = new TestDocumentLog {
+				FirmCode = supplier.Id,
+				ClientCode = user.Client.Id,
+				DocumentType = DocumentType.Waybill,
+				LogTime = DateTime.Now,
+				FileName = Path.GetRandomFileName() + ".txt"
+			};
+
+			var document = new TestWaybill {
+				ClientCode = user.Client.Id,
+				FirmCode = supplier.Supplier,
+				DocumentType = DocumentType.Waybill,
+				WriteTime = DateTime.Now
+			};
+
+			var documentLine = new TestWaybillLine();
+			documentLine.Waybill = document;
+
+			document.Lines = new List<TestWaybillLine>();
+			document.Lines.Add(documentLine);
+
+			using (new TransactionScope()) {
+				documentLog.Create();
+				document.DownloadId = documentLog.Id;
+				document.Create();
+				documentLine.Create();
+			}
+
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			Assert.That(document.Lines[0].Id, Is.GreaterThan(0));
+
+			return documentLine;
+		}
+
+		public class TestCertificateSourceHandler : CertificateSourceHandler
+		{
+
+			public void TestProcessData()
+			{
+				ProcessData();
+			}
+		}
+
+		[Test]
+		public void CertificatesSourceHandler()
+		{
+			var supplier = Supplier.Find(39u);
+			var documentLine = CreateBodyLine(supplier.Id);
+
+			var catalog = TestCatalogProduct.Queryable.First();
+			var serialNumber = Path.GetRandomFileName();
+			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			var task = new CertificateTask();
+			using (new TransactionScope()) {
+				task.Supplier = supplier;
+				task.CatalogProduct = Catalog.Find(catalog.Id);
+				task.SerialNumber = serialNumber;
+				task.DocumentLine = realDocumentLine;
+				task.Create();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+
+
+			try{
+
+				var memoryAppender = new MemoryAppender();
+				//memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PrgData", Next = new DenyAllFilter() });
+				BasicConfigurator.Configure(memoryAppender);
+
+
+				try
+				{
+
+					var handler = new TestCertificateSourceHandler();
+
+					handler.TestProcessData();
+
+				}
+				catch
+				{
+					var logEvents = memoryAppender.GetEvents();
+					Console.WriteLine("Ошибки при подготовке данных:\r\n{0}", logEvents.Select(item =>
+					{
+						if (string.IsNullOrEmpty(item.GetExceptionString()))
+							return item.RenderedMessage;
+						else
+							return item.RenderedMessage + Environment.NewLine + item.GetExceptionString();
+					}).Implode("\r\n"));
+					throw;
+				}
+
+				var events = memoryAppender.GetEvents();
+				var errors = events.Where(item => item.Level >= Level.Warn);
+				Assert.That(errors.Count(), Is.EqualTo(0), "При подготовке данных возникли ошибки:\r\n{0}", errors.Select(item => item.RenderedMessage).Implode("\r\n"));
+			}
+			finally
+			{
+				LogManager.ResetConfiguration();
+			}
+
+
 		}
 
 	}

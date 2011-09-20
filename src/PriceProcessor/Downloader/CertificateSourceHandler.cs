@@ -97,11 +97,28 @@ namespace Inforoom.PriceProcessor.Downloader
 					certificate.NewFile(certificateFile);
 				}
 
-				certificate.Update();
+				certificate.Save();
 
 				certificateTask.Delete();
 
 				transaction.VoteCommit();
+			}
+
+
+			foreach (var certificateFileEntry in files) {
+				var fileName = certificateFileEntry.CertificateFile.Id + ".tif";
+				var fullFileName = Path.Combine(Settings.Default.CertificatePath, fileName);
+
+				try {
+					File.Copy(certificateFileEntry.LocalFile, fullFileName);
+				}
+				catch (Exception exception) {
+					_logger.WarnFormat(
+						"При копировании файла {0} для сертификата {1} возникла ошибка: {2}", 
+						certificateFileEntry.LocalFile,
+						certificateTask, 
+						exception);
+				}
 			}
 
 			//Здесь надо осуществить копирование сертификатов
