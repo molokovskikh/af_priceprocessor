@@ -9,6 +9,7 @@ using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using LumiSoft.Net.IMAP;
 using Inforoom.Common;
+using LumiSoft.Net.SMTP.Client;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
 using System.Net.Mail;
 
