@@ -354,7 +354,8 @@ Content-Disposition: attachment;
 				Settings.Default.HistoryPath,
 				Settings.Default.FTPOptBoxPath,
 				Settings.Default.DownWaybillsPath,
-				Settings.Default.DocumentPath
+				Settings.Default.DocumentPath,
+				Settings.Default.CertificatePath
 			};
 
 			dirs.Each(d => {

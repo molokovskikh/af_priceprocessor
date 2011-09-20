@@ -998,5 +998,17 @@ namespace Inforoom.PriceProcessor
 				return ((string)(this["IMAPSourceFolder"]));
 			}
 		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("Certificates")]
+		public string CertificatePath
+		{
+			get
+			{
+				return ((string)(this["CertificatePath"]));
+			}
+		}
+
 	}
 }
