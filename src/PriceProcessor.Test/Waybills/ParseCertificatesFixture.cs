@@ -14,7 +14,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов")]
 		public void CheckParse()
 		{
-			var docSupplier = Supplier.Queryable.First();
+			var docSupplier = Supplier.Find(39u);
 
 			var firstCatalog = new Catalog {Id = 1, Name = "catalog1"};
 			var secondCatalog = new Catalog {Id = 2, Name = "catalog2"};
@@ -55,9 +55,7 @@ namespace PriceProcessor.Test.Waybills
 				CertificateFilename = "cerFilename"
 			});
 
-			var detector = new WaybillFormatDetector();
-
-			detector.ParseCertificates(document);
+			CertificateSourceDetector.DetectAndParse(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(3));
 			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));
@@ -71,9 +69,8 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов при существовании сертификатов")]
 		public void CheckParseWithExistsCertificates()
 		{
-			var suppliers = Supplier.Queryable.Take(2).ToList();
-			var docSupplier = suppliers[0];
-			var anotherSupplier = suppliers[0];
+			var docSupplier = Supplier.Find(39u);
+			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != docSupplier.Id).First();
 
 			var catalogs = Catalog.Queryable.Take(2).ToList().OrderBy(c => c.Id).ToList();
 			var existsCatalog = catalogs[0];
@@ -154,9 +151,7 @@ namespace PriceProcessor.Test.Waybills
 				CertificateFilename = "cerFilename"
 			});
 
-			var detector = new WaybillFormatDetector();
-
-			detector.ParseCertificates(document);
+			CertificateSourceDetector.DetectAndParse(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(4));
 			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));

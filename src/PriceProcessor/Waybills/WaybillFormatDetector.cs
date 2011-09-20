@@ -235,33 +235,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				doc.CalculateValues(); // расчет недостающих значений 
 				if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
 				//сопоставление сертификатов для позиций накладной
-				ParseCertificates(doc);
+				CertificateSourceDetector.DetectAndParse(doc);
 			}
 			return doc;
-		}
-
-		public void ParseCertificates(Document document)
-		{
-
-			foreach (var documentLine in document.Lines) {
-			    if (documentLine.ProductEntity != null && !String.IsNullOrEmpty(documentLine.SerialNumber)) {
-			        var certificate = 
-						Certificate.Queryable.FirstOrDefault(
-							c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id && c.SerialNumber == documentLine.SerialNumber);
-					if (certificate != null)
-						documentLine.Certificate = certificate;
-					else 
-						if (NeedFoundCertificate(documentLine))
-							document.AddCertificateTask(documentLine);
-			    }
-			}
-		}
-
-		private bool NeedFoundCertificate(DocumentLine documentLine)
-		{
-			return !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
-			       !String.IsNullOrEmpty(documentLine.ProtocolFilemame) ||
-			       !String.IsNullOrEmpty(documentLine.PassportFilename);
 		}
 
 	}
