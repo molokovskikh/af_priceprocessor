@@ -24,6 +24,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("DocumentBodyId")]
 		public virtual DocumentLine DocumentLine { get; set; }
+
+		public override string ToString()
+		{
+			return string.Format(
+				"CertificateTask Id: {0},  Supplier: {1},  Catalog: {2},  SerialNumber: {3},  DocumentBodyId: {4}", 
+				Id, 
+				Supplier != null ? Supplier.Id.ToString() : "null",
+				CatalogProduct != null ? CatalogProduct.Id.ToString() : "null",
+				SerialNumber,
+				DocumentLine != null ? DocumentLine.Id.ToString() : "null"
+			);
+		}
 		
 	}
 }

@@ -52,7 +52,8 @@ namespace Inforoom.PriceProcessor
 				new WaybillLANSourceHandler(),
 				new ClearArchivedPriceSourceHandler(),
 			//	new RostaHandler(4820, new RostaDownloader()), // с 12.07.2011 этот обработчик не используется
-				new ProtekWaybillHandler()
+				new ProtekWaybillHandler(),
+				new CertificateSourceHandler()
 #endif
 			};
 

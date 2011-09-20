@@ -126,6 +126,7 @@
     <Compile Include="AbstractHandler.cs" />
     <Compile Include="Downloader\BasePriceSourceHandler.cs" />
     <Compile Include="Downloader\BaseSourceHandler.cs" />
+    <Compile Include="Downloader\CertificateSourceHandler.cs" />
     <Compile Include="Downloader\ClearArchivedPriceSourceHandler.cs" />
     <Compile Include="Downloader\DocumentReaders\BaseDocumentReader.cs" />
     <Compile Include="Downloader\DocumentReaders\SupplierFtpReader.cs" />
