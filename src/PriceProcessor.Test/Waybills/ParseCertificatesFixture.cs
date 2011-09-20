@@ -14,13 +14,17 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов")]
 		public void CheckParse()
 		{
+			var docSupplier = Supplier.Queryable.First();
+
 			var firstCatalog = new Catalog {Id = 1, Name = "catalog1"};
 			var secondCatalog = new Catalog {Id = 2, Name = "catalog2"};
 			var firstProduct = new Product {Id = 3, CatalogProduct = firstCatalog};
 			var secondProduct = new Product {Id = 4, CatalogProduct = firstCatalog};
 			var thirdProduct = new Product {Id = 5, CatalogProduct = secondCatalog};
 
-			var document = new Document();
+			var document = new Document {
+				FirmCode = docSupplier.Id
+			};
 			document.NewLine(new DocumentLine{
 				ProductEntity = firstProduct,
 				SerialNumber = "крутая серия 1"
@@ -56,6 +60,7 @@ namespace PriceProcessor.Test.Waybills
 			detector.ParseCertificates(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(3));
+			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == firstCatalog.Id && task[0].SerialNumber == "крутая серия 1");
@@ -66,6 +71,10 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов при существовании сертификатов")]
 		public void CheckParseWithExistsCertificates()
 		{
+			var suppliers = Supplier.Queryable.Take(2).ToList();
+			var docSupplier = suppliers[0];
+			var anotherSupplier = suppliers[0];
+
 			var catalogs = Catalog.Queryable.Take(2).ToList().OrderBy(c => c.Id).ToList();
 			var existsCatalog = catalogs[0];
 			var nonExistCatalog = catalogs[1];
@@ -88,18 +97,28 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificate.SerialNumber = serialNumber;
 				existsCertificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = docSupplier
 					}
 				);
 				existsCertificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = docSupplier
+					}
+				);
+				existsCertificate.NewFile(
+					new CertificateFile{
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = anotherSupplier
 					}
 				);
 				existsCertificate.Create();
 			}
 
-			var document = new Document();
+			var document = new Document{
+				FirmCode = docSupplier.Id
+			};
 			document.NewLine(new DocumentLine{
 				ProductEntity = firstProduct,
 				SerialNumber = serialNumber
@@ -140,6 +159,7 @@ namespace PriceProcessor.Test.Waybills
 			detector.ParseCertificates(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(4));
+			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == existsCatalog.Id && task[0].SerialNumber == "крутая серия 1");

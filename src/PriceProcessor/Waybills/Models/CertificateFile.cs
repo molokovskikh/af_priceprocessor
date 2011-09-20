@@ -1,5 +1,6 @@
 ﻿using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -18,5 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string OriginFilename { get; set; }
 
+		[BelongsTo("SupplierId")]
+		public virtual Supplier Supplier { get; set; }
 	}
 }

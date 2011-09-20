@@ -59,6 +59,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "создаем задачу на разбор сертификата")]
 		public void SimpleCreateTask()
 		{
+			var supplier = Supplier.Queryable.First();
 			var documentLine = CreateBodyLine();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = Path.GetRandomFileName();
@@ -66,6 +67,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var task = new CertificateTask();
 			using (new TransactionScope()) {
+				task.Supplier = supplier;
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
@@ -78,6 +80,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "создаем задачу на разбор сертификата с повторением уникального ключа")]
 		public void CreateTaskOnUniqueKey()
 		{
+			var supplier = Supplier.Queryable.First();
 			var documentLine = CreateBodyLine();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = "Мама мыла раму";
@@ -91,6 +94,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var task = new CertificateTask();
 			using (new TransactionScope()) {
+				task.Supplier = supplier;
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
@@ -103,6 +107,7 @@ namespace PriceProcessor.Test.Waybills
 			var doubleRealDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
 
 			var doubleTask = new CertificateTask {
+				Supplier = supplier,
 				CatalogProduct = task.CatalogProduct,
 				SerialNumber = "мАМА мыла рАМУ",
 				DocumentLine = doubleRealDocumentLine
@@ -124,6 +129,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "создаем сертификат")]
 		public void SimpleCreateCertificate()
 		{
+			var supplier = Supplier.Queryable.First();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = Path.GetRandomFileName();
 
@@ -133,12 +139,14 @@ namespace PriceProcessor.Test.Waybills
 				certificate.SerialNumber = serialNumber;
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.Create();
@@ -151,6 +159,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "создаем сертификат с повторением уникального ключа")]
 		public void CreateCertificateOnUniqueKey()
 		{
+			var supplier = Supplier.Queryable.First();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = "Мама мыла раму";
 
@@ -166,12 +175,14 @@ namespace PriceProcessor.Test.Waybills
 				certificate.SerialNumber = serialNumber;
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.Create();
@@ -201,6 +212,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "создаем сертификат с повторением уникального ключа и исправляем ошибку в одной транзакции")]
 		public void CreateTaskWithUniqueKeyAndCorrect()
 		{
+			var supplier = Supplier.Queryable.First();
 			var documentLine = CreateBodyLine();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = "Мама мыла раму";
@@ -221,6 +233,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var task = new CertificateTask();
 			using (new TransactionScope()) {
+				task.Supplier = supplier;
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
@@ -233,6 +246,7 @@ namespace PriceProcessor.Test.Waybills
 			var doubleRealDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
 
 			var doubleTask = new CertificateTask {
+				Supplier = supplier,
 				CatalogProduct = task.CatalogProduct,
 				SerialNumber = "мАМА мыла рАМУ",
 				DocumentLine = doubleRealDocumentLine
@@ -244,6 +258,7 @@ namespace PriceProcessor.Test.Waybills
 				//поэтому перед сохранением надо проверять, что такое задание не существует
 				var existsTask = CertificateTask.Exists(
 					DetachedCriteria.For<CertificateTask>()
+						.Add(Restrictions.Eq("Supplier.Id", task.Supplier.Id))
 						.Add(Restrictions.Eq("CatalogProduct.Id", task.CatalogProduct.Id))
 						.Add(Restrictions.Eq("SerialNumber", doubleTask.SerialNumber)));
 
@@ -262,6 +277,9 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка поиска сертификата с различными параметрами")]
 		public void CheckLikedSearch()
 		{
+			var supplier = Supplier.Queryable.First();
+			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != supplier.Id).First();
+
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = "Мама мыла раму";
 
@@ -277,12 +295,14 @@ namespace PriceProcessor.Test.Waybills
 				certificate.SerialNumber = serialNumber;
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.NewFile(
 					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName()
+						OriginFilename = Path.GetRandomFileName(),
+						Supplier = supplier
 					}
 				);
 				certificate.Create();
@@ -337,6 +357,15 @@ namespace PriceProcessor.Test.Waybills
 						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == "какая-то большая фигня");
 
 				Assert.That(findedCertificate, Is.Null);
+
+
+				//Поиск сертификата с привязкой к поставщику
+				findedCertificate = 
+					Certificate.Queryable.FirstOrDefault(
+						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == serialNumber && c.CertificateFiles.Any(f => f.Supplier.Id == anotherSupplier.Id));
+
+				Assert.That(findedCertificate, Is.Null);
+
 
 				transaction.VoteRollBack();
 			}

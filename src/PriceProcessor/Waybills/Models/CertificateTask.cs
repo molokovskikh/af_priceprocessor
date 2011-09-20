@@ -10,6 +10,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[PrimaryKey]
 		public uint Id { get; set; }
 
+		[BelongsTo("SupplierId")]
+		public virtual Supplier Supplier { get; set; }
+
 		[BelongsTo("CatalogId")]
 		public virtual Catalog CatalogProduct { get; set; }
 
