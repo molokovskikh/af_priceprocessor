@@ -259,6 +259,89 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(doubleTask.Id, Is.Not.EqualTo(task.Id));
 		}
 
+		[Test(Description = "проверка поиска сертификата с различными параметрами")]
+		public void CheckLikedSearch()
+		{
+			var catalog = TestCatalogProduct.Queryable.First();
+			var serialNumber = "Мама мыла раму";
+
+			using (new TransactionScope()) {
+				var certificates =
+					Certificate.Queryable.Where(c => c.SerialNumber.Equals(serialNumber)).ToList();
+				certificates.ForEach(c => c.Delete());
+			}
+
+			var certificate = new Certificate();
+			using (new TransactionScope()) {
+				certificate.CatalogProduct = Catalog.Find(catalog.Id);
+				certificate.SerialNumber = serialNumber;
+				certificate.NewFile(
+					new CertificateFile{
+						OriginFilename = Path.GetRandomFileName()
+					}
+				);
+				certificate.NewFile(
+					new CertificateFile{
+						OriginFilename = Path.GetRandomFileName()
+					}
+				);
+				certificate.Create();
+			}
+
+			Assert.That(certificate.Id, Is.GreaterThan(0));
+			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
+
+			using (var transaction = new TransactionScope()) {
+
+				var findedCertificate = Certificate.FindFirst(
+					DetachedCriteria.For<Certificate>()
+						.Add(Restrictions.Eq("CatalogProduct.Id", certificate.CatalogProduct.Id))
+						.Add(Restrictions.Eq("SerialNumber", serialNumber)));
+
+				Assert.That(findedCertificate, Is.Not.Null);
+				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
+
+
+				findedCertificate = Certificate.FindFirst(
+					DetachedCriteria.For<Certificate>()
+						.Add(Restrictions.Eq("CatalogProduct.Id", certificate.CatalogProduct.Id))
+						.Add(Restrictions.Eq("SerialNumber", "мАМА мыла рАМУ")));
+
+				Assert.That(findedCertificate, Is.Not.Null);
+				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
+
+				findedCertificate = Certificate.FindFirst(
+					DetachedCriteria.For<Certificate>()
+						.Add(Restrictions.Eq("CatalogProduct.Id", certificate.CatalogProduct.Id))
+						.Add(Restrictions.Eq("SerialNumber", "какая-то большая фигня")));
+
+				Assert.That(findedCertificate, Is.Null);
+
+				findedCertificate =
+					Certificate.Queryable.FirstOrDefault(
+						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == serialNumber);
+
+				Assert.That(findedCertificate, Is.Not.Null);
+				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
+
+
+				findedCertificate = 
+					Certificate.Queryable.FirstOrDefault(
+						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == "мАМА мыла рАМУ");
+
+				Assert.That(findedCertificate, Is.Not.Null);
+				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
+
+				findedCertificate = 
+					Certificate.Queryable.FirstOrDefault(
+						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == "какая-то большая фигня");
+
+				Assert.That(findedCertificate, Is.Null);
+
+				transaction.VoteRollBack();
+			}
+
+		}
 	}
 }
 	

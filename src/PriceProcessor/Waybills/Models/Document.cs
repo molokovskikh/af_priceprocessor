@@ -258,5 +258,40 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				.Replace("-", String.Empty)
 				.Replace("/", String.Empty);
 		}
+
+		public List<CertificateTask> Tasks = new List<CertificateTask>();
+
+		public void AddCertificateTask(DocumentLine documentLine)
+		{
+			if (!Tasks.Exists(
+					t => t.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
+						&& t.SerialNumber.Equals(documentLine.SerialNumber, StringComparison.CurrentCultureIgnoreCase)))
+				Tasks.Add(new CertificateTask {
+					CatalogProduct = documentLine.ProductEntity.CatalogProduct,
+					SerialNumber = documentLine.SerialNumber,
+					DocumentLine = documentLine
+				});
+		}
+
+		public void CreateCertificateTasks()
+		{
+			Tasks.ForEach(task => { 
+				var existsTask = CertificateTask.Exists(
+					DetachedCriteria.For<CertificateTask>()
+						.Add(Restrictions.Eq("CatalogProduct.Id", task.CatalogProduct.Id))
+						.Add(Restrictions.Eq("SerialNumber", task.SerialNumber)));
+
+				if (!existsTask)
+					task.Save();
+				else {
+					ActiveRecordMediator.Evict(task);
+					_log.WarnFormat("Отклонено создании дубликата задачи на разбор сертификата: CatalogId: {0}  SerialNumber: {1}  DocumentBodyId: {2}", 
+						task.CatalogProduct.Id, 
+						task.SerialNumber,
+						task.DocumentLine.Id);
+				}
+			});
+		}
+
 	}
 }

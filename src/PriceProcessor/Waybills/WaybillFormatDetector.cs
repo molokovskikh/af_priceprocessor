@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using log4net;
+using NHibernate.Criterion;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -65,13 +66,13 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(ImperiaFarmaSpecialParser);
 							break;
 						}
-                    case 1581: // Накладная от Здравсервис, содержащая поля для счета-фактуры
-				        {
-				            var table = ZdravServiceSpecialParser.Load(file);
-                            if (ZdravServiceSpecialParser.CheckFileFormat(table))
-                                type = typeof (ZdravServiceSpecialParser);
-				            break;
-				        }
+					case 1581: // Накладная от Здравсервис, содержащая поля для счета-фактуры
+						{
+							var table = ZdravServiceSpecialParser.Load(file);
+							if (ZdravServiceSpecialParser.CheckFileFormat(table))
+								type = typeof (ZdravServiceSpecialParser);
+							break;
+						}
 					/*case 4138: // Накладная от Катрен Воронеж
 						{
 							var table = KatrenVrnSpecialParser.Load(file);
@@ -83,48 +84,48 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 			}
 
-            if ((documentLog != null) && (extention == ".sst"))
-            {
-                switch (documentLog.Supplier.Id)
-                {
-                    case 4910: // Фармпартнер (Калуга)
-                        {
-                            if (FarmPartnerKalugaParser.CheckFileFormat(file))
-                                type = typeof(FarmPartnerKalugaParser);
-                            break;
-                        }
-                    default: break;
-                }
-            }
+			if ((documentLog != null) && (extention == ".sst"))
+			{
+				switch (documentLog.Supplier.Id)
+				{
+					case 4910: // Фармпартнер (Калуга)
+						{
+							if (FarmPartnerKalugaParser.CheckFileFormat(file))
+								type = typeof(FarmPartnerKalugaParser);
+							break;
+						}
+					default: break;
+				}
+			}
 
-            if ((documentLog != null) && (extention == ".txt"))
-            {
-                switch (documentLog.Supplier.Id)
-                {
-                    case 8063: // Накладная (txt) от  "Бизон" (Казань)
-                        {
-                            if (BizonKazanSpecialParser.CheckFileFormat(file))
-                                type = typeof (BizonKazanSpecialParser);
-                            break;
-                        }
-                    default: break;
-                }
-            }
+			if ((documentLog != null) && (extention == ".txt"))
+			{
+				switch (documentLog.Supplier.Id)
+				{
+					case 8063: // Накладная (txt) от  "Бизон" (Казань)
+						{
+							if (BizonKazanSpecialParser.CheckFileFormat(file))
+								type = typeof (BizonKazanSpecialParser);
+							break;
+						}
+					default: break;
+				}
+			}
 
 			if (type == null)
 			{
-                if (extention == ".dbf")
-                    type = DetectDbfParser(file);
-                else if (extention == ".sst")
-                    type = typeof (UkonParser);
-                else if (extention == ".xls")
-                    type = DetectXlsParser(file);
-                else if ((extention == ".xml") || (extention == ".data"))
-                    type = DetectXmlParser(file);
-                else if (extention == ".pd")
-                    type = typeof(ProtekParser);
-                else if (extention == ".txt")
-                    type = DetectTxtParser(file);
+				if (extention == ".dbf")
+					type = DetectDbfParser(file);
+				else if (extention == ".sst")
+					type = typeof (UkonParser);
+				else if (extention == ".xls")
+					type = DetectXlsParser(file);
+				else if ((extention == ".xml") || (extention == ".data"))
+					type = DetectXmlParser(file);
+				else if (extention == ".pd")
+					type = typeof(ProtekParser);
+				else if (extention == ".txt")
+					type = DetectTxtParser(file);
 
 				// Если поставщик - это челябинский Морон, для него отдельный парсер 
 				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
@@ -135,11 +136,11 @@ namespace Inforoom.PriceProcessor.Waybills
 					type = typeof (Moron_338_SpecialParser);
 
 				// Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
-                if (type == typeof(PulsFKParser) && documentLog != null
-                    && documentLog.Supplier.Id == 1581)
-                {                  
-                    type = typeof(ZdravServiceParser);                 
-                }
+				if (type == typeof(PulsFKParser) && documentLog != null
+					&& documentLog.Supplier.Id == 1581)
+				{                  
+					type = typeof(ZdravServiceParser);                 
+				}
 			}
 			if (type == null)
 			{
@@ -228,13 +229,40 @@ namespace Inforoom.PriceProcessor.Waybills
 			var document = new Document(log);
 			document.Parser = parser.GetType().Name;
 			var doc = parser.Parse(file, document);
-            if (doc != null)
-            {
+			if (doc != null)
+			{
 				doc.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 				doc.CalculateValues(); // расчет недостающих значений 
-                if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;                				
-            }
-		    return doc;
+				if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
+				//сопоставление сертификатов для позиций накладной
+				ParseCertificates(doc);
+			}
+			return doc;
 		}
+
+		public void ParseCertificates(Document document)
+		{
+
+			foreach (var documentLine in document.Lines) {
+			    if (documentLine.ProductEntity != null && !String.IsNullOrEmpty(documentLine.SerialNumber)) {
+			        var certificate = 
+						Certificate.Queryable.FirstOrDefault(
+							c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id && c.SerialNumber == documentLine.SerialNumber);
+					if (certificate != null)
+						documentLine.Certificate = certificate;
+					else 
+						if (NeedFoundCertificate(documentLine))
+							document.AddCertificateTask(documentLine);
+			    }
+			}
+		}
+
+		private bool NeedFoundCertificate(DocumentLine documentLine)
+		{
+			return !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
+			       !String.IsNullOrEmpty(documentLine.ProtocolFilemame) ||
+			       !String.IsNullOrEmpty(documentLine.PassportFilename);
+		}
+
 	}
 }
