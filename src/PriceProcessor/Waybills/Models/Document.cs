@@ -267,6 +267,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					t => t.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
 						&& t.SerialNumber.Equals(documentLine.SerialNumber, StringComparison.CurrentCultureIgnoreCase)))
 				Tasks.Add(new CertificateTask {
+					Supplier = Supplier.Find(FirmCode),
 					CatalogProduct = documentLine.ProductEntity.CatalogProduct,
 					SerialNumber = documentLine.SerialNumber,
 					DocumentLine = documentLine
@@ -278,6 +279,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Tasks.ForEach(task => { 
 				var existsTask = CertificateTask.Exists(
 					DetachedCriteria.For<CertificateTask>()
+						.Add(Restrictions.Eq("Supplier.Id", task.Supplier.Id))
 						.Add(Restrictions.Eq("CatalogProduct.Id", task.CatalogProduct.Id))
 						.Add(Restrictions.Eq("SerialNumber", task.SerialNumber)));
 

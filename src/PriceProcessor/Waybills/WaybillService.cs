@@ -105,8 +105,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			{
 
 				docs.Each(d => {
-								if(d.Log.IsFake) d.Log.Save();
-								d.Save();
+					if(d.Log.IsFake) d.Log.Save();
+					d.Save();
+					d.CreateCertificateTasks();
 				});
 				scope.VoteCommit();
 			}
@@ -147,8 +148,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
 					if(log.IsFake) log.Save();
-						document.Save();
-						transaction.VoteCommit();
+					document.Save();
+					document.CreateCertificateTasks();
+					transaction.VoteCommit();
 				}
 			}
 			catch(Exception e)
