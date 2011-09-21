@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.IO;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
@@ -16,13 +17,26 @@ namespace PriceProcessor.Test
 			var data = TestHelper.Fill(@"
 select * from farm.core0 c
 where pricecode = 4649;");
-			Assert.That(data.Tables[0].Rows[0]["RequestRatio"], Is.EqualTo(50));
-			Assert.That(data.Tables[0].Rows[1]["RequestRatio"], Is.EqualTo(DBNull.Value));
-			Assert.That(data.Tables[0].Rows[2]["RequestRatio"], Is.EqualTo(50));
-			Assert.That(data.Tables[0].Rows[3]["RequestRatio"], Is.EqualTo(DBNull.Value));
-			Assert.That(data.Tables[0].Rows[4]["RequestRatio"], Is.EqualTo(40));
-			Assert.That(data.Tables[0].Rows[5]["RequestRatio"], Is.EqualTo(6));
-			Assert.That(data.Tables[0].Rows[6]["RequestRatio"], Is.EqualTo(6));
+
+			Assert.That(data.Tables[0].Rows.Count, Is.EqualTo(6), "Изменилось кол-во формализованных позиций для прайс-листа, значит порядок позиций в тесте будет неожидаемым");
+
+			var coreTable = data.Tables[0];
+
+			CheckCoreRowByRequestRatio(coreTable.Rows[0], "1022", null);
+			CheckCoreRowByRequestRatio(coreTable.Rows[1], "1038", 50);
+			CheckCoreRowByRequestRatio(coreTable.Rows[2], "10475", null);
+			CheckCoreRowByRequestRatio(coreTable.Rows[3], "1083", 40);
+			CheckCoreRowByRequestRatio(coreTable.Rows[4], "10860", 6);
+			CheckCoreRowByRequestRatio(coreTable.Rows[5], "10861", 6);
+		}
+
+		private void CheckCoreRowByRequestRatio(DataRow dataRow, string code, int? requestRatio)
+		{
+			Assert.That(dataRow["Code"], Is.EqualTo(code), "Неожидаемая позиция в прайс-листе по полю Code");
+			Assert.That(
+				dataRow["RequestRatio"], 
+				requestRatio.HasValue ? Is.EqualTo(requestRatio) : Is.EqualTo(DBNull.Value), 
+				"У позиции некорректно формализовано поле RequestRatio");
 		}
 	}
 }
