@@ -282,8 +282,34 @@ namespace PriceProcessor.Test.Waybills
 			{
 				LogManager.ResetConfiguration();
 			}
+		}
+		
+		[Test(Description = "перемещение сертификатов на их законное место"), Ignore("это не тест")]
+		public void MigrateCertificates()
+		{
+			return;
 
+			//var certificateFiles = CertificateFile.FindAll().ToList();
+			//var distinctCertificateFiles =
+			//    certificateFiles.GroupBy(c => c.OriginFilename).Where(g => g.Count() == 1).Select(g => g.First()).ToList();
+			//Assert.That(certificateFiles.Count, Is.GreaterThan(0));
 
+			//var sourcePath = @"\\adc.analit.net\Inforoom\FTP\OptBox";
+			//var destinationPath = @"\\ADC.ANALIT.NET\Inforoom\WebApps\PrgDataService\Results\Certificates";
+
+			//foreach (var distinctCertificateFile in distinctCertificateFiles) {
+			//    var sourceFile = Path.Combine(
+			//        sourcePath, 
+			//        distinctCertificateFile.Supplier.Id.ToString().PadLeft(3, '0'),
+			//        "Certificats", 
+			//        distinctCertificateFile.OriginFilename);
+			//    var destinationFile = Path.Combine(destinationPath, distinctCertificateFile.Id + ".tif");
+
+			//    if (File.Exists(sourceFile)) {
+			//        if (!File.Exists(destinationFile))
+			//            File.Move(sourceFile, destinationFile);
+			//    }
+			//}
 		}
 
 	}
