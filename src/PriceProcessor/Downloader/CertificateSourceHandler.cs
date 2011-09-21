@@ -94,12 +94,40 @@ namespace Inforoom.PriceProcessor.Downloader
 						Supplier = certificateTask.Supplier
 					};
 
+					certificateFileEntry.CertificateFile = certificateFile;
 					certificate.NewFile(certificateFile);
 				}
 
 				certificate.Save();
 
 				certificateTask.Delete();
+
+				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
+				try
+				{
+					session.CreateSQLQuery(@"
+	update  
+		documents.Certificates c,
+		catalogs.Products p,
+		documents.DocumentBodies db
+	set
+		db.CertificateId = c.Id
+	where
+		c.Id = :certificateId
+		and p.CatalogId = c.catalogId
+		and db.ProductId is not null 
+		and db.SerialNumber is not null 
+		and db.ProductId = p.Id 
+		and db.SerialNumber = c.SerialNumber 
+		and db.CertificateId is null;
+		")
+						.SetParameter("certificateId", certificate.Id)
+						.ExecuteUpdate();
+				}
+				finally
+				{
+					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
+				}
 
 				transaction.VoteCommit();
 			}

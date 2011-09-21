@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var document = new TestWaybill {
 				ClientCode = user.Client.Id,
-				FirmCode = supplier.Supplier,
+				FirmCode = supplier.Id,
 				DocumentType = DocumentType.Waybill,
 				WriteTime = DateTime.Now
 			};

@@ -176,7 +176,7 @@ namespace PriceProcessor.Test.Waybills
 
 				var productSynonym = new TestSynonym
 										{
-											ProductId = (int?)product.Id,
+											ProductId = product.Id,
 											Synonym = "Коринфар таб п/о 10мг № 50",
 											PriceCode = (int?) price.Id
 										};
@@ -969,10 +969,10 @@ namespace PriceProcessor.Test.Waybills
 				producer3 = new TestProducer("Воронежская Фармацевтическая компания");
 				producer3.CreateAndFlush();
 
-				new TestSynonym() {Synonym = "Активированный уголь", ProductId = (int?)product1.Id, PriceCode = (int?)price.Id}.CreateAndFlush();			
-				new TestSynonym() {Synonym = "Виагра", ProductId = (int?)product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();				
-				new TestSynonym() {Synonym = "Крем для кожи", ProductId = (int?) product3.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
-				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = (int?)product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonym() {Synonym = "Активированный уголь", ProductId = product1.Id, PriceCode = (int?)price.Id}.CreateAndFlush();			
+				new TestSynonym() {Synonym = "Виагра", ProductId = product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();				
+				new TestSynonym() {Synonym = "Крем для кожи", ProductId = product3.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 
 				new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
 				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();

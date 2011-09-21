@@ -186,7 +186,7 @@ namespace PriceProcessor.Test.Handlers
 			if (synonym.Count > 0)
 			{
 				//Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
-				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains((int)line.ProductEntity.Id));
+				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductEntity.Id));
 			}
 			else
 			{
