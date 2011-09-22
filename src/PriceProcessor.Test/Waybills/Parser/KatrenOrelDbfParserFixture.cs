@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[4].RegistryCost, Is.EqualTo(122.3400));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(271.3700));
-			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -77,7 +77,39 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[1].Nds.Value, Is.EqualTo(18));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(179.3700));
-			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(-5.0044));
 		}
+
+		[Test]
+		public void Parse_BellaVolga()
+		{
+			var document = WaybillParser.Parse(@"00011560.DBF");
+			Assert.That(document.Lines.Count, Is.EqualTo(27));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("к0000011560"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("20.09.2011")));
+
+			Assert.That(document.Lines[0].Code, Is.EqualTo("26"));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Прокладки женские гигиенические впитывающие\"bella\" \"Classic Nova Maxi\" drainette air по 10 шт"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("TZMO З.А."));
+			Assert.That(document.Lines[0].Country, Is.Null);
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
+			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(29.6550));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(32.6200));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(29.6550));
+			Assert.That(document.Lines[0].Period, Is.Null);
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ИМ09.В02709"));
+			Assert.That(document.Lines[0].SerialNumber, Is.Null);						
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);			
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
+			Assert.That(document.Lines[19].Nds, Is.EqualTo(18));
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(5.93));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(65.2400));
+			Assert.That(document.Lines[0].BillOfEntryNumber, Is.Null);
+			Assert.That(document.Lines[1].BillOfEntryNumber, Is.EqualTo("10130060/120911/0025285/1"));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("5900516300920"));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+		}
+
 	}
 }

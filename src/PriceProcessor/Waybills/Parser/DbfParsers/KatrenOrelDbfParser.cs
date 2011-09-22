@@ -1,19 +1,20 @@
 ﻿using System.Data;
 using System.Text;
-using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class KatrenOrelDbfParser : IDocumentParser
+	public class KatrenOrelDbfParser : BaseDbfParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
-
-		public Document Parse(string file, Document document)
+		public override Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding);
+			Encdoing = Encoding.GetEncoding(866);
+			return base.Parse(file, document);
+		}
 
-			new DbfParser()
+		public override DbfParser GetParser()
+		{
+			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "DCODE")
 				.DocumentHeader(h => h.DocumentDate, "DATE_DOC")
 				.Line(l => l.Code, "CODE")
@@ -30,9 +31,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SERIES")
 				.Line(l => l.VitallyImportant, "VitImport", "PV")
 				.Line(l => l.Nds, "NDS_PR")
-				.ToDocument(document, data);
-
-			return document;
+				.Line(l => l.NdsAmount, "NDS_SUM")
+				.Line(l => l.Amount, "SUM_OPL")				
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.EAN13, "EAN13")
+				.Line(l => l.SupplierPriceMarkup, "NC_OPT_PR");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
