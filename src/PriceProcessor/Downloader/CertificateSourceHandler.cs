@@ -66,10 +66,16 @@ namespace Inforoom.PriceProcessor.Downloader
 					}
 				else {
 					_logger.WarnFormat("Для задачи сертификата {0} не были получены файлы", certificateTask);
+					using (new TransactionScope()) {
+						certificateTask.Delete();
+					}
 				}
 			}
 			else {
-				_logger.WarnFormat("Для задачи сертификата {0} не был найден источник", certificateTask);
+				_logger.ErrorFormat("Для задачи сертификата {0} не был найден источник", certificateTask);
+				using (new TransactionScope()) {
+					certificateTask.Delete();
+				}
 			}
 		}
 
