@@ -6,12 +6,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class KatrenOrelDbfParser : BaseDbfParser
 	{
-		public override Document Parse(string file, Document document)
-		{
-			Encdoing = Encoding.GetEncoding(866);
-			return base.Parse(file, document);
-		}
-
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()

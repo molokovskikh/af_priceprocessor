@@ -21,7 +21,7 @@ namespace Inforoom.Downloader
 	public class WaybillLANSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
-		private InboundDocumentType _currentDocumentType;
+		protected InboundDocumentType _currentDocumentType;
 
 		public WaybillLANSourceHandler()
 		{
@@ -281,7 +281,7 @@ and st.SourceID = 4";
 							clientId = clientAddressId;
 							clientAddressId = null;
 						}
-				
+
 						var log = DocumentReceiveLog.LogNoCommit(supplierId,
 						    clientId,
 						    clientAddressId,
@@ -298,10 +298,9 @@ and st.SourceID = 4";
 				}
 				catch(Exception e)
 				{
-					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-					//DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
-					//LoggingToService(String.Format("Не удалось отформатировать документ.\nОшибка: {0}", e));
+					var message = "Не удалось отформатировать документ.\nОшибка: " + e;										
 					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
+					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
 					return false;
 				}
 			}
