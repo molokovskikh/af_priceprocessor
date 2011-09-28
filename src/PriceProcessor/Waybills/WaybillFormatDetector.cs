@@ -80,6 +80,13 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(PokrevskySpecialParser);
 							break;
 						}
+					case 182: // Накладная от Лекрус Центральное Черноземье
+						{
+							var table = LekRusChernozemieSpecialParser.Load(file);
+							if (LekRusChernozemieSpecialParser.CheckFileFormat(table))
+								type = typeof(LekRusChernozemieSpecialParser);
+							break;
+						}
 					/*case 4138: // Накладная от Катрен Воронеж
 						{
 							var table = KatrenVrnSpecialParser.Load(file);

@@ -1,11 +1,11 @@
-﻿using Castle.ActiveRecord;
-using Inforoom.PriceProcessor.Models;
+﻿using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
 
-namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
+namespace PriceProcessor.Test.Waybills.Parser
 {
+	[TestFixture]
 	class ImperiaFarmaSpecialParserFixture
 	{
 		[Test]
