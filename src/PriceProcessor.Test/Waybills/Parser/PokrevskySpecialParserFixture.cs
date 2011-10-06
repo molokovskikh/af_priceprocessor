@@ -1,5 +1,4 @@
 ﻿using Inforoom.PriceProcessor.Models;
-using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -29,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(27.11));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(54.22));
 			Assert.That(document.Lines[0].SerialNumber, Is.Null);
-			Assert.That(document.Lines[0].Certificates, Is.EqualTo("АЯ42.Н27564"));			
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("АЯ42.Н27564"));
 		}
 	}
 }

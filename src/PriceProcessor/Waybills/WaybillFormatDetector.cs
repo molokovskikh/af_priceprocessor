@@ -80,6 +80,13 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(PokrevskySpecialParser);
 							break;
 						}
+					case 7: // Накладная от Ориола (Воронеж)
+						{
+							var table = OriolaVoronezhSpecialParser.Load(file);
+							if (OriolaVoronezhSpecialParser.CheckFileFormat(table))
+								type = typeof(OriolaVoronezhSpecialParser);
+							break;
+						}
 					case 182: // Накладная от Лекрус Центральное Черноземье
 						{
 							var table = LekRusChernozemieSpecialParser.Load(file);
@@ -87,7 +94,8 @@ namespace Inforoom.PriceProcessor.Waybills
 								type = typeof(LekRusChernozemieSpecialParser);
 							break;
 						}
-					/*case 4138: // Накладная от Катрен Воронеж
+					/* Пока не используется
+					 * case 4138: // Накладная от Катрен Воронеж
 						{
 							var table = KatrenVrnSpecialParser.Load(file);
 							if (KatrenVrnSpecialParser.CheckFileFormat(table))
