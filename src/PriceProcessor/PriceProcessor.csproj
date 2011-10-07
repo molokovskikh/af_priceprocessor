@@ -221,6 +221,7 @@
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
     <Compile Include="Waybills\Models\Certificate.cs" />
     <Compile Include="Waybills\Models\CertificateFile.cs" />
+    <Compile Include="Waybills\Models\CertificateSource.cs" />
     <Compile Include="Waybills\Models\CertificateTask.cs" />
     <Compile Include="Waybills\Models\Document.cs" />
     <Compile Include="Waybills\Models\DocumentLine.cs" />

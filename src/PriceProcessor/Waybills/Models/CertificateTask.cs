@@ -10,8 +10,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[PrimaryKey]
 		public uint Id { get; set; }
 
-		[BelongsTo("SupplierId")]
-		public virtual Supplier Supplier { get; set; }
+		[BelongsTo("CertificateSourceId")]
+		public virtual CertificateSource CertificateSource { get; set; }
 
 		[BelongsTo("CatalogId")]
 		public virtual Catalog CatalogProduct { get; set; }
@@ -28,9 +28,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public override string ToString()
 		{
 			return string.Format(
-				"CertificateTask Id: {0},  Supplier: {1},  Catalog: {2},  SerialNumber: {3},  DocumentBodyId: {4}", 
+				"CertificateTask Id: {0},  CertificateSource: {1},  Catalog: {2},  SerialNumber: {3},  DocumentBodyId: {4}", 
 				Id, 
-				Supplier != null ? Supplier.Id.ToString() : "null",
+				CertificateSource != null ? CertificateSource.Id.ToString() : "null",
 				CatalogProduct != null ? CatalogProduct.Id.ToString() : "null",
 				SerialNumber,
 				DocumentLine != null ? DocumentLine.Id.ToString() : "null"

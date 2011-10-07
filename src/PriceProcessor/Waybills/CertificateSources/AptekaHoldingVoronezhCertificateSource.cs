@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public IList<CertificateFileEntry> GetCertificateFiles(CertificateTask certificateTask)
 		{
-			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.Supplier.Id.ToString().PadLeft(3, '0'), "Certificats");
+			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.SourceSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			var list = new List<CertificateFileEntry>();
 
@@ -59,18 +59,18 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public void CommitCertificateFiles(CertificateTask certificateTask, IList<CertificateFileEntry> fileEntries)
 		{
-			foreach (var certificateFileEntry in fileEntries) {
-				try {
-					if (File.Exists(certificateFileEntry.OriginFile))
-						File.Delete(certificateFileEntry.OriginFile);
-				}
-				catch (Exception exception) {
-					_logger.WarnFormat("Ошибка при удалении оригинального файла {0} для задачи сертификата {1}: {2}", 
-						certificateFileEntry.OriginFile, 
-						certificateTask, 
-						exception);
-				}
-			}
+			//foreach (var certificateFileEntry in fileEntries) {
+			//    try {
+			//        if (File.Exists(certificateFileEntry.OriginFile))
+			//            File.Delete(certificateFileEntry.OriginFile);
+			//    }
+			//    catch (Exception exception) {
+			//        _logger.WarnFormat("Ошибка при удалении оригинального файла {0} для задачи сертификата {1}: {2}", 
+			//            certificateFileEntry.OriginFile, 
+			//            certificateTask, 
+			//            exception);
+			//    }
+			//}
 		}
 	}
 }

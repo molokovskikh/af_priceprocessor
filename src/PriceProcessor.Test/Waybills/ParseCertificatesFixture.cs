@@ -28,6 +28,7 @@ namespace PriceProcessor.Test.Waybills
 		public void CheckParse()
 		{
 			var docSupplier = Supplier.Find(39u);
+			var certificateSource = CreateSourceForSupplier(docSupplier);
 
 			var firstCatalog = new Catalog {Id = 1, Name = "catalog1"};
 			var secondCatalog = new Catalog {Id = 2, Name = "catalog2"};
@@ -71,7 +72,7 @@ namespace PriceProcessor.Test.Waybills
 			CertificateSourceDetector.DetectAndParse(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(3));
-			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));
+			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == firstCatalog.Id && task[0].SerialNumber == "крутая серия 1");
@@ -79,11 +80,27 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(task[2].CatalogProduct.Id == secondCatalog.Id && task[2].SerialNumber == "крутая серия 1");
 		}
 
+		private CertificateSource CreateSourceForSupplier(Supplier supplier)
+		{
+			var source = CertificateSource.Queryable.FirstOrDefault(s => s.SourceSupplier.Id == supplier.Id);
+			if (source == null)
+				using (new TransactionScope()) {
+					source = new CertificateSource {
+						SourceSupplier = supplier,
+						SourceClassName = Path.GetRandomFileName() 
+					};
+					source.Create();
+				}
+			return source;
+		}
+
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов при существовании сертификатов")]
 		public void CheckParseWithExistsCertificates()
 		{
 			var docSupplier = Supplier.Find(39u);
+			var certificateSource = CertificateSource.Queryable.First(s => s.SourceSupplier.Id == docSupplier.Id);
 			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != docSupplier.Id).First();
+			var anotherSupplierSource = CreateSourceForSupplier(anotherSupplier);
 
 			var catalogs = Catalog.Queryable.Take(2).ToList().OrderBy(c => c.Id).ToList();
 			var existsCatalog = catalogs[0];
@@ -108,19 +125,19 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
-						Supplier = docSupplier
+						CertificateSource = certificateSource
 					}
 				);
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
-						Supplier = docSupplier
+						CertificateSource = certificateSource
 					}
 				);
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
-						Supplier = anotherSupplier
+						CertificateSource = anotherSupplierSource
 					}
 				);
 				existsCertificate.Create();
@@ -167,7 +184,7 @@ namespace PriceProcessor.Test.Waybills
 			CertificateSourceDetector.DetectAndParse(document);
 
 			Assert.That(document.Tasks.Count, Is.EqualTo(4));
-			Assert.That(document.Tasks.TrueForAll(t => t.Supplier.Id == docSupplier.Id));
+			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == existsCatalog.Id && task[0].SerialNumber == "крутая серия 1");
@@ -237,7 +254,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			using (new TransactionScope()) {
 				var certificates =
-					CertificateTask.Queryable.Where(c => c.Supplier.Id != 39).ToList();
+					CertificateTask.Queryable.Where(c => c.CertificateSource.SourceSupplier.Id != 39).ToList();
 				certificates.ForEach(c => c.Delete());
 			}
 		}
@@ -285,6 +302,7 @@ namespace PriceProcessor.Test.Waybills
 			DeleteNonProcessedTasks();
 
 			var supplier = Supplier.Find(39u);
+			var certificateSource = CreateSourceForSupplier(supplier);
 			var serialNumber = Path.GetRandomFileName();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
@@ -305,7 +323,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var task = new CertificateTask();
 			using (new TransactionScope()) {
-				task.Supplier = supplier;
+				task.CertificateSource = certificateSource;
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
@@ -333,10 +351,10 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(certificate, Is.Not.Null, "Не был создан сертификат");
 				Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "Не были добавлены файлы сертификата");
 				Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "Не совпадает оригинальное имя файла сертификата");
-				Assert.That(certificate.CertificateFiles[0].Supplier.Id, Is.EqualTo(supplier.Id), "Не совпадает поставщик файла сертификата");
+				Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "Не совпадает источник файла сертификата");
 
 				Assert.That(File.Exists(Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif")), "Не скопирован файл сертификата");
-				Assert.That(!File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "Не удален файл сертификата из исходной папки");
+				Assert.That(File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "Удален файл сертификата из исходной папки");
 
 				documentLine.Refresh();
 				Assert.That(documentLine.Certificate.Id, Is.EqualTo(certificate.Id), "В позиции документа не установлена ссылка на сертификат");

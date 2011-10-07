@@ -22,15 +22,18 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (source != null) {
 
 				foreach (var documentLine in document.Lines) {
-					if (documentLine.ProductEntity != null && !String.IsNullOrEmpty(documentLine.SerialNumber)) {
+					if (documentLine.ProductEntity != null && !String.IsNullOrWhiteSpace(documentLine.SerialNumber)) {
+						var certificateSource = CertificateSource.Queryable.First(s => s.SourceSupplier.Id == document.FirmCode);
 						var certificate = 
 							Certificate.Queryable.FirstOrDefault(
-								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id && c.SerialNumber == documentLine.SerialNumber && c.CertificateFiles.Any(f => f.Supplier.Id == document.FirmCode));
+								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
+									&& c.SerialNumber == documentLine.SerialNumber 
+									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == certificateSource.Id));
 						if (certificate != null)
 							documentLine.Certificate = certificate;
 						else 
 							if (source.CertificateExists(documentLine))
-								document.AddCertificateTask(documentLine);
+								document.AddCertificateTask(documentLine, certificateSource);
 					}
 				}
 

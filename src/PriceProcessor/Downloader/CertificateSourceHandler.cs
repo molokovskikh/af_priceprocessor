@@ -97,7 +97,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				foreach (var certificateFileEntry in files) {
 					var certificateFile = new CertificateFile {
 						OriginFilename = Path.GetFileName(certificateFileEntry.OriginFile),
-						Supplier = certificateTask.Supplier
+						CertificateSource = certificateTask.CertificateSource
 					};
 
 					certificateFileEntry.CertificateFile = certificateFile;

@@ -8,6 +8,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("Certificates", Schema = "documents")]
 	public class Certificate : ActiveRecordLinqBase<Certificate>
 	{
+		public Certificate()
+		{
+			CertificateFiles = new List<CertificateFile>();
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -20,7 +25,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string SerialNumber { get; set; }
 
-		[HasMany(ColumnKey = "CertificateId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
+		[HasAndBelongsToMany(typeof (CertificateFile),
+			Lazy = false,
+			ColumnKey = "CertificateId",
+			Table = "FileCertificates",
+			Schema = "Documents",
+			ColumnRef = "CertificateFileId",
+			Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<CertificateFile> CertificateFiles { get; set; }
 
 		public CertificateFile NewFile()
@@ -33,7 +44,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (CertificateFiles == null)
 				CertificateFiles = new List<CertificateFile>();
 
-			file.Certificate = this;
+			file.Certificates.Add(this);
 			CertificateFiles.Add(file);
 			return file;
 		}
