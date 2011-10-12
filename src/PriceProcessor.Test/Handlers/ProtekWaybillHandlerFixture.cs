@@ -44,6 +44,7 @@ namespace PriceProcessor.Test.Handlers
 		private TestOrder order;
 		private TestOrder order2;
 		private FakeProtekHandler fake;
+		private Blading blading;
 
 		[SetUp]
 		public void SetUp()
@@ -66,30 +67,29 @@ namespace PriceProcessor.Test.Handlers
 				}
 			};
 
+			blading = new Blading {
+				bladingId = 1,
+				@uint = (int?) order.Id,
+				bladingItems = new [] {
+					new BladingItem {
+						itemId = 3345,
+						itemName = "Коринфар таб п/о 10мг № 50",
+						manufacturerName = "",
+						bitemQty = 3,
+						country = "Хорватия/Германия",
+						prodexpiry = DateTime.Parse("17.02.2012"),
+						distrPriceNds = 45.05,
+						distrPriceWonds = 40.95,
+						vitalMed = 1,
+						sumVat = 12.3
+					}
+				},
+			};
 			fake.bodyResponce = new getBladingBodyResponse
 			{
 				@return = new EZakazXML
 				{
-					blading = new[] {
-						new Blading {
-							bladingId = 1,
-							@uint = (int?) order.Id,
-							bladingItems = new [] {
-								new BladingItem {
-									itemId = 3345,
-									itemName = "Коринфар таб п/о 10мг № 50",
-									manufacturerName = "",
-									bitemQty = 3,
-									country = "Хорватия/Германия",
-									prodexpiry = DateTime.Parse("17.02.2012"),
-									distrPriceNds = 45.05,
-									distrPriceWonds = 40.95,
-									vitalMed = 1,
-									sumVat = 12.3
-								}                                
-							},                                                        
-						}
-					}
+					blading = new[] { blading }
 				}
 			};
 		}
@@ -218,6 +218,12 @@ namespace PriceProcessor.Test.Handlers
 			}
 			var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 			Assert.That(files_dbf.Count(), Is.EqualTo(1));
+		}
+
+		[Test]
+		public void Save_dump()
+		{
+			ProtekWaybillHandler.Dump(".", blading);
 		}
 	}
 }

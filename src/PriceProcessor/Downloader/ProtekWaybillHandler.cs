@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Xml;
+using System.Xml.Serialization;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
@@ -331,13 +335,27 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.EAN13 = bladingItem.prodsbar;
 			}
 
+			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
+
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 			document.CalculateValues(); // расчет недостающих значений
 			var settings = WaybillSettings.TryFind(order.ClientCode);
-			if (settings != null && settings.IsConvertFormat)			
+			if (settings != null && settings.IsConvertFormat)
 				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);
 
 			return document;
+		}
+
+		public static void Dump(string path, Blading blading)
+		{
+			if (String.IsNullOrEmpty(path))
+				return;
+			var file = Path.Combine(path, DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss_fff") + ".xml");
+			using(var writer = new StreamWriter(file))
+			{
+				var serializer = new XmlSerializer(blading.GetType());
+				serializer.Serialize(XmlWriter.Create(writer), blading);
+			}
 		}
 	}
 }

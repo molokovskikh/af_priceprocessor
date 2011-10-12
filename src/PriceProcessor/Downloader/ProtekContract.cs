@@ -68,6 +68,115 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public double? positionsum { get; set; }
+
+		[XmlElement("bladingItemSeries", Form=XmlSchemaForm.Unqualified)]
+		public BladingItemSeries[] bladingItemSeries { get; set; }
+	}
+
+	[Serializable]
+	[XmlType(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	public partial class BladingItemSeries
+	{
+		[XmlElement(Form=XmlSchemaForm.Unqualified)]
+		public int? bitemId { get;set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? bitemSeriesId { get; set; }
+
+		[XmlElement("bladingItemSeriesCertificates", Form = XmlSchemaForm.Unqualified)]
+		public BladingItemSeriesCertificate[] bladingItemSeriesCertificates { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string country { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string countryCode { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public DateTime? dateExpire { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public DateTime? dateProduce { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string descBrak { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? grcPrice { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string gtdn { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? impProc { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? itemId { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? lotsSumWnds { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? optProc { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? prodPrice { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public double? prodPriceWnds { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? qty { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public float? rrpriceNonds { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? sbad { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string sbar { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string seria { get; set; }
+	}
+
+	[Serializable]
+	[XmlType(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	public class BladingItemSeriesCertificate
+	{
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public int? bitemSeriesId { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public DateTime? dateExpire { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public string declarantName { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public int? docId { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public int? docTypeId { get; set; }
+
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public int? itemId { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public string regNo { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public string regOrg { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public string regSert { get; set; }
+		
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public System.DateTime? regd { get; set; }
+
+		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		public int? sertId { get; set; }
 	}
 
 	[SerializableAttribute]
