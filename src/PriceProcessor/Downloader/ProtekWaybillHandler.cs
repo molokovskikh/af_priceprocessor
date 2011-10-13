@@ -1,10 +1,13 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
@@ -16,7 +19,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
-	[ServiceContractAttribute(Namespace="http://service.ezakaz.protek.ru")]
+	[ServiceContract(Namespace="http://service.ezakaz.protek.ru")]
 	public interface ProtekService
 	{
 		[OperationContract(Action = "urn:getBladingHeaders", ReplyAction = "urn:getBladingHeadersResponse")]
@@ -33,6 +36,94 @@ namespace Inforoom.PriceProcessor.Downloader
 		[XmlSerializerFormat(SupportFaults = true)]
 		[return: MessageParameter(Name = "return")]
 		closeBladingSessionResponse closeBladingSession(closeBladingSessionRequest request);
+
+		[OperationContract(Action = "urn:getSertImages", ReplyAction = "urn:getSertImagesResponse")]
+		[XmlSerializerFormat(SupportFaults = true)]
+		[return: MessageParameter(Name = "return")]
+		getSertImagesResponse getSertImages(getSertImagesRequest request);
+
+		[OperationContractAttribute(Action="urn:getSertDocType", ReplyAction="urn:getSertDocTypeResponse")]
+		[XmlSerializerFormatAttribute(SupportFaults=true)]
+		[return: MessageParameterAttribute(Name="return")]
+		getSertDocTypeResponse getSertDocType(getSertDocTypeRequest request);
+	}
+
+	[MessageContract(WrapperName="getSertDocTypeResponse", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
+	public class getSertDocTypeResponse
+	{
+		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
+		[XmlElement(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
+		public EZakazXML @return;
+
+		public getSertDocTypeResponse()
+		{}
+
+		public getSertDocTypeResponse(EZakazXML @return)
+		{
+			this.@return = @return;
+		}
+	}
+
+	[MessageContract(WrapperName="getSertDocType", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
+	public class getSertDocTypeRequest
+	{
+		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
+		[XmlElement(Form=XmlSchemaForm.Unqualified)]
+		public int clientId;
+
+		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
+		[XmlElement(Form=XmlSchemaForm.Unqualified)]
+		public int instCode;
+
+		public getSertDocTypeRequest()
+		{}
+
+		public getSertDocTypeRequest(int clientId, int instCode)
+		{
+			this.clientId = clientId;
+			this.instCode = instCode;
+		}
+	}
+
+	[MessageContract(WrapperName = "getSertImagesResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
+	public class getSertImagesResponse
+	{
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public EZakazXML @return;
+
+		public getSertImagesResponse()
+		{}
+
+		public getSertImagesResponse(EZakazXML @return)
+		{
+			this.@return = @return;
+		}
+	}
+
+	[MessageContract(WrapperName = "getSertImages", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
+	public class getSertImagesRequest
+	{
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
+		public int clientId;
+
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
+		[XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
+
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int theDocId;
+
+		public getSertImagesRequest()
+		{}
+
+		public getSertImagesRequest(int clientId, int instCode, int theDocId)
+		{
+			this.clientId = clientId;
+			this.instCode = instCode;
+			this.theDocId = theDocId;
+		}
 	}
 
 	[ActiveRecord("OrdersHead", Schema = "Orders")]
@@ -79,13 +170,12 @@ namespace Inforoom.PriceProcessor.Downloader
 		public OrderHead Order { get; set; }
 	}
 
-
 	public class ProtekWaybillHandler : AbstractHandler
 	{
 		private string uri;
 		private IList<OrderHead> orders = new List<OrderHead>();
 
-		public virtual void WithService(Action<ProtekService> action)
+		public virtual void WithService(string uri, Action<ProtekService> action)
 		{
 			var endpoint = new EndpointAddress(uri);
 			var binding = new BasicHttpBinding {
@@ -200,7 +290,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		protected void Load(int clientId, int instanceId)
 		{
-			WithService(service => {
+			WithService(uri, service => {
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
@@ -351,11 +441,8 @@ namespace Inforoom.PriceProcessor.Downloader
 			if (String.IsNullOrEmpty(path))
 				return;
 			var file = Path.Combine(path, DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss_fff") + ".xml");
-			using(var writer = new StreamWriter(file))
-			{
-				var serializer = new XmlSerializer(blading.GetType());
-				serializer.Serialize(XmlWriter.Create(writer), blading);
-			}
+			using(var stream = File.OpenRead(file))
+				blading.ToXml(stream);
 		}
 	}
 }

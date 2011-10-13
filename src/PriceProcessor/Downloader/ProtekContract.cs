@@ -1,4 +1,7 @@
 using System;
+using System.CodeDom.Compiler;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.ServiceModel;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -71,6 +74,26 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement("bladingItemSeries", Form=XmlSchemaForm.Unqualified)]
 		public BladingItemSeries[] bladingItemSeries { get; set; }
+	}
+
+	[Serializable]
+	[XmlType(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
+	public class SertImagesBase
+	{
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? docId { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, DataType = "base64Binary")]
+		public byte[] image { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public int? imageSize { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public int? leafNumber { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
+		public int? saveTypeId {get; set; }
 	}
 
 	[Serializable]
@@ -379,35 +402,59 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public string protekInnKpp { get; set; }
-
 	}
 
-	[SerializableAttribute]
-	[XmlTypeAttribute(Namespace="http://xml.ezakaz.protek.ru/xsd")]
+	[Serializable]
+	[XmlType(Namespace="http://xml.ezakaz.protek.ru/xsd")]
 	public class EZakazXML 
 	{
-		[XmlElementAttribute("blading", Form = XmlSchemaForm.Unqualified)]
+		[XmlElement("blading", Form = XmlSchemaForm.Unqualified)]
 		public Blading[] blading { get; set; }
 
-		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
+		[XmlElement("sertImage", Form = XmlSchemaForm.Unqualified)]
+		public SertImagesBase[] sertImage { get; set; }
+
+		[XmlElement("sertDocType", Form=XmlSchemaForm.Unqualified)]
+		public SertDocType[] sertDocType { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public string wsSessionIdStr { get; set; }
 	}
 
+	[Serializable]
+	[XmlType(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
+	public class SertDocType
+	{
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string description { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? docTypeId { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string docTypeName { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? organizationId { get; set; }
+	}
+
 	[SerializableAttribute]
-	[MessageContract(WrapperName="getBladingHeaders", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
-	public class getBladingHeadersRequest {
-		
-		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru", Order=0)]
-		[XmlElement(Form=XmlSchemaForm.Unqualified)]
+	[MessageContract(WrapperName = "getBladingHeaders", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
+	public class getBladingHeadersRequest
+	{
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public int clientId;
-		
-		[MessageBodyMemberAttribute(Namespace="http://service.ezakaz.protek.ru", Order=1)]
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[MessageBodyMemberAttribute(Namespace = "http://service.ezakaz.protek.ru", Order = 1)]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int instCode;
-		
-		public getBladingHeadersRequest() { }
-		
-		public getBladingHeadersRequest(int clientId, int instCode) {
+
+		public getBladingHeadersRequest()
+		{}
+
+		public getBladingHeadersRequest(int clientId, int instCode)
+		{
 			this.clientId = clientId;
 			this.instCode = instCode;
 		}
@@ -434,8 +481,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		public int bladingId;
 
 		public getBladingBodyRequest()
-		{
-		}
+		{}
 
 		public getBladingBodyRequest(string theUid, int clientId, int instCode, int bladingId)
 		{
@@ -518,5 +564,4 @@ namespace Inforoom.PriceProcessor.Downloader
 			this.@return = @return;
 		}
 	}
-
 }

@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Handlers
 			Load(261543, 1072995);
 		}
 
-		public override void WithService(Action<ProtekService> action)
+		public override void WithService(string uri, Action<ProtekService> action)
 		{
 			var service = MockRepository.GenerateStub<ProtekService>();
 			service.Stub(s => s.getBladingHeaders(null)).IgnoreArguments().Return(headerResponce);
