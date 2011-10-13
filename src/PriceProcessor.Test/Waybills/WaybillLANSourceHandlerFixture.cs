@@ -457,11 +457,19 @@ WHERE FirmCode = ?SupplierId
 	[TestFixture]
 	public class WaybillLANSourceHandlerErrorsFixture
 	{
+		private DateTime start;
+
+		[SetUp]
+		public void Setup()
+		{
+			Thread.Sleep(1000);
+			start = DateTime.Now;
+			Thread.Sleep(1000);
+		}
+
 		[Test]
 		public void GetClientCodesErrorTest()
 		{
-			Thread.Sleep(1000);
-			var start = DateTime.Now;
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1");
 			var res = handler.MoveWaybill("test", "test");			
 			using(new SessionScope())
@@ -476,9 +484,7 @@ WHERE FirmCode = ?SupplierId
 
 		[Test]
 		public void FormatOutputFileError()
-		{
-			Thread.Sleep(1000);
-			var start = DateTime.Now;
+		{			
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader2");
 			var res = handler.MoveWaybill("test", "test");
 			using (new SessionScope())
@@ -493,9 +499,7 @@ WHERE FirmCode = ?SupplierId
 
 		[Test]
 		public void ImportDocumentError()
-		{
-			Thread.Sleep(1000);
-			var start = DateTime.Now;
+		{			
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader3");
 			var res = handler.MoveWaybill("test", "test");
 			using (new SessionScope())
@@ -510,9 +514,7 @@ WHERE FirmCode = ?SupplierId
 
 		[Test]
 		public void WithoutError()
-		{
-			Thread.Sleep(1000);
-			var start = DateTime.Now;
+		{			
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader4");
 			var res = handler.MoveWaybill("test", "test");
 			using (new SessionScope())

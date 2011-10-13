@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
+			var data = Load(file);
 			new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "D_NAKL")
 				.DocumentHeader(d => d.ProviderDocumentId, "N_NAKL")

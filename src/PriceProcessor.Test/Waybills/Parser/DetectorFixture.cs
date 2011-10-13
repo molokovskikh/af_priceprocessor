@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Waybills;
+﻿using System.Linq;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
@@ -57,6 +58,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var detect2 = new WaybillFormatDetector();
 			var parser5 = detect2.DetectParser(@"..\..\Data\Waybills\169976_21.dbf", null);
 			Assert.That(parser5, Is.InstanceOf<GenesisNNParser>());
+		}
+
+		[Test]
+		public void DetectSpecialParserTest()
+		{
+			var detector = new WaybillFormatDetector();
+
+			var type = typeof(Avesta_6256_SpecialParser);
+			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
+
+			IDocumentParser parser = (IDocumentParser)constructor.Invoke(new object[0]);
+			bool res = detector.IsSpecialParser(parser);
+			Assert.True(res);
 		}
 	}
 }
