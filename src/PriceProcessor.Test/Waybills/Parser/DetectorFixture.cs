@@ -1,5 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
@@ -71,6 +75,111 @@ namespace PriceProcessor.Test.Waybills.Parser
 			IDocumentParser parser = (IDocumentParser)constructor.Invoke(new object[0]);
 			bool res = detector.IsSpecialParser(parser);
 			Assert.True(res);
+		}
+
+		public  class WaybillFormatDetectorFake : WaybillFormatDetector
+		{
+			public void AddSpecParser(uint firmCode, Type parserType)
+			{
+				if(!specParsers.ContainsKey(firmCode))				
+					specParsers.Add(firmCode, new List<Type>{parserType});
+				else				
+					specParsers[firmCode].Add(parserType);				
+			}
+
+		}
+
+		public class ParserFake1 : IDocumentParser
+		{
+			public Document Parse(string file, Document document) { return null; }
+			public static bool CheckFileFormat(DataTable data) { return true; }
+		}
+
+		public class ParserFake2 : IDocumentParser
+		{
+			public Document Parse(string file, Document document) { return null; }
+			public static bool CheckFileFormat(object data) { return true; }
+		}
+
+		public class ParserFake3 : IDocumentParser
+		{
+			public Document Parse(string file, Document document) { return null; }			
+		}
+
+		public class ParserFake4 : IDocumentParser
+		{
+			public Document Parse(string file, Document document) { return null; }
+			public static bool CheckFileFormat(DataTable data) { return true; }
+			public DataTable Load(string file) { return  new DataTable(); }
+		}
+
+		public class ParserFake5 : BaseDbfParser
+		{
+			public override Document Parse(string file, Document document) { return new Document(); }
+			public override DbfParser GetParser() { return new DbfParser(); }
+			public static bool CheckFileFormat(DataTable data) { return false; }
+		}
+
+		public class ParserFake6 : BaseDbfParser
+		{
+			public override Document Parse(string file, Document document) { return new Document(); }
+			public override DbfParser GetParser() { return new DbfParser(); }
+			public static bool CheckFileFormat(DataTable data) { return true; }
+		}
+
+		public class ParserFake7 : BaseDbfParser
+		{
+			public override Document Parse(string file, Document document) { return new Document(); }
+			public override DbfParser GetParser() { return new DbfParser(); }
+			public static bool CheckFileFormat(string data) { return true; }
+		}
+
+		[Test]
+		public void GetSpecialParserTest()
+		{
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 1 }, };
+			var detector = new WaybillFormatDetectorFake();
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake1));
+
+			var type = detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.dbf", documentLog);
+			Assert.That(type.FullName.Contains("ParserFake1"), Is.True);
+			
+			detector = new WaybillFormatDetectorFake();
+
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake2));
+			type = detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.dbf", documentLog);
+			Assert.That(type, Is.Null);
+
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake1));
+			type = detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.txt", documentLog);
+			Assert.That(type, Is.Null);
+
+			detector = new WaybillFormatDetectorFake();
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake3));
+			bool fail = false;
+			try
+			{
+				detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.dbf", documentLog);
+			}
+			catch(Exception e)
+			{
+				fail = e.Message.Contains("реализуй метод CheckFileFormat");
+			}
+			Assert.That(fail, Is.True);
+
+			detector = new WaybillFormatDetectorFake();
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake2));
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake1));
+			type = detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.dbf", documentLog);
+			Assert.That(type.FullName.Contains("ParserFake1"), Is.True);
+
+			detector = new WaybillFormatDetectorFake();
+
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake5));
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake7));
+			detector.AddSpecParser(documentLog.Supplier.Id, typeof(ParserFake6));
+			type = detector.GetSpecialParser(@"..\..\Data\Waybills\KZ000130.dbf", documentLog);
+			Assert.That(type.FullName.Contains("ParserFake6"), Is.True);
 		}
 	}
 }

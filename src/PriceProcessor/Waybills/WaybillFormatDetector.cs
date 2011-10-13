@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	public class WaybillFormatDetector
 	{
 		// словарь для специальных парсеров
-		private readonly Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>>
+		protected Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>>
 		    {				
 				{6256, new List<Type>{typeof(Avesta_6256_SpecialParser)}}, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
 				{2747, new List<Type>{typeof(KazanFarmDbfParser)}}, //Накладная в формате dbf от Казань-Фарм.
@@ -22,7 +22,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				{7957, new List<Type>{typeof(ZhdanovKazanSpecialParser)}}, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
 				{8063, new List<Type>{typeof(ZhdanovKazanSpecialParser),
 										typeof(BizonKazanSpecialParser)}}, // Накладная (dbf) от ООО "Бизон" (Казань)
-				{74, new List<Type>{typeof(ImperiaFarmaSpecialParser)}}, // Накладная от Империа-Фарма
+				{74, new List<Type>{typeof(ImperiaFarmaSpecialParser), // Накладная от Империа-Фарма (dbf)
+										typeof(ImperiaFarmaSpecialParser2)}}, // Накладная от Империа-Фарма (txt)
 				{1581, new List<Type>{typeof(ZdravServiceSpecialParser),  // Накладная от Здравсервис, содержащая поля для счета-фактуры
 										typeof(ZdravServiceSpecialParser2)}}, // Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
 				{11427, new List<Type>{typeof(PokrevskySpecialParser)}}, // Накладная от ИП Покревский
