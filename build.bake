@@ -14,7 +14,7 @@ import file from Tools.bake
 import file from DB.bake
 
 [ServiceContract]
-interface IWaybillService: 
+interface IWaybillService:
 	[OperationContract]
 	def ParseWaybill(uints as (uint)) as (uint)
 
@@ -30,10 +30,10 @@ Task @ParseWaybills:
 		print result
 
 Global(
-	project : "PriceProcessor",
-	server : "fms.adc.analit.net",
-	humanReadableName : "Служба обработки прайс-листов",
-	serviceName : "PriceProcessorService",
+	Project : "PriceProcessor",
+	Server : "fms.adc.analit.net",
+	HumanReadableName : "Служба обработки прайс-листов",
+	ServiceName : "PriceProcessorService",
 
 	libs : ("Common.Tools", "ExecuteTemplate")
 )
@@ -54,8 +54,8 @@ def Resend(attachment as MimeEntity):
 		print "Ignored ${attachedMime.MainEntity.Subject}"
 		return
 	print "Resend ${attachedMime.MainEntity.Subject}"
-	SmtpClientEx.QuickSendSmartHost("box.analit.net", 
-		25, 
+	SmtpClientEx.QuickSendSmartHost("box.analit.net",
+		25,
 		Environment.MachineName,
 		"service@analit.net",
 		("root@waybills.analit.net",),
