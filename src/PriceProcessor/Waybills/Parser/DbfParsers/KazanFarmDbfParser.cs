@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "PROIZV")
 				.Line(l => l.Country, "COUNTRY")
-				.Line(l => l.ProducerCost, "CENAFACT")
+				.Line(l => l.ProducerCostWithoutNDS, "CENAFACT")
 				.Line(l => l.SupplierCost, "CENASNDS")
 				.Line(l => l.Quantity, "KOLVO")
 				.Line(l => l.RegistryCost, "CENAREG")

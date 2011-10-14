@@ -32,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Code, "ITEM_ID")
 				.Line(l => l.Product, "ITEM_NAME")
 				.Line(l => l.Producer, "VEND_NAME")
-				.Line(l => l.ProducerCost, "PRICE_VR")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE_VR")
 				.Line(l => l.Nds, "TAX_RATE")				
 				.Line(l => l.Quantity, "QNTY")
 				.Line(l => l.Period, "DUE_DATE")				

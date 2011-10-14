@@ -218,7 +218,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				row["sgodn"] = line.Period;
 				row["sert"] = line.Certificates;				
 				row["sert_date"] = line.CertificatesDate;
-				row["prcena_bnds"] = line.ProducerCost;
+				row["prcena_bnds"] = line.ProducerCostWithoutNDS;
 				row["gr_cena"] = line.RegistryCost;
 				row["pcena_bnds"] = line.SupplierCostWithoutNDS;
 				row["nds"] = line.Nds;

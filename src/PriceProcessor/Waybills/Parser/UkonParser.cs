@@ -134,7 +134,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				docLine.SetSupplierCostWithoutNds(ToDecimal(parts[7]).Value);
 				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
 				docLine.Period = parts[15];
-				docLine.ProducerCost = ToDecimal(parts[6]);
+				docLine.ProducerCostWithoutNDS = ToDecimal(parts[6]);
 				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
 					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
 					//авеста хранит в колонке 11 хранит признак жизненно важный
@@ -184,7 +184,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						docLine.SetSupplierCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
 					docLine.SupplierPriceMarkup = bodyDescription.GetSupplierPriceMarkup(parts);
 					docLine.Period = bodyDescription.GetPeriod(parts);
-					docLine.ProducerCost = bodyDescription.GetProducerCost(parts);
+					docLine.ProducerCostWithoutNDS = bodyDescription.GetProducerCost(parts);
 					docLine.VitallyImportant = bodyDescription.GetVitallyImportant(parts);
 				}
 			}

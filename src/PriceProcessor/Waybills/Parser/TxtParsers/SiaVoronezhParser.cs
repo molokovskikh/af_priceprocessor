@@ -114,7 +114,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
                     docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
                     docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
-                    docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+					docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
                     docLine.Nds = (uint?)GetInteger(parts[NdsIndex]);
                     docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
                     docLine.Amount = GetDecimal(parts[AmountIndex]);

@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Козинак 4злака \"Арахис с изюмом\"100г"));
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("ТПО Диал"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(26.32));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(26.32));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(3.00));
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(0));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(0.00));

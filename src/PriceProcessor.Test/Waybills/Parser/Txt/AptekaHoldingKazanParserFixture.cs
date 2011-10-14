@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Фармстандарт- Лексредства, г. Курск"));
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(4));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(179));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(179));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(167.99));
 			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("120710"));

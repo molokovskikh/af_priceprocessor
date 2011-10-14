@@ -458,13 +458,27 @@ WHERE FirmCode = ?SupplierId
 	public class WaybillLANSourceHandlerErrorsFixture
 	{
 		private DateTime start;
+		private int maxLogId;
 
 		[SetUp]
 		public void Setup()
 		{
-			Thread.Sleep(1000);
+			using (new SessionScope())
+			{
+				maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
+			}
 			start = DateTime.Now;
-			Thread.Sleep(1000);
+		}
+
+		[TearDown]
+		public void EndTest()
+		{
+			With.Connection(connection =>
+			{
+				var command = new MySqlCommand(@"delete from logs.document_logs where rowid > ?Id", connection);
+				command.Parameters.AddWithValue("?Id", maxLogId);
+				command.ExecuteNonQuery();
+			});
 		}
 
 		[Test]

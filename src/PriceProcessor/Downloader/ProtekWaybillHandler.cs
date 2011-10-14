@@ -418,7 +418,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Nds = (uint?) bladingItem.vat;
 				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
-				line.ProducerCost = (decimal?) bladingItem.prodPriceWonds;
+				line.ProducerCostWithoutNDS = (decimal?)bladingItem.prodPriceWonds;
 				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;

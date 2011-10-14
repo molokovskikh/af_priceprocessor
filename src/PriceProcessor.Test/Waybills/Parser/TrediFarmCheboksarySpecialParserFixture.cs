@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Producer, Is.EqualTo("Оболенское-фармацевтическое предпр-е"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
 			Assert.That(line.Quantity, Is.EqualTo(1));
-			Assert.That(line.ProducerCost, Is.EqualTo(44.0356));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(44.0356));
 			Assert.That(line.RegistryCost, Is.EqualTo(44.0300));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(12.5000));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(49.5400));			

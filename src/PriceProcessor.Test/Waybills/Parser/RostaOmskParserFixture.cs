@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Promed Exports Pvt. Ltd. - Индия"));
 			Assert.That(doc.Lines[0].Country, Is.Null);
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(1));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(102.63));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(102.63));
 			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(124.44));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(113.13));
 			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[1].VitallyImportant, Is.False);
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(10.23));
 		}
 	}
 }

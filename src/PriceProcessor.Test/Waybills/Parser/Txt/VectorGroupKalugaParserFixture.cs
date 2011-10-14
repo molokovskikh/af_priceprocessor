@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(5.28));
             Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
             Assert.That(doc.Lines[0].RegistryCost, Is.Null);
-            Assert.That(doc.Lines[0].ProducerCost, Is.Null);
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
             Assert.That(doc.Lines[0].Nds, Is.EqualTo(18));
             Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(4.03));
             Assert.That(doc.Lines[0].Amount, Is.EqualTo(26.40));
@@ -80,7 +80,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(21.86));
             Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
             Assert.That(doc.Lines[0].RegistryCost, Is.Null);
-            Assert.That(doc.Lines[0].ProducerCost, Is.Null);
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
             Assert.That(doc.Lines[0].Nds, Is.EqualTo(18));
             Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(10.00));
             Assert.That(doc.Lines[0].Amount, Is.EqualTo(65.58));

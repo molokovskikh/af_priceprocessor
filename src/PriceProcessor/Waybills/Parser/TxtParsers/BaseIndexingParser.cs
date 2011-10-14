@@ -347,7 +347,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				docLine.Unit = GetString(parts[UnitIndex]);
 
 			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex)
-				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+				docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
 
 			if (SupplierCostIndex > 0)
 				docLine.SupplierCost = GetDecimal(parts[SupplierCostIndex]);
@@ -398,8 +398,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))
 				docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
 
-			if (CalculateSupplierPriceMarkup) 
-				docLine.SetSupplierPriceMarkup();
+			/*if (CalculateSupplierPriceMarkup) 
+				docLine.SetSupplierPriceMarkup();*/
 		}
 
 		public static bool CheckByHeaderPart(string file, IEnumerable<string> name, string commentMark)

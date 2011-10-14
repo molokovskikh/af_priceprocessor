@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "NAME_PRO")
 				.Line(l => l.Country, "COUNTRY")
-				.Line(l => l.ProducerCost, "PRICE_ZI")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE_ZI")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE")
 				.Line(l => l.Quantity, "KOL")
 				.Line(l => l.Period, "SROK")

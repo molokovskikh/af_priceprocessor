@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].Producer, Is.EqualTo("Omron"));
             Assert.That(doc.Lines[0].Country, Is.EqualTo("Китай"));
             Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
-            Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(375.00));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(375.00));
             Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(375.00));
             Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(375.00));
             Assert.That(doc.Lines[0].Nds, Is.EqualTo(0));

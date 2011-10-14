@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
-			Assert.That(line.ProducerCost, Is.EqualTo(0.00));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(0.00));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(55.11));
 			Assert.That(line.SupplierCost, Is.EqualTo(60.62));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(296.28));
-			Assert.That(line.ProducerCost, Is.EqualTo(296.28));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(296.28));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(299.89));
 			Assert.That(line.SupplierCost, Is.EqualTo(329.88));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(1.22));

@@ -28,11 +28,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФM08.Д84457"));			
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(102.00));
 			Assert.That(line.SupplierCost, Is.EqualTo(112.20));
-			Assert.That(line.ProducerCost, Is.EqualTo(111.16));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(111.16));
 			Assert.That(line.SerialNumber, Is.EqualTo("010310"));
 			Assert.That(line.RegistryCost, Is.EqualTo(122.11));
-			//Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-8.24));
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.EAN13, Is.Null);
 		}
@@ -56,10 +55,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС SI ФМ08 Д65108"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(244.65));
 			Assert.That(line.SupplierCost, Is.EqualTo(269.12));
-			Assert.That(line.ProducerCost, Is.EqualTo(266.09));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(266.09));
 			Assert.That(line.SerialNumber, Is.EqualTo("N68061"));
 			Assert.That(line.RegistryCost, Is.EqualTo(311.22));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-8.06));
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.EAN13, Is.EqualTo("3838989596446"));
 		}
@@ -77,7 +76,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.12.2010"));
 			line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("120190"));
-			Assert.That(line.ProducerCost, Is.EqualTo(93.90));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(93.90));
 			Assert.That(line.SupplierCost, Is.EqualTo(103.83));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(94.39));
 			Assert.That(line.Quantity, Is.EqualTo(2));
@@ -105,7 +104,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("01.10.2006"));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("Т00332"));
-			Assert.That(line.ProducerCost, Is.EqualTo(77.00000));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(77.00000));
 			Assert.That(line.SupplierCost, Is.EqualTo(77.00000));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(77.00000));
 			Assert.That(line.Quantity, Is.EqualTo(2));
@@ -119,8 +118,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.Certificates, Is.EqualTo("POCC JP.ИM04.B05579"));
 			Assert.That(line.Amount, Is.EqualTo(154.00000));
-		   // Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(line.EAN13, Is.EqualTo("4606339000818"));
 		}
 
@@ -139,7 +137,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(136.94));
 			Assert.That(line.SupplierCost, Is.EqualTo(150.63));
 			Assert.That(line.Quantity, Is.EqualTo(2));
-			Assert.That(line.ProducerCost, Is.EqualTo(136.94));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(136.94));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.04.2014"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС PL ИМ09 В02637"));
@@ -147,8 +145,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.SerialNumber, Is.EqualTo(".."));
 			Assert.That(line.Amount, Is.EqualTo(301.26));
-		   // Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(line.EAN13, Is.EqualTo("0"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10124030/270905/0009093/2"));
 		}

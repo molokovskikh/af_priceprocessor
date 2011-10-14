@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Country, Is.Null);
 			Assert.That(line.SerialNumber, Is.Null);
 			Assert.That(line.Certificates, Is.Null);
-			Assert.That(line.ProducerCost, Is.Null);
+			Assert.That(line.ProducerCostWithoutNDS, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.SupplierPriceMarkup, Is.Null);
 			Assert.That(line.NdsAmount, Is.EqualTo(18.78));
@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.Country, Is.Null);
             Assert.That(line.SerialNumber, Is.Null);
             Assert.That(line.Certificates, Is.Null);
-            Assert.That(line.ProducerCost, Is.Null);
+			Assert.That(line.ProducerCostWithoutNDS, Is.Null);
             Assert.That(line.RegistryCost, Is.Null);
             Assert.That(line.SupplierPriceMarkup, Is.Null);
             Assert.That(line.NdsAmount, Is.EqualTo(8.50));

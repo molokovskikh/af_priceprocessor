@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "Country")
 				.Line(l => l.SupplierCost, "Price")
 				.Line(l => l.Quantity, "Amount")
-				.Line(l => l.ProducerCost, "VendorPric")
+				.Line(l => l.ProducerCostWithoutNDS, "VendorPric")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Period, "LifeTime")
 				.Line(l => l.Certificates, "Sertif")

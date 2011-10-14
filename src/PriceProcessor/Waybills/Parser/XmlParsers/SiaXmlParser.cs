@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.Country = position.XPathSelectElement("СтранаИзготовителя").Value;
 				line.Code = (position.XPathSelectElement("КодТовара") == null) ? null : position.XPathSelectElement("КодТовара").Value;
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
-				line.ProducerCost = position.Get("ЦенаИзг");
+				line.ProducerCostWithoutNDS = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
 				if (!hasOpt) line.SupplierPriceMarkup = null;
 					else line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);

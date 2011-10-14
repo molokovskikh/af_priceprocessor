@@ -14,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "TOVAR")
 				.Line(l => l.Quantity, "KOLVO")
 				.Line(l => l.RegistryCost, "CENAREESTR")
-				.Line(l => l.ProducerCost, "CENAIZBNDS")
+				.Line(l => l.ProducerCostWithoutNDS, "CENAIZBNDS")
 				.Line(l => l.SupplierCostWithoutNDS, "CENABNDS")
 				.Line(l => l.SupplierCost, "CENASNDS")
 				.Line(l => l.Nds, "STAVKANDS")

@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Product = r["GOODSN"].ToString();
 				line.Producer = Convert.IsDBNull(r["FIRMN"]) ? null : r["FIRMN"].ToString();
 				line.Country = Convert.IsDBNull(r["COUNTRYN"]) ? null : r["COUNTRYN"].ToString();
-				line.ProducerCost = Convert.ToDecimal(r["PRICEF"], CultureInfo.InvariantCulture);
+				line.ProducerCostWithoutNDS = Convert.ToDecimal(r["PRICEF"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["QUANTITY"]);
 				if (!Convert.IsDBNull(r["BESTBEFORE"]))

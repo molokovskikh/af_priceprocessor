@@ -18,7 +18,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.Producer, Is.EqualTo("ООО компания Мир Детства"));
 			Assert.That(line.Country, Is.EqualTo("Китай"));
 			Assert.That(line.Quantity, Is.EqualTo(3));
-			Assert.That(line.ProducerCost, Is.EqualTo(142.93));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(142.93));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(144.37));
 			Assert.That(line.Nds, Is.EqualTo(10));
 		}
@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.Producer, Is.EqualTo("Biotehnos"));
 			Assert.That(line.Country, Is.EqualTo("Румыния"));
 			Assert.That(line.Quantity, Is.EqualTo(1));
-			Assert.That(line.ProducerCost, Is.EqualTo(1102.59));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(1102.59));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(888.7));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SerialNumber, Is.EqualTo("3491009"));
@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.Producer, Is.EqualTo("Лекко"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
 			Assert.That(line.Quantity, Is.EqualTo(20));
-			Assert.That(line.ProducerCost, Is.EqualTo(3.2));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(3.2));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(3.2));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SerialNumber, Is.EqualTo("180511"));

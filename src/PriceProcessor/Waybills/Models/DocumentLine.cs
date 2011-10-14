@@ -82,7 +82,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// <summary>
 		/// Цена производителя без НДС
 		/// </summary>
-		[Property]
+		[Property("ProducerCost")]
+		public decimal? ProducerCostWithoutNDS { get; set; }
+
+		/// <summary>
+		/// Цена производителя с НДС (не маппится, используется для доп. расчетов)
+		/// </summary>
 		public decimal? ProducerCost { get; set; }
 
 		/// <summary>
@@ -228,7 +233,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				if (Convert.ToInt32(Math.Round(SupplierCost.Value, 2) * 100) < Convert.ToInt32(Math.Round(SupplierCostWithoutNDS.Value, 2)*100))
 					SetSupplierCostByNds(Nds.Value);
 			}
-
+			SetSupplierPriceMarkup();
 			SetAmount();
 			SetNdsAmount();
 		}
@@ -272,11 +277,17 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public void SetSupplierPriceMarkup()
 		{
-			if (!SupplierPriceMarkup.HasValue && ProducerCost.HasValue
-				&& SupplierCostWithoutNDS.HasValue && (ProducerCost.Value != 0))
+			if (!ProducerCostWithoutNDS.HasValue && !ProducerCost.HasValue) return;
+			if (!SupplierPriceMarkup.HasValue && ProducerCostWithoutNDS.HasValue
+				&& SupplierCostWithoutNDS.HasValue && (ProducerCostWithoutNDS.Value != 0))
 			{
 				SupplierPriceMarkup = null;
-				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value/ProducerCost.Value - 1)*100), 2);
+				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value / ProducerCostWithoutNDS.Value - 1) * 100), 2);
+			}
+			else if(!SupplierPriceMarkup.HasValue && ProducerCost.HasValue
+				&& SupplierCost.HasValue && (ProducerCost.Value != 0))
+			{
+				SupplierPriceMarkup = Math.Round(((SupplierCost.Value / ProducerCost.Value - 1) * 100), 2);
 			}
 		}
 
