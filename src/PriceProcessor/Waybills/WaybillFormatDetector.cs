@@ -4,136 +4,97 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
-using log4net;
-using NHibernate.Criterion;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
 	public class WaybillFormatDetector
 	{
+		// словарь для специальных парсеров
+		protected Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>>
+		    {				
+				{6256, new List<Type>{typeof(Avesta_6256_SpecialParser)}}, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
+				{2747, new List<Type>{typeof(KazanFarmDbfParser)}}, //Накладная в формате dbf от Казань-Фарм.
+				{7999, new List<Type>{typeof(TrediFarmCheboksarySpecialParser)}}, // Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
+				{7957, new List<Type>{typeof(ZhdanovKazanSpecialParser)}}, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
+				{8063, new List<Type>{typeof(ZhdanovKazanSpecialParser),
+										typeof(BizonKazanSpecialParser)}}, // Накладная (dbf) от ООО "Бизон" (Казань)
+				{74, new List<Type>{typeof(ImperiaFarmaSpecialParser), // Накладная от Империа-Фарма (dbf)
+										typeof(ImperiaFarmaSpecialParser2)}}, // Накладная от Империа-Фарма (txt)
+				{1581, new List<Type>{typeof(ZdravServiceSpecialParser),  // Накладная от Здравсервис, содержащая поля для счета-фактуры
+										typeof(ZdravServiceSpecialParser2)}}, // Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
+				{11427, new List<Type>{typeof(PokrevskySpecialParser)}}, // Накладная от ИП Покревский
+				{7, new List<Type>{typeof(OriolaVoronezhSpecialParser)}}, // Накладная от Ориола (Воронеж)
+				{182, new List<Type>{typeof(LekRusChernozemieSpecialParser)}}, // Накладная от Лекрус Центральное Черноземье
+				//{4138, new List<Type>{typeof(KatrenVrnSpecialParser)}}, // Накладная от Катрен Воронеж, пока не используется
+				{338, new List<Type>{typeof(Moron_338_SpecialParser)}}, // Накладная от Морон (Челябинск)
+				{4001, new List<Type>{typeof(Moron_338_SpecialParser)}},
+				{7146, new List<Type>{typeof(Moron_338_SpecialParser)}},
+				{5802, new List<Type>{typeof(Moron_338_SpecialParser)}},
+				{21, new List<Type>{typeof(Moron_338_SpecialParser)}},
+				{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)				
+		    };
+		                                             	
+
+		public bool IsSpecialParser(IDocumentParser parser)
+		{
+			return specParsers.Select(item => item.Value).Any(parsers => parsers.Contains(parser.GetType()));
+		}
+
+		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
+		{
+			if (documentLog == null) return null;
+			var extention = Path.GetExtension(file.ToLower());
+			var firmCode = documentLog.Supplier.Id;
+
+			IList<Type> parsersTypes = specParsers.ContainsKey(firmCode) ? specParsers[firmCode] : null;
+			if (parsersTypes == null) return null;
+
+			foreach (var parserType in parsersTypes)
+			{
+				MethodInfo checkMethod = parserType.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+				if (checkMethod == null)
+					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", parserType));
+
+				var paramClass = checkMethod.GetParameters()[0].ParameterType.FullName;
+				object[] args = null;
+				bool check = false;
+				if (extention == ".dbf" && paramClass.Contains("DataTable"))
+				{
+					MethodInfo loadMethod = parserType.GetMethod("Load", BindingFlags.Static | BindingFlags.Public);
+					DataTable table;
+					if (loadMethod != null)
+					{						
+						args = new[] { file };
+						table = (DataTable)loadMethod.Invoke(null, args);						
+					}
+					else
+					{
+						table = Dbf.Load(file);
+					}
+					args = new[] { table };
+					check = (bool)checkMethod.Invoke(null, args);
+				}
+				else if ((extention == ".sst" || extention == ".txt") && paramClass.Contains("String"))
+				{
+					args = new[] {file};
+					check = (bool)checkMethod.Invoke(null, args);
+				}
+				if (check) return parserType;
+			}
+			return null;
+		}
+
 		public IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
 		{
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
 
-			if ((documentLog != null) && (extention == ".dbf"))
-			{
-				switch (documentLog.Supplier.Id)
-				{
-					// Если это накладная в формате DBF от Авеста-Фармацевтика,
-					// обрабатываем ее специальным парсером
-					case 6256:
-						{
-							var table = Avesta_6256_SpecialParser.Load(file);
-							if (Avesta_6256_SpecialParser.CheckFileFormat(table))
-								type = typeof(Avesta_6256_SpecialParser);
-							break;
-						}
-					//Накладная в формате dbf от Казань-Фарм.
-					case 2747:
-						{
-							var table = KazanFarmDbfParser.Load(file);
-							if (KazanFarmDbfParser.CheckFileFormat(table))
-								type = typeof (KazanFarmDbfParser);
-							break;
-						}
-					// Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
-					case 7999:
-						{
-							var table = TrediFarmCheboksarySpecialParser.Load(file);
-							if (TrediFarmCheboksarySpecialParser.CheckFileFormat(table))
-								type = typeof(TrediFarmCheboksarySpecialParser);
-							break;
-						}
-					case 7957: // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
-					case 8063: // Накладная (dbf) от ООО "Бизон" (Казань)
-						{
-							var table = ZhdanovKazanSpecialParser.Load(file);
-							if (ZhdanovKazanSpecialParser.CheckFileFormat(table))
-								type = typeof(ZhdanovKazanSpecialParser);
-							break;
-						}
-					case 74:
-						{
-							var table = ImperiaFarmaSpecialParser.Load(file);
-							if (ImperiaFarmaSpecialParser.CheckFileFormat(table))
-								type = typeof(ImperiaFarmaSpecialParser);
-							break;
-						}
-					case 1581: // Накладная от Здравсервис, содержащая поля для счета-фактуры
-						{
-							var table = ZdravServiceSpecialParser.Load(file);
-							if (ZdravServiceSpecialParser.CheckFileFormat(table))
-								type = typeof (ZdravServiceSpecialParser);
-							break;
-						}
-					case 11427: // Накладная от ИП Покревский
-						{
-							var table = PokrevskySpecialParser.Load(file);
-							if (PokrevskySpecialParser.CheckFileFormat(table))
-								type = typeof(PokrevskySpecialParser);
-							break;
-						}
-					case 7: // Накладная от Ориола (Воронеж)
-						{
-							var table = OriolaVoronezhSpecialParser.Load(file);
-							if (OriolaVoronezhSpecialParser.CheckFileFormat(table))
-								type = typeof(OriolaVoronezhSpecialParser);
-							break;
-						}
-					case 182: // Накладная от Лекрус Центральное Черноземье
-						{
-							var table = LekRusChernozemieSpecialParser.Load(file);
-							if (LekRusChernozemieSpecialParser.CheckFileFormat(table))
-								type = typeof(LekRusChernozemieSpecialParser);
-							break;
-						}
-					/* Пока не используется
-					 * case 4138: // Накладная от Катрен Воронеж
-						{
-							var table = KatrenVrnSpecialParser.Load(file);
-							if (KatrenVrnSpecialParser.CheckFileFormat(table))
-								type = typeof(KatrenVrnSpecialParser);
-							break;
-						}*/
-					default: break;
-				}
-			}
-
-			if ((documentLog != null) && (extention == ".sst"))
-			{
-				switch (documentLog.Supplier.Id)
-				{
-					case 4910: // Фармпартнер (Калуга)
-						{
-							if (FarmPartnerKalugaParser.CheckFileFormat(file))
-								type = typeof(FarmPartnerKalugaParser);
-							break;
-						}
-					default: break;
-				}
-			}
-
-			if ((documentLog != null) && (extention == ".txt"))
-			{
-				switch (documentLog.Supplier.Id)
-				{
-					case 8063: // Накладная (txt) от  "Бизон" (Казань)
-						{
-							if (BizonKazanSpecialParser.CheckFileFormat(file))
-								type = typeof (BizonKazanSpecialParser);
-							break;
-						}
-					default: break;
-				}
-			}
-
+			type = GetSpecialParser(file, documentLog);
+			
 			if (type == null)
 			{
 				if (extention == ".dbf")
@@ -148,21 +109,6 @@ namespace Inforoom.PriceProcessor.Waybills
 					type = typeof(ProtekParser);
 				else if (extention == ".txt")
 					type = DetectTxtParser(file);
-
-				// Если поставщик - это челябинский Морон, для него отдельный парсер 
-				// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
-				if ((documentLog != null) && Moron_338_SpecialParser.CheckFileFormat(file) &&
-					(documentLog.Supplier.Id == 338 || documentLog.Supplier.Id == 4001
-					 || documentLog.Supplier.Id == 7146 || documentLog.Supplier.Id == 5802
-					 || documentLog.Supplier.Id == 21))
-					type = typeof (Moron_338_SpecialParser);
-
-				// Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
-				if (type == typeof(PulsFKParser) && documentLog != null
-					&& documentLog.Supplier.Id == 1581)
-				{                  
-					type = typeof(ZdravServiceParser);                 
-				}
 			}
 			if (type == null)
 			{
@@ -261,6 +207,5 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			return doc;
 		}
-
 	}
 }

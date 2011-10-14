@@ -162,6 +162,7 @@
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
+    <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParserFixture.cs" />
     <Compile Include="Waybills\ParseCertificatesFixture.cs" />
     <Compile Include="Waybills\Parser\AllinceHealthcareParserFixture.cs" />
