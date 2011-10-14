@@ -234,6 +234,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
+    <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2.cs" />
     <Compile Include="Waybills\Parser\LekRusChernozemieSpecialParser.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParser.cs" />
     <Compile Include="Waybills\Parser\PokrevskySpecialParser.cs" />
@@ -331,7 +332,7 @@
     <Compile Include="Waybills\Parser\TxtParsers\TxtParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaOmskParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
-    <Compile Include="Waybills\Parser\ZdravServiceParser.cs" />
+    <Compile Include="Waybills\Parser\ZdravServiceSpecialParser2.cs" />
     <Compile Include="Waybills\WaybillFormatDetector.cs" />
     <Compile Include="Waybills\WaybillHelper.cs" />
     <Compile Include="Waybills\WaybillService.cs" />

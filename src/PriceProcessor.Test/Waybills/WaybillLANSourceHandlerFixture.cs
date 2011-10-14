@@ -38,7 +38,7 @@ namespace PriceProcessor.Test
 	}
 
 	public class FakeSIAMoscow_2788_Reader1 : SIAMoscow_2788_Reader
-	{
+	{		
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.");

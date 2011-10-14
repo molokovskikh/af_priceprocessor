@@ -7,19 +7,22 @@ using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
-	public class ZdravServiceParser : IDocumentParser
+	public class ZdravServiceSpecialParser2 : IDocumentParser
 	{
-		public Document Parse(string file, Document document)
+		private static Encoding encoding = Encoding.GetEncoding(1251);
+
+		public static DataTable Load(string file)
 		{
-			return new PulsFKParser{Encdoing = Encoding.GetEncoding(1251)}.Parse(file, document);
+			return Dbf.Load(file, encoding);
 		}
 
-		public static bool CheckFileFormat(string file)
+		public Document Parse(string file, Document document)
 		{
-			if (Path.GetExtension(file.ToLower()) != ".dbf")
-				return false;
+			return new PulsFKParser { Encdoing = encoding }.Parse(file, document);
+		}
 
-			var data = Dbf.Load(file);
+		public static bool CheckFileFormat(DataTable data)
+		{
 			return data.Columns.Contains("NDOC")
 					&& data.Columns.Contains("CNTR")
 					&& data.Columns.Contains("SERTIF")

@@ -14,11 +14,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	// (вообще-то формат тот же что и у SiaParser, но в колонке PRICE цена БЕЗ Ндс)
 	public class Moron_338_SpecialParser : IDocumentParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
+		public static DataTable Load(string file)
+		{
+			try
+			{
+				return Dbf.Load(file);
+			}
+			catch (DbfException)
+			{
+				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
+			}
+		}
 
 		public Document Parse(string file, Document document)
-		{
-			var data = Dbf.Load(file, Encoding);
+		{			
+			var data = Load(file);
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
 			string registryCostColumn = null;
@@ -92,13 +102,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}).ToList();
 			return document;
 		}
-
-		public static bool CheckFileFormat(string file)
-		{
-			if (Path.GetExtension(file.ToLower()) != ".dbf")
-				return false;
-
-			var data = Dbf.Load(file);
+	
+		public static bool CheckFileFormat(DataTable data)
+		{			
 			return data.Columns.Contains("CODE_TOVAR") &&
 				   data.Columns.Contains("NAME_TOVAR") &&
 				   data.Columns.Contains("PROIZ") &&
