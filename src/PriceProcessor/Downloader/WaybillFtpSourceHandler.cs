@@ -258,7 +258,10 @@ GROUP BY SupplierId
 						&& d.LogTime > waybillDate
 						&& d.ClientCode == clientId);
 				if (addressId.HasValue)
-					docs = docs.Where(d => d.AddressId == addressId);
+				{
+					var id = addressId.Value;
+					docs = docs.Where(d => d.Address.Id == id);
+				}
 
 				var count = docs.Count();
 				return count == 0;

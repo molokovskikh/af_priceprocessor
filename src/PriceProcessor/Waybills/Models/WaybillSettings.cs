@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public bool IsConvertFormat { get; set; }
 
 		[Property]
-		public int? AssortimentPriceId { get; set; }
+		public uint? AssortimentPriceId { get; set; }
 
 		[Property]
 		public bool ParseWaybills { get; set; }

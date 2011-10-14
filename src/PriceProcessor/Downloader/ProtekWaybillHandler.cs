@@ -135,8 +135,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		[Property]
 		public DateTime WriteTime { get; set; }
 
-		[Property]
-		public virtual uint? AddressId { get; set; }
+		[BelongsTo("AddressId")]
+		public virtual Address Address { get; set; }
 
 		[Property]
 		public virtual uint ClientCode { get; set; }
@@ -309,12 +309,15 @@ namespace Inforoom.PriceProcessor.Downloader
 						{
 							using (var scope = new TransactionScope(OnDispose.Rollback))
 							{
-								DocumentReceiveLog log = null;
-								var document = ToDocument(body, ref log);
+								var document = ToDocument(body);
 								if (document == null)
 									continue;
 								document.Log.Save();
 								document.Save();
+
+								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
+									DbfExporter.SaveProtek(document);
+
 								scope.VoteCommit();
 								WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
@@ -330,7 +333,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			});
 		}
 
-		private Document ToDocument(Blading blading, ref DocumentReceiveLog log)
+		private Document ToDocument(Blading blading)
 		{
 			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
 			
@@ -361,21 +364,19 @@ namespace Inforoom.PriceProcessor.Downloader
 					blading.baseId);
 				return null;
 			}
-		   
+
 			foreach (var id in orderIds)
 			{
 				var ord = OrderHead.TryFind(id);
 				if(ord != null) orders.Add(ord);
 			}
 
-			log = new DocumentReceiveLog 
-			{
+			var log = new DocumentReceiveLog {
 				DocumentType = DocType.Waybill,
-				FileName = "fake.txt",
 				ClientCode = order.ClientCode,
-				AddressId = order.AddressId,
+				Address = order.Address,
 				Supplier = order.Price.Supplier,
-				IsFake = true,
+				IsFake = true
 			};
 
 			var document = new Document(log) {
@@ -429,9 +430,6 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 			document.CalculateValues(); // расчет недостающих значений
-			var settings = WaybillSettings.TryFind(order.ClientCode);
-			if (settings != null && settings.IsConvertFormat)
-				WaybillService.ConvertAndSaveDbfFormatIfNeeded(document, log, true);
 
 			return document;
 		}
@@ -441,7 +439,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			if (String.IsNullOrEmpty(path))
 				return;
 			var file = Path.Combine(path, DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss_fff") + ".xml");
-			using(var stream = File.OpenRead(file))
+			using(var stream = File.OpenWrite(file))
 				blading.ToXml(stream);
 		}
 	}

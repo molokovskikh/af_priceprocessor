@@ -40,7 +40,6 @@ namespace PriceProcessor.Test.Waybills
 			service = factory.CreateChannel();
 
 			client = TestClient.Create();
-			//var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			waybillsPath = Path.Combine(docRoot, "Waybills");
 			rejectsPath = Path.Combine(docRoot, "Rejects");
@@ -52,9 +51,7 @@ namespace PriceProcessor.Test.Waybills
 
 		private void Setup_Parse_Convert_Dbf_format()
 		{
-			//client_dbf = TestOldClient.CreateTestClient(1UL, true);
 			client_dbf = TestClient.Create();
-			//var _docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client_dbf.Id.ToString());
 			var _docRoot = Path.Combine(Settings.Default.DocumentPath, client_dbf.Id.ToString());
 			waybillsPath_dbf = Path.Combine(_docRoot, "Waybills");
 			rejectsPath_dbf = Path.Combine(_docRoot, "Rejects");
@@ -65,8 +62,6 @@ namespace PriceProcessor.Test.Waybills
 		private string GetDocumentDir(uint? AddressId, uint? ClientCode)
 		{
 			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
-		//	var clientDir = Path.Combine(Settings.Default.WaybillsPath, code.ToString().PadLeft(3, '0'));
-			//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, code.ToString().PadLeft(3, '0'));
 			var clientDir = Path.Combine(Settings.Default.DocumentPath, code.ToString().PadLeft(3, '0'));
 			return Path.Combine(clientDir, "Waybill" + "s");
 		}

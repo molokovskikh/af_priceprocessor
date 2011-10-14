@@ -18,25 +18,56 @@ using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
 using Test.Support.Helpers;
 using Test.Support.Suppliers;
+using log4net.Config;
 
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
 	public class WaybillServiceFixture
 	{
+		TestClient client;
+		TestSupplier supplier;
+		TestPrice price;
+		TestAddress testAddress;
+
+		Supplier appSupplier;
+		WaybillSettings settings;
+		Address address;
+
+		string docRoot;
+		string waybillsPath;
+
+		[SetUp]
+		public void Setup()
+		{
+			client = TestClient.Create();
+			testAddress = client.Addresses[0];
+			address = Address.Find(testAddress.Id);
+			settings = WaybillSettings.Find(client.Id);
+
+			docRoot = Path.Combine(Settings.Default.DocumentPath, address.Id.ToString());
+			waybillsPath = Path.Combine(docRoot, "Waybills");
+			Directory.CreateDirectory(waybillsPath);
+
+			price = TestSupplier.CreateTestSupplierWithPrice();
+			supplier = price.Supplier;
+			appSupplier = Supplier.Find(supplier.Id);
+		}
+
+		private uint[] ParseFile(string filename)
+		{
+			var file = filename;
+			var log = CreateTestLog(file);
+
+			var service = new WaybillService();
+			var ids = service.ParseWaybill(new[] {log.Id});
+			return ids;
+		}
+
 		[Test]
 		public void Parse_waybill()
 		{
-			var file = "1008fo.pd";
-			var client = TestClient.Create();
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
-			File.Copy(@"..\..\Data\Waybills\1008fo.pd", Path.Combine(waybillsPath, String.Format("{0}_1008fo.pd", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new [] {log.Id});
+			var ids = ParseFile("1008fo.pd");
 
 			using(new SessionScope())
 			{
@@ -45,59 +76,10 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test]
-		[Ignore]
-		public void ParseDocument()
-		{
-			var file = "4179_1445878.dbf";
-			var client = TestClient.Create();
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = DocumentReceiveLog.Log(1179, client.Id, null, file, DocType.Waybill);
-			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
-			using (new TransactionScope())
-			{				
-				settings.ParseWaybills = true;
-				settings.SaveAndFlush();
-			}			
-			WaybillService.ParserDocument(log);
-		}
-
 		[Test(Description = "тест разбора накладной с ShortName поставщика в имени файла")]
 		public void Parse_waybill_with_ShortName_in_fileName()
 		{
-			var file = "1008fo.pd";			
-			var client = TestClient.Create();			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = 1179,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			var supplier = TestSupplier.Find(log.FirmCode);
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(
-				@"..\..\Data\Waybills\1008fo.pd", 
-				Path.Combine(waybillsPath, 
-					String.Format(
-						"{0}_{1}({2}){3}", 
-						log.Id,
-						supplier.Name,
-						Path.GetFileNameWithoutExtension(file),
-						Path.GetExtension(file))));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			var ids = ParseFile("1008fo.pd");
 
 			using (new SessionScope())
 			{
@@ -106,30 +88,11 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+
 		[Test]
 		public void Parse_waybill_without_header()
 		{
-			var file = "00000049080.sst";
-			var client = TestClient.Create();
-			var docRoot = Path.Combine(Settings.Default.FTPOptBoxPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = 2207,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(@"..\..\Data\Waybills\00000049080.sst", Path.Combine(waybillsPath, String.Format("{0}_00000049080.sst", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			var ids = ParseFile("00000049080.sst");
 
 			using (new SessionScope())
 			{
@@ -140,10 +103,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "Проверка сопоставления идентификатора продукта синониму. Синоним есть в БД")]
 		public void Check_SetProductId_if_synonym_exists()
 		{
-			const string file = "14356_4.dbf";
-			TestClient client;
-			TestSupplier supplier;
-			TestPrice price;
+			var file = "14356_4.dbf";
 			TestDocumentLog log;
 			TestProducer producer1;
 			TestProducer producer2;
@@ -151,74 +111,47 @@ namespace PriceProcessor.Test.Waybills
 
 			using (new SessionScope())
 			{
-				client = TestClient.Create();
-				supplier = TestSupplier.Create();
-				price = new TestPrice	// прайс, по которому будут определяться синонимы
-				{
-					CostType = CostType.MultiColumn,
-					Supplier = supplier,
-					ParentSynonym = null,
-					PriceName = "тестовый прайс"
-				};
-				price.SaveAndFlush();
-				log = new TestDocumentLog
-				{
-					ClientCode = client.Id,
-					FirmCode = supplier.Id,
-					LogTime = DateTime.Now,
-					DocumentType = DocumentType.Waybill,
-					FileName = file,
-				};
-				log.SaveAndFlush();
+				log = CreateTestLog(file);
 
 				product = new TestProduct("тестовый товар");
 				product.SaveAndFlush();
 
-				var productSynonym = new TestSynonym
-										{
-											ProductId = product.Id,
-											Synonym = "Коринфар таб п/о 10мг № 50",
-											PriceCode = (int?) price.Id
-										};
-				
-				productSynonym.SaveAndFlush();
-
-				productSynonym = new TestSynonym
-				{
-					ProductId = null,
+				var productSynonym = new TestSynonym {
+					ProductId = product.Id,
 					Synonym = "Коринфар таб п/о 10мг № 50",
-					PriceCode = (int?)price.Id
+					PriceCode = (int?) price.Id
 				};
 
+				productSynonym.SaveAndFlush();
 
+				productSynonym = new TestSynonym {
+					ProductId = null,
+					Synonym = "Коринфар таб п/о 10мг № 50",
+					PriceCode = (int?) price.Id
+				};
 
-				producer1 = new TestProducer
-								{
-									Name = "Тестовый производитель",
-								};
+				producer1 = new TestProducer {
+					Name = "Тестовый производитель",
+				};
 				producer1.SaveAndFlush();
 
-				producer2 = new TestProducer
-				{
+				producer2 = new TestProducer {
 					Name = "Тестовый производитель",
 				};
 				producer2.SaveAndFlush();
 
-			
-				var producerSynonym = new TestProducerSynonym
-										{
-											Price = price,
-											Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
-											Producer = null
-										};
+				var producerSynonym = new TestProducerSynonym {
+					Price = price,
+					Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+					Producer = null
+				};
 				producerSynonym.SaveAndFlush();
 
-				producerSynonym = new TestProducerSynonym
-										{
-											Price = price,
-											Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
-											Producer = producer1
-										};
+				producerSynonym = new TestProducerSynonym {
+					Price = price,
+					Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
+					Producer = producer1
+				};
 				producerSynonym.SaveAndFlush();
 
 				producerSynonym = new TestProducerSynonym
@@ -228,15 +161,8 @@ namespace PriceProcessor.Test.Waybills
 					Producer = producer2
 				};
 				producerSynonym.SaveAndFlush();
-
 			}
 			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-
-			Directory.CreateDirectory(waybillsPath);
-			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
-
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
 
@@ -247,50 +173,27 @@ namespace PriceProcessor.Test.Waybills
 				Assert.IsTrue(waybill.Lines[0].ProductId != null);
 				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
 				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
-
 			}
+		}
+
+		private TestDocumentLog CreateTestLog(string file)
+		{
+			var log = new TestDocumentLog(supplier, testAddress, file);
+			using (new TransactionScope())
+				log.SaveAndFlush();
+
+			File.Copy(@"..\..\Data\Waybills\" + file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
+				log.Id,
+				supplier.Name,
+				Path.GetFileNameWithoutExtension(file),
+				Path.GetExtension(file))));
+			return log;
 		}
 
 		[Test(Description = "Проверка сопоставления идентификатора продукта синониму. Синонима нет в БД")]
 		public void Check_SetProductId_if_synonym_not_exists()
 		{
-			const string file = "14356_4.dbf";
-			TestClient client;
-			TestSupplier supplier;
-			TestPrice price;
-			TestDocumentLog log;
-
-			using (new SessionScope())
-			{
-				client = TestClient.Create();
-				supplier = TestSupplier.Create();
-				price = new TestPrice
-				{
-					CostType = CostType.MultiColumn,
-					Supplier = supplier,
-					ParentSynonym = null,
-					PriceName = "тестовый прайс"
-				};
-				price.SaveAndFlush();
-				log = new TestDocumentLog
-				{
-					ClientCode = client.Id,
-					FirmCode = supplier.Id,
-					LogTime = DateTime.Now,
-					DocumentType = DocumentType.Waybill,
-					FileName = file,
-				};
-				log.SaveAndFlush();
-			}
-			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-
-			Directory.CreateDirectory(waybillsPath);
-			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			var ids = ParseFile("14356_4.dbf");
 
 			using (new SessionScope())
 			{
@@ -301,33 +204,10 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-
 		[Test]
 		public void Check_SetProductId()
 		{
-			const string file = "14326_4.dbf";
-			var client = TestClient.Create();			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			
-			Directory.CreateDirectory(waybillsPath);
-
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = 1179,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			var ids = ParseFile("14326_4.dbf");
 
 			using (new SessionScope())
 			{
@@ -370,29 +250,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Check_SetProducerId()
 		{
-			const string file = "14326_4.dbf";
-			var client = TestClient.Create();
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-
-			Directory.CreateDirectory(waybillsPath);
-
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = 1179,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
-
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+			var ids = ParseFile("14326_4.dbf");
 
 			using (new SessionScope())
 			{
@@ -435,38 +293,14 @@ namespace PriceProcessor.Test.Waybills
 		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]		
 		public void Parse_and_Convert_to_Dbf()
 		{
-			const string file = "14326_4.dbf";
-			var client = TestClient.Create();
-			var supplier = TestSupplier.Create();
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-
-			Directory.CreateDirectory(waybillsPath);
-
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,				
-				FirmCode = supplier.Id,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 
-			File.Copy(@"..\..\Data\Waybills\14326_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14326_4.dbf", log.Id)));
-
-			var service = new WaybillService();
-			service.ParseWaybill(new[] { log.Id });
+			ParseFile("14326_4.dbf");
 
 			using (new SessionScope())
 			{
@@ -480,39 +314,32 @@ namespace PriceProcessor.Test.Waybills
 				{
 					var count = documentLog.IsFake
 									? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
-									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();					
+									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(2));
 				settings.IsConvertFormat = false;
 				settings.AssortimentPriceId = null;
-				settings.SaveAndFlush();			
+				settings.SaveAndFlush();
 			}
 		}
 
 		[Test(Description = "Проверка сопоставления кода клиента по ассортиментному прайс листу")]
 		public void Check_SetAssortimentInfo()
 		{
-			const string file = "14356_4.dbf";
-			TestClient client;
-			TestSupplier supplier;
-			TestPrice price;
-			TestDocumentLog log;			
+			var file = "14356_4.dbf";
+			TestDocumentLog log;
 			TestProducer producer;
 			TestProduct product;
 
 			using (new SessionScope())
 			{
-				client = TestClient.Create();
-				supplier = TestSupplier.Create();
-				price = new TestPrice{CostType = CostType.MultiColumn, Supplier = supplier, ParentSynonym = null, PriceName = "тестовый прайс"};
-				price.SaveAndFlush();
-				log = new TestDocumentLog{ClientCode = client.Id, FirmCode = supplier.Id, LogTime = DateTime.Now, DocumentType = DocumentType.Waybill, FileName = file,};
-				log.SaveAndFlush();
+				log = CreateTestLog(file);
+
 				product = new TestProduct("тестовый товар");
 				product.SaveAndFlush();
-				var productSynonym = new TestProductSynonym("Коринфар таб п/о 10мг № 50", product, price);				
+				var productSynonym = new TestProductSynonym("Коринфар таб п/о 10мг № 50", product, price);
 				productSynonym.SaveAndFlush();
 
 				producer = new TestProducer{Name = "Тестовый производитель"};
@@ -526,37 +353,33 @@ namespace PriceProcessor.Test.Waybills
 
 				core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
-			}
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", Path.Combine(waybillsPath, String.Format("{0}_14356_4.dbf", log.Id)));
-			var settings = WaybillSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
-			using (new TransactionScope())
-			{
+
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = (int?)price.Id;
+				settings.AssortimentPriceId = price.Id;
 				settings.SaveAndFlush();
 			}
+
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
+
 			using (new SessionScope())
 			{
-				Document doc = Document.Find(ids.Single());
+				var doc = Document.Find(ids.Single());
 				Assert.That(doc.Lines.Count, Is.EqualTo(1));
-				//Assert.IsTrue(doc.Lines[0].ProductId != null);
 				Assert.IsTrue(doc.Lines[0].ProductEntity != null);
-				//Assert.That(doc.Lines[0].ProductId, Is.EqualTo(product.Id));
 				Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product.Id));
 				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
-				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
-				Assert.That(files_dbf.Count(), Is.EqualTo(2));
-				var file_dbf = files_dbf.Where(f => f.Contains(supplier.Name)).Select(f => f).First();					
-				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+
+				var resultDoc = DocumentReceiveLog.Queryable.Single(d => d.Address == address && d.IsFake == false);
+				var files = Directory.GetFiles(waybillsPath, "*.dbf");
+				Assert.That(files.Count(), Is.EqualTo(2), files.Implode());
+	
+				Console.WriteLine(waybillsPath);
+				var data = Dbf.Load(resultDoc.GetFileName(), Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
 				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
 				Assert.IsTrue(data.Columns.Contains("name_artis"));
-				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));				
+				Assert.That(data.Rows[0]["name_artis"], Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.IsTrue(data.Columns.Contains("przv_artis"));
 				Assert.That(data.Rows[0]["przv_artis"], Is.EqualTo("Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ"));
 			}
@@ -577,32 +400,15 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Parse_and_Convert_to_Dbf_if_sert_date()
 		{
-			const string file = "20101119_8055_250829.xml";
-			var client = TestClient.Create();
-			var supplier = TestSupplier.Create();			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = supplier.Id,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file,
-			};
-			using (new TransactionScope())
-				log.SaveAndFlush();
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.AssortimentPriceId = price.Id;
 				settings.SaveAndFlush();
 			}
-			File.Copy(@"..\..\Data\Waybills\20101119_8055_250829.xml", Path.Combine(waybillsPath, String.Format("{0}_20101119_8055_250829.xml", log.Id)));
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
+
+			var ids = ParseFile("20101119_8055_250829.xml");
+
 			using (new SessionScope())
 			{
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id);
@@ -632,30 +438,23 @@ namespace PriceProcessor.Test.Waybills
 		{
 			Document doc;
 			using (new SessionScope())
-			{                
-				TestSupplier testsupplier = (TestSupplier)TestSupplier.FindFirst();
-				Supplier supplier = Supplier.Find(testsupplier.Id);
-				
-				TestDrugstoreSettings settings = TestDrugstoreSettings.FindFirst();
-				TestOrder order = TestOrder.FindFirst();
+			{
+				var settings = TestDrugstoreSettings.FindFirst();
+				var order = TestOrder.FindFirst();
 
-				TestAddress address = TestAddress.FindFirst();
-				DocumentReceiveLog log = new DocumentReceiveLog()
-				{
-					Supplier = supplier,
+				var log = new DocumentReceiveLog() {
+					Supplier = appSupplier,
 					ClientCode = settings.Id,
-					AddressId = address.Id,
+					Address = address,
 					MessageUid = 123,
 					DocumentSize = 100
 				};
 
-				doc = new Document(log)
-				{
+				doc = new Document(log) {
 					OrderId = order.Id,
-					AddressId = address.Id,
-					DocumentDate = DateTime.Now                    
+					DocumentDate = DateTime.Now
 				};
-				Invoice inv = doc.SetInvoice();                
+				var inv = doc.SetInvoice();
 				inv.BuyerName = "Тестовый покупатель";
 
 				log.Save();
@@ -675,7 +474,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(inv2.Id, Is.EqualTo(doc.Id));
 				Assert.That(inv2.Document, Is.Not.Null);
 				Assert.That(inv2.Document.Id, Is.EqualTo(doc.Id));
-				Assert.That(inv2.Document.AddressId, Is.EqualTo(doc.AddressId));
+				Assert.That(inv2.Document.Address.Id, Is.EqualTo(doc.Address.Id));
 				Assert.That(inv2.BuyerName, Is.EqualTo("Тестовый покупатель"));
 			}
 		}
@@ -688,40 +487,40 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(invoice, Is.Not.Null);
 			using (new TransactionScope())
 			{
-				TestSupplier testsupplier = (TestSupplier) TestSupplier.FindFirst();
-				Supplier supplier = Supplier.Find(testsupplier.Id);
-				TestDrugstoreSettings settings = TestDrugstoreSettings.Queryable.Where(s => s.IsConvertFormat && s.AssortimentPriceId != null).FirstOrDefault();
-				TestOrder order = TestOrder.FindFirst();
-				TestAddress address = TestAddress.FindFirst();
-				DocumentReceiveLog log = new DocumentReceiveLog()
-											 {
-												 Supplier = supplier,
-												 ClientCode = settings.Id,
-												 AddressId = address.Id,
-												 MessageUid = 123,
-												 DocumentSize = 100
-											 };
+				var order = TestOrder.FindFirst();
+				var log = new DocumentReceiveLog {
+					Supplier = appSupplier,
+					ClientCode = client.Id,
+					Address = address,
+					DocumentType = DocType.Waybill,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
 
 				doc.Log = log;
 				doc.OrderId = order.Id;
-				doc.AddressId = address.Id;
+				doc.Address = log.Address;
 				doc.FirmCode = log.Supplier.Id;
 				doc.ClientCode = (uint) log.ClientCode;
+
+				settings.AssortimentPriceId = price.Id;
+				settings.Save();
 
 				doc.SetProductId();
 
 				var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
 				Directory.Delete(path, true);
-				
-				WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
 
+				var result = DbfExporter.ConvertAndSaveDbfFormatIfNeeded(doc);
+
+				Assert.That(result, Is.True, "файл не был сконвертирован");
 				var files_dbf = Directory.GetFiles(path, "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(1));
 				var file_dbf = files_dbf.Select(f => f).First();
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("ean13"));
 				Assert.That(data.Rows[0]["ean13"], Is.EqualTo("5944700100019"));
-			}            
+			}
 		}
 
 		[Test]
@@ -752,19 +551,18 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(settings.AssortimentPriceId, Is.Not.Null);
 				var client = (TestClient)TestClient.Find(settings.Id);
 				var order = TestOrder.FindFirst();
-				var address = client.Addresses[0];
-				DocumentReceiveLog log = new DocumentReceiveLog()
-				{
+				var address = Address.Find(client.Addresses[0].Id);
+				DocumentReceiveLog log = new DocumentReceiveLog() {
 					Supplier = supplier,
 					ClientCode = settings.Id,
-					AddressId = address.Id,
+					Address = address,
 					MessageUid = 123,
 					DocumentSize = 100
 				};
 
 				doc.Log = log;
 				doc.OrderId = order.Id;
-				doc.AddressId = address.Id;
+				doc.Address = address;
 				doc.FirmCode = log.Supplier.Id;
 				doc.ClientCode = (uint)log.ClientCode;
 
@@ -773,7 +571,7 @@ namespace PriceProcessor.Test.Waybills
 				var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
 				Directory.Delete(path, true);
 
-				WaybillService.ConvertAndSaveDbfFormatIfNeeded(doc, log, true);
+				DbfExporter.ConvertAndSaveDbfFormatIfNeeded(doc);
 
 				var files_dbf = Directory.GetFiles(path, "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(1));
@@ -796,39 +594,35 @@ namespace PriceProcessor.Test.Waybills
 		
 		[Test]
 		public void ComparisonWithOrdersTest()
-		{            
-			Supplier supplier;
-			TestClient client = TestClient.Create();
+		{
 			OrderHead order1;
 			OrderHead order2;
-			Document document;          
+			Document document;
 
 			using (new SessionScope())
 			{
-				supplier = Supplier.FindFirst();
-				order1 = new OrderHead { ClientCode = client.Id }; order1.Save();                
+				order1 = BuildOrder();
+				order1.Save();
 				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 }; item.Save();
 				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 }; item.Save();
 				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 }; item.Save();
 				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 }; item.Save();
 
-				order2 = new OrderHead { ClientCode = client.Id }; order2.Save();
+				order2 = BuildOrder();
+				order2.Save();
 				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 }; item.Save();
 				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
 				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
 
-				DocumentReceiveLog log = new DocumentReceiveLog
-				{
-					Supplier = supplier,
+				var log = new DocumentReceiveLog {
+					Supplier = appSupplier,
 					ClientCode = client.Id,
-					AddressId = client.Addresses[0].Id,
+					Address = address,
 					MessageUid = 123,
 					DocumentSize = 100
 				};
-				document = new Document(log)
-				{
+				document = new Document(log) {
 					OrderId = order1.Id,
-					AddressId = client.Addresses[0].Id,
 					DocumentDate = DateTime.Now
 				};
 				var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
@@ -886,25 +680,25 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
 		}
 
+		private OrderHead BuildOrder()
+		{
+			OrderHead order1;
+			order1 = new OrderHead {
+				ClientCode = client.Id,
+				Address = address,
+				Price = Price.Find(price.Id)
+			};
+			return order1;
+		}
+
 		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
 		public void check_parse_waybill_if_file_is_not_local()
 		{
-			const string file = "9229370.dbf";
-			var client = TestClient.Create();
-			var supplier = TestSupplier.Create();
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
-				ClientCode = client.Id,
-				FirmCode = supplier.Id,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file
-			};
+			var file = "9229370.dbf";
+			var log = new TestDocumentLog(supplier, testAddress, file);
 			using (new TransactionScope())
-				log.SaveAndFlush();	
+				log.SaveAndFlush();
+
 			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
 			var ids = service.ParseWaybill(new[] { log.Id });
 			using (new SessionScope())
@@ -919,7 +713,7 @@ namespace PriceProcessor.Test.Waybills
 			{
 				Thread.Sleep(3000);
 				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
-													supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
+					supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));
 			});
 			thread.Start(); // подкладываем файл в процессе разбора накладной
 			ids = service.ParseWaybill(new[] {log.Id});
@@ -941,9 +735,6 @@ namespace PriceProcessor.Test.Waybills
 			
 			using(new SessionScope())
 			{
-				var price = TestSupplier.CreateTestSupplierWithPrice();
-				var supplier = Supplier.Find(price.Supplier.Id);
-				var client = TestClient.Create();
 				var order = new TestOrder();
 	
 				product1 = new TestProduct("Активированный уголь (табл.)");
@@ -983,19 +774,17 @@ namespace PriceProcessor.Test.Waybills
 				TestAssortment.CheckAndCreate(product1, producer1);
 				TestAssortment.CheckAndCreate(product2, producer2);
 
-				var log = new DocumentReceiveLog()
-				{
-					Supplier = supplier,
+				var log = new DocumentReceiveLog() {
+					Supplier = appSupplier,
 					ClientCode = client.Id,
-					AddressId = client.Addresses[0].Id,
+					Address = address,
 					MessageUid = 123,
 					DocumentSize = 100
 				};
 
-				doc = new Document(log)
-				{
+				doc = new Document(log) {
 					OrderId = order.Id,
-					AddressId = log.AddressId,
+					Address = log.Address,
 					DocumentDate = DateTime.Now
 				};
 
@@ -1036,14 +825,12 @@ namespace PriceProcessor.Test.Waybills
 		public void ParseCertificateFiles()
 		{
 			const string file = "9229370.dbf";
-			var client = TestClient.Create();
 			//Ищем воронежскую Аптеку-Холдинг, ЭТО ХАК!!!
 			var supplier = TestSupplier.Find(39u);
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog
-			{
+			var log = new TestDocumentLog {
 				ClientCode = client.Id,
 				FirmCode = supplier.Id,
 				LogTime = DateTime.Now,
@@ -1051,10 +838,10 @@ namespace PriceProcessor.Test.Waybills
 				FileName = file
 			};
 			using (new TransactionScope())
-				log.SaveAndFlush();	
+				log.SaveAndFlush();
 
 			File.Copy(@"..\..\Data\Waybills\9832937_Аптека-Холдинг(3334_1459366).dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
-												supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
+				supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
 
 			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
 			var ids = service.ParseWaybill(new[] { log.Id });
@@ -1071,6 +858,5 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(docs[0].Lines.ToList().TrueForAll(docLine => !String.IsNullOrEmpty(docLine.CertificateFilename)));
 			}
 		}
-
 	}
 }

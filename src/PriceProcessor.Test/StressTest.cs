@@ -390,14 +390,6 @@ order by Core0.Id", 3779);
 		[Test, Ignore]
 		public void Formilize_test()
 		{
-			//@"..\..\Data\StressTest\517.dbf"
-			//@"..\..\Data\StressTest\599.dbf"
-			var appender = new ConsoleAppender {
-				Layout = new SimpleLayout1()
-			};
-			appender.ActivateOptions();
-			BasicConfigurator.Configure(appender);
-
 			Settings.Default.SyncPriceCodes.Clear();
 			Settings.Default.SyncPriceCodes.Add("3779");
 			Settings.Default.SyncPriceCodes.Add("2819");

@@ -141,8 +141,8 @@ and st.SourceID = 4";
 							//Обрабатываем ошибку в случае обработки одного из типов документов
 							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
-                            if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
-							    LoggingToService(Error);
+							if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
+								LoggingToService(Error);
 						}
 
 
@@ -158,8 +158,8 @@ and st.SourceID = 4";
 					}
 					catch { }
 					error += Environment.NewLine + Environment.NewLine + ex;
-                    if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-					    LoggingToService(error);
+					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
+						LoggingToService(error);
 					try
 					{
 						dtSources.AcceptChanges();
@@ -283,12 +283,10 @@ and st.SourceID = 4";
 						}
 
 						var log = DocumentReceiveLog.LogNoCommit(supplierId,
-						    clientId,
-						    clientAddressId,
-						    formatFile,
-						    _currentDocumentType.DocType,
-						    null,
-						    null);
+							clientId,
+							clientAddressId,
+							formatFile,
+							_currentDocumentType.DocType);
 
 						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
@@ -300,7 +298,7 @@ and st.SourceID = 4";
 				{
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;										
 					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
-					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
+					DocumentReceiveLog.Log(supplierId, null, null, fileName, _currentDocumentType.DocType, message);
 					return false;
 				}
 			}

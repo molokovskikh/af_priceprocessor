@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\ProjectLib.properties" Condition="Exists('..\ProjectLib.properties')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -95,9 +96,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.ByteCode.Castle.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=2.5.0.9122, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+    <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Rhino.Mocks">
       <HintPath>..\..\Lib\Rhino.Mocks.dll</HintPath>
@@ -161,6 +162,7 @@
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
+    <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParserFixture.cs" />
     <Compile Include="Waybills\ParseCertificatesFixture.cs" />
@@ -267,6 +269,7 @@
     <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WayBillRetransFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />

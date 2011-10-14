@@ -26,8 +26,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public uint? ClientCode { get; set; }
 
-		[Property]
-		public uint? AddressId { get; set; }
+		[BelongsTo("AddressId")]
+		public Address Address { get; set; }
 
 		[Property]
 		public DocType DocumentType { get; set; }
@@ -48,6 +48,19 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public bool IsFake { get; set; }
 
 		private string _localFile;
+
+		public DocumentReceiveLog()
+		{}
+
+		public DocumentReceiveLog(DocumentReceiveLog log)
+		{
+			ClientCode = log.ClientCode;
+			Address = log.Address;
+			Supplier = log.Supplier;
+			Comment = "Сконвертированный Dbf файл";
+			DocumentType = log.DocumentType;
+			FileName = Path.GetFileNameWithoutExtension(log.FileName) + ".dbf";
+		}
 
 		public bool FileIsLocal()
 		{
@@ -73,7 +86,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (!File.Exists(fullName))
 			{
 				file = String.Format("{0}_{1}({2}){3}",
-					Id,					
+					Id,
 					Supplier.Name,
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));
@@ -84,19 +97,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		private string GetDocumentDir()
 		{
-			var code = AddressId.HasValue ? AddressId.Value : ClientCode;
-			var clientDir = Path.Combine(Settings.Default.DocumentPath, code.ToString().PadLeft(3, '0'));
+			if (Address == null)
+				throw new Exception("Не могу получить путь документа для неизвестного адреса доставки");
+
+			var clientDir = Path.Combine(Settings.Default.DocumentPath, Address.Id.ToString().PadLeft(3, '0'));
 			return Path.Combine(clientDir, DocumentType + "s");
-		}
-
-		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType)
-		{
-			return Log(supplierId, clientId, addressId, fileName, documentType, null, null);
-		}
-
-		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment)
-		{
-			return Log(supplierId, clientId, addressId, fileName, documentType, comment, null);
 		}
 
 		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, int messageId)
@@ -104,44 +109,30 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return Log(supplierId, clientId, addressId, fileName, documentType, null, messageId);
 		}
 
-		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId, bool isFake = false)
+		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment = null, int? messageId = null, bool isFake = false)
 		{
-			fileName = CleanupFilename(fileName);
-			var localFile = fileName;
-			fileName = Path.GetFileName(fileName);
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				var document = new DocumentReceiveLog {
-					AddressId = addressId,
-					ClientCode = clientId,
-					FileName = fileName,
-					_localFile = localFile,
-					DocumentType = documentType,
-					Comment = comment,
-					MessageUid = messageId,
-					IsFake = isFake
-				};
-
-				if (File.Exists(localFile))
-					document.DocumentSize = new FileInfo(localFile).Length;
-
-				if (supplierId != null)
-					document.Supplier = Supplier.Find(supplierId.Value);
-
-				document.Create();
+				var document = LogNoCommit(supplierId, clientId, addressId, fileName, documentType, comment, messageId, isFake);
+				document.Save();
 				scope.VoteCommit();
 				return document;
 			}
 		}
 
-		public static DocumentReceiveLog LogNoCommit(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment, int? messageId, bool isFake = false)
+		public static DocumentReceiveLog LogNoCommit(uint? supplierId,
+			uint? clientId,
+			uint? addressId,
+			string fileName,
+			DocType documentType,
+			string comment = null,
+			int? messageId = null,
+			bool isFake = false)
 		{
 			fileName = CleanupFilename(fileName);
 			var localFile = fileName;
 			fileName = Path.GetFileName(fileName);
-			var document = new DocumentReceiveLog
-			{
-				AddressId = addressId,
+			var document = new DocumentReceiveLog {
 				ClientCode = clientId,
 				FileName = fileName,
 				_localFile = localFile,
@@ -152,27 +143,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			};
 			if (File.Exists(localFile))
 				document.DocumentSize = new FileInfo(localFile).Length;
-			if (supplierId != null)				
-				document.Supplier = Supplier.Find(supplierId.Value);								
+			if (supplierId != null)
+				document.Supplier = Supplier.Find(supplierId.Value);
+			if (addressId != null)
+				document.Address = Address.Find(addressId.Value);
 			return document;
-		}
-		
-		public static void LogFail(uint supplierId, uint? clientId, uint? clientAddressId, DocType docType, string filename, string message)
-		{
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				var supplier = Supplier.Find(supplierId);
-				var document = new DocumentReceiveLog {
-					Supplier = supplier,
-					AddressId = clientAddressId,
-					ClientCode = clientId,
-					FileName = filename,
-					DocumentType = docType,
-					Comment = message,
-				};
-				document.Create();
-				scope.VoteCommit();
-			}
 		}
 
 		//теоритически имя файла может содержать символы которых нет в 1251
@@ -206,26 +181,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public void CopyDocumentToClientDirectory()
 		{
-			var clientDirectory = GetDocumentDir();
+			var destinationFileName = GetRemoteFileNameExt();
 
-			if (!Directory.Exists(clientDirectory))
-				Directory.CreateDirectory(clientDirectory);
-
-			var destinationFileName = GetRemoteFileName();
+			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
+			if (GetFileName() != destinationFileName)
+				File.Copy(_localFile, destinationFileName, true);
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
-			
-			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
-			if (GetFileName() != destinationFileName)
-			{
-				File.SetLastAccessTime(_localFile, DateTime.Now);
-				File.Copy(_localFile, destinationFileName, true);
-			}
-			else
-			{
-				File.SetLastAccessTime(destinationFileName, DateTime.Now);
-			}
+			File.SetLastAccessTime(destinationFileName, DateTime.Now);
 
 			if (_logger.IsDebugEnabled)
 				WaybillService.SaveWaybill(_localFile);

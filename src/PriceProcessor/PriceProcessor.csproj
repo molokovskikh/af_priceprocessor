@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\ProjectLib.properties" Condition="Exists('..\ProjectLib.properties')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,19 +13,13 @@
     <AssemblyName>PriceProcessor</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
+    <SccProjectName></SccProjectName>
+    <SccLocalPath></SccLocalPath>
+    <SccAuxPath></SccAuxPath>
+    <SccProvider></SccProvider>
     <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
+    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
+    <FileUpgradeFlags></FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
   </PropertyGroup>
@@ -219,10 +214,12 @@
     <Compile Include="Waybills\CertificateSources\AptekaHoldingVoronezhCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\CertificateFileEntry.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
+    <Compile Include="Waybills\Models\Address.cs" />
     <Compile Include="Waybills\Models\Certificate.cs" />
     <Compile Include="Waybills\Models\CertificateFile.cs" />
     <Compile Include="Waybills\Models\CertificateSource.cs" />
     <Compile Include="Waybills\Models\CertificateTask.cs" />
+    <Compile Include="Waybills\Models\DbfExporter.cs" />
     <Compile Include="Waybills\Models\Document.cs" />
     <Compile Include="Waybills\Models\DocumentLine.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLog.cs" />

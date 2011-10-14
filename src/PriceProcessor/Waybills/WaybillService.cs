@@ -86,8 +86,14 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-					if (doc != null && settings != null && settings.IsConvertFormat)					
-						ConvertAndSaveDbfFormatIfNeeded(doc, d.DocumentLog, true);											
+					if (doc != null && settings != null && settings.IsConvertFormat)
+					{
+						using (var scope = new TransactionScope(OnDispose.Rollback))
+						{
+							DbfExporter.ConvertAndSaveDbfFormatIfNeeded(doc);
+							scope.VoteCommit();
+						}
+					}
 
 					return doc;
 				}
@@ -143,8 +149,14 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				//конвертируем накладную в новый формат dbf.
 				if (settings.IsConvertFormat)
-					ConvertAndSaveDbfFormatIfNeeded(document, log, true);						
-										
+				{
+					using (var scope = new TransactionScope(OnDispose.Rollback))
+					{
+						DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document);
+						scope.VoteCommit();
+					}
+				}
+
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
 					if(log.IsFake) log.Save();
@@ -160,117 +172,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		private static DataTable InitTableForFormatDbf(Document document, Supplier supplier)
-		{
-			var table = new DataTable();
-
-			table.Columns.AddRange(new DataColumn[]
-									{
-										new DataColumn("postid_af"),
-										new DataColumn("post_name_af"),
-										new DataColumn("apt_af"),
-										new DataColumn("aname_af"),
-										new DataColumn("ttn"),
-										new DataColumn("ttn_date"),
-										new DataColumn("id_artis"),
-										new DataColumn("name_artis"),
-										new DataColumn("przv_artis"),
-										new DataColumn("name_post"),
-										new DataColumn("przv_post"),
-										new DataColumn("seria"),
-										new DataColumn("sgodn"),
-										new DataColumn("sert"),
-										new DataColumn("sert_date"),
-										new DataColumn("prcena_bnds"),
-										new DataColumn("gr_cena"),
-										new DataColumn("pcena_bnds"),
-										new DataColumn("nds"),
-										new DataColumn("pcena_nds"),
-										new DataColumn("kol_tov"),
-										new DataColumn("ean13")
-									});
-			
-
-			foreach (var line in document.Lines)
-			{
-				var row = table.NewRow();
-				row["postid_af"] = document.FirmCode;
-				row["post_name_af"] = supplier.FullName;
-				row["apt_af"] = document.AddressId;
-				row["aname_af"] = document.AddressId != null
-									? With.Connection(connection =>
-													  MySqlHelper.ExecuteScalar(connection,
-																				"select Address from future.Addresses where Id = " +
-																				document.AddressId
-														))
-									: "";
-				row["ttn"] = document.ProviderDocumentId;
-				row["ttn_date"] = document.DocumentDate;				
-				if(line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.Code != null)
-					row["id_artis"] = line.AssortimentPriceInfo.Code;				
-				if (line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.Synonym != null)
-					row["name_artis"] = line.AssortimentPriceInfo.Synonym;
-				if (line.AssortimentPriceInfo != null && line.AssortimentPriceInfo.SynonymFirmCr != null)
-					row["przv_artis"] = line.AssortimentPriceInfo.SynonymFirmCr;
-				row["name_post"] = line.Product;
-				row["przv_post"] = line.Producer;
-				row["seria"] = line.SerialNumber;
-				row["sgodn"] = line.Period;
-				row["sert"] = line.Certificates;				
-				row["sert_date"] = line.CertificatesDate;
-				row["prcena_bnds"] = line.ProducerCost;
-				row["gr_cena"] = line.RegistryCost;
-				row["pcena_bnds"] = line.SupplierCostWithoutNDS;
-				row["nds"] = line.Nds;
-				row["pcena_nds"] = line.SupplierCost;
-				row["kol_tov"] = line.Quantity;
-				row["ean13"] = line.EAN13;
-				
-				table.Rows.Add(row);
-			}
-
-			return table;
-		}
-		
-		public static void ConvertAndSaveDbfFormatIfNeeded(Document document, DocumentReceiveLog log, bool isfake = false)
-		{
-			if (document.SetAssortimentInfo() == false) return;
-			var path = string.Empty;
-			try
-			{	
-				var table = InitTableForFormatDbf(document, log.Supplier);
-
-				using (var scope = new TransactionScope(OnDispose.Rollback))
-				{
-					var log_dbf = DocumentReceiveLog.Log(	log.Supplier.Id,
-															log.ClientCode,
-															log.AddressId,
-															//Path.GetFileNameWithoutExtension(log.GetRemoteFileNameExt()) + ".dbf",
-															Path.GetFileNameWithoutExtension(log.FileName) + ".dbf",
-															log.DocumentType, 
-															"Сконвертированный Dbf файл"
-														);
-
-					var file = log_dbf.GetRemoteFileNameExt();
-					log_dbf.FileName = string.Format("{0}{1}", Path.GetFileNameWithoutExtension(file), ".dbf");
-					log_dbf.SaveAndFlush();
-
-					path = Path.Combine(Path.GetDirectoryName(file), log_dbf.FileName);
-					//сохраняем накладную в новом формате dbf.
-					Dbf.Save(table, path);
-
-					scope.VoteCommit();
-				}
-				log.IsFake = isfake;
-			}
-			catch (Exception exception)
-			{
-				var info = string.Format("Исходный файл: {0} , log.id = {1}. Сконвертированный: {2}. ClientCode = {3}. SupplierId = {4}.", log.FileName, log.Id, path, log.ClientCode, log.Supplier.Id);
-				_log.Error("Ошибка сохранения накладной в новый формат dbf. "+ info + " Ошибка: " + exception.Message + ". StackTrace:" + exception.StackTrace);
-				throw;
-			}
-		}
-
 		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
 			if (document == null) return;
@@ -283,7 +184,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				while (waybillPositions.Count > 0)
 				{
-					var line = NextFirst(waybillPositions, false);                    
+					var line = NextFirst(waybillPositions, false);
 					var code = line.Code.Trim().ToLower();
 					var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
 					foreach (var waybillLine in waybillLines)
@@ -311,7 +212,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private static T NextFirst<T> (IList<T> list, bool rem) where T : class
 		{
-			if (list.Count == 0) return null;                
+			if (list.Count == 0) return null;
 			if(rem)
 			{
 				list.Remove(list.First());

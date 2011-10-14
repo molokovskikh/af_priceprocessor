@@ -24,11 +24,11 @@ namespace PriceProcessor.Test
 				new Dictionary<string, string> {
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
-					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},					
+					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
 					{Environment.ConnectionStringName, Literals.GetConnectionName()},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
 					{Environment.Hbm2ddlKeyWords, "none"},
-					{Environment.ShowSql, "true"}
+					//{Environment.ShowSql, "true"}
 				});
 			ActiveRecordStarter.Initialize(new[] {typeof (TestClient).Assembly, typeof (Document).Assembly}, config);
 		}

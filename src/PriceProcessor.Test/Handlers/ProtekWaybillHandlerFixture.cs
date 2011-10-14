@@ -85,10 +85,8 @@ namespace PriceProcessor.Test.Handlers
 					}
 				},
 			};
-			fake.bodyResponce = new getBladingBodyResponse
-			{
-				@return = new EZakazXML
-				{
+			fake.bodyResponce = new getBladingBodyResponse {
+				@return = new EZakazXML {
 					blading = new[] { blading }
 				}
 			};
@@ -98,25 +96,28 @@ namespace PriceProcessor.Test.Handlers
 		public void Process_protek_waybills()
 		{
 			DateTime begin = DateTime.Now;
-			fake.Process();		    
+			fake.Process();
 			using (new SessionScope())
 			{
 				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
 				Assert.That(documents.Count, Is.EqualTo(1));
-				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
-				var line = documents[0].Lines[0];
+				var document = documents[0];
+				Assert.That(document.Lines.Count, Is.EqualTo(1));
+				var line = document.Lines[0];
 				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
-				Assert.That(documents[0].Log, Is.Not.Null);
-				Assert.That(documents[0].Log.IsFake, Is.True);									
-				Check_DocumentLine_SetProductId(documents[0]);
+				var log = document.Log;
+				Assert.That(log, Is.Not.Null);
+				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.dbf", log.Id)));
+				Assert.That(log.DocumentSize, Is.GreaterThan(0));
+				Check_DocumentLine_SetProductId(document);
 			}
 		}
 
 		[Test]
 		public void Process_protek_waybills_with_blading_folder()
 		{
-			Thread.Sleep(1000);                      
+			Thread.Sleep(1000);
 			fake.bodyResponce.@return.blading[0].@uint = null;
 			fake.bodyResponce.@return.blading[0].bladingFolder = new[]{
 				new BladingFolder
@@ -156,7 +157,6 @@ namespace PriceProcessor.Test.Handlers
 				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
 				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
 				Assert.That(documents[0].Log, Is.Not.Null);
-				Assert.That(documents[0].Log.IsFake, Is.True);
 				Check_DocumentLine_SetProductId(documents[0]);
 				Assert.That(documents[0].OrderId, Is.EqualTo(order.Id));
 			}
@@ -209,7 +209,7 @@ namespace PriceProcessor.Test.Handlers
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);
-			fake.Process();			
+			fake.Process();
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = false;
