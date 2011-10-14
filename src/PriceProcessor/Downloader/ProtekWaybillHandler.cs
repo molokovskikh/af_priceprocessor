@@ -441,7 +441,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			if (String.IsNullOrEmpty(path))
 				return;
 			var file = Path.Combine(path, DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss_fff") + ".xml");
-			using(var stream = File.OpenRead(file))
+			using(var stream = File.OpenWrite(file))
 				blading.ToXml(stream);
 		}
 	}
