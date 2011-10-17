@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Models;
+using NHibernate;
 using log4net;
 using Castle.ActiveRecord.Framework;
 
@@ -146,7 +147,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (supplierId != null)
 				document.Supplier = Supplier.Find(supplierId.Value);
 			if (addressId != null && addressId != 0)
+			{
 				document.Address = Address.Find(addressId.Value);
+				NHibernateUtil.Initialize(document.Address);
+				NHibernateUtil.Initialize(document.Address.Org);
+			}
 			return document;
 		}
 
