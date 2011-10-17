@@ -1037,8 +1037,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			const string file = "9229370.dbf";
 			var client = TestClient.Create();
-			//Ищем воронежскую Аптеку-Холдинг, ЭТО ХАК!!!
-			var supplier = TestSupplier.Find(39u);
+			var supplier = TestSupplier.Create();
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
