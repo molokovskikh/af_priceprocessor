@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Quantity, "VOLUME")
-				.Line(l => l.ProducerCost, "PR_PROIZ")
+				.Line(l => l.ProducerCostWithoutNDS, "PR_PROIZ")
 				.Line(l => l.Nds, "PCT_NDS")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE")
 				.Line(l => l.SupplierCost, "PRICE_NDS")

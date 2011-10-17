@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.01.16"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("pocc ru.фм05.д72060"));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(false));
-			Assert.That(doc.Lines[0].ProducerCost, Is.Null);
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 						
 			Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(11.46));
@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[1].Period, Is.EqualTo("01.07.12"));
 			Assert.That(doc.Lines[1].Certificates, Is.EqualTo("pocc ru.фм10.д65023"));
 			Assert.That(doc.Lines[1].VitallyImportant, Is.EqualTo(true));
-			Assert.That(doc.Lines[1].ProducerCost, Is.EqualTo(93));
+			Assert.That(doc.Lines[1].ProducerCostWithoutNDS, Is.EqualTo(93));
 			Assert.That(doc.Lines[1].RegistryCost, Is.EqualTo(100.44));
 
 			Assert.That(doc.Lines[1].NdsAmount, Is.EqualTo(49.98));

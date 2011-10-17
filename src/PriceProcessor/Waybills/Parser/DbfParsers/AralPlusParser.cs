@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERNUMID")
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.RegistryCost, "REGPR")
-				.Line(l => l.ProducerCost, "PRODPRNV")
+				.Line(l => l.ProducerCostWithoutNDS, "PRODPRNV")
 				.Line(l => l.SupplierPriceMarkup, "WHLPRUP");
 		}
 

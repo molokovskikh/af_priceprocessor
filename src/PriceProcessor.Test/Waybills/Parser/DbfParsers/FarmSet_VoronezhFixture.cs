@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("060410"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ08.Д98276"));
 			Assert.That(line.Period, Is.EqualTo("01.05.2013"));
-            Assert.That(line.ProducerCost, Is.EqualTo(10.4));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(10.4));
             Assert.That(line.RegistryCost, Is.EqualTo(0));
             Assert.That(line.VitallyImportant, !Is.True);
             Assert.That(line.EAN13, Is.EqualTo("4605180002422"));

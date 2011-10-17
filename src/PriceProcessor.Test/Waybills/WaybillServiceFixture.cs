@@ -833,11 +833,8 @@ namespace PriceProcessor.Test.Waybills
 		public void ParseCertificateFiles()
 		{
 			var file = "9832937_Аптека-Холдинг(3334_1459366).dbf";
-			//Ищем воронежскую Аптеку-Холдинг, ЭТО ХАК!!!
-			supplier = (TestSupplier)TestSupplier.Find(39u);
 			var log = CreateTestLog(file);
 
-			//BasicConfigurator.Configure();
 			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
 			var ids = service.ParseWaybill(new[] { log.Id });
 

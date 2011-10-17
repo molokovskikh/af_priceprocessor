@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Code, Is.EqualTo("1200000757"));
 			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 100 мл"));
 			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
-			Assert.That(line.ProducerCost, Is.EqualTo(66.84));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(66.84));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.Period, Is.Null);
@@ -40,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Code, Is.EqualTo("1200000968"));
 			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 200 мл"));
 			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
-			Assert.That(line.ProducerCost, Is.EqualTo(127.89));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(127.89));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.Period, Is.EqualTo("01.09.2013"));
@@ -67,7 +67,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Code, Is.EqualTo("1200000757"));
 			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 100 мл"));
 			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
-			Assert.That(line.ProducerCost, Is.EqualTo(66.84));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(66.84));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.Period, Is.Null);
@@ -82,7 +82,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Code, Is.EqualTo("1200000968"));
 			Assert.That(line.Product, Is.EqualTo("Johnsons baby Масло 200 мл"));
 			Assert.That(line.Producer, Is.EqualTo("Джонсон"));
-			Assert.That(line.ProducerCost, Is.EqualTo(127.89));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(127.89));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.Period, Is.EqualTo("01.09.2013"));

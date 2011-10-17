@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Вазилип 10мг Таб.П/плен.об  Х28"));
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("КРКА-РУС/KRKA d.d."));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(242.88));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(242.88));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(250.59));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(227.81));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
@@ -72,7 +72,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Code, Is.EqualTo("7688460"));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Юнифарм Инк"));
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(72.29f));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(72.29f));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.02.2012"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС US.ФМ08.Д22407"));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("VU011"));
@@ -97,7 +97,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("ФЭСТ"));
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(10));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(102.23f));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(102.23f));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.10.2011"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС RU.ИМ08.Н09675"));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("Б/С"));
@@ -122,12 +122,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Xiantao Fortune Medical Supplies Co., Ltd"));
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("Китай"));
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(100.00));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(0.74f));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(0.74f));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС CN.ИМ22.В01471"));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo(""));
 			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
-			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(null));
+			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(4.05));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(0.77f));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 		}

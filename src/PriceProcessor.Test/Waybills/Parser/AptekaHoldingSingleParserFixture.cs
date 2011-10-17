@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Mann&Schroder GmbH"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("Германия"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(83.92));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(83.92));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(85.60));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("-"));
 			Assert.That(document.Lines[1].SerialNumber, Is.EqualTo("AE39L8D"));
@@ -63,7 +63,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Berlin-Chemie AG/Menarini Group"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("Германия"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(107.12));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(107.12));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(104.90));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("93052"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС.DE.ФМ01.Д27143 д"));
@@ -110,7 +110,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Твинс Тэк ЗАО - Россия"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("-"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(5));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(35.23));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(35.23));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(37.88));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("022011"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU АИ86 Д00149 Д"));
@@ -147,7 +147,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Диод ОАО"));
 			Assert.That(document.Lines[0].Country, Is.EqualTo("Россия"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(52.94));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(52.94));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(54.00));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("080711"));
 			Assert.That(document.Lines[1].SerialNumber, Is.EqualTo("24212051"));

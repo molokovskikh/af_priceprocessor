@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					line.SerialNumber = txtParser.SerialNumber.Trim();
 					line.Country = txtParser.Country;
 					line.Quantity = txtParser.Quantity;
-					line.ProducerCost = txtParser.ProducerCost;
+					line.ProducerCostWithoutNDS = txtParser.ProducerCost;
 					line.SupplierCost = txtParser.SupplierCost;
 					line.SupplierCostWithoutNDS = txtParser.SupplierCostWithoutNds;
 					line.Period = txtParser.Period;

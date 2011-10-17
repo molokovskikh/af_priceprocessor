@@ -45,7 +45,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[2].Country, Is.EqualTo("РОССИЯ"));
 			Assert.That(document.Lines[1].BillOfEntryNumber, Is.EqualTo("10125020/280710/0007"));
 			Assert.That(line.Quantity, Is.EqualTo(50));
-			Assert.That(line.ProducerCost, Is.EqualTo(1.73));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(1.73));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(2.00));
 			Assert.That(line.SupplierCost, Is.EqualTo(2.20));
@@ -57,7 +57,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ05.Д97380"));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.EAN13, Is.Null);			
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(15.61));
 		}
 	}
 }

@@ -56,7 +56,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.ExciseTax, Is.EqualTo(0.00));
             Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.00));
             Assert.That(line.RegistryCost, Is.EqualTo(0.00));
-            Assert.That(line.ProducerCost, Is.EqualTo(0.00));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(0.00));
             Assert.That(line.Nds, Is.EqualTo(10));
             Assert.That(line.NdsAmount, Is.EqualTo(9.10));
             Assert.That(line.Amount, Is.EqualTo(100.15));

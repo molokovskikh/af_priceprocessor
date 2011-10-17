@@ -62,7 +62,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
                 .Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
                 .Line(l => l.SupplierPriceMarkup, "PROCNDB")
                 .Line(l => l.RegistryCost, "REGPRC")
-                .Line(l => l.ProducerCost, "PRICE1N")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE1N")
                 .Line(l => l.Nds, "NDS")
                 .Line(l => l.NdsAmount, "SUMNDS2")
                 .Line(l => l.Amount, "SUM1")

@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Producer, "PRODUSER")
-				.Line(l => l.ProducerCost, "PPRICEWT")
+				.Line(l => l.ProducerCostWithoutNDS, "PPRICEWT")
 				.Line(l => l.VitallyImportant, "GV")
 				.Line(l => l.NdsAmount, "NDSSUM")
 				.Line(l => l.Amount, "SUM")

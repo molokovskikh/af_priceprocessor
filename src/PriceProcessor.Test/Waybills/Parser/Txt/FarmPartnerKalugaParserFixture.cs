@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(6.83));
             Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
             Assert.That(doc.Lines[0].Amount, Is.EqualTo(75.08));
-            Assert.That(doc.Lines[0].ProducerCost, Is.Null);
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
         }
     }
 }

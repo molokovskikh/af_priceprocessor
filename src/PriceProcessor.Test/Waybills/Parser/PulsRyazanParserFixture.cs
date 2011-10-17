@@ -10,10 +10,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
+			var now = DateTime.Now;
 			var doc = WaybillParser.Parse("0020790.dbf");
-
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
-			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
+			Assert.That(doc.ProviderDocumentId, !Is.Empty);
+			Assert.That(doc.DocumentDate, Is.GreaterThanOrEqualTo(now));
 			Assert.That(doc.Lines.Count, Is.EqualTo(15));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("174"));
@@ -26,12 +26,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС BG.ФМ09.Д02834"));
 			Assert.That(line.SupplierCost, Is.EqualTo(89.06));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(80.96));
-			Assert.That(line.ProducerCost, Is.EqualTo(87.66));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(87.66));
 			Assert.That(line.SerialNumber, Is.EqualTo("111209"));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(doc.Lines[4].VitallyImportant, Is.True);
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-7.64));
 		}
 	}
 }

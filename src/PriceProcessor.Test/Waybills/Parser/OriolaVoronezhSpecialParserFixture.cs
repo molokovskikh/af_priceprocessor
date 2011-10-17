@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.Null);
 			Assert.That(document.Lines[0].Country, Is.EqualTo("Франция"));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(69.09));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(69.09));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(-3.89));
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("YS LAB"));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(73.04));

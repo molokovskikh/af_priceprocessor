@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "TOVNAME")
 				.Line(l => l.Quantity, "KOLVO")
 				.Line(l => l.Nds, "STNDS")
-				.Line(l => l.ProducerCost, "CENAPROIZV")
+				.Line(l => l.ProducerCostWithoutNDS, "CENAPROIZV")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesDate, "DATEREG")

@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
                 .Line(l => l.ExciseTax, "AKCIZE")
                 .Line(l => l.SupplierPriceMarkup, "PR")
                 .Line(l => l.RegistryCost, "GPRICE")
-                .Line(l => l.ProducerCost, "MNNDS")
+				.Line(l => l.ProducerCostWithoutNDS, "MNNDS")
                 .Line(l => l.Nds, "NDS")
                 .Line(l => l.NdsAmount, "SUMNDS")
                 .Line(l => l.Amount, "SUMMA")

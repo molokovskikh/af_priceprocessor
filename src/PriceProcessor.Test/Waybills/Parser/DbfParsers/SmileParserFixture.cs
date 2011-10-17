@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Country, Is.EqualTo("RU"));
 			Assert.That(line.Quantity, Is.EqualTo(8));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(146.73));
-			Assert.That(line.ProducerCost, Is.EqualTo(0.00));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(0.00));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SerialNumber, Is.Null);
 			Assert.That(line.Certificates, Is.EqualTo("С-СН.АЯ46.В51338"));			

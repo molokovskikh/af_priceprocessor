@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("Китай"));
 			Assert.That(doc.Lines[0].Quantity, Is.EqualTo(5));
 			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(48.98));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(41.1));           //По описанию тут цена производителя без НДС
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(41.1));           //По описанию тут цена производителя без НДС
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(41.51));
 			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(18));
 

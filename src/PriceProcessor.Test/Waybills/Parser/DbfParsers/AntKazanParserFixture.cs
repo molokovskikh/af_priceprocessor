@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Period, Is.EqualTo(null));
 			Assert.That(line.SerialNumber, Is.EqualTo(null));
 			Assert.That(line.SupplierCost, Is.EqualTo(145));
-			Assert.That(line.ProducerCost, Is.EqualTo(145));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(145));
 		}
 
         [Test]

@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line.Certificates, Is.EqualTo("РОСС DE.ФМ08.Д05192"));
 			Assert.That(line.SupplierCost, Is.EqualTo(45.05000));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(40.95330));
-			Assert.That(line.ProducerCost, Is.EqualTo(39.18000));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(39.18000));
 			Assert.That(line.SerialNumber, Is.EqualTo("9B018A"));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(15.00000));
 			Assert.That(line.VitallyImportant, Is.True);
@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line.Certificates, Is.EqualTo("РОСС SK.ФМ11.Д04901"));
 			Assert.That(line.SupplierCost, Is.EqualTo(193.14000));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(175.58000));
-			Assert.That(line.ProducerCost, Is.EqualTo(170.93000));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(170.93000));
 			Assert.That(line.SerialNumber, Is.EqualTo("2010110"));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(13.00000));
 			Assert.That(line.VitallyImportant, Is.True);
@@ -80,7 +80,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line.Certificates, Is.EqualTo("РОСС CN ПК04 В00054"));
 			Assert.That(line.SupplierCost, Is.EqualTo(12.19000));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(10.33000));
-			Assert.That(line.ProducerCost, Is.EqualTo(11.61000));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(11.61000));
 			Assert.That(line.SerialNumber, Is.EqualTo("Б/С"));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(5.00000));
 			Assert.That(line.VitallyImportant, Is.False);

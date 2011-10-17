@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Code = element.XPathSelectElement("Ид").Value;
 				line.Country = element.XPathSelectElement("Страна").Value;
 				line.SupplierCost = element.Get("ЦенаЗаЕдиницу");
-				line.ProducerCost = element.Get("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_PRDPRCWONDS']/Значение");
+				line.ProducerCostWithoutNDS = element.Get("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_PRDPRCWONDS']/Значение");
 				var serialNumber = element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_SERIA']/Значение").Value;
 				if (serialNumber != null)
 					line.SerialNumber = serialNumber.Split('^')[0];

@@ -17,7 +17,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Producer, Is.EqualTo("МАРБИОФАРМ ОАО"));
 			Assert.That(line.Country, Is.EqualTo("россия"));
 			Assert.That(line.Quantity, Is.EqualTo(3));
-			Assert.That(line.ProducerCost, Is.EqualTo(9.69));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(9.69));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(11));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(9.69));
@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Producer, Is.EqualTo("Валента Фармацевтика ОАО - Россия"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
 			Assert.That(line.Quantity, Is.EqualTo(1));
-			Assert.That(line.ProducerCost, Is.EqualTo(233.59));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(233.59));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(227.79));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(313.58));
@@ -67,7 +67,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Producer, Is.EqualTo("Tonus Elast ООО"));
 			Assert.That(line.Country, Is.EqualTo("Латвия"));
 			Assert.That(line.Quantity, Is.EqualTo(2));
-			Assert.That(line.ProducerCost, Is.EqualTo(50.52));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(50.52));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(50.52));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
@@ -99,7 +99,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.Producer, Is.EqualTo("ООО \"Белла\",г.Егорьевск, Россия"));
             Assert.That(line.Country, Is.EqualTo("Россия"));
             Assert.That(line.Quantity, Is.EqualTo(2));
-            Assert.That(line.ProducerCost, Is.EqualTo(179.99000));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(179.99000));
             Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(224.99000));
             Assert.That(line.Nds, Is.EqualTo(10));
             Assert.That(line.RegistryCost, Is.Null);

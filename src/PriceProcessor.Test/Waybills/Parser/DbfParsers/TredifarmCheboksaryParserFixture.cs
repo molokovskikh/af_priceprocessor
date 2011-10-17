@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Period, Is.EqualTo("01.09.2012"));
 			Assert.That(line.SupplierCost, Is.EqualTo(25.89));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(23.54));
-			Assert.That(line.ProducerCost, Is.EqualTo(25.40));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(25.40));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 		}
 		[Test]

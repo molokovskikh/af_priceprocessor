@@ -31,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 				line.Nds = Convert.ToUInt32(row.GetCell(9).Value);
 				line.Producer = row.GetCell(14).StringValue;
 				line.Country = row.GetCell(16).StringValue;
-				line.ProducerCost = Convert.ToDecimal(row.GetCell(17).Value);
+				line.ProducerCostWithoutNDS = Convert.ToDecimal(row.GetCell(17).Value);
 				line.Period = row.GetCell(22).StringValue;
 				line.SerialNumber = row.GetCell(24).StringValue;
 				line.Certificates = row.GetCell(25).StringValue;

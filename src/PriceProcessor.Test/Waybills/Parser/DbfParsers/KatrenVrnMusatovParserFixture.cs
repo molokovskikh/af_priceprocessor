@@ -24,12 +24,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("30710"));
 			Assert.That(line.SupplierCost, Is.EqualTo(83.38));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(75.8));
-			Assert.That(line.ProducerCost, Is.EqualTo(75.80));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(75.80));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
 			var line1 = doc.Lines[1];
-			Assert.That(line1.ProducerCost, Is.EqualTo(116.83));
+			Assert.That(line1.ProducerCostWithoutNDS, Is.EqualTo(116.83));
 			Assert.That(line1.SupplierCostWithoutNDS, Is.EqualTo(108.7));
 			Assert.That(line1.Nds, Is.EqualTo(10));
 		}
@@ -51,12 +51,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("112010"));
 			Assert.That(line.SupplierCost, Is.EqualTo(71.51));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(71.51));
-			Assert.That(line.ProducerCost, Is.EqualTo(71.51));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(71.51));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
 			var line1 = doc.Lines[1];
-			Assert.That(line1.ProducerCost, Is.EqualTo(33.90));
+			Assert.That(line1.ProducerCostWithoutNDS, Is.EqualTo(33.90));
 			Assert.That(line1.SupplierCostWithoutNDS, Is.EqualTo(33.90));
 			Assert.That(line1.Nds, Is.EqualTo(10));
 		}
@@ -79,14 +79,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("210810"));
 			Assert.That(line.SupplierCost, Is.EqualTo(14.19));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(12.90));
-			Assert.That(line.ProducerCost, Is.EqualTo(14.04));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(14.04));
 			Assert.That(line.RegistryCost, Is.EqualTo(15.16));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(line.Amount, Is.EqualTo(70.95));
 			Assert.That(line.NdsAmount, Is.EqualTo(6.45));
 			var line1 = doc.Lines[1];
-			Assert.That(line1.ProducerCost, Is.EqualTo(157.90));
+			Assert.That(line1.ProducerCostWithoutNDS, Is.EqualTo(157.90));
 			Assert.That(line1.SupplierCostWithoutNDS, Is.EqualTo(157.90));
 			Assert.That(line1.Nds, Is.EqualTo(10));
 			Assert.That(line1.Amount, Is.EqualTo(868.45));
