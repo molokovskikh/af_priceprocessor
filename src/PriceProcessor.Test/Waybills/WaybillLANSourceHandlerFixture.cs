@@ -61,9 +61,7 @@ namespace PriceProcessor.Test
 	{
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			var res = new List<ulong>();
-			res.AddRange(new ulong [] {0});
-			return res;
+			return new List<ulong>{ 0 };
 		}
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
 		{
@@ -80,9 +78,7 @@ namespace PriceProcessor.Test
 	{
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			var res = new List<ulong>();
-			res.AddRange(new ulong[] { 0 });
-			return res;
+			return new List<ulong>{ 0 };
 		}
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
 		{
@@ -276,7 +272,7 @@ where a.Id = ?AddressId", connection);
 				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
 				
 				var _log = logs.Where(l => !l.IsFake).SingleOrDefault();
-				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(_log.FileName) > -1).SingleOrDefault();
+				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(Path.GetFileNameWithoutExtension(_log.FileName)) > -1).Single();
 				
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));

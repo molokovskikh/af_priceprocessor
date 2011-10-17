@@ -69,7 +69,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var resultList = new List<uint>();
 			uint documentLogId = 0;
-			uint clientCode = 5;
+			uint supplirtId = 5;
+			uint clientId = 363;
+			uint addressId = 363;
 			foreach (var filePath in filePaths)
 			{
 				var file = filePath;
@@ -77,24 +79,25 @@ namespace PriceProcessor.Test.Waybills.Parser
 					file = Path.Combine(@"..\..\Data\Waybills\multifile", filePath);
 				With.Connection(connection => {
 					var cmdInsert = new MySqlCommand(@"
-INSERT INTO logs.document_logs (FirmCode, ClientCode, FileName, DocumentType)
-VALUES (?FirmCode, ?ClientCode, ?FileName, ?DocumentType); select last_insert_id();", connection);
+INSERT INTO logs.document_logs (FirmCode, ClientCode, AddressId, FileName, DocumentType)
+VALUES (?FirmCode, ?ClientCode, ?AddressId, ?FileName, ?DocumentType); select last_insert_id();", connection);
 
-					cmdInsert.Parameters.AddWithValue("?FirmCode", clientCode);
-					cmdInsert.Parameters.AddWithValue("?ClientCode", clientCode);
+					cmdInsert.Parameters.AddWithValue("?FirmCode", supplirtId);
+					cmdInsert.Parameters.AddWithValue("?ClientCode", clientId);
+					cmdInsert.Parameters.AddWithValue("?AddressId", addressId);
 					cmdInsert.Parameters.AddWithValue("?FileName", Path.GetFileName(file));
 					cmdInsert.Parameters.AddWithValue("?DocumentType", DocType.Waybill);
 					documentLogId = Convert.ToUInt32(cmdInsert.ExecuteScalar());
 				});
 				resultList.Add(documentLogId);
-				var clientDir = Path.Combine(Settings.Default.DocumentPath, clientCode.ToString().PadLeft(3, '0'));
+				var clientDir = Path.Combine(Settings.Default.DocumentPath, clientId.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");
 				var name = String.Format("{0}_{1}({2}){3}",
 					documentLogId,
 					"Протек-15",
 					Path.GetFileNameWithoutExtension(file),
 					Path.GetExtension(file));
-				CreateClientDirectory(clientCode);
+				CreateClientDirectory(clientId);
 				File.Copy(file, Path.Combine(documentDir, name));
 			}
 			return DocumentReceiveLog.LoadByIds(resultList.ToArray());

@@ -145,7 +145,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				document.DocumentSize = new FileInfo(localFile).Length;
 			if (supplierId != null)
 				document.Supplier = Supplier.Find(supplierId.Value);
-			if (addressId != null)
+			if (addressId != null && addressId != 0)
 				document.Address = Address.Find(addressId.Value);
 			return document;
 		}

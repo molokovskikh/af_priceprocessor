@@ -58,7 +58,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 				@"..\..\Data\Waybills\multifile\b271433.dbf"
 			);
 
-			var mergedFiles = MultifileDocument.Merge(files);			
+			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
 				
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));

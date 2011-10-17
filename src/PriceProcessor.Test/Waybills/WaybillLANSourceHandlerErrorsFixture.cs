@@ -5,6 +5,7 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
+using log4net.Config;
 
 namespace PriceProcessor.Test
 {
@@ -62,7 +63,7 @@ namespace PriceProcessor.Test
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.LogTime >= start).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
-				Assert.That(logs[0].Comment.Contains("Дублирующийся документ"), Is.True);
+				Assert.That(logs[0].Comment, Is.StringContaining("Дублирующийся документ"));
 			}
 		}
 

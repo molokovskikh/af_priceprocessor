@@ -22,20 +22,19 @@ using log4net.Config;
 
 namespace PriceProcessor.Test.Waybills
 {
-	[TestFixture]
-	public class WaybillServiceFixture
+	public class DocumentFixture
 	{
-		TestClient client;
-		TestSupplier supplier;
-		TestPrice price;
-		TestAddress testAddress;
+		protected TestClient client;
+		protected TestSupplier supplier;
+		protected TestPrice price;
+		protected TestAddress testAddress;
 
-		Supplier appSupplier;
-		WaybillSettings settings;
-		Address address;
+		protected Supplier appSupplier;
+		protected WaybillSettings settings;
+		protected Address address;
 
-		string docRoot;
-		string waybillsPath;
+		protected string docRoot;
+		protected string waybillsPath;
 
 		[SetUp]
 		public void Setup()
@@ -54,6 +53,29 @@ namespace PriceProcessor.Test.Waybills
 			appSupplier = Supplier.Find(supplier.Id);
 		}
 
+		public TestDocumentLog CreateTestLog(string file)
+		{
+			var log = new TestDocumentLog(supplier, testAddress, file);
+			using (new TransactionScope())
+				log.SaveAndFlush();
+
+			File.Copy(@"..\..\Data\Waybills\" + file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
+				log.Id,
+				supplier.Name,
+				Path.GetFileNameWithoutExtension(file),
+				Path.GetExtension(file))));
+			return log;
+		}
+
+		public TestDocumentLog[] CreateTestLogs(params string[] files)
+		{
+			return files.Select(f => CreateTestLog(f)).ToArray();
+		}
+	}
+
+	[TestFixture]
+	public class WaybillServiceFixture : DocumentFixture
+	{
 		private uint[] ParseFile(string filename)
 		{
 			var file = filename;
@@ -174,20 +196,6 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
 				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
 			}
-		}
-
-		private TestDocumentLog CreateTestLog(string file)
-		{
-			var log = new TestDocumentLog(supplier, testAddress, file);
-			using (new TransactionScope())
-				log.SaveAndFlush();
-
-			File.Copy(@"..\..\Data\Waybills\" + file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
-				log.Id,
-				supplier.Name,
-				Path.GetFileNameWithoutExtension(file),
-				Path.GetExtension(file))));
-			return log;
 		}
 
 		[Test(Description = "Проверка сопоставления идентификатора продукта синониму. Синонима нет в БД")]
@@ -824,25 +832,12 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "разбор накладной с установленными файлами сертификатов")]
 		public void ParseCertificateFiles()
 		{
-			const string file = "9229370.dbf";
+			var file = "9832937_Аптека-Холдинг(3334_1459366).dbf";
 			//Ищем воронежскую Аптеку-Холдинг, ЭТО ХАК!!!
-			var supplier = TestSupplier.Find(39u);
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, client.Id.ToString());
-			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			Directory.CreateDirectory(waybillsPath);
-			var log = new TestDocumentLog {
-				ClientCode = client.Id,
-				FirmCode = supplier.Id,
-				LogTime = DateTime.Now,
-				DocumentType = DocumentType.Waybill,
-				FileName = file
-			};
-			using (new TransactionScope())
-				log.SaveAndFlush();
+			supplier = (TestSupplier)TestSupplier.Find(39u);
+			var log = CreateTestLog(file);
 
-			File.Copy(@"..\..\Data\Waybills\9832937_Аптека-Холдинг(3334_1459366).dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
-				supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));				
-
+			//BasicConfigurator.Configure();
 			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
 			var ids = service.ParseWaybill(new[] { log.Id });
 
