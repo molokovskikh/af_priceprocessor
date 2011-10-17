@@ -48,10 +48,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 				if (hasProducerCost)
 				{
-					if (String.IsNullOrEmpty(position.XPathSelectElement("ЦенаИзг").Value)) line.ProducerCost = null;
-					else line.ProducerCost = position.Get("ЦенаИзг");
+					if (String.IsNullOrEmpty(position.XPathSelectElement("ЦенаИзг").Value)) line.ProducerCostWithoutNDS = null;
+					else line.ProducerCostWithoutNDS = position.Get("ЦенаИзг");
 				}
-				else line.ProducerCost = null;
+				else line.ProducerCostWithoutNDS = null;
 				
 				if(hasNds)
 				{

@@ -457,14 +457,26 @@ WHERE FirmCode = ?SupplierId
 	[TestFixture]
 	public class WaybillLANSourceHandlerErrorsFixture
 	{
-		private DateTime start;
+		private int maxLogId;
 
 		[SetUp]
 		public void Setup()
 		{
-			Thread.Sleep(1000);
-			start = DateTime.Now;
-			Thread.Sleep(1000);
+			using (new SessionScope())
+			{
+				maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
+			}
+		}
+
+		[TearDown]
+		public void EndTest()
+		{
+			With.Connection(connection =>
+			{
+				var command = new MySqlCommand(@"delete from logs.document_logs where rowid > ?Id", connection);
+				command.Parameters.AddWithValue("?Id", maxLogId);
+				command.ExecuteNonQuery();
+			});
 		}
 
 		[Test]
@@ -475,7 +487,7 @@ WHERE FirmCode = ?SupplierId
 			using(new SessionScope())
 			{
 				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.LogTime >= start).ToList();
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
 				Assert.That(logs[0].Comment.Contains("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа."), Is.True);
@@ -490,7 +502,7 @@ WHERE FirmCode = ?SupplierId
 			using (new SessionScope())
 			{
 				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.LogTime >= start).ToList();
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
 				Assert.That(logs[0].Comment.Contains("Количество позиций в документе не соответствует значению в заголовке документа"), Is.True);
@@ -505,7 +517,7 @@ WHERE FirmCode = ?SupplierId
 			using (new SessionScope())
 			{
 				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.LogTime >= start).ToList();
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
 				Assert.That(logs[0].Comment.Contains("Дублирующийся документ"), Is.True);
@@ -520,7 +532,7 @@ WHERE FirmCode = ?SupplierId
 			using (new SessionScope())
 			{
 				Assert.That(res, Is.True);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.LogTime >= start).ToList();
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
 				Assert.That(logs[0].Comment, Is.Null);

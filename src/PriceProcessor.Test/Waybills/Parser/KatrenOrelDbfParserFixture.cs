@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Реплекфарм АО/ФармФирма Сотекс (Россия)"));
 			Assert.That(document.Lines[0].Country, Is.Null);
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(3));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(250.0000));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(250.0000));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(246.7000));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("010110"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д82590"));
@@ -67,7 +67,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Polfa/PF Jelfa SA, Польша"));
 			Assert.That(document.Lines[0].Country, Is.Null);
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(171.6500));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(171.6500));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(163.0600));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("912061"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС PL.ФМ01.Д06613"));
@@ -93,7 +93,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("TZMO З.А."));
 			Assert.That(document.Lines[0].Country, Is.Null);
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(2));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(29.6550));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(29.6550));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(32.6200));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(29.6550));
 			Assert.That(document.Lines[0].Period, Is.Null);

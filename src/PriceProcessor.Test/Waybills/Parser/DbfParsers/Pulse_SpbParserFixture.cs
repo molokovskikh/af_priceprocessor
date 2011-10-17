@@ -17,7 +17,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Product, Is.EqualTo("Бифидумбактерин сухой фл. 5 доз х10"));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Quantity, Is.EqualTo(3));
-			Assert.That(line.ProducerCost, Is.EqualTo(40.18));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(40.18));
 			Assert.That(line.SupplierCost, Is.EqualTo(47.18));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(42.89));
 			Assert.That(line.RegistryCost, Is.EqualTo(36.53));

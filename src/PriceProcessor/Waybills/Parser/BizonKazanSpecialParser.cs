@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
             if (parts.Count() > CertificatesDateIndex)
                 docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
             if (parts.Count() > ProducerCostIndex)
-                docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+				docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
             if (parts.Count() > RegistryCostIndex)
                 docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
             if (parts.Count() > SupplierCostIndex)

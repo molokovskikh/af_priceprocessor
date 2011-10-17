@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.Period, "SROKGODN")
 				.Line(l => l.SupplierPriceMarkup, "OPT_NAC")
-				.Line(l => l.ProducerCost, "PRICE_PROI")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE_PROI")
 				.Line(l => l.VitallyImportant, "GNVLS");
 		}
 

@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
-				.Line(l => l.ProducerCost, "PRICEENT")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICEENT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS");
 		}
 	}

@@ -27,10 +27,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС PL.ФМ08.Д42224"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(125.27));
 			Assert.That(line.SupplierCost, Is.EqualTo(137.80));
-			Assert.That(line.ProducerCost, Is.EqualTo(116.48));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(116.48));
 			Assert.That(line.SerialNumber, Is.EqualTo("03ЕХ1109"));
 			Assert.That(line.RegistryCost, Is.EqualTo(141.88));
-			Assert.That(line.SupplierPriceMarkup, Is.Null);
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(7.55));
 			Assert.That(line.VitallyImportant, Is.True);
 		}
 	}

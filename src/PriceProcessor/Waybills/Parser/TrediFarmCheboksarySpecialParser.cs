@@ -32,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Producer, "PROIZV")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Quantity, "KOLVO")
-				.Line(l => l.ProducerCost, "CENAPROIZ")
+				.Line(l => l.ProducerCostWithoutNDS, "CENAPROIZ")
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.SupplierPriceMarkup, "NADBPROC")
 				.Line(l => l.SupplierCostWithoutNDS, "CENABNDS")

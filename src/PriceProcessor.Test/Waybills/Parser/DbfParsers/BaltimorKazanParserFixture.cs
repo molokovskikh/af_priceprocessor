@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Product, Is.EqualTo("Циклоферон р-р д/ин. 12,5% амп. 2 мл №5"));
 			Assert.That(line.Quantity, Is.EqualTo(3));
 			Assert.That(line.Nds, Is.EqualTo(10));
-			Assert.That(line.ProducerCost, Is.EqualTo(197.07));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(197.07));
 			Assert.That(line.SerialNumber, Is.EqualTo("320710"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ03.Д96935"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("25.02.2011"));

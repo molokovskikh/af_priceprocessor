@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.NdsAmount, "SUMNDS")
 				.Line(l => l.Amount, "SUMSNDS")
 				.Line(l => l.EAN13, "BAR")
-				.Line(l => l.ProducerCost, "CIZG")
+				.Line(l => l.ProducerCostWithoutNDS, "CIZG")
 				.Line(l => l.VitallyImportant, "JV")
 				.Line(l => l.RegistryCost, "GOSREESTR");
 		}

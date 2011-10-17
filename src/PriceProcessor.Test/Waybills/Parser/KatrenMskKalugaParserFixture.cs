@@ -23,8 +23,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(372.85));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(315.97));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(289.90));
-			Assert.That(document.Lines[0].ProducerCost, Is.LessThanOrEqualTo(document.Lines[0].SupplierCost));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(289.90));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.LessThanOrEqualTo(document.Lines[0].SupplierCost));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.LessThanOrEqualTo(document.Lines[0].SupplierCost));
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.11.2008"));
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);

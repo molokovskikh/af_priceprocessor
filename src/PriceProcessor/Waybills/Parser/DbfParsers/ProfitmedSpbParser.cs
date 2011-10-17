@@ -21,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
                 .Line(l => l.Nds, "NDS_PR")
                 .Line(l => l.SupplierCostWithoutNDS, "PRICE")
                 .Line(l => l.SupplierCost, "PRICE_N")
-                .Line(l => l.ProducerCost, "PRICEIZG")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICEIZG")
                 .Line(l => l.NdsAmount, "NDS_SUM")
                 .Line(l => l.Amount, "SUM_VSEGO")
                 .Line(l => l.SerialNumber, "SERIES")

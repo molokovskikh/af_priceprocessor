@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "ZNVLS")
 				.Line(l => l.Nds, "TAX")				
 				.Line(l => l.RegistryCost, "PREDELPRIC")
-				.Line(l => l.ProducerCost, "ZAVODNONDS")
+				.Line(l => l.ProducerCostWithoutNDS, "ZAVODNONDS")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICENONDS")
 				.Line(l => l.SupplierCost, "PRICESNDS")
 				.Line(l => l.SupplierPriceMarkup, "NADPROC")

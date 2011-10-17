@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(166.7));
-			Assert.That(line.ProducerCost, Is.EqualTo(195.9));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(195.9));
 			Assert.That(line.VitallyImportant, Is.False);
 		}
 	}

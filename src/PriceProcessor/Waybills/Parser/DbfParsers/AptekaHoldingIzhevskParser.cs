@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Product = r["TOVAR"].ToString();
 				line.Producer = r["IZGOT"].ToString();
 				line.Country = r["STRANA"].ToString();
-				line.ProducerCost = Convert.IsDBNull(r["CENAIZG"]) ? null : (decimal?)Convert.ToDecimal(r["CENAIZG"], CultureInfo.InvariantCulture);
+				line.ProducerCostWithoutNDS = Convert.IsDBNull(r["CENAIZG"]) ? null : (decimal?)Convert.ToDecimal(r["CENAIZG"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["CENAOPT"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["SRGOD"]) ? null : Convert.ToDateTime(r["SRGOD"]).ToShortDateString();

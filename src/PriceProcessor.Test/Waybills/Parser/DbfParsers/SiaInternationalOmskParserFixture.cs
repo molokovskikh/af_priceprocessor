@@ -23,7 +23,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.Period, Is.EqualTo("28.02.2013"));
             Assert.That(line.SerialNumber, Is.EqualTo("902878"));
             Assert.That(line.SupplierCost, Is.EqualTo(460.7));
-            Assert.That(line.ProducerCost, Is.EqualTo(418.82));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(418.82));
         }
     }
 }

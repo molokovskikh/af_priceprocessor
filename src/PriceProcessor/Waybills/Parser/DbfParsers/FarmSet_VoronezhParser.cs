@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					.Line(l => l.Certificates, "SERT")
 					.Line(l => l.Period, "SROK")
 					.Line(l => l.RegistryCost, "CENAREESTR")
-					.Line(l => l.ProducerCost, "CENAPROIZ")
+					.Line(l => l.ProducerCostWithoutNDS, "CENAPROIZ")
 					.Line(l => l.VitallyImportant, "PV")
 					.Line(l => l.EAN13, "SHTRIH")
 					.ToDocument(document, data);

@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("1003109"));
 			Assert.That(line.Certificates, Is.EqualTo("пняя.DE.ой04.б00065"));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(4.46));
-			Assert.That(line.ProducerCost, Is.EqualTo(91.42));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(91.42));
 			Assert.That(doc.Lines[2].VitallyImportant, Is.EqualTo(true));
 		}
 	}

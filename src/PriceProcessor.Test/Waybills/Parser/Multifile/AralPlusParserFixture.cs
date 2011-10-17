@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 			Assert.That(line.Period, Is.EqualTo("01.12.2012"));
 			Assert.That(line.Certificates, Is.EqualTo("пняя.FR.тл08.д98850"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.ProducerCost, Is.EqualTo(179.27));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(179.27));
 
 			Assert.That(doc.Lines[1].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[1].RegistryCost, Is.EqualTo(27.88));

@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Producer = r[producerColumn].ToString();
 				if (data.Columns.Contains("VE_COUNTRY"))
 					line.Country = r["VE_COUNTRY"].ToString();
-				line.ProducerCost = Convert.ToDecimal(r["PRICE_VR"], CultureInfo.InvariantCulture);
+				line.ProducerCostWithoutNDS = Convert.ToDecimal(r["PRICE_VR"], CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE_TAX"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["QNTY"]);

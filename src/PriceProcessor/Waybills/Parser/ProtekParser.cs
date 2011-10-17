@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						SupplierCost = header.GetSupplierCost(parts),
 						SupplierCostWithoutNDS = header.GetSupplierCostWithoutNds(parts),
 						Certificates = header.GetCertificates(parts),
-						ProducerCost = header.GetProducerCost(parts),
+						ProducerCostWithoutNDS = header.GetProducerCost(parts),
 						RegistryCost = header.GetRegistryCost(parts),
 						Nds = header.GetNds(parts),
 						Period = header.GetPeriod(parts),
