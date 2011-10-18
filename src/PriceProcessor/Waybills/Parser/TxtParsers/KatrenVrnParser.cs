@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			ProducerIndex = 2;
 			CountryIndex = 3;
 			QuantityIndex = 4;
-			ProducerCostIndex = 5;
+			ProducerCostWithoutNdsIndex = 5;
 			SupplierCostIndex = 6;
 			NdsIndex = 7;
 			SupplierPriceMarkupIndex = 8;

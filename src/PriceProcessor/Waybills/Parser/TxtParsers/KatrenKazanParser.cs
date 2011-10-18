@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 {
-	public class ImperiaFarmaSpecialParser2 : BaseIndexingParser
+	public class KatrenKazanParser : BaseIndexingParser
 	{
 		protected override void SetIndexes()
 		{
@@ -27,8 +23,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			PeriodIndex = 10;
 			BillOfEntryNumberIndex = 11;
 			CertificatesIndex = 12;
-			CertificatesDateIndex = 14;
 			RegistryCostIndex = 16;
+			AmountIndex = 17;
+			SupplierCostIndex = 18;
 		}
 
 		public static bool CheckFileFormat(string file)
@@ -39,13 +36,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
-				if (header.Length != 7)
-					return false;				
+				if ((header.Length != 6) || !header[3].ToLower().Contains("зао нпк катрен"))
+					return false;
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))
-					return false;
+					return false;				
 				var body = reader.ReadLine().Split(';');
-				if (body.Length < 20 || body.Length > 27)
+				if (body.Length != 20)
+					return false;
+				if (GetDecimal(body[6]) == null)
+					return false;
+				if (GetDecimal(body[7]) == null)
 					return false;
 			}
 			return true;

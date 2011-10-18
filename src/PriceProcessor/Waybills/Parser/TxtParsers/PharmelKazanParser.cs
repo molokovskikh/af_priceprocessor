@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			PeriodIndex = 9;
 			CertificatesIndex = 11;
 			VitallyImportantIndex = 16;
-			ProducerCostIndex = 17;
+			ProducerCostWithoutNdsIndex = 17;
 			RegistryCostIndex = 18;
 			NdsAmountIndex = 20;
 			AmountIndex = 21;

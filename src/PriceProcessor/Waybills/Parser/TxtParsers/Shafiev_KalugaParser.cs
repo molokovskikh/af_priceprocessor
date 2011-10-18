@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CountryIndex = 3;
 			QuantityIndex = 4;
 			SupplierCostIndex = 5;
-			ProducerCostIndex = 6;				//По описанию тут цена производителя без НДС
+			ProducerCostWithoutNdsIndex = 6;				//По описанию тут цена производителя без НДС
 			SupplierCostWithoutNdsIndex = 7;
 			NdsIndex = 9;
 		}

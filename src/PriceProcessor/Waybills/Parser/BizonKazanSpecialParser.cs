@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
             PeriodIndex = 11;
             CertificatesIndex = 12;
             CertificatesDateIndex = 13;
-            ProducerCostIndex = 14;
+			ProducerCostWithoutNdsIndex = 14;
             RegistryCostIndex = 15;
             SupplierCostIndex = 16;
             VitallyImportantIndex = 17;
@@ -74,8 +74,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
                 docLine.Certificates = GetString(parts[CertificatesIndex]);
             if (parts.Count() > CertificatesDateIndex)
                 docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
-            if (parts.Count() > ProducerCostIndex)
-				docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
+			if (parts.Count() > ProducerCostWithoutNdsIndex)
+				docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostWithoutNdsIndex]);
             if (parts.Count() > RegistryCostIndex)
                 docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
             if (parts.Count() > SupplierCostIndex)

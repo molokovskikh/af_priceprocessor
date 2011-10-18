@@ -18,7 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
             ExciseTaxIndex = 8;
             SupplierPriceMarkupIndex = 9;
             RegistryCostIndex = 10;
-            ProducerCostIndex = 12;
+			ProducerCostWithoutNdsIndex = 12;
             NdsIndex = 13;
             NdsAmountIndex = 14;
             AmountIndex = 15;

@@ -46,7 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
             ExciseTaxIndex = 8;
             SupplierPriceMarkupIndex = 9;
             RegistryCostIndex = 10;
-            ProducerCostIndex = 12;
+			ProducerCostWithoutNdsIndex = 12;
             NdsIndex = 13;
             NdsAmountIndex = 14;
             AmountIndex = 15;
@@ -114,7 +114,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
                     docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
                     docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
-					docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
+					docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostWithoutNdsIndex]);
                     docLine.Nds = (uint?)GetInteger(parts[NdsIndex]);
                     docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
                     docLine.Amount = GetDecimal(parts[AmountIndex]);
