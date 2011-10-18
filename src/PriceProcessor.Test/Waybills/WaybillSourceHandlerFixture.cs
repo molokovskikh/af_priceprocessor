@@ -135,7 +135,7 @@ namespace PriceProcessor.Test
 			{
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
 					doc.ClientCode == _summary.Client.Id &&
-					doc.AddressId == _summary.Client.Addresses[0].Id);
+					doc.Address.Id == _summary.Client.Addresses[0].Id);
 				Assert.That(documents.Count(), Is.EqualTo(waitingCountEntries));
 			}			
 		}
@@ -156,7 +156,7 @@ namespace PriceProcessor.Test
 			{
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
 					doc.ClientCode == _summary.Client.Id &&
-					doc.AddressId == _summary.Client.Addresses[0].Id &&
+					doc.Address.Id == _summary.Client.Addresses[0].Id &&
 					doc.DocumentDate != null);
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
@@ -211,8 +211,9 @@ namespace PriceProcessor.Test
 			Assert.That(headerFile.Count(), Is.EqualTo(1));
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
-					doc.ClientCode == _summary.Client.Id && doc.AddressId == _summary.Client.Addresses[0].Id);
+				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id
+					&& doc.ClientCode == _summary.Client.Id
+					&& doc.Address.Id == _summary.Client.Addresses[0].Id);
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
 

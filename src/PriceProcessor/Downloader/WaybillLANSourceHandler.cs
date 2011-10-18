@@ -29,7 +29,7 @@ namespace Inforoom.Downloader
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
 		}
 
-		// Выбирает данные о включенных поставщиках, накладные от которых обрабатываются особым образом
+		// Р’С‹Р±РёСЂР°РµС‚ РґР°РЅРЅС‹Рµ Рѕ РІРєР»СЋС‡РµРЅРЅС‹С… РїРѕСЃС‚Р°РІС‰РёРєР°С…, РЅР°РєР»Р°РґРЅС‹Рµ РѕС‚ РєРѕС‚РѕСЂС‹С… РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РѕСЃРѕР±С‹Рј РѕР±СЂР°Р·РѕРј
 		protected override string GetSQLSources()
 		{
 			return @"
@@ -48,17 +48,17 @@ and st.SourceID = 4";
 
 		protected override void ProcessData()
 		{
-			//набор строк похожих источников
+			//РЅР°Р±РѕСЂ СЃС‚СЂРѕРє РїРѕС…РѕР¶РёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ
 			DataRow drLanSource;
-			// Заполняем таблицу с данными о поставщиках.
+			// Р—Р°РїРѕР»РЅСЏРµРј С‚Р°Р±Р»РёС†Сѓ СЃ РґР°РЅРЅС‹РјРё Рѕ РїРѕСЃС‚Р°РІС‰РёРєР°С….
 			FillSourcesTable();
 
 			while (dtSources.Rows.Count > 0)
 			{
 				try
 				{
-					_currentDocumentType = null; 
-					// Берем нулевую строку (с данными о поставщике)
+					_currentDocumentType = null;
+					// Р‘РµСЂРµРј РЅСѓР»РµРІСѓСЋ СЃС‚СЂРѕРєСѓ (СЃ РґР°РЅРЅС‹РјРё Рѕ РїРѕСЃС‚Р°РІС‰РёРєРµ)
 					drLanSource = dtSources.Rows[0];
 
 					var documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
@@ -68,7 +68,7 @@ and st.SourceID = 4";
 						{
 							_currentDocumentType = documentType;
 
-							// Получаем список файлов из папки
+							// РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РёР· РїР°РїРєРё
 							var files = GetFileFromSource(documentReader);
 
 							foreach (var sourceFileName in files)
@@ -78,7 +78,7 @@ and st.SourceID = 4";
 								if (!String.IsNullOrEmpty(CurrFileName))
 								{
 									var CorrectArchive = true;
-									//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+									//РЇРІР»СЏРµС‚СЃСЏ Р»Рё СЃРєР°С‡Р°РЅРЅС‹Р№ С„Р°Р№Р» РєРѕСЂСЂРµРєС‚РЅС‹Рј, РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РЅРµ Р±СѓРґРµРј
 									if (ArchiveHelper.IsArchive(CurrFileName))
 									{
 										if (ArchiveHelper.TestArchive(CurrFileName))
@@ -101,15 +101,15 @@ and st.SourceID = 4";
 										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
 										{
 											using (var mm = new MailMessage(
-												Settings.Default.FarmSystemEmail, 
+												Settings.Default.FarmSystemEmail,
 												Settings.Default.DocumentFailMail,
 												String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
-												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
+												String.Format("РљРѕРґ РїРѕСЃС‚Р°РІС‰РёРєР° : {0}\nР¤РёСЂРјР°: {1}\nРўРёРї: {2}\nР”Р°С‚Р°: {3}\nРџСЂРёС‡РёРЅР°: {4}",
 													drLanSource[WaybillSourcesTable.colFirmCode],
 													drLanSource[SourcesTableColumns.colShortName],
 													_currentDocumentType.GetType().Name,
 													DateTime.Now,
-													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs.")))
+													"РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕРїРѕСЃС‚Р°РІРёС‚СЊ РґРѕРєСѓРјРµРЅС‚ РєР»РёРµРЅС‚Р°Рј. РџРѕРґСЂРѕР±РЅРµРµ СЃРјРѕС‚СЂРёС‚Рµ РІ С‚Р°Р±Р»РёС†Рµ logs.document_logs.")))
 											{
 												if (!String.IsNullOrEmpty(CurrFileName))
 													mm.Attachments.Add(new Attachment(CurrFileName));
@@ -117,16 +117,16 @@ and st.SourceID = 4";
 												sc.Send(mm);
 											}
 										}
-										//После обработки файла удаляем его из папки
+										//РџРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё С„Р°Р№Р»Р° СѓРґР°Р»СЏРµРј РµРіРѕ РёР· РїР°РїРєРё
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
 									}
 									else
 									{
 										var supplierId = Convert.ToUInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
-										WriteLog(documentType.DocType, supplierId, null, Path.GetFileName(CurrFileName), 
-											String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
-										//Распаковать файл не удалось, поэтому удаляем его из папки
+										WriteLog(documentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
+											String.Format("РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїР°РєРѕРІР°С‚СЊ С„Р°Р№Р» '{0}'", Path.GetFileName(CurrFileName)));
+										//Р Р°СЃРїР°РєРѕРІР°С‚СЊ С„Р°Р№Р» РЅРµ СѓРґР°Р»РѕСЃСЊ, РїРѕСЌС‚РѕРјСѓ СѓРґР°Р»СЏРµРј РµРіРѕ РёР· РїР°РїРєРё
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
 									}
@@ -138,11 +138,11 @@ and st.SourceID = 4";
 						}
 						catch (Exception typeException)
 						{
-							//Обрабатываем ошибку в случае обработки одного из типов документов
-							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
+							//РћР±СЂР°Р±Р°С‚С‹РІР°РµРј РѕС€РёР±РєСѓ РІ СЃР»СѓС‡Р°Рµ РѕР±СЂР°Р±РѕС‚РєРё РѕРґРЅРѕРіРѕ РёР· С‚РёРїРѕРІ РґРѕРєСѓРјРµРЅС‚РѕРІ
+							var Error = String.Format("РСЃС‚РѕС‡РЅРёРє : {0}\nРўРёРї : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
-                            if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
-							    LoggingToService(Error);
+							if (!typeException.ToString().Contains("РџРѕС‚РѕРє РЅР°С…РѕРґРёР»СЃСЏ РІ РїСЂРѕС†РµСЃСЃРµ РїСЂРµСЂС‹РІР°РЅРёСЏ"))
+								LoggingToService(Error);
 						}
 
 
@@ -151,22 +151,22 @@ and st.SourceID = 4";
 				}
 				catch (Exception ex)
 				{
-					var error = String.Format("Источник : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
+					var error = String.Format("РСЃС‚РѕС‡РЅРёРє : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
 					try
 					{
 						dtSources.Rows[0].Delete();
 					}
 					catch { }
 					error += Environment.NewLine + Environment.NewLine + ex;
-                    if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-					    LoggingToService(error);
+					if (!ex.ToString().Contains("РџРѕС‚РѕРє РЅР°С…РѕРґРёР»СЃСЏ РІ РїСЂРѕС†РµСЃСЃРµ РїСЂРµСЂС‹РІР°РЅРёСЏ"))
+						LoggingToService(error);
 					try
 					{
 						dtSources.AcceptChanges();
 					}
 					catch { }
 				}
-			}		
+			}
 		}
 
 		protected string[] GetFileFromSource(BaseDocumentReader documentReader)
@@ -174,21 +174,21 @@ and st.SourceID = 4";
 			var pricePath = String.Empty;
 			try
 			{
-				// Путь к папке, из которой нужно забирать накладную
-				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
-				pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + 
-					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') + 
+				// РџСѓС‚СЊ Рє РїР°РїРєРµ, РёР· РєРѕС‚РѕСЂРѕР№ РЅСѓР¶РЅРѕ Р·Р°Р±РёСЂР°С‚СЊ РЅР°РєР»Р°РґРЅСѓСЋ
+				// \FTPOptBox\<РљРѕРґ РїРѕСЃС‚Р°С‰РёРєР°>\Waybills\ (РёР»Рё \Rejects\)
+				pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) +
+					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') +
 					Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
-				// Получаем все файлы из этой папки
+				// РџРѕР»СѓС‡Р°РµРј РІСЃРµ С„Р°Р№Р»С‹ РёР· СЌС‚РѕР№ РїР°РїРєРё
 				var ff = Directory.GetFiles(pricePath);
-				// Отсекаем файлы с некорректным расширением
+				// РћС‚СЃРµРєР°РµРј С„Р°Р№Р»С‹ СЃ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Рј СЂР°СЃС€РёСЂРµРЅРёРµРј
 				var newFiles = new List<string>();
 				foreach (var newFileName in ff)
 				{
 					if (Array.Exists(documentReader.ExcludeExtentions,
 						s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase)))
 					{
-						// Если есть файл с некорректным разрешением, удаляем его
+						// Р•СЃР»Рё РµСЃС‚СЊ С„Р°Р№Р» СЃ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Рј СЂР°Р·СЂРµС€РµРЅРёРµРј, СѓРґР°Р»СЏРµРј РµРіРѕ
 						if (File.Exists(newFileName))
 							File.Delete(newFileName);
 					}
@@ -200,7 +200,7 @@ and st.SourceID = 4";
 			}
 			catch (Exception exDir)
 			{
-				LoggingToService(String.Format("Не удалось получить список файлов для папки {0}: {1}", 
+				LoggingToService(String.Format("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РґР»СЏ РїР°РїРєРё {0}: {1}",
 					pricePath, exDir));
 				return new string[] { };
 			}
@@ -220,17 +220,17 @@ and st.SourceID = 4";
 			}
 			catch (Exception ex)
 			{
-				LoggingToService(String.Format("Не удалось скопировать файл {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+				LoggingToService(String.Format("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ С„Р°Р№Р» {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
 			}
 		}
 
 		protected bool ProcessWaybillFile(string InFile, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			//Массив файлов 
+			//РњР°СЃСЃРёРІ С„Р°Р№Р»РѕРІ
 			var Files = new[] { InFile };
 			if (ArchiveHelper.IsArchive(InFile))
 			{
-				// Получаем файлы, распакованные из архива
+				// РџРѕР»СѓС‡Р°РµРј С„Р°Р№Р»С‹, СЂР°СЃРїР°РєРѕРІР°РЅРЅС‹Рµ РёР· Р°СЂС…РёРІР°
 				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
 			}
 
@@ -244,8 +244,8 @@ and st.SourceID = 4";
 			catch (Exception exDivide)
 			{
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				WriteLog(_currentDocumentType.DocType, supplierId, null, Path.GetFileName(CurrFileName), 
-					String.Format("Не удалось разделить файлы: {0}", exDivide));
+				WriteLog(_currentDocumentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
+					String.Format("РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°Р·РґРµР»РёС‚СЊ С„Р°Р№Р»С‹: {0}", exDivide));
 				return false;
 			}
 
@@ -282,25 +282,24 @@ and st.SourceID = 4";
 							clientAddressId = null;
 						}
 
-						var log = DocumentReceiveLog.LogNoCommit(supplierId,
-						    clientId,
-						    clientAddressId,
-						    formatFile,
-						    _currentDocumentType.DocType,
-						    null,
-						    null);
+						DocumentReceiveLog log;
+						using(new SessionScope())
+							log = DocumentReceiveLog.LogNoCommit(supplierId,
+								clientId,
+								clientAddressId,
+								formatFile,
+								_currentDocumentType.DocType);
 
-						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
+						_logger.InfoFormat("WaybillLANSourceHandler: РѕР±СЂР°Р±РѕС‚РєР° С„Р°Р№Р»Р° {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
-						//log.CopyDocumentToClientDirectory();
-						WaybillService.ParserDocument(log); 
+						WaybillService.ParserDocument(log);
 					}
 				}
 				catch(Exception e)
 				{
-					var message = "Не удалось отформатировать документ.\nОшибка: " + e;										
+					var message = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚С„РѕСЂРјР°С‚РёСЂРѕРІР°С‚СЊ РґРѕРєСѓРјРµРЅС‚.\nРћС€РёР±РєР°: " + e;
 					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
-					DocumentReceiveLog.LogFail(supplierId, null, null, _currentDocumentType.DocType, fileName, message);
+					DocumentReceiveLog.Log(supplierId, null, null, fileName, _currentDocumentType.DocType, message);
 					return false;
 				}
 			}
@@ -321,17 +320,17 @@ and st.SourceID = 4";
 		}
 
 		private static BaseDocumentReader GetDocumentReader(string readerClassName)
-		{ 
+		{
 			Type result = null;
 			var types = Assembly.GetExecutingAssembly()
 								.GetModules()[0]
 								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
 			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", readerClassName));
+				throw new Exception(String.Format("РќР°Р№РґРµРЅРѕ Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ С‚РёРїР° СЃ РёРјРµРЅРµРј {0}", readerClassName));
 			if (types.Length == 1)
 				result = types[0];
 			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", readerClassName));
+				throw new Exception(String.Format("РљР»Р°СЃСЃ {0} РЅРµ РЅР°Р№РґРµРЅ", readerClassName));
 			return (BaseDocumentReader)Activator.CreateInstance(result);
 		}
 	}

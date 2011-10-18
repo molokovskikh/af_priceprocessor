@@ -27,8 +27,9 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов")]
 		public void CheckParse()
 		{
-			var docSupplier = Supplier.Find(39u);
-			var certificateSource = CreateSourceForSupplier(docSupplier);
+			var testSupplier = TestSupplier.Create();
+			var docSupplier = Supplier.Find(testSupplier.Id);
+			var certificateSource = CreateRealSourceForSupplier(docSupplier);
 
 			var firstCatalog = new Catalog {Id = 1, Name = "catalog1"};
 			var secondCatalog = new Catalog {Id = 2, Name = "catalog2"};
@@ -80,27 +81,42 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(task[2].CatalogProduct.Id == secondCatalog.Id && task[2].SerialNumber == "крутая серия 1");
 		}
 
-		private CertificateSource CreateSourceForSupplier(Supplier supplier)
+		private CertificateSource CreateSourceForSupplier(Supplier supplier, string sourceClassName)
 		{
-			var source = CertificateSource.Queryable.FirstOrDefault(s => s.SourceSupplier.Id == supplier.Id);
-			if (source == null)
-				using (new TransactionScope()) {
-					source = new CertificateSource {
-						SourceSupplier = supplier,
-						SourceClassName = Path.GetRandomFileName() 
-					};
-					source.Create();
-				}
+			var source = new CertificateSource {
+				SourceSupplier = supplier,
+				SourceClassName = sourceClassName 
+			};
+			
+			using (new TransactionScope()) {
+				var deletedSource = CertificateSource.Queryable.FirstOrDefault(s => s.SourceClassName == sourceClassName);
+				if (deletedSource != null)
+					deletedSource.Delete();
+
+				source.Create();
+			}
+
 			return source;
+		}
+
+		private CertificateSource CreateRealSourceForSupplier(Supplier supplier)
+		{
+			return CreateSourceForSupplier(supplier, "AptekaHoldingVoronezhCertificateSource");
+		}
+
+		private CertificateSource CreateRandomSourceForSupplier(Supplier supplier)
+		{
+			return CreateSourceForSupplier(supplier, Path.GetRandomFileName());
 		}
 
 		[Test(Description = "проверка создания заданий для несуществующих сертификатов при существовании сертификатов")]
 		public void CheckParseWithExistsCertificates()
 		{
-			var docSupplier = Supplier.Find(39u);
-			var certificateSource = CertificateSource.Queryable.First(s => s.SourceSupplier.Id == docSupplier.Id);
+			var testSupplier = TestSupplier.Create();
+			var docSupplier = Supplier.Find(testSupplier.Id);
+			var certificateSource = CreateRealSourceForSupplier(docSupplier);
 			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != docSupplier.Id).First();
-			var anotherSupplierSource = CreateSourceForSupplier(anotherSupplier);
+			var anotherSupplierSource = CreateRandomSourceForSupplier(anotherSupplier);
 
 			var catalogs = Catalog.Queryable.Take(2).ToList().OrderBy(c => c.Id).ToList();
 			var existsCatalog = catalogs[0];
@@ -253,8 +269,7 @@ namespace PriceProcessor.Test.Waybills
 		private void DeleteNonProcessedTasks()
 		{
 			using (new TransactionScope()) {
-				var certificates =
-					CertificateTask.Queryable.Where(c => c.CertificateSource.SourceSupplier.Id != 39).ToList();
+				var certificates = CertificateTask.FindAll().ToList();
 				certificates.ForEach(c => c.Delete());
 			}
 		}
@@ -301,8 +316,10 @@ namespace PriceProcessor.Test.Waybills
 		{
 			DeleteNonProcessedTasks();
 
-			var supplier = Supplier.Find(39u);
-			var certificateSource = CreateSourceForSupplier(supplier);
+			var testSupplier = TestSupplier.Create();
+			var supplier = Supplier.Find(testSupplier.Id);
+
+			var certificateSource = CreateRealSourceForSupplier(supplier);
 			var serialNumber = Path.GetRandomFileName();
 			var catalog = TestCatalogProduct.Queryable.First();
 			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);

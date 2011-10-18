@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Collections.Generic;
-using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
@@ -35,6 +34,90 @@ namespace PriceProcessor.Test
 		{
 			CreateDirectoryPath();
 			ProcessData();
+		}
+	}
+
+	public class FakeSIAMoscow_2788_Reader1 : SIAMoscow_2788_Reader
+	{		
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		{
+			throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.");
+		}
+	}
+
+	public class FakeSIAMoscow_2788_Reader2 : SIAMoscow_2788_Reader
+	{
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		{
+			return null;
+		}
+		public override string FormatOutputFile(string InputFile, DataRow drSource)
+		{
+			throw new Exception("Количество позиций в документе не соответствует значению в заголовке документа");
+		}
+	}
+
+	public class FakeSIAMoscow_2788_Reader3 : SIAMoscow_2788_Reader
+	{
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		{
+			return new List<ulong>{ 0 };
+		}
+		public override string FormatOutputFile(string InputFile, DataRow drSource)
+		{
+			return "test";
+		}
+		public override void ImportDocument(DocumentReceiveLog log, string filename)
+		{
+			throw new Exception("Дублирующийся документ");
+		}
+
+	}
+
+	public class FakeSIAMoscow_2788_Reader4 : SIAMoscow_2788_Reader
+	{
+		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		{
+			return new List<ulong>{ 0 };
+		}
+		public override string FormatOutputFile(string InputFile, DataRow drSource)
+		{
+			return "test";
+		}
+		public override void ImportDocument(DocumentReceiveLog log, string filename)
+		{
+			using (var transaction = new TransactionScope(OnDispose.Rollback))
+			{
+				log.Save();
+				transaction.VoteCommit();
+			}
+		}
+	}
+
+	public class FakeWaybillLANSourceHandler : WaybillLANSourceHandler
+	{
+		private readonly DataRow drLanSource;
+		private readonly BaseDocumentReader reader;
+
+		public  FakeWaybillLANSourceHandler()
+		{}
+
+		public FakeWaybillLANSourceHandler(string readerClassName)
+		{
+			FillSourcesTable();
+			drLanSource = dtSources.Rows.Cast<DataRow>().Where(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader").FirstOrDefault();			
+			Type result = null;
+			var types = Assembly.GetExecutingAssembly()
+								.GetModules()[0]
+								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
+			result = types[0];
+			reader = (BaseDocumentReader)Activator.CreateInstance(result);
+			_currentDocumentType = new WaybillType();
+		}
+
+		public bool MoveWaybill(string archFileName, string fileName)
+		{
+			return base.MoveWaybill(archFileName, fileName, drLanSource, reader);
 		}
 	}
 
@@ -189,7 +272,7 @@ where a.Id = ?AddressId", connection);
 				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
 				
 				var _log = logs.Where(l => !l.IsFake).SingleOrDefault();
-				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(_log.FileName) > -1).SingleOrDefault();
+				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(Path.GetFileNameWithoutExtension(_log.FileName)) > -1).Single();
 				
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));
@@ -249,14 +332,6 @@ where a.Id = ?AddressId", connection);
 		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
-			var appender = new ConsoleAppender
-			{
-				Layout = new SimpleLayout1()
-			};
-
-			appender.ActivateOptions();
-			BasicConfigurator.Configure(appender);
-
 			try
 			{
 				var beign = DateTime.Now;
@@ -360,183 +435,6 @@ WHERE FirmCode = ?SupplierId
 ";
 			var paramSupplierId = new MySqlParameter("?SupplierId", supplierCode);
 			With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryDelete, paramSupplierId); });
-		}
-	}
-
-
-
-
-	public class FakeSIAMoscow_2788_Reader1 : SIAMoscow_2788_Reader
-	{		
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
-		{
-			throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.");
-		}
-	}
-
-	public class FakeSIAMoscow_2788_Reader2 : SIAMoscow_2788_Reader
-	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
-		{
-			return null;
-		}
-		public override string FormatOutputFile(string InputFile, DataRow drSource)
-		{
-			throw new Exception("Количество позиций в документе не соответствует значению в заголовке документа");
-		}
-	}
-
-	public class FakeSIAMoscow_2788_Reader3 : SIAMoscow_2788_Reader
-	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
-		{
-			var res = new List<ulong>();
-			res.AddRange(new ulong [] {0});
-			return res;
-		}
-		public override string FormatOutputFile(string InputFile, DataRow drSource)
-		{
-			return "test";
-		}
-		public override void ImportDocument(DocumentReceiveLog log, string filename)
-		{
-			throw new Exception("Дублирующийся документ");
-		}
-
-	}
-
-	public class FakeSIAMoscow_2788_Reader4 : SIAMoscow_2788_Reader
-	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
-		{
-			var res = new List<ulong>();
-			res.AddRange(new ulong[] { 0 });
-			return res;
-		}
-		public override string FormatOutputFile(string InputFile, DataRow drSource)
-		{
-			return "test";
-		}
-		public override void ImportDocument(DocumentReceiveLog log, string filename)
-		{
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
-				log.Save();
-				transaction.VoteCommit();
-			}
-		}
-	}
-
-	public class FakeWaybillLANSourceHandler : WaybillLANSourceHandler
-	{
-		private readonly DataRow drLanSource;
-		private readonly BaseDocumentReader reader;
-
-		public  FakeWaybillLANSourceHandler()
-		{}
-
-		public FakeWaybillLANSourceHandler(string readerClassName)
-		{
-			FillSourcesTable();
-			drLanSource = dtSources.Rows.Cast<DataRow>().Where(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader").FirstOrDefault();			
-			Type result = null;
-			var types = Assembly.GetExecutingAssembly()
-								.GetModules()[0]
-								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
-			result = types[0];
-			reader = (BaseDocumentReader)Activator.CreateInstance(result);
-			_currentDocumentType = new WaybillType();
-		}
-
-		public bool MoveWaybill(string archFileName, string fileName)
-		{
-			return base.MoveWaybill(archFileName, fileName, drLanSource, reader);
-		}
-	}
-
-	[TestFixture]
-	public class WaybillLANSourceHandlerErrorsFixture
-	{
-		private int maxLogId;
-
-		[SetUp]
-		public void Setup()
-		{
-			using (new SessionScope())
-			{
-				maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
-			}
-		}
-
-		[TearDown]
-		public void EndTest()
-		{
-			With.Connection(connection =>
-			{
-				var command = new MySqlCommand(@"delete from logs.document_logs where rowid > ?Id", connection);
-				command.Parameters.AddWithValue("?Id", maxLogId);
-				command.ExecuteNonQuery();
-			});
-		}
-
-		[Test]
-		public void GetClientCodesErrorTest()
-		{
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1");
-			var res = handler.MoveWaybill("test", "test");			
-			using(new SessionScope())
-			{
-				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
-				Assert.That(logs[0].Comment.Contains("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа."), Is.True);
-			}
-		}
-
-		[Test]
-		public void FormatOutputFileError()
-		{			
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader2");
-			var res = handler.MoveWaybill("test", "test");
-			using (new SessionScope())
-			{
-				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
-				Assert.That(logs[0].Comment.Contains("Количество позиций в документе не соответствует значению в заголовке документа"), Is.True);
-			}
-		}
-
-		[Test]
-		public void ImportDocumentError()
-		{			
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader3");
-			var res = handler.MoveWaybill("test", "test");
-			using (new SessionScope())
-			{
-				Assert.That(res, Is.False);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
-				Assert.That(logs[0].Comment.Contains("Дублирующийся документ"), Is.True);
-			}
-		}
-
-		[Test]
-		public void WithoutError()
-		{			
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader4");
-			var res = handler.MoveWaybill("test", "test");
-			using (new SessionScope())
-			{
-				Assert.That(res, Is.True);
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				Assert.That(logs[0].Supplier.Id, Is.EqualTo(2788));
-				Assert.That(logs[0].Comment, Is.Null);
-			}
 		}
 	}
 }

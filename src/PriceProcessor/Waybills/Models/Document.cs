@@ -28,7 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			WriteTime = DateTime.Now;
 			FirmCode = Convert.ToUInt32(log.Supplier.Id);
 			ClientCode = log.ClientCode.Value;
-			AddressId = log.AddressId;
+			Address = log.Address;
 			DocumentType = DocType.Waybill;
 		}
 		
@@ -40,7 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
 		{
 			var criteriaSynonym = DetachedCriteria.For<T>();
-			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));			
+			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
 			criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
@@ -66,7 +66,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => l.ProductEntity.Id).ToList();
 
 				var criteria = DetachedCriteria.For<Core>();
-				criteria.Add(Restrictions.Eq("Price.Id", (uint)settings.AssortimentPriceId.Value));
+				criteria.Add(Restrictions.Eq("Price.Id", settings.AssortimentPriceId.Value));
 				criteria.Add(Restrictions.In("ProductId", productIds));
 
 				List<Core> cores = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<Core>()).ToList();
@@ -188,8 +188,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public uint ClientCode { get; set; }
 
-		[Property]
-		public uint? AddressId { get; set; }
+		[BelongsTo("AddressId")]
+		public Address Address { get; set; }
 
 		[Property]
 		public DocType DocumentType { get; set; }
