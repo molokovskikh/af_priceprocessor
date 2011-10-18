@@ -305,7 +305,7 @@ namespace Inforoom.PriceProcessor
             SleepTime = 60;
             workTime = TimeSpan.Parse("02:00:00");                        
             taskList = new List<SynonymTask>();
-            IdxDir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "IdxDir");
+        	IdxDir = Settings.Default.IdxDir;
         }
 
         //Остановка обработчика

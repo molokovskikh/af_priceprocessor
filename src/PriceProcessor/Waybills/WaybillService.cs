@@ -283,7 +283,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				while (waybillPositions.Count > 0)
 				{
-					var line = NextFirst(waybillPositions, false);                    
+					var line = NextFirst(waybillPositions, false); 
 					var code = line.Code.Trim().ToLower();
 					var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
 					foreach (var waybillLine in waybillLines)

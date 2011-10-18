@@ -965,6 +965,17 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("IdxDir")]
+		public string IdxDir
+		{
+			get
+			{
+				return ((string)(this["IdxDir"]));
+			}
+		}
+
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

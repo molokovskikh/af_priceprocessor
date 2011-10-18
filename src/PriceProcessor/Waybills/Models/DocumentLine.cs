@@ -19,12 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("DocumentId")]
 		public Document Document { get; set; }
-
-		/// <summary>
-		/// Id продукта
-		/// </summary>
-		//[Property]
-		//public int? ProductId { get; set; }
+		
 		/// <summary>
 		/// Если не null, то содержит ссылку на сопоставленный продукт из catalogs.products
 		/// </summary>
@@ -173,6 +168,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string EAN13 { get; set; }
+		
+		/// <summary>
+		/// Код ОКДП
+		/// </summary>
+		//[Property]
+		public string CodeOKDP { get; set; }
 
 		[BelongsTo(Column = "CertificateId", Lazy = FetchWhen.OnInvoke)]
 		public Certificate Certificate { get; set; }
