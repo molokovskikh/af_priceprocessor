@@ -273,6 +273,7 @@
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\WaybillOrderMatcherFixture.cs" />
     <Compile Include="Waybills\WayBillRetransFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />

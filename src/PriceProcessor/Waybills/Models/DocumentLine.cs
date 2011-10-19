@@ -172,7 +172,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// <summary>
 		/// Код ОКДП
 		/// </summary>
-		//[Property]
+		[Property]
 		public string CodeOKDP { get; set; }
 
 		[BelongsTo(Column = "CertificateId", Lazy = FetchWhen.OnInvoke)]
@@ -195,6 +195,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string PassportFilename { get; set; }
+
+		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }
+
+		/// <summary>
+		/// Номер заказа, которому соответствует данная позиция
+		/// </summary>
+		public uint? OrderId { get; set; }
 
 		public void SetAmount()
 		{
@@ -291,7 +298,5 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				SupplierPriceMarkup = Math.Round(((SupplierCost.Value / ProducerCost.Value - 1) * 100), 2);
 			}
 		}
-
-		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }		
 	}
 }

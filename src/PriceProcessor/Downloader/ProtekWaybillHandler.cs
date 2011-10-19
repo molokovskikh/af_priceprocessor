@@ -319,7 +319,7 @@ namespace Inforoom.PriceProcessor.Downloader
 									DbfExporter.SaveProtek(document);
 
 								scope.VoteCommit();
-								WaybillService.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
+								WaybillOrderMatcher.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
 							

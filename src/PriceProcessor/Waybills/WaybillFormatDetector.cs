@@ -88,7 +88,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			return null;
 		}
 
-		public IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
+		public virtual IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
 		{
 			var extention = Path.GetExtension(file.ToLower());
 			Type type = null;
@@ -202,6 +202,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				doc.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 				doc.CalculateValues(); // расчет недостающих значений 
 				if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
+				WaybillOrderMatcher.ComparisonWithOrders(doc, null); // сопоставляем позиции в накладной с позициями в заказе
 				//сопоставление сертификатов для позиций накладной
 				CertificateSourceDetector.DetectAndParse(doc);
 			}

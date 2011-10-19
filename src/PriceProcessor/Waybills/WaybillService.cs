@@ -170,55 +170,59 @@ namespace Inforoom.PriceProcessor.Waybills
 				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
 				SaveWaybill(file);
 			}
-		}
+		}		
+	}
+
+
+	public class WaybillOrderMatcher
+	{
+		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillOrderMatcher));
 
 		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
-			if (document == null) return;
-			if (document.OrderId == null) return;
-			if (orders == null) return;
-			if (orders.Count == 0) return;
-			try
+			if (document == null) return;			
+			using (new SessionScope())
 			{
-				var waybillPositions = document.Lines.Where(l => l != null && !String.IsNullOrEmpty(l.Code)).ToList();
+				try
+				{					
+					if (orders != null) // заказы переданы отдельно и не связаны с позициями в накладной
+					{
+						var waybillPositions = document.Lines.Where(l => l != null && !String.IsNullOrEmpty(l.Code)).ToList();
 
-				while (waybillPositions.Count > 0)
-				{
-					var line = NextFirst(waybillPositions, false);
-					var code = line.Code.Trim().ToLower();
-					var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
-					foreach (var waybillLine in waybillLines)
-					{
-						waybillPositions.Remove(waybillLine);
-					}
-					foreach (var itemW in waybillLines)
-					{
-						foreach (var order in orders)
+						while (waybillPositions.Count > 0)
 						{
-							var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
-							foreach (var itemOrd in orderLines)
+							var line = waybillPositions.First();
+							var code = line.Code.Trim().ToLower();
+							var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
+							waybillLines.ForEach(waybillLine => waybillPositions.Remove(waybillLine));							
+							foreach (var itemW in waybillLines)
 							{
-								AddToAssociativeTable(itemW.Id, itemOrd.Id);
+								foreach (var order in orders)
+								{
+									var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
+									orderLines.ForEach(itemOrd => AddToAssociativeTable(itemW.Id, itemOrd.Id));									
+								}
 							}
 						}
 					}
+					else
+					{
+						var waybillPositions = document.Lines.Where(l => l != null && l.OrderId != null && !String.IsNullOrEmpty(l.Code)).ToList();						
+						foreach(var line in waybillPositions) // номер заказа выставлен для каждой позиции в накладной
+						{
+							var code = line.Code.Trim().ToLower();
+							var order = OrderHead.TryFind(line.OrderId);
+							if (order == null) continue;
+							var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
+							orderLines.ForEach(itemOrd => AddToAssociativeTable(line.Id, itemOrd.Id));
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					_log.Error("Ошибка при сопоставлении заказов накладной", e);
 				}
 			}
-			catch(Exception e)
-			{
-				_log.Error("Ошибка при сопоставлении заказов накладной", e);
-			}
-		}
-
-		private static T NextFirst<T> (IList<T> list, bool rem) where T : class
-		{
-			if (list.Count == 0) return null;
-			if(rem)
-			{
-				list.Remove(list.First());
-			}
-			if (list.Count == 0) return null;
-			return list.First();
 		}
 
 		private static void AddToAssociativeTable(uint docLineId, uint ordLineId)

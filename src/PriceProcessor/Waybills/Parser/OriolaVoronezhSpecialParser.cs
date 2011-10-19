@@ -48,6 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.VitallyImportant, "PV")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.OrderId, "NZAKAZ")
 				.ToDocument(document, data);
 			return document;
 		}
