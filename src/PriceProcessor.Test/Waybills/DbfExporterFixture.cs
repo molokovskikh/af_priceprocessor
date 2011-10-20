@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
@@ -47,6 +48,8 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 			Assert.That(log.FileName, Is.EqualTo("100.dbf"));
 			Assert.That(File.Exists(resultFile), Is.True, "файл накладной несуществует {0}", resultFile);
+			var table = Dbf.Load(resultFile);
+			Assert.That(table.Rows.Count, Is.EqualTo(1));
 		}
 	}
 }

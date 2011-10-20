@@ -182,6 +182,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				row.SetField("ExciseTax", line.ExciseTax);
 				row.SetField("Entry", line.BillOfEntryNumber);
 				row.SetField("Ean13", line.EAN13);
+				table.Rows.Add(row);
 			}
 
 			document.Log.IsFake = false;
