@@ -322,13 +322,13 @@ namespace Inforoom.PriceProcessor.Downloader
 								WaybillOrderMatcher.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
-							
 						}
 					}
 				}
 				finally
 				{
 					service.closeBladingSession(new closeBladingSessionRequest(sessionId, clientId, instanceId));
+					Ping(); // чтобы монитор не перезапустил рабочий поток
 				}
 			});
 		}
