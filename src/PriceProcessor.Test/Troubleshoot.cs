@@ -77,5 +77,14 @@ namespace PriceProcessor.Test
 			return null;
 		}
 
+		[Test, Ignore]
+		public void TryGetAllNames()
+		{
+			string conn = Literals.ConnectionString();
+			PriceProcessItem item = PriceProcessItem.GetProcessItem(1253);
+			item.GetAllNames();
+
+
+		}
 	}
 }

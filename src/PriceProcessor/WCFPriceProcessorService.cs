@@ -450,28 +450,33 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 
         public string[] FindSynonyms(uint priceItemId)
         {
-			log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
-            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
-            if(item == null)
-            {
-                string er = String.Format("Файл прайс-листа не найден (priceItemId = {0})", priceItemId);
-                throw new FaultException<string>(er, new FaultReason(er));
-            }
-            var names = item.GetAllNames();
-            if(names == null)
-            {
-                string er = String.Format("Прайс-лист не формализован (priceItemId = {0})", priceItemId);
-                throw new FaultException<string>(er, new FaultReason(er));
-            }
-            if(names.Count == 0)
-            {
-                string er = String.Format("Не найдено ни одной позиции в прайс-листе (priceItemId = {0})", priceItemId);
-                throw new FaultException<string>(er, new FaultReason(er));
-            }
-            // создаем задачу
-            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-            long taskId = handler.AddTask(names, (uint)item.PriceCode);
-            return new [] {"Success", taskId.ToString()}; // задача успешно создана           
+        	long taskId = 0;
+			try {
+
+				log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
+				PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
+				if (item == null) {
+					string er = String.Format("Файл прайс-листа не найден (priceItemId = {0})", priceItemId);
+					throw new FaultException<string>(er, new FaultReason(er));
+				}
+				var names = item.GetAllNames();
+				if (names == null) {
+					string er = String.Format("Прайс-лист не формализован (priceItemId = {0})", priceItemId);
+					throw new FaultException<string>(er, new FaultReason(er));
+				}
+				if (names.Count == 0) {
+					string er = String.Format("Не найдено ни одной позиции в прайс-листе (priceItemId = {0})", priceItemId);
+					throw new FaultException<string>(er, new FaultReason(er));
+				}
+				// создаем задачу
+				IndexerHandler handler = (IndexerHandler) Monitor.GetInstance().GetHandler(typeof (IndexerHandler));
+				taskId = handler.AddTask(names, (uint) item.PriceCode);
+			}
+			catch(Exception e) {
+				log.Error("Ошибка в функции FindSynonyms:", e);
+				throw;
+			}
+        	return new [] {"Success", taskId.ToString()}; // задача успешно создана           
         }
 
         public string[] FindSynonymsResult(string taskId)
