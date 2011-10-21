@@ -13,13 +13,19 @@
     <AssemblyName>PriceProcessor</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName></SccProjectName>
-    <SccLocalPath></SccLocalPath>
-    <SccAuxPath></SccAuxPath>
-    <SccProvider></SccProvider>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
     <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
-    <FileUpgradeFlags></FileUpgradeFlags>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
   </PropertyGroup>
@@ -234,6 +240,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2.cs" />
     <Compile Include="Waybills\Parser\LekRusChernozemieSpecialParser.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParser.cs" />

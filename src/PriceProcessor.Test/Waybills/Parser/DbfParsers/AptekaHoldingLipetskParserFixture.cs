@@ -72,34 +72,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.CertificatesDate, Is.EqualTo("24.12.2010"));
             Assert.That(line.VitallyImportant, Is.False);
             Assert.That(line.EAN13, Is.EqualTo("5944700100019"));
-
-           /* using (new SessionScope())
-            {
-                TestSupplier testsupplier = (TestSupplier)TestSupplier.FindFirst();
-                Supplier supplier = Supplier.Find(testsupplier.Id);
-
-                TestDrugstoreSettings settings = TestDrugstoreSettings.FindFirst();
-                TestOrder order = TestOrder.FindFirst();
-
-                TestAddress address = TestAddress.FindFirst();
-                DocumentReceiveLog log = new DocumentReceiveLog()
-                {
-                    Supplier = supplier,
-                    ClientCode = settings.Id,
-                    AddressId = address.Id,
-                    MessageUid = 123,
-                    DocumentSize = 100
-                };
-
-                doc.Log = log;
-                doc.OrderId = order.Id;
-                doc.AddressId = address.Id;
-                doc.FirmCode = log.Supplier.Id;
-                doc.ClientCode = (uint)log.ClientCode;
-
-                log.Save();
-                doc.Save();
-            }*/
         }
 
         [Test]

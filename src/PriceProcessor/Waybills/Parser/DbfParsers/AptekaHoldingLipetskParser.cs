@@ -69,14 +69,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
                 var innkpp = doc.Invoice.SellerINN.Split('/');
                 if (innkpp.Length == 2)
                 {
-                    doc.Invoice.SellerINN = innkpp[0];
-                    doc.Invoice.SellerKPP = innkpp[1];
+                    doc.Invoice.SellerINN = String.IsNullOrEmpty(innkpp[0]) ? null : innkpp[0];
+                    doc.Invoice.SellerKPP = String.IsNullOrEmpty(innkpp[1]) ? null : innkpp[1];
                 }
                 innkpp = doc.Invoice.BuyerINN.Split('/');
                 if(innkpp.Length == 2)
                 {
-                    doc.Invoice.BuyerINN = innkpp[0];
-                    doc.Invoice.BuyerKPP = innkpp[1];
+                    doc.Invoice.BuyerINN = String.IsNullOrEmpty(innkpp[0]) ? null : innkpp[0];
+                    doc.Invoice.BuyerKPP = String.IsNullOrEmpty(innkpp[1]) ? null : innkpp[1];
                 }
             }
         }

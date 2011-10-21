@@ -450,6 +450,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 
         public string[] FindSynonyms(uint priceItemId)
         {
+			log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
             PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
             if(item == null)
             {
