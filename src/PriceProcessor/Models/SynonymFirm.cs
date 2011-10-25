@@ -30,5 +30,11 @@ namespace Inforoom.PriceProcessor.Models
 		/// </summary>
 		[Property]
 		public int? CodeFirmCr { get; set; }
+
+		/// <summary>
+		/// Код, присвоенный поставщиком
+		/// </summary>		
+		[Property]
+		public string SupplierCode { get; set; }
 	}
 }

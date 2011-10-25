@@ -78,6 +78,19 @@ namespace Inforoom.Formalizer
 		MiltiFile = 1
 	}
 
+	public enum FormatType
+	{
+		Xml = 5,
+		NativeDbf = 8,
+		Sudakov = 9,
+		NativeXls = 10,
+		NativeDelimiter1251 = 11,
+		NativeDelimiterDOS = 12,
+		NativeFixedWIN = 13,
+		NativeFixedDOS = 14,
+		FarmImpeks = 15,
+	}
+
 	//Статистические счетчики для формализации
 	public class FormalizeStats
 	{
@@ -212,6 +225,7 @@ namespace Inforoom.Formalizer
 		public static string colFirmStatus = "FirmStatus";
 		public static string colCostType = "CostType";
 		public static string colFirmSegment = "FirmSegment";
+		public static string colPriceFormatId = "PriceFormatId";
 	}
 
 	public class CoreCost : ICloneable

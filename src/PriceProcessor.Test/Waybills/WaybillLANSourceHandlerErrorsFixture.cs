@@ -14,14 +14,15 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class WaybillLANSourceHandlerErrorsFixture
 	{
-		private int maxLogId;
+		private int maxLogId = 0;
 
 		[SetUp]
 		public void Setup()
 		{
-			using (new SessionScope())
-			{
-				maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
+			using (new SessionScope()) {
+				var count = DocumentReceiveLog.Queryable.Count();
+				if(count > 0)
+					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
 			}
 		}
 

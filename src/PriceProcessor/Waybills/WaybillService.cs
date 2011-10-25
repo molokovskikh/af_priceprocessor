@@ -199,7 +199,7 @@ namespace Inforoom.PriceProcessor.Waybills
 							{
 								foreach (var order in orders)
 								{
-									var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
+									var orderLines = order.Items.Where(i => i != null && !String.IsNullOrEmpty(i.Code) && i.Code.Trim().ToLower() == code).ToList();
 									orderLines.ForEach(itemOrd => AddToAssociativeTable(itemW.Id, itemOrd.Id));									
 								}
 							}
@@ -220,7 +220,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				catch (Exception e)
 				{
-					_log.Error("Ошибка при сопоставлении заказов накладной", e);
+					_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
 				}
 			}
 		}

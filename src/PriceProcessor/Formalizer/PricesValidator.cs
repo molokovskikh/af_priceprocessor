@@ -112,7 +112,8 @@ select
   PFR.*,
   pricefmts.FileExtention,
   pricefmts.ParserClassName,
-  pd.BuyingMatrix
+  pd.BuyingMatrix,
+  pricefmts.Id											as PriceFormat
 from
   usersettings.PriceItems pi,
   usersettings.pricescosts pc,

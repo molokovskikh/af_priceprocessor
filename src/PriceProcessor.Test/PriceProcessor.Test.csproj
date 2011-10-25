@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArchiveHelperFixture.cs" />
+    <Compile Include="DifferTests.cs" />
     <Compile Include="Formalization\AssortmentFixture.cs" />
     <Compile Include="Formalization\BasePriceParserFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />

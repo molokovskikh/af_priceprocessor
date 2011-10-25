@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.IO;
 using Common.Tools;
 using Inforoom.PriceProcessor;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Handlers
 {
@@ -49,10 +50,21 @@ namespace PriceProcessor.Test.Handlers
 		[SetUp]
 		public void SetUp()
 		{			
-			using (new SessionScope())
-			{
-				order = TestOrder.Queryable.First();
-				order2 = TestOrder.Queryable.Where(o => o != order).First();
+			using (new SessionScope()) {
+				var client1 = TestClient.Create();
+				var client2 = TestClient.Create();
+				var price = TestSupplier.CreateTestSupplierWithPrice();
+				order = new TestOrder();
+				order.Client = client1;
+				order.Address = client1.Addresses[0];
+				order.Price = price;
+				order.Save();
+
+				order2 = new TestOrder();
+				order2.Client = client2;
+				order2.Address = client2.Addresses[0];
+				order2.Price = price;
+				order2.Save();
 			}
 
 			fake = new FakeProtekHandler();

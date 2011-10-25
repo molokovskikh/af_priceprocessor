@@ -37,10 +37,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
 		}
 
-		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes)
+		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes, string colName = "Synonym")
 		{
 			var criteriaSynonym = DetachedCriteria.For<T>();
-			criteriaSynonym.Add(Restrictions.In("Synonym", synonyms));
+			criteriaSynonym.Add(Restrictions.In(colName, synonyms));
 			criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
 		}
@@ -103,64 +103,80 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			try
 			{
-				// получаем Id прайсов, из которых мы будем брать синонимы.
-				var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
-												.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-				if (priceCodes.Count <= 0 || Lines == null) return this;				
-				// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
-				// Если накладная большая, то будем выбирать из неё продукты блоками.
-				int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
-				int index = 0;
-				int count = GetCount(realBatchSize, index);
+				using(new SessionScope()) {
+					// получаем Id прайсов, из которых мы будем брать синонимы.
+					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
+						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+					if (priceCodes.Count <= 0 || Lines == null) return this;
+					// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
+					// Если накладная большая, то будем выбирать из неё продукты блоками.
+					int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
+					int index = 0;
+					int count = GetCount(realBatchSize, index);
 
-				while ((count + index <= Lines.Count) && (count > 0))
-				{				    
-					// выбираем из накладной часть названия продуктов.
-					var productNames = Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Product)).Select(line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
-					//выбираем из накладной часть названия производителей.
-					var firmNames = Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
-					//получаем из базы данные для выбранной части продуктов из накладной.
-					var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(productNames, priceCodes);
-					//получаем из базы данные для выбранной части производителей из накладной.
-					var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(firmNames, priceCodes);
-				
-					//заполняем ProductId для продуктов в накладной по данным полученным из базы.
-					foreach (var line in Lines)
-					{
-						var productName = (String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();						
-						var listSynonym = dbListSynonym.Where(syn => syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
-						if(listSynonym.Count > 0)
-						{
+					while ((count + index <= Lines.Count) && (count > 0)) {
+						// выбираем из накладной часть названия продуктов.
+						var productNames =
+							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Product)).Select(
+								line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
+						//выбираем из накладной часть названия производителей.
+						var firmNames =
+							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(
+								line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
+						//получаем из базы данные для выбранной части продуктов из накладной.
+						var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(productNames, priceCodes);
+						//получаем из базы данные для выбранной части производителей из накладной.
+						var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(firmNames, priceCodes);
+						//выбираем из накладной коды
+						var сodes =
+							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Code)).Select(
+								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
+
+						var dbListSynonymByCodes = GetListSynonymFromDb<SynonymProduct>(сodes, priceCodes, "SupplierCode");
+						var dbListSynonymFirmByCodes = GetListSynonymFromDb<SynonymFirm>(сodes, priceCodes, "SupplierCode");
+
+						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+						foreach (var line in Lines) {
+							var productName =
+								(String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var code =
+									(String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var listSynonym =
+								dbListSynonym.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
+							if (listSynonym.Count == 0) 
+							{
+								listSynonym =
+									dbListSynonymByCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.SupplierCode.Trim().ToUpper() == code && syn.Product != null).ToList();
+								if (listSynonym.Count == 0) continue;
+							}
 							line.ProductEntity = listSynonym.Select(syn => syn.Product).FirstOrDefault();
-						}
-						if (line.ProductEntity == null) continue; // если сопоставили позицию по продукту, сопоставляем по производителю
-						var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
-						if(!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
-						{								
-							var listSynonymFirmCr = dbListSynonymFirm.Where(syn => syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
-							if (listSynonymFirmCr.Count > 0)
+							// если сопоставили позицию по продукту, сопоставляем по производителю
+							var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var listSynonymFirmCr =
+									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
+								if (listSynonymFirmCr.Count == 0) {
+									listSynonymFirmCr =
+										dbListSynonymFirmByCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.SupplierCode.Trim().ToUpper() == code && syn.CodeFirmCr != null).
+											ToList();
+									if (listSynonymFirmCr.Count == 0) continue;
+								}
+
+							if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика							
 								line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
-						}
-						else // если фармацевтика, то производителя ищем с учетом ассортимента
-						{
-							if (String.IsNullOrEmpty(producerName)) continue;
-							var listSynonymFirmCr = dbListSynonymFirm.Where(producerSyn => producerSyn.Synonym.Trim().ToUpper() == producerName && producerSyn.CodeFirmCr != null).ToList();
-							using(new SessionScope())
+							else // если фармацевтика, то производителя ищем с учетом ассортимента
 							{
 								var assortment = Assortment.Queryable.Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
-								foreach (var producerSynonym in listSynonymFirmCr)
-								{
-									if(assortment.Any(a => a.ProducerId == producerSynonym.CodeFirmCr))
-									{
+								foreach (var producerSynonym in listSynonymFirmCr) {
+									if (assortment.Any(a => a.ProducerId == producerSynonym.CodeFirmCr)) {
 										line.ProducerId = producerSynonym.CodeFirmCr;
 										break;
 									}
 								}
 							}
 						}
+						index = count;
+						count = GetCount(realBatchSize, index);
 					}
-					index = count;
-					count = GetCount(realBatchSize, index);
 				}
 			}
 			catch (Exception e)

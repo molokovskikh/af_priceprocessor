@@ -8,6 +8,7 @@ using Inforoom.PriceProcessor.Downloader;
 using log4net;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
+using RemotePriceProcessor;
 
 namespace PriceProcessor.Test
 {
@@ -84,7 +85,24 @@ namespace PriceProcessor.Test
 			PriceProcessItem item = PriceProcessItem.GetProcessItem(1253);
 			item.GetAllNames();
 
+/*			uint priceItemId = 183;
+			Stream stream = File.OpenRead(@"D:\Temp\Черная_Запрещенная_матрица_211011.xls");
 
+			var parameter = new FilePriceInfo() {
+				PriceItemId = priceItemId,
+				Stream = stream,
+				LogInformation = new LogInformation() {
+					ComputerName = Environment.MachineName,
+					UserName = Environment.UserName
+				}
+			};
+
+			var service = new WCFPriceProcessorService();
+			service.PutFileToBase(parameter);
+
+			PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
+			item.GetAllNames();
+			*/
 		}
 	}
 }

@@ -86,8 +86,33 @@ group by pi.Id",
 			return item;
 		}
 
+		public static string GetFile(string[] files, FormatType format)
+		{
+			if(files.Length == 0) return null;
+			string filename = String.Empty;
+			switch (format) {					
+					case FormatType.NativeDbf :
+            			filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf").FirstOrDefault();
+            			break;					
+					case FormatType.NativeXls :
+						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls").FirstOrDefault();
+            			break;
+					case FormatType.NativeDelimiter1251 :
+						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt").FirstOrDefault();
+            			break;
+					default:
+						filename = files[0];
+            			break;
+            	}
+			if(String.IsNullOrEmpty(filename)) filename = files[0];
+			return filename;
+		}
+
         public static PriceProcessItem GetProcessItem(uint priceItemId)
-        {                        
+        {
+        	var dtRules = PricesValidator.LoadFormRules(priceItemId);
+			if(dtRules.Rows.Count == 0) return null;
+        	var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
             var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
                                             String.Format(@"{0}.*", priceItemId));
             if(files.Count() == 0)
@@ -95,9 +120,10 @@ group by pi.Id",
                                             String.Format(@"{0}.*", priceItemId));
 
             string filename = String.Empty;
-            if (files.Count() > 0) filename = files[0];
+            if (files.Count() > 0) 
+            	filename = GetFile(files, fmt);
             else return null;
-            if (filename == String.Empty) return null;           
+            if (String.IsNullOrEmpty(filename)) return null;           
             return TryToLoadPriceProcessItem(filename);
         }
 

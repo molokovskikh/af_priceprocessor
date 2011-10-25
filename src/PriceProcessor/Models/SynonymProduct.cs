@@ -36,5 +36,11 @@ namespace Inforoom.PriceProcessor.Models
 		/// </summary>		
 		[BelongsTo("PriceCode")]
 		public Price Price { get; set; }
+
+		/// <summary>
+		/// Код, присвоенный поставщиком
+		/// </summary>		
+		[Property]
+		public string SupplierCode { get; set; }
 	}
 }

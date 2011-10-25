@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Formalizer;
@@ -81,5 +82,19 @@ namespace PriceProcessor.Test.Formalization
             File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
             Assert.That(names.Count(), Is.EqualTo(35));
         }
+
+		[Test]
+		public void GetFileTest()
+		{
+			string[] files = new string[] {"file1.txt", "file2", "file3.dbf", "file5.xls"};
+
+			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file1.txt"));
+			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeXls), Is.EqualTo("file5.xls"));
+			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDbf), Is.EqualTo("file3.dbf"));
+			Assert.That(PriceProcessItem.GetFile(files, FormatType.Xml), Is.EqualTo("file1.txt"));
+
+			files = new string[] {"file"};
+			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file"));
+		}
 	}
 }
