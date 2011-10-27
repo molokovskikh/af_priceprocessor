@@ -241,6 +241,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParser.cs" />
+    <Compile Include="Waybills\Parser\MarimedsnabSpecialParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2.cs" />
     <Compile Include="Waybills\Parser\LekRusChernozemieSpecialParser.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParser.cs" />
