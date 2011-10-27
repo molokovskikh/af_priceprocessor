@@ -424,6 +424,14 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
 				line.EAN13 = bladingItem.prodsbar;
+				if (bladingItem.bladingItemSeries != null)
+					line.ProtekDocIds = bladingItem.bladingItemSeries
+						.SelectMany(s => s.bladingItemSeriesCertificates)
+						.Where(c => c != null)
+						.Select(c => c.docId)
+						.Where(id => id != null)
+						.Select(id => new ProtekDoc(line, id.Value))
+						.ToList();
 			}
 
 			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);

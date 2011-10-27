@@ -5,8 +5,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public interface ICertificateSource
 	{
-		bool CertificateExists(DocumentLine documentLine);
-		IList<CertificateFileEntry> GetCertificateFiles(CertificateTask certificateTask);
-		void CommitCertificateFiles(CertificateTask certificateTask, IList<CertificateFileEntry> fileEntries);
+		bool CertificateExists(DocumentLine line);
+		IList<CertificateFileEntry> GetCertificateFiles(CertificateTask task);
 	}
 }

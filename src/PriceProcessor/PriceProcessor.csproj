@@ -220,6 +220,7 @@
     <Compile Include="Waybills\CertificateSources\AptekaHoldingVoronezhCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\CertificateFileEntry.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
+    <Compile Include="Waybills\CertificateSources\ProtekSource.cs" />
     <Compile Include="Waybills\Models\Address.cs" />
     <Compile Include="Waybills\Models\Certificate.cs" />
     <Compile Include="Waybills\Models\CertificateFile.cs" />

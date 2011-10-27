@@ -95,10 +95,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				}
 
 				foreach (var certificateFileEntry in files) {
-					var certificateFile = new CertificateFile {
-						OriginFilename = Path.GetFileName(certificateFileEntry.OriginFile),
-						CertificateSource = certificateTask.CertificateSource
-					};
+					var certificateFile = new CertificateFile(certificateFileEntry.OriginFile, certificateTask.CertificateSource);
 
 					certificateFileEntry.CertificateFile = certificateFile;
 					certificate.NewFile(certificateFile);
@@ -154,10 +151,6 @@ namespace Inforoom.PriceProcessor.Downloader
 						exception);
 				}
 			}
-
-			//Здесь надо осуществить копирование сертификатов
-
-			source.CommitCertificateFiles(certificateTask, files);
 		}
 	}
 }

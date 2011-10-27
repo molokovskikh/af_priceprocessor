@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
@@ -11,6 +13,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public CertificateFile()
 		{
 			Certificates = new List<Certificate>();
+		}
+
+		public CertificateFile(string originFile, CertificateSource source)
+			: this()
+		{
+			if (!String.IsNullOrEmpty(originFile))
+				OriginFilename = Path.GetFileName(originFile);
+			CertificateSource = source;
 		}
 
 		[PrimaryKey]

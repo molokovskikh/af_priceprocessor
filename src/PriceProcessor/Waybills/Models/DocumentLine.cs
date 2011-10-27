@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Models;
 
@@ -9,6 +10,28 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public uint? Code { get; set; }
 		public string Synonym { get; set; }
 		public string SynonymFirmCr { get; set; }
+	}
+
+	[ActiveRecord("ProtekDocs", Schema = "Documents")]
+	public class ProtekDoc
+	{
+		public ProtekDoc()
+		{}
+
+		public ProtekDoc(DocumentLine line, int docId)
+		{
+			Line = line;
+			DocId = docId;
+		}
+
+		[PrimaryKey]
+		public uint Id { get; set; }
+
+		[BelongsTo]
+		public DocumentLine Line { get; set; }
+
+		[Property]
+		public int DocId { get; set; }
 	}
 
 	[ActiveRecord("DocumentBodies", Schema = "documents")]
@@ -195,6 +218,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string PassportFilename { get; set; }
+
+		//список идентификаторов документов которые отдает протек
+		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
+		[HasMany(Cascade = ManyRelationCascadeEnum.All)]
+		public IList<ProtekDoc> ProtekDocIds { get; set; }
 
 		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }
 

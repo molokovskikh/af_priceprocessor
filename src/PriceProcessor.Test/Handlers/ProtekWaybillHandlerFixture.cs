@@ -46,6 +46,7 @@ namespace PriceProcessor.Test.Handlers
 		private TestOrder order2;
 		private FakeProtekHandler fake;
 		private Blading blading;
+		private DateTime begin;
 
 		[SetUp]
 		public void SetUp()
@@ -102,16 +103,17 @@ namespace PriceProcessor.Test.Handlers
 					blading = new[] { blading }
 				}
 			};
+
+			begin = DateTime.Now;
 		}
 
 		[Test]
 		public void Process_protek_waybills()
 		{
-			DateTime begin = DateTime.Now;
 			fake.Process();
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+				var documents = Documents();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				var document = documents[0];
 				Assert.That(document.Lines.Count, Is.EqualTo(1));
@@ -123,6 +125,33 @@ namespace PriceProcessor.Test.Handlers
 				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.dbf", log.Id)));
 				Assert.That(log.DocumentSize, Is.GreaterThan(0));
 				Check_DocumentLine_SetProductId(document);
+			}
+		}
+
+		private List<Document> Documents()
+		{
+			var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+			return documents;
+		}
+
+		[Test]
+		public void Save_document_id()
+		{
+			blading.bladingItems[0].bladingItemSeries = new BladingItemSeries[] {
+				new BladingItemSeries {
+					bladingItemSeriesCertificates = new [] {
+						new BladingItemSeriesCertificate {
+							docId = 5478
+						}
+					}
+				}, 
+			};
+
+			fake.Process();
+			using(new SessionScope())
+			{
+				var documents = Documents();
+				Assert.That(documents[0].Lines[0].ProtekDocIds[0].DocId, Is.EqualTo(5478));
 			}
 		}
 
@@ -162,7 +191,7 @@ namespace PriceProcessor.Test.Handlers
 			fake.Process();
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+				var documents = Documents();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
 				var line = documents[0].Lines[0];
@@ -185,7 +214,6 @@ namespace PriceProcessor.Test.Handlers
 
 			if (priceCodes.Count < 0)
 			{
-				//Assert.True(document.Lines.Where(l => l.ProductId == null).Count() == document.Lines.Count);
 				Assert.True(document.Lines.Where(l => l.ProductEntity == null).Count() == document.Lines.Count);
 				return;
 			}
@@ -197,12 +225,10 @@ namespace PriceProcessor.Test.Handlers
 			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
 			if (synonym.Count > 0)
 			{
-				//Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductId));
 				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductEntity.Id));
 			}
 			else
 			{
-				//Assert.IsTrue(line.ProductId == null);
 				Assert.IsTrue(line.ProductEntity == null);
 			}
 		}

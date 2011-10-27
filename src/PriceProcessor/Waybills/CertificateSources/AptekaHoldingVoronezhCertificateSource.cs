@@ -50,27 +50,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			foreach (var file in files) {
 				var tempFile = Path.GetTempFileName();
 				File.Copy(file, tempFile, true);
-				list.Add(new CertificateFileEntry{
-					OriginFile = file,
-					LocalFile = tempFile
-				});
+				list.Add(new CertificateFileEntry (file, tempFile));
 			}
-		}
-
-		public void CommitCertificateFiles(CertificateTask certificateTask, IList<CertificateFileEntry> fileEntries)
-		{
-			//foreach (var certificateFileEntry in fileEntries) {
-			//    try {
-			//        if (File.Exists(certificateFileEntry.OriginFile))
-			//            File.Delete(certificateFileEntry.OriginFile);
-			//    }
-			//    catch (Exception exception) {
-			//        _logger.WarnFormat("Ошибка при удалении оригинального файла {0} для задачи сертификата {1}: {2}", 
-			//            certificateFileEntry.OriginFile, 
-			//            certificateTask, 
-			//            exception);
-			//    }
-			//}
 		}
 	}
 }
