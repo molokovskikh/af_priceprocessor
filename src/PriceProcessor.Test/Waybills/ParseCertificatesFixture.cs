@@ -150,18 +150,21 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
+						CertificateSource = certificateSource
+					}
+				);
+				existsCertificate.NewFile(
+					new CertificateFile {
+						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
 						CertificateSource = certificateSource
 					}
 				);
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				existsCertificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
 						CertificateSource = anotherSupplierSource
 					}
 				);
@@ -381,7 +384,8 @@ namespace PriceProcessor.Test.Waybills
 				Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "Не установлено поле ExternalFileId");
 				Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "Поле ExternalFileId не совпадает с OriginFilename (только для AptekaHoldingVoronezhCertificateSource)");
 
-				Assert.That(File.Exists(Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif")), "Не скопирован файл сертификата");
+				var file = Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif");
+				Assert.That(File.Exists(file), "Не скопирован файл {0} сертификата", file);
 				Assert.That(File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "Удален файл сертификата из исходной папки");
 
 				documentLine.Refresh();
@@ -457,7 +461,6 @@ namespace PriceProcessor.Test.Waybills
 			var existsSerialNumber = Path.GetRandomFileName();
 			var existsFileId = Path.GetRandomFileName();
 			var existsCertificateCatalog = TestCatalogProduct.Queryable.First();
-			//var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
 
 			Certificate existsCertificate = null;
 			CertificateFile existsCertificateFile = null;
@@ -470,6 +473,7 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificateFile.CertificateSource = certificateSource;
 				existsCertificateFile.OriginFilename = existsFileId;
 				existsCertificateFile.ExternalFileId = existsFileId;
+				existsCertificateFile.Extension = ".tif";
 				existsCertificate.Create();
 			}
 

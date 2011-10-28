@@ -12,20 +12,23 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			return line.ProtekDocIds != null && line.ProtekDocIds.Count > 0;
 		}
 
-		public IList<CertificateFileEntry> GetCertificateFiles(CertificateTask task)
+		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
 		{
 			var uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			var result = new List<CertificateFileEntry>();
+			var result = new List<CertificateFile>();
 
 			new ProtekWaybillHandler().WithService(uri, s => {
 				foreach (var id in task.DocumentLine.ProtekDocIds)
 				{
 					var response = s.getSertImages(new getSertImagesRequest(83674, 1033812, id.DocId));
+					var index = 1;
 					foreach(var sertImage in response.@return.sertImage)
 					{
 						var tempFile = Path.GetTempFileName();
 						File.WriteAllBytes(tempFile, sertImage.image);
-						result.Add(new CertificateFileEntry(tempFile));
+						result.Add(new CertificateFile(tempFile, id.DocId + "-" + index++) {
+							Extension = ".tif"
+						});
 					}
 				}
 			});
