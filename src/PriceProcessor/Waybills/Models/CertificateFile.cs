@@ -8,18 +8,25 @@ using Inforoom.PriceProcessor.Models;
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
 	[ActiveRecord("CertificateFiles", Schema = "documents")]
-	public class CertificateFile: ActiveRecordLinqBase<CertificateFile>
+	public class CertificateFile : ActiveRecordLinqBase<CertificateFile>
 	{
 		public CertificateFile()
 		{
 			Certificates = new List<Certificate>();
 		}
 
-		public CertificateFile(string originFile, CertificateSource source)
+		public CertificateFile(string localFile, string externalFileId,
+			string originFile = null,
+			CertificateSource source = null)
 			: this()
 		{
+			LocalFile =localFile;
+			ExternalFileId = externalFileId;
 			if (!String.IsNullOrEmpty(originFile))
+			{
 				OriginFilename = Path.GetFileName(originFile);
+				Extension = Path.GetExtension(originFile);
+			}
 			CertificateSource = source;
 		}
 
@@ -47,5 +54,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string ExternalFileId { get; set; }
 
+		[Property]
+		public string Extension { get; set; }
+
+		public string LocalFile { get; set; }
+
+		public string RemoteFile
+		{
+			get { return Id + Extension; }
+		}
 	}
 }

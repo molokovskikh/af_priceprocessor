@@ -25,19 +25,18 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (ICertificateSource)Activator.CreateInstance(result);
 		}
 	
-		public static ICertificateSource DetectSource(Document document)
+		public static CertificateSource DetectSource(Document document)
 		{
-			var source = CertificateSource.Queryable.Where(s => s.SourceSupplier.Id == document.FirmCode).FirstOrDefault();
+			var source = CertificateSource.Queryable.FirstOrDefault(s => s.Suppliers.FirstOrDefault(certificateSupplier => certificateSupplier.Id == document.FirmCode) != null);
 			if (source != null) {
-				ICertificateSource certificateSource = null;
 				try {
-					certificateSource = GetCertificateSource(source.SourceClassName);
+					source.CertificateSourceParser = GetCertificateSource(source.SourceClassName);
 				}
 				catch (Exception exception) {
 					ILog _logger = LogManager.GetLogger(typeof (CertificateSourceDetector));
 					_logger.WarnFormat("Ошибка при создании экземпляра для разбора сертификатов {0}: {1}", source.SourceClassName, exception);
 				}
-				return certificateSource;
+				return source.CertificateSourceParser != null ? source : null;
 			}
 			return null;
 		}
@@ -55,17 +54,16 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				foreach (var documentLine in document.Lines) {
 					if (documentLine.ProductEntity != null && AllowSerialNumber(documentLine)) {
-						var certificateSource = CertificateSource.Queryable.First(s => s.SourceSupplier.Id == document.FirmCode);
 						var certificate = 
 							Certificate.Queryable.FirstOrDefault(
 								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
 									&& c.SerialNumber == documentLine.SerialNumber 
-									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == certificateSource.Id));
+									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == source.Id));
 						if (certificate != null)
 							documentLine.Certificate = certificate;
 						else 
-							if (source.CertificateExists(documentLine))
-								document.AddCertificateTask(documentLine, certificateSource);
+							if (source.CertificateSourceParser.CertificateExists(documentLine))
+								document.AddCertificateTask(documentLine, source);
 					}
 				}
 

@@ -273,6 +273,8 @@
     <Compile Include="Waybills\Parser\WaybillParser.cs" />
     <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
+    <Compile Include="Waybills\Sources\ProtekSourceFixture.cs" />
+    <Compile Include="Waybills\Sources\SiaSourceFixture.cs" />
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />

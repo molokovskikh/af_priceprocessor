@@ -2,6 +2,7 @@
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.CertificateSources;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -11,8 +12,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[PrimaryKey]
 		public uint Id { get; set; }
 
-		[BelongsTo("SourceSupplierId")]
-		public virtual Supplier SourceSupplier { get; set; }
+		[BelongsTo("FtpSupplierId")]
+		public virtual Supplier FtpSupplier { get; set; }
 		
 		[Property]
 		public string SourceClassName { get; set; }
@@ -24,6 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Schema = "Documents",
 			ColumnRef = "SupplierId")]
 		public virtual IList<Supplier> Suppliers { get; set; }
-		
+
+		public ICertificateSource CertificateSourceParser;
 	}
 }

@@ -17,11 +17,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			       !String.IsNullOrEmpty(documentLine.PassportFilename);
 		}
 
-		public IList<CertificateFileEntry> GetCertificateFiles(CertificateTask certificateTask)
+		public IList<CertificateFile> GetCertificateFiles(CertificateTask certificateTask)
 		{
-			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.SourceSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
+			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
-			var list = new List<CertificateFileEntry>();
+			var list = new List<CertificateFile>();
 
 			if (Directory.Exists(certificatesPath)) {
 
@@ -43,14 +43,14 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			return list;
 		}
 
-		private void AddFiles(string certificatesPath, string certificateFilenameMask, List<CertificateFileEntry> list)
+		private void AddFiles(string certificatesPath, string certificateFilenameMask, List<CertificateFile> list)
 		{
 			var files = Directory.GetFiles(certificatesPath, certificateFilenameMask + "*");
 
 			foreach (var file in files) {
 				var tempFile = Path.GetTempFileName();
 				File.Copy(file, tempFile, true);
-				list.Add(new CertificateFileEntry (file, tempFile));
+				list.Add(new CertificateFile(tempFile, Path.GetFileName(file), file) { Extension = ".tif"});
 			}
 		}
 	}

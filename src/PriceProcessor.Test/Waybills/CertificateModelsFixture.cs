@@ -6,6 +6,7 @@ using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net;
 using log4net.Config;
 using NHibernate.Criterion;
 using NUnit.Framework;
@@ -130,13 +131,14 @@ namespace PriceProcessor.Test.Waybills
 
 		private CertificateSource CreateSourceForSupplier(Supplier supplier)
 		{
-			var source = CertificateSource.Queryable.FirstOrDefault(s => s.SourceSupplier.Id == supplier.Id);
+			var source = CertificateSource.Queryable.FirstOrDefault(s => s.Suppliers.FirstOrDefault(certificateSupplier => certificateSupplier.Id == supplier.Id) != null);
 			if (source == null)
 				using (new TransactionScope()) {
 					source = new CertificateSource {
-						SourceSupplier = supplier,
 						SourceClassName = Path.GetRandomFileName() 
 					};
+					source.Suppliers = new List<Supplier>();
+					source.Suppliers.Add(supplier);
 					source.Create();
 				}
 			return source;
@@ -154,18 +156,7 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope()) {
 				certificate.CatalogProduct = Catalog.Find(catalog.Id);
 				certificate.SerialNumber = serialNumber;
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
+				CreateFiles(certificateSource, certificate, 2);
 				certificate.Create();
 			}
 
@@ -181,27 +172,25 @@ namespace PriceProcessor.Test.Waybills
 			var catalog = TestCatalogProduct.Queryable.First();
 			var serialNumber = Path.GetRandomFileName();
 
-			var certificate = new Certificate();
-			using (new TransactionScope()) {
-				certificate.CatalogProduct = Catalog.Find(catalog.Id);
-				certificate.SerialNumber = serialNumber;
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.Save();
-			}
+			var certificate = CreateCertificateWithFiles(certificateSource, catalog, serialNumber);
 
 			Assert.That(certificate.Id, Is.GreaterThan(0));
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
+		}
+
+		private static Certificate CreateCertificateWithFiles(CertificateSource certificateSource,
+			TestCatalogProduct catalog,
+			string serialNumber)
+		{
+			var certificate = new Certificate();
+			using (new TransactionScope())
+			{
+				certificate.CatalogProduct = Catalog.Find(catalog.Id);
+				certificate.SerialNumber = serialNumber;
+				CreateFiles(certificateSource, certificate, 2);
+				certificate.Save();
+			}
+			return certificate;
 		}
 
 		[Test(Description = "создаем сертификат с повторением уникального ключа")]
@@ -218,24 +207,7 @@ namespace PriceProcessor.Test.Waybills
 				certificates.ForEach(c => c.Delete());
 			}
 
-			var certificate = new Certificate();
-			using (new TransactionScope()) {
-				certificate.CatalogProduct = Catalog.Find(catalog.Id);
-				certificate.SerialNumber = serialNumber;
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.Create();
-			}
+			var certificate = CreateCertificateWithFiles(certificateSource, catalog, serialNumber);
 
 			Assert.That(certificate.Id, Is.GreaterThan(0));
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
@@ -255,6 +227,19 @@ namespace PriceProcessor.Test.Waybills
 			catch (Exception exception) {
 				if (!ExceptionHelper.IsDuplicateEntryExceptionInChain(exception))
 					throw;
+			}
+		}
+
+		private static void CreateFiles(CertificateSource certificateSource, Certificate certificate, int count)
+		{
+			for(var i = 0; i < count; i++)
+			{
+				certificate.NewFile(
+					new CertificateFile {
+						OriginFilename = Path.GetRandomFileName(),
+						CertificateSource = certificateSource,
+						Extension = ".tif"
+					});
 			}
 		}
 
@@ -329,6 +314,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var supplier = Supplier.Queryable.First();
 			var certificateSource = CreateSourceForSupplier(supplier);
+
 			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != supplier.Id).First();
 			var anotherSupplierSource = CreateSourceForSupplier(anotherSupplier);
 
@@ -341,24 +327,7 @@ namespace PriceProcessor.Test.Waybills
 				certificates.ForEach(c => c.Delete());
 			}
 
-			var certificate = new Certificate();
-			using (new TransactionScope()) {
-				certificate.CatalogProduct = Catalog.Find(catalog.Id);
-				certificate.SerialNumber = serialNumber;
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				certificate.Create();
-			}
+			var certificate = CreateCertificateWithFiles(certificateSource, catalog, serialNumber);
 
 			Assert.That(certificate.Id, Is.GreaterThan(0));
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));

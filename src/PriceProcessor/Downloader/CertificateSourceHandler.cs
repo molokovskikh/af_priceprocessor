@@ -40,12 +40,12 @@ namespace Inforoom.PriceProcessor.Downloader
 			var source = CertificateSourceDetector.DetectSource(certificateTask.DocumentLine.Document);
 
 			if (source != null) {
-				var files = source.GetCertificateFiles(certificateTask);
+				var files = source.CertificateSourceParser.GetCertificateFiles(certificateTask);
 
 				if (files.Count > 0)
 					try {
 
-						CreateCertificate(certificateTask, source, files);
+						CreateCertificate(certificateTask, source.CertificateSourceParser, files);
 
 					}
 					finally {
@@ -79,31 +79,37 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		}
 
-		private void CreateCertificate(CertificateTask certificateTask, ICertificateSource source, IList<CertificateFileEntry> files)
+		private CertificateFile Find(CertificateFile file)
+		{
+			return 
+				CertificateFile.Queryable.FirstOrDefault(
+					e => e.CertificateSource.Id == file.CertificateSource.Id && e.ExternalFileId == file.ExternalFileId);
+		}
+
+		private void CreateCertificate(CertificateTask task, ICertificateSource source, IEnumerable<CertificateFile> files)
 		{
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				
 				var certificate = Certificate.Queryable.FirstOrDefault(
-					c => c.CatalogProduct.Id == certificateTask.CatalogProduct.Id && c.SerialNumber == certificateTask.SerialNumber);
+					c => c.CatalogProduct.Id == task.CatalogProduct.Id && c.SerialNumber == task.SerialNumber);
 
 				if (certificate == null)
 				{
 					certificate = new Certificate {
-						CatalogProduct = certificateTask.CatalogProduct,
-						SerialNumber = certificateTask.SerialNumber
+						CatalogProduct = task.CatalogProduct,
+						SerialNumber = task.SerialNumber
 					};
 				}
 
-				foreach (var certificateFileEntry in files) {
-					var certificateFile = new CertificateFile(certificateFileEntry.OriginFile, certificateTask.CertificateSource);
-
-					certificateFileEntry.CertificateFile = certificateFile;
-					certificate.NewFile(certificateFile);
+				foreach (var file in files) {
+					file.CertificateSource = task.CertificateSource;
+					var exist = Find(file) ?? file;
+					certificate.NewFile(exist);
 				}
 
 				certificate.Save();
 
-				certificateTask.Delete();
+				task.Delete();
 
 				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
 				try
@@ -136,18 +142,27 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 
 
-			foreach (var certificateFileEntry in files) {
-				var fileName = certificateFileEntry.CertificateFile.Id + ".tif";
+			foreach (var file in files) {
+				var fileName = file.RemoteFile;
 				var fullFileName = Path.Combine(Settings.Default.CertificatePath, fileName);
 
 				try {
-					File.Copy(certificateFileEntry.LocalFile, fullFileName);
+					if (File.Exists(fullFileName)) {
+						File.Delete(fullFileName);
+						_logger.InfoFormat(
+							"Будет произведено обновление файла сертификата {0} с Id {1} для сертификата {2}", 
+							file.LocalFile,
+							file.Id,
+							task);
+					}
+
+					File.Copy(file.LocalFile, fullFileName);
 				}
 				catch (Exception exception) {
 					_logger.WarnFormat(
 						"При копировании файла {0} для сертификата {1} возникла ошибка: {2}", 
-						certificateFileEntry.LocalFile,
-						certificateTask, 
+						file.LocalFile,
+						task, 
 						exception);
 				}
 			}

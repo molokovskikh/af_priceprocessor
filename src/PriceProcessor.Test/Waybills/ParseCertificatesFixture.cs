@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using log4net.Appender;
@@ -24,7 +25,7 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class ParseCertificatesFixture
 	{
-		[Test(Description = "проверка создания заданий для несуществующих сертификатов")]
+		[Test(Description = "РїСЂРѕРІРµСЂРєР° СЃРѕР·РґР°РЅРёСЏ Р·Р°РґР°РЅРёР№ РґР»СЏ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ")]
 		public void CheckParse()
 		{
 			var testSupplier = TestSupplier.Create();
@@ -42,21 +43,21 @@ namespace PriceProcessor.Test.Waybills
 			};
 			document.NewLine(new DocumentLine{
 				ProductEntity = firstProduct,
-				SerialNumber = "крутая серия 1"
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1"
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = firstProduct,
-				SerialNumber = "крутая серия 1",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = secondProduct,
-				SerialNumber = "крутая серия 1",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = secondProduct,
-				SerialNumber = "крутая серия 2",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
@@ -66,7 +67,7 @@ namespace PriceProcessor.Test.Waybills
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = thirdProduct,
-				SerialNumber = "крутая серия 1",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1",
 				CertificateFilename = "cerFilename"
 			});
 
@@ -76,15 +77,14 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
-			Assert.That(task[0].CatalogProduct.Id == firstCatalog.Id && task[0].SerialNumber == "крутая серия 1");
-			Assert.That(task[1].CatalogProduct.Id == firstCatalog.Id && task[1].SerialNumber == "крутая серия 2");
-			Assert.That(task[2].CatalogProduct.Id == secondCatalog.Id && task[2].SerialNumber == "крутая серия 1");
+			Assert.That(task[0].CatalogProduct.Id == firstCatalog.Id && task[0].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1");
+			Assert.That(task[1].CatalogProduct.Id == firstCatalog.Id && task[1].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2");
+			Assert.That(task[2].CatalogProduct.Id == secondCatalog.Id && task[2].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1");
 		}
 
 		private CertificateSource CreateSourceForSupplier(Supplier supplier, string sourceClassName)
 		{
 			var source = new CertificateSource {
-				SourceSupplier = supplier,
 				SourceClassName = sourceClassName 
 			};
 			
@@ -93,6 +93,8 @@ namespace PriceProcessor.Test.Waybills
 				if (deletedSource != null)
 					deletedSource.Delete();
 
+				source.Suppliers = new List<Supplier>();
+				source.Suppliers.Add(supplier);
 				source.Create();
 			}
 
@@ -101,7 +103,14 @@ namespace PriceProcessor.Test.Waybills
 
 		private CertificateSource CreateRealSourceForSupplier(Supplier supplier)
 		{
-			return CreateSourceForSupplier(supplier, "AptekaHoldingVoronezhCertificateSource");
+			var source = CreateSourceForSupplier(supplier, "AptekaHoldingVoronezhCertificateSource");
+
+			using (new TransactionScope()) {
+				source.FtpSupplier = supplier;
+				source.Save();
+			}
+
+			return source;
 		}
 
 		private CertificateSource CreateRandomSourceForSupplier(Supplier supplier)
@@ -109,7 +118,7 @@ namespace PriceProcessor.Test.Waybills
 			return CreateSourceForSupplier(supplier, Path.GetRandomFileName());
 		}
 
-		[Test(Description = "проверка создания заданий для несуществующих сертификатов при существовании сертификатов")]
+		[Test(Description = "РїСЂРѕРІРµСЂРєР° СЃРѕР·РґР°РЅРёСЏ Р·Р°РґР°РЅРёР№ РґР»СЏ РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ РїСЂРё СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРё СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ")]
 		public void CheckParseWithExistsCertificates()
 		{
 			var testSupplier = TestSupplier.Create();
@@ -121,7 +130,7 @@ namespace PriceProcessor.Test.Waybills
 			var catalogs = Catalog.Queryable.Take(2).ToList().OrderBy(c => c.Id).ToList();
 			var existsCatalog = catalogs[0];
 			var nonExistCatalog = catalogs[1];
-			var serialNumber = "крутая серия 5";
+			var serialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 5";
 
 			var firstProduct = new Product {Id = 3, CatalogProduct = existsCatalog};
 			var secondProduct = new Product {Id = 4, CatalogProduct = nonExistCatalog};
@@ -141,18 +150,21 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
+						CertificateSource = certificateSource
+					}
+				);
+				existsCertificate.NewFile(
+					new CertificateFile {
+						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
 						CertificateSource = certificateSource
 					}
 				);
 				existsCertificate.NewFile(
 					new CertificateFile{
 						OriginFilename = Path.GetRandomFileName(),
-						CertificateSource = certificateSource
-					}
-				);
-				existsCertificate.NewFile(
-					new CertificateFile{
-						OriginFilename = Path.GetRandomFileName(),
+						Extension = ".tif",
 						CertificateSource = anotherSupplierSource
 					}
 				);
@@ -168,7 +180,7 @@ namespace PriceProcessor.Test.Waybills
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = firstProduct,
-				SerialNumber = "крутая серия 1",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
@@ -178,7 +190,7 @@ namespace PriceProcessor.Test.Waybills
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = secondProduct,
-				SerialNumber = "крутая серия 2",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
@@ -188,12 +200,12 @@ namespace PriceProcessor.Test.Waybills
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = thirdProduct,
-				SerialNumber = "крутая серия 1",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1",
 				CertificateFilename = "cerFilename"
 			});
 			document.NewLine(new DocumentLine{
 				ProductEntity = thirdProduct,
-				SerialNumber = "крутая серия 2",
+				SerialNumber = "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2",
 				CertificateFilename = "cerFilename"
 			});
 
@@ -203,9 +215,9 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
-			Assert.That(task[0].CatalogProduct.Id == existsCatalog.Id && task[0].SerialNumber == "крутая серия 1");
-			Assert.That(task[1].CatalogProduct.Id == existsCatalog.Id && task[1].SerialNumber == "крутая серия 2");
-			Assert.That(task[2].CatalogProduct.Id == nonExistCatalog.Id && task[2].SerialNumber == "крутая серия 2");
+			Assert.That(task[0].CatalogProduct.Id == existsCatalog.Id && task[0].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 1");
+			Assert.That(task[1].CatalogProduct.Id == existsCatalog.Id && task[1].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2");
+			Assert.That(task[2].CatalogProduct.Id == nonExistCatalog.Id && task[2].SerialNumber == "РєСЂСѓС‚Р°СЏ СЃРµСЂРёСЏ 2");
 			Assert.That(task[3].CatalogProduct.Id == nonExistCatalog.Id && task[3].SerialNumber == serialNumber);
 
 			Assert.That(document.Lines[0].Certificate.Id, Is.EqualTo(existsCertificate.Id));
@@ -264,7 +276,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		/// <summary>
-		/// удаляем задачи, которые не будут обработаны
+		/// СѓРґР°Р»СЏРµРј Р·Р°РґР°С‡Рё, РєРѕС‚РѕСЂС‹Рµ РЅРµ Р±СѓРґСѓС‚ РѕР±СЂР°Р±РѕС‚Р°РЅС‹
 		/// </summary>
 		private void DeleteNonProcessedTasks()
 		{
@@ -291,7 +303,7 @@ namespace PriceProcessor.Test.Waybills
 				{
 					var logEvents = memoryAppender.GetEvents();
 					Console.WriteLine(
-						"Ошибки при обработки задач сертификатов:\r\n{0}", 
+						"РћС€РёР±РєРё РїСЂРё РѕР±СЂР°Р±РѕС‚РєРё Р·Р°РґР°С‡ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ:\r\n{0}", 
 						logEvents.Select(item => {
 							if (string.IsNullOrEmpty(item.GetExceptionString()))
 								return item.RenderedMessage;
@@ -303,7 +315,7 @@ namespace PriceProcessor.Test.Waybills
 
 				var events = memoryAppender.GetEvents();
 				var errors = events.Where(item => item.Level >= Level.Warn);
-				Assert.That(errors.Count(), Is.EqualTo(0), "При обработки задач сертификатов возникли ошибки:\r\n{0}", errors.Select(item => item.RenderedMessage).Implode("\r\n"));
+				Assert.That(errors.Count(), Is.EqualTo(0), "РџСЂРё РѕР±СЂР°Р±РѕС‚РєРё Р·Р°РґР°С‡ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ РІРѕР·РЅРёРєР»Рё РѕС€РёР±РєРё:\r\n{0}", errors.Select(item => item.RenderedMessage).Implode("\r\n"));
 			}
 			finally
 			{
@@ -311,7 +323,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test(Description = "простой вызов обработки задачи сертификата")]
+		[Test(Description = "РїСЂРѕСЃС‚РѕР№ РІС‹Р·РѕРІ РѕР±СЂР°Р±РѕС‚РєРё Р·Р°РґР°С‡Рё СЃРµСЂС‚РёС„РёРєР°С‚Р°")]
 		public void SimpleCertificatesSourceHandler()
 		{
 			DeleteNonProcessedTasks();
@@ -334,7 +346,7 @@ namespace PriceProcessor.Test.Waybills
 			var documentLine = CreateBodyLine(supplier.Id, serialNumber, product);
 
 			var certificateFile = Path.GetRandomFileName();
-			File.WriteAllText(Path.Combine(supplierCertificatesDir, certificateFile), "Это тестовый сертификат", Encoding.GetEncoding(1251));
+			File.WriteAllText(Path.Combine(supplierCertificatesDir, certificateFile), "Р­С‚Рѕ С‚РµСЃС‚РѕРІС‹Р№ СЃРµСЂС‚РёС„РёРєР°С‚", Encoding.GetEncoding(1251));
 
 			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
 
@@ -360,25 +372,28 @@ namespace PriceProcessor.Test.Waybills
 
 			using (new TransactionScope()) {
 				var processedTask = CertificateTask.Queryable.Where(t => t.Id == task.Id).FirstOrDefault();
-				Assert.That(processedTask, Is.Null, "Не была удалена задача на создание сертификата после обработки");
+				Assert.That(processedTask, Is.Null, "РќРµ Р±С‹Р»Р° СѓРґР°Р»РµРЅР° Р·Р°РґР°С‡Р° РЅР° СЃРѕР·РґР°РЅРёРµ СЃРµСЂС‚РёС„РёРєР°С‚Р° РїРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё");
 
 				var certificate =
 					TestCertificate.Queryable.Where(c => c.CatalogProduct.Id == catalog.Id && c.SerialNumber == serialNumber).
 						FirstOrDefault();
-				Assert.That(certificate, Is.Not.Null, "Не был создан сертификат");
-				Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "Не были добавлены файлы сертификата");
-				Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "Не совпадает оригинальное имя файла сертификата");
-				Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "Не совпадает источник файла сертификата");
+				Assert.That(certificate, Is.Not.Null, "РќРµ Р±С‹Р» СЃРѕР·РґР°РЅ СЃРµСЂС‚РёС„РёРєР°С‚");
+				Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "РќРµ Р±С‹Р»Рё РґРѕР±Р°РІР»РµРЅС‹ С„Р°Р№Р»С‹ СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "РќРµ СЃРѕРІРїР°РґР°РµС‚ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "РќРµ СЃРѕРІРїР°РґР°РµС‚ РёСЃС‚РѕС‡РЅРёРє С„Р°Р№Р»Р° СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "РќРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ РїРѕР»Рµ ExternalFileId");
+				Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "РџРѕР»Рµ ExternalFileId РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ OriginFilename (С‚РѕР»СЊРєРѕ РґР»СЏ AptekaHoldingVoronezhCertificateSource)");
 
-				Assert.That(File.Exists(Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif")), "Не скопирован файл сертификата");
-				Assert.That(File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "Удален файл сертификата из исходной папки");
+				var file = Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif");
+				Assert.That(File.Exists(file), "РќРµ СЃРєРѕРїРёСЂРѕРІР°РЅ С„Р°Р№Р» {0} СЃРµСЂС‚РёС„РёРєР°С‚Р°", file);
+				Assert.That(File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "РЈРґР°Р»РµРЅ С„Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р° РёР· РёСЃС…РѕРґРЅРѕР№ РїР°РїРєРё");
 
 				documentLine.Refresh();
-				Assert.That(documentLine.Certificate.Id, Is.EqualTo(certificate.Id), "В позиции документа не установлена ссылка на сертификат");
+				Assert.That(documentLine.Certificate.Id, Is.EqualTo(certificate.Id), "Р’ РїРѕР·РёС†РёРё РґРѕРєСѓРјРµРЅС‚Р° РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅР° СЃСЃС‹Р»РєР° РЅР° СЃРµСЂС‚РёС„РёРєР°С‚");
 			}
 		}
 		
-		[Test(Description = "перемещение сертификатов на их законное место"), Ignore("это не тест")]
+		[Test(Description = "РїРµСЂРµРјРµС‰РµРЅРёРµ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ РЅР° РёС… Р·Р°РєРѕРЅРЅРѕРµ РјРµСЃС‚Рѕ"), Ignore("СЌС‚Рѕ РЅРµ С‚РµСЃС‚")]
 		public void MigrateCertificates()
 		{
 			return;
@@ -404,6 +419,127 @@ namespace PriceProcessor.Test.Waybills
 			//            File.Move(sourceFile, destinationFile);
 			//    }
 			//}
+		}
+
+		[Test(Description = "РџСЂРѕРІРµСЂРєР° РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ РѕРїСЂРµРґРµР»РµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР°")]
+		public void DetectSourceParser()
+		{
+
+			var testSupplier = TestSupplier.Create();
+			var supplier = Supplier.Find(testSupplier.Id);
+
+			var certificateSource = CreateRealSourceForSupplier(supplier);
+
+			var serialNumber = Path.GetRandomFileName();
+			var catalog = TestCatalogProduct.Queryable.First();
+			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
+
+			var documentLine = CreateBodyLine(supplier.Id, serialNumber, product);
+
+			var realDocument = Document.Find(documentLine.Waybill.Id);
+
+			var source = CertificateSourceDetector.DetectSource(realDocument);
+
+			Assert.That(source, Is.Not.Null);
+			Assert.That(source.Id, Is.EqualTo(certificateSource.Id));
+			Assert.That(source.CertificateSourceParser, Is.InstanceOf<AptekaHoldingVoronezhCertificateSource>());
+		}
+
+		[Test(Description = "РџСЂРѕРІРµСЂРєР° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕРґРЅРѕРіРѕ Рё С‚РѕРіРѕ Р¶Рµ С„Р°Р№Р»Р° РІ СЂР°Р·РЅС‹С… СЃРµСЂС‚РёС„РёРєР°С‚Р°С…")]
+		public void UseExistsCertificateFiles()
+		{
+			DeleteNonProcessedTasks();
+
+			var testSupplier = TestSupplier.Create();
+			var supplier = Supplier.Find(testSupplier.Id);
+
+			var certificateSource = CreateRealSourceForSupplier(supplier);
+
+			var destinationDir = Settings.Default.CertificatePath;
+
+			//РЎРѕР·РґР°РµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ С„Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р°
+			var existsSerialNumber = Path.GetRandomFileName();
+			var existsFileId = Path.GetRandomFileName();
+			var existsCertificateCatalog = TestCatalogProduct.Queryable.First();
+
+			Certificate existsCertificate = null;
+			CertificateFile existsCertificateFile = null;
+			using (new TransactionScope()) {
+				existsCertificate = new Certificate() {
+					CatalogProduct = Catalog.Find(existsCertificateCatalog.Id),
+					SerialNumber = existsSerialNumber
+				};
+				existsCertificateFile = existsCertificate.NewFile();
+				existsCertificateFile.CertificateSource = certificateSource;
+				existsCertificateFile.OriginFilename = existsFileId;
+				existsCertificateFile.ExternalFileId = existsFileId;
+				existsCertificateFile.Extension = ".tif";
+				existsCertificate.Create();
+			}
+
+			File.WriteAllText(Path.Combine(destinationDir, existsCertificateFile.Id + ".tif"), "Р­С‚Рѕ С‚РµСЃС‚РѕРІС‹Р№ СЃРµСЂС‚РёС„РёРєР°С‚", Encoding.GetEncoding(1251));
+
+			var serialNumber = Path.GetRandomFileName();
+			var catalog = TestCatalogProduct.Queryable.First(catalogProduct => catalogProduct.Id != existsCertificateCatalog.Id);
+			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
+
+			var supplierCertificatesDir = Path.Combine(Settings.Default.FTPOptBoxPath, supplier.Id.ToString().PadLeft(3, '0'), "Certificats");
+			if (Directory.Exists(supplierCertificatesDir))
+				Directory.Delete(supplierCertificatesDir, true);
+			Directory.CreateDirectory(supplierCertificatesDir);
+
+
+			var documentLine = CreateBodyLine(supplier.Id, serialNumber, product);
+
+			//Р¤Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р° РІ РЅРѕРІРѕР№ СЂР°Р·Р±РёСЂР°РµРјРѕР№ РїРѕР·РёС†РёРё РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ С‚Р°РєРёРј Р¶Рµ
+			var certificateFile = existsFileId;
+			File.WriteAllText(Path.Combine(supplierCertificatesDir, certificateFile), "Р­С‚Рѕ С‚РµСЃС‚РѕРІС‹Р№ СЃРµСЂС‚РёС„РёРєР°С‚", Encoding.GetEncoding(1251));
+
+			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			var task = new CertificateTask();
+			using (new TransactionScope()) {
+				task.CertificateSource = certificateSource;
+				task.CatalogProduct = Catalog.Find(catalog.Id);
+				task.SerialNumber = serialNumber;
+				task.DocumentLine = realDocumentLine;
+				task.Create();
+
+				documentLine.CertificateFilename = Path.GetFileNameWithoutExtension(certificateFile);
+				documentLine.Save();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+
+			ProcessCertificatesWithLog(() => { 
+				var handler = new TestCertificateSourceHandler();
+
+				handler.TestProcessData();
+			});
+
+			using (new TransactionScope()) {
+				var processedTask = CertificateTask.Queryable.Where(t => t.Id == task.Id).FirstOrDefault();
+				Assert.That(processedTask, Is.Null, "РќРµ Р±С‹Р»Р° СѓРґР°Р»РµРЅР° Р·Р°РґР°С‡Р° РЅР° СЃРѕР·РґР°РЅРёРµ СЃРµСЂС‚РёС„РёРєР°С‚Р° РїРѕСЃР»Рµ РѕР±СЂР°Р±РѕС‚РєРё");
+
+				var certificate =
+					TestCertificate.Queryable.Where(c => c.CatalogProduct.Id == catalog.Id && c.SerialNumber == serialNumber).
+						FirstOrDefault();
+				Assert.That(certificate, Is.Not.Null, "РќРµ Р±С‹Р» СЃРѕР·РґР°РЅ СЃРµСЂС‚РёС„РёРєР°С‚");
+				Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "РќРµ Р±С‹Р»Рё РґРѕР±Р°РІР»РµРЅС‹ С„Р°Р№Р»С‹ СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "РќРµ СЃРѕРІРїР°РґР°РµС‚ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р° СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "РќРµ СЃРѕРІРїР°РґР°РµС‚ РёСЃС‚РѕС‡РЅРёРє С„Р°Р№Р»Р° СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "РќРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ РїРѕР»Рµ ExternalFileId");
+				Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "РџРѕР»Рµ ExternalFileId РЅРµ СЃРѕРІРїР°РґР°РµС‚ СЃ OriginFilename (С‚РѕР»СЊРєРѕ РґР»СЏ AptekaHoldingVoronezhCertificateSource)");
+
+				Assert.That(File.Exists(Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif")), "РќРµ СЃРєРѕРїРёСЂРѕРІР°РЅ С„Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(File.Exists(Path.Combine(supplierCertificatesDir, certificateFile)), "РЈРґР°Р»РµРЅ С„Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р° РёР· РёСЃС…РѕРґРЅРѕР№ РїР°РїРєРё");
+
+				documentLine.Refresh();
+				Assert.That(documentLine.Certificate.Id, Is.EqualTo(certificate.Id), "Р’ РїРѕР·РёС†РёРё РґРѕРєСѓРјРµРЅС‚Р° РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅР° СЃСЃС‹Р»РєР° РЅР° СЃРµСЂС‚РёС„РёРєР°С‚");
+
+				Assert.That(certificate.CertificateFiles[0].Id, Is.EqualTo(existsCertificateFile.Id), "РќРµ СЃРѕРІРїР°РґР°РµС‚ Id РЅР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ С„Р°Р№Р» СЃРµСЂС‚РёС„РёРєР°С‚Р°");
+				Assert.That(certificate.CertificateFiles[0].Certificates.Count, Is.EqualTo(2), "РќРµРѕР¶РёРґР°РµРјРѕРµ РєРѕР»-РІРѕ СЃРІСЏР·Р°РЅРЅС‹С… СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ");
+			}
 		}
 
 	}
