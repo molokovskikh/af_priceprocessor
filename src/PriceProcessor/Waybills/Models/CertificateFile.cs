@@ -15,12 +15,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Certificates = new List<Certificate>();
 		}
 
-		public CertificateFile(string originFile, CertificateSource source)
+		public CertificateFile(string originFile, CertificateSource source, string externalFileId)
 			: this()
 		{
 			if (!String.IsNullOrEmpty(originFile))
 				OriginFilename = Path.GetFileName(originFile);
 			CertificateSource = source;
+			ExternalFileId = externalFileId;
 		}
 
 		[PrimaryKey]

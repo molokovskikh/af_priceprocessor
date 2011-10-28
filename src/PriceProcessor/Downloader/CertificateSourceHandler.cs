@@ -79,6 +79,14 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		}
 
+		private CertificateFile FindOrCreate(string originFile, CertificateSource source, string externalFileId)
+		{
+			var existsCertificateFile =
+				CertificateFile.Queryable.FirstOrDefault(
+					file => file.CertificateSource.Id == source.Id && file.ExternalFileId == externalFileId);
+			return existsCertificateFile ?? new CertificateFile(originFile, source, externalFileId);
+		}
+
 		private void CreateCertificate(CertificateTask certificateTask, ICertificateSource source, IList<CertificateFileEntry> files)
 		{
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
@@ -95,10 +103,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				}
 
 				foreach (var certificateFileEntry in files) {
-					var certificateFile = new CertificateFile(certificateFileEntry.OriginFile, certificateTask.CertificateSource);
-
-					certificateFileEntry.CertificateFile = certificateFile;
-					certificate.NewFile(certificateFile);
+					certificateFileEntry.CertificateFile = FindOrCreate(certificateFileEntry.OriginFile, certificateTask.CertificateSource, certificateFileEntry.ExternalFileId);
+					certificate.NewFile(certificateFileEntry.CertificateFile);
 				}
 
 				certificate.Save();
@@ -141,6 +147,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				var fullFileName = Path.Combine(Settings.Default.CertificatePath, fileName);
 
 				try {
+					if (File.Exists(fullFileName)) {
+						File.Delete(fullFileName);
+						_logger.InfoFormat(
+							"Будет произведено обновление файла сертификата {0} с Id {1} для сертификата {2}", 
+							certificateFileEntry.LocalFile,
+							certificateFileEntry.CertificateFile.Id,
+							certificateTask);
+					}
+
 					File.Copy(certificateFileEntry.LocalFile, fullFileName);
 				}
 				catch (Exception exception) {

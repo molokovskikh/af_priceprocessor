@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			foreach (var file in files) {
 				var tempFile = Path.GetTempFileName();
 				File.Copy(file, tempFile, true);
-				list.Add(new CertificateFileEntry (file, tempFile));
+				list.Add(new CertificateFileEntry (file, tempFile, Path.GetFileName(file)));
 			}
 		}
 	}
