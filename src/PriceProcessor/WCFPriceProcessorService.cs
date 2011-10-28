@@ -220,7 +220,7 @@ and pf.Id = fr.PriceFormatId", c);
 					}
 					catch (Exception e)
 					{
-						log.Error(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
+						log.Warn(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
 					}
 				}
 			});

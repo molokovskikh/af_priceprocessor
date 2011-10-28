@@ -35,7 +35,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				{7146, new List<Type>{typeof(Moron_338_SpecialParser)}},
 				{5802, new List<Type>{typeof(Moron_338_SpecialParser)}},
 				{21, new List<Type>{typeof(Moron_338_SpecialParser)}},
-				{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)				
+				{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)
+				{7949, new List<Type>{typeof(MarimedsnabSpecialParser)}}, // Маримедснаб (Йошкар-Ола)
 		    };
 		                                             	
 

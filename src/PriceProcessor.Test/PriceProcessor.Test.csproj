@@ -166,6 +166,7 @@
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParserFixture.cs" />
+    <Compile Include="Waybills\Parser\MarimedsnabSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\OriolaVoronezhSpecialParserFixture.cs" />
     <Compile Include="Waybills\ParseCertificatesFixture.cs" />
