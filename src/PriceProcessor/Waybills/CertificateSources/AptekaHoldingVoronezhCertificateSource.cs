@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public IList<CertificateFileEntry> GetCertificateFiles(CertificateTask certificateTask)
 		{
-			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.SourceSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
+			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			var list = new List<CertificateFileEntry>();
 

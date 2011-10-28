@@ -6,6 +6,7 @@ using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net;
 using log4net.Config;
 using NHibernate.Criterion;
 using NUnit.Framework;
@@ -130,13 +131,14 @@ namespace PriceProcessor.Test.Waybills
 
 		private CertificateSource CreateSourceForSupplier(Supplier supplier)
 		{
-			var source = CertificateSource.Queryable.FirstOrDefault(s => s.SourceSupplier.Id == supplier.Id);
+			var source = CertificateSource.Queryable.FirstOrDefault(s => s.Suppliers.FirstOrDefault(certificateSupplier => certificateSupplier.Id == supplier.Id) != null);
 			if (source == null)
 				using (new TransactionScope()) {
 					source = new CertificateSource {
-						SourceSupplier = supplier,
 						SourceClassName = Path.GetRandomFileName() 
 					};
+					source.Suppliers = new List<Supplier>();
+					source.Suppliers.Add(supplier);
 					source.Create();
 				}
 			return source;
@@ -329,6 +331,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var supplier = Supplier.Queryable.First();
 			var certificateSource = CreateSourceForSupplier(supplier);
+
 			var anotherSupplier = Supplier.Queryable.Where(s => s.Id != supplier.Id).First();
 			var anotherSupplierSource = CreateSourceForSupplier(anotherSupplier);
 

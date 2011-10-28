@@ -40,12 +40,12 @@ namespace Inforoom.PriceProcessor.Downloader
 			var source = CertificateSourceDetector.DetectSource(certificateTask.DocumentLine.Document);
 
 			if (source != null) {
-				var files = source.GetCertificateFiles(certificateTask);
+				var files = source.CertificateSourceParser.GetCertificateFiles(certificateTask);
 
 				if (files.Count > 0)
 					try {
 
-						CreateCertificate(certificateTask, source, files);
+						CreateCertificate(certificateTask, source.CertificateSourceParser, files);
 
 					}
 					finally {
