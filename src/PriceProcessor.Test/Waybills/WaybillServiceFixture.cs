@@ -605,27 +605,5 @@ namespace PriceProcessor.Test.Waybills
 
 
 		}
-
-		[Test(Description = "разбор накладной с установленными файлами сертификатов")]
-		public void ParseCertificateFiles()
-		{
-			var file = "9832937_Аптека-Холдинг(3334_1459366).dbf";
-			var log = CreateTestLog(file);
-
-			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
-			var ids = service.ParseWaybill(new[] { log.Id });
-
-			using (new SessionScope())
-			{
-				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
-				Assert.That(logs.Count(), Is.EqualTo(1));
-				Assert.That(ids.Length, Is.EqualTo(1));
-
-				var docs = Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).ToList();
-				Assert.That(docs.Count, Is.EqualTo(1));
-
-				Assert.That(docs[0].Lines.ToList().TrueForAll(docLine => !String.IsNullOrEmpty(docLine.CertificateFilename)));
-			}
-		}
 	}
 }
