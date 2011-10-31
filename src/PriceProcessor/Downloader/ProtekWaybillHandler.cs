@@ -312,8 +312,10 @@ namespace Inforoom.PriceProcessor.Downloader
 								var document = ToDocument(body);
 								if (document == null)
 									continue;
+								CertificateSourceDetector.DetectAndParse(doc);
 								document.Log.Save();
 								document.Save();
+								document.CreateCertificateTasks();
 
 								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
 									DbfExporter.SaveProtek(document);
