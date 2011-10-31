@@ -312,7 +312,8 @@ namespace Inforoom.PriceProcessor.Downloader
 								var document = ToDocument(body);
 								if (document == null)
 									continue;
-								CertificateSourceDetector.DetectAndParse(doc);
+
+								CertificateSourceDetector.DetectAndParse(document);
 								document.Log.Save();
 								document.Save();
 								document.CreateCertificateTasks();
@@ -428,6 +429,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.EAN13 = bladingItem.prodsbar;
 				if (bladingItem.bladingItemSeries != null)
 					line.ProtekDocIds = bladingItem.bladingItemSeries
+						.Where(s => s.bladingItemSeriesCertificates != null)
 						.SelectMany(s => s.bladingItemSeriesCertificates)
 						.Where(c => c != null)
 						.Select(c => c.docId)
