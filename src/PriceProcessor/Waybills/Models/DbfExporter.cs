@@ -186,7 +186,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			}
 
 			document.Log.IsFake = false;
-			document.Log.FileName = document.Log.Id + ".dbf";
+			var id = document.ProviderDocumentId;
+			if (string.IsNullOrEmpty(id))
+				id = document.Log.Id.ToString();
+
+			document.Log.FileName = id + ".dbf";
 			var filename = document.Log.GetRemoteFileNameExt();
 			Dbf.Save(table, filename);
 			document.Log.DocumentSize = new FileInfo(filename).Length;

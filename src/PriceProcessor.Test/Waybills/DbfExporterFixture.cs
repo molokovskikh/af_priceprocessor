@@ -29,7 +29,9 @@ namespace PriceProcessor.Test.Waybills
 					}
 				}
 			};
-			var document = new Document(log);
+			var document = new Document(log) {
+				ProviderDocumentId = "001-01"
+			};
 			document.NewLine(new DocumentLine {
 				Product = "Алька-прим шип.таб. Х10",
 				Code = "21603",
@@ -44,9 +46,9 @@ namespace PriceProcessor.Test.Waybills
 				Nds = 10,
 			});
 			DbfExporter.SaveProtek(document);
-			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(100).dbf");
+			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).dbf");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
-			Assert.That(log.FileName, Is.EqualTo("100.dbf"));
+			Assert.That(log.FileName, Is.EqualTo("001-01.dbf"));
 			Assert.That(File.Exists(resultFile), Is.True, "файл накладной несуществует {0}", resultFile);
 			var table = Dbf.Load(resultFile);
 			Assert.That(table.Rows.Count, Is.EqualTo(1));
