@@ -33,9 +33,11 @@ Global(
 	Project : "PriceProcessor",
 	Server : "fms.adc.analit.net",
 	HumanReadableName : "Служба обработки прайс-листов",
-	ServiceName : "PriceProcessorService",
-	Environment : @Local
+	ServiceName : "PriceProcessorService"
 )
+
+unless string.Equals(System.Environment.MachineName, @devsrv, StringComparison.OrdinalIgnoreCase):
+	Globals.Environment = @Local
 
 Task @default, [@BuildService]
 Task @deploy, [@BuildService, @StopServices, @Production, @Migrate, @Backup, @SimpleDeployService, @SendDeployNotification]
