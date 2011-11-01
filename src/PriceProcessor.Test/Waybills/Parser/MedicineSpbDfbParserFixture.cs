@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCost, Is.EqualTo(102.30));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(84.55));
 			Assert.That(line.SerialNumber, Is.EqualTo("6059090"));
-			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(9.99));
 			Assert.That(line.VitallyImportant, Is.False);
 		}

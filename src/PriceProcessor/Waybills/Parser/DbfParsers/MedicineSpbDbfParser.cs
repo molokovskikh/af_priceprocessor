@@ -25,7 +25,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "VATV")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.VitallyImportant, "VITAL")
-				.Line(l => l.SerialNumber, "SERIES");
+				.Line(l => l.SerialNumber, "SERIES")
+				.Line(l => l.RegistryCost, "PriceGR");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
