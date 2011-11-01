@@ -240,6 +240,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorYoshkarOlaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
+    <Compile Include="Waybills\Parser\GenesisMMskSpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\KatrenKazanSpecialParser.cs" />

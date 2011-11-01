@@ -39,6 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)
 				{7949, new List<Type>{typeof(MarimedsnabSpecialParser)}}, // Маримедснаб (Йошкар-Ола)
 				{2754, new List<Type>{typeof(KatrenKazanSpecialParser)}}, // Катрен (Казань)
+				{2286, new List<Type>{typeof(GenesisMMskSpecialParser)}}, // Генезис-М (Москва)
 		    };
 		                                             	
 
