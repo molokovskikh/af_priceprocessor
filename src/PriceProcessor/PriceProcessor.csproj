@@ -242,6 +242,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParser.cs" />
+    <Compile Include="Waybills\Parser\KatrenKazanSpecialParser.cs" />
     <Compile Include="Waybills\Parser\MarimedsnabSpecialParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser2.cs" />
     <Compile Include="Waybills\Parser\LekRusChernozemieSpecialParser.cs" />
@@ -251,7 +252,6 @@
     <Compile Include="Waybills\Parser\FarmPartnerKalugaParser.cs" />
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\CSMedicaKazanParser.cs" />
-    <Compile Include="Waybills\Parser\TxtParsers\KatrenKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KazMedFarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\SiaVoronezhParser.cs" />

@@ -198,7 +198,7 @@
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\CSMedicaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\FarmPartnerKalugaParserFixture.cs" />
-    <Compile Include="Waybills\Parser\Txt\KatrenKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\KatrenKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\KazMedFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\SiaVoronezhParserFixture.cs" />

@@ -8,6 +8,7 @@ using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -37,6 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				{21, new List<Type>{typeof(Moron_338_SpecialParser)}},
 				{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)
 				{7949, new List<Type>{typeof(MarimedsnabSpecialParser)}}, // Маримедснаб (Йошкар-Ола)
+				{2754, new List<Type>{typeof(KatrenKazanSpecialParser)}}, // Катрен (Казань)
 		    };
 		                                             	
 
