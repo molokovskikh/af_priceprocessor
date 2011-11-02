@@ -286,28 +286,37 @@ and pd.AgencyEnabled= 1",
 
 		protected void Cleanup()
 		{
-			try
-			{
-				if (Directory.Exists(CurrFileName + ExtrDirSuffix))
-					Directory.Delete(CurrFileName + ExtrDirSuffix, true);
-			}
-			catch (Exception e)
-			{
-				_logger.Error(String.Format("Ошибка при удалении директории {0}", CurrFileName + ExtrDirSuffix), e);
-			}
+			var cleanupDirs = Directory.GetDirectories(DownHandlerPath);
+			foreach (var dir in cleanupDirs)
+				try
+				{
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("Попытка удалить директорию : {0}", dir);
+					if (Directory.Exists(dir))
+						Directory.Delete(dir, true);
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("Директория удалена : {0}", dir);
+				}
+				catch (Exception ex)
+				{
+					_logger.ErrorFormat("Ошибка при удалении директории {0}:\r\n{1}", dir, ex);
+				}
+
+			var cleanupFiles = Directory.GetFiles(DownHandlerPath);
+			foreach (var cleanupFile in cleanupFiles)
 			try
 			{
 
 				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Попытка удалить файл : {0}", CurrFileName);
-				if (File.Exists(CurrFileName))
-					File.Delete(CurrFileName);
+					_logger.DebugFormat("Попытка удалить файл : {0}", cleanupFile);
+				if (File.Exists(cleanupFile))
+					File.Delete(cleanupFile);
 				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Файл удален : {0}", CurrFileName);
+					_logger.DebugFormat("Файл удален : {0}", cleanupFile);
 			}
 			catch (Exception ex)
 			{
-				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", CurrFileName, ex);
+				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", cleanupFile, ex);
 			}
 		}
 
