@@ -171,7 +171,7 @@ namespace PriceProcessor.Test
 
 			Assert.That(GetSavedFiles("*(0000470553).dbf").Count(), Is.EqualTo(1));
 
-			var tempFilePath = Path.Combine(Settings.Default.TempPath, "DownWAYBILL");
+			var tempFilePath = Path.Combine(Settings.Default.TempPath, typeof(WaybillSourceHandlerForTesting).Name);
 			tempFilePath = Path.Combine(tempFilePath, "0000470553.dbf");
 			Assert.IsFalse(File.Exists(tempFilePath));
 		}
@@ -217,7 +217,7 @@ namespace PriceProcessor.Test
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
 
-			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, "DownWAYBILL"), "*.*");
+			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillSourceHandlerForTesting).Name), "*.*");
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временный файл {0}", tmpFiles.Implode());
 		}
 

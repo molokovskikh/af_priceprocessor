@@ -187,7 +187,7 @@ and pd.AgencyEnabled= 1",
 
 		protected void CreateDirectoryPath()
 		{
-			DownHandlerPath = FileHelper.NormalizeDir(Settings.Default.TempPath) + "Down" + SourceType;
+			DownHandlerPath = Path.Combine(Settings.Default.TempPath, this.GetType().Name);
 			if (!Directory.Exists(DownHandlerPath))
 				Directory.CreateDirectory(DownHandlerPath);
 			DownHandlerPath += Path.DirectorySeparatorChar;
