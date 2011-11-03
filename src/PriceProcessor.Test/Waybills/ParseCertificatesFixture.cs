@@ -542,5 +542,43 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test(Description = "удаление дубликатов сертификатов"), Ignore("это не тест")]
+		public void DeleteDuplicateCertificates()
+		{
+			return;
+
+			//var destinationPath = @"\\ADC.ANALIT.NET\Inforoom\WebApps\PrgDataService\Results\Certificates";
+
+			//using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+			//    var certificateFiles = CertificateFile.FindAll().ToList();
+			//    var distinctCertificateFiles =
+			//        certificateFiles.GroupBy(c => c.ExternalFileId).Where(g => g.Count() > 1).ToList();
+			//    Assert.That(certificateFiles.Count, Is.GreaterThan(0));
+			//    Console.WriteLine("distinctCertificateFiles = {0}", distinctCertificateFiles.Count);
+
+			//    foreach (var distinctCertificateFileGroup in distinctCertificateFiles) {
+			//        var orderedList = distinctCertificateFileGroup.OrderBy(c => c.Id).ToList();
+			//        for (int i = 1; i < orderedList.Count; i++) {
+			//            var deletedFile = orderedList[i];
+			//            Console.WriteLine("deletedFile = {0}, {1}, {2}", deletedFile, deletedFile.OriginFilename, deletedFile.ExternalFileId);
+			//            Assert.IsNotNullOrEmpty(deletedFile.Extension);
+
+			//            var realFile = Path.Combine(destinationPath, deletedFile.Id.ToString() + deletedFile.Extension);
+
+			//            if (!File.Exists(realFile))
+			//                Console.WriteLine("Не найден файл: {0}", realFile);
+			//            else {
+			//                File.Delete(realFile);
+			//            }
+
+			//            deletedFile.Delete();
+			//        }
+			//    }
+
+			//    transaction.VoteCommit();
+			//}
+		}
+
+
 	}
 }
