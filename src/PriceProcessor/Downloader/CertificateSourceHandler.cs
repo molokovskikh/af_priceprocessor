@@ -101,14 +101,22 @@ namespace Inforoom.PriceProcessor.Downloader
 						CatalogProduct = task.CatalogProduct,
 						SerialNumber = task.SerialNumber
 					};
+					_logger.DebugFormat("При обработке задачи {0} будет создан сертификат", task);
 				}
+				else
+					_logger.DebugFormat("При обработке задачи {0} будет использоваться сертификат c Id:{1}", task, certificate.Id);
 
 				foreach (var file in files) {
 					file.CertificateSource = task.CertificateSource;
 					var exist = Find(file) ?? file;
 					certificate.NewFile(exist);
 					if (exist != file)
+					{
 						exist.LocalFile = file.LocalFile;
+						_logger.DebugFormat("При обработке задачи {0} будет использоваться файл сертификата {1}", task, exist);
+					}
+					else
+						_logger.DebugFormat("При обработке задачи {0} будет создан файл сертификата {1}", task, exist);
 					savedFiles.Add(exist);
 				}
 
