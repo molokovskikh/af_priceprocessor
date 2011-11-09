@@ -15,6 +15,7 @@ using log4net;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Core;
+using log4net.Filter;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Documents;
@@ -291,7 +292,7 @@ namespace PriceProcessor.Test.Waybills
 			try{
 
 				var memoryAppender = new MemoryAppender();
-				//memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PrgData", Next = new DenyAllFilter() });
+				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
 				BasicConfigurator.Configure(memoryAppender);
 
 				try {
@@ -457,6 +458,12 @@ namespace PriceProcessor.Test.Waybills
 
 			var destinationDir = Settings.Default.CertificatePath;
 
+			//Удаляем файлы, которые имеют Id = 0
+			var zeroFiles = Directory.GetFiles(destinationDir, "0.*");
+			foreach (var zeroFile in zeroFiles) {
+				File.Delete(zeroFile);
+			}
+
 			//Создаем существующий файл сертификата
 			var existsSerialNumber = Path.GetRandomFileName();
 			var existsFileId = Path.GetRandomFileName();
@@ -539,6 +546,12 @@ namespace PriceProcessor.Test.Waybills
 
 				Assert.That(certificate.CertificateFiles[0].Id, Is.EqualTo(existsCertificateFile.Id), "Не совпадает Id на существующий файл сертификата");
 				Assert.That(certificate.CertificateFiles[0].Certificates.Count, Is.EqualTo(2), "Неожидаемое кол-во связанных сертификатов");
+
+				var filesByExternalFileId = CertificateFile.Queryable.Where(f => f.ExternalFileId == existsFileId).ToList();
+				Assert.That(filesByExternalFileId.Count, Is.EqualTo(1), "Имеются повторения файлов сертификатов по ExternalFileId: {0}", existsFileId);
+
+				var zeroFilesAfteParse = Directory.GetFiles(destinationDir, "0.*");
+				Assert.That(zeroFilesAfteParse.Length, Is.EqualTo(0), "Имеются файлы с Id = 0: {0}", zeroFilesAfteParse.Implode());
 			}
 		}
 

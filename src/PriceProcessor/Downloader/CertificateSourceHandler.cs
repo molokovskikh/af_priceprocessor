@@ -88,6 +88,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private void CreateCertificate(CertificateTask task, ICertificateSource source, IEnumerable<CertificateFile> files)
 		{
+			var savedFiles = new List<CertificateFile>();
+
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				
 				var certificate = Certificate.Queryable.FirstOrDefault(
@@ -105,6 +107,9 @@ namespace Inforoom.PriceProcessor.Downloader
 					file.CertificateSource = task.CertificateSource;
 					var exist = Find(file) ?? file;
 					certificate.NewFile(exist);
+					if (exist != file)
+						exist.LocalFile = file.LocalFile;
+					savedFiles.Add(exist);
 				}
 
 				certificate.Save();
@@ -142,7 +147,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 
 
-			foreach (var file in files) {
+			foreach (var file in savedFiles) {
 				var fileName = file.RemoteFile;
 				var fullFileName = Path.Combine(Settings.Default.CertificatePath, fileName);
 
