@@ -88,6 +88,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private void CreateCertificate(CertificateTask task, ICertificateSource source, IEnumerable<CertificateFile> files)
 		{
+			var savedFiles = new List<CertificateFile>();
+
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				
 				var certificate = Certificate.Queryable.FirstOrDefault(
@@ -99,12 +101,23 @@ namespace Inforoom.PriceProcessor.Downloader
 						CatalogProduct = task.CatalogProduct,
 						SerialNumber = task.SerialNumber
 					};
+					_logger.DebugFormat("При обработке задачи {0} будет создан сертификат", task);
 				}
+				else
+					_logger.DebugFormat("При обработке задачи {0} будет использоваться сертификат c Id:{1}", task, certificate.Id);
 
 				foreach (var file in files) {
 					file.CertificateSource = task.CertificateSource;
 					var exist = Find(file) ?? file;
 					certificate.NewFile(exist);
+					if (exist != file)
+					{
+						exist.LocalFile = file.LocalFile;
+						_logger.DebugFormat("При обработке задачи {0} будет использоваться файл сертификата {1}", task, exist);
+					}
+					else
+						_logger.DebugFormat("При обработке задачи {0} будет создан файл сертификата {1}", task, exist);
+					savedFiles.Add(exist);
 				}
 
 				certificate.Save();
@@ -142,7 +155,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 
 
-			foreach (var file in files) {
+			foreach (var file in savedFiles) {
 				var fileName = file.RemoteFile;
 				var fullFileName = Path.Combine(Settings.Default.CertificatePath, fileName);
 

@@ -63,5 +63,19 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			get { return Id + Extension; }
 		}
+
+		public override string ToString()
+		{
+			return string.Format(
+				"CertificateFile Id: {0},  CertificateSource: {1},  OriginFilename: {2},  ExternalFileId: {3},  Extension: {4},  LocalFile: {5}", 
+				Id, 
+				CertificateSource != null ? CertificateSource.Id.ToString() : "null",
+				OriginFilename,
+				ExternalFileId,
+				Extension,
+				LocalFile
+			);
+		}
+
 	}
 }
