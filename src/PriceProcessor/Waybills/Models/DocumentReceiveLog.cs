@@ -168,7 +168,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				//Если результат преобразования отличается от исходного имени, то переименовываем файл
 				convertedFileName = Path.Combine(Path.GetDirectoryName(fileName), convertedFileName);
 
-				File.Move(fileName, convertedFileName);
+				File.Copy(fileName, convertedFileName, true);
 				fileName = convertedFileName;
 			}
 			return fileName;

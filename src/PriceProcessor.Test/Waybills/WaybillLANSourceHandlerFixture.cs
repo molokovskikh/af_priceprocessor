@@ -148,7 +148,7 @@ namespace PriceProcessor.Test
 			handler.Process();
 		}
 
-		public void Insert_waybill_source()
+		public void Insert_waybill_source(string readerClassName = "ProtekOmsk_3777_Reader")
 		{
 			With.Connection(connection => {
 				var command = new MySqlCommand(@"
@@ -158,26 +158,51 @@ UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?Clie
 				command.Parameters.AddWithValue("?FirmCode", _summary.Supplier.Id);
 				command.Parameters.AddWithValue("?EmailFrom", String.Format("{0}@test.test", _summary.Client.Id));
 				command.Parameters.AddWithValue("?ClientCode", _summary.Client.Id);
-				command.Parameters.AddWithValue("?ReaderClassName", "ProtekOmsk_3777_Reader");
+				command.Parameters.AddWithValue("?ReaderClassName", readerClassName);
 				command.Parameters.AddWithValue("?SourceId", 4);
 				command.ExecuteNonQuery();
 			});
 		}
 
-		private void MaitainAddressIntersection(uint addressId)
+		private void MaitainAddressIntersection(uint addressId, string supplierDeliveryId = null)
 		{
+			if (String.IsNullOrEmpty(supplierDeliveryId))
+				supplierDeliveryId = addressId.ToString();
+
 			With.Connection(connection =>
 			{
 				var command = new MySqlCommand(@"
 insert into Future.AddressIntersection(AddressId, IntersectionId, SupplierDeliveryId)
-select a.Id, i.Id, a.Id
+select a.Id, i.Id, ?supplierDeliveryId
 from Future.Intersection i
 	join Future.Addresses a on a.ClientId = i.ClientId
 	left join Future.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
-where a.Id = ?AddressId", connection);
+where 
+	a.Id = ?AddressId
+and ai.Id is null
+"
+					, 
+					connection);
 
 				command.Parameters.AddWithValue("?AddressId", addressId);
-				command.ExecuteNonQuery();
+				command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId);
+				var insertCount = command.ExecuteNonQuery();
+				if (insertCount == 0) {
+					command.CommandText = @"
+update
+  Future.Intersection i,
+  Future.Addresses a,
+  Future.AddressIntersection ai
+set
+  ai.SupplierDeliveryId = ?supplierDeliveryId
+where
+	a.ClientId = i.ClientId
+and ai.AddressId = a.Id 
+and ai.IntersectionId = i.Id
+and a.Id = ?AddressId
+";
+					command.ExecuteNonQuery();
+				}
 			});
 		}
 
@@ -192,26 +217,42 @@ where a.Id = ?AddressId", connection);
 			return directory;
 		}
 
-		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
+		public string Create_supplier_reject_dir()
 		{
-			var savedFiles = GetFileForAddress(documentsType);
+			var directory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Supplier.Id.ToString());
+			directory = Path.Combine(directory, DocType.Reject + "s");
+
+			if (Directory.Exists(directory))
+				Directory.Delete(directory, true);
+			Directory.CreateDirectory(directory);
+			return directory;
+		}
+
+		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType, TestAddress address = null)
+		{
+			var savedFiles = GetFileForAddress(documentsType, address);
 			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));
 		}
 
-		private string[] GetFileForAddress(DocType documentsType)
+		private string[] GetFileForAddress(DocType documentsType, TestAddress address = null)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			if (address == null)
+				address = _summary.Client.Addresses[0];
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, address.Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
 
-		private void CheckDocumentLogEntry(int waitingCountEntries)
+		private void CheckDocumentLogEntry(int waitingCountEntries, TestAddress address = null)
 		{
+			if (address == null)
+				address = _summary.Client.Addresses[0];
+
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
 					log.ClientCode == _summary.Client.Id &&
 					log.FirmCode == _summary.Supplier.Id &&
-					log.AddressId == _summary.Client.Addresses[0].Id);
+					log.AddressId == address.Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
 		}
@@ -230,6 +271,40 @@ where a.Id = ?AddressId", connection);
 
 			CheckClientDirectory(1, DocType.Waybill);
 			CheckDocumentLogEntry(1);
+		}
+
+		[Test(Description = "Проверяем корректное изменение имени файла при недопустимых символах в имени")]
+		public void Parse_error_rejects()
+		{
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+				var address = _summary.Client.CreateAddress();
+				_summary.Client.Users[0].JoinAddress(address);
+				address.Save();
+				transaction.VoteCommit();
+			}
+
+			Assert.That(_summary.Client.Addresses.Count, Is.GreaterThanOrEqualTo(2));
+
+			var directory = Create_supplier_reject_dir();
+			var filePath = @"..\..\Data\Waybills\14460_Брнскфарм апт. пункт (1) (дп №20111297)5918043df.txt";
+
+			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
+			
+			Insert_waybill_source("SupplierFtpReader");
+
+			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
+			MaitainAddressIntersection(_summary.Client.Addresses[1].Id, _summary.Client.Addresses[0].Id.ToString());
+
+			Process_waybills();
+
+			CheckClientDirectory(1, DocType.Reject, _summary.Client.Addresses[0]);
+			CheckDocumentLogEntry(1, _summary.Client.Addresses[0]);
+
+			CheckClientDirectory(1, DocType.Reject, _summary.Client.Addresses[1]);
+			CheckDocumentLogEntry(1, _summary.Client.Addresses[1]);
+
+			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillLANSourceHandlerForTesting).Name), "*.*");
+			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временные файлы {0}", tmpFiles.Implode());
 		}
 
 		[Test]
