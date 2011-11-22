@@ -238,6 +238,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorYoshkarOlaParser.cs" />
+    <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParcer.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\GenesisMMskSpecialParser.cs" />

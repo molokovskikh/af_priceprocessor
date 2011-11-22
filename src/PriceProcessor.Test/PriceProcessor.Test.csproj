@@ -165,6 +165,7 @@
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
+    <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\GenesisMMskSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\MarimedsnabSpecialParserFixture.cs" />
