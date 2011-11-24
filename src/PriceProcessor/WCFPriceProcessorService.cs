@@ -473,7 +473,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				taskId = handler.AddTask(names, (uint) item.PriceCode);
 			}
 			catch(Exception e) {
-				log.Error("Ошибка в функции FindSynonyms:", e);
+				log.Warn("Ошибка в функции FindSynonyms:", e);
 				throw;
 			}
         	return new [] {"Success", taskId.ToString()}; // задача успешно создана           
