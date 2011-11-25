@@ -141,9 +141,16 @@ update  `logs`.DocumentSendLogs set UpdateId = null, Committed = 0 where Documen
 		public void ParseWorkWaybill()
 		{
 			var conn = Literals.ConnectionString();
-			uint rowId = 9835721;
+			uint rowId = 10529581;
 			DocumentReceiveLog doc_log = DocumentReceiveLog.TryFind(rowId);
 			WaybillService.ParserDocument(doc_log);
+		}
+
+		[Test, Ignore]
+		public void SetProductId()
+		{
+			var doc = Document.TryFind(2957973u);
+			doc.SetProductId();
 		}
 
         [Test, Ignore("Не тест! Вспомогательный функционал")]

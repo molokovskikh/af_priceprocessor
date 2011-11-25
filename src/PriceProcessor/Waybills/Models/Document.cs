@@ -34,7 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		
 		private int GetCount(int batchSize, int index)
 		{
-			return (batchSize + index) <= Lines.Count ? batchSize + index : Lines.Count - batchSize;
+			return (batchSize + index) <= Lines.Count ? batchSize : Lines.Count - index;
 		}
 
 		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes, string colName = "Synonym")
@@ -174,7 +174,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								}
 							}
 						}
-						index = count;
+						index += count;
 						count = GetCount(realBatchSize, index);
 					}
 				}
