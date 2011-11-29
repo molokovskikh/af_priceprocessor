@@ -56,7 +56,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string Product { get; set; }
 
 		/// <summary>
-		/// Код товара
+		/// Код товара поставщика
 		/// </summary>
 		[Property]
 		public string Code { get; set; }
