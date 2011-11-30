@@ -10,7 +10,7 @@ create table Documents.CertificateSourceCatalogs
   SupplierCode varchar(50) not null,
   OriginFilePath varchar(255) not null,
   primary key (Id),
-  KEY `IDX_CertificateCatalog` (CatalogId, SerialNumber),
+  KEY `IDX_CertificateCatalog` (SerialNumber, SupplierCode),
   CONSTRAINT FK_CertificateSourceCatalogs_CertificateSourceId FOREIGN KEY (CertificateSourceId) REFERENCES Documents.CertificateSources (Id) ON DELETE cascade ON UPDATE cascade,
   CONSTRAINT FK_CertificateSourceCatalogs_CatalogId FOREIGN KEY (CatalogId) REFERENCES catalogs.catalog (Id) ON DELETE RESTRICT ON UPDATE RESTRICT
 );
