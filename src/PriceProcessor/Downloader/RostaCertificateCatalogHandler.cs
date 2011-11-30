@@ -40,7 +40,7 @@ namespace Inforoom.PriceProcessor.Downloader
 							ImportCatalogFile(catalogFile);
 					}
 					finally {
-						if (File.Exists(catalogFile.LocalFileName))
+						if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
 							File.Delete(catalogFile.LocalFileName);
 					}
 				}
