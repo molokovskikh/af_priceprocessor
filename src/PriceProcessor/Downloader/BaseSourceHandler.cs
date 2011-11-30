@@ -88,10 +88,6 @@ namespace Inforoom.Downloader
 		/// </summary>
 		protected string CurrFileName;
 		/// <summary>
-		/// временная директория для скачивания файлов (+ TempPath + 'Down' + SourceType)
-		/// </summary>
-		protected string DownHandlerPath;
-		/// <summary>
 		/// директория для сохранения файлов для истории 
 		/// </summary>
 		protected string DownHistoryPath;
@@ -187,10 +183,7 @@ and pd.AgencyEnabled= 1",
 
 		protected void CreateDirectoryPath()
 		{
-			DownHandlerPath = Path.Combine(Settings.Default.TempPath, this.GetType().Name);
-			if (!Directory.Exists(DownHandlerPath))
-				Directory.CreateDirectory(DownHandlerPath);
-			DownHandlerPath += Path.DirectorySeparatorChar;
+			CreateDownHandlerPath();
 
 			DownHistoryPath = FileHelper.NormalizeDir(Settings.Default.HistoryPath);
 			if (!Directory.Exists(DownHistoryPath))
@@ -282,42 +275,6 @@ and pd.AgencyEnabled= 1",
 				return false;
 			}
 			return true;
-		}
-
-		protected void Cleanup()
-		{
-			var cleanupDirs = Directory.GetDirectories(DownHandlerPath);
-			foreach (var dir in cleanupDirs)
-				try
-				{
-					if (_logger.IsDebugEnabled)
-						_logger.DebugFormat("Попытка удалить директорию : {0}", dir);
-					if (Directory.Exists(dir))
-						Directory.Delete(dir, true);
-					if (_logger.IsDebugEnabled)
-						_logger.DebugFormat("Директория удалена : {0}", dir);
-				}
-				catch (Exception ex)
-				{
-					_logger.ErrorFormat("Ошибка при удалении директории {0}:\r\n{1}", dir, ex);
-				}
-
-			var cleanupFiles = Directory.GetFiles(DownHandlerPath);
-			foreach (var cleanupFile in cleanupFiles)
-			try
-			{
-
-				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Попытка удалить файл : {0}", cleanupFile);
-				if (File.Exists(cleanupFile))
-					File.Delete(cleanupFile);
-				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Файл удален : {0}", cleanupFile);
-			}
-			catch (Exception ex)
-			{
-				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", cleanupFile, ex);
-			}
 		}
 
 		/// <summary>
