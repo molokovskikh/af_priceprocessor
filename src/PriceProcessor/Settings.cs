@@ -1021,5 +1021,38 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("ftp.apteka-raduga.ru")]
+		public string RostaCertificateFtp
+		{
+			get
+			{
+				return ((string)(this["RostaCertificateFtp"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("ftpanalit")]
+		public string RostaCertificateFtpUserName
+		{
+			get
+			{
+				return ((string)(this["RostaCertificateFtpUserName"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("imalit76")]
+		public string RostaCertificateFtpPassword
+		{
+			get
+			{
+				return ((string)(this["RostaCertificateFtpPassword"]));
+			}
+		}
+
 	}
 }

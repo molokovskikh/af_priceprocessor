@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
@@ -27,5 +28,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public virtual IList<Supplier> Suppliers { get; set; }
 
 		public ICertificateSource CertificateSourceParser;
+
+		[Property]
+		public DateTime? FtpFileDate { get; set; }
+
 	}
 }

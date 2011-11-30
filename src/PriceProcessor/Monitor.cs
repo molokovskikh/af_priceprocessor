@@ -53,7 +53,8 @@ namespace Inforoom.PriceProcessor
 				new ClearArchivedPriceSourceHandler(),
 			//	new RostaHandler(4820, new RostaDownloader()), // с 12.07.2011 этот обработчик не используется
 				new ProtekWaybillHandler(),
-				new CertificateSourceHandler()
+				new CertificateSourceHandler(),
+				new RostaCertificateCatalogHandler()
 #endif
 			};
 
