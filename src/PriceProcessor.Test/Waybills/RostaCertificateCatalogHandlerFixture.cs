@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -61,12 +61,12 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test(Description = "проверяем заполнение таблицы каталога сертификатов")]
+		[Test(Description = "РїСЂРѕРІРµСЂСЏРµРј Р·Р°РїРѕР»РЅРµРЅРёРµ С‚Р°Р±Р»РёС†С‹ РєР°С‚Р°Р»РѕРіР° СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ")]
 		public void ImportCatalogFile()
 		{
-			Assert.That(_source.FtpFileDate, Is.Null, "Дата файла с ftp не должна быть заполнена");
+			Assert.That(_source.FtpFileDate, Is.Null, "Р”Р°С‚Р° С„Р°Р№Р»Р° СЃ ftp РЅРµ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°");
 			var catalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
-			Assert.That(catalogs.Count, Is.EqualTo(0), "Таблица не должна быть заполнена");
+			Assert.That(catalogs.Count, Is.EqualTo(0), "РўР°Р±Р»РёС†Р° РЅРµ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°");
 
 			using (new SessionScope()) {
 				var catalogFile = new CertificateCatalogFile{
@@ -79,15 +79,15 @@ namespace PriceProcessor.Test.Waybills
 				handler.TestImportCatalogFile(catalogFile);
 
 				_source.Refresh();
-				Assert.That(_source.FtpFileDate, Is.Not.Null, "Дата файла с ftp должна быть заполнена");
-				Assert.That(_source.FtpFileDate.Value.Subtract(catalogFile.FileDate).TotalSeconds, Is.LessThan(1), "Дата файла не совпадает");
+				Assert.That(_source.FtpFileDate, Is.Not.Null, "Р”Р°С‚Р° С„Р°Р№Р»Р° СЃ ftp РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°");
+				Assert.That(_source.FtpFileDate.Value.Subtract(catalogFile.FileDate).TotalSeconds, Is.LessThan(1), "Р”Р°С‚Р° С„Р°Р№Р»Р° РЅРµ СЃРѕРІРїР°РґР°РµС‚");
 
 				var existsCatalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
-				Assert.That(existsCatalogs.Count, Is.GreaterThan(0), "Таблица должна быть заполнена");
+				Assert.That(existsCatalogs.Count, Is.GreaterThan(0), "РўР°Р±Р»РёС†Р° РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅР°");
 			}
 		}
 
-		[Test(Description = "проверяем закачку файла с каталогов сертификатов"), Ignore("Проверять надо в ручном режиме")]
+		[Test(Description = "РїСЂРѕРІРµСЂСЏРµРј Р·Р°РєР°С‡РєСѓ С„Р°Р№Р»Р° СЃ РєР°С‚Р°Р»РѕРіРѕРІ СЃРµСЂС‚РёС„РёРєР°С‚РѕРІ"), Ignore("РџСЂРѕРІРµСЂСЏС‚СЊ РЅР°РґРѕ РІ СЂСѓС‡РЅРѕРј СЂРµР¶РёРјРµ")]
 		public void GetCatalogFile()
 		{
 			using (new SessionScope()) {
@@ -95,7 +95,7 @@ namespace PriceProcessor.Test.Waybills
 				var handler = new TestRostaCertificateCatalogHandler();
 				handler.TestCreateDownHandlerPath();
 
-				//Производим первую закачку и закачиваем файл
+				//РџСЂРѕРёР·РІРѕРґРёРј РїРµСЂРІСѓСЋ Р·Р°РєР°С‡РєСѓ Рё Р·Р°РєР°С‡РёРІР°РµРј С„Р°Р№Р»
 				var catalogFile = handler.TestGetCatalogFile(_source);
 
 				Assert.That(catalogFile, Is.Not.Null);
@@ -106,11 +106,11 @@ namespace PriceProcessor.Test.Waybills
 
 				File.Delete(catalogFile.LocalFileName);
 
-				//производим вторую закачку и файл не качается, т.к. не обновлен
+				//РїСЂРѕРёР·РІРѕРґРёРј РІС‚РѕСЂСѓСЋ Р·Р°РєР°С‡РєСѓ Рё С„Р°Р№Р» РЅРµ РєР°С‡Р°РµС‚СЃСЏ, С‚.Рє. РЅРµ РѕР±РЅРѕРІР»РµРЅ
 				_source.FtpFileDate = catalogFile.FileDate;
 				var newCatalogFile = handler.TestGetCatalogFile(_source);
 
-				Assert.That(newCatalogFile, Is.Null, "Файл не должен быть закачен");
+				Assert.That(newCatalogFile, Is.Null, "Р¤Р°Р№Р» РЅРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ Р·Р°РєР°С‡РµРЅ");
 			}
 		}
 

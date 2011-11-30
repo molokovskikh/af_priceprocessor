@@ -1,4 +1,4 @@
-using Castle.ActiveRecord;
+п»їusing Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
 
@@ -20,13 +20,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string SerialNumber { get; set; }
 
 		/// <summary>
-		/// Код продукта поставщика
+		/// РљРѕРґ РїСЂРѕРґСѓРєС‚Р° РїРѕСЃС‚Р°РІС‰РёРєР°
 		/// </summary>
 		[Property]
 		public string SupplierCode { get; set; }
 
 		/// <summary>
-		/// Путь к файлу сертификата поставщика
+		/// РџСѓС‚СЊ Рє С„Р°Р№Р»Сѓ СЃРµСЂС‚РёС„РёРєР°С‚Р° РїРѕСЃС‚Р°РІС‰РёРєР°
 		/// </summary>
 		[Property]
 		public string OriginFilePath { get; set; }
