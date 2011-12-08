@@ -11,17 +11,13 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
-			if (!String.IsNullOrWhiteSpace(line.Code)) {
-				var catalog = CertificateSourceCatalog.Queryable
-					.Where(
-						c =>
-						c.CertificateSource.SourceClassName == this.GetType().Name && c.SerialNumber == line.SerialNumber &&
-						c.SupplierCode == line.Code)
-					.FirstOrDefault();
-				return catalog != null;
-			}
-
-			return false;
+			var catalog = CertificateSourceCatalog.Queryable
+				.Where(
+					c =>
+					c.CertificateSource.SourceClassName == this.GetType().Name && c.SerialNumber == line.SerialNumber &&
+					c.CatalogProduct.Id == line.ProductEntity.CatalogProduct.Id)
+				.FirstOrDefault();
+			return catalog != null;
 		}
 
 		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
@@ -33,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					c =>
 					c.CertificateSource.Id == task.CertificateSource.Id
 					&& c.SerialNumber == task.DocumentLine.SerialNumber
-					&& c.SupplierCode == task.DocumentLine.Code)
+					&& c.CatalogProduct.Id == task.DocumentLine.ProductEntity.CatalogProduct.Id)
 				.ToList();
 
 			if (catalogs.Count > 0) {

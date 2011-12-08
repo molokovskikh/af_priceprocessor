@@ -6,6 +6,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
+using Test.Support;
 using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills.Sources
@@ -39,9 +40,12 @@ namespace PriceProcessor.Test.Waybills.Sources
 		{
 			var rostaSource = new RostaCertificateSource();
 
+			var product = Product.FindFirst();
+
 			var line = new DocumentLine {
 				Code = "22651",
-				SerialNumber = "835495"
+				SerialNumber = "835495",
+				ProductEntity = product
 			};
 
 			Assert.That(rostaSource.CertificateExists(line), Is.False);
@@ -50,7 +54,9 @@ namespace PriceProcessor.Test.Waybills.Sources
 				var catalog = new CertificateSourceCatalog {
 					CertificateSource = _source,
 					SerialNumber = line.SerialNumber,
-					SupplierCode = line.Code,
+					//Код в накладной и в каталоге может не совпадать, сравниваем по CatalogId
+					SupplierCode = "C!" + line.Code,
+					CatalogProduct = product.CatalogProduct,
 					OriginFilePath = Path.GetRandomFileName()
 				};
 				catalog.Create();

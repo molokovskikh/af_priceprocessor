@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
+using Test.Support;
 using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills
@@ -41,12 +43,13 @@ namespace PriceProcessor.Test.Waybills
 	public class RostaCertificateCatalogHandlerFixture
 	{
 		private CertificateSource _source;
+		private TestSupplier _supplier;
 
 		[SetUp]
 		public void SetUp()
 		{
-			var supplier = TestSupplier.Create();
-			var realSupplier = Supplier.Find(supplier.Id);
+			_supplier = TestSupplier.Create();
+			var realSupplier = Supplier.Find(_supplier.Id);
 
 			using (new TransactionScope()) {
 				var certificateSources = CertificateSource.Queryable.Where(s => s.SourceClassName == typeof(RostaCertificateSource).Name).ToList();
@@ -64,6 +67,24 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверяем заполнение таблицы каталога сертификатов")]
 		public void ImportCatalogFile()
 		{
+			var rostaCertList = Dbf.Load(@"..\..\Data\RostaSertList.dbf");
+			var supplierCode = rostaCertList.Rows[0]["CODE"].ToString();
+
+			//Берем первый попавшийся продукт
+			var product = TestProduct.FindFirst();
+			TestCore core;
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+				var price = TestPrice.Find(_supplier.Prices[0].Id);
+				price.AddProductSynonym(product.CatalogProduct.Name +  " Тестовый", product);
+				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
+				price.SaveAndFlush();
+
+				core = new TestCore() { Price = price, Code = supplierCode, ProductSynonym = synonym, Product = product, Quantity = "0", Period = "01.01.2015" };
+				core.SaveAndFlush();
+
+				transaction.VoteCommit();
+			}
+
 			Assert.That(_source.FtpFileDate, Is.Null, "Дата файла с ftp не должна быть заполнена");
 			var catalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
 			Assert.That(catalogs.Count, Is.EqualTo(0), "Таблица не должна быть заполнена");
@@ -84,6 +105,15 @@ namespace PriceProcessor.Test.Waybills
 
 				var existsCatalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
 				Assert.That(existsCatalogs.Count, Is.GreaterThan(0), "Таблица должна быть заполнена");
+
+				var catalogWithCatalog = existsCatalogs.Where(c => c.SupplierCode == supplierCode).FirstOrDefault();
+				Assert.That(catalogWithCatalog, Is.Not.Null, "Позиция не существует");
+				Assert.That(catalogWithCatalog.CatalogProduct, Is.Not.Null, "Позиция не сопоставлена с каталогом");
+				Assert.That(catalogWithCatalog.CatalogProduct.Id, Is.EqualTo(product.CatalogProduct.Id), "Позиция не сопоставлена с каталогом по значению");
+
+				var catalogWithoutCatalog = existsCatalogs.Where(c => c.SupplierCode != supplierCode).FirstOrDefault();
+				Assert.That(catalogWithoutCatalog, Is.Not.Null, "Позиция не существует");
+				Assert.That(catalogWithoutCatalog.CatalogProduct, Is.Null, "Позиция не должна быть сопоставлена с каталогом");
 			}
 		}
 

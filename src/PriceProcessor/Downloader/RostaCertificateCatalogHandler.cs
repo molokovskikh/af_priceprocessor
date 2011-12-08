@@ -6,6 +6,8 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader.Ftp;
+using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 
@@ -51,6 +53,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			var catalogTable = Dbf.Load(catalogFile.LocalFileName);
 			var catalogList = new List<CertificateSourceCatalog>();
+
 			foreach (DataRow row in catalogTable.Rows) {
 				var catalog = new CertificateSourceCatalog {
 					CertificateSource = catalogFile.Source,
@@ -58,6 +61,28 @@ namespace Inforoom.PriceProcessor.Downloader
 					SupplierCode = row["CODE"].ToString(),
 					OriginFilePath = row["GB_FILES"].ToString()
 				};
+
+				var catalogId = SessionHelper.WithSession(
+					c => c.CreateSQLQuery(@"
+select
+	p.CatalogId
+from
+	documents.SourceSuppliers ss
+	inner join usersettings.PricesData pd on pd.FirmCode = ss.SupplierId
+	inner join farm.Core0 c on c.PriceCode = pd.PriceCode and c.Code = :supplierCode
+	inner join catalogs.Products p on p.Id = c.ProductId
+where
+	ss.CertificateSourceId = :sourceId
+limit 1;
+"
+						)
+						.SetParameter("sourceId", catalogFile.Source.Id)
+						.SetParameter("supplierCode", catalog.SupplierCode)
+						.UniqueResult());
+				uint catalogValue;
+				if (catalogId != null && uint.TryParse(catalogId.ToString(), out catalogValue))
+					catalog.CatalogProduct = Catalog.Find(catalogId);
+
 				catalogList.Add(catalog);
 			}
 
