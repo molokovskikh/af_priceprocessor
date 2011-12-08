@@ -35,11 +35,17 @@ namespace Inforoom.PriceProcessor.Downloader
 				if (source != null) {
 					Cleanup();
 
+					Ping();
+
 					var catalogFile = GetCatalogFile(source);
+
+					Ping();
 
 					try {
 						if (catalogFile != null)
 							ImportCatalogFile(catalogFile);
+
+						Ping();
 					}
 					finally {
 						if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
@@ -51,8 +57,12 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		protected virtual void ImportCatalogFile(CertificateCatalogFile catalogFile)
 		{
+			_logger.InfoFormat("Загружен новый каталог сертификатов: date: {0},  fileName: {1}", catalogFile.FileDate, catalogFile.LocalFileName);
+
 			var catalogTable = Dbf.Load(catalogFile.LocalFileName);
 			var catalogList = new List<CertificateSourceCatalog>();
+
+			_logger.InfoFormat("Количество строк в новом каталоге сертификатов: {0}", catalogTable.Rows.Count);
 
 			foreach (DataRow row in catalogTable.Rows) {
 				var catalog = new CertificateSourceCatalog {
@@ -84,8 +94,15 @@ limit 1;
 					catalog.CatalogProduct = Catalog.Find(catalogId);
 
 				catalogList.Add(catalog);
+
+				if (catalogList.Count % 10000 == 0)
+				{
+					Ping();
+					_logger.DebugFormat("Количество обработанных строк нового каталога сертификатов: {0}", catalogList.Count);
+				}
 			}
 
+			_logger.InfoFormat("Начата транзакция по обновлению каталога сертификатов");
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 
 				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
@@ -128,6 +145,7 @@ limit 1;
 				}
 
 				transaction.VoteCommit();
+				_logger.InfoFormat("Транзакция по обновлению каталога сертификатов завершена успешно");
 			}
 		}
 
