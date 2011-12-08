@@ -5,6 +5,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -75,6 +76,10 @@ namespace PriceProcessor.Test.Waybills
 			TestCore core;
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				var price = TestPrice.Find(_supplier.Prices[0].Id);
+
+				//Прайс-лист должен быть ассортиментным
+				price.PriceType = PriceType.Assortment;
+
 				price.AddProductSynonym(product.CatalogProduct.Name +  " Тестовый", product);
 				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
 				price.SaveAndFlush();
@@ -142,6 +147,56 @@ namespace PriceProcessor.Test.Waybills
 
 				Assert.That(newCatalogFile, Is.Null, "Файл не должен быть закачен");
 			}
+		}
+
+		[Test(Description = "проверка загрузки элементов из Core с помощью CreateSQLQuery")]
+		public void GetCoreWithQuery()
+		{
+
+			//Создаем запись в Core для прайс-листа
+			var product = TestProduct.FindFirst();
+			TestCore core;
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+				var price = TestPrice.Find(_supplier.Prices[0].Id);
+
+				//Прайс-лист должен быть ассортиментным
+				price.PriceType = PriceType.Assortment;
+
+				price.AddProductSynonym(product.CatalogProduct.Name +  " Тестовый", product);
+				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
+				price.SaveAndFlush();
+
+				core = new TestCore() { Price = price, Code = "123456", ProductSynonym = synonym, Product = product, Quantity = "0", Period = "01.01.2015" };
+				core.SaveAndFlush();
+
+				transaction.VoteCommit();
+			}
+
+			//Выбираем записи из Core для ассортиментных прайсов поставщиков, которые привязаны к нужному источнику сертификатов
+			var cores = SessionHelper.WithSession(
+				c => c.CreateSQLQuery(@"
+select
+	{core.*}
+from
+	documents.SourceSuppliers ss
+	inner join usersettings.PricesData pd on pd.FirmCode = ss.SupplierId
+	inner join farm.Core0 {core} on core.PriceCode = pd.PriceCode and pd.PriceType = 1
+	inner join catalogs.Products p on p.Id = core.ProductId
+where
+	ss.CertificateSourceId = :sourceId;
+"
+					)
+					.AddEntity("core", typeof(Core))
+					.SetParameter("sourceId", _source.Id)
+					.List<Core>());
+
+			Assert.That(cores.Count, Is.GreaterThan(0));
+			Assert.That(cores.Count, Is.EqualTo(1));
+			Assert.That(cores[0].Code, Is.EqualTo("123456"));
+			Assert.That(cores[0].ProductId, Is.Not.Null);
+			Assert.That(cores[0].ProductId.HasValue, Is.True);
+			Assert.That(cores[0].Product, Is.Not.Null);
+			Assert.That(cores[0].Product.Id, Is.EqualTo(cores[0].ProductId.Value));
 		}
 
 	}

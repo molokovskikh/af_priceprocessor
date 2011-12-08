@@ -64,6 +64,27 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			_logger.InfoFormat("Количество строк в новом каталоге сертификатов: {0}", catalogTable.Rows.Count);
 
+			//Выбираем записи из Core для ассортиментных прайсов поставщиков, которые привязаны к нужному источнику сертификатов
+			var cores = SessionHelper.WithSession(
+				c => c.CreateSQLQuery(@"
+select
+	{core.*}
+from
+	documents.SourceSuppliers ss
+	inner join usersettings.PricesData pd on pd.FirmCode = ss.SupplierId
+	inner join farm.Core0 {core} on core.PriceCode = pd.PriceCode and pd.PriceType = 1
+	inner join catalogs.Products p on p.Id = core.ProductId
+where
+	ss.CertificateSourceId = :sourceId;
+"
+					)
+					.AddEntity("core", typeof(Core))
+					.SetParameter("sourceId", catalogFile.Source.Id)
+					.List<Core>()
+			);
+
+			_logger.InfoFormat("Количество загруженных позиций из Core: {0}", cores.Count);
+
 			foreach (DataRow row in catalogTable.Rows) {
 				var catalog = new CertificateSourceCatalog {
 					CertificateSource = catalogFile.Source,
@@ -72,26 +93,9 @@ namespace Inforoom.PriceProcessor.Downloader
 					OriginFilePath = row["GB_FILES"].ToString()
 				};
 
-				var catalogId = SessionHelper.WithSession(
-					c => c.CreateSQLQuery(@"
-select
-	p.CatalogId
-from
-	documents.SourceSuppliers ss
-	inner join usersettings.PricesData pd on pd.FirmCode = ss.SupplierId
-	inner join farm.Core0 c on c.PriceCode = pd.PriceCode and c.Code = :supplierCode
-	inner join catalogs.Products p on p.Id = c.ProductId
-where
-	ss.CertificateSourceId = :sourceId
-limit 1;
-"
-						)
-						.SetParameter("sourceId", catalogFile.Source.Id)
-						.SetParameter("supplierCode", catalog.SupplierCode)
-						.UniqueResult());
-				uint catalogValue;
-				if (catalogId != null && uint.TryParse(catalogId.ToString(), out catalogValue))
-					catalog.CatalogProduct = Catalog.Find(catalogId);
+				var corePosition = cores.FirstOrDefault(c => c.Code == catalog.SupplierCode);
+				if (corePosition != null && corePosition.Product != null)
+					catalog.CatalogProduct = corePosition.Product.CatalogProduct;
 
 				catalogList.Add(catalog);
 
