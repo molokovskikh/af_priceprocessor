@@ -35,13 +35,13 @@ namespace Inforoom.PriceProcessor
 		private ServiceHost _waybillServiceHost;
 		private const string _strProtocol = @"net.tcp://";
 
-	    private static Monitor _instance = null;
+		private static Monitor _instance;
 		
-        private Monitor()
+		private Monitor()
 		{
 			_handlers = new List<AbstractHandler> {
 				new FormalizeHandler(),
-                new IndexerHandler(),
+				new IndexerHandler(),
 #if (!DEBUG)
 				new WaybillFtpSourceHandler(),
 				new LANSourceHandler(),
@@ -51,7 +51,6 @@ namespace Inforoom.PriceProcessor
 				new WaybillSourceHandler(),
 				new WaybillLANSourceHandler(),
 				new ClearArchivedPriceSourceHandler(),
-			//	new RostaHandler(4820, new RostaDownloader()), // с 12.07.2011 этот обработчик не используется
 				new ProtekWaybillHandler(),
 				new CertificateSourceHandler(),
 				new RostaCertificateCatalogHandler()
@@ -59,22 +58,22 @@ namespace Inforoom.PriceProcessor
 			};
 
 			_monitor = new Thread(MonitorWork) {Name = "MonitorThread"};
-		}      
+		}
 
-        public static Monitor GetInstance()
-        {
-            return _instance ?? (_instance = new Monitor());
-        }
+		public static Monitor GetInstance()
+		{
+			return _instance ?? (_instance = new Monitor());
+		}
 
-	    public AbstractHandler GetHandler(Type type)
-        {
-            foreach (var h in _handlers)
-            {
-                if (h.GetType() == type)
-                    return h;
-            }
-	        return null;
-        }
+		public AbstractHandler GetHandler(Type type)
+		{
+			foreach (var h in _handlers)
+			{
+				if (h.GetType() == type)
+					return h;
+			}
+			return null;
+		}
 
 		//запускаем монитор с обработчиками
 		public void Start()
@@ -157,9 +156,10 @@ namespace Inforoom.PriceProcessor
 		private void MonitorWork()
 		{
 			while (!Stopped)
+			{
 				try
 				{
-					foreach(var handler in _handlers)
+					foreach (var handler in _handlers)
 					{
 						if (!handler.Worked)
 							handler.RestartWork();
@@ -167,10 +167,11 @@ namespace Inforoom.PriceProcessor
 
 					Thread.Sleep(500);
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					_logger.Error("Ошибка в нитке", e);
 				}
+			}
 		}
 	}
 }

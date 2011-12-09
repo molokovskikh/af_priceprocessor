@@ -66,7 +66,7 @@ namespace PriceProcessor.Test
 
 			public CorruptDBThread()
 			{
-				_thread = new Thread(new ThreadStart(ThreadMethod));
+				_thread = new Thread(ThreadMethod);
 				_thread.Name = "PPT" + _thread.ManagedThreadId;
 				_thread.Start();
 				_logger.Info("Start");

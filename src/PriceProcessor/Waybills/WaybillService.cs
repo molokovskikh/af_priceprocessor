@@ -147,21 +147,15 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (document == null)
 					return;
 
-				//конвертируем накладную в новый формат dbf.
-				if (settings.IsConvertFormat)
-				{
-					using (var scope = new TransactionScope(OnDispose.Rollback))
-					{
-						DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document);
-						scope.VoteCommit();
-					}
-				}
-
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
+					if (settings.IsConvertFormat)
+						DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document);
+
 					if(log.IsFake) log.Save();
 					document.Save();
 					document.CreateCertificateTasks();
+
 					transaction.VoteCommit();
 				}
 			}
@@ -170,9 +164,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
 				SaveWaybill(file);
 			}
-		}		
+		}
 	}
-
 
 	public class WaybillOrderMatcher
 	{

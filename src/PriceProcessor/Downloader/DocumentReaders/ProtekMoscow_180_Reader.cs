@@ -12,7 +12,7 @@ namespace Inforoom.Downloader.DocumentReaders
 	{
 		public ProtekMoscow_180_Reader()
 		{
-			excludeExtentions = new string[] { ".fls" };
+			excludeExtentions = new[] { ".fls" };
 		}
 
 		public override string[] DivideFiles(string extractDir, string[] inputFiles)
@@ -23,7 +23,7 @@ namespace Inforoom.Downloader.DocumentReaders
 
 			foreach (var fileName in inputFiles)
 			{
-				shortFileName = extractDir + Path.GetFileNameWithoutExtension(fileName) + ".";
+				shortFileName = Path.Combine(extractDir, Path.GetFileNameWithoutExtension(fileName) + ".");
 				fileID = 0;
 
 				//Прочитали исходный XML c документами
@@ -34,7 +34,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Документ"))
 				{
 					//Формируем новое имя файла
-					string newFileName = shortFileName + fileID.ToString() + ".xml";
+					var newFileName = shortFileName + fileID.ToString() + ".xml";
 					while (File.Exists(newFileName))
 					{
 						fileID++;
@@ -42,18 +42,18 @@ namespace Inforoom.Downloader.DocumentReaders
 					}
 					fileID++;
 
-					XmlDocument newXml = new XmlDocument();
+					var newXml = new XmlDocument();
 					
 					//Создали документ с декларацией
-					XmlDeclaration xmldecl = newXml.CreateXmlDeclaration("1.0", "WINDOWS-1251", "yes");
+					var xmldecl = newXml.CreateXmlDeclaration("1.0", "WINDOWS-1251", "yes");
 					newXml.AppendChild(xmldecl);
 
 					//Создали элемент "КоммерческаяИнформация" с атрибутами
-					XmlElement root = newXml.CreateElement(xml.DocumentElement.Name);
+					var root = newXml.CreateElement(xml.DocumentElement.Name);
 					newXml.AppendChild(root);
 					foreach (XmlAttribute a in xml.DocumentElement.Attributes)
 					{
-						XmlAttribute newAtt = newXml.CreateAttribute(a.Name);
+						var newAtt = newXml.CreateAttribute(a.Name);
 						newAtt.Value = a.Value;
 						root.Attributes.Append(newAtt);
 					}
@@ -74,8 +74,8 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var list = new List<ulong>();
 			
-            string SQL = SqlGetClientAddressId(true, true) +
-                Environment.NewLine + GetFilterSQLFooter();
+			string SQL = SqlGetClientAddressId(true, true) +
+				Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
 			try

@@ -134,8 +134,8 @@ namespace Inforoom.Downloader
 			return String.Format(@"
 SELECT
   pi.Id as PriceItemId,
-  cd.FirmCode,
-  cd.ShortName,
+  s.Id as FirmCode,
+  s.Name as ShortName,
   pd.PriceCode,
   pd.PriceName,
   pd.ParentSynonym,
@@ -160,7 +160,7 @@ FROM
   usersettings.PriceItems pi,
   usersettings.PricesCosts pc,
   UserSettings.PricesData  as PD,
-  usersettings.ClientsData as CD,
+  Future.Suppliers as s,
   farm.regions             as r,
   farm.FormRules           AS fr,
   farm.pricefmts           AS pf
@@ -172,11 +172,11 @@ and pi.SourceId = st.ID
 and pc.PriceItemId = pi.ID
 and PD.PriceCode = pc.PriceCode
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and CD.FirmCode = PD.FirmCode
-and r.RegionCode = cd.RegionCode
+and s.Id = PD.FirmCode
+and r.RegionCode = s.HomeRegion
 and fr.Id = pi.FormRuleId
 and pf.Id = fr.PriceFormatId
-and cd.FirmStatus   = 1
+and s.Disabled = 0
 and pd.AgencyEnabled= 1", 
 				type);
 		}

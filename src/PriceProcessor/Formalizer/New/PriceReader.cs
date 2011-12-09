@@ -111,18 +111,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				if (cost.UndefinedCostCount > stat.formCount * 0.05)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
 
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
+			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
 
 		}
 
@@ -136,48 +125,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				if ((cost.ZeroCostCount > 0 && stat.formCount == 0) || cost.ZeroCostCount == stat.formCount)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
 
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
-
-		}
-
-		protected void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body)
-		{
-			var drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
-select
-  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
-  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
-from
-usersettings.pricescosts pc,
-usersettings.pricesdata pd,
-usersettings.clientsdata cd,
-farm.regions r
-where
-	pc.PriceItemId = ?PriceItemId
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and r.RegionCode = cd.RegionCode",
-				new MySqlParameter("?PriceItemId", _priceItemId));
-			subject = String.Format(subject, drProvider["PriceName"], drProvider["ShortFirmName"]);
-			body = String.Format(
-				body,
-				drProvider["PriceName"],
-				drProvider["ShortFirmName"],
-				stringBuilder);
-
-			_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
-			Mailer.SendUserFail(subject, body);
+			Alerts.ZeroCostAlert(stringBuilder, _priceInfo);
 		}
 
 		/// <summary>
@@ -205,18 +153,7 @@ and r.RegionCode = cd.RegionCode",
 				if (!String.IsNullOrEmpty(cost.FieldName) && !_priceData.Columns.Contains(cost.FieldName))
 					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.Name, cost.FieldName);
 
-			if (sb.Length > 0)
-				SendAlertToUserFail(
-					sb,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
-					@"
-Здравствуйте!
-В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
-Следующие поля отсутствуют:
-{2}
-
-С уважением,
-PriceProcessor.");
+			Alerts.NotConfiguredAllert(sb, _priceInfo);
 
 			if (_priceData.Rows.Count == 0)
 				throw new FormalizeException("В полученом прайс листе не удалось найти ни одной позиции", _priceInfo);

@@ -56,8 +56,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			return String.Format(@"
 SELECT
-	cd.FirmCode as SupplierId,
-	cd.ShortName as SupplierName,
+	s.Id as SupplierId,
+	s.Name as SupplierName,
 	r.Region as RegionName,
 	st.WaybillUrl,
 	st.RejectUrl,
@@ -67,11 +67,11 @@ SELECT
 	max(dl.LogTime) as LastDownloadTime
 FROM
 	Documents.Waybill_Sources AS st
-	INNER JOIN usersettings.ClientsData AS cd ON CD.FirmCode = st.FirmCode
-	INNER JOIN farm.regions AS r ON r.RegionCode = cd.RegionCode
+	JOIN Future.Suppliers as s ON s.Id = st.FirmCode
+	JOIN farm.regions as r ON r.RegionCode = s.HomeRegion
 	LEFT JOIN logs.document_logs dl ON dl.FirmCode = st.FirmCode
 WHERE
-	cd.FirmStatus = 1
+	s.Disabled = 0
 	AND st.SourceID = {0}
 GROUP BY SupplierId
 ", Convert.ToUInt32(WaybillSourceType.FtpSupplier));
@@ -81,7 +81,7 @@ GROUP BY SupplierId
 		{
 			FillSourcesTable();
 			foreach (DataRow sourceRow in dtSources.Rows)
-			{				
+			{
 				var waybillSource = new WaybillSource(sourceRow);
 				_log.InfoFormat("Попытка забрать накладные с FTP поставщика. Код поставщика = {0}", waybillSource.SupplierId);
 				if (!IsNeedToDownload(waybillSource))
@@ -235,8 +235,7 @@ GROUP BY SupplierId
 							addrId,
 							file,
 							documentType);
-                        _logger.InfoFormat("WaybillFtpSourceHandler: обработка файла {0}", file);
-						//log.CopyDocumentToClientDirectory();
+						_logger.InfoFormat("WaybillFtpSourceHandler: обработка файла {0}", file);
 						documentLogs.Add(log);
 					}
 				}
@@ -284,7 +283,7 @@ GROUP BY SupplierId
 
 				if (!String.IsNullOrEmpty(message.ToString()))
 					_log.ErrorFormat("При загрузке файлов с FTP поставщика возникли ошибки (код поставщика: {0})\n{1}",
-					                 waybillSource.SupplierId, message);
+									 waybillSource.SupplierId, message);
 
 				var restoredFilesMessage = new StringBuilder();
 				foreach (var source in FailedSources)

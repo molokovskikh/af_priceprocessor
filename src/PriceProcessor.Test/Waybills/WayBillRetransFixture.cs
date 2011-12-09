@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using PriceProcessor.Test.TestHelpers;
 using log4net.Config;
 using NHibernate.Criterion;
 using NHibernate.SqlCommand;

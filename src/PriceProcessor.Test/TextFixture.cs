@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data;
 using Common.Tools;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test
 {
@@ -118,7 +120,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 
 			etalonCore0.WriteXml(String.Format(@"..\..\Data\{0}-etalon.xml", priceItemId), XmlWriteMode.WriteSchema);
 
-			var rules = TestHelper.LoadFormRules((uint)priceItemId);
+			var rules = PricesValidator.LoadFormRules((uint)priceItemId);
 			rules.WriteXml(String.Format(@"..\..\Data\{0}-rules.xml", priceItemId), XmlWriteMode.WriteSchema);
 		}
 	}

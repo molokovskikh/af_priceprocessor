@@ -39,29 +39,26 @@ namespace PriceProcessor.Test.Loader
 				};
 
 				var supplier = TestSupplier.Create();
-				var price = new TestPrice {
+				var price = new TestPrice(supplier) {
 					CostType = CostType.MultiColumn,
-					Supplier = supplier,
 					ParentSynonym = 4745,
 					PriceName = "2"
 				};
 				var cost = price.NewPriceCost(priceItem, "123");
 				cost.Name = "2";
 				price.SaveAndFlush();
-				price.Maintain();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
-				price = new TestPrice {
+				price = new TestPrice(supplier) {
 					CostType = CostType.MultiColumn,
-					Supplier = supplier,
 					ParentSynonym = 4745,
 					PriceName = "11"
 				};
 				cost = price.NewPriceCost(priceItem, "123");
 				cost.Name = "11";
 				price.SaveAndFlush();
-				price.Maintain();
+				supplier.Maintain();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 			}

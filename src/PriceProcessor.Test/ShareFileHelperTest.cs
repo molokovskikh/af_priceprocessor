@@ -7,6 +7,7 @@ using System.Threading;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Helpers;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test
 {

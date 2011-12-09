@@ -191,7 +191,7 @@ namespace Inforoom.Downloader
 		/// <summary>
 		/// Проверяет, что письмо содержит вложения
 		/// </summary>
-		protected virtual void CheckMime(Mime m)
+		public virtual void CheckMime(Mime m)
 		{
 			if (m.Attachments.Length == 0)
 				throw new EMailSourceHandlerException("Письмо не содержит вложений.");

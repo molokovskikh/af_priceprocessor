@@ -34,15 +34,15 @@ namespace Inforoom.Downloader
 		{
 			return @"
 SELECT
-  cd.FirmCode,
-  cd.ShortName,
+  s.Id as FirmCode,
+  s.Name as ShortName,
   st.EMailFrom,
   st.ReaderClassName
 FROM
-  usersettings.ClientsData AS cd
-  INNER JOIN Documents.Waybill_Sources AS st ON CD.FirmCode = st.FirmCode
+  Future.Suppliers as s
+  INNER JOIN Documents.Waybill_Sources AS st ON s.Id = st.FirmCode
 WHERE
-cd.FirmStatus   = 1
+s.Disabled = 0
 and st.SourceID = 4";
 		}
 
@@ -224,22 +224,23 @@ and st.SourceID = 4";
 			}
 		}
 
-		protected bool ProcessWaybillFile(string InFile, DataRow drCurrent, BaseDocumentReader documentReader)
+		protected bool ProcessWaybillFile(string inFile, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
 			//Массив файлов
-			var Files = new[] { InFile };
-			if (ArchiveHelper.IsArchive(InFile))
+			var files = new[] { inFile };
+			var dir = inFile + ExtrDirSuffix;
+			if (ArchiveHelper.IsArchive(inFile))
 			{
 				// Получаем файлы, распакованные из архива
-				Files = Directory.GetFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
+				files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories);
 			}
 
-			if (!Directory.Exists(InFile + ExtrDirSuffix))
-				Directory.CreateDirectory(InFile + ExtrDirSuffix);
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 
 			try
 			{
-				Files = documentReader.DivideFiles(InFile + ExtrDirSuffix + Path.DirectorySeparatorChar, Files);
+				files = documentReader.DivideFiles(dir, files);
 			}
 			catch (Exception exDivide)
 			{
@@ -251,9 +252,9 @@ and st.SourceID = 4";
 
 			var processed = false;
 
-			foreach (var file in Files)
+			foreach (var file in files)
 			{
-				if (MoveWaybill(InFile, file, drCurrent, documentReader))
+				if (MoveWaybill(inFile, file, drCurrent, documentReader))
 					processed = true;
 			}
 			return processed;

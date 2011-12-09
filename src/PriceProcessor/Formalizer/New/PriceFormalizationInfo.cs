@@ -14,6 +14,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public PriceFormalizationInfo(DataRow row)
 		{
+			Region = row["region"].ToString();
+			CostName = row["CostName"].ToString();
 			PriceName = row[FormRules.colSelfPriceName].ToString();
 			FirmShortName = row[FormRules.colFirmShortName].ToString();
 			FirmCode = Convert.ToInt64(row[FormRules.colFirmCode]);
@@ -40,9 +42,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public string PriceName { get; set; }
 		public string FirmShortName { get; set; }
+		public string Region { get; set; }
 		public long FirmCode { get; set; }
 		//код ценовой колонки, может быть не установлен
 		public long? CostCode { get; set; }
+		public string CostName { get; set; }
 
 		public uint PriceCode { get; set; }
 

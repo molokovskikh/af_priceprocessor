@@ -240,7 +240,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
+				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}			
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());

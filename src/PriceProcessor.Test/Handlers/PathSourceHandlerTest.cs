@@ -4,6 +4,7 @@ using System.Threading;
 using Common.MySql;
 using NUnit.Framework;
 using Inforoom.Downloader;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using System.Collections;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;

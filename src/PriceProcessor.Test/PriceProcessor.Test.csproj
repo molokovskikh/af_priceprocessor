@@ -154,10 +154,9 @@
     <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="ShareFileHelperTest.cs" />
     <Compile Include="SiaPriceFixture.cs" />
-    <Compile Include="Special\RostaFixture.cs" />
-    <Compile Include="Special\RostaParserFixture.cs" />
     <Compile Include="StressTest.cs" />
-    <Compile Include="TestHelper.cs" />
+    <Compile Include="TestHelpers\ImapHelper.cs" />
+    <Compile Include="TestHelpers\TestHelper.cs" />
     <Compile Include="TextFixture.cs" />
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />

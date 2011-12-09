@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 

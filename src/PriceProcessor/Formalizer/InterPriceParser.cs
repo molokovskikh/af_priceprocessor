@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using System.Text;
 
@@ -38,19 +39,8 @@ namespace Inforoom.Formalizer
 						sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
 
 				if (sb.Length > 0)
-					SendAlertToUserFail(
-						sb,
-						"PriceProcessor: В прайс-листе {0} поставщика {1} отсутствуют настроенные поля",
-						@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} отсутствуют настроенные поля.
-  Следующие поля отсутствуют:
-{2}
-
-С уважением,
-  PriceProcessor.");
+					Alerts.NotConfiguredAllert(sb, _info);
 			}
-
 		}
 
 		public override string GetFieldValue(PriceFields field)

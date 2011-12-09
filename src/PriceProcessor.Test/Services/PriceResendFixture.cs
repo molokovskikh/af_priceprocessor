@@ -8,6 +8,7 @@ using System.ServiceModel;
 using System.Net;
 using Inforoom.PriceProcessor;
 using PriceProcessor.Test.Handlers;
+using PriceProcessor.Test.TestHelpers;
 using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
@@ -176,7 +177,7 @@ namespace PriceProcessor.Test.Services
 			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
 			{
 				var attachments = new List<string> { Path.Combine(Path.GetFullPath(@"..\..\Data\"), archiveFileName) };
-				var message = TestHelper.BuildMessageWithAttachments(emailTo, emailFrom, attachments.ToArray());
+				var message = ImapHelper.BuildMessageWithAttachments(emailTo, emailFrom, attachments.ToArray());
 				var bytes = message.ToByteData();
 				sw.Write(bytes, 0, bytes.Length);
 			}

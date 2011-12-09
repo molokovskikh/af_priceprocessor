@@ -1,15 +1,11 @@
-using System;
 using System.Linq;
-using System.Threading;
 using Castle.ActiveRecord;
-using Castle.ActiveRecord.Framework;
 using Common.MySql;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
-using log4net.Config;
 
-namespace PriceProcessor.Test
+namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
 	public class WaybillLANSourceHandlerErrorsFixture
@@ -22,7 +18,7 @@ namespace PriceProcessor.Test
 			using (new SessionScope()) {
 				var count = DocumentReceiveLog.Queryable.Count();
 				if(count > 0)
-					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);	
+					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);
 			}
 		}
 
@@ -41,7 +37,7 @@ namespace PriceProcessor.Test
 		public void GetClientCodesErrorTest()
 		{
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1");
-			var res = handler.MoveWaybill("test", "test");			
+			var res = handler.MoveWaybill("test", "test");
 			using(new SessionScope())
 			{
 				Assert.That(res, Is.False);

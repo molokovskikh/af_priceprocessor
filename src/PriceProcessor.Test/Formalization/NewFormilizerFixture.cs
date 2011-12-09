@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
@@ -488,7 +489,7 @@ namespace PriceProcessor.Test.Formalization
 
 		private void Formalize()
 		{
-			var table = TestHelper.LoadFormRules(priceItem.Id);
+			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, new PriceFormalizationInfo(row));
 			formalizer = new BasePriceParser2(reader, row);

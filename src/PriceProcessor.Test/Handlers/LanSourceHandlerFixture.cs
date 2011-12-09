@@ -7,6 +7,7 @@ using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using PriceSourceType = Test.Support.PriceSourceType;
 

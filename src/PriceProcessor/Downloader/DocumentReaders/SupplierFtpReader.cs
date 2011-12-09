@@ -18,10 +18,8 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
-			var list = new List<ulong>();
-			
-            string SQL = SqlGetClientAddressId(false, true) +
-                Environment.NewLine + GetFilterSQLFooter();
+			var sql = SqlGetClientAddressId(false, true) +
+				Environment.NewLine + GetFilterSQLFooter();
 
 			string supplierDeliveryId;
 			try
@@ -35,14 +33,11 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 
 			var ds = MySqlHelper.ExecuteDataset(
 				connection,
-				SQL,
+				sql,
 				new MySqlParameter("?SupplierId", supplierId),
 				new MySqlParameter("?SupplierDeliveryId", supplierDeliveryId));
 
-			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
-
-			return list;
+			return ds.Tables[0].AsEnumerable().Select(r => Convert.ToUInt64(r["AddressId"])).ToList();
 		}
 	}
 }

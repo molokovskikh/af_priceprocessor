@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using System.Threading;
 using System.IO;
 using Inforoom.PriceProcessor;
+using PriceProcessor.Test.TestHelpers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test

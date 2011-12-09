@@ -334,6 +334,7 @@ namespace Inforoom.Formalizer
 		public string priceName { get; set; }
 		//Имя клиента
 		public string firmShortName { get; set; }
+
 		//Код клиента
 		public long firmCode { get; set; }
 		//ключ прайса
@@ -393,7 +394,7 @@ namespace Inforoom.Formalizer
 		protected List<List<CoreCost>> CoreCosts;
 
 		protected readonly ILog _logger;
-		private PriceFormalizationInfo _info;
+		protected PriceFormalizationInfo _info;
 
 		public string InputFileName { get; set; }
 
@@ -426,23 +427,25 @@ namespace Inforoom.Formalizer
 			CoreCosts = new List<List<CoreCost>>();
 			FieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
 
-			_info = new PriceFormalizationInfo(data.Rows[0]);
-			priceName = data.Rows[0][FormRules.colSelfPriceName].ToString();
+			var row = data.Rows[0];
+			_info = new PriceFormalizationInfo(row);
+			priceName = row[FormRules.colSelfPriceName].ToString();
 			
-			firmShortName = data.Rows[0][FormRules.colFirmShortName].ToString();
-			firmCode = Convert.ToInt64(data.Rows[0][FormRules.colFirmCode]); 
-			formByCode = Convert.ToBoolean(data.Rows[0][FormRules.colFormByCode]);
-			priceItemId = Convert.ToInt64(data.Rows[0][FormRules.colPriceItemId]); 
-			priceCode = Convert.ToInt64(data.Rows[0][FormRules.colPriceCode]);
-			costCode = (data.Rows[0][FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(data.Rows[0][FormRules.colCostCode]);
-			parentSynonym = Convert.ToInt64(data.Rows[0][FormRules.colParentSynonym]); 
-			costType = (CostTypes)Convert.ToInt32(data.Rows[0][FormRules.colCostType]);
-			buyingMatrix = Convert.ToBoolean(data.Rows[0]["BuyingMatrix"]);
+			firmShortName = row[FormRules.colFirmShortName].ToString();
+			firmCode = Convert.ToInt64(row[FormRules.colFirmCode]);
+			formByCode = Convert.ToBoolean(row[FormRules.colFormByCode]);
+			priceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]); 
+			priceCode = Convert.ToInt64(row[FormRules.colPriceCode]);
+			costCode = (row[FormRules.colCostCode] is DBNull) ? null : (long?)Convert.ToInt64(row[FormRules.colCostCode]);
 			
-			nameMask = data.Rows[0][FormRules.colNameMask] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colNameMask];
+			parentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]); 
+			costType = (CostTypes)Convert.ToInt32(row[FormRules.colCostType]);
+			buyingMatrix = Convert.ToBoolean(row["BuyingMatrix"]);
+			
+			nameMask = row[FormRules.colNameMask] is DBNull ? String.Empty : (string)row[FormRules.colNameMask];
 
 			//Производим попытку разобрать строку с "запрещенными выражениями"
-			forbWords = data.Rows[0][FormRules.colForbWords] is DBNull ? String.Empty : (string)data.Rows[0][FormRules.colForbWords];
+			forbWords = row[FormRules.colForbWords] is DBNull ? String.Empty : (string)row[FormRules.colForbWords];
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords)
 			{
@@ -466,11 +469,11 @@ namespace Inforoom.Formalizer
 					forbWordsList = null;
 			}
 
-			awaitPos = data.Rows[0][FormRules.colSelfAwaitPos].ToString();
-			junkPos  = data.Rows[0][FormRules.colSelfJunkPos].ToString();
-			vitallyImportantMask = data.Rows[0][FormRules.colSelfVitallyImportantMask].ToString();
-			prevRowCount = data.Rows[0][FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(data.Rows[0][FormRules.colPrevRowCount]);
-			priceType = Convert.ToInt32(data.Rows[0][FormRules.colPriceType]);
+			awaitPos = row[FormRules.colSelfAwaitPos].ToString();
+			junkPos  = row[FormRules.colSelfJunkPos].ToString();
+			vitallyImportantMask = row[FormRules.colSelfVitallyImportantMask].ToString();
+			prevRowCount = row[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(row[FormRules.colPrevRowCount]);
+			priceType = Convert.ToInt32(row[FormRules.colPriceType]);
 
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
@@ -519,8 +522,8 @@ namespace Inforoom.Formalizer
 					{
 						throw new WarningFormalizeException(
 							String.Format(Settings.Default.DoubleBaseCostsError,
-							              bc[0].costCode,
-							              bc[1].costCode),
+										  bc[0].costCode,
+										  bc[1].costCode),
 							firmCode, priceCode, firmShortName, priceName);
 					}
 					currentCoreCosts.Remove(bc[0]);
@@ -845,7 +848,7 @@ FROM
   farm.CoreCosts,
   usersettings.pricescosts
 WHERE 
-    Core0.PriceCode = {0} 
+	Core0.PriceCode = {0} 
 and pricescosts.PriceCode = {0}
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode 
@@ -999,13 +1002,13 @@ order by Core0.Id", priceCode);
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
 				else
 					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-                    if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
+					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"]) 
 						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
-                if (drNewProducerSynonym != null)
-                    drExistsCore = null;
+				if (drNewProducerSynonym != null)
+					drExistsCore = null;
 				else
-                    drExistsCore = FindPositionInExistsCore(drCore);
+					drExistsCore = FindPositionInExistsCore(drCore);
 				if (drExistsCore == null)
 				{
 					_stats.InsertCount++;
@@ -1207,7 +1210,7 @@ where
 							updateFieldsScript.Add(compareField + " = ''");
 						else
 							updateFieldsScript.Add(String.Format("{0} = '{1}'", compareField,
-							                                     SqlBuilder.StringToMySqlString(drCore[compareField].ToString())));
+																 SqlBuilder.StringToMySqlString(drCore[compareField].ToString())));
 					}
 					else if (drCore[compareField] is DBNull)
 						updateFieldsScript.Add(compareField + " = null");
@@ -1375,7 +1378,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 							sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
@@ -1490,7 +1493,7 @@ UPDATE usersettings.AnalitFReplicationInfo A, usersettings.PricesData P
 SET
   a.ForceReplication = 1
 where
-    p.PriceCode = {0}
+	p.PriceCode = {0}
 and a.FirmCode = p.FirmCode;", priceCode);
 
 					sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
@@ -1509,7 +1512,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
 						existsCoreCount = Convert.ToInt32(mcClear.ExecuteScalar());
@@ -1606,7 +1609,7 @@ where
 						{
 							drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
 							//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
-						    //и если не сбрасывали ссылку на новый синоним
+							//и если не сбрасывали ссылку на новый синоним
 							if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
 							{
 								drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
@@ -1700,24 +1703,12 @@ where
 		/// </summary>
 		private void ProcessUndefinedCost()
 		{
-			StringBuilder stringBuilder = new StringBuilder();
+			var stringBuilder = new StringBuilder();
 			foreach (var cost in currentCoreCosts)
 				if (cost.undefinedCostCount > formCount * 0.05)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.costName, cost.undefinedCostCount);
 
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
-
+			Alerts.ToManyZeroCostAlert(stringBuilder, _info);
 		}
 
 		/// <summary>
@@ -1725,53 +1716,12 @@ where
 		/// </summary>
 		private void ProcessZeroCost()
 		{
-			StringBuilder stringBuilder = new StringBuilder();
+			var stringBuilder = new StringBuilder();
 			foreach (var cost in currentCoreCosts)
 				if ((cost.zeroCostCount > 0) && ((formCount == 0) || (cost.zeroCostCount == formCount)))
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.costName);
 
-			if (stringBuilder.Length > 0)
-				SendAlertToUserFail(
-					stringBuilder,
-					"PriceProcessor: В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой \"0\"",
-					@"
-Здравствуйте!
-  В прайс-листе {0} поставщика {1} имеются ценовые колонки, полностью заполненные ценой '0'.
-  Список ценовых колонок:
-{2}
-
-С уважением,
-  PriceProcessor.");
-
-		}
-
-		protected void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body)
-		{
-			var drProvider = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), @"
-select
-  if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) PriceName,
-  concat(cd.ShortName, ' - ', r.Region) ShortFirmName
-from
-usersettings.pricescosts pc,
-usersettings.pricesdata pd,
-usersettings.clientsdata cd,
-farm.regions r
-where
-    pc.PriceItemId = ?PriceItemId
-and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
-and r.RegionCode = cd.RegionCode",
-								 new MySqlParameter("?PriceItemId", priceItemId));
-				subject = String.Format(subject, drProvider["PriceName"], drProvider["ShortFirmName"]);
-				body = String.Format(
-					body,
-					drProvider["PriceName"],
-					drProvider["ShortFirmName"],
-					stringBuilder);
-
-			_logger.DebugFormat("Сформировали предупреждение о настройках формализации прайс-листа: {0}", body);
-			Mailer.SendUserFail(subject, body);
+			Alerts.ZeroCostAlert(stringBuilder, _info);
 		}
 
 		/// <summary>
@@ -1869,22 +1819,22 @@ and r.RegionCode = cd.RegionCode",
 			set { downloaded = value; }
 		}
 
-        public IList<string> GetAllNames()
-        {
-            Open();
-            if ((dtPrice.Rows.Count > 0) && (null != toughMask))
-                toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
-            List<string> names = new List<string>();
-            do
-            {
-                var posName = GetFieldValue(PriceFields.Name1);
-                if (String.IsNullOrEmpty(posName))
-                    continue;
-                names.Add(posName);
-            } 
-            while (Next());
-            return names;
-        }
+		public IList<string> GetAllNames()
+		{
+			Open();
+			if ((dtPrice.Rows.Count > 0) && (null != toughMask))
+				toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
+			List<string> names = new List<string>();
+			do
+			{
+				var posName = GetFieldValue(PriceFields.Name1);
+				if (String.IsNullOrEmpty(posName))
+					continue;
+				names.Add(posName);
+			} 
+			while (Next());
+			return names;
+		}
 
 		private void InternalFormalize()
 		{

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,18 +6,13 @@ using System.Threading;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
-using NHibernate.Criterion;
 using NUnit.Framework;
 using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
-using Test.Support.Helpers;
 using Test.Support.Suppliers;
-using log4net.Config;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -40,8 +34,8 @@ namespace PriceProcessor.Test.Waybills
 		public void Setup()
 		{
 			client = TestClient.Create();
-			testAddress = client.Addresses[0];			
-			using(new SessionScope()) {								
+			testAddress = client.Addresses[0];
+			using(new SessionScope()) {
 				address = Address.Find(testAddress.Id);
 				settings = WaybillSettings.Find(client.Id);
 				price = TestSupplier.CreateTestSupplierWithPrice();
@@ -69,7 +63,7 @@ namespace PriceProcessor.Test.Waybills
 
 		public TestDocumentLog[] CreateTestLogs(params string[] files)
 		{
-			return files.Select(f => CreateTestLog(f)).ToArray();
+			return files.Select(CreateTestLog).ToArray();
 		}
 	}
 

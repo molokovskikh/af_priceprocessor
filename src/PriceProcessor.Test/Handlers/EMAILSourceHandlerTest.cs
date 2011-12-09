@@ -18,6 +18,7 @@ using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using System.Threading;
 using System.IO;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
@@ -66,7 +67,7 @@ namespace PriceProcessor.Test
 				emailFrom = email;
 			TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, "*.*", "*.*");
 
-			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 
 			byte[] bytes;
 			foreach (var file in fileNames)
@@ -77,12 +78,12 @@ namespace PriceProcessor.Test
 				}
 				else
 				{
-					var message = TestHelper.BuildMessageWithAttachments(
+					var message = ImapHelper.BuildMessageWithAttachments(
 						String.Format(emailTo),
 						String.Format(emailFrom), new[] { file });
 					bytes = message.ToByteData();
 				}
-				TestHelper.StoreMessage(
+				ImapHelper.StoreMessage(
 					Settings.Default.TestIMAPUser,
 					Settings.Default.TestIMAPPass,
 					Settings.Default.IMAPSourceFolder, bytes);
@@ -105,7 +106,7 @@ namespace PriceProcessor.Test
 			var email = "d.dorofeev@analit.net";
 
 			// Очищаем IMAP папку
-			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
 									   Settings.Default.IMAPSourceFolder);
 
 			// Пересоздаем папки (чтоб в них не было файлов)
@@ -118,7 +119,7 @@ namespace PriceProcessor.Test
 			foreach (var fileName in _archiveNames)
 			{
 				// Кладем в IMAP папку сообщение с вложениями
-				TestHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
+				ImapHelper.StoreMessageWithAttachToImapFolder(Settings.Default.TestIMAPUser,
 															  Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder,
 															  email, email, _dataDir + fileName);
 			}
@@ -165,7 +166,7 @@ namespace PriceProcessor.Test
 			var mailboxPassword = Settings.Default.TestIMAPPass;
 			var imapFolder = Settings.Default.IMAPSourceFolder;
 
-			TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
+			ImapHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
 			TestHelper.RecreateDirectories();
 
 			var filePaths = Directory.GetFiles(dataDirectory, "*.eml", SearchOption.AllDirectories);
@@ -187,7 +188,7 @@ namespace PriceProcessor.Test
 					handler.StartWork();
 					Thread.Sleep(8000);
 					handler.StopWork();
-					TestHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
+					ImapHelper.ClearImapFolder(mailboxAddress, mailboxPassword, imapFolder);
 					index = 0;
 					var querySelectLogs = @"select count(*) from `logs`.downlogs where logtime > curdate()";
 					With.Connection(connection => countDownlogs = Convert.ToInt32(MySqlHelper.ExecuteScalar(connection, querySelectLogs)));

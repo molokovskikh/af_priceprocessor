@@ -183,8 +183,8 @@ namespace Inforoom.Downloader.DocumentReaders
 				string DeliveryCode = drHeader[HeaderTable.colObtCod].ToString(),
 					OrderID = drHeader[HeaderTable.colCMN].ToString();
 
-				var documentFileName = ExtractDir + String.Format("{0}_{1}_{2}_{3}.xml", 
-					FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum].ToString());
+				var documentFileName = Path.Combine(ExtractDir, String.Format("{0}_{1}_{2}_{3}.xml", 
+					FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum]));
 
 				dsStandaloneDocument = dsSource.Clone();
 				var drTemp = dsStandaloneDocument.Tables["Header"].NewRow();

@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using PriceProcessor.Test.TestHelpers;
 using log4net;
 using log4net.Appender;
 using log4net.Config;

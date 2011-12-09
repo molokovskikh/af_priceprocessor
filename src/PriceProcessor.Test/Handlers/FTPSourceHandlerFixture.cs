@@ -4,6 +4,7 @@ using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using LumiSoft.Net.FTP.Server;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using System.Threading;
 using System.IO;

@@ -9,6 +9,7 @@ using System.Data;
 using MySql.Data.MySqlClient;
 using System.Configuration;
 using System.Threading;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test
 {

@@ -38,9 +38,9 @@ SELECT
   logs.Addition as DAddition,
   logs.ArchFileName as DArchFileName,
   logs.ExtrFileName as DExtrFileName,
-  cd.ShortName as DFirmName,
+  s.Name as DFirmName,
   r.Region as DRegion,
-  cd.FirmSegment as DFirmSegment,
+  s.Segment as DFirmSegment,
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) as DPriceName,
   pim.Id as DPriceItemId,
   pd.PriceCode as DPriceCode,
@@ -54,7 +54,7 @@ SELECT
   pricefmts.FileExtention as DFileExtention
 FROM
   logs.downlogs as logs,
-  usersettings.clientsdata cd,
+  Future.Suppliers s,
   usersettings.pricesdata pd,
   usersettings.pricescosts pc,
   usersettings.PriceItems pim,
@@ -68,8 +68,8 @@ WHERE
 and pc.PriceItemId = pim.Id
 and pc.PriceCode = pd.PriceCode
 and ((pd.CostType = 1) OR (pc.BaseCost = 1))
-and cd.firmcode=pd.firmcode
-and r.regioncode=cd.regioncode
+and s.Id = pd.firmcode
+and r.regioncode = s.HomeRegion
 and s.Id = pim.SourceId
 and st.Id = s.SourceTypeId
 and logs.ResultCode in (2, 3)
@@ -190,7 +190,7 @@ select
   pf.FileExtention
 from
   usersettings.pricesdata pd,
-  usersettings.clientsdata cd,
+  Future.Suppliers s,
   usersettings.pricescosts pc,
   usersettings.priceitems pim,
   farm.formrules fr,
@@ -198,8 +198,8 @@ from
 where
     (pd.PriceCode = ?priceId or pd.ParentSynonym = ?priceId)
 and pd.AgencyEnabled = 1
-and cd.FirmCode = pd.FirmCode
-and cd.FirmStatus = 1
+and s.Id = pd.FirmCode
+and s.Disabled = 0
 and pc.PriceCode = pd.PriceCode
 and (pd.CostType = 1 or pc.BaseCost = 1)
 and pim.Id = pc.PriceItemId

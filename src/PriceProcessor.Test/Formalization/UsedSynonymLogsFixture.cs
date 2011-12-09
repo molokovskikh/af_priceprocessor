@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Data;
 using Inforoom.PriceProcessor.Formalizer;
 using MySql.Data.MySqlClient;
+using PriceProcessor.Test.TestHelpers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test

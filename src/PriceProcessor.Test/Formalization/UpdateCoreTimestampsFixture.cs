@@ -3,6 +3,7 @@ using System.Data;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test
 {

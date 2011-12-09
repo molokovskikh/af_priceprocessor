@@ -11,6 +11,8 @@ using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using LumiSoft.Net.Mime;
+using PriceProcessor.Test.TestHelpers;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -22,6 +24,7 @@ using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.log4net;
 using Test.Support.Suppliers;
+using Address = LumiSoft.Net.Mime.Address;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using WaybillSourceType = Test.Support.WaybillSourceType;
 using FileHelper = Inforoom.Common.FileHelper;
@@ -106,7 +109,7 @@ namespace PriceProcessor.Test
 		{
 			FillSourcesTable();
 			drLanSource = dtSources.Rows.Cast<DataRow>().Where(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader").FirstOrDefault();			
-			Type result = null;
+			Type result;
 			var types = Assembly.GetExecutingAssembly()
 								.GetModules()[0]
 								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
@@ -117,29 +120,30 @@ namespace PriceProcessor.Test
 
 		public bool MoveWaybill(string archFileName, string fileName)
 		{
-			return base.MoveWaybill(archFileName, fileName, drLanSource, reader);
+			return MoveWaybill(archFileName, fileName, drLanSource, reader);
 		}
 	}
 
 	[TestFixture]
 	public class WaybillLANSourceHandlerFixture
 	{
-		private SummaryInfo _summary = new SummaryInfo();
+		private string waybillDir;
+		private string rejectDir;
 
-		private const string WaybillsDirectory = @"Waybills";
+		private TestClient client;
+		private TestAddress address;
+		private TestSupplier supplier;
 
-		private const string RejectsDirectory = @"Rejects";
-
-		private ulong[] _supplierCodes = new ulong[1] { 2788 };
-
-		private string[] _waybillFiles2788 = new string[3] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
-		
 		[SetUp]
 		public void SetUp()
 		{
 			TestHelper.RecreateDirectories();
-			_summary.Client = TestClient.Create();
-			_summary.Supplier = TestSupplier.Create();
+			client = TestClient.Create();
+			address = client.Addresses[0];
+			supplier = TestSupplier.Create();
+
+			waybillDir = CreateSupplierDir(DocType.Waybill);
+			rejectDir = CreateSupplierDir(DocType.Reject);
 		}
 
 		private void Process_waybills()
@@ -148,20 +152,13 @@ namespace PriceProcessor.Test
 			handler.Process();
 		}
 
-		public void Insert_waybill_source(string readerClassName = "ProtekOmsk_3777_Reader")
+		public void PrepareLanSource(string readerClassName = "ProtekOmsk_3777_Reader")
 		{
-			With.Connection(connection => {
-				var command = new MySqlCommand(@"
-INSERT INTO `documents`.`waybill_sources` (FirmCode, EMailFrom, SourceId, ReaderClassName) VALUES (?FirmCode, ?EmailFrom, ?SourceId, ?ReaderClassName);
-UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?ClientCode
-", connection);
-				command.Parameters.AddWithValue("?FirmCode", _summary.Supplier.Id);
-				command.Parameters.AddWithValue("?EmailFrom", String.Format("{0}@test.test", _summary.Client.Id));
-				command.Parameters.AddWithValue("?ClientCode", _summary.Client.Id);
-				command.Parameters.AddWithValue("?ReaderClassName", readerClassName);
-				command.Parameters.AddWithValue("?SourceId", 4);
-				command.ExecuteNonQuery();
-			});
+			client.Settings.ParseWaybills = true;
+			client.Save();
+			supplier.WaybillSource.SourceType = WaybillSourceType.FtpInforoom;
+			supplier.WaybillSource.ReaderClassName = readerClassName;
+			supplier.Save();
 		}
 
 		private void MaitainAddressIntersection(uint addressId, string supplierDeliveryId = null)
@@ -179,10 +176,7 @@ from Future.Intersection i
 	left join Future.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
 where 
 	a.Id = ?AddressId
-and ai.Id is null
-"
-					, 
-					connection);
+and ai.Id is null", connection);
 
 				command.Parameters.AddWithValue("?AddressId", addressId);
 				command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId);
@@ -206,21 +200,10 @@ and a.Id = ?AddressId
 			});
 		}
 
-		public string Create_supplier_dir()
+		public string CreateSupplierDir(DocType type)
 		{
-			var directory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Supplier.Id.ToString());
-			directory = Path.Combine(directory, DocType.Waybill + "s");
-
-			if (Directory.Exists(directory))
-				Directory.Delete(directory, true);
-			Directory.CreateDirectory(directory);
-			return directory;
-		}
-
-		public string Create_supplier_reject_dir()
-		{
-			var directory = Path.Combine(Settings.Default.FTPOptBoxPath, _summary.Supplier.Id.ToString());
-			directory = Path.Combine(directory, DocType.Reject + "s");
+			var directory = Path.Combine(Settings.Default.FTPOptBoxPath, supplier.Id.ToString());
+			directory = Path.Combine(directory, type + "s");
 
 			if (Directory.Exists(directory))
 				Directory.Delete(directory, true);
@@ -237,7 +220,7 @@ and a.Id = ?AddressId
 		private string[] GetFileForAddress(DocType documentsType, TestAddress address = null)
 		{
 			if (address == null)
-				address = _summary.Client.Addresses[0];
+				address = client.Addresses[0];
 			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, address.Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
 		}
@@ -245,13 +228,13 @@ and a.Id = ?AddressId
 		private void CheckDocumentLogEntry(int waitingCountEntries, TestAddress address = null)
 		{
 			if (address == null)
-				address = _summary.Client.Addresses[0];
+				address = client.Addresses[0];
 
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.ClientCode == _summary.Client.Id &&
-					log.FirmCode == _summary.Supplier.Id &&
+					log.ClientCode == client.Id &&
+					log.FirmCode == supplier.Id &&
 					log.AddressId == address.Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
@@ -260,12 +243,11 @@ and a.Id = ?AddressId
 		[Test]
 		public void Parse_waybills()
 		{
-			var directory = Create_supplier_dir();
 			var filePath = @"..\..\Data\Waybills\890579.dbf";
 
-			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
-			Insert_waybill_source();
-			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
+			File.Copy(filePath, Path.Combine(waybillDir, String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
+			PrepareLanSource();
+			MaitainAddressIntersection(client.Addresses[0].Id);
 
 			Process_waybills();
 
@@ -277,31 +259,31 @@ and a.Id = ?AddressId
 		public void Parse_error_rejects()
 		{
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-				var address = _summary.Client.CreateAddress();
-				_summary.Client.Users[0].JoinAddress(address);
+				var address = client.CreateAddress();
+				client.Users[0].JoinAddress(address);
 				address.Save();
 				transaction.VoteCommit();
 			}
 
-			Assert.That(_summary.Client.Addresses.Count, Is.GreaterThanOrEqualTo(2));
+			Assert.That(client.Addresses.Count, Is.GreaterThanOrEqualTo(2));
 
-			var directory = Create_supplier_reject_dir();
+			var directory = CreateSupplierDir(DocType.Reject);
 			var filePath = @"..\..\Data\Waybills\14460_Брнскфарм апт. пункт (1) (дп №20111297)5918043df.txt";
 
-			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
+			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
 			
-			Insert_waybill_source("SupplierFtpReader");
+			PrepareLanSource("SupplierFtpReader");
 
-			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
-			MaitainAddressIntersection(_summary.Client.Addresses[1].Id, _summary.Client.Addresses[0].Id.ToString());
+			MaitainAddressIntersection(client.Addresses[0].Id);
+			MaitainAddressIntersection(client.Addresses[1].Id, client.Addresses[0].Id.ToString());
 
 			Process_waybills();
 
-			CheckClientDirectory(1, DocType.Reject, _summary.Client.Addresses[0]);
-			CheckDocumentLogEntry(1, _summary.Client.Addresses[0]);
+			CheckClientDirectory(1, DocType.Reject, client.Addresses[0]);
+			CheckDocumentLogEntry(1, client.Addresses[0]);
 
-			CheckClientDirectory(1, DocType.Reject, _summary.Client.Addresses[1]);
-			CheckDocumentLogEntry(1, _summary.Client.Addresses[1]);
+			CheckClientDirectory(1, DocType.Reject, client.Addresses[1]);
+			CheckDocumentLogEntry(1, client.Addresses[1]);
 
 			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillLANSourceHandlerForTesting).Name), "*.*");
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временные файлы {0}", tmpFiles.Implode());
@@ -310,26 +292,13 @@ and a.Id = ?AddressId
 		[Test]
 		public void Parse_waybills_Convert_Dbf_format()
 		{
-			var directory = Create_supplier_dir();
 			var filePath = @"..\..\Data\Waybills\890579.dbf";
 
-			File.Copy(filePath, Path.Combine(directory, String.Format("{0}_{1}", _summary.Client.Addresses[0].Id, Path.GetFileName(filePath))));
-			Insert_waybill_source();
-			MaitainAddressIntersection(_summary.Client.Addresses[0].Id);
+			File.Copy(filePath, Path.Combine(waybillDir, String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
+			PrepareLanSource();
+			MaitainAddressIntersection(client.Addresses[0].Id);
 
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == _summary.Client.Id).SingleOrDefault();
-			//запоминаем начальное состояние настройки
-			var source_IsConvertFormat = settings.IsConvertFormat;
-			//и если оно не включено, то включим принудительно для теста
-			if (!source_IsConvertFormat)
-			{
-				using (new TransactionScope())
-				{
-					settings.IsConvertFormat = true;
-					settings.AssortimentPriceId = (int)Core.Queryable.First().Price.Id;
-					settings.SaveAndFlush();
-				}
-			}
+			SetConvertDocumentSettings();
 
 			Process_waybills();
 
@@ -338,9 +307,9 @@ and a.Id = ?AddressId
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.ClientCode == _summary.Client.Id &&
-					log.FirmCode == _summary.Supplier.Id &&
-					log.AddressId == _summary.Client.Addresses[0].Id);
+					log.ClientCode == client.Id &&
+					log.FirmCode == supplier.Id &&
+					log.AddressId == client.Addresses[0].Id);
 				
 				Assert.That(logs.Count(), Is.EqualTo(2));
 				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
@@ -354,29 +323,16 @@ and a.Id = ?AddressId
 				Assert.IsTrue(data.Columns.Contains("ttn"));
 				Assert.IsTrue(data.Columns.Contains("przv_post"));
 			}
-
-			//если было включено принудительно, то вернем назад настройку.
-			if (!source_IsConvertFormat)
-			{
-				using (new TransactionScope())
-				{
-					settings.IsConvertFormat = false;
-					settings.AssortimentPriceId = null;
-				}
-			}
 		}
-
 
 		[Test]
 		public void TestSIAMoscow2788()
-		{            
-			var supplierCode = 2788;
+		{
+			var files = new[] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
 
-			PrepareDirectories();
+			PrepareLanSource("SIAMoscow_2788_Reader");
 
-			CopyFilesFromDataDirectory(_waybillFiles2788, supplierCode);
-
-			ClearDocumentHeadersTable(Convert.ToUInt64(supplierCode));
+			CopyFilesFromDataDirectory(files);
 
 			Process_waybills();
 		
@@ -384,132 +340,108 @@ and a.Id = ?AddressId
 			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.DocumentPath));
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
 		}
- 
+
 		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
+			supplier.WaybillSource.EMailFrom = String.Format("edata{0}@msk.katren.ru", supplier.Id);
+			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.Save();
+
 			FileHelper.DeleteDir(Settings.Default.DocumentPath);
 
-			var filter = new EventFilter<WaybillSourceHandler>();
-
-			TestHelper.ClearImapFolder();
-			TestHelper.StoreMessage(File.ReadAllBytes(@"..\..\Data\Unparse.eml"));
+			ImapHelper.ClearImapFolder();
+			var mime = PatchTo(@"..\..\Data\Unparse.eml",
+				String.Format("{0}@waybills.analit.net", address.Id),
+				String.Format("edata{0}@msk.katren.ru,vbskript@katren.ru", supplier.Id)
+			);
+			ImapHelper.StoreMessage(mime.ToByteData());
 
 			Process();
 
-			var ftp = Path.Combine(Settings.Default.DocumentPath, @"4147\rejects\");
-			Assert.That(Directory.Exists(ftp), "не обработали документ");
-			Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
-
-			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
+			var files = GetFileForAddress(DocType.Waybill);
+			Assert.That(files.Length, Is.EqualTo(1), "не обработали документ");
 		}
 
 		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
-			try
+			var beign = DateTime.Now;
+
+			var email = String.Format("edata{0}@msk.katren.ru", supplier.Id);
+			supplier.WaybillSource.EMailFrom = email;
+			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.Save();
+			client.Settings.ParseWaybills = true;
+			client.Save();
+
+			ImapHelper.ClearImapFolder();
+			ImapHelper.StoreMessageWithAttachToImapFolder(
+				String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
+				email,
+				@"..\..\Data\Waybills\8916.dbf");
+
+			Process();
+
+			var files = GetFileForAddress(DocType.Waybill);
+			Assert.That(files.Length, Is.EqualTo(1));
+
+			using (new SessionScope())
 			{
-				var beign = DateTime.Now;
-				var filter = new EventFilter<WaybillSourceHandler>();
-				var supplier = TestSupplier.Create();
-				var client = TestClient.Create();
+				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
+				Assert.That(logs.Count, Is.EqualTo(1));
+				var log = logs.Single();
+				Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
+				Assert.That(log.DocumentSize, Is.GreaterThan(0));
 
-				const string email = "edata@msk.katren.ru";
-				uint firmId = 0;
+				var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
+				Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
+			}
+		}
 
-				var query = string.Format("select FirmCode from documents.waybill_sources where EMailFrom LIKE '%{0}%' LIMIT 1;", email);
-				With.Connection(connection => { uint.TryParse(MySqlHelper.ExecuteScalar(connection, query).ToString(), out firmId); });
-
-				using (new SessionScope())
+		private void SetConvertDocumentSettings()
+		{
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			//запоминаем начальное состояние настройки
+			var isConvertFormat = settings.IsConvertFormat;
+			//и если оно не включено, то включим принудительно для теста
+			if (!isConvertFormat)
+			{
+				using (new TransactionScope())
 				{
-
-					if (firmId == 0)
-					{
-						var waybillsource = new TestWaybillSource() {EMailFrom = email, SourceType = WaybillSourceType.Email};
-						waybillsource.Id = supplier.Id;
-						waybillsource.Create();
-					}
-
-					//
-					var settings = WaybillSettings.Find(client.Id);
-					settings.ParseWaybills = true;
-					settings.Update();
-
-				}
-
-				TestHelper.ClearImapFolder();
-				TestHelper.StoreMessageWithAttachToImapFolder(
-					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
-					email,
-					@"..\..\Data\Waybills\8916.dbf");
-
-				Process();
-
-				Assert.That(filter.Events.Count, Is.EqualTo(0), "Ошибки {0}", filter.Events.Implode(e => e.ExceptionObject.ToString()));
-
-				var ftp = Path.Combine(Settings.Default.DocumentPath, String.Format(@"{0}\waybills\", client.Addresses[0].Id));
-				Assert.That(Directory.Exists(ftp), "не обработали документ");
-				Assert.That(Directory.GetFiles(ftp).Length, Is.EqualTo(1));
-
-				using (new SessionScope())
-				{
-					var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
-					Assert.That(logs.Count, Is.EqualTo(1));
-					var log = logs.Single();
-					Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
-					Assert.That(log.DocumentSize, Is.GreaterThan(0));
-
-					var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
-					Assert.That(documents.Count, Is.EqualTo(1));
-					Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
+					settings.IsConvertFormat = true;
+					settings.AssortimentPriceId = supplier.Prices.First().Id;
+					settings.SaveAndFlush();
 				}
 			}
-			finally
-			{
-				LogManager.ResetConfiguration();
-			}
+		}
 
+		private Mime PatchTo(string file, string to, string from)
+		{
+			var mime = Mime.Parse(file);
+			var main = mime.MainEntity;
+			main.To.Clear();
+			main.To.Parse(to);
+			main.From.Clear();
+			main.From.Parse(from);
+			return mime;
 		}
 
 		private void Process()
 		{
+			var filter = new EventFilter<WaybillSourceHandler>();
 			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
+			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
 		}
 
-		private void PrepareDirectories()
-		{
-			TestHelper.RecreateDirectories();
-
-			// Создаем директории для поставщиков 
-			foreach (var supplierCode in _supplierCodes)
-			{
-				var supplierDir = Settings.Default.FTPOptBoxPath + Path.DirectorySeparatorChar +
-								  Convert.ToString(supplierCode) + Path.DirectorySeparatorChar;
-				Directory.CreateDirectory(supplierDir);
-				Directory.CreateDirectory(supplierDir + WaybillsDirectory);
-				Directory.CreateDirectory(supplierDir + RejectsDirectory);
-			}
-		}
-
-		private void CopyFilesFromDataDirectory(string[] fileNames, int supplierCode)
+		private void CopyFilesFromDataDirectory(string[] fileNames)
 		{
 			var dataDirectory = Path.GetFullPath(Settings.Default.TestDataDirectory);
-			var supplierDirectory = Path.GetFullPath(Settings.Default.FTPOptBoxPath) + Path.DirectorySeparatorChar + supplierCode +
-									Path.DirectorySeparatorChar + WaybillsDirectory + Path.DirectorySeparatorChar;
 			// Копируем файлы в папку поставщика
 			foreach (var fileName in fileNames)
-				File.Copy(dataDirectory + fileName, supplierDirectory + fileName);
-		}
-
-		private void ClearDocumentHeadersTable(ulong supplierCode)
-		{
-			var queryDelete = @"
-DELETE FROM documents.DocumentHeaders
-WHERE FirmCode = ?SupplierId
-";
-			var paramSupplierId = new MySqlParameter("?SupplierId", supplierCode);
-			With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryDelete, paramSupplierId); });
+				File.Copy(Path.Combine(dataDirectory, fileName), Path.Combine(waybillDir, fileName));
 		}
 	}
 }

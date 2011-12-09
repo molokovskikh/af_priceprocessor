@@ -101,33 +101,36 @@ select
   PD.PriceType,
   pd.CostType,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
-  CD.FirmCode,
-  CD.ShortName as FirmShortName,
-  CD.FirmStatus,
-  CD.FirmSegment,
-  FR.JunkPos                                            as SelfJunkPos,
-  FR.AwaitPos                                           as SelfAwaitPos,
-  FR.VitallyImportantMask                               as SelfVitallyImportantMask,
-  ifnull(pd.ParentSynonym, pd.PriceCode)                as ParentSynonym,
+  pc.CostName,
+  s.Id as FirmCode,
+  s.Name as FirmShortName,
+  r.Region,
+  not s.Disabled as FirmStatus,
+  s.Segment as FirmSegment,
+  FR.JunkPos as SelfJunkPos,
+  FR.AwaitPos as SelfAwaitPos,
+  FR.VitallyImportantMask as SelfVitallyImportantMask,
+  ifnull(pd.ParentSynonym, pd.PriceCode) as ParentSynonym,
   PFR.*,
   pricefmts.FileExtention,
   pricefmts.ParserClassName,
   pd.BuyingMatrix,
-  pricefmts.Id											as PriceFormat
+  pricefmts.Id as PriceFormat
 from
-  usersettings.PriceItems pi,
+  (usersettings.PriceItems pi,
   usersettings.pricescosts pc,
   UserSettings.PricesData pd,
-  UserSettings.ClientsData cd,
+  Future.Suppliers s,
   Farm.formrules FR,
   Farm.FormRules PFR,
-  farm.pricefmts 
+  farm.pricefmts)
+  join Farm.Regions r on r.RegionCode = s.HomeRegion
 where
     pi.Id = {0}
 and pc.PriceItemId = pi.Id
 and pd.PriceCode = pc.PriceCode
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
-and cd.FirmCode = pd.FirmCode
+and s.Id = pd.FirmCode
 and FR.Id = pi.FormRuleId
 and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
 and pricefmts.ID = PFR.PriceFormatId", priceItemId);

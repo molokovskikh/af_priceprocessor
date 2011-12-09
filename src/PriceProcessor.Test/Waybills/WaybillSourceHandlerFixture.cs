@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Inforoom.Downloader;
 using System.IO;
 using MySql.Data.MySqlClient;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
@@ -35,40 +36,27 @@ namespace PriceProcessor.Test
 			CreateDirectoryPath();
 			ProcessData();
 		}
-
-		public void CheckMimeTest(Mime m)
-		{
-			CheckMime(m);
-		}	
 	}
 
 	[TestFixture]
 	public class WaybillSourceHandlerFixture
 	{
-		private IList<string> _fileNames = new List<string> {@"..\..\Data\Waybills\0000470553.dbf"};
-
 		private SummaryInfo _summary = new SummaryInfo();
 
-		private bool IsEmlFile = false;
+		private bool IsEmlFile;
 
 		[SetUp]
 		public void DeleteDirectories()
 		{
 			TestHelper.RecreateDirectories();
-			TestHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 		}
 
 		private static void PrepareSupplier(TestSupplier supplier, string from)
 		{
-			With.Connection(c => {
-				var command = new MySqlCommand(
-					@"INSERT INTO `documents`.`waybill_sources` (FirmCode, EMailFrom, SourceId) VALUES (?FirmCode, ?EmailFrom, ?SourceId);",
-					c);
-				command.Parameters.AddWithValue("?FirmCode", supplier.Id);
-				command.Parameters.AddWithValue("?EmailFrom", from);
-				command.Parameters.AddWithValue("?SourceId", 1);
-				command.ExecuteNonQuery();
-			});
+			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.WaybillSource.EMailFrom = from;
+			supplier.Save();
 		}
 
 		private static void PrepareClient(TestClient client)
@@ -96,13 +84,13 @@ namespace PriceProcessor.Test
 				bytes = File.ReadAllBytes(fileNames[0]);
 			else
 			{
-				var message = TestHelper.BuildMessageWithAttachments(
+				var message = ImapHelper.BuildMessageWithAttachments(
 					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
 					from, fileNames.ToArray());
 				bytes = message.ToByteData();
 			}
 
-			TestHelper.StoreMessage(
+			ImapHelper.StoreMessage(
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
 				Settings.Default.IMAPSourceFolder, bytes);
@@ -336,7 +324,7 @@ namespace PriceProcessor.Test
 			addrCc.GroupMembers.Add(new MailboxAddress("a_andreychenkov@oryol.protek.ru"));
 			message.MainEntity.Cc.Add(addrCc);
 
-			handler.CheckMimeTest(message);
+			handler.CheckMime(message);
 		}
 
 		[Test]
@@ -347,13 +335,13 @@ namespace PriceProcessor.Test
 			var from = String.Format("{0}@test.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
-			var message = TestHelper.BuildMessageWithAttachments(
+			var message = ImapHelper.BuildMessageWithAttachments(
 				String.Format("{0}@waybills.analit.net", "1"),
 				from,
 				new[] {@"..\..\Data\Waybills\bi055540.DBF"});
 			var bytes = message.ToByteData();
 
-			TestHelper.StoreMessage(
+			ImapHelper.StoreMessage(
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
 				Settings.Default.IMAPSourceFolder, bytes);
@@ -401,7 +389,7 @@ namespace PriceProcessor.Test
 			//    new[] {@"..\..\Data\Waybills\bi055540.DBF"});
 			//var bytes = message.ToByteData();
 
-			TestHelper.StoreMessage(
+			ImapHelper.StoreMessage(
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
 				Settings.Default.IMAPSourceFolder, bytes);

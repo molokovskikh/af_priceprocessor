@@ -82,8 +82,8 @@ namespace Inforoom.Downloader
 			client.Authenticate(_imapUser, _imapPassword);
 		}
 
-		protected override void CheckMime(Mime m)
-		{			
+		public override void CheckMime(Mime m)
+		{
 			var emailList = new List<string>();
 
 			_clientId = null;
@@ -389,33 +389,17 @@ WHERE
 			client.Value = clientId;
 
 			return With.Connection(c => Convert.ToInt32(MySqlHelper.ExecuteScalar(c,@"
-SELECT
-	count(*)
-FROM
-(
-	SELECT i.Id
-	FROM usersettings.clientsdata as clients
-		JOIN usersettings.clientsdata as suppliers ON suppliers.FirmCode = ?SupplierId
-		JOIN usersettings.pricesdata as prices ON prices.FirmCode = suppliers.FirmCode AND prices.enabled = 1 AND prices.AgencyEnabled = 1
-		JOIN usersettings.intersection as i ON
-			i.ClientCode = clients.FirmCode
-			AND i.PriceCode = prices.PriceCode
-			AND DisabledByAgency = 0
-			AND DisabledByFirm = 0
-			AND DisabledByClient = 0
-	WHERE clients.FirmCode = ?ClientId
-	UNION
-	SELECT i.Id
-	FROM future.clients
-		JOIN usersettings.clientsdata as suppliers ON suppliers.FirmCode = ?SupplierId
-		JOIN usersettings.pricesdata as prices ON prices.FirmCode = suppliers.FirmCode AND prices.enabled = 1 AND prices.AgencyEnabled = 1
-		JOIN future.intersection as i ON
-			i.ClientId = clients.Id
-			AND i.PriceId = prices.PriceCode
-			AND i.AgencyEnabled = 1
-			AND i.AvailableForClient = 1
-	WHERE clients.Id = ?ClientId
-) as Temp", supplier, client)) > 0);
+SELECT count(i.Id)
+FROM future.clients
+	JOIN Future.Suppliers as s ON s.Id = ?SupplierId
+	JOIN usersettings.pricesdata as prices ON prices.FirmCode = s.Id AND prices.enabled = 1 AND prices.AgencyEnabled = 1
+	JOIN future.intersection as i ON
+		i.ClientId = clients.Id
+		AND i.PriceId = prices.PriceCode
+		AND i.AgencyEnabled = 1
+		AND i.AvailableForClient = 1
+WHERE clients.Id = ?ClientId
+", supplier, client)) > 0);
 		}
 
 		private DataRow SelectWaybillSourceForClient(DataRow[] sources, uint? deliveryId)
@@ -557,12 +541,12 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
 				addressId = null;
 			}
 
-			var log = DocumentReceiveLog.Log(	Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
-												clientId,
-												addressId, 
-												file,
-												_currentDocumentType.DocType,
-												currentUID);
+			var log = DocumentReceiveLog.Log(Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
+				clientId,
+				addressId,
+				file,
+				_currentDocumentType.DocType,
+				currentUID);
 			log.CopyDocumentToClientDirectory();
 			return log;
 		}

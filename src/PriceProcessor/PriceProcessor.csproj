@@ -144,6 +144,7 @@
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
     <Compile Include="Formalizer\BuyingMatrixProcessor.cs" />
     <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
+    <Compile Include="Formalizer\New\Alerts.cs" />
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
@@ -158,7 +159,6 @@
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SynonymFirm.cs" />
     <Compile Include="Models\SynonymProduct.cs" />
-    <Compile Include="Rosta\RostaHandler.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
@@ -169,7 +169,6 @@
     <Compile Include="Formalizer\BasePriceParser.cs" />
     <Compile Include="Formalizer\New\BasePriceParser2.cs" />
     <Compile Include="Formalizer\CommerceMLParser.cs" />
-    <Compile Include="Rosta\FakeRostaParser.cs" />
     <Compile Include="Formalizer\FormalizationPosition.cs" />
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\InterPriceParser.cs" />
@@ -214,7 +213,6 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rosta\RostaDownloader.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\CertificateSourceDetector.cs" />

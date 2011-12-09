@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Data;
 using System.IO;
-using Castle.ActiveRecord;
-using Common.MySql;
 using Common.Tools;
-using Inforoom.PriceProcessor.Models;
 using log4net;
-using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -56,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			var table = new DataTable();
 
-			table.Columns.AddRange(new DataColumn[] {
+			table.Columns.AddRange(new[] {
 				new DataColumn("postid_af"),
 				new DataColumn("post_name_af"),
 				new DataColumn("apt_af"),
@@ -120,7 +116,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			var table = new DataTable();
 
-			table.Columns.AddRange(new DataColumn[] {
+			table.Columns.AddRange(new[] {
 				new DataColumn("ID"),
 				new DataColumn("Date", typeof(DateTime)),
 				new DataColumn("Address"),
