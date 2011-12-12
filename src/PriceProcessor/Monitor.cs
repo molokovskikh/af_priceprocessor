@@ -14,7 +14,6 @@ using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using RemotePriceProcessor;
 #if (!DEBUG)
-using Inforoom.PriceProcessor.Rosta;
 using Inforoom.Downloader;
 #endif
 
