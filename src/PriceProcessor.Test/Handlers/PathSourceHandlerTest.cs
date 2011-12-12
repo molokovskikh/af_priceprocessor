@@ -30,11 +30,11 @@ namespace PriceProcessor.Test.Handlers
 				PriceDateTime = DateTime.Now,
 				RequestInterval = 10
 			};
-            source.UpdateLastCheck();
+			source.UpdateLastCheck();
 			Assert.IsFalse(IsReadyForDownload(source));
 			source.RequestInterval = 0;
 			Assert.IsTrue(IsReadyForDownload(source));
-            Thread.Sleep(5000);
+			Thread.Sleep(5000);
 			source.PriceDateTime = DateTime.Now.Subtract(new TimeSpan(0, 1, 0));
 			source.RequestInterval = 4;
 			Assert.IsTrue(IsReadyForDownload(source));
@@ -75,7 +75,7 @@ namespace PriceProcessor.Test.Handlers
 				Assert.IsTrue(FailedSources.Contains(item.PriceItemId));
 		}
 
-		[Test]
+		[Test, Ignore("в тестах нельзя ходить на внешние ресурсы")]
 		public void TestDownloadSeveralFiles()
 		{
 			var sql = @"
@@ -85,25 +85,25 @@ update farm.sources set sourcetypeid = 3 where sourcetypeid = 2;";
 			TestHelper.RecreateDirectories();
 			var source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.pressa.html", "index.pressa.html");
 			source.LastDownload = new DateTime(DateTime.Now.Year, 1, 1);
-            source.SaveAndFlush();
-            var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
-            priceCost.BaseCost = true;
-            priceCost.Save();            
+			source.SaveAndFlush();
+			var priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
+			priceCost.BaseCost = true;
+			priceCost.Save();            
 			
 
 			source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.html", "index.html");
 			source.LastDownload = DateTime.Now.AddDays(30);
 			source.SaveAndFlush();
-            priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
-            priceCost.BaseCost = true;
-            priceCost.Save();
+			priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
+			priceCost.BaseCost = true;
+			priceCost.Save();
 
 			source = TestPriceSource.CreateHttpPriceSource("www.ru/rus", "index.about.html", "index.about.html");
 			source.LastDownload = new DateTime(DateTime.Now.Year, 1, 1);            
 			source.SaveAndFlush();
-            priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
-            priceCost.BaseCost = true;
-            priceCost.Save();
+			priceCost = TestPriceCost.Queryable.Where(c => c.PriceItem.Id == source.Id).FirstOrDefault();
+			priceCost.BaseCost = true;
+			priceCost.Save();
 
 			var handler = new HTTPSourceHandler();
 			handler.StartWork();

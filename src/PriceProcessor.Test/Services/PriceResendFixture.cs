@@ -43,8 +43,15 @@ namespace PriceProcessor.Test.Services
 		[TearDown]
 		public void TearDown()
 		{
-			Assert.That(((ICommunicationObject)priceProcessor).State, Is.EqualTo(CommunicationState.Opened));
-			((ICommunicationObject)priceProcessor).Close();
+			var communicationObject = ((ICommunicationObject)priceProcessor);
+			if (communicationObject.State == CommunicationState.Faulted)
+			{
+				communicationObject.Abort();
+			}
+			else
+			{
+				communicationObject.Close();
+			}
 			_serviceHost.Close();
 		}
 
@@ -277,15 +284,20 @@ namespace PriceProcessor.Test.Services
 		{
 			TestPrice rootPrice;
 			TestPrice childPrice;
+			var supplier1 = TestSupplier.Create();
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				rootPrice = TestSupplier.CreateTestSupplierWithPrice();
+				rootPrice = supplier1.Prices[0];
+				rootPrice.SetFormat(PriceFormatType.NativeDbf);
+				rootPrice.Save();
 				scope.VoteCommit();
 			}
 
+			var supplier2 = TestSupplier.Create();
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				childPrice = TestSupplier.CreateTestSupplierWithPrice();
+				childPrice = supplier2.Prices[0];
+				childPrice.SetFormat(PriceFormatType.NativeDbf);
 
 				new TestUnrecExp("test", "test", childPrice).Save();
 				new TestUnrecExp("test", "test", rootPrice).Save();

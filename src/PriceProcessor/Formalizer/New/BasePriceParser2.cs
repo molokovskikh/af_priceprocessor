@@ -790,17 +790,13 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 			});
 		}
 
-        public IList<string> GetAllNames()
-        {            
-            List<string> names = new List<string>();
-            foreach (var position in _reader.Read())
-            {
-                if (String.IsNullOrEmpty(position.PositionName))
-                    continue;
-                names.Add(position.PositionName); 
-            }
-            return names;
-        }
+		public IList<string> GetAllNames()
+		{
+			return _reader.Read()
+				.Where(p => !String.IsNullOrEmpty(p.PositionName))
+				.Select(p => p.PositionName)
+				.ToList();
+		}
 
 		private void InternalFormalize()
 		{

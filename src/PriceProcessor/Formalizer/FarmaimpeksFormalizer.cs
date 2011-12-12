@@ -203,8 +203,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IList<string> GetAllNames()
 		{
-			List<string> names = new List<string>();          
-			using (PriceXmlReader reader = new PriceXmlReader(_fileName))
+			var names = new List<string>();
+			using (var reader = new PriceXmlReader(_fileName))
 			{
 				foreach (var parsedPrice in reader.Prices())
 				{
@@ -231,11 +231,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 					var parser = new BasePriceParser2(reader, info);
 					parser.Downloaded = Downloaded;
 
-					IList<string> ls = parser.GetAllNames();
+					var ls = parser.GetAllNames();
 					if (ls != null)
 						names.AddRange(ls);
 				}
-			}            
+			}
 			return names;
 		}
 

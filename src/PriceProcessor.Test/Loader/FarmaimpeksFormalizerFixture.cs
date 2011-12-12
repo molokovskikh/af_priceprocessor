@@ -25,27 +25,13 @@ namespace PriceProcessor.Test.Loader
 			prices = new List<TestPrice>();
 			using(new SessionScope())
 			{
-				priceItem = new TestPriceItem {
-					Source = new TestPriceSource {
-						SourceType = PriceSourceType.Email,
-					},
-					Format = new TestFormat {
-						PriceFormat = PriceFormatType.FarmImpeks,
-						Delimiter = ";",
-						FName1 = "F1",
-						FFirmCr = "F2",
-						FQuantity = "F3"
-					},
-				};
-
 				var supplier = TestSupplier.Create();
-				var price = new TestPrice(supplier) {
-					CostType = CostType.MultiColumn,
-					ParentSynonym = 4745,
-					PriceName = "2"
-				};
-				var cost = price.NewPriceCost(priceItem, "123");
+				var price = supplier.Prices[0];
+				price.ParentSynonym = 4745;
+				var cost = price.Costs[0];
 				cost.Name = "2";
+				priceItem = cost.PriceItem;
+				priceItem.Format.PriceFormat = PriceFormatType.FarmImpeks;
 				price.SaveAndFlush();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
@@ -55,7 +41,7 @@ namespace PriceProcessor.Test.Loader
 					ParentSynonym = 4745,
 					PriceName = "11"
 				};
-				cost = price.NewPriceCost(priceItem, "123");
+				cost = price.Costs[0];
 				cost.Name = "11";
 				price.SaveAndFlush();
 				supplier.Maintain();
@@ -123,6 +109,7 @@ namespace PriceProcessor.Test.Loader
 			File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"));
 			File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),
 					  Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+			Console.WriteLine(priceItem.Id);
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
 			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));

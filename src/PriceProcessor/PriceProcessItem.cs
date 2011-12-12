@@ -92,72 +92,72 @@ group by pi.Id",
 			string filename = String.Empty;
 			switch (format) {					
 					case FormatType.NativeDbf :
-            			filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf").FirstOrDefault();
-            			break;					
+						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf").FirstOrDefault();
+						break;					
 					case FormatType.NativeXls :
 						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls").FirstOrDefault();
-            			break;
+						break;
 					case FormatType.NativeDelimiter1251 :
 						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt").FirstOrDefault();
-            			break;
+						break;
 					default:
 						filename = files[0];
-            			break;
-            	}
+						break;
+				}
 			if(String.IsNullOrEmpty(filename)) filename = files[0];
 			return filename;
 		}
 
-        public static PriceProcessItem GetProcessItem(uint priceItemId)
-        {
-        	var dtRules = PricesValidator.LoadFormRules(priceItemId);
+		public static PriceProcessItem GetProcessItem(uint priceItemId)
+		{
+			var dtRules = PricesValidator.LoadFormRules(priceItemId);
 			if(dtRules.Rows.Count == 0) return null;
-        	var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
-            var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
-                                            String.Format(@"{0}.*", priceItemId));
-            if(files.Count() == 0)
-                files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.InboundPath),
-                                            String.Format(@"{0}.*", priceItemId));
+			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
+			var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
+											String.Format(@"{0}.*", priceItemId));
+			if(files.Count() == 0)
+				files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.InboundPath),
+											String.Format(@"{0}.*", priceItemId));
 
-            string filename = String.Empty;
-            if (files.Count() > 0) 
-            	filename = GetFile(files, fmt);
-            else return null;
-            if (String.IsNullOrEmpty(filename)) return null;           
-            return TryToLoadPriceProcessItem(filename);
-        }
+			string filename = String.Empty;
+			if (files.Count() > 0) 
+				filename = GetFile(files, fmt);
+			else return null;
+			if (String.IsNullOrEmpty(filename)) return null;
+			return TryToLoadPriceProcessItem(filename);
+		}
 
-        public IList<string> GetAllNames()
-        {
-            IList<string> names = null;          
-            var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
-                            PriceItemId.ToString() + "\\";
-            var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
-             
-            if (Directory.Exists(tempPath))
-                Common.FileHelper.DeleteDir(tempPath);
-            Directory.CreateDirectory(tempPath);
-            try
-            {
-                try
-                {
-                    IPriceFormalizer _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
-                    _workPrice.Downloaded = Downloaded;
-                    _workPrice.InputFileName = FilePath;
-                    names = _workPrice.GetAllNames();                    
-                }
-                catch (WarningFormalizeException e)
-                {
-                    return null;
-                }
-            }
-            finally
-            {
-                Directory.Delete(tempPath, true);    
-            }
+		public IList<string> GetAllNames()
+		{
+			IList<string> names;
+			var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
+							PriceItemId.ToString() + "\\";
+			var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
+			 
+			if (Directory.Exists(tempPath))
+				Common.FileHelper.DeleteDir(tempPath);
+			Directory.CreateDirectory(tempPath);
+			try
+			{
+				try
+				{
+					var _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
+					_workPrice.Downloaded = Downloaded;
+					_workPrice.InputFileName = FilePath;
+					names = _workPrice.GetAllNames();
+				}
+				catch (WarningFormalizeException e)
+				{
+					return null;
+				}
+			}
+			finally
+			{
+				Directory.Delete(tempPath, true);
+			}
 
-            return names;
-        }
+			return names;
+		}
 
 		public bool IsReadyForProcessing(IEnumerable<PriceProcessThread> processList)
 		{

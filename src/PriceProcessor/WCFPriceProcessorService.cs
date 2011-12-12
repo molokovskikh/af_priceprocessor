@@ -38,9 +38,9 @@ SELECT
   logs.Addition as DAddition,
   logs.ArchFileName as DArchFileName,
   logs.ExtrFileName as DExtrFileName,
-  s.Name as DFirmName,
+  sp.Name as DFirmName,
   r.Region as DRegion,
-  s.Segment as DFirmSegment,
+  sp.Segment as DFirmSegment,
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) as DPriceName,
   pim.Id as DPriceItemId,
   pd.PriceCode as DPriceCode,
@@ -54,7 +54,7 @@ SELECT
   pricefmts.FileExtention as DFileExtention
 FROM
   logs.downlogs as logs,
-  Future.Suppliers s,
+  Future.Suppliers sp,
   usersettings.pricesdata pd,
   usersettings.pricescosts pc,
   usersettings.PriceItems pim,
@@ -68,8 +68,8 @@ WHERE
 and pc.PriceItemId = pim.Id
 and pc.PriceCode = pd.PriceCode
 and ((pd.CostType = 1) OR (pc.BaseCost = 1))
-and s.Id = pd.firmcode
-and r.regioncode = s.HomeRegion
+and sp.Id = pd.firmcode
+and r.regioncode = sp.HomeRegion
 and s.Id = pim.SourceId
 and st.Id = s.SourceTypeId
 and logs.ResultCode in (2, 3)
@@ -184,6 +184,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				if (price.ParentSynonym != null)
 					priceId = price.ParentSynonym.Value;
 
+				Console.WriteLine(priceId);
 				var adapter = new MySqlDataAdapter(@"
 select
   pc.PriceItemId,
@@ -216,6 +217,7 @@ and pf.Id = fr.PriceFormatId", c);
 				{
 					try
 					{
+						Console.WriteLine(row["PriceItemId"]);
 						RetransPrice(row, Settings.Default.BasePath);
 					}
 					catch (Exception e)

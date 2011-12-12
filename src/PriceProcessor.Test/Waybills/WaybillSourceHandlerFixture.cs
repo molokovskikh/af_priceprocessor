@@ -128,11 +128,11 @@ namespace PriceProcessor.Test
 			}			
 		}
 
-		private WaybillSourceHandlerForTesting Process()
+		private void Process()
 		{			
-			WaybillSourceHandlerForTesting handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
-			return handler;
+			return;
 		}
 
 		[Test, Description("Проверка вставки даты документа после разбора накладной")]
@@ -305,21 +305,19 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Check_destination_addresses()
 		{
-			string emailList = String.Empty;
-
-			TestClient client = TestClient.Create();
+			var client = TestClient.Create();
 
 			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			Mime message = Mime.Parse(@"..\..\Data\EmailSourceHandlerTest\WithCC.eml");
+			var message = Mime.Parse(@"..\..\Data\EmailSourceHandlerTest\WithCC.eml");
 
 			message.MainEntity.To.Clear();
 			message.MainEntity.Cc.Clear();
 
-			GroupAddress addrTo = new GroupAddress();		
+			var addrTo = new GroupAddress();		
 			addrTo.GroupMembers.Add(new MailboxAddress("klpuls@mail.ru"));
 			message.MainEntity.To.Add(addrTo);
 
-			GroupAddress addrCc = new GroupAddress();
+			var addrCc = new GroupAddress();
 			addrCc.GroupMembers.Add(new MailboxAddress(String.Format("{0}@waybills.analit.net", client.Addresses[0].Id)));
 			addrCc.GroupMembers.Add(new MailboxAddress("a_andreychenkov@oryol.protek.ru"));
 			message.MainEntity.Cc.Add(addrCc);
@@ -351,54 +349,6 @@ namespace PriceProcessor.Test
 
 			var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
 			Assert.That(docs.Count, Is.EqualTo(0));
-		}
-
-		[Test, Ignore("Разбор ситуации с письмом")]
-		public void CheckTrouble()
-		{
-			//IsEmlFile = true;
-			//SetUp();
-			//3649142.eml
-			var emailList = String.Empty;
-
-			var client = TestClient.Create();
-
-
-			///var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-
-			//handler.CheckMimeTest(message);
-
-			var begin = DateTime.Now;
-			var supplier = TestSupplier.Create();
-			var from = String.Format("{0}@test.test", supplier.Id);
-			PrepareSupplier(supplier, from);
-
-			Mime message = Mime.Parse(@"..\..\Data\3649142.eml");
-
-			message.MainEntity.To.Clear();
-			message.MainEntity.To.Add(new MailboxAddress(String.Format("{0}@waybills.analit.net", client.Addresses[0].Id)));
-
-			message.MainEntity.From.Clear();
-			message.MainEntity.From.Add(new MailboxAddress(from));
-
-			var bytes = message.ToByteData();
-
-			//var message = TestHelper.BuildMessageWithAttachments(
-			//    String.Format("{0}@waybills.analit.net", "1"),
-			//    from,
-			//    new[] {@"..\..\Data\Waybills\bi055540.DBF"});
-			//var bytes = message.ToByteData();
-
-			ImapHelper.StoreMessage(
-				Settings.Default.TestIMAPUser,
-				Settings.Default.TestIMAPPass,
-				Settings.Default.IMAPSourceFolder, bytes);
-
-			_summary.Supplier = supplier;
-			_summary.Client = client;
-
-			Process();
-
 		}
 	}
 }
