@@ -17,11 +17,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			string fullPriceName;
 			if (info.CostType == CostTypes.MultiColumn)
 			{
-				fullPriceName = String.Format("[Колонка] {0}", info.CostName);
+				fullPriceName = info.PriceName;
 			}
 			else
 			{
-				fullPriceName = info.PriceName;
+				fullPriceName = String.Format("[Колонка] {0}", info.CostName);
 			}
 			var fullSupplierName = String.Format("{0} - {1}", info.FirmShortName, info.Region);
 
