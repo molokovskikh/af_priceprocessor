@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Code, "ID_MP")
 				.Line(l => l.Product, "NAMETOW")
 
-				.Line(l => l.ProducerCostWithoutNDS, "SUMIZGOTWON")
+				.Line(l => l.ProducerCostWithoutNDS, "SUMIZGOTWO")
 				.Line(l => l.ProducerCost, "SUMIZGOT")
 				.Line(l => l.SupplierCostWithoutNDS, "SUMPRIHWON")
 				.Line(l => l.SupplierCost, "SUMPRIH")
@@ -54,12 +54,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return data.Columns.Contains("SUMIZGOTWON") &&
+			return data.Columns.Contains("SUMIZGOTWO") &&
 				   data.Columns.Contains("ID_MP") &&
 				   data.Columns.Contains("SUMPRIH") &&
 				   data.Columns.Contains("SUMPRIHWON") &&
 				   data.Columns.Contains("PRICESWN") &&
-				   data.Columns.Contains("PRICE_REG");
+				   data.Columns.Contains("IDDOC");
 		}
 	}
 }
