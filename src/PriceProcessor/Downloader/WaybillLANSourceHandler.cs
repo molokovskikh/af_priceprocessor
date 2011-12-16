@@ -14,6 +14,7 @@ using System.Net.Mail;
 using System.Reflection;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Attachment = System.Net.Mail.Attachment;
 using FileHelper = Inforoom.Common.FileHelper;
 
 namespace Inforoom.Downloader

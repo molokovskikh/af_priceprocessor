@@ -129,6 +129,7 @@
     <Compile Include="Downloader\BaseSourceHandler.cs" />
     <Compile Include="Downloader\CertificateSourceHandler.cs" />
     <Compile Include="Downloader\ClearArchivedPriceSourceHandler.cs" />
+    <Compile Include="Downloader\DocSourceHandler.cs" />
     <Compile Include="Downloader\DocumentReaders\BaseDocumentReader.cs" />
     <Compile Include="Downloader\DocumentReaders\SupplierFtpReader.cs" />
     <Compile Include="Downloader\DocumentReaders\ProtekMoscow_180_Reader.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Mailer.cs" />
+    <Compile Include="Models\User.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="MySqlUtils.cs" />
     <Compile Include="PriceItemList.cs" />
@@ -222,6 +224,8 @@
     <Compile Include="Waybills\CertificateSources\RostaCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\SiaSource.cs" />
     <Compile Include="Waybills\Models\Address.cs" />
+    <Compile Include="Waybills\Models\Attachment.cs" />
+    <Compile Include="Waybills\Models\AttachmentSendLog.cs" />
     <Compile Include="Waybills\Models\Certificate.cs" />
     <Compile Include="Waybills\Models\CertificateFile.cs" />
     <Compile Include="Waybills\Models\CertificateSource.cs" />
@@ -232,6 +236,8 @@
     <Compile Include="Waybills\Models\DocumentLine.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Models\Invoice.cs" />
+    <Compile Include="Waybills\Models\Mail.cs" />
+    <Compile Include="Waybills\Models\MailSendLog.cs" />
     <Compile Include="Waybills\Models\WaybillSettings.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingCheboksaryParser.cs" />

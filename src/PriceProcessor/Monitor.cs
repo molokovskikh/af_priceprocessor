@@ -52,7 +52,8 @@ namespace Inforoom.PriceProcessor
 				new ClearArchivedPriceSourceHandler(),
 				new ProtekWaybillHandler(),
 				new CertificateSourceHandler(),
-				new RostaCertificateCatalogHandler()
+				new RostaCertificateCatalogHandler(),
+				new DocSourceHandler()
 #endif
 			};
 

@@ -206,7 +206,8 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 				Settings.Default.FTPOptBoxPath,
 				Settings.Default.DownWaybillsPath,
 				Settings.Default.DocumentPath,
-				Settings.Default.CertificatePath
+				Settings.Default.CertificatePath,
+				Settings.Default.AttachmentPath
 			};
 
 			dirs.Each(d => {
