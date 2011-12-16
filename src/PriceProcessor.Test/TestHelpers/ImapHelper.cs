@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
+using NUnit.Framework;
 
 namespace PriceProcessor.Test.TestHelpers
 {
@@ -95,6 +97,56 @@ namespace PriceProcessor.Test.TestHelpers
 					attachEntity.Data = fileBytes;
 				}
 			}
+			return responseMime;
+		}
+
+		public static Mime BuildMessageWithAttachments(string subject, string body, string[] to, string[] from, string[] files)
+		{
+			Assert.That(to, Is.Not.Null, "Список to пуст");
+			Assert.That(to.Length, Is.GreaterThan(0), "Список to пуст");
+			Assert.That(from, Is.Not.Null, "Список from пуст");
+			Assert.That(from.Length, Is.GreaterThan(0), "Список from пуст");
+
+			var responseMime = new Mime();
+
+			responseMime.MainEntity.Subject = subject;
+			responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+
+			if (!String.IsNullOrWhiteSpace(body)) {
+				var textEntity = responseMime.MainEntity.ChildEntities.Add();
+				textEntity.ContentType = MediaType_enum.Text_plain;
+				textEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+				textEntity.DataText = body;
+			}
+
+			var fromAddresses = new AddressList();
+			fromAddresses.Parse(from[0]);
+			responseMime.MainEntity.From = fromAddresses;
+
+			if (from.Length > 1)
+				responseMime.MainEntity.Sender = MailboxAddress.Parse(from[1]);
+
+			var toList = new AddressList();
+			toList.Parse(to.Implode());
+			responseMime.MainEntity.To = toList;
+
+			if (files != null)
+				foreach (var fileName in files)
+				{
+					var attachEntity = responseMime.MainEntity.ChildEntities.Add();
+					attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+					attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+					attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+					attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
+
+					using (var fileStream = File.OpenRead(fileName))
+					{
+						var fileBytes = new byte[fileStream.Length];
+						fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
+						attachEntity.Data = fileBytes;
+					}
+				}
+
 			return responseMime;
 		}
 

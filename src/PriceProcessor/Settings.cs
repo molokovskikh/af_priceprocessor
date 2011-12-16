@@ -1054,5 +1054,38 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
+		public string DocIMAPUser
+		{
+			get
+			{
+				return ((string)(this["DocIMAPUser"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("12345678")]
+		public string DocIMAPPass
+		{
+			get
+			{
+				return ((string)(this["DocIMAPPass"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("Attachments")]
+		public string AttachmentPath
+		{
+			get
+			{
+				return ((string)(this["AttachmentPath"]));
+			}
+		}
+
 	}
 }
