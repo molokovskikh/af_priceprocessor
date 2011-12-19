@@ -1,6 +1,7 @@
 ﻿using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -36,6 +37,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				DocumentLine != null ? DocumentLine.Id.ToString() : "null"
 			);
 		}
-		
+
+		public string GetErrorId()
+		{
+			return "{0}_{1}_{2}".Format(CertificateSource.Id, CatalogProduct.Id, SerialNumber);
+		}
+
 	}
 }

@@ -7,7 +7,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class RostaCertificateSource : ICertificateSource
+	public class RostaCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
@@ -20,10 +20,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			return catalog != null;
 		}
 
-		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
-			var result = new List<CertificateFile>();
-
 			var catalogs = CertificateSourceCatalog.Queryable
 				.Where(
 					c =>
@@ -54,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 						tempDowloadDir);
 
 					if (downloadFiles.Count > 0)
-						result.Add(new CertificateFile(
+						files.Add(new CertificateFile(
 							downloadFiles[0].FileName,
 							certificateSourceCatalog.OriginFilePath,
 							fileName,
@@ -63,8 +61,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				}
 
 			}
-
-			return result;
 		}
 
 		private string ExtractFileName(string originFilePath)

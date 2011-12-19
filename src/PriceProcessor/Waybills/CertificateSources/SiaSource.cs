@@ -10,14 +10,14 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class SiaSource : ICertificateSource
+	public class SiaSource : AbstractCertifcateSource, ICertificateSource
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
 			return !String.IsNullOrEmpty(line.Code) && !String.IsNullOrEmpty(line.SerialNumber);
 		}
 
-		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var client = new WebClient();
 			var data = client.UploadValues("http://sds.siachel.ru/sds/index.php", new NameValueCollection {
@@ -26,16 +26,13 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			});
 			var text = Encoding.GetEncoding(1251).GetString(data);
 			
-			var result = new List<CertificateFile>();
-
 			foreach (var file in ParseFiles(text))
 			{
 				var localFile = Path.GetTempFileName();
 				var uri = "http://sds.siachel.ru/DOCS/" + file.Replace("\\", "/");
 				client.DownloadFile(uri, localFile);
-				result.Add(new CertificateFile(localFile, file, file));
+				files.Add(new CertificateFile(localFile, file, file));
 			}
-			return result;
 		}
 
 		public static IEnumerable<string> ParseFiles(string data)

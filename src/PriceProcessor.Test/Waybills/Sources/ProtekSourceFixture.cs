@@ -9,7 +9,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 	[TestFixture]
 	public class ProtekSourceFixture
 	{
-		[Test]
+		[Test, Ignore("Для ручной проверки что бы не долбить сервер Протек")]
 		public void Check_protek_source()
 		{
 			var source = new ProtekSource();
