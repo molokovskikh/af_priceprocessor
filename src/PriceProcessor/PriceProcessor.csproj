@@ -218,6 +218,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="UueHelper.cs" />
     <Compile Include="Waybills\CertificateSourceDetector.cs" />
+    <Compile Include="Waybills\CertificateSources\AbstractCertifcateSource.cs" />
     <Compile Include="Waybills\CertificateSources\AptekaHoldingVoronezhCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ProtekSource.cs" />

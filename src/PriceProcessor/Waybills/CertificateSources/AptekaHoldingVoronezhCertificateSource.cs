@@ -6,7 +6,7 @@ using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class AptekaHoldingVoronezhCertificateSource : ICertificateSource
+	public class AptekaHoldingVoronezhCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
 		private ILog _logger = LogManager.GetLogger(typeof (AptekaHoldingVoronezhCertificateSource));
 
@@ -17,33 +17,29 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			       !String.IsNullOrEmpty(documentLine.PassportFilename);
 		}
 
-		public IList<CertificateFile> GetCertificateFiles(CertificateTask certificateTask)
+		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
-			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, certificateTask.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
-
-			var list = new List<CertificateFile>();
+			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			if (Directory.Exists(certificatesPath)) {
 
-				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.CertificateFilename))
-					AddFiles(certificatesPath, certificateTask.DocumentLine.CertificateFilename, list);
+				if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
+					AddFiles(certificatesPath, task.DocumentLine.CertificateFilename, files);
 
-				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.ProtocolFilemame))
-					AddFiles(certificatesPath, certificateTask.DocumentLine.ProtocolFilemame, list);
+				if (!String.IsNullOrEmpty(task.DocumentLine.ProtocolFilemame))
+					AddFiles(certificatesPath, task.DocumentLine.ProtocolFilemame, files);
 
-				if (!String.IsNullOrEmpty(certificateTask.DocumentLine.PassportFilename))
-					AddFiles(certificatesPath, certificateTask.DocumentLine.PassportFilename, list);
+				if (!String.IsNullOrEmpty(task.DocumentLine.PassportFilename))
+					AddFiles(certificatesPath, task.DocumentLine.PassportFilename, files);
 
 			}
 			else 
 				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
 					certificatesPath,
-					certificateTask);
-
-			return list;
+					task);
 		}
 
-		private void AddFiles(string certificatesPath, string certificateFilenameMask, List<CertificateFile> list)
+		private void AddFiles(string certificatesPath, string certificateFilenameMask, IList<CertificateFile> list)
 		{
 			var files = Directory.GetFiles(certificatesPath, certificateFilenameMask + "*");
 

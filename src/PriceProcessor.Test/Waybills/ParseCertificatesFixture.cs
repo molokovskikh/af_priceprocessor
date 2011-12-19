@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Castle.Core;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
@@ -810,6 +812,41 @@ namespace PriceProcessor.Test.Waybills
 			//Задача должна быть удалена из базы данных
 			var deletedTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
 			Assert.That(deletedTask, Is.Null);
+		}
+
+
+		public class TestAbstractCertifcateSource : AbstractCertifcateSource
+		{
+			public List<string> LocalFiles = new List<string>();
+
+			public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
+			{
+				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
+				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
+				files.ForEach(f => { 
+					LocalFiles.Add(f.LocalFile);
+					if (!File.Exists(f.LocalFile))
+						File.WriteAllText(f.LocalFile, "this is test text");
+				});
+
+				throw new NotImplementedException();
+			}
+		}
+
+		[Test(Description = "Проверяем удаление локальных файлов при ошибке в CertifcateSource")]
+		public void DeleteLocalFilesOnError()
+		{
+			var source = new TestAbstractCertifcateSource();
+			var task = new CertificateTask();
+
+			try {
+				source.GetCertificateFiles(task);
+				Assert.Fail("Не возникло исключение NotImplementedException");
+			}
+			catch (NotImplementedException) {
+			}
+
+		    Assert.That(source.LocalFiles.TrueForAll(f => !File.Exists(f)), "Не должно существовать локальных файлов");
 		}
 	}
 }
