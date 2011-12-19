@@ -274,6 +274,15 @@ namespace PriceProcessor.Test.Waybills
 			{
 				ProcessData();
 			}
+
+			public Func<CertificateTask, CertificateSource> OnSource { get; set; }
+
+			protected override CertificateSource DetectSource(CertificateTask certificateTask)
+			{
+				if (OnSource != null)
+					return OnSource(certificateTask);
+				return base.DetectSource(certificateTask);
+			}
 		}
 
 		/// <summary>
@@ -592,6 +601,215 @@ namespace PriceProcessor.Test.Waybills
 			//}
 		}
 
+		[Test(Description = "проверка доступа к объекту CertificateTask после удаления")]
+		public void AccessToDeletedTask()
+		{
+			DeleteNonProcessedTasks();
 
+			var testSupplier = TestSupplier.Create();
+			var supplier = Supplier.Find(testSupplier.Id);
+
+			var certificateSource = CreateRealSourceForSupplier(supplier);
+			var serialNumber = Path.GetRandomFileName();
+			var catalog = TestCatalogProduct.Queryable.First();
+			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
+
+			var documentLine = CreateBodyLine(supplier.Id, serialNumber, product);
+
+			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			var task = new CertificateTask();
+			using (new TransactionScope()) {
+				task.CertificateSource = certificateSource;
+				task.CatalogProduct = Catalog.Find(catalog.Id);
+				task.SerialNumber = serialNumber;
+				task.DocumentLine = realDocumentLine;
+				task.Create();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+
+			using (new SessionScope()) {
+				task.Delete();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+			Assert.That(task.CertificateSource, Is.Not.Null);
+			Assert.That(task.CatalogProduct, Is.Not.Null);
+			Assert.IsNotNullOrEmpty(task.SerialNumber);
+
+			var deletedTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
+			Assert.That(deletedTask, Is.Null);
+			Assert.IsNotNullOrEmpty(task.SerialNumber);
+		}
+
+
+		public class TestErrorSource : ICertificateSource
+		{
+			public bool CertificateExists(DocumentLine line)
+			{
+				return !String.IsNullOrEmpty(line.SerialNumber);
+			}
+
+			public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+			{
+				throw new Exception("Возникла ошибка при обработке задачи: {0}".Format(task));
+			}
+		}
+
+		public class TestSuccessSource : ICertificateSource
+		{
+			public bool CertificateExists(DocumentLine line)
+			{
+				return !String.IsNullOrEmpty(line.SerialNumber);
+			}
+
+			public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+			{
+				var list = new List<CertificateFile>();
+
+				var tempFile = Path.GetTempFileName();
+				list.Add(new CertificateFile(tempFile, Path.GetFileNameWithoutExtension(tempFile), Path.GetFileName(tempFile), task.CertificateSource));
+
+				return list;
+			}
+		}
+
+		[Test(Description = "проверяем удаление задач сертификатов при возникновении ошибок при обработки")]
+		public void SendErrorsOnProcessTask()
+		{
+			DeleteNonProcessedTasks();
+
+			var testSupplier = TestSupplier.Create();
+			var supplier = Supplier.Find(testSupplier.Id);
+
+			var certificateSource = CreateSourceForSupplier(supplier, typeof(TestErrorSource).Name);
+
+			var serialNumber = Path.GetRandomFileName();
+			var catalog = TestCatalogProduct.Queryable.First();
+			var product = TestProduct.Queryable.First(p => p.CatalogProduct == catalog);
+
+			var documentLine = CreateBodyLine(supplier.Id, serialNumber, product);
+
+			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
+
+			var task = new CertificateTask();
+			using (new TransactionScope()) {
+				task.CertificateSource = certificateSource;
+				task.CatalogProduct = Catalog.Find(catalog.Id);
+				task.SerialNumber = serialNumber;
+				task.DocumentLine = realDocumentLine;
+				task.Create();
+			}
+
+			Assert.That(task.Id, Is.GreaterThan(0));
+
+			try{
+
+				var memoryAppender = new MemoryAppender();
+				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
+				BasicConfigurator.Configure(memoryAppender);
+
+				var handler = new TestCertificateSourceHandler();
+
+				handler.OnSource = (c) => {
+					c.CertificateSource.CertificateSourceParser = new TestErrorSource();
+					return c.CertificateSource;
+				};
+
+				//Обрабатываем задачу первый раз
+				handler.TestProcessData();
+				CheckErrors(task, memoryAppender, handler, 1);
+
+				//Создаем новую задачу с теми же параметрами и обрабатываем задачу второй раз
+				task = new CertificateTask();
+				using (new TransactionScope()) {
+					task.CertificateSource = certificateSource;
+					task.CatalogProduct = Catalog.Find(catalog.Id);
+					task.SerialNumber = serialNumber;
+					task.DocumentLine = realDocumentLine;
+					task.Create();
+				}
+
+				handler.TestProcessData();
+				CheckErrors(task, memoryAppender, handler, 2);
+
+				//Создаем новую задачу с теми же параметрами и обрабатываем задачу третий раз
+				task = new CertificateTask();
+				using (new TransactionScope()) {
+					task.CertificateSource = certificateSource;
+					task.CatalogProduct = Catalog.Find(catalog.Id);
+					task.SerialNumber = serialNumber;
+					task.DocumentLine = realDocumentLine;
+					task.Create();
+				}
+
+				handler.TestProcessData();
+				CheckErrors(task, memoryAppender, handler, 3);
+
+
+				var lastEvents = memoryAppender.GetEvents();
+				var errors = lastEvents.Where(item => item.Level >= Level.Warn).ToList();
+				Assert.That(errors.Count, Is.EqualTo(3));
+				//Последнее сообщение должно быть Error
+				Assert.That(errors[2].Level, Is.EqualTo(Level.Error));
+
+				//Успешно обработываем сертификат и список ошибок должен очистится
+				handler.OnSource = (c) => {
+					c.CertificateSource.CertificateSourceParser = new TestSuccessSource();
+					return c.CertificateSource;
+				};
+				using (new TransactionScope()) {
+					certificateSource.SourceClassName = typeof (TestSuccessSource).Name;
+					certificateSource.Save();
+				}
+				//Создаем новую задачу с теми же параметрами и обрабатываем задачу третий раз
+				task = new CertificateTask();
+				using (new TransactionScope()) {
+					task.CertificateSource = certificateSource;
+					task.CatalogProduct = Catalog.Find(catalog.Id);
+					task.SerialNumber = serialNumber;
+					task.DocumentLine = realDocumentLine;
+					task.Create();
+				}
+				handler.TestProcessData();
+				var eventsAfterSuccess = memoryAppender.GetEvents();
+				var errorsAfterSuccess = eventsAfterSuccess.Where(item => item.Level >= Level.Warn).ToList();
+				Assert.That(errors.Count, Is.EqualTo(3));
+				Assert.That(handler.Errors.Count, Is.EqualTo(0));
+
+				//Задача должна быть удалена из базы данных
+				var deletedSuccessTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
+				Assert.That(deletedSuccessTask, Is.Null);
+			}
+			finally
+			{
+				LogManager.ResetConfiguration();
+			}
+		}
+
+		private void CheckErrors(CertificateTask task, MemoryAppender memoryAppender, TestCertificateSourceHandler handler, uint errorCount, bool idEquals = false)
+		{
+			var firstEvents = memoryAppender.GetEvents();
+
+			var firstErrors = firstEvents.Where(item => item.Level >= Level.Warn);
+			Assert.That(firstErrors.Count(), Is.EqualTo(errorCount));
+
+			//кол-во ошибок должно быть равно 1
+			Assert.That(handler.Errors.Count, Is.EqualTo(1));
+
+			var info = handler.Errors[task.GetErrorId()];
+			Assert.That(info.ErrorCount, Is.EqualTo(errorCount));
+			Assert.That(info.Exception.Message, Is.StringStarting("Возникла ошибка при обработке задачи: "));
+			if (idEquals)
+				Assert.That(info.Task.Id, Is.EqualTo(task.Id));
+			Assert.That(info.Task.CertificateSource.Id, Is.EqualTo(task.CertificateSource.Id));
+			Assert.That(info.Task.CatalogProduct.Id, Is.EqualTo(task.CatalogProduct.Id));
+			Assert.That(info.Task.SerialNumber, Is.EqualTo(task.SerialNumber));
+
+			//Задача должна быть удалена из базы данных
+			var deletedTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
+			Assert.That(deletedTask, Is.Null);
+		}
 	}
 }

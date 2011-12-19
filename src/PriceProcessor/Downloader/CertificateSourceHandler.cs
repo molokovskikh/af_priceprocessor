@@ -3,19 +3,47 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
+
+	public class CertificateTaskErrorInfo
+	{
+		public CertificateTask Task { get; set; }
+		public Exception Exception { get; set; }
+		public uint ErrorCount { get; set; }
+
+		public CertificateTaskErrorInfo(CertificateTask task, Exception exception)
+		{
+			ErrorCount = 1;
+			Exception = exception;
+			Task = task;
+		}
+
+		public bool NeedSendError()
+		{
+			return ErrorCount == 3;
+		}
+
+		public void UpdateError(Exception exception)
+		{
+			ErrorCount++;
+			Exception = exception;
+		}
+	}
+
 	public class CertificateSourceHandler : AbstractHandler
 	{
+		public Dictionary<string, CertificateTaskErrorInfo> Errors = new Dictionary<string, CertificateTaskErrorInfo>();
+
 		public CertificateSourceHandler()
 		{
 			SleepTime = 5;
 		}
-
 
 		protected override void ProcessData()
 		{
@@ -26,18 +54,59 @@ namespace Inforoom.PriceProcessor.Downloader
 					foreach (var certificateTask in tasks) {
 						try {
 							ProcessTask(certificateTask);
+							ClearError(certificateTask);
 						}
 						catch (Exception exception) {
-							_logger.WarnFormat("Ошибка при отбработки задачи для сертификата {0} : {1}", certificateTask, exception);
+							OnTaskError(certificateTask, exception);
 						}
 					
 					}
 			}
 		}
 
+		private void ClearError(CertificateTask certificateTask)
+		{
+			if (Errors.ContainsKey(certificateTask.GetErrorId()))
+				Errors.Remove(certificateTask.GetErrorId());
+		}
+
+		private void OnTaskError(CertificateTask task, Exception exception)
+		{
+			var errorInfo = FindError(task, exception);
+			if (errorInfo.NeedSendError())
+				_logger.ErrorFormat("Ошибка при обработки задачи для сертификата {0} : {1}", task, exception);
+			else
+				_logger.WarnFormat("Ошибка при обработки задачи для сертификата {0} : {1}", task, exception);
+			using (new TransactionScope()) {
+				task.Delete();
+			}
+		}
+
+		private CertificateTaskErrorInfo FindError(CertificateTask task, Exception exception)
+		{
+			CertificateTaskErrorInfo result;
+
+			if (Errors.ContainsKey(task.GetErrorId()))
+			{
+				result = Errors[task.GetErrorId()];
+				result.UpdateError(exception);
+			}
+			else {
+				result = new CertificateTaskErrorInfo(task, exception);
+				Errors[task.GetErrorId()] = result;
+			}
+
+			return result;
+		}
+
+		protected virtual CertificateSource DetectSource(CertificateTask certificateTask)
+		{
+			return CertificateSourceDetector.DetectSource(certificateTask.DocumentLine.Document);
+		}
+
 		private void ProcessTask(CertificateTask certificateTask)
 		{
-			var source = CertificateSourceDetector.DetectSource(certificateTask.DocumentLine.Document);
+			var source = DetectSource(certificateTask);
 
 			if (source != null) {
 				var files = source.CertificateSourceParser.GetCertificateFiles(certificateTask);
