@@ -20,11 +20,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1")
 		        .Line(l => l.Nds, "NDS")
 		        .Line(l => l.Period, "GDATE")
-		        .Line(l => l.Certificates, "SERTIF")		        
+		        .Line(l => l.Certificates, "SERTIF")
 		        .Line(l => l.RegistryCost, "REGPRC")
 		        .Line(l => l.VitallyImportant, "GNVLS")
 		        .Line(l => l.SerialNumber, "SER")
-		        .Line(l => l.Amount, "SUMPAY")		        
+		        .Line(l => l.Amount, "SUMPAY")
 		        .Line(l => l.SupplierPriceMarkup, "PROCNDB")
 		        .Line(l => l.EAN13, "EAN13")
 		        .Line(l => l.BillOfEntryNumber, "NUMGTD");
@@ -36,7 +36,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			       && data.Columns.Contains("CNTR")
 			       && data.Columns.Contains("SERTIF")
 			       && data.Columns.Contains("GDATE")
-			       && data.Columns.Contains("QNT");
+			       //&& data.Columns.Contains("MAKERPRICE")
+			       && data.Columns.Contains("PRICE2");
 		}
 	}
 }
