@@ -246,7 +246,7 @@ WHERE
 		{
 			try
 			{
-				if (!String.IsNullOrEmpty(e.Body))
+				if (String.IsNullOrEmpty(e.Body))
 				{
 					SendUnrecLetter(m, from, e);
 					return;
