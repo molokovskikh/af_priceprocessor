@@ -367,6 +367,8 @@ and a.Id = ?AddressId
 		public void Parse_waybill_if_parsing_enabled()
 		{
 			var beign = DateTime.Now;
+			//Удаляем миллисекунды из даты, т.к. они не сохраняются в базе данных
+			beign = beign.AddMilliseconds(-beign.Millisecond);
 
 			var email = String.Format("edata{0}@msk.katren.ru", supplier.Id);
 			supplier.WaybillSource.EMailFrom = email;

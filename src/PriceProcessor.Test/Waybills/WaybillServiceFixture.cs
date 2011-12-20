@@ -286,7 +286,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(doc.Lines[0].ProductEntity.Id, Is.EqualTo(product.Id));
 				Assert.That(doc.Lines[0].ProducerId, Is.EqualTo(producer.Id));
 
-				var resultDoc = DocumentReceiveLog.Queryable.Single(d => d.Address == address && d.IsFake == false);
+				var resultDoc = DocumentReceiveLog.Queryable.Single(d => d.Address == address && !d.IsFake);
 				var files = Directory.GetFiles(waybillsPath, "*.dbf");
 				Assert.That(files.Count(), Is.EqualTo(2), files.Implode());
 	
