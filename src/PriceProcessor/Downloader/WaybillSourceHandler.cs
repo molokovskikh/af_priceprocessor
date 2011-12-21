@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -44,19 +44,19 @@ namespace Inforoom.Downloader
 
 	public class WaybillSourceHandler : EMAILSourceHandler
 	{
-		// Код клиента (аптеки)
+		// РљРѕРґ РєР»РёРµРЅС‚Р° (Р°РїС‚РµРєРё)
 		private uint? _clientId;
 
-		// Типы документов (накладные, отказы)
+		// РўРёРїС‹ РґРѕРєСѓРјРµРЅС‚РѕРІ (РЅР°РєР»Р°РґРЅС‹Рµ, РѕС‚РєР°Р·С‹)
 		private readonly List<InboundDocumentType> _documentTypes;
 
-		// Тип текущего документа (накладная или отказ)
+		// РўРёРї С‚РµРєСѓС‰РµРіРѕ РґРѕРєСѓРјРµРЅС‚Р° (РЅР°РєР»Р°РґРЅР°СЏ РёР»Рё РѕС‚РєР°Р·)
 		private InboundDocumentType _currentDocumentType;
 
-		// Email, из которого будут браться накладные и отказы
+		// Email, РёР· РєРѕС‚РѕСЂРѕРіРѕ Р±СѓРґСѓС‚ Р±СЂР°С‚СЊСЃСЏ РЅР°РєР»Р°РґРЅС‹Рµ Рё РѕС‚РєР°Р·С‹
 		private string _imapUser = Settings.Default.WaybillIMAPUser;
 
-		// Пароль для указанного email-а
+		// РџР°СЂРѕР»СЊ РґР»СЏ СѓРєР°Р·Р°РЅРЅРѕРіРѕ email-Р°
 		private string _imapPassword = Settings.Default.WaybillIMAPPass;
 
 		public WaybillSourceHandler()
@@ -89,8 +89,8 @@ namespace Inforoom.Downloader
 			_clientId = null;
 			_currentDocumentType = null;
 
-			// Получаем кол-во корректных адресов, т.е. отправленных 
-			// на @waybills.analit.net или на @refused.analit.net			
+			// РџРѕР»СѓС‡Р°РµРј РєРѕР»-РІРѕ РєРѕСЂСЂРµРєС‚РЅС‹С… Р°РґСЂРµСЃРѕРІ, С‚.Рµ. РѕС‚РїСЂР°РІР»РµРЅРЅС‹С… 
+			// РЅР° @waybills.analit.net РёР»Рё РЅР° @refused.analit.net			
 			if(m.MainEntity.To != null)
 				CorrectClientAddress(m.MainEntity.To, ref emailList);
 			if(m.MainEntity.Cc != null)
@@ -101,23 +101,23 @@ namespace Inforoom.Downloader
 			var correctAddresCount = emailList.Count;
 			
 
-			// Все хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
-			// Если не сопоставили с клиентом)
+			// Р’СЃРµ С…РѕСЂРѕС€Рѕ, РµСЃР»Рё РєРѕР»-РІРѕ РІР»РѕР¶РµРЅРёР№ Р±РѕР»СЊС€Рµ 0 Рё СЂР°СЃРїРѕР·РЅР°РЅ С‚РѕР»СЊРєРѕ РѕРґРёРЅ Р°РґСЂРµСЃ РєР°Рє РєРѕСЂСЂРµРєС‚РЅС‹Р№
+			// Р•СЃР»Рё РЅРµ СЃРѕРїРѕСЃС‚Р°РІРёР»Рё СЃ РєР»РёРµРЅС‚РѕРј)
 			if (correctAddresCount == 0)
 			{
-				throw new EMailSourceHandlerException("Не найден клиент.",
+				throw new EMailSourceHandlerException("РќРµ РЅР°Р№РґРµРЅ РєР»РёРµРЅС‚.",
 					Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient,
 					Settings.Default.ResponseDocBodyTemplateOnNonExistentClient);
 			}
 			if (correctAddresCount == 1 && m.Attachments.Length == 0)
 			{
-				throw new EMailSourceHandlerException("Письмо не содержит вложений.",
+				throw new EMailSourceHandlerException("РџРёСЃСЊРјРѕ РЅРµ СЃРѕРґРµСЂР¶РёС‚ РІР»РѕР¶РµРЅРёР№.",
 					Settings.Default.ResponseDocSubjectTemplateOnNothingAttachs,
 					Settings.Default.ResponseDocBodyTemplateOnNothingAttachs);
 			}
 			if (correctAddresCount > 1)
 			{
-				throw new EMailSourceHandlerException("Письмо отправленно нескольким клиентам.",
+				throw new EMailSourceHandlerException("РџРёСЃСЊРјРѕ РѕС‚РїСЂР°РІР»РµРЅРЅРѕ РЅРµСЃРєРѕР»СЊРєРёРј РєР»РёРµРЅС‚Р°Рј.",
 					Settings.Default.ResponseDocSubjectTemplateOnMultiDomen,
 					Settings.Default.ResponseDocBodyTemplateOnMultiDomen);
 			}
@@ -132,7 +132,7 @@ namespace Inforoom.Downloader
 					}
 				if (attachmentsIsBigger)
 				{
-					throw new EMailSourceHandlerException(String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
+					throw new EMailSourceHandlerException(String.Format("РџРёСЃСЊРјРѕ СЃРѕРґРµСЂР¶РёС‚ РІР»РѕР¶РµРЅРёРµ СЂР°Р·РјРµСЂРѕРј Р±РѕР»СЊС€Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ ({0} РљР±).",
 							Settings.Default.MaxWaybillAttachmentSize),
 						Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment,
 						String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment,
@@ -142,9 +142,9 @@ namespace Inforoom.Downloader
 		}
 
 		/// <summary>
-		/// Проверяет, существует ли клиент с указанным кодом.
-		/// Также ищет указанный код среди адресов в таблице future.Addresses,
-		/// поэтому можно сказать, что также проверяет адрес клиента на существование
+		/// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РєР»РёРµРЅС‚ СЃ СѓРєР°Р·Р°РЅРЅС‹Рј РєРѕРґРѕРј.
+		/// РўР°РєР¶Рµ РёС‰РµС‚ СѓРєР°Р·Р°РЅРЅС‹Р№ РєРѕРґ СЃСЂРµРґРё Р°РґСЂРµСЃРѕРІ РІ С‚Р°Р±Р»РёС†Рµ future.Addresses,
+		/// РїРѕСЌС‚РѕРјСѓ РјРѕР¶РЅРѕ СЃРєР°Р·Р°С‚СЊ, С‡С‚Рѕ С‚Р°РєР¶Рµ РїСЂРѕРІРµСЂСЏРµС‚ Р°РґСЂРµСЃ РєР»РёРµРЅС‚Р° РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ
 		/// </summary>
 		private bool ClientExists(uint checkClientCode)
 		{
@@ -159,13 +159,13 @@ WHERE Addr.Id = {0}", checkClientCode);
 		}
 
 		/// <summary>
-		/// Извлекает код клиента (или код адреса клиента) из email адреса,
-		/// на который поставщик отправил накладную (или отказ)
+		/// РР·РІР»РµРєР°РµС‚ РєРѕРґ РєР»РёРµРЅС‚Р° (РёР»Рё РєРѕРґ Р°РґСЂРµСЃР° РєР»РёРµРЅС‚Р°) РёР· email Р°РґСЂРµСЃР°,
+		/// РЅР° РєРѕС‚РѕСЂС‹Р№ РїРѕСЃС‚Р°РІС‰РёРє РѕС‚РїСЂР°РІРёР» РЅР°РєР»Р°РґРЅСѓСЋ (РёР»Рё РѕС‚РєР°Р·)
 		/// </summary>
-		/// <returns>Если код извлечен и соответствует коду клиента 
-		/// (или коду адреса), будет возвращен этот код. 
-		/// Если код не удалось извлечь или он не найден ни среди кодов клиентов,
-		/// ни среди кодов адресов, будет возвращен null</returns>
+		/// <returns>Р•СЃР»Рё РєРѕРґ РёР·РІР»РµС‡РµРЅ Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РєРѕРґСѓ РєР»РёРµРЅС‚Р° 
+		/// (РёР»Рё РєРѕРґСѓ Р°РґСЂРµСЃР°), Р±СѓРґРµС‚ РІРѕР·РІСЂР°С‰РµРЅ СЌС‚РѕС‚ РєРѕРґ. 
+		/// Р•СЃР»Рё РєРѕРґ РЅРµ СѓРґР°Р»РѕСЃСЊ РёР·РІР»РµС‡СЊ РёР»Рё РѕРЅ РЅРµ РЅР°Р№РґРµРЅ РЅРё СЃСЂРµРґРё РєРѕРґРѕРІ РєР»РёРµРЅС‚РѕРІ,
+		/// РЅРё СЃСЂРµРґРё РєРѕРґРѕРІ Р°РґСЂРµСЃРѕРІ, Р±СѓРґРµС‚ РІРѕР·РІСЂР°С‰РµРЅ null</returns>
 		private uint? GetClientCode(string emailAddress)
 		{ 
 			emailAddress = emailAddress.ToLower();
@@ -176,7 +176,7 @@ WHERE Addr.Id = {0}", checkClientCode);
 			{
 				uint clientCode;
 
-				// Пытаемся извлечь код клиента из email адреса
+				// РџС‹С‚Р°РµРјСЃСЏ РёР·РІР»РµС‡СЊ РєРѕРґ РєР»РёРµРЅС‚Р° РёР· email Р°РґСЂРµСЃР°
 				if (documentType.ParseEmail(emailAddress, out clientCode))
 				{
 					testClientCode = clientCode;
@@ -207,9 +207,9 @@ WHERE Addr.Id = {0}", checkClientCode);
 			uint? currentClientCode;
 			var clientCodeCount = 0;
 
-			// Пробегаемся по всем адресам TO и ищем адрес вида 
-			// <\d+@waybills.analit.net> или <\d+@refused.analit.net>
-			// Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
+			// РџСЂРѕР±РµРіР°РµРјСЃСЏ РїРѕ РІСЃРµРј Р°РґСЂРµСЃР°Рј TO Рё РёС‰РµРј Р°РґСЂРµСЃ РІРёРґР° 
+			// <\d+@waybills.analit.net> РёР»Рё <\d+@refused.analit.net>
+			// Р•СЃР»Рё С‚Р°РєРёС… Р°РґСЂРµСЃРѕРІ РЅРµСЃРєРѕР»СЊРєРѕ, С‚Рѕ СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РїРёСЃСЊРјРѕ РѕС€РёР±РѕС‡РЅРѕРµ Рё РЅРµ СЂР°Р·Р±РёСЂР°РµРј РµРіРѕ РґР°Р»СЊС€Рµ
 			foreach(var mailbox in  addressList.Mailboxes)
 			{
 				currentClientCode = GetClientCode(GetCorrectEmailAddress(mailbox.EmailAddress));
@@ -223,8 +223,8 @@ WHERE Addr.Id = {0}", checkClientCode);
 		}
 
 		/// <summary>
-		/// Возвращает SQL запрос для выборки поставщиков и e-mail-ов, 
-		/// с которых они могут отправлять накладные и отказы (для конкретной аптеки)
+		/// Р’РѕР·РІСЂР°С‰Р°РµС‚ SQL Р·Р°РїСЂРѕСЃ РґР»СЏ РІС‹Р±РѕСЂРєРё РїРѕСЃС‚Р°РІС‰РёРєРѕРІ Рё e-mail-РѕРІ, 
+		/// СЃ РєРѕС‚РѕСЂС‹С… РѕРЅРё РјРѕРіСѓС‚ РѕС‚РїСЂР°РІР»СЏС‚СЊ РЅР°РєР»Р°РґРЅС‹Рµ Рё РѕС‚РєР°Р·С‹ (РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕР№ Р°РїС‚РµРєРё)
 		/// </summary>
 		protected override string GetSQLSources()
 		{
@@ -255,12 +255,7 @@ WHERE
 				var subject = e.Subject;
 				var body = e.Body;
 				var message = e.Message;
-				if (e is EmailFromUnregistredMail)
-				{
-					subject = Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider;
-					body = Settings.Default.ResponseDocBodyTemplateOnUnknownProvider;
-					message = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
-				}
+
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				SendErrorLetterToProvider(
 					from, 
@@ -275,12 +270,12 @@ WHERE
 				}
 
 				var comment = String.Format(@"{0} 
-Отправители     : {1}
-Получатели      : {2}
-Список вложений : 
+РћС‚РїСЂР°РІРёС‚РµР»Рё     : {1}
+РџРѕР»СѓС‡Р°С‚РµР»Рё      : {2}
+РЎРїРёСЃРѕРє РІР»РѕР¶РµРЅРёР№ : 
 {3}
-Тема письма поставщику : {4}
-Тело письма поставщику : 
+РўРµРјР° РїРёСЃСЊРјР° РїРѕСЃС‚Р°РІС‰РёРєСѓ : {4}
+РўРµР»Рѕ РїРёСЃСЊРјР° РїРѕСЃС‚Р°РІС‰РёРєСѓ : 
 {5}",
 					message,
 					from.ToAddressListString(),
@@ -298,7 +293,7 @@ WHERE
 			}
 			catch (Exception exMatch)
 			{
-				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
+				_logger.Error("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅРѕРµ РїРёСЃСЊРјРѕ", exMatch);
 			}
 		}
 
@@ -359,10 +354,10 @@ WHERE
 					_clientId,
 					null,
 					String.Format(@"{0} 
-Тема            : {1} 
-Отправители     : {2}
-Получатели      : {3}
-Список вложений : 
+РўРµРјР°            : {1} 
+РћС‚РїСЂР°РІРёС‚РµР»Рё     : {2}
+РџРѕР»СѓС‡Р°С‚РµР»Рё      : {3}
+РЎРїРёСЃРѕРє РІР»РѕР¶РµРЅРёР№ : 
 {4}
 ", 
 						e.Message, 
@@ -374,13 +369,13 @@ WHERE
 			}
 			catch (Exception exMatch)
 			{
-				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
+				_logger.Error("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅРѕРµ РїРёСЃСЊРјРѕ", exMatch);
 			}
 		}
 
-		// Проверяет, что поставщик может работать и работает с данным клиентом.
-		// supplierId - код поставщика
-		// clientId - код клиента (или из "новой" или из "старой" реальности)
+		// РџСЂРѕРІРµСЂСЏРµС‚, С‡С‚Рѕ РїРѕСЃС‚Р°РІС‰РёРє РјРѕР¶РµС‚ СЂР°Р±РѕС‚Р°С‚СЊ Рё СЂР°Р±РѕС‚Р°РµС‚ СЃ РґР°РЅРЅС‹Рј РєР»РёРµРЅС‚РѕРј.
+		// supplierId - РєРѕРґ РїРѕСЃС‚Р°РІС‰РёРєР°
+		// clientId - РєРѕРґ РєР»РёРµРЅС‚Р° (РёР»Рё РёР· "РЅРѕРІРѕР№" РёР»Рё РёР· "СЃС‚Р°СЂРѕР№" СЂРµР°Р»СЊРЅРѕСЃС‚Рё)
 		private bool SupplierAvaliableForClient(ulong supplierId, ulong clientId)
 		{
 			var supplier = new MySqlParameter("?SupplierId", MySqlDbType.Int32);
@@ -423,23 +418,23 @@ WHERE clients.Id = ?ClientId
 
 		protected override void ProcessAttachs(Mime m, AddressList FromList)
 		{
-			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+			//РћРґРёРЅ РёР· Р°С‚С‚Р°С‡РјРµРЅС‚РѕРІ РїРёСЃСЊРјР° СЃРѕРІРїР°Р» СЃ РёСЃС‚РѕС‡РЅРёРєРѕРј, РёРЅР°С‡Рµ - РїРёСЃСЊРјРѕ РЅРµ СЂР°СЃРїРѕР·РЅР°РЅРѕ
 			bool matched = false;
 
 			/*
-			 * В накладных письма обрабатываются немного по-другому: 
-			 * письма обрабатываются относительно адреса отправителя
-			 * и если такой отправитель найден в истониках, то все вложения 
-			 * сохраняются относительно него.
-			 * Если он не найден, то ничего не делаем.
+			 * Р’ РЅР°РєР»Р°РґРЅС‹С… РїРёСЃСЊРјР° РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РЅРµРјРЅРѕРіРѕ РїРѕ-РґСЂСѓРіРѕРјСѓ: 
+			 * РїРёСЃСЊРјР° РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р°РґСЂРµСЃР° РѕС‚РїСЂР°РІРёС‚РµР»СЏ
+			 * Рё РµСЃР»Рё С‚Р°РєРѕР№ РѕС‚РїСЂР°РІРёС‚РµР»СЊ РЅР°Р№РґРµРЅ РІ РёСЃС‚РѕРЅРёРєР°С…, С‚Рѕ РІСЃРµ РІР»РѕР¶РµРЅРёСЏ 
+			 * СЃРѕС…СЂР°РЅСЏСЋС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РЅРµРіРѕ.
+			 * Р•СЃР»Рё РѕРЅ РЅРµ РЅР°Р№РґРµРЅ, С‚Рѕ РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј.
 			 */
 			foreach (var mbFrom in FromList.Mailboxes)
 			{
 				var sources = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
-				// Адрес отправителя должен быть только у одного поставщика, 
-				// если получилось больше, то ищем поставщика, который доступен клиенту,
-				// если таких нет или несколько, то это ошибка
+				// РђРґСЂРµСЃ РѕС‚РїСЂР°РІРёС‚РµР»СЏ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ С‚РѕР»СЊРєРѕ Сѓ РѕРґРЅРѕРіРѕ РїРѕСЃС‚Р°РІС‰РёРєР°, 
+				// РµСЃР»Рё РїРѕР»СѓС‡РёР»РѕСЃСЊ Р±РѕР»СЊС€Рµ, С‚Рѕ РёС‰РµРј РїРѕСЃС‚Р°РІС‰РёРєР°, РєРѕС‚РѕСЂС‹Р№ РґРѕСЃС‚СѓРїРµРЅ РєР»РёРµРЅС‚Сѓ,
+				// РµСЃР»Рё С‚Р°РєРёС… РЅРµС‚ РёР»Рё РЅРµСЃРєРѕР»СЊРєРѕ, С‚Рѕ СЌС‚Рѕ РѕС€РёР±РєР°
 
 				DataRow source;
 
@@ -448,7 +443,7 @@ WHERE clients.Id = ?ClientId
 					source = SelectWaybillSourceForClient(sources, _clientId);
 					if (source == null)
 						throw new Exception(String.Format(
-							"На адрес \"{0}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", mbFrom.EmailAddress));
+							"РќР° Р°РґСЂРµСЃ \"{0}\" РЅР°Р·РЅР°С‡РµРЅРѕ РЅРµСЃРєРѕР»СЊРєРѕ РїРѕСЃС‚Р°РІС‰РёРєРѕРІ. РћРїСЂРµРґРµР»РёС‚СЊ РєР°РєРѕР№ РёР· РЅРёС… СЂР°Р±РѕС‚Р°РµС‚ СЃ РєР»РёРµРЅС‚РѕРј РЅРµ СѓРґР°Р»РѕСЃСЊ", mbFrom.EmailAddress));
 				}
 				else if (sources.Length == 0)
 					continue;
@@ -456,8 +451,8 @@ WHERE clients.Id = ?ClientId
 					source = sources.Single();
 
 				var attachments = m.GetValidAttachements();
-				//двойная очистка FileCleaner и Cleanup нужно оставить только одно
-				//думаю Cleaner подходит лучше
+				//РґРІРѕР№РЅР°СЏ РѕС‡РёСЃС‚РєР° FileCleaner Рё Cleanup РЅСѓР¶РЅРѕ РѕСЃС‚Р°РІРёС‚СЊ С‚РѕР»СЊРєРѕ РѕРґРЅРѕ
+				//РґСѓРјР°СЋ Cleaner РїРѕРґС…РѕРґРёС‚ Р»СѓС‡С€Рµ
 				using (var cleaner = new FileCleaner())
 				{
 					var savedFiles = new List<string>();
@@ -471,7 +466,7 @@ WHERE clients.Id = ?ClientId
 							WriteLog(_currentDocumentType.DocType,
 								Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
 								_clientId, Path.GetFileName(CurrFileName),
-								"Не удалось распаковать файл", currentUID);
+								"РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїР°РєРѕРІР°С‚СЊ С„Р°Р№Р»", currentUID);
 							Cleanup();
 							continue;
 						}
@@ -497,7 +492,10 @@ WHERE clients.Id = ?ClientId
 			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
 			if (!matched)
-				throw new EmailFromUnregistredMail("Не найден источник.");
+				throw new EmailFromUnregistredMail(
+					"Р”Р»СЏ РґР°РЅРЅРѕРіРѕ E-mail РЅРµ РЅР°Р№РґРµРЅ РёСЃС‚РѕС‡РЅРёРє РІ С‚Р°Р±Р»РёС†Рµ documents.waybill_sources",
+					Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider,
+					Settings.Default.ResponseDocBodyTemplateOnUnknownProvider);
 		}
 
 		private uint? GetFirmCodeByFromList(AddressList FromList)
@@ -532,7 +530,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
 
 		protected DocumentReceiveLog MoveWaybill(string file, DataRow source)
 		{
-			_logger.InfoFormat("WaybillSourceHandler: обработка файла {0}", file);
+			_logger.InfoFormat("WaybillSourceHandler: РѕР±СЂР°Р±РѕС‚РєР° С„Р°Р№Р»Р° {0}", file);
 			var addressId = _clientId;
 			var clientId = GetClientIdByAddress(ref addressId);
 			if (clientId == null)
