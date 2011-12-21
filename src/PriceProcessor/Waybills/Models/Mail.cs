@@ -12,6 +12,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public Mail()
 		{
 			Attachments = new List<Attachment>();
+			MailRecipients = new List<MailRecipient>();
 		}
 
 		[PrimaryKey]
@@ -24,6 +25,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public Supplier Supplier { get; set; }
 
 		[Property]
+		public string SupplierEmail { get; set; }
+
+		[Property]
 		public bool IsVIPMail { get; set; }
 
 		[Property]
@@ -34,6 +38,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		
 		[HasMany(ColumnKey = "MailId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public virtual IList<Attachment> Attachments { get; set; }
+
+		[HasMany(ColumnKey = "MailId", Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
+		public virtual IList<MailRecipient> MailRecipients { get; set; }
 
 	}
 }

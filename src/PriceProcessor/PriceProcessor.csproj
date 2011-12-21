@@ -154,9 +154,11 @@
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="Models\Assortment.cs" />
     <Compile Include="Models\Catalog.cs" />
+    <Compile Include="Models\Client.cs" />
     <Compile Include="Models\Core.cs" />
     <Compile Include="Models\DocType.cs" />
     <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Region.cs" />
     <Compile Include="Models\Supplier.cs" />
     <Compile Include="Models\SynonymFirm.cs" />
     <Compile Include="Models\SynonymProduct.cs" />
@@ -238,6 +240,7 @@
     <Compile Include="Waybills\Models\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Models\Invoice.cs" />
     <Compile Include="Waybills\Models\Mail.cs" />
+    <Compile Include="Waybills\Models\MailRecipient.cs" />
     <Compile Include="Waybills\Models\MailSendLog.cs" />
     <Compile Include="Waybills\Models\WaybillSettings.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />

@@ -28,7 +28,7 @@ namespace Inforoom.Downloader
 			SourceType = "EMAIL";
 		}
 
-		protected string GetCorrectEmailAddress(string Source)
+		public static string GetCorrectEmailAddress(string Source)
 		{
 			return Source.Replace("'", String.Empty).Trim();
 		}

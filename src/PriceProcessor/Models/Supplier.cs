@@ -14,5 +14,8 @@ namespace Inforoom.PriceProcessor.Models
 		
 		[Property]
 		public string FullName { get; set; }
+
+		[Property]
+		public virtual ulong RegionMask { get; set; }
 	}
 }

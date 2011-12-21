@@ -297,7 +297,7 @@ WHERE
 			}
 		}
 
-		private static void SendErrorLetterToProvider(AddressList FromList, 
+		public static void SendErrorLetterToProvider(AddressList FromList, 
 			string causeSubject, string causeBody, Mime sourceLetter)
 		{
 			try

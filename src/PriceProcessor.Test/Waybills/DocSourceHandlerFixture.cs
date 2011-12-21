@@ -76,7 +76,7 @@ namespace PriceProcessor.Test.Waybills
 			    var message = ImapHelper.BuildMessageWithAttachments(
 					subject,
 					body,
-					users.Select(u => "{0}@docs.analit.net".Format(u.Id)).ToArray(),
+					users.Select(u => "{0}@docs.analit.net".Format(u.AvaliableAddresses[0].Id)).ToArray(),
 			        new []{from}, 
 					fileNames != null ? fileNames.ToArray() : null);
 			    bytes = message.ToByteData();
@@ -125,7 +125,8 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mailLog.UpdateLogEntry, Is.Null);
 				Assert.That(mailLog.Committed, Is.False);
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.That(mailLog.Mail.Region, Is.Null);
+				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
+				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
 				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
 				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
 				Assert.That(mailLog.Mail.IsVIPMail, Is.False);
@@ -156,7 +157,8 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mailLog.UpdateLogEntry, Is.Null);
 				Assert.That(mailLog.Committed, Is.False);
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.That(mailLog.Mail.Region, Is.Null);
+				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
+				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
 				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
 				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
 				Assert.That(mailLog.Mail.IsVIPMail, Is.False);

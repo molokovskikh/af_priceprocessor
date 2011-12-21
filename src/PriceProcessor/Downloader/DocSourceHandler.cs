@@ -17,11 +17,66 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
 {
-	public class UserMailInfo
+
+	public class MailContext
 	{
-		public uint UserId { get; set; }
-		public string Mail { get; set; }
-		public User User { get; set; }
+		public MailContext()
+		{
+			FullRecipients = new List<MailRecipient>();
+			Users = new List<User>();
+		}
+
+		public string SupplierEmails { get; set; }
+		public List<Supplier> Suppliers { get; set; }
+		public List<MailRecipient> FullRecipients { get; set; }
+		public List<MailRecipient> VerifyRecipients { get; set; }
+		public List<User> Users { get; set; }
+
+		public void ParseRecipients(Mime mime)
+		{
+			if(mime.MainEntity.To != null)
+				ParseRecipientAddresses(mime.MainEntity.To);
+			if(mime.MainEntity.Cc != null)
+				ParseRecipientAddresses(mime.MainEntity.Cc);
+			if(mime.MainEntity.Bcc != null)
+				ParseRecipientAddresses(mime.MainEntity.Bcc);
+
+			if (FullRecipients.Count > 0) {
+				VerifyRecipients = new List<MailRecipient>();
+				foreach (var fullRecipient in FullRecipients) {
+					var users = fullRecipient.GetUsers(Suppliers[0].RegionMask);
+					if (users.Count > 0) {
+						VerifyRecipients.Add(fullRecipient);
+						users.ForEach(u => AddUser(u));
+					}
+				}
+			}
+		}
+
+		private void ParseRecipientAddresses(AddressList addressList)
+		{
+			// Пробегаемся по всем адресам TO и ищем адрес вида 
+			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
+			foreach(var mailbox in  addressList.Mailboxes) {
+				var mail = EMAILSourceHandler.GetCorrectEmailAddress(mailbox.EmailAddress);
+				var recipient = MailRecipient.Parse(mail);
+				if (recipient != null)
+					AddRecipient(recipient);
+			}
+		}
+
+		public void AddRecipient(MailRecipient recipient)
+		{
+			if (!FullRecipients.Exists(r => r.Equals(recipient)))
+				FullRecipients.Add(recipient);
+		}
+
+		public void AddUser(User user)
+		{
+			if (!Users.Exists(u => u.Id == user.Id))
+				Users.Add(user);
+		}
+
 	}
 
 	public class DocSourceHandler : EMAILSourceHandler
@@ -33,7 +88,7 @@ namespace Inforoom.Downloader
 		// Пароль для указанного email-а
 		private string _imapPassword = Settings.Default.DocIMAPPass;
 
-		private List<UserMailInfo> _parsedInfos;
+		private MailContext _context;
 
 		public DocSourceHandler()
 		{
@@ -57,23 +112,36 @@ namespace Inforoom.Downloader
 
 		public override void CheckMime(Mime m)
 		{
-			_parsedInfos = new List<UserMailInfo>();
+			_context = null;
 
-			// Получаем кол-во корректных адресов, т.е. отправленных 
-			// на @waybills.analit.net или на @refused.analit.net			
-			if(m.MainEntity.To != null)
-				CorrectUserAddress(m.MainEntity.To, ref _parsedInfos);
-			if(m.MainEntity.Cc != null)
-				CorrectUserAddress(m.MainEntity.Cc, ref _parsedInfos);
+			var context = new MailContext();
 
-			//Оставляем только уникальные
-			_parsedInfos = _parsedInfos.GroupBy(i => i.UserId).Select(g => g.First()).ToList();
+			Ping();
 
-			var correctUserCount = _parsedInfos.Count;
+			var fromSupplierList = GetAddressList(m);
+			context.SupplierEmails = fromSupplierList.Mailboxes.Implode();
+			context.Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
+
+			Ping();
+
+			if (context.Suppliers.Count > 1)
+				throw new EMailSourceHandlerException("Найдено несколько источников.");
+			else 
+				if (context.Suppliers.Count == 0)
+					throw new EmailFromUnregistredMail(
+						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'",
+						Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider,
+						Settings.Default.ResponseDocBodyTemplateOnUnknownProvider);
+
+			using (new SessionScope()) {
+				context.ParseRecipients(m);
+			}
+
+			Ping();
 
 			// Все хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
 			// Если не сопоставили с клиентом)
-			if (correctUserCount == 0)
+			if (context.Users.Count == 0)
 			{
 				throw new EMailSourceHandlerException("Не найден пользователь.",
 					Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient,
@@ -97,89 +165,10 @@ namespace Inforoom.Downloader
 							Settings.Default.MaxWaybillAttachmentSize));
 				}
 			}
-		}
 
-		public bool ParseEmail(string email, out uint userId)
-		{
-			userId = 0;
-			int Index = email.IndexOf("@docs.analit.net");
-			if (Index > -1)
-			{
-				if (uint.TryParse(email.Substring(0, Index), out userId))
-				{
-					return true;
-				}
-				return false;
-			}
-			return false;
-		}
-
-		/// <summary>
-		/// Проверяет, существует ли пользовател с указанным кодом.
-		/// Также ищет указанный код среди адресов в таблице future.Users,
-		/// поэтому можно сказать, что также проверяет пользователя на существование
-		/// </summary>
-		private bool UserExists(uint checkUserId)
-		{
-			var queryGetUserId = String.Format(@"
-SELECT Users.Id
-FROM Future.Users 
-WHERE Users.Id = {0}", checkUserId);
-			return With.Connection(c => {
-				var userId = MySqlHelper.ExecuteScalar(c, queryGetUserId);
-				return (userId != null);
-			});
-		}
-
-		/// <summary>
-		/// Извлекает код пользователя (или код адреса клиента) из email адреса,
-		/// на который поставщик отправил накладную (или отказ)
-		/// </summary>
-		/// <returns>Если код извлечен и соответствует коду клиента 
-		/// (или коду адреса), будет возвращен этот код. 
-		/// Если код не удалось извлечь или он не найден ни среди кодов клиентов,
-		/// ни среди кодов адресов, будет возвращен null</returns>
-		private uint? GetUserId(string emailAddress)
-		{ 
-			emailAddress = emailAddress.ToLower();
-
-			uint? testUserId = null;
-
-			uint userId;
-			if (ParseEmail(emailAddress, out userId))
-			{
-				testUserId = userId;
-			}
-
-
-			if (testUserId.HasValue && UserExists(testUserId.Value))
-			{
-			}
-			else
-				testUserId = null;
-
-			return testUserId;
+			_context = context;
 		}
 		
-		private int CorrectUserAddress(AddressList addressList, ref List<UserMailInfo> parsedInfo)
-		{
-			uint? currentUserId;
-			var userIdCount = 0;
-
-			// Пробегаемся по всем адресам TO и ищем адрес вида 
-			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
-			foreach(var mailbox in  addressList.Mailboxes) {
-				var mail = GetCorrectEmailAddress(mailbox.EmailAddress);
-				currentUserId = GetUserId(mail);
-				if (currentUserId.HasValue)
-				{					
-					parsedInfo.Add(new UserMailInfo{UserId = currentUserId.Value, Mail = mail});
-					userIdCount++;
-				}
-			}
-			return userIdCount;
-		}
-
 		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
 			try
@@ -197,14 +186,14 @@ WHERE Users.Id = {0}", checkUserId);
 				{
 					subject = Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider;
 					body = Settings.Default.ResponseDocBodyTemplateOnUnknownProvider;
-					message = "Для данного E-mail не найден источник в таблице documents.waybill_sources";
+					message = "Для данного E-mail не найден контакт в ";
 				}
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 
-				//SendErrorLetterToProvider(
-				//    from, 
-				//    subject, 
-				//    body, m);
+				WaybillSourceHandler.SendErrorLetterToProvider(
+				    from, 
+				    subject, 
+				    body, m);
 
 				if (e is EmailFromUnregistredMail)
 				{
@@ -258,59 +247,52 @@ WHERE Users.Id = {0}", checkUserId);
 
 		protected override void ProcessAttachs(Mime m, AddressList FromList)
 		{
-			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-			bool matched = false;
+			if (_context == null)
+				throw new EMailSourceHandlerException("Не установлен контекст для обработки письма");
 
-			var suppliers = GetSuppliersFromList(FromList.Mailboxes);
+			Cleanup();
 
-			if (suppliers.Count == 1) {
-				matched = true;
-				Cleanup();
+			var mail = new Mail {
+				Supplier = _context.Suppliers[0],
+				SupplierEmail = _context.SupplierEmails,
+				Subject = m.MainEntity.Subject,
+				Body = m.BodyText,
+				LogTime = DateTime.Now
+			};
 
-				using (new SessionScope()) {
-					_parsedInfos.ForEach(i => i.User = User.Find(i.UserId));
-				}
-
-				var mail = new Mail {
-					Supplier = suppliers[0],
-					Subject = m.MainEntity.Subject,
-					Body = m.BodyText,
-					LogTime = DateTime.Now
-				};
-
-			    var attachments = m.GetValidAttachements();
-				foreach (var entity in attachments) {
-				    SaveAttachement(entity);
-					mail.Attachments.Add(new Attachment(mail, CurrFileName));
-				}
-
-				var mailLogs = _parsedInfos.Select(i => new MailSendLog {Mail = mail, User = i.User}).ToList();
-
-				var attachmentLogs = new List<AttachmentSendLog>();
-				foreach (var attachement in mail.Attachments) {
-					attachmentLogs.AddRange(_parsedInfos.Select(i => new AttachmentSendLog{Attachment = attachement, User = i.User}));
-				}
-
-				using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-					mail.Create();
-					mail.Attachments.ForEach(a =>
-						File.Copy(
-							a.LocalFileName,
-							Path.Combine(Settings.Default.AttachmentPath, a.GetSaveFileName())));
-
-					mailLogs.ForEach(l => l.Create());
-					attachmentLogs.ForEach(l => l.Create());
-
-					transaction.VoteCommit();
-				}
-
-			}
-			else {
-				throw new EmailFromUnregistredMail("Найдено несколько источников.");
+			var attachments = m.GetValidAttachements();
+			foreach (var entity in attachments) {
+				SaveAttachement(entity);
+				mail.Attachments.Add(new Attachment(mail, CurrFileName));
 			}
 
-			if (!matched)
-				throw new EmailFromUnregistredMail("Не найден источник.");
+			foreach (var verifyRecipient in _context.VerifyRecipients) {
+				verifyRecipient.Mail = mail;
+				mail.MailRecipients.Add(verifyRecipient);
+			}
+
+			var mailLogs = _context.Users.Select(i => new MailSendLog {Mail = mail, User = i}).ToList();
+
+			var attachmentLogs = new List<AttachmentSendLog>();
+			foreach (var attachement in mail.Attachments) {
+				attachmentLogs.AddRange(_context.Users.Select(i => new AttachmentSendLog{Attachment = attachement, User = i}));
+			}
+
+			Ping();
+
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+				mail.Create();
+				mail.Attachments.ForEach(a =>
+					File.Copy(
+						a.LocalFileName,
+						Path.Combine(Settings.Default.AttachmentPath, a.GetSaveFileName())));
+
+				mailLogs.ForEach(l => l.Create());
+				attachmentLogs.ForEach(l => l.Create());
+
+				transaction.VoteCommit();
+			}
+
 		}
 
 		private List<Supplier> GetSuppliersFromList(MailboxAddress[] mailboxes)
