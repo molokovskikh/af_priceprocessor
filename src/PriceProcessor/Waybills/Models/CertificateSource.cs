@@ -21,6 +21,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string SourceClassName { get; set; }
 
+		[Property]
+		public bool SearchInAssortmentPrice { get; set; }
+
+		[Property]
+		public DateTime? FtpFileDate { get; set; }
+
 		[HasAndBelongsToMany(typeof (Supplier),
 			Lazy = true,
 			ColumnKey = "CertificateSourceId",
@@ -29,10 +35,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			ColumnRef = "SupplierId")]
 		public virtual IList<Supplier> Suppliers { get; set; }
 
-		public ICertificateSource CertificateSourceParser;
 
-		[Property]
-		public DateTime? FtpFileDate { get; set; }
+		public ICertificateSource CertificateSourceParser;
 
 		public ICertificateSource GetCertificateSource()
 		{

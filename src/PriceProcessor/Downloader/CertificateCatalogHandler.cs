@@ -53,7 +53,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			try
 			{
 				if (catalogFile != null)
-					ImportCatalogFile(catalogFile, ftpSource);
+					ImportCatalogFile(catalogFile, source, ftpSource);
 
 				Ping();
 			}
@@ -64,7 +64,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		}
 
-		public virtual void ImportCatalogFile(CertificateCatalogFile catalogFile, IRemoteFtpSource source)
+		public virtual void ImportCatalogFile(CertificateCatalogFile catalogFile, CertificateSource source, IRemoteFtpSource ftpSource)
 		{
 			_logger.InfoFormat("Загружен новый каталог сертификатов: date: {0},  fileName: {1}", catalogFile.FileDate, catalogFile.LocalFileName);
 
@@ -74,6 +74,9 @@ namespace Inforoom.PriceProcessor.Downloader
 			_logger.InfoFormat("Количество строк в новом каталоге сертификатов: {0}", catalogTable.Rows.Count);
 
 			//Выбираем записи из Core для ассортиментных прайсов поставщиков, которые привязаны к нужному источнику сертификатов
+			var filter = "";
+			if (source.SearchInAssortmentPrice)
+				filter = "and pd.PriceType = 1";
 			var cores = SessionHelper.WithSession(
 				c => c.CreateSQLQuery(@"
 select
@@ -81,12 +84,11 @@ select
 from
 	documents.SourceSuppliers ss
 	inner join usersettings.PricesData pd on pd.FirmCode = ss.SupplierId
-	inner join farm.Core0 {core} on core.PriceCode = pd.PriceCode and pd.PriceType = 1
+	inner join farm.Core0 {core} on core.PriceCode = pd.PriceCode
 	inner join catalogs.Products p on p.Id = core.ProductId
 where
-	ss.CertificateSourceId = :sourceId;
-"
-					)
+	ss.CertificateSourceId = :sourceId
+" + filter)
 					.AddEntity("core", typeof(Core))
 					.SetParameter("sourceId", catalogFile.Source.Id)
 					.List<Core>()
@@ -98,7 +100,7 @@ where
 				var catalog = new CertificateSourceCatalog {
 					CertificateSource = catalogFile.Source,
 				};
-				source.ReadSourceCatalog(catalog, row);
+				ftpSource.ReadSourceCatalog(catalog, row);
 
 				var core = catalog.FindCore(cores);
 				if (core != null && core.Product != null)

@@ -47,7 +47,8 @@ namespace PriceProcessor.Test.Waybills
 				certificateSources.ForEach(c => c.Delete());
 
 				_source = new CertificateSource{
-					SourceClassName = typeof(RostaCertificateSource).Name
+					SourceClassName = typeof(RostaCertificateSource).Name,
+					SearchInAssortmentPrice = true
 				};
 				ftpSource = (IRemoteFtpSource)_source.GetCertificateSource();
 				_source.Suppliers = new List<Supplier>();
@@ -93,7 +94,7 @@ namespace PriceProcessor.Test.Waybills
 				};
 
 				var handler = new TestCertificateCatalogHandler();
-				handler.ImportCatalogFile(catalogFile, ftpSource);
+				handler.ImportCatalogFile(catalogFile, _source, ftpSource);
 
 				_source.Refresh();
 				Assert.That(_source.FtpFileDate, Is.Not.Null, "Дата файла с ftp должна быть заполнена");
