@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
-using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 
@@ -9,28 +7,12 @@ namespace Inforoom.PriceProcessor.Waybills
 {
 	public class CertificateSourceDetector
 	{
-
-		private static ICertificateSource GetCertificateSource(string sourceClassName)
-		{ 
-			Type result = null;
-			var types = Assembly.GetExecutingAssembly()
-								.GetModules()[0]
-								.FindTypes(Module.FilterTypeNameIgnoreCase, sourceClassName);
-			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", sourceClassName));
-			if (types.Length == 1)
-				result = types[0];
-			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", sourceClassName));
-			return (ICertificateSource)Activator.CreateInstance(result);
-		}
-	
 		public static CertificateSource DetectSource(Document document)
 		{
 			var source = CertificateSource.Queryable.FirstOrDefault(s => s.Suppliers.FirstOrDefault(certificateSupplier => certificateSupplier.Id == document.FirmCode) != null);
 			if (source != null) {
 				try {
-					source.CertificateSourceParser = GetCertificateSource(source.SourceClassName);
+					source.CertificateSourceParser = source.GetCertificateSource();
 				}
 				catch (Exception exception) {
 					ILog _logger = LogManager.GetLogger(typeof (CertificateSourceDetector));
@@ -66,10 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills
 								document.AddCertificateTask(documentLine, source);
 					}
 				}
-
 			}
 		}
-
 	}
-
 }

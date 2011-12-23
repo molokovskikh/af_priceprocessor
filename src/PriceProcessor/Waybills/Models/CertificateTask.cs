@@ -8,6 +8,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("CertificateTasks", Schema = "documents")]
 	public class CertificateTask : ActiveRecordLinqBase<CertificateTask>
 	{
+		public CertificateTask()
+		{
+		}
+
+		public CertificateTask(CertificateSource certificateSource, DocumentLine documentLine)
+		{
+			CertificateSource = certificateSource;
+			CatalogProduct = documentLine.ProductEntity.CatalogProduct;
+			SerialNumber = documentLine.SerialNumber;
+			DocumentLine = documentLine;
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 

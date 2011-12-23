@@ -160,90 +160,6 @@ namespace Inforoom.Downloader.Ftp
 			return dataSetEntries;
 		}
 
-		/// <summary>
-		/// Пытается загрузить файл. После 3х неудачных попыток последнее исключение отдается наверх
-		/// </summary>
-		/// <param name="ftpClient">Объект FTP клиента</param>
-		/// <param name="fileInDirectory">Имя файла в текущей FTP директории</param>
-		/// <param name="downloadedFileName">Путь к файлу, куда он должен быть загружен</param>
-		private void ReceiveFile(FTP_Client ftpClient, string fileInDirectory, string downloadedFileName)
-		{
-			var countAttempts = 3;
-
-			for (var i = 0; i < countAttempts; i++)
-			{
-				try
-				{
-					if (File.Exists(downloadedFileName))
-					{
-						var log = log4net.LogManager.GetLogger(GetType());
-						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
-						File.Delete(downloadedFileName);
-					}
-					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew))
-					{
-						ftpClient.ReceiveFile(fileInDirectory, fileStream);
-						return;
-					}
-				}
-				catch (Exception)
-				{
-					if (i >= countAttempts)
-						throw;
-				}
-			}
-		}
-
-		/*	
-		private const int FtpPort = 21;
-
-		private FTP_ListItem[] GetList(FTP_Client ftpClient, string ftpHost, string ftpDir, PriceSource priceSource)
-		{
-			ftpClient.Connect(ftpHost, FtpPort);
-			ftpClient.Authenticate(priceSource.FtpLogin, priceSource.FtpPassword);
-			ftpClient.SetCurrentDir(ftpDir);
-			FTP_ListItem[] items = null;
-			try
-			{
-				items = ftpClient.GetList();
-			}
-			catch (IOException)
-			{
-				items = ftpClient.GetList();
-			}
-			return items;
-		}
-
-		private FTP_ListItem[] FtpClientGetList(FTP_Client ftpClient, PriceSource priceSource, string ftpHost, string ftpDir)
-		{
-			FTP_ListItem[] entries = null;
-			try
-			{
-				ftpClient.TransferMode = priceSource.FtpPassiveMode ? FTP_TransferMode.Passive : FTP_TransferMode.Active;
-				entries = GetList(ftpClient, ftpHost, ftpDir, priceSource);
-			}
-			catch (FTP_ClientException e)
-			{
-				if ((e.StatusCode == (int)FTP_StatusCode.ServiceNotAvaliable) || (e.StatusCode == (int)FTP_StatusCode.ConnectionTimeout))
-				{
-					ftpClient.Disconnect();
-					ftpClient.TransferMode = (!priceSource.FtpPassiveMode) ? FTP_TransferMode.Passive : FTP_TransferMode.Active;
-					entries = GetList(ftpClient, ftpHost, ftpDir, priceSource);
-					var warningMessageBody = String.Format(
-@"При попытке подключиться к {0} с FTPPassiveMode = {1} возникла ошибка.
-Значение FTPPassiveMode было изменено на {2}. Подключение прошло успешно.
-Возможно, неверное значение поля FTPPassiveMode в таблице farm.Sources.(PriceItemId = {3}, FirmCode = {4})
-Ошибка:
-{5}", ftpHost, priceSource.FtpPassiveMode, !priceSource.FtpPassiveMode, priceSource.PriceItemId, priceSource.FirmCode, e);
-					Mailer.SendFromServiceToService("Предупреждение в PriceProcessor", warningMessageBody);
-				}
-				else
-					throw;
-			}
-			return entries;
-		}
-		/**/
-
 		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;
@@ -262,7 +178,6 @@ namespace Inforoom.Downloader.Ftp
 			var priceDateTime = source.PriceDateTime;
 			using (var ftpClient = new FTP_Client())
 			{
-				//var dsEntries = FtpClientGetList(ftpClient, source, ftpHost, pricePath);
 				ftpClient.PassiveMode = true;
 				ftpClient.Connect(ftpHost, 21);
 				ftpClient.Authenticate(source.FtpLogin, source.FtpPassword);
@@ -275,13 +190,11 @@ namespace Inforoom.Downloader.Ftp
 					if (Convert.ToBoolean(entry["IsDirectory"]))
 						continue;
 
-					//shortFileName = entry.Name;
 					shortFileName = entry["Name"].ToString();
 
 					var priceMaskIsMatched = PriceProcessor.FileHelper.CheckMask(shortFileName, source.PriceMask);
 					if (priceMaskIsMatched)
 					{
-						//var fileLastWriteTime = entry.Modified;
 						var fileLastWriteTime = Convert.ToDateTime(entry["Date"]);
 #if DEBUG
 						priceDateTime = fileLastWriteTime;
@@ -301,7 +214,6 @@ namespace Inforoom.Downloader.Ftp
 					return null;
 				downFileName = Path.Combine(downHandlerPath, ftpFileName);
 				using (var file = new FileStream(downFileName, FileMode.Create))
-					//ftpClient.GetFile(ftpFileName, file);
 					ftpClient.ReceiveFile(ftpFileName, file);
 			}
 
@@ -368,32 +280,8 @@ namespace Inforoom.Downloader.Ftp
 		protected override string GetShortErrorMessage(Exception e)
 		{
 			var message = String.Empty;
-			//var ftpClientException = e as FTP_ClientException;
 			var socketException = e as SocketException;
 			var threadAbortException = e as ThreadAbortException;
-			/*
-			if (ftpClientException != null)
-			{
-				switch (ftpClientException.StatusCode)
-				{
-					case (int)FTP_StatusCode.UserNotLoggedIn:
-						{
-							message += ErrorMessageInvalidLoginOrPassword;
-							break;
-						}
-					case (int)FTP_StatusCode.ServiceNotAvaliable:
-						{
-							message += ErrorMessageServiceNotAvaliable;
-							break;
-						}
-					default:				
-						{
-							message += NetworkErrorMessage;
-							break;
-						}
-				}
-			}
-			else*/
 			if (socketException != null)
 				return NetworkErrorMessage;
 			if (threadAbortException != null)

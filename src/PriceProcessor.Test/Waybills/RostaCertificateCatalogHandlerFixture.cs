@@ -15,22 +15,11 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills
 {
-	public class TestRostaCertificateCatalogHandler : RostaCertificateCatalogHandler
+	public class TestCertificateCatalogHandler : CertificateCatalogHandler
 	{
-
 		public void TestProcessData()
 		{
 			ProcessData();
-		}
-
-		public void TestImportCatalogFile(CertificateCatalogFile catalogFile)
-		{
-			ImportCatalogFile(catalogFile);
-		}
-
-		public CertificateCatalogFile TestGetCatalogFile(CertificateSource source)
-		{
-			return GetCatalogFile(source);
 		}
 
 		public void TestCreateDownHandlerPath()
@@ -45,6 +34,7 @@ namespace PriceProcessor.Test.Waybills
 	{
 		private CertificateSource _source;
 		private TestSupplier _supplier;
+		private IRemoteFtpSource ftpSource;
 
 		[SetUp]
 		public void SetUp()
@@ -59,6 +49,7 @@ namespace PriceProcessor.Test.Waybills
 				_source = new CertificateSource{
 					SourceClassName = typeof(RostaCertificateSource).Name
 				};
+				ftpSource = (IRemoteFtpSource)_source.GetCertificateSource();
 				_source.Suppliers = new List<Supplier>();
 				_source.Suppliers.Add(realSupplier);
 				_source.Create();
@@ -101,8 +92,8 @@ namespace PriceProcessor.Test.Waybills
 					LocalFileName = Path.GetFullPath(@"..\..\Data\RostaSertList.dbf")
 				};
 
-				var handler = new TestRostaCertificateCatalogHandler();
-				handler.TestImportCatalogFile(catalogFile);
+				var handler = new TestCertificateCatalogHandler();
+				handler.ImportCatalogFile(catalogFile, ftpSource);
 
 				_source.Refresh();
 				Assert.That(_source.FtpFileDate, Is.Not.Null, "Дата файла с ftp должна быть заполнена");
@@ -127,11 +118,11 @@ namespace PriceProcessor.Test.Waybills
 		{
 			using (new SessionScope()) {
 
-				var handler = new TestRostaCertificateCatalogHandler();
+				var handler = new TestCertificateCatalogHandler();
 				handler.TestCreateDownHandlerPath();
 
 				//Производим первую закачку и закачиваем файл
-				var catalogFile = handler.TestGetCatalogFile(_source);
+				var catalogFile = handler.GetCatalogFile(ftpSource, _source);
 
 				Assert.That(catalogFile, Is.Not.Null);
 				Assert.That(catalogFile.Source, Is.EqualTo(_source));
@@ -143,7 +134,7 @@ namespace PriceProcessor.Test.Waybills
 
 				//производим вторую закачку и файл не качается, т.к. не обновлен
 				_source.FtpFileDate = catalogFile.FileDate;
-				var newCatalogFile = handler.TestGetCatalogFile(_source);
+				var newCatalogFile = handler.GetCatalogFile(ftpSource, _source);
 
 				Assert.That(newCatalogFile, Is.Null, "Файл не должен быть закачен");
 			}

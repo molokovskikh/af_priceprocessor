@@ -282,12 +282,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (!Tasks.Exists(
 					t => t.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
 						&& t.SerialNumber.Equals(documentLine.SerialNumber, StringComparison.CurrentCultureIgnoreCase)))
-				Tasks.Add(new CertificateTask {
-					CertificateSource = certificateSource,
-					CatalogProduct = documentLine.ProductEntity.CatalogProduct,
-					SerialNumber = documentLine.SerialNumber,
-					DocumentLine = documentLine
-				});
+				Tasks.Add(new CertificateTask(certificateSource, documentLine));
 		}
 
 		public void CreateCertificateTasks()

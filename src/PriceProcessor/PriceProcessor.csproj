@@ -141,7 +141,7 @@
     <Compile Include="Downloader\PriceSource.cs" />
     <Compile Include="Downloader\ProtekContract.cs" />
     <Compile Include="Downloader\ProtekWaybillHandler.cs" />
-    <Compile Include="Downloader\RostaCertificateCatalogHandler.cs" />
+    <Compile Include="Downloader\CertificateCatalogHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
     <Compile Include="Formalizer\BuyingMatrixProcessor.cs" />
     <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
@@ -223,6 +223,7 @@
     <Compile Include="Waybills\CertificateSources\AbstractCertifcateSource.cs" />
     <Compile Include="Waybills\CertificateSources\AptekaHoldingVoronezhCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
+    <Compile Include="Waybills\CertificateSources\KatrenSource.cs" />
     <Compile Include="Waybills\CertificateSources\ProtekSource.cs" />
     <Compile Include="Waybills\CertificateSources\RostaCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\SiaSource.cs" />

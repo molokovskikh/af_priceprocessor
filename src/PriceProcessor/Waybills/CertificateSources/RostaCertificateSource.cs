@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using Inforoom.Downloader.Ftp;
@@ -7,7 +8,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class RostaCertificateSource : AbstractCertifcateSource, ICertificateSource
+	public class RostaCertificateSource : AbstractCertifcateSource, ICertificateSource, IRemoteFtpSource
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
@@ -83,5 +84,36 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			return result;
 		}
 
+		public string FtpHost
+		{
+			get { return Settings.Default.RostaCertificateFtp; }
+		}
+
+		public string FtpDir
+		{
+			get { return "LIST"; }
+		}
+
+		public string FtpUser
+		{
+			get { return Settings.Default.RostaCertificateFtpUserName; }
+		}
+
+		public string FtpPassword
+		{
+			get { return Settings.Default.RostaCertificateFtpPassword; }
+		}
+
+		public string Filename
+		{
+			get { return "SERT_LIST.DBF"; }
+		}
+
+		public void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row)
+		{
+			catalog.SerialNumber = row["BATCH_ID"].ToString();
+			catalog.SupplierCode = row["CODE"].ToString();
+			catalog.OriginFilePath = row["GB_FILES"].ToString();
+		}
 	}
 }

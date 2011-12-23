@@ -25,7 +25,8 @@ namespace Inforoom.PriceProcessor.Models
 		[HasAndBelongsToMany(typeof (Address),
 			Lazy = true,
 			ColumnKey = "UserId",
-			Table = "future.UserAddresses",
+			Schema = "future",
+			Table = "UserAddresses",
 			ColumnRef = "AddressId")]
 		public virtual IList<Address> AvaliableAddresses { get; set; }
 

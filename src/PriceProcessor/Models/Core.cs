@@ -34,5 +34,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public string Code { get; set; }
+
+		[Property]
+		public string CodeCr { get; set; }
 	}
 }

@@ -20,9 +20,9 @@ namespace Inforoom.PriceProcessor.Downloader
 		public string LocalFileName { get; set; }
 	}
 
-	public class RostaCertificateCatalogHandler : AbstractHandler
+	public class CertificateCatalogHandler : AbstractHandler
 	{
-		public RostaCertificateCatalogHandler()
+		public CertificateCatalogHandler()
 		{
 			SleepTime = 5;
 		}
@@ -30,32 +30,41 @@ namespace Inforoom.PriceProcessor.Downloader
 		protected override void ProcessData()
 		{
 			using (new SessionScope()) {
-			    var source = CertificateSource.Queryable.Where(s => s.SourceClassName == typeof(RostaCertificateSource).Name).FirstOrDefault();
-
-				if (source != null) {
-					Cleanup();
-
-					Ping();
-
-					var catalogFile = GetCatalogFile(source);
-
-					Ping();
-
-					try {
-						if (catalogFile != null)
-							ImportCatalogFile(catalogFile);
-
-						Ping();
-					}
-					finally {
-						if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
-							File.Delete(catalogFile.LocalFileName);
-					}
+				var sources = CertificateSource.Queryable.ToArray();
+				foreach (var source in sources)
+				{
+					var ftpSource = source.GetCertificateSource() as IRemoteFtpSource;
+					if (ftpSource != null)
+						DownloadFile(source, ftpSource);
 				}
 			}
 		}
 
-		protected virtual void ImportCatalogFile(CertificateCatalogFile catalogFile)
+		private void DownloadFile(CertificateSource source, IRemoteFtpSource ftpSource)
+		{
+			Cleanup();
+
+			Ping();
+
+			var catalogFile = GetCatalogFile(ftpSource, source);
+
+			Ping();
+
+			try
+			{
+				if (catalogFile != null)
+					ImportCatalogFile(catalogFile, ftpSource);
+
+				Ping();
+			}
+			finally
+			{
+				if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
+					File.Delete(catalogFile.LocalFileName);
+			}
+		}
+
+		public virtual void ImportCatalogFile(CertificateCatalogFile catalogFile, IRemoteFtpSource source)
 		{
 			_logger.InfoFormat("Загружен новый каталог сертификатов: date: {0},  fileName: {1}", catalogFile.FileDate, catalogFile.LocalFileName);
 
@@ -88,14 +97,12 @@ where
 			foreach (DataRow row in catalogTable.Rows) {
 				var catalog = new CertificateSourceCatalog {
 					CertificateSource = catalogFile.Source,
-					SerialNumber = row["BATCH_ID"].ToString(),
-					SupplierCode = row["CODE"].ToString(),
-					OriginFilePath = row["GB_FILES"].ToString()
 				};
+				source.ReadSourceCatalog(catalog, row);
 
-				var corePosition = cores.FirstOrDefault(c => c.Code == catalog.SupplierCode);
-				if (corePosition != null && corePosition.Product != null)
-					catalog.CatalogProduct = corePosition.Product.CatalogProduct;
+				var core = catalog.FindCore(cores);
+				if (core != null && core.Product != null)
+					catalog.CatalogProduct = core.Product.CatalogProduct;
 
 				catalogList.Add(catalog);
 
@@ -153,22 +160,22 @@ where
 			}
 		}
 
-		protected virtual CertificateCatalogFile GetCatalogFile(CertificateSource source)
+		public virtual CertificateCatalogFile GetCatalogFile(IRemoteFtpSource ftpSource, CertificateSource source)
 		{
 			var downloader = new FtpDownloader();
 
 			var downloadFiles = downloader.GetFilesFromSource(
-				Settings.Default.RostaCertificateFtp,
+				ftpSource.FtpHost,
 				21,
-				"LIST",
-				Settings.Default.RostaCertificateFtpUserName,
-				Settings.Default.RostaCertificateFtpPassword,
-				"SERT_LIST.DBF",
+				ftpSource.FtpDir,
+				ftpSource.FtpUser,
+				ftpSource.FtpPassword,
+				ftpSource.Filename,
 				source.FtpFileDate.HasValue ? source.FtpFileDate.Value : DateTime.MinValue,
 				DownHandlerPath);
 
 			if (downloadFiles.Count > 0)
-				return new CertificateCatalogFile{
+				return new CertificateCatalogFile {
 					Source = source,
 					FileDate = downloadFiles[0].FileDate,
 					LocalFileName = downloadFiles[0].FileName
