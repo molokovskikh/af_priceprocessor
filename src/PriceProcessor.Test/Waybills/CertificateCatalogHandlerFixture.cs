@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills
 	}
 
 	[TestFixture]
-	public class RostaCertificateCatalogHandlerFixture
+	public class CertificateCatalogHandlerFixture
 	{
 		private CertificateSource _source;
 		private TestSupplier _supplier;

@@ -160,6 +160,40 @@ namespace Inforoom.Downloader.Ftp
 			return dataSetEntries;
 		}
 
+		/// <summary>
+		/// Пытается загрузить файл. После 3х неудачных попыток последнее исключение отдается наверх
+		/// </summary>
+		/// <param name="ftpClient">Объект FTP клиента</param>
+		/// <param name="fileInDirectory">Имя файла в текущей FTP директории</param>
+		/// <param name="downloadedFileName">Путь к файлу, куда он должен быть загружен</param>
+		private void ReceiveFile(FTP_Client ftpClient, string fileInDirectory, string downloadedFileName)
+		{
+			var countAttempts = 3;
+
+			for (var i = 0; i < countAttempts; i++)
+			{
+				try
+				{
+					if (File.Exists(downloadedFileName))
+					{
+						var log = log4net.LogManager.GetLogger(GetType());
+						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
+						File.Delete(downloadedFileName);
+					}
+					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew))
+					{
+						ftpClient.ReceiveFile(fileInDirectory, fileStream);
+						return;
+					}
+				}
+				catch (Exception)
+				{
+					if (i >= countAttempts)
+						throw;
+				}
+			}
+		}
+
 		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;
@@ -280,8 +314,32 @@ namespace Inforoom.Downloader.Ftp
 		protected override string GetShortErrorMessage(Exception e)
 		{
 			var message = String.Empty;
+			//var ftpClientException = e as FTP_ClientException;
 			var socketException = e as SocketException;
 			var threadAbortException = e as ThreadAbortException;
+			/*
+			if (ftpClientException != null)
+			{
+				switch (ftpClientException.StatusCode)
+				{
+					case (int)FTP_StatusCode.UserNotLoggedIn:
+						{
+							message += ErrorMessageInvalidLoginOrPassword;
+							break;
+						}
+					case (int)FTP_StatusCode.ServiceNotAvaliable:
+						{
+							message += ErrorMessageServiceNotAvaliable;
+							break;
+						}
+					default:				
+						{
+							message += NetworkErrorMessage;
+							break;
+						}
+				}
+			}
+			else*/
 			if (socketException != null)
 				return NetworkErrorMessage;
 			if (threadAbortException != null)
