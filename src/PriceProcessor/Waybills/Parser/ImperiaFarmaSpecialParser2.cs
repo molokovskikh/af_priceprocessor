@@ -29,6 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			CertificatesIndex = 12;
 			CertificatesDateIndex = 14;
 			RegistryCostIndex = 16;
+			VitallyImportantIndex = 26;
 		}
 
 		public static bool CheckFileFormat(string file)
@@ -45,7 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (!bodyCaption.ToLower().Equals("[body]"))
 					return false;
 				var body = reader.ReadLine().Split(';');
-				if (body.Length < 20 || body.Length > 27)
+				if (body.Length < 20 || body.Length > 28)
 					return false;
 			}
 			return true;
