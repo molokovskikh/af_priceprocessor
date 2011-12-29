@@ -110,8 +110,8 @@ namespace PriceProcessor.Test
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.ClientCode == _summary.Client.Id &&
-					log.FirmCode == _summary.Supplier.Id &&
+					log.Client.Id == _summary.Client.Id &&
+					log.Supplier.Id == _summary.Supplier.Id &&
 					log.AddressId == _summary.Client.Addresses[0].Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}

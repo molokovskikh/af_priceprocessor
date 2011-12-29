@@ -233,8 +233,8 @@ and a.Id = ?AddressId
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.ClientCode == client.Id &&
-					log.FirmCode == supplier.Id &&
+					log.Client.Id == client.Id &&
+					log.Supplier.Id == supplier.Id &&
 					log.AddressId == address.Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
@@ -307,8 +307,8 @@ and a.Id = ?AddressId
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.ClientCode == client.Id &&
-					log.FirmCode == supplier.Id &&
+					log.Client.Id == client.Id &&
+					log.Supplier.Id == supplier.Id &&
 					log.AddressId == client.Addresses[0].Id);
 				
 				Assert.That(logs.Count(), Is.EqualTo(2));
@@ -390,7 +390,7 @@ and a.Id = ?AddressId
 
 			using (new SessionScope())
 			{
-				var logs = TestDocumentLog.Queryable.Where(d => d.ClientCode == client.Id).ToList();
+				var logs = TestDocumentLog.Queryable.Where(d => d.Client.Id == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				var log = logs.Single();
 				Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));

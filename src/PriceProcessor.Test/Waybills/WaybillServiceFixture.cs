@@ -186,8 +186,8 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-				Assert.IsTrue(waybill.Lines[0].ProductId != null);
-				Assert.That(waybill.Lines[0].ProductId, Is.EqualTo(product.Id));
+				Assert.IsTrue(waybill.Lines[0].CatalogProduct != null);
+				Assert.That(waybill.Lines[0].CatalogProduct.Id, Is.EqualTo(product.Id));
 				Assert.That(waybill.Lines[0].ProducerId, Is.EqualTo(producer1.Id));
 			}
 		}
@@ -201,7 +201,7 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-				Assert.IsTrue(waybill.Lines[0].ProductId == null);
+				Assert.IsTrue(waybill.Lines[0].CatalogProduct == null);
 				Assert.IsTrue(waybill.Lines[0].ProducerId == null);
 			}
 		}

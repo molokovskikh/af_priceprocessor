@@ -24,31 +24,22 @@ namespace PriceProcessor.Test.Waybills
 			var user = TestUser.Queryable.First(u => u.AvaliableAddresses.Count > 0);
 
 			var documentLog = new TestDocumentLog {
-				FirmCode = supplier.Id,
-				ClientCode = user.Client.Id,
+				Supplier = supplier,
+				Client = user.Client,
 				DocumentType = DocumentType.Waybill,
 				LogTime = DateTime.Now,
 				FileName = Path.GetRandomFileName() + ".txt"
 			};
 
-			var document = new TestWaybill {
-				ClientCode = user.Client.Id,
-				FirmCode = supplier.Id,
-				DocumentType = DocumentType.Waybill,
-				WriteTime = DateTime.Now
-			};
+			var document = new TestWaybill(documentLog);
 
 			var documentLine = new TestWaybillLine();
 			documentLine.Waybill = document;
 
-			document.Lines = new List<TestWaybillLine>();
 			document.Lines.Add(documentLine);
 
 			using (new TransactionScope()) {
-				documentLog.Create();
-				document.DownloadId = documentLog.Id;
-				document.Create();
-				documentLine.Create();
+				document.Save();
 			}
 
 			Assert.That(document.Lines.Count, Is.EqualTo(1));

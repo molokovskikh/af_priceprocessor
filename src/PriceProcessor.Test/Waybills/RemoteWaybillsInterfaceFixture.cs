@@ -115,14 +115,14 @@ namespace PriceProcessor.Test.Waybills
 				var waybill = waybills.Single();
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				
-				var logs = TestDocumentLog.Queryable.Where(l => l.FirmCode == supplier.Id && l.ClientCode == client.Id).ToList();
+				var logs = TestDocumentLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.Client.Id == client.Id).ToList();
 				var count = logs.Count;
 				Assert.That(count, Is.EqualTo(2));
 
 				var log_fake = logs.Where(l => l.IsFake).ToList();
 				Assert.That(log_fake.Count, Is.EqualTo(1));
 				Assert.That(log_fake[0].FileName, Is.EqualTo(file));
-				Assert.That(waybill.DownloadId, Is.EqualTo(log_fake[0].Id));
+				Assert.That(waybill.Log.Id, Is.EqualTo(log_fake[0].Id));
 
 				var log = logs.Where(l => !l.IsFake).ToList();
 				Assert.That(log.Count, Is.EqualTo(1));
@@ -169,7 +169,7 @@ namespace PriceProcessor.Test.Waybills
 					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
 					Assert.That(waybills.Count, Is.EqualTo(1));
 
-					var documents = TestWaybill.Queryable.Where(doc => doc.ClientCode == documentLog.ClientCode).ToList();
+					var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
 					Assert.That(documents.Count, Is.EqualTo(1));
 				}
 			}
@@ -196,7 +196,7 @@ namespace PriceProcessor.Test.Waybills
 					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
 					Assert.That(waybills.Count, Is.EqualTo(1));
 
-					var documents = TestWaybill.Queryable.Where(doc => doc.ClientCode == documentLog.ClientCode).ToList();
+					var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
 					Assert.That(documents.Count, Is.EqualTo(1));
 				}
 
