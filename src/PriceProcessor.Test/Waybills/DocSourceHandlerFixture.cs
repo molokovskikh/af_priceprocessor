@@ -156,15 +156,17 @@ namespace PriceProcessor.Test.Waybills
 				var mailLog = mails[0];
 				Assert.That(mailLog.UpdateLogEntry, Is.Null);
 				Assert.That(mailLog.Committed, Is.False);
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
-				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
-				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
-				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
-				Assert.That(mailLog.Mail.IsVIPMail, Is.False);
-				Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(1));
+				var mail = mailLog.Mail;
+				Assert.That(mailLog.Recipient, Is.EqualTo(mail.MailRecipients[0]));
+				Assert.That(mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+				Assert.IsNotNullOrEmpty(mail.SupplierEmail);
+				Assert.That(mail.MailRecipients.Count, Is.GreaterThan(0));
+				Assert.That(mail.Subject, Is.EqualTo("Это письмо пользователю"));
+				Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
+				Assert.That(mail.IsVIPMail, Is.False);
+				Assert.That(mail.Attachments.Count, Is.EqualTo(1));
 
-				var attachment = mailLog.Mail.Attachments[0];
+				var attachment = mail.Attachments[0];
 				Assert.That(attachment.FileName, Is.EqualTo("0000470553.dbf"));
 				Assert.That(attachment.Extension, Is.EqualTo(".dbf"));
 				Assert.That(attachment.Size, Is.EqualTo(new FileInfo(@"..\..\Data\Waybills\0000470553.dbf").Length));

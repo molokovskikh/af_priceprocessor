@@ -23,23 +23,20 @@ namespace Inforoom.Downloader
 		public MailContext()
 		{
 			FullRecipients = new List<MailRecipient>();
-			Users = new List<User>();
+			Users = new Dictionary<User, MailRecipient>();
 		}
 
 		public string SupplierEmails { get; set; }
 		public List<Supplier> Suppliers { get; set; }
 		public List<MailRecipient> FullRecipients { get; set; }
 		public List<MailRecipient> VerifyRecipients { get; set; }
-		public List<User> Users { get; set; }
+		public Dictionary<User, MailRecipient> Users { get; set; }
 
 		public void ParseRecipients(Mime mime)
 		{
-			if(mime.MainEntity.To != null)
-				ParseRecipientAddresses(mime.MainEntity.To);
-			if(mime.MainEntity.Cc != null)
-				ParseRecipientAddresses(mime.MainEntity.Cc);
-			if(mime.MainEntity.Bcc != null)
-				ParseRecipientAddresses(mime.MainEntity.Bcc);
+			ParseRecipientAddresses(mime.MainEntity.To);
+			ParseRecipientAddresses(mime.MainEntity.Cc);
+			ParseRecipientAddresses(mime.MainEntity.Bcc);
 
 			if (FullRecipients.Count > 0) {
 				VerifyRecipients = new List<MailRecipient>();
@@ -47,7 +44,7 @@ namespace Inforoom.Downloader
 					var users = fullRecipient.GetUsers(Suppliers[0].RegionMask);
 					if (users.Count > 0) {
 						VerifyRecipients.Add(fullRecipient);
-						users.ForEach(u => AddUser(u));
+						users.ForEach(u => AddUser(u, fullRecipient));
 					}
 				}
 			}
@@ -55,6 +52,8 @@ namespace Inforoom.Downloader
 
 		private void ParseRecipientAddresses(AddressList addressList)
 		{
+			if (addressList == null)
+				return;
 			// Пробегаемся по всем адресам TO и ищем адрес вида 
 			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
 			foreach(var mailbox in  addressList.Mailboxes) {
@@ -71,10 +70,10 @@ namespace Inforoom.Downloader
 				FullRecipients.Add(recipient);
 		}
 
-		public void AddUser(User user)
+		public void AddUser(User user, MailRecipient recipient)
 		{
-			if (!Users.Exists(u => u.Id == user.Id))
-				Users.Add(user);
+			if (!Users.Keys.Any(u => u.Id == user.Id))
+				Users.Add(user, recipient);
 		}
 
 	}
@@ -271,11 +270,11 @@ namespace Inforoom.Downloader
 				mail.MailRecipients.Add(verifyRecipient);
 			}
 
-			var mailLogs = _context.Users.Select(i => new MailSendLog {Mail = mail, User = i}).ToList();
+			var mailLogs = _context.Users.Select(i => new MailSendLog(i.Key, i.Value)).ToList();
 
 			var attachmentLogs = new List<AttachmentSendLog>();
 			foreach (var attachement in mail.Attachments) {
-				attachmentLogs.AddRange(_context.Users.Select(i => new AttachmentSendLog{Attachment = attachement, User = i}));
+				attachmentLogs.AddRange(_context.Users.Select(i => new AttachmentSendLog{Attachment = attachement, User = i.Key}));
 			}
 
 			Ping();
