@@ -126,6 +126,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mailLog.Committed, Is.False);
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
+				Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id) ));
 				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
 				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
 				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));

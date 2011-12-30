@@ -118,7 +118,7 @@ namespace Inforoom.Downloader
 			Ping();
 
 			var fromSupplierList = GetAddressList(m);
-			context.SupplierEmails = fromSupplierList.Mailboxes.Implode();
+			context.SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
 			context.Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
 
 			Ping();
