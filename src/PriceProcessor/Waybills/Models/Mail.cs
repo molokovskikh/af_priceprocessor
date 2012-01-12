@@ -35,7 +35,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[Property]
 		public string Body { get; set; }
-		
+
+		[Property]
+		public uint Size { get; set; }
+
 		[HasMany(ColumnKey = "MailId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public virtual IList<Attachment> Attachments { get; set; }
 

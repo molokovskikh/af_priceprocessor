@@ -264,6 +264,7 @@ namespace Inforoom.Downloader
 				SaveAttachement(entity);
 				mail.Attachments.Add(new Attachment(mail, CurrFileName));
 			}
+			mail.Size = (uint)(mail.Body.Length + mail.Attachments.Sum(a => a.Size));
 
 			foreach (var verifyRecipient in _context.VerifyRecipients) {
 				verifyRecipient.Mail = mail;

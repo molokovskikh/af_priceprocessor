@@ -14,7 +14,6 @@ using Common.Tools;
 
 namespace PriceProcessor.Test.Waybills
 {
-
 	public class DocSourceHandlerTestInfo
 	{
 		public TestSupplier Supplier { get; set; }
@@ -23,7 +22,7 @@ namespace PriceProcessor.Test.Waybills
 	}
 
 	public class DocSourceHandlerForTesting : DocSourceHandler
-	{		
+	{
 		public DocSourceHandlerForTesting(string mailbox, string password)
 			: base(mailbox, password)
 		{
@@ -73,19 +72,19 @@ namespace PriceProcessor.Test.Waybills
 			    bytes = File.ReadAllBytes(fileNames[0]);
 			else
 			{
-			    var message = ImapHelper.BuildMessageWithAttachments(
+				var message = ImapHelper.BuildMessageWithAttachments(
 					subject,
 					body,
 					users.Select(u => "{0}@docs.analit.net".Format(u.AvaliableAddresses[0].Id)).ToArray(),
-			        new []{from}, 
+					new []{from}, 
 					fileNames != null ? fileNames.ToArray() : null);
-			    bytes = message.ToByteData();
+				bytes = message.ToByteData();
 			}
 
 			ImapHelper.StoreMessage(
-			    Settings.Default.TestIMAPUser,
-			    Settings.Default.TestIMAPPass,
-			    Settings.Default.IMAPSourceFolder, 
+				Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder, 
 				bytes);
 
 			info.Region = region;
@@ -99,7 +98,6 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(_info, Is.Not.Null, "Перед обработкой должен быть вызван метод SetUp");
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
-			return;
 		}
 
 		[Test(Description = "Простой разбор письма")]
@@ -166,6 +164,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
 				Assert.That(mail.IsVIPMail, Is.False);
 				Assert.That(mail.Attachments.Count, Is.EqualTo(1));
+				Assert.That(mail.Size, Is.EqualTo(53928));
 
 				var attachment = mail.Attachments[0];
 				Assert.That(attachment.FileName, Is.EqualTo("0000470553.dbf"));
