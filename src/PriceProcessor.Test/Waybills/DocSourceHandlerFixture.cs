@@ -5,6 +5,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
@@ -144,7 +145,7 @@ namespace PriceProcessor.Test.Waybills
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
-				new List<string> {@"..\..\Data\Waybills\0000470553.dbf"});
+				new List<string> {@"..\..\Data\Waybills\moron.txt"});
 
 			Process();
 
@@ -164,12 +165,12 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
 				Assert.That(mail.IsVIPMail, Is.False);
 				Assert.That(mail.Attachments.Count, Is.EqualTo(1));
-				Assert.That(mail.Size, Is.EqualTo(53928));
+				Assert.That(mail.Size, Is.EqualTo(2453));
 
 				var attachment = mail.Attachments[0];
-				Assert.That(attachment.FileName, Is.EqualTo("0000470553.dbf"));
-				Assert.That(attachment.Extension, Is.EqualTo(".dbf"));
-				Assert.That(attachment.Size, Is.EqualTo(new FileInfo(@"..\..\Data\Waybills\0000470553.dbf").Length));
+				Assert.That(attachment.FileName, Is.EqualTo("moron.txt"));
+				Assert.That(attachment.Extension, Is.EqualTo(".txt"));
+				Assert.That(attachment.Size, Is.EqualTo(new FileInfo(@"..\..\Data\Waybills\moron.txt").Length));
 
 				var attachLogs = TestAttachmentSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
 				Assert.That(attachLogs.Count, Is.EqualTo(1));
@@ -181,6 +182,26 @@ namespace PriceProcessor.Test.Waybills
 
 				Assert.That(File.Exists(Path.Combine(Settings.Default.AttachmentPath, attachment.GetSaveFileName())), Is.True);
 			}
+		}
+
+		[Test]
+		public void AllowExtensions()
+		{
+			//DefaultValues
+			var values = new DefaultValues {
+				AllowedMiniMailExtensions = "doc, xls, gif, tiff, tif, jpg, pdf, txt"
+			};
+
+			Assert.That(values.ExtensionAllow("doc"), Is.True);
+			Assert.That(values.ExtensionAllow("txt"), Is.True);
+			Assert.That(values.ExtensionAllow(".doc"), Is.True);
+			Assert.That(values.ExtensionAllow(".txt"), Is.True);
+
+			Assert.That(values.ExtensionAllow(null), Is.False);
+			Assert.That(values.ExtensionAllow(""), Is.False);
+			Assert.That(values.ExtensionAllow(" "), Is.False);
+			Assert.That(values.ExtensionAllow("exe"), Is.False);
+			Assert.That(values.ExtensionAllow(".exe"), Is.False);
 		}
 
 	}

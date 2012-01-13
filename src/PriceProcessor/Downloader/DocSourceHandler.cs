@@ -127,10 +127,9 @@ namespace Inforoom.Downloader
 				throw new EMailSourceHandlerException("Найдено несколько источников.");
 			else 
 				if (context.Suppliers.Count == 0)
-					throw new EmailFromUnregistredMail(
-						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'",
-						Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider,
-						Settings.Default.ResponseDocBodyTemplateOnUnknownProvider);
+					throw new EmailByMiniMails(
+						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'", 
+						ResponseTemplate.MiniMailOnUnknownProvider);
 
 			using (new SessionScope()) {
 				context.ParseRecipients(m);
@@ -142,26 +141,39 @@ namespace Inforoom.Downloader
 			// Если не сопоставили с клиентом)
 			if (context.Users.Count == 0)
 			{
-				throw new EMailSourceHandlerException("Не найден пользователь.",
-					Settings.Default.ResponseDocSubjectTemplateOnNonExistentClient,
-					Settings.Default.ResponseDocBodyTemplateOnNonExistentClient);
+				throw new EmailByMiniMails(
+						"Не найден пользователь.", 
+						ResponseTemplate.MiniMailOnEmptyRecipients);
 			}
 			if (m.Attachments.Length > 0)
 			{ 
-				bool attachmentsIsBigger = false;
-				foreach(var attachment in m.Attachments)
+				var attachmentsIsBigger = false;
+				var nonAllowedExtension = false;
+				foreach (var attachment in m.Attachments) {
+
+					var fileName = attachment.GetFilename();
+					if (!String.IsNullOrWhiteSpace(fileName) && !TemplateHolder.Values.ExtensionAllow(Path.GetExtension(fileName)))
+					{
+						nonAllowedExtension = true;
+						break;
+					}
+
 					if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
 					{
 						attachmentsIsBigger = true;
 						break;
 					}
-				if (attachmentsIsBigger)
-				{
-					throw new EMailSourceHandlerException(String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
-							Settings.Default.MaxWaybillAttachmentSize),
-						Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment,
-						String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment,
-							Settings.Default.MaxWaybillAttachmentSize));
+				}
+				if (nonAllowedExtension) {
+					throw new EmailByMiniMails(
+						"Письмо содержит вложение недопустимого типа.",
+						ResponseTemplate.MiniMailOnAllowedExtensions);
+				}
+				if (attachmentsIsBigger) {
+					throw new EmailByMiniMails(
+						String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
+						              Settings.Default.MaxWaybillAttachmentSize),
+						ResponseTemplate.MiniMailOnMaxAttachment);
 				}
 			}
 

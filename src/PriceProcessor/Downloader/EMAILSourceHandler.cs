@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Data;
 using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor;
 using LumiSoft.Net.IMAP.Client;
@@ -405,6 +406,19 @@ namespace Inforoom.Downloader
 
 		public EmailFromUnregistredMail(string message, string subject, string body) : base(message, subject, body)
 		{}
+	}
+
+	public class EmailByMiniMails : EMailSourceHandlerException
+	{
+		public EmailByMiniMails(string message) : base(message)
+		{}
+
+		public EmailByMiniMails(string message, ResponseTemplate template) : base(message)
+		{
+			Template = template;
+		}
+
+		public ResponseTemplate Template { get; set; }
 	}
 
 	public class EMailSourceHandlerException : Exception

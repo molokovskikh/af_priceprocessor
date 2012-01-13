@@ -30,6 +30,8 @@ namespace Inforoom.PriceProcessor.Models
 			ColumnRef = "AddressId")]
 		public virtual IList<Address> AvaliableAddresses { get; set; }
 
+		[Property]
+		public virtual bool Enabled { get; set; }
 	}
 
 }
