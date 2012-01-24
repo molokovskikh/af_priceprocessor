@@ -46,22 +46,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
         private void CheckAndFixSerialFormat(IList<DocumentLine> lines)
         {
-            foreach (var documentLine in lines)
-            {
-                DateTime tmp;
+        	foreach (var documentLine in lines) {
+        		DateTime tmp;
 
-                var serialNumber = documentLine.SerialNumber;
+        		var serialNumber = documentLine.SerialNumber;
 
-                if (/*serialNumber.Length == 10
-                    &&*/ DateTime.TryParse(serialNumber, out tmp)/*
-                    && tmp.Day == 01*/)
-                { documentLine.SerialNumber = serialNumber.Substring(3); }
-
-
-            }
+        		if (DateTime.TryParse(serialNumber, out tmp)) {
+        			documentLine.SerialNumber = serialNumber.Substring(3);
+        		}
+        	}
         }
 
-        public static bool CheckFileFormat(DataTable data)
+    	public static bool CheckFileFormat(DataTable data)
         {
             var columns = data.Columns;
 
