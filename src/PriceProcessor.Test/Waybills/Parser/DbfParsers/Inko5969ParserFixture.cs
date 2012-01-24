@@ -30,10 +30,10 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
             Assert.That(line.Quantity, Is.EqualTo(1u));
             Assert.That(line.Nds, Is.EqualTo(18u));
-            Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(67.94));
+            Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(67.94));
             Assert.That(line.NdsAmount, Is.EqualTo(12.23));
             Assert.That(line.Amount, Is.EqualTo(80.17));
-            Assert.That(line.ProducerCost, Is.EqualTo(80.17));
+            Assert.That(line.SupplierCost, Is.EqualTo(80.17));
         }
     }
 }
