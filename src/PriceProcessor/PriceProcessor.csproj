@@ -256,6 +256,7 @@
     <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParcer.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Inko5969Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KrasotaIZdorovieKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VitaLineKazanParser.cs" />

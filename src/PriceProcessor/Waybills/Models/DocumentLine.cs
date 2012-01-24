@@ -74,7 +74,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string CertificatesDate { get; set; }
 		
 		/// <summary>
-		/// Срок годности
+		/// Срок годности. А точнее Дата окончания срока годности.
 		/// </summary>
 		[Property]
 		public string Period { get; set; }

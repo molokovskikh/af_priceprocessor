@@ -210,9 +210,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public DocType DocumentType { get; set; }
 
+        /// <summary>
+        /// Номер накладной.
+        /// </summary>
 		[Property]
 		public string ProviderDocumentId { get; set; }
 
+        /// <summary>
+        /// Дата накладной.
+        /// </summary>
 		[Property]
 		public DateTime? DocumentDate { get; set; }
 
