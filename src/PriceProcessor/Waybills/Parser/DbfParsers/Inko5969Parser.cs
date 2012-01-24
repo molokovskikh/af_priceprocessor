@@ -31,11 +31,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
                 .Line(l => l.Nds, "NDS")//NDS – НДС на данный товар
                 //Пропущено : EDIZM- всегда пусто
                 //Пропущено : KOEFED – всегда ноль
-                .Line(l => l.ProducerCostWithoutNDS, "PRICEENT")//PRICEENT –цена за штуку без НДС
+                .Line(l => l.SupplierCostWithoutNDS, "PRICEENT")//PRICEENT –цена ПОСТАВЩИКА за штуку без НДС 
                 //.Line(l => l.ProducerCostWithoutNDS, "PRICEWONDS")//PRICEWONDS – цена за штуку без НДС
                 .Line(l => l.NdsAmount, "SUMNDS")//SUMNDS – сумма НДС за штуку
                 .Line(l => l.Amount, "SUMSNDS")//SUMSNDS – общая сумма товара с НДС
-                .Line(l => l.ProducerCost, "PRICEENTND")// PRICEENTND – Цена за штуку с НДС
+                .Line(l => l.SupplierCost, "PRICEENTND")// PRICEENTND – Цена ПОСТАВЩИКА за штуку с НДС
                 //.Line(l => l.ProducerCost, "CENASNDS")//CENASNDS – Цена за штуку с НДС
                 .ToDocument(document, data);
 
@@ -52,12 +52,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
                 var serialNumber = documentLine.SerialNumber;
 
-                if (serialNumber.Length == 10
-                    && DateTime.TryParse(serialNumber, out tmp)
-                    && tmp.Day == 01)
-                {
-                    documentLine.SerialNumber = serialNumber.Substring(3);
-                }
+                if (/*serialNumber.Length == 10
+                    &&*/ DateTime.TryParse(serialNumber, out tmp)/*
+                    && tmp.Day == 01*/)
+                { documentLine.SerialNumber = serialNumber.Substring(3); }
+
 
             }
         }
