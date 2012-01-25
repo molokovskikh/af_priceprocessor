@@ -26,6 +26,7 @@ namespace Inforoom.Downloader
 			Users = new Dictionary<User, MailRecipient>();
 		}
 
+		public string SHA256MailHash { get; set; }
 		public string SupplierEmails { get; set; }
 		public List<Supplier> Suppliers { get; set; }
 		public List<MailRecipient> FullRecipients { get; set; }
@@ -117,6 +118,7 @@ namespace Inforoom.Downloader
 
 			Ping();
 
+			context.SHA256MailHash = m.GetSHA256Hash();
 			var fromSupplierList = GetAddressList(m);
 			context.SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
 			context.Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
@@ -268,7 +270,8 @@ namespace Inforoom.Downloader
 				SupplierEmail = _context.SupplierEmails,
 				Subject = m.MainEntity.Subject,
 				Body = m.BodyText,
-				LogTime = DateTime.Now
+				LogTime = DateTime.Now,
+				SHA256Hash = _context.SHA256MailHash
 			};
 
 			var attachments = m.GetValidAttachements();

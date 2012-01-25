@@ -152,6 +152,7 @@
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="IndexerHandler.cs" />
+    <Compile Include="MimeExtension.cs" />
     <Compile Include="Models\Assortment.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Client.cs" />

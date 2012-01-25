@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
@@ -70,7 +72,7 @@ namespace PriceProcessor.Test.Waybills
 
 			byte[] bytes;
 			if (IsEmlFile)
-			    bytes = File.ReadAllBytes(fileNames[0]);
+				bytes = File.ReadAllBytes(fileNames[0]);
 			else
 			{
 				var message = ImapHelper.BuildMessageWithAttachments(
@@ -131,6 +133,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
 				Assert.That(mailLog.Mail.IsVIPMail, Is.False);
 				Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(0));
+				Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
 			}
 		}
 
@@ -166,6 +169,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mail.IsVIPMail, Is.False);
 				Assert.That(mail.Attachments.Count, Is.EqualTo(1));
 				Assert.That(mail.Size, Is.EqualTo(2453));
+				Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
 
 				var attachment = mail.Attachments[0];
 				Assert.That(attachment.FileName, Is.EqualTo("moron.txt"));
@@ -202,6 +206,92 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(values.ExtensionAllow(" "), Is.False);
 			Assert.That(values.ExtensionAllow("exe"), Is.False);
 			Assert.That(values.ExtensionAllow(".exe"), Is.False);
+		}
+
+		static string HashToString(byte[] data)
+		{
+			// Create a new Stringbuilder to collect the bytes
+			// and create a string.
+			StringBuilder sBuilder = new StringBuilder();
+
+			// Loop through each byte of the hashed data 
+			// and format each one as a hexadecimal string.
+			for (int i = 0; i < data.Length; i++)
+			{
+				sBuilder.Append(data[i].ToString("x2"));
+			}
+
+			// Return the hexadecimal string.
+			return sBuilder.ToString();
+		}
+
+		static string GetHash(SHA256Managed sha256Hash, string input)
+		{
+
+			// Convert the input string to a byte array and compute the hash.
+			byte[] data = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+			return Convert.ToBase64String(data);
+		}
+
+		// Verify a hash against a string.
+		static bool VerifyHash(SHA256Managed sha256Hash, string input, string hash)
+		{
+			// Hash the input.
+			var hashOfInput = GetHash(sha256Hash, input);
+
+			return hashOfInput.Equals(hash, StringComparison.OrdinalIgnoreCase);
+		}
+
+		[Test(Description = "проверяем работу класса по вычислению hash SHA256")]
+		public void CheckHashCompute()
+		{
+			var source = "Hello World!";
+			var doubleSource = "Mama said goodbye!";
+
+			using (var sha256Hash = new SHA256Managed())
+			{
+				var hash = GetHash(sha256Hash, source);
+
+				Assert.IsTrue(VerifyHash(sha256Hash, source, hash));
+
+				var firstHash = GetHash(sha256Hash, source);
+				var secondHash = GetHash(sha256Hash, doubleSource);
+
+				var finalHash = Convert.ToBase64String(sha256Hash.Hash);
+
+				Assert.That(firstHash, Is.Not.EqualTo(secondHash));
+
+				Assert.That(finalHash, Is.EqualTo(secondHash), "В свойстве Hash должен содержаться хеш данных, относительно которых был последний раз вызван метод ComputeHash");
+			}
+		}
+
+		[Test(Description = "попытка вычислить хеш для буферов из MultiBufferStream")]
+		public void ComputeHashOnMultiBufferStream()
+		{
+			var firstArray = Encoding.ASCII.GetBytes("this is good");
+			var secondArray = Encoding.ASCII.GetBytes("this is bad");
+
+			using (var stream = new MultiBufferStream()) {
+				stream.AddBuffer(firstArray);
+				stream.AddBuffer(secondArray);
+
+				using (var sha256Hash = new SHA256Managed())
+				{
+					var hash = sha256Hash.ComputeHash(stream);
+
+					var hashString = HashToString(hash);
+
+					//Хеш для строки 'this is goodthis is bad', вычисленный с помощью внешней программы
+					var verifyHash = "B61A0664186896AF7D947E6A56DEB8D608FDF092E515DB531834FDE7DBFCAF79";
+					Assert.That(hashString, Is.EqualTo(verifyHash).IgnoreCase);
+
+					hashString = Convert.ToBase64String(hash);
+
+					var allStringHash = Convert.ToBase64String(sha256Hash.ComputeHash(Encoding.ASCII.GetBytes("this is goodthis is bad")));
+					Assert.That(hashString, Is.EqualTo(allStringHash).IgnoreCase);
+				}
+			}
 		}
 
 	}
