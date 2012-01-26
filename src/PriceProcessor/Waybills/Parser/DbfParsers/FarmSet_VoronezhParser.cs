@@ -14,6 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				new DbfParser()
 					.DocumentHeader(h => h.ProviderDocumentId, "DOCNO")
 					.DocumentHeader(h => h.DocumentDate, "DOCDAT")
+					.DocumentHeader(h => h.OrderId, "DOC_ID")
 					.Line(l => l.Code, "CODTOVAR")
 					.Line(l => l.Product, "TOVARNAME")
 					.Line(l => l.Producer, "PROIZV")
@@ -29,11 +30,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					.Line(l => l.ProducerCostWithoutNDS, "CENAPROIZ")
 					.Line(l => l.VitallyImportant, "PV")
 					.Line(l => l.EAN13, "SHTRIH")
+					.Line(l => l.CertificateFilename, "SERTFILE")
 					.ToDocument(document, data);
 				return document;
 			}
-
-			//private string 
 
 			public static bool CheckFileFormat(DataTable table)
 			{
