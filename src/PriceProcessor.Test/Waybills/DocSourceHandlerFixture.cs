@@ -294,5 +294,34 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test(Description = "отправляем письмо со статусом VIP")]
+		public void SendVIPMail()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				"Это письмо пользователю",
+				"Это текст письма пользователю",
+				null);
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.VIPMailPayerId = _info.Supplier.Payer.Id;
+			handler.Process();
+
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.UpdateLogEntry, Is.Null);
+				Assert.That(mailLog.Committed, Is.False);
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+				Assert.That(mailLog.Mail.IsVIPMail, Is.True);
+			}
+		}
+
 	}
 }

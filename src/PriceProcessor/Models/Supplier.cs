@@ -17,5 +17,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual ulong RegionMask { get; set; }
+
+		[Property]
+		public uint Payer { get; set; }
 	}
 }

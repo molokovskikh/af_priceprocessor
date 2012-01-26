@@ -102,6 +102,8 @@ namespace Inforoom.Downloader
 
 		private MailContext _context;
 
+		public uint VIPMailPayerId = 921;
+
 		public DocSourceHandler()
 		{
 			SourceType = "Doc";
@@ -283,7 +285,8 @@ namespace Inforoom.Downloader
 				Subject = m.MainEntity.Subject,
 				Body = m.BodyText,
 				LogTime = DateTime.Now,
-				SHA256Hash = _context.SHA256MailHash
+				SHA256Hash = _context.SHA256MailHash,
+				IsVIPMail = VIPMailPayerId == _context.Suppliers[0].Payer
 			};
 
 			var attachments = m.GetValidAttachements();
