@@ -172,7 +172,7 @@ namespace Inforoom.Downloader
 						break;
 					}
 
-					if ((attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize)
+					if ((attachment.Data.Length / 1024.0) > 2*1024)
 					{
 						attachmentsIsBigger = true;
 						break;
