@@ -165,7 +165,7 @@ namespace Inforoom.Downloader
 			{ 
 				var attachmentsIsBigger = false;
 				var nonAllowedExtension = false;
-				foreach (var attachment in m.Attachments) {
+				foreach (var attachment in m.GetValidAttachements()) {
 
 					var fileName = attachment.GetFilename();
 					if (!String.IsNullOrWhiteSpace(fileName) && !TemplateHolder.Values.ExtensionAllow(Path.GetExtension(fileName)))

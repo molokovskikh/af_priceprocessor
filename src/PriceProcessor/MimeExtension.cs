@@ -15,8 +15,7 @@ namespace LumiSoft.Net.Mime
 				stream.AddBuffer(Encoding.ASCII.GetBytes(mime.MainEntity.Subject));
 				stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyText));
 
-				var attachments =
-					mime.Attachments.Where(m => !string.IsNullOrEmpty(m.GetFilename()) && m.Data != null).OrderBy(m => m.GetFilename());
+				var attachments = mime.GetValidAttachements().OrderBy(m => m.GetFilename());
 
 				foreach (var attachment in attachments) {
 					stream.AddBuffer(attachment.Data);
@@ -28,6 +27,11 @@ namespace LumiSoft.Net.Mime
 					return Convert.ToBase64String(hash);
 				}
 			}
+		}
+
+		public static uint MailSize(this Mime mime)
+		{
+			return (uint)(mime.BodyText.Length + mime.GetValidAttachements().Sum(a => a.Data.Length));
 		}
 	}
 }
