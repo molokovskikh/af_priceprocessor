@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
@@ -12,6 +13,20 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		Address = 0,
 		Region = 1,
 		Client = 2
+	}
+
+	public enum RecipientStatus
+	{
+		Verified = 0,
+		[Description("Не найдена ни одна аптека для данного адреса")]
+		NotFound = 1,
+		[Description("Аптека отключена в рамках системы АналитФармация")]
+		Disabled = 2,
+		[Description("Aптека находится вне Вашего региона работы в рамках системы АналитФармация")]
+		NotAvailable = 3,
+		[Description("письмо уже доставлялось данному получателю")]
+		Duplicate = 4
+		
 	}
 
 	[ActiveRecord("MailRecipients", Schema = "documents")]
@@ -37,6 +52,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		
 		public string Email { get; set; }
 
+		public RecipientStatus Status { get; set; }
+
 		public override bool Equals(object obj)
 		{
 			if (obj is MailRecipient) {
@@ -61,7 +78,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 						recipient = new MailRecipient {
 							Type = RecipientType.Address,
 							Address = address,
-							Email = email
+							Email = email,
+							Status = address.Enabled ? RecipientStatus.Verified : RecipientStatus.Disabled
+						};
+					else 
+						recipient = new MailRecipient {
+							Type = RecipientType.Address,
+							Email = email,
+							Status = RecipientStatus.NotFound
 						};
 				}
 				else {
@@ -72,6 +96,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							Type = RecipientType.Region,
 							Region = region,
 							Email = email
+						};
+					else 
+						recipient = new MailRecipient {
+							Type = RecipientType.Region,
+							Email = email,
+							Status = RecipientStatus.NotFound
 						};
 				}
 			}
@@ -85,7 +115,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							recipient = new MailRecipient {
 								Type = RecipientType.Client,
 								Client = client,
-								Email = email
+								Email = email,
+								Status = client.Status ? RecipientStatus.Verified : RecipientStatus.Disabled
+							};
+						else 
+							recipient = new MailRecipient {
+								Type = RecipientType.Client,
+								Email = email,
+								Status = RecipientStatus.NotFound
 							};
 					}
 				}

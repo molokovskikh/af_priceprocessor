@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 using Test.Support;
@@ -21,14 +22,18 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var address = TestAddress.Queryable.OrderByDescending(a => a.Id).First();
 			var recipient = MailRecipient.Parse((address.Id+10) + "@docs.analit.net");
-			Assert.That(recipient, Is.Null);
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Email, Is.EqualTo((address.Id+10) + "@docs.analit.net"));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
 		}
 
 		[Test]
 		public void CheckNonExistsRegion()
 		{
 			var recipient = MailRecipient.Parse( "mlfds@docs.analit.net");
-			Assert.That(recipient, Is.Null);
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Email, Is.EqualTo("mlfds@docs.analit.net"));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
 		}
 
 		[Test]
@@ -36,13 +41,16 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Queryable.OrderByDescending(c => c.Id).First();
 			var recipient = MailRecipient.Parse((client.Id+10) + "@client.docs.analit.net");
-			Assert.That(recipient, Is.Null);
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Email, Is.EqualTo((client.Id+10) + "@client.docs.analit.net"));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
 		}
 
 		[Test]
 		public void CheckExistsAddress()
 		{
-			var address = TestAddress.Queryable.First();
+			var client = TestClient.Create();
+			var address = client.Addresses[0];
 			var recipient = MailRecipient.Parse(address.Id + "@docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
 			Assert.That(recipient.Email, Is.EqualTo(address.Id + "@docs.analit.net"));
@@ -51,6 +59,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(recipient.Region, Is.Null);
 			Assert.That(recipient.Client, Is.Null);
 			Assert.That(recipient.Address.Id, Is.EqualTo(address.Id));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Verified));
 		}
 
 		[Test]
@@ -65,6 +74,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(recipient.Region, Is.Not.Null);
 			Assert.That(recipient.Client, Is.Null);
 			Assert.That(recipient.Region.Id, Is.EqualTo(region.Id));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Verified));
 		}
 
 		[Test]
@@ -79,6 +89,51 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(recipient.Region, Is.Null);
 			Assert.That(recipient.Client, Is.Not.Null);
 			Assert.That(recipient.Client.Id, Is.EqualTo(client.Id));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Verified));
 		}
+
+		[Test]
+		public void CheckDisabledAddress()
+		{
+			var client = TestClient.Create();
+			var address = client.Addresses[0];
+
+			using (new TransactionScope()) {
+				address.Enabled = false;
+				address.Save();
+			}
+
+			var recipient = MailRecipient.Parse(address.Id + "@docs.analit.net");
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Email, Is.EqualTo(address.Id + "@docs.analit.net"));
+			Assert.That(recipient.Type, Is.EqualTo(RecipientType.Address));
+			Assert.That(recipient.Address, Is.Not.Null);
+			Assert.That(recipient.Region, Is.Null);
+			Assert.That(recipient.Client, Is.Null);
+			Assert.That(recipient.Address.Id, Is.EqualTo(address.Id));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Disabled));
+		}
+
+		[Test]
+		public void CheckDisabledClient()
+		{
+			var client = TestClient.Create();
+
+			using (new TransactionScope()) {
+				client.Status = ClientStatus.Off;
+				client.Save();
+			}
+
+			var recipient = MailRecipient.Parse(client.Id + "@client.docs.analit.net");
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Email, Is.EqualTo(client.Id + "@client.docs.analit.net"));
+			Assert.That(recipient.Type, Is.EqualTo(RecipientType.Client));
+			Assert.That(recipient.Address, Is.Null);
+			Assert.That(recipient.Region, Is.Null);
+			Assert.That(recipient.Client, Is.Not.Null);
+			Assert.That(recipient.Client.Id, Is.EqualTo(client.Id));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Disabled));
+		}
+
 	}
 }

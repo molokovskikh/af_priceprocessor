@@ -14,6 +14,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("LegalEntityId")]
 		public virtual Org Org { get; set; }
+
+		[Property]
+		public virtual bool Enabled { get; set; }
 	}
 
 	[ActiveRecord("LegalEntities", Schema = "Billing", Lazy = true)]

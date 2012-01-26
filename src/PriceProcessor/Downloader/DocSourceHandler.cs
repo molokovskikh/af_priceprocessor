@@ -22,15 +22,15 @@ namespace Inforoom.Downloader
 	{
 		public MailContext()
 		{
-			FullRecipients = new List<MailRecipient>();
+			Recipients = new List<MailRecipient>();
 			Users = new Dictionary<User, MailRecipient>();
 		}
 
 		public string SHA256MailHash { get; set; }
 		public string SupplierEmails { get; set; }
 		public List<Supplier> Suppliers { get; set; }
-		public List<MailRecipient> FullRecipients { get; set; }
-		public List<MailRecipient> VerifyRecipients { get; set; }
+		public List<MailRecipient> Recipients { get; set; }
+
 		public Dictionary<User, MailRecipient> Users { get; set; }
 
 		public void ParseRecipients(Mime mime)
@@ -39,13 +39,24 @@ namespace Inforoom.Downloader
 			ParseRecipientAddresses(mime.MainEntity.Cc);
 			ParseRecipientAddresses(mime.MainEntity.Bcc);
 
-			if (FullRecipients.Count > 0) {
-				VerifyRecipients = new List<MailRecipient>();
-				foreach (var fullRecipient in FullRecipients) {
-					var users = fullRecipient.GetUsers(Suppliers[0].RegionMask);
-					if (users.Count > 0) {
-						VerifyRecipients.Add(fullRecipient);
-						users.ForEach(u => AddUser(u, fullRecipient));
+			if (Recipients.Count > 0) {
+				foreach (var recipient in Recipients) {
+					if (recipient.Status == RecipientStatus.Verified) {
+						var users = recipient.GetUsers(Suppliers[0].RegionMask);
+						if (users.Count > 0) {
+							for (int i = users.Count-1; i > -1; i--) {
+								var mails = MailSendLog.Queryable.Where(
+									log => log.Mail.LogTime > DateTime.Now.AddDays(-1) && log.Mail.SHA256Hash == SHA256MailHash && log.User.Id == users[i].Id).ToList();
+								if (mails.Count > 0)
+									users.RemoveAt(i);
+							}
+							if (users.Count > 0)
+								users.ForEach(u => AddUser(u, recipient));
+							else 
+								recipient.Status = RecipientStatus.Duplicate;
+						}
+						else 
+							recipient.Status = RecipientStatus.NotAvailable;
 					}
 				}
 			}
@@ -67,8 +78,8 @@ namespace Inforoom.Downloader
 
 		public void AddRecipient(MailRecipient recipient)
 		{
-			if (!FullRecipients.Exists(r => r.Equals(recipient)))
-				FullRecipients.Add(recipient);
+			if (!Recipients.Exists(r => r.Equals(recipient)))
+				Recipients.Add(recipient);
 		}
 
 		public void AddUser(User user, MailRecipient recipient)
@@ -77,6 +88,7 @@ namespace Inforoom.Downloader
 				Users.Add(user, recipient);
 		}
 
+		public List<MailRecipient> VerifiedRecipients { get {return Recipients.Where(r => r.Status == RecipientStatus.Verified).ToList();} }
 	}
 
 	public class DocSourceHandler : EMAILSourceHandler
@@ -281,7 +293,7 @@ namespace Inforoom.Downloader
 			}
 			mail.Size = (uint)(mail.Body.Length + mail.Attachments.Sum(a => a.Size));
 
-			foreach (var verifyRecipient in _context.VerifyRecipients) {
+			foreach (var verifyRecipient in _context.VerifiedRecipients) {
 				verifyRecipient.Mail = mail;
 				mail.MailRecipients.Add(verifyRecipient);
 			}
