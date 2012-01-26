@@ -225,6 +225,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string Parser { get; set; }
 
+		/// <summary>
+		/// наш номер заявки, на основании кот. сформирована накладная
+		/// </summary>
 		[Property]
 		public uint? OrderId { get; set; }
 
