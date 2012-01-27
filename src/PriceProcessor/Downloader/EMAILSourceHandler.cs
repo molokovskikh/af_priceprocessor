@@ -408,19 +408,6 @@ namespace Inforoom.Downloader
 		{}
 	}
 
-	public class EmailByMiniMails : EMailSourceHandlerException
-	{
-		public EmailByMiniMails(string message) : base(message)
-		{}
-
-		public EmailByMiniMails(string message, ResponseTemplate template) : base(message)
-		{
-			Template = template;
-		}
-
-		public ResponseTemplate Template { get; set; }
-	}
-
 	public class EMailSourceHandlerException : Exception
 	{
 		public EMailSourceHandlerException(string message) : base(message)
@@ -435,4 +422,5 @@ namespace Inforoom.Downloader
 		public string Body { get; set; }
 		public string Subject { get; set; }
 	}
+
 }

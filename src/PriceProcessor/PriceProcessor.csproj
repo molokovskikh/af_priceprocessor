@@ -137,6 +137,7 @@
     <Compile Include="Downloader\DocumentReaders\SIAMoscow_2788_Reader.cs" />
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\DownloadLogEntity.cs" />
+    <Compile Include="Downloader\EmailByMiniMailsException.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
     <Compile Include="Downloader\ProtekContract.cs" />

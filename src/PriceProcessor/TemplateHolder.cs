@@ -59,7 +59,7 @@ namespace Inforoom.PriceProcessor
 
 		public static MailTemplate GetTemplate(ResponseTemplate template)
 		{
-			var values = Values;
+			var values = _values;
 
 			switch (template) {
 				case ResponseTemplate.MiniMailOnUnknownProvider:
