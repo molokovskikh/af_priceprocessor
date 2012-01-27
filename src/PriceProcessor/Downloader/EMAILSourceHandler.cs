@@ -121,7 +121,7 @@ namespace Inforoom.Downloader
 			c.Authenticate(Settings.Default.IMAPUser, Settings.Default.IMAPPass);
 		}
 
-		private void ProcessMime(Mime m)
+		protected void ProcessMime(Mime m)
 		{
 			var from = GetAddressList(m);
 			m = UueHelper.ExtractFromUue(m, DownHandlerPath);

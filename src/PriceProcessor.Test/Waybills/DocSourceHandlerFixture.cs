@@ -29,6 +29,7 @@ namespace PriceProcessor.Test.Waybills
 		public TestSupplier Supplier { get; set; }
 		public TestRegion Region { get; set; }
 		public IList<TestUser> Users { get; set; }
+		public Mime Mime { get; set;}
 	}
 
 	public class DocSourceHandlerForTesting : DocSourceHandler
@@ -38,10 +39,10 @@ namespace PriceProcessor.Test.Waybills
 		{
 		}
 
-		public void Process()
+		public void TestProcessMime(Mime m)
 		{
 			CreateDirectoryPath();
-			ProcessData();
+			ProcessMime(m);
 		}
 	}
 
@@ -50,9 +51,6 @@ namespace PriceProcessor.Test.Waybills
 	{
 		private DocSourceHandlerTestInfo _info;
 
-		private bool IsEmlFile;
-
-		
 		[SetUp]
 		public void DeleteDirectories()
 		{
@@ -99,25 +97,18 @@ namespace PriceProcessor.Test.Waybills
 			PrepareSupplier(supplier, from);
 			info.Supplier = supplier;
 
-			byte[] bytes;
-			if (IsEmlFile)
-				bytes = File.ReadAllBytes(fileNames[0]);
-			else
-			{
-				var message = ImapHelper.BuildMessageWithAttachments(
-					subject,
-					body,
-					users.Select(u => "{0}@docs.analit.net".Format(u.AvaliableAddresses[0].Id)).ToArray(),
-					new []{from}, 
-					fileNames != null ? fileNames.ToArray() : null);
-				bytes = message.ToByteData();
-			}
+			var toList = users.Select(u => "{0}@docs.analit.net".Format(u.AvaliableAddresses[0].Id)).ToList();
+			if (region != null)
+				toList.Add(region.ShortAliase + "@docs.analit.net");
 
-			ImapHelper.StoreMessage(
-				Settings.Default.TestIMAPUser,
-				Settings.Default.TestIMAPPass,
-				Settings.Default.IMAPSourceFolder, 
-				bytes);
+			var message = ImapHelper.BuildMessageWithAttachments(
+				subject,
+				body,
+				toList.ToArray(),
+				new []{from}, 
+				fileNames != null ? fileNames.ToArray() : null);
+
+			info.Mime = message;
 
 			info.Region = region;
 			info.Users = users;
@@ -128,8 +119,11 @@ namespace PriceProcessor.Test.Waybills
 		private void Process()
 		{			
 			Assert.That(_info, Is.Not.Null, "Перед обработкой должен быть вызван метод SetUp");
+			Assert.That(_info.Mime, Is.Not.Null, "Перед обработкой должен быть вызван метод SetUp");
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			handler.Process();
+			handler.TestProcessMime(_info.Mime);
+			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
 		}
 
 		[Test(Description = "Простой разбор письма")]
@@ -338,7 +332,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.VIPMailPayerId = _info.Supplier.Payer.Id;
-			handler.Process();
+			handler.TestProcessMime(_info.Mime);
 
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
@@ -490,6 +484,76 @@ namespace PriceProcessor.Test.Waybills
 			catch (MiniMailOnMaxAttachmentException exception) {
 				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnMaxAttachment));
 				SendErrorToProvider(handler, exception, message);
+			}
+		}
+
+		[Test(Description = "отправляем письмо два раза, второй раз оно не должно доставляться")]
+		public void SendDuplicateMessage()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				"Это письмо пользователю",
+				"Это текст письма пользователю",
+				null);
+
+			//Обрабатываем письмо один раз
+			Process();
+
+			TestMailSendLog firstLog;
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+				firstLog = mailLog;
+			}
+
+			//Обрабатываем письмо повторно
+			Process();
+
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+
+				Assert.That(mailLog.Id, Is.EqualTo(firstLog.Id));
+			}
+		}
+
+		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
+		public void SendNotAll()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			var inforoomRegion = TestRegion.Find(TestRegion.Inforoom);
+
+			SetUp(
+				new List<TestUser> {user},
+				inforoomRegion,
+				"Это письмо пользователю",
+				"Это текст письма пользователю",
+				null);
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.TestProcessMime(_info.Mime);
+			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			Assert.That(existsMessages.Count, Is.EqualTo(1), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
+			Assert.That(existsMessages[0].Envelope.Subject, Is.EqualTo("Ваше Сообщение не доставлено одной или нескольким аптекам").IgnoreCase);
+			
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 			}
 		}
 

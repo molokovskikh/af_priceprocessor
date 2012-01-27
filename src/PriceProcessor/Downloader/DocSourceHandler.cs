@@ -91,10 +91,11 @@ namespace Inforoom.Downloader
 
 		public List<MailRecipient> VerifiedRecipients { get {return Recipients.Where(r => r.Status == RecipientStatus.Verified).ToList();} }
 
+		public List<MailRecipient> DiscardedRecipients { get {return Recipients.Where(r => r.Status != RecipientStatus.Verified && r.Status != RecipientStatus.Duplicate).ToList();} }
+
 		public string GetCauseList()
 		{
-			var list = Recipients.Where(r => r.Status != RecipientStatus.Verified || r.Status != RecipientStatus.Duplicate).Select(r => r.Email + ":" + r.Status.GetDescription()).ToArray();
-			return list.Implode("\r\n");
+			return DiscardedRecipients.Select(r => r.Email + " : " + r.Status.GetDescription()).Implode("\r\n");
 		}
 
 	}
@@ -172,7 +173,7 @@ namespace Inforoom.Downloader
 							"Не найден пользователь.", 
 							context.GetCauseList());
 			}
-			else if (context.Recipients.Any(r => r.Status != RecipientStatus.Verified || r.Status != RecipientStatus.Duplicate)) {
+			else if (context.DiscardedRecipients.Count > 0) {
 				SendErrorLetterToSupplier(
 					new MiniMailOnEmptyRecipientsException(
 						"Не найден пользователь.", 

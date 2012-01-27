@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor;
@@ -51,6 +53,25 @@ namespace PriceProcessor.Test.TestHelpers
 					}
 				}
 			}
+		}
+
+		public static List<IMAP_FetchItem> CheckImapFolder(string mailbox, string password, string folder)
+		{
+			using (var imapClient = new IMAP_Client())
+			{
+				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
+				imapClient.Authenticate(mailbox, password);
+				imapClient.SelectFolder(folder);
+				var sequenceSet = new IMAP_SequenceSet();
+				sequenceSet.Parse("1:*", Int64.MaxValue);
+				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
+				if ((items != null) && (items.Length > 0))
+				{
+					return items.ToList();
+				}
+			}
+
+			return new List<IMAP_FetchItem>();
 		}
 
 		public static void StoreMessage(byte[] messageBytes)
