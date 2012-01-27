@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	/*
-	 Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением	 
+	 Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением
 	 */
 	public class MiniMailOnUnknownProviderException : MiniMailException
 	{
@@ -45,7 +45,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	/*
-	 Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением	 
+	 Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением
 	 */
 	public class MiniMailOnEmptyRecipientsException : MiniMailException
 	{
@@ -63,7 +63,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	/*
-	 Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением	 
+	 Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением
 	 */
 	public class MiniMailOnMaxAttachmentException : MiniMailException
 	{
@@ -78,7 +78,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	/*
-	 Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением	 
+	 Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением
 	 */
 	public class MiniMailOnAllowedExtensionsException : MiniMailException
 	{

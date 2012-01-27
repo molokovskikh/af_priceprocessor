@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor
 
 		public bool IsValid()
 		{
-			return !String.IsNullOrWhiteSpace(Subject) && String.IsNullOrWhiteSpace(Body);
+			return !String.IsNullOrWhiteSpace(Subject) && !String.IsNullOrWhiteSpace(Body);
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace Inforoom.PriceProcessor
 
 		public static MailTemplate GetTemplate(ResponseTemplate template)
 		{
-			var values = _values;
+			var values = Values;
 
 			switch (template) {
 				case ResponseTemplate.MiniMailOnUnknownProvider:

@@ -7,13 +7,20 @@ using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
+using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Logs;
 using Test.Support.Suppliers;
 using Common.Tools;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
+using log4net.Filter;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -45,12 +52,34 @@ namespace PriceProcessor.Test.Waybills
 
 		private bool IsEmlFile;
 
+		
 		[SetUp]
 		public void DeleteDirectories()
 		{
+			SetDefaultValues();
 			_info = null;
 			TestHelper.RecreateDirectories();
 			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+		}
+
+		private void SetDefaultValues()
+		{
+			using (new TransactionScope()) {
+				var values = TemplateHolder.Values;
+
+				values.AllowedMiniMailExtensions = "doc, xls, gif, tiff, tif, jpg, pdf, txt";
+
+				values.ResponseSubjectMiniMailOnUnknownProvider = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+				values.ResponseSubjectMiniMailOnEmptyRecipients = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+				values.ResponseSubjectMiniMailOnMaxAttachment = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+				values.ResponseSubjectMiniMailOnAllowedExtensions = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+
+				values.ResponseBodyMiniMailOnUnknownProvider = "Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением";
+				values.ResponseBodyMiniMailOnEmptyRecipients = "Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением";
+				values.ResponseBodyMiniMailOnMaxAttachment = "Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением";
+				values.ResponseBodyMiniMailOnAllowedExtensions = "Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением";
+				values.Save();
+			}
 		}
 
 		private void PrepareSupplier(TestSupplier supplier, string from)
@@ -320,6 +349,147 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(mailLog.Committed, Is.False);
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 				Assert.That(mailLog.Mail.IsVIPMail, Is.True);
+			}
+		}
+
+		private void SendErrorToProvider(DocSourceHandlerForTesting handler, MiniMailException exception, Mime sourceLetter)
+		{
+			try {
+
+				var memoryAppender = new MemoryAppender();
+				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
+				BasicConfigurator.Configure(memoryAppender);
+
+				handler.SendErrorLetterToSupplier(exception, sourceLetter);
+
+				var events = memoryAppender.GetEvents();
+				Assert.That(
+					events.Length, 
+					Is.EqualTo(0), 
+					"Ошибки при обработки задач сертификатов:\r\n{0}", 
+						events.Select(item => {
+							if (string.IsNullOrEmpty(item.GetExceptionString()))
+								return item.RenderedMessage;
+							else
+								return item.RenderedMessage + Environment.NewLine + item.GetExceptionString();
+						}).Implode("\r\n"));
+
+			}
+			finally {
+				LogManager.ResetConfiguration();
+			}
+		}
+
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон для неизвестного адреса поставщика'")]
+		public void NotFoundSupplierError()
+		{
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"test NotFound",
+				"body NotFound",
+				new string[] {"testUser@docs.analit.net"},
+				new []{from}, 
+				null);
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnUnknownProviderException");
+			}
+			catch (MiniMailOnUnknownProviderException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnUnknownProvider));
+				Assert.That(exception.SuppliersEmails, Is.StringContaining(from));
+				SendErrorToProvider(handler, exception, message);
+			}
+		}
+
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон для пустого списка получателей'")]
+		public void NotFoundError()
+		{
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"test NotFound",
+				"body NotFound",
+				new string[] {"testUser@docs.analit.net"},
+				new []{from}, 
+				null);
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnEmptyRecipientsException");
+			}
+			catch (MiniMailOnEmptyRecipientsException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnEmptyRecipients));
+				Assert.That(exception.CauseList, Is.EqualTo("testUser@docs.analit.net:" + RecipientStatus.NotFound.GetDescription()));
+				SendErrorToProvider(handler, exception, message);
+			}
+		}
+
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при недопустимом типе файла вложения'")]
+		public void ErrorOnAllowedExtensions()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"test NotFound",
+				"body NotFound",
+				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
+				new []{from}, 
+				new string[]{@"..\..\Data\Waybills\70983_906384.zip"});
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnAllowedExtensionsException");
+			}
+			catch (MiniMailOnAllowedExtensionsException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnAllowedExtensions));
+				Assert.That(exception.ErrorExtention, Is.EqualTo(".zip").IgnoreCase);
+				Assert.That(exception.AllowedExtensions, Is.EqualTo("doc, xls, gif, tiff, tif, jpg, pdf, txt").IgnoreCase);
+				SendErrorToProvider(handler, exception, message);
+			}
+		}
+
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при превышении размера вложения'")]
+		public void ErrorOnMaxAttachment()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"test NotFound",
+				"body NotFound",
+				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
+				new []{from}, 
+				new string[]{@"..\..\Data\BigMiniMailAttachment.xls"});
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnMaxAttachmentException");
+			}
+			catch (MiniMailOnMaxAttachmentException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnMaxAttachment));
+				SendErrorToProvider(handler, exception, message);
 			}
 		}
 
