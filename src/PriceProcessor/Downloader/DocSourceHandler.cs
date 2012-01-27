@@ -8,6 +8,7 @@ using Castle.Core;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.IMAP.Client;
@@ -89,6 +90,13 @@ namespace Inforoom.Downloader
 		}
 
 		public List<MailRecipient> VerifiedRecipients { get {return Recipients.Where(r => r.Status == RecipientStatus.Verified).ToList();} }
+
+		public string GetCauseList()
+		{
+			var list = Recipients.Where(r => r.Status != RecipientStatus.Verified || r.Status != RecipientStatus.Duplicate).Select(r => r.Email + ":" + r.Status.GetDescription()).ToArray();
+			return list.Implode("\r\n");
+		}
+
 	}
 
 	public class DocSourceHandler : EMAILSourceHandler
@@ -143,9 +151,9 @@ namespace Inforoom.Downloader
 				throw new EMailSourceHandlerException("Найдено несколько источников.");
 			else 
 				if (context.Suppliers.Count == 0)
-					throw new EmailByMiniMails(
-						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'", 
-						ResponseTemplate.MiniMailOnUnknownProvider);
+					throw new MiniMailOnUnknownProviderException(
+						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'",
+						fromSupplierList.ToAddressListString());
 
 			using (new SessionScope()) {
 				context.ParseRecipients(m);
@@ -157,20 +165,33 @@ namespace Inforoom.Downloader
 			// Если не сопоставили с клиентом)
 			if (context.Users.Count == 0)
 			{
-				throw new EmailByMiniMails(
-						"Не найден пользователь.", 
-						ResponseTemplate.MiniMailOnEmptyRecipients);
+				if (context.Recipients.All(r => r.Status == RecipientStatus.Duplicate))
+					throw new EMailSourceHandlerException("Письмо было отброшено как дубликат.");
+				else 
+					throw new MiniMailOnEmptyRecipientsException(
+							"Не найден пользователь.", 
+							context.GetCauseList());
 			}
+			else if (context.Recipients.Any(r => r.Status != RecipientStatus.Verified || r.Status != RecipientStatus.Duplicate)) {
+				SendErrorLetterToSupplier(
+					new MiniMailOnEmptyRecipientsException(
+						"Не найден пользователь.", 
+						context.GetCauseList()),
+					m);
+			}
+
 			if (m.Attachments.Length > 0)
 			{ 
 				var attachmentsIsBigger = false;
 				var nonAllowedExtension = false;
+				var errorExtension = String.Empty;
 				foreach (var attachment in m.GetValidAttachements()) {
 
 					var fileName = attachment.GetFilename();
 					if (!String.IsNullOrWhiteSpace(fileName) && !TemplateHolder.Values.ExtensionAllow(Path.GetExtension(fileName)))
 					{
 						nonAllowedExtension = true;
+						errorExtension = Path.GetExtension(fileName);
 						break;
 					}
 
@@ -181,70 +202,77 @@ namespace Inforoom.Downloader
 					}
 				}
 				if (nonAllowedExtension) {
-					throw new EmailByMiniMails(
+					throw new MiniMailOnAllowedExtensionsException(
 						"Письмо содержит вложение недопустимого типа.",
-						ResponseTemplate.MiniMailOnAllowedExtensions);
+						errorExtension,
+						TemplateHolder.Values.AllowedMiniMailExtensions);
 				}
 				if (attachmentsIsBigger) {
-					throw new EmailByMiniMails(
-						String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
-						              Settings.Default.MaxWaybillAttachmentSize),
-						ResponseTemplate.MiniMailOnMaxAttachment);
+					throw new MiniMailOnMaxAttachmentException(
+						"Письмо содержит вложение размером больше максимально допустимого значения (2 Мб).");
 				}
 			}
 
 			_context = context;
 		}
 		
+		public void SendErrorLetterToSupplier(MiniMailException e, Mime sourceLetter)
+		{
+			try
+			{
+				e.MailTemplate = TemplateHolder.GetTemplate(e.Template);
+
+				if (e.MailTemplate.IsValid()) {
+					var FromList = GetAddressList(sourceLetter);
+
+					var _from = new AddressList();
+					_from.Parse("farm@analit.net");
+
+					var responseMime = new Mime();
+					responseMime.MainEntity.From = _from;
+	#if DEBUG
+					var toList = new AddressList { new MailboxAddress(Settings.Default.SMTPUserFail) };				
+					responseMime.MainEntity.To = toList;
+	#else
+					responseMime.MainEntity.To = FromList;
+	#endif
+					responseMime.MainEntity.Subject = e.MailTemplate.Subject;
+					responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+
+					var testEntity  = responseMime.MainEntity.ChildEntities.Add();
+					testEntity.ContentType = MediaType_enum.Text_plain;
+					testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+					testEntity.DataText = e.GetBody(sourceLetter);
+
+					var attachEntity  = responseMime.MainEntity.ChildEntities.Add();
+					attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+					attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+					attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+					attachEntity.ContentDisposition_FileName = (!String.IsNullOrEmpty(sourceLetter.MainEntity.Subject)) ? sourceLetter.MainEntity.Subject + ".eml" : "Unrec.eml";
+					attachEntity.Data = sourceLetter.ToByteData();
+
+					LumiSoft.Net.SMTP.Client.SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, String.Empty, responseMime);
+				}
+				else 
+					_logger.ErrorFormat("Для шаблона '{0}' не установлено значение", e.Template.GetDescription());
+
+			}
+			catch (Exception exception) {
+				_logger.WarnFormat("Ошибка при отправке письма поставщику: {0}", exception);
+			}
+		}
+
 		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
 			try
 			{
-				if (String.IsNullOrEmpty(e.Body))
-				{
+				if (e is MiniMailException) {
+					//отправляем письмо поставщику
+					SendErrorLetterToSupplier((MiniMailException)e, m);
+				}
+				else 
+					//отправляем письмо в tech для разбора
 					SendUnrecLetter(m, from, e);
-					return;
-				}
-
-				var subject = e.Subject;
-				var body = e.Body;
-				var message = e.Message;
-				if (e is EmailFromUnregistredMail)
-				{
-					subject = Settings.Default.ResponseDocSubjectTemplateOnUnknownProvider;
-					body = Settings.Default.ResponseDocBodyTemplateOnUnknownProvider;
-					message = "Для данного E-mail не найден контакт в ";
-				}
-				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
-
-				WaybillSourceHandler.SendErrorLetterToProvider(
-				    from, 
-				    subject, 
-				    body, m);
-
-				if (e is EmailFromUnregistredMail)
-				{
-					var ms = new MemoryStream(m.ToByteData());
-					FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
-						m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, e.Body);
-				}
-
-				var comment = String.Format(@"{0} 
-Отправители     : {1}
-Получатели      : {2}
-Список вложений : 
-{3}
-Тема письма поставщику : {4}
-Тело письма поставщику : 
-{5}",
-					message,
-					from.ToAddressListString(),
-					m.MainEntity.To.ToAddressListString(),
-					attachments,
-					subject, 
-					body);
-
-				_logger.WarnFormat("Нераспознанное письмо: {0}", comment);
 			}
 			catch (Exception exMatch)
 			{
