@@ -226,6 +226,7 @@
     <Compile Include="Waybills\CertificateSourceDetector.cs" />
     <Compile Include="Waybills\CertificateSources\AbstractCertifcateSource.cs" />
     <Compile Include="Waybills\CertificateSources\AptekaHoldingVoronezhCertificateSource.cs" />
+    <Compile Include="Waybills\CertificateSources\FarmKomplektCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\KatrenSource.cs" />
     <Compile Include="Waybills\CertificateSources\ProtekSource.cs" />

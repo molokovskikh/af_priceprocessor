@@ -282,6 +282,8 @@
     <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
     <Compile Include="Waybills\CertificateCatalogHandlerFixture.cs" />
+    <Compile Include="Waybills\Sources\AptekaHoldingVoronezhCertificateSourceFixture.cs" />
+    <Compile Include="Waybills\Sources\FarmKomplektCertificateSourceFixture.cs" />
     <Compile Include="Waybills\Sources\KatrensourceFixture.cs" />
     <Compile Include="Waybills\Sources\ProtekSourceFixture.cs" />
     <Compile Include="Waybills\Sources\RostaCertificateSourceFixture.cs" />
