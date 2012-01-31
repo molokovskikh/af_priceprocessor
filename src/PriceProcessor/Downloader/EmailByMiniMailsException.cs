@@ -65,15 +65,15 @@ namespace Inforoom.PriceProcessor.Downloader
 	/*
 	 Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением
 	 */
-	public class MiniMailOnMaxAttachmentException : MiniMailException
+	public class MiniMailOnMaxMailSizeException : MiniMailException
 	{
-		public MiniMailOnMaxAttachmentException(string message) : base(message, ResponseTemplate.MiniMailOnMaxAttachment)
+		public MiniMailOnMaxMailSizeException(string message) : base(message, ResponseTemplate.MiniMailOnMaxAttachment)
 		{
 		}
 		
 		public override string GetBody(Mime mime)
 		{
-			return string.Format(MailTemplate.Body, mime.MainEntity.Subject, mime.MailSize() /1024.0 / 1024.0, 2);
+			return string.Format(MailTemplate.Body, mime.MainEntity.Subject, mime.MailSize() / 1024.0 / 1024.0, Settings.Default.MaxMiniMailSize);
 		}
 	}
 

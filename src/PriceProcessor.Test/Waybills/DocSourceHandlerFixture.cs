@@ -381,8 +381,8 @@ namespace PriceProcessor.Test.Waybills
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			
 			var message = ImapHelper.BuildMessageWithAttachments(
-				"test NotFound",
-				"body NotFound",
+				"test NotFoundSupplier",
+				"body NotFoundSupplier",
 				new string[] {"testUser@docs.analit.net"},
 				new []{from}, 
 				null);
@@ -422,7 +422,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 			catch (MiniMailOnEmptyRecipientsException exception) {
 				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnEmptyRecipients));
-				Assert.That(exception.CauseList, Is.EqualTo("testUser@docs.analit.net:" + RecipientStatus.NotFound.GetDescription()));
+				Assert.That(exception.CauseList, Is.EqualTo("testUser@docs.analit.net : " + RecipientStatus.NotFound.GetDescription()));
 				SendErrorToProvider(handler, exception, message);
 			}
 		}
@@ -438,8 +438,8 @@ namespace PriceProcessor.Test.Waybills
 			PrepareSupplier(supplier, from);
 
 			var message = ImapHelper.BuildMessageWithAttachments(
-				"test NotFound",
-				"body NotFound",
+				"test AllowedExtensions",
+				"body AllowedExtensions",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
 				new []{from}, 
 				new string[]{@"..\..\Data\Waybills\70983_906384.zip"});
@@ -469,8 +469,8 @@ namespace PriceProcessor.Test.Waybills
 			PrepareSupplier(supplier, from);
 
 			var message = ImapHelper.BuildMessageWithAttachments(
-				"test NotFound",
-				"body NotFound",
+				"test MaxAttachment",
+				"body MaxAttachment",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
 				new []{from}, 
 				new string[]{@"..\..\Data\BigMiniMailAttachment.xls"});
@@ -479,9 +479,9 @@ namespace PriceProcessor.Test.Waybills
 
 			try {
 				handler.CheckMime(message);
-				Assert.Fail("Должно было возникнуть исключение MiniMailOnMaxAttachmentException");
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnMaxMailSizeException");
 			}
-			catch (MiniMailOnMaxAttachmentException exception) {
+			catch (MiniMailOnMaxMailSizeException exception) {
 				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnMaxAttachment));
 				SendErrorToProvider(handler, exception, message);
 			}
@@ -528,7 +528,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
-		public void SendNotAll()
+		public void SendWithExclusion()
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
@@ -554,6 +554,35 @@ namespace PriceProcessor.Test.Waybills
 
 				var mailLog = mails[0];
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			}
+		}
+
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при превышении размера вложения'")]
+		public void ErrorOnMaxSizeLetter()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"test MaxSizeLetter",
+				"body MaxSizeLetter",
+				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
+				new []{from}, 
+				new string[]{@"..\..\Data\688.txt", @"..\..\Data\138.txt"});
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnMaxMailSizeException");
+			}
+			catch (MiniMailOnMaxMailSizeException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnMaxAttachment));
+				SendErrorToProvider(handler, exception, message);
 			}
 		}
 

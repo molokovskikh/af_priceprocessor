@@ -1087,5 +1087,16 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("2")]
+		public int MaxMiniMailSize
+		{
+			get
+			{
+				return ((int)(this["MaxMiniMailSize"]));
+			}
+		}
+
 	}
 }

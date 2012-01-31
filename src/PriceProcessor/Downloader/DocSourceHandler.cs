@@ -181,9 +181,12 @@ namespace Inforoom.Downloader
 					m);
 			}
 
+			if (m.MailSize() / 1024.0 / 1024.0 > Settings.Default.MaxMiniMailSize)
+				throw new MiniMailOnMaxMailSizeException(
+					"Размер письма больше максимально допустимого значения ({0} Мб).".Format(Settings.Default.MaxMiniMailSize));
+
 			if (m.Attachments.Length > 0)
 			{ 
-				var attachmentsIsBigger = false;
 				var nonAllowedExtension = false;
 				var errorExtension = String.Empty;
 				foreach (var attachment in m.GetValidAttachements()) {
@@ -196,21 +199,12 @@ namespace Inforoom.Downloader
 						break;
 					}
 
-					if ((attachment.Data.Length / 1024.0) > 2*1024)
-					{
-						attachmentsIsBigger = true;
-						break;
-					}
 				}
 				if (nonAllowedExtension) {
 					throw new MiniMailOnAllowedExtensionsException(
 						"Письмо содержит вложение недопустимого типа.",
 						errorExtension,
 						TemplateHolder.Values.AllowedMiniMailExtensions);
-				}
-				if (attachmentsIsBigger) {
-					throw new MiniMailOnMaxAttachmentException(
-						"Письмо содержит вложение размером больше максимально допустимого значения (2 Мб).");
 				}
 			}
 
