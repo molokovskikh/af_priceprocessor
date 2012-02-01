@@ -161,7 +161,7 @@ namespace PriceProcessor.Test
 			supplier.Save();
 		}
 
-		private void MaitainAddressIntersection(uint addressId, string supplierDeliveryId = null)
+		private void MaitainAddressIntersection(uint addressId, string supplierDeliveryId = null, string supplierClientId = null)
 		{
 			if (String.IsNullOrEmpty(supplierDeliveryId))
 				supplierDeliveryId = addressId.ToString();
@@ -188,13 +188,15 @@ update
   Future.Addresses a,
   Future.AddressIntersection ai
 set
-  ai.SupplierDeliveryId = ?supplierDeliveryId
+  ai.SupplierDeliveryId = ?supplierDeliveryId,
+  i.SupplierClientId = ?supplierClientId
 where
 	a.ClientId = i.ClientId
 and ai.AddressId = a.Id 
 and ai.IntersectionId = i.Id
 and a.Id = ?AddressId
 ";
+					command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
 					command.ExecuteNonQuery();
 				}
 			});
@@ -328,9 +330,55 @@ and a.Id = ?AddressId
 		[Test]
 		public void TestSIAMoscow2788()
 		{
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
+				var address = client.CreateAddress();
+				client.Users[0].JoinAddress(address);
+				address.Save();
+				transaction.VoteCommit();
+			}
+
+			//Эти коды доставки вбиты в файлы, которые используются в качестве примера для теста (переменная files)
+			//Прописываем эти коды доставки у тестового клиента, чтобы относительно него разбирались данные тестовые файлы
+			var supplierClientId = "826874436";
+			var supplierDeliveryId_0 = "826874888";
+			var supplierDeliveryId_1 = "826874892";
+
 			var files = new[] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
 
 			PrepareLanSource("SIAMoscow_2788_Reader");
+
+			//Очищаем supplierDeliveryId и supplierClientId для всех адресов, у которых установлены необходимые значения
+			With.Connection(connection =>
+			{
+				var command = new MySqlCommand(@"
+update
+  Future.Intersection i,
+  Future.Addresses a,
+  Future.AddressIntersection ai
+set
+  ai.SupplierDeliveryId = null,
+  i.SupplierClientId = null
+where
+	a.ClientId = i.ClientId
+and ai.AddressId = a.Id 
+and ai.IntersectionId = i.Id
+and ai.SupplierDeliveryId = ?supplierDeliveryId
+and  i.SupplierClientId = ?supplierClientId
+"
+					, 
+					connection);
+
+				command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
+				command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId_0);
+				command.ExecuteNonQuery();
+
+				command.Parameters["?supplierDeliveryId"].Value = supplierDeliveryId_1;
+				command.ExecuteNonQuery();
+			}
+			);
+
+			MaitainAddressIntersection(client.Addresses[0].Id, supplierDeliveryId_0, supplierClientId);
+			MaitainAddressIntersection(client.Addresses[1].Id, supplierDeliveryId_1, supplierClientId);
 
 			CopyFilesFromDataDirectory(files);
 
