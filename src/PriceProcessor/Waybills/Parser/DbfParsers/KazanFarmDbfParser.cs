@@ -38,6 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.VitallyImportant, "JNVLS")
 				.Line(l => l.NdsAmount, "SUMMANDS")
+				.Line(l => l.Amount, "SUMMA")
+				.Line(l => l.Period, "DATAEND")
 				.ToDocument(document, data);
 
 			return document;
