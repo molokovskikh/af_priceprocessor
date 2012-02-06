@@ -7,6 +7,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
@@ -26,10 +27,14 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			});
 			var text = Encoding.GetEncoding(1251).GetString(data);
 			
+			var _logger = LogManager.GetLogger(this.GetType());
+			_logger.DebugFormat("Текст для разбора {0} для обработки задачи {1}", text, task);
+
 			foreach (var file in ParseFiles(text))
 			{
 				var localFile = Path.GetTempFileName();
 				var uri = "http://sds.siachel.ru/DOCS/" + file.Replace("\\", "/");
+				_logger.DebugFormat("Будет производиться закачка файла {0} в локальный файл {1}", file, localFile);
 				client.DownloadFile(uri, localFile);
 				files.Add(new CertificateFile(localFile, file, file));
 			}
