@@ -652,5 +652,60 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test(Description = "проверям метод конвертации Mime.HtmlToText")]
+		public void CheckHtmlToText()
+		{
+			var mime = Mime.Parse(@"..\..\Data\UnparseWithHtml.eml");
+			Assert.IsNullOrEmpty(mime.BodyText);
+			Assert.IsNotEmpty(mime.BodyHtml);
+
+			var convertedText = mime.HtmlToText();
+			Assert.IsNotEmpty(convertedText);
+
+			var expectedText = @"
+ДОБРЫЙ ДЕНЬ!
+Наша фирма является поставщиком и официальным представителем органической косметики Натура Сиберика. Мы уже поставляем эту косметику в вашу аптеку по ул.Советская.
+Наш склад находится в г.Белгород. Доставка в г Губкин и Ст.Оскол по средам.
+На этой неделе машина будет в пятницу в связи с поступлением товара в четверг. Высылаю наши прайсы. и презентацию новинок.Наш прайс лист вы можете найти в ""аналитке""
+С уважением,
+ИП Деденко Виктория Владимировна
+Белгород
+8 960 628 51 32
+";
+			Assert.That(convertedText, Is.EqualTo(expectedText));
+		}
+
+		[Test(Description = "отправляем письмо, которого нет текстовой части, но есть html-body")]
+		public void SendWithHtmlBody()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				"Это письмо пользователю",
+				"Это текст письма пользователю",
+				null);
+
+			var mimeHtml = Mime.Parse(@"..\..\Data\UnparseWithHtml.eml");
+			mimeHtml.MainEntity.To = _info.Mime.MainEntity.To;
+			mimeHtml.MainEntity.From = _info.Mime.MainEntity.From;
+			_info.Mime = mimeHtml;
+
+			Process();
+			
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+				Assert.That(mailLog.Mail.Subject, Is.EqualTo("натура сиберика"));
+				Assert.That(mailLog.Mail.Body, Is.StringStarting("\r\nДОБРЫЙ ДЕНЬ!\r\nНаша фирма является поставщиком и официальным представителем органической косметики Натура Сиберика. Мы уже поставляем эту косметику в вашу аптеку по ул.Советская."));
+			}
+		}
+
+
 	}
 }

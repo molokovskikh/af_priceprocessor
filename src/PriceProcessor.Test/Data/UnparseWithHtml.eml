@@ -1,0 +1,44 @@
+X-Spam-Ystatus: hits=-28.6
+X-Spam-Flag: NO
+X-Spam-Yversion: Spamooborona-3.2
+X-Real-To: <6483@docs.analit.net>
+Return-Path: <dedenko.viktoriya@yandex.ru>
+Received: from forward2.mail.yandex.net ([77.88.46.7] verified)
+  by box.analit.net (CommuniGate Pro SMTP 5.2.20)
+  with ESMTP id 50195296 for 6483@docs.analit.net; Tue, 07 Feb 2012 16:40:27 +0400
+Received-SPF: pass
+ receiver=box.analit.net; client-ip=77.88.46.7; envelope-from=dedenko.viktoriya@yandex.ru
+Received: from web61.yandex.ru (web61.yandex.ru [77.88.46.52])
+	by forward2.mail.yandex.net (Yandex) with ESMTP id 7B23212A2676
+	for <6483@docs.analit.net>; Tue,  7 Feb 2012 16:40:24 +0400 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
+	t=1328618424; bh=cuuNChj1Xdo2Wi4tDS8Y82sGRThY7GxjBuD+HjPpdlg=;
+	h=From:To:Subject:MIME-Version:Message-Id:Date:
+	 Content-Transfer-Encoding:Content-Type;
+	b=GoiSl2RzdW/Cn7Xj5ZJGpX5a1E1BV8iVyiazpOyDsyujEzegMHtrZtQ+qUAva6iGg
+	 TUHsVApPIqG/SZOG5ne+0loaOGlmVstaXzUmsdn8Zrm3G6OI9hL9IvVBR7XkcQEPq5
+	 90ZaWaBnLftUKD+fm5idBbcxmToZ/uUw2CIGQ7bk=
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by web61.yandex.ru (Yandex) with ESMTP id 5C4E915B0057
+	for <6483@docs.analit.net>; Tue,  7 Feb 2012 16:40:24 +0400 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yandex.ru; s=mail;
+	t=1328618424; bh=cuuNChj1Xdo2Wi4tDS8Y82sGRThY7GxjBuD+HjPpdlg=;
+	h=From:To:Subject:MIME-Version:Message-Id:Date:
+	 Content-Transfer-Encoding:Content-Type;
+	b=GoiSl2RzdW/Cn7Xj5ZJGpX5a1E1BV8iVyiazpOyDsyujEzegMHtrZtQ+qUAva6iGg
+	 TUHsVApPIqG/SZOG5ne+0loaOGlmVstaXzUmsdn8Zrm3G6OI9hL9IvVBR7XkcQEPq5
+	 90ZaWaBnLftUKD+fm5idBbcxmToZ/uUw2CIGQ7bk=
+X-Yandex-Spam: 1
+Received: from 88.gprs.mts.ru (88.gprs.mts.ru [213.87.133.88]) by web61.yandex.ru with HTTP;
+	Tue, 07 Feb 2012 16:40:23 +0400
+From: =?koi8-r?B?5MXExc7LzyD3ycvUz9LJ0Q==?= <dedenko.viktoriya@yandex.ru>
+To: 6483@docs.analit.net
+Subject: =?koi8-r?B?zsHU1dLBINPJwsXSycvB?=
+MIME-Version: 1.0
+Message-Id: <393471328618423@web61.yandex.ru>
+Date: Tue, 07 Feb 2012 16:40:23 +0400
+X-Mailer: Yamail [ http://yandex.ru ] 5.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/html; charset=koi8-r
+
+<div> <span style="font-size:15px;line-height:18px;">ДОБРЫЙ ДЕНЬ!</span></div><div style="font-size:15px;line-height:18px;">Наша фирма является поставщиком и официальным представителем органической косметики Натура Сиберика. Мы уже поставляем эту косметику в вашу аптеку по ул.Советская.</div><div style="font-size:15px;line-height:18px;">Наш склад находится в г.Белгород. Доставка в г Губкин и Ст.Оскол по средам.</div><div style="font-size:15px;line-height:18px;">        На этой неделе машина будет в пятницу в связи с поступлением товара в четверг. Высылаю наши прайсы. и презентацию новинок.Наш прайс лист вы можете найти в "аналитке"</div><div style="font-size:15px;line-height:18px;">С уважением,</div><div style="font-size:15px;line-height:18px;"> </div><div style="font-size:15px;line-height:18px;">ИП Деденко Виктория Владимировна </div><div style="font-size:15px;line-height:18px;">Белгород</div><div style="font-size:15px;line-height:18px;"><span>8 960 628 51 32</span></div>

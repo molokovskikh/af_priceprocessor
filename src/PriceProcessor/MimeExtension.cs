@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,8 +18,11 @@ namespace LumiSoft.Net.Mime
 					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.MainEntity.Subject));
 				if (!String.IsNullOrWhiteSpace(mime.BodyText))
 					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyText));
-				if (!String.IsNullOrWhiteSpace(mime.BodyHtml))
-					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyHtml));
+				if (String.IsNullOrWhiteSpace(mime.BodyText) && !String.IsNullOrWhiteSpace(mime.BodyHtml)) {
+					var convertedHtml = mime.HtmlToText();
+					if (!String.IsNullOrWhiteSpace(convertedHtml))
+						stream.AddBuffer(Encoding.ASCII.GetBytes(convertedHtml));
+				}
 
 				var attachments = mime.GetValidAttachements().OrderBy(m => m.GetFilename());
 
@@ -47,5 +51,22 @@ namespace LumiSoft.Net.Mime
 			mailSize += (uint)mime.GetValidAttachements().Sum(a => a.Data.Length);
 			return mailSize;
 		}
+
+		public static string HtmlToText(this Mime mime)
+		{
+			if (String.IsNullOrWhiteSpace(mime.BodyHtml))
+				return mime.BodyHtml;
+
+			var html = mime.BodyHtml;
+			var converter = new Microsoft.Exchange.Data.TextConverters.HtmlToText(
+				 Microsoft.Exchange.Data.TextConverters.TextExtractionMode.ExtractText
+				 );
+			var sb = new StringBuilder();
+			using (var sr = new System.IO.StringReader(html))
+				using (var sw = new System.IO.StringWriter(sb))
+					converter.Convert(sr, sw);
+			return sb.ToString();
+		}
+
 	}
 }

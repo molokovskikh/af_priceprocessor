@@ -104,9 +104,12 @@ namespace Inforoom.Downloader
 		{
 			SHA256MailHash = mime.GetSHA256Hash();
 			Subject = mime.MainEntity.Subject;
-			Body = mime.BodyText;
 			SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
 			Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
+
+			Body = mime.BodyText;
+			if (String.IsNullOrWhiteSpace(Body))
+				Body = mime.HtmlToText();
 		}
 
 		private List<Supplier> GetSuppliersFromList(MailboxAddress[] mailboxes)
