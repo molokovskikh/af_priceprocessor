@@ -64,16 +64,14 @@ namespace Inforoom.PriceProcessor
 			switch (template) {
 				case ResponseTemplate.MiniMailOnUnknownProvider:
 					return new MailTemplate(template, values.ResponseSubjectMiniMailOnUnknownProvider, values.ResponseBodyMiniMailOnUnknownProvider);
-					break;
 				case ResponseTemplate.MiniMailOnEmptyRecipients:
 					return new MailTemplate(template, values.ResponseSubjectMiniMailOnEmptyRecipients, values.ResponseBodyMiniMailOnEmptyRecipients);
-					break;
 				case ResponseTemplate.MiniMailOnMaxAttachment:
 					return new MailTemplate(template, values.ResponseSubjectMiniMailOnMaxAttachment, values.ResponseBodyMiniMailOnMaxAttachment);
-					break;
 				case ResponseTemplate.MiniMailOnAllowedExtensions:
 					return new MailTemplate(template, values.ResponseSubjectMiniMailOnAllowedExtensions, values.ResponseBodyMiniMailOnAllowedExtensions);
-					break;
+				case ResponseTemplate.MiniMailOnEmptyLetter:
+					return new MailTemplate(template, values.ResponseSubjectMiniMailOnEmptyLetter, values.ResponseBodyMiniMailOnEmptyLetter);
 				default:
 					throw new ArgumentOutOfRangeException("template");
 			}

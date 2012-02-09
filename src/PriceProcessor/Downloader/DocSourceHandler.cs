@@ -29,6 +29,8 @@ namespace Inforoom.Downloader
 
 		public string SHA256MailHash { get; set; }
 		public string SupplierEmails { get; set; }
+		public string Subject { get; set; }
+		public string Body { get; set; }
 		public List<Supplier> Suppliers { get; set; }
 		public List<MailRecipient> Recipients { get; set; }
 
@@ -98,6 +100,45 @@ namespace Inforoom.Downloader
 			return DiscardedRecipients.Select(r => r.Email + " : " + r.Status.GetDescription()).Implode("\r\n");
 		}
 
+		public void ParseMime(Mime mime, AddressList fromSupplierList)
+		{
+			SHA256MailHash = mime.GetSHA256Hash();
+			Subject = mime.MainEntity.Subject;
+			Body = mime.BodyText;
+			SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
+			Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
+		}
+
+		private List<Supplier> GetSuppliersFromList(MailboxAddress[] mailboxes)
+		{
+			var dtSuppliers = new DataTable();
+
+			using(var connection = new MySqlConnection(Literals.ConnectionString()))
+			{
+				connection.Open();
+				var adapter = new MySqlDataAdapter(@"
+select
+  s.Id
+from
+  future.Suppliers s
+  inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
+  inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
+where
+  c.ContactText in (" + mailboxes.Select(m => "'" + m.EmailAddress +"'").Implode() + ") group by s.Id", 
+					  connection);
+				adapter.Fill(dtSuppliers);
+			}
+
+			var result = new List<Supplier>();
+			using (new SessionScope()) {
+				foreach (DataRow dataRow in dtSuppliers.Rows) {
+					result.Add(Supplier.Find(Convert.ToUInt32(dataRow["Id"])));
+				}
+			}
+
+			return result;
+		}
+
 	}
 
 	public class DocSourceHandler : EMAILSourceHandler
@@ -141,12 +182,12 @@ namespace Inforoom.Downloader
 
 			Ping();
 
-			context.SHA256MailHash = m.GetSHA256Hash();
-			var fromSupplierList = GetAddressList(m);
-			context.SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
-			context.Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
+			context.ParseMime(m, GetAddressList(m));
 
 			Ping();
+
+			if (String.IsNullOrEmpty(context.SHA256MailHash))
+				throw new MiniMailOnEmptyLetterException("У письма не установлены тема и тело письма.");
 
 			if (context.Suppliers.Count > 1)
 				throw new EMailSourceHandlerException("Найдено несколько источников.");
@@ -154,7 +195,7 @@ namespace Inforoom.Downloader
 				if (context.Suppliers.Count == 0)
 					throw new MiniMailOnUnknownProviderException(
 						"Для данного E-mail не найден контакт в группе 'Список E-mail, с которых разрешена отправка писем клиентам АналитФармация'",
-						fromSupplierList.ToAddressListString());
+						context.SupplierEmails);
 
 			using (new SessionScope()) {
 				context.ParseRecipients(m);
@@ -305,8 +346,8 @@ namespace Inforoom.Downloader
 			var mail = new Mail {
 				Supplier = _context.Suppliers[0],
 				SupplierEmail = _context.SupplierEmails,
-				Subject = m.MainEntity.Subject,
-				Body = m.BodyText,
+				Subject = _context.Subject,
+				Body = _context.Body,
 				LogTime = DateTime.Now,
 				SHA256Hash = _context.SHA256MailHash,
 				IsVIPMail = VIPMailPayerId == _context.Suppliers[0].Payer
@@ -317,7 +358,7 @@ namespace Inforoom.Downloader
 				SaveAttachement(entity);
 				mail.Attachments.Add(new Attachment(mail, CurrFileName));
 			}
-			mail.Size = (uint)(mail.Body.Length + mail.Attachments.Sum(a => a.Size));
+			mail.Size = (uint)(_context.Body.Length + mail.Attachments.Sum(a => a.Size));
 
 			foreach (var verifyRecipient in _context.VerifiedRecipients) {
 				verifyRecipient.Mail = mail;
@@ -346,36 +387,6 @@ namespace Inforoom.Downloader
 				transaction.VoteCommit();
 			}
 
-		}
-
-		private List<Supplier> GetSuppliersFromList(MailboxAddress[] mailboxes)
-		{
-			var dtSuppliers = new DataTable();
-
-			using(var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
-				connection.Open();
-				var adapter = new MySqlDataAdapter(@"
-select
-  s.Id
-from
-  future.Suppliers s
-  inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
-  inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
-where
-  c.ContactText in (" + mailboxes.Select(m => "'" + m.EmailAddress +"'").Implode() + ") group by s.Id", 
-					  connection);
-				adapter.Fill(dtSuppliers);
-			}
-
-			var result = new List<Supplier>();
-			using (new SessionScope()) {
-				foreach (DataRow dataRow in dtSuppliers.Rows) {
-					result.Add(Supplier.Find(Convert.ToUInt32(dataRow["Id"])));
-				}
-			}
-
-			return result;
 		}
 
 	}

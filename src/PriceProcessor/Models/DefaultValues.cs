@@ -38,6 +38,12 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public string ResponseBodyMiniMailOnAllowedExtensions { get; set; }
 
+		[Property]
+		public string ResponseSubjectMiniMailOnEmptyLetter { get; set; }
+
+		[Property]
+		public string ResponseBodyMiniMailOnEmptyLetter { get; set; }
+
 		public static DefaultValues Get()
 		{
 			return FindAll().First();

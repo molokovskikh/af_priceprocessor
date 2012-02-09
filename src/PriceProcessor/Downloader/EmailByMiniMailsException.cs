@@ -98,5 +98,20 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		public string AllowedExtensions { get; set; }
 	}
+
+	/*
+	 Здравствуйте! Ваше письмо не содержит тему, тело и вложения С уважением
+	 */
+	public class MiniMailOnEmptyLetterException : MiniMailException
+	{
+		public MiniMailOnEmptyLetterException(string message) : base(message, ResponseTemplate.MiniMailOnEmptyLetter)
+		{
+		}
+		
+		public override string GetBody(Mime mime)
+		{
+			return MailTemplate.Body;
+		}
+	}
 	
 }

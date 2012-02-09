@@ -39,7 +39,13 @@ namespace LumiSoft.Net.Mime
 
 		public static uint MailSize(this Mime mime)
 		{
-			return (uint)(mime.BodyText.Length + mime.GetValidAttachements().Sum(a => a.Data.Length));
+			uint mailSize = 0;
+			if (!String.IsNullOrWhiteSpace(mime.BodyText))
+				mailSize += (uint)mime.BodyText.Length;
+			else if (!String.IsNullOrWhiteSpace(mime.BodyHtml))
+				mailSize += (uint)mime.BodyHtml.Length;
+			mailSize += (uint)mime.GetValidAttachements().Sum(a => a.Data.Length);
+			return mailSize;
 		}
 	}
 }

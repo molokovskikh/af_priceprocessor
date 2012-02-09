@@ -71,11 +71,13 @@ namespace PriceProcessor.Test.Waybills
 				values.ResponseSubjectMiniMailOnEmptyRecipients = "Ваше Сообщение не доставлено одной или нескольким аптекам";
 				values.ResponseSubjectMiniMailOnMaxAttachment = "Ваше Сообщение не доставлено одной или нескольким аптекам";
 				values.ResponseSubjectMiniMailOnAllowedExtensions = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+				values.ResponseSubjectMiniMailOnEmptyLetter = "Ваше Сообщение не доставлено одной или нескольким аптекам";
 
 				values.ResponseBodyMiniMailOnUnknownProvider = "Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением";
 				values.ResponseBodyMiniMailOnEmptyRecipients = "Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением";
 				values.ResponseBodyMiniMailOnMaxAttachment = "Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением";
 				values.ResponseBodyMiniMailOnAllowedExtensions = "Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением";
+				values.ResponseBodyMiniMailOnEmptyLetter = "Здравствуйте! Ваше письмо не содержит тему, тело и вложения С уважением";
 				values.Save();
 			}
 		}
@@ -621,6 +623,34 @@ namespace PriceProcessor.Test.Waybills
 			Assert.IsEmpty(hash);
 		}
 
+		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при пустом письме'")]
+		public void ErrorOnEmptyLetter()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			var supplier = TestSupplier.Create();
+			var from = String.Format("{0}@supplier.test", supplier.Id);
+			PrepareSupplier(supplier, from);
+
+			var message = ImapHelper.BuildMessageWithAttachments(
+				"  ",
+				"   ",
+				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
+				new []{from}, 
+				null);
+
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
+			try {
+				handler.CheckMime(message);
+				Assert.Fail("Должно было возникнуть исключение MiniMailOnEmptyLetterException");
+			}
+			catch (MiniMailOnEmptyLetterException exception) {
+				Assert.That(exception.Template, Is.EqualTo(ResponseTemplate.MiniMailOnEmptyLetter));
+				SendErrorToProvider(handler, exception, message);
+			}
+		}
 
 	}
 }
