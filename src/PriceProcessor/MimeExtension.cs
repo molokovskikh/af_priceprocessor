@@ -12,8 +12,13 @@ namespace LumiSoft.Net.Mime
 		public static string GetSHA256Hash(this Mime mime)
 		{
 			using (var stream = new MultiBufferStream()) {
-				stream.AddBuffer(Encoding.ASCII.GetBytes(mime.MainEntity.Subject));
-				stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyText));
+
+				if (!String.IsNullOrWhiteSpace(mime.MainEntity.Subject))
+					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.MainEntity.Subject));
+				if (!String.IsNullOrWhiteSpace(mime.BodyText))
+					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyText));
+				if (!String.IsNullOrWhiteSpace(mime.BodyHtml))
+					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.BodyHtml));
 
 				var attachments = mime.GetValidAttachements().OrderBy(m => m.GetFilename());
 
@@ -21,11 +26,14 @@ namespace LumiSoft.Net.Mime
 					stream.AddBuffer(attachment.Data);
 				}
 
-				using (var sha256Hash = new SHA256Managed()) {
-					var hash = sha256Hash.ComputeHash(stream);
+				if (stream.Length > 0)
+					using (var sha256Hash = new SHA256Managed()) {
+						var hash = sha256Hash.ComputeHash(stream);
 
-					return Convert.ToBase64String(hash);
-				}
+						return Convert.ToBase64String(hash);
+					}
+
+				return String.Empty;
 			}
 		}
 

@@ -586,5 +586,41 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test(Description = "проверяем работу метода GetSHA256Hash")]
+		public void CheckGetSHA256Hash()
+		{
+			//пустое письмо
+			var mime = new Mime();
+			var hash = mime.GetSHA256Hash();
+			Assert.IsEmpty(hash);
+
+			//установлена тема письма
+			mime.MainEntity.Subject = "test subject";
+			hash = mime.GetSHA256Hash();
+			Assert.IsNotEmpty(hash);
+
+			//установлено тело письма как текст
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
+			hash = mime.GetSHA256Hash();
+			Assert.IsNotEmpty(hash);
+
+			//установлено тело письма как html
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
+			var hmtlEntity = mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count-1];
+			hmtlEntity.DataText = null;
+			hmtlEntity.ContentType = MediaType_enum.Text_html;
+			hmtlEntity.DataText = "test body html";
+			hash = mime.GetSHA256Hash();
+			Assert.IsNotEmpty(hash);
+
+			//установлено все как строки с пробелами
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
+			mime.MainEntity.Subject = "    ";
+			mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count-1].DataText = "    ";
+			hash = mime.GetSHA256Hash();
+			Assert.IsEmpty(hash);
+		}
+
+
 	}
 }
