@@ -211,10 +211,11 @@ namespace Inforoom.PriceProcessor.Downloader
 		and db.ProductId is not null 
 		and db.SerialNumber is not null 
 		and db.ProductId = p.Id 
-		and db.SerialNumber = c.SerialNumber 
+		and db.SerialNumber = :serialNumber 
 		and db.CertificateId is null;
 		")
 						.SetParameter("certificateId", certificate.Id)
+						.SetParameter("serialNumber", task.DocumentLine.SerialNumber)
 						.ExecuteUpdate();
 				}
 				finally

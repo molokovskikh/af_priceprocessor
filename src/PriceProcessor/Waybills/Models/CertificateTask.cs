@@ -16,7 +16,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			CertificateSource = certificateSource;
 			CatalogProduct = documentLine.ProductEntity.CatalogProduct;
-			SerialNumber = documentLine.SerialNumber;
+			SerialNumber = documentLine.CertificateSerialNumber;
 			DocumentLine = documentLine;
 		}
 

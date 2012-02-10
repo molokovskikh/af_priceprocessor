@@ -23,11 +23,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			return null;
 		}
 
-		private static bool AllowSerialNumber(DocumentLine documentLine)
-		{
-			return !String.IsNullOrWhiteSpace(documentLine.SerialNumber) && documentLine.SerialNumber.Trim() != "-";
-		}
-
 		public static void DetectAndParse(Document document)
 		{
 			var source = DetectSource(document);
@@ -35,11 +30,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (source != null) {
 
 				foreach (var documentLine in document.Lines) {
-					if (documentLine.ProductEntity != null && AllowSerialNumber(documentLine)) {
+					if (documentLine.ProductEntity != null) {
 						var certificate = 
 							Certificate.Queryable.FirstOrDefault(
 								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
-									&& c.SerialNumber == documentLine.SerialNumber 
+									&& c.SerialNumber == documentLine.CertificateSerialNumber 
 									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == source.Id));
 						if (certificate != null)
 							documentLine.Certificate = certificate;

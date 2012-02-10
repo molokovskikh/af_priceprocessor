@@ -231,6 +231,24 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		public uint? OrderId { get; set; }
 
+		public const string EmptySerialNumber = "пустая серия";
+
+		private bool StatedSerialNumber()
+		{
+			return !String.IsNullOrWhiteSpace(SerialNumber) && SerialNumber.Trim() != "-";
+		}
+
+		public string CertificateSerialNumber
+		{
+			get
+			{
+				if (StatedSerialNumber())
+					return SerialNumber;
+
+				return EmptySerialNumber;
+			}
+		}
+
 		public void SetAmount()
 		{
 			if(!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
