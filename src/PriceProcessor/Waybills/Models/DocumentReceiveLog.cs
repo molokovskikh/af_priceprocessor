@@ -88,7 +88,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			{
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,
-					Supplier.Name,
+					Common.FileHelper.FileNameToWindows1251(Supplier.Name),
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));
 				return Path.Combine(documentDir, file);
