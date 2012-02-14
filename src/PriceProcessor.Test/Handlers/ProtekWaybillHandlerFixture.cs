@@ -110,6 +110,13 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Process_protek_waybills()
 		{
+			using (new SessionScope()) {
+				var settings = WaybillSettings.Find(order.Client.Id);
+				//Формат сохранения в dbf теперь не является форматом по умолчанию
+				settings.ProtekWaybillSavingType = ProtekWaybillSavingType.DBF;
+				settings.Save();
+			}
+
 			fake.Process();
 			using (new SessionScope())
 			{
@@ -123,6 +130,33 @@ namespace PriceProcessor.Test.Handlers
 				var log = document.Log;
 				Assert.That(log, Is.Not.Null);
 				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.dbf", log.Id)));
+				Assert.That(log.DocumentSize, Is.GreaterThan(0));
+				Check_DocumentLine_SetProductId(document);
+			}
+		}
+
+		[Test]
+		public void ProcessProtekWaybillsSst()
+		{
+			using (new SessionScope()) {
+				var settings = WaybillSettings.Find(order.Client.Id);
+				//По умолчанию форматом сохранения является формат sst
+				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(ProtekWaybillSavingType.SST));
+			}
+
+			fake.Process();
+			using (new SessionScope())
+			{
+				var documents = Documents();
+				Assert.That(documents.Count, Is.EqualTo(1));
+				var document = documents[0];
+				Assert.That(document.Lines.Count, Is.EqualTo(1));
+				var line = document.Lines[0];
+				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+				var log = document.Log;
+				Assert.That(log, Is.Not.Null);
+				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.sst", log.Id)));
 				Assert.That(log.DocumentSize, Is.GreaterThan(0));
 				Check_DocumentLine_SetProductId(document);
 			}

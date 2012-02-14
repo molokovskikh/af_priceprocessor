@@ -289,6 +289,7 @@
     <Compile Include="Waybills\Sources\ProtekSourceFixture.cs" />
     <Compile Include="Waybills\Sources\RostaCertificateSourceFixture.cs" />
     <Compile Include="Waybills\Sources\SiaSourceFixture.cs" />
+    <Compile Include="Waybills\SstExporterFixture.cs" />
     <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />

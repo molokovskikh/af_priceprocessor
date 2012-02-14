@@ -1,5 +1,6 @@
 ﻿using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -21,6 +22,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public bool OnlyParseWaybills { get; set; }
 
+		[Property]
+		public ProtekWaybillSavingType ProtekWaybillSavingType { get; set; }
 
 		public bool ShouldParseWaybill()
 		{

@@ -313,13 +313,18 @@ namespace Inforoom.PriceProcessor.Downloader
 								if (document == null)
 									continue;
 
+								var settings = WaybillSettings.Find(document.ClientCode);
+
 								CertificateSourceDetector.DetectAndParse(document);
 								document.Log.Save();
 								document.Save();
 								document.CreateCertificateTasks();
 
 								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
-									DbfExporter.SaveProtek(document);
+									if (settings.ProtekWaybillSavingType == ProtekWaybillSavingType.SST)
+										SstExporter.Save(document);
+									else 
+										DbfExporter.SaveProtek(document);
 
 								scope.VoteCommit();
 								WaybillOrderMatcher.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе

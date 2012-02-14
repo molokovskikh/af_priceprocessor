@@ -155,6 +155,7 @@
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
+    <Compile Include="Waybills\Models\SstExporter.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
     <Compile Include="Models\Assortment.cs" />
