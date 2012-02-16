@@ -343,6 +343,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private Document ToDocument(Blading blading)
 		{
+			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
+
 			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
 			
 			IList<uint> orderIds = new List<uint>();
@@ -442,8 +444,6 @@ namespace Inforoom.PriceProcessor.Downloader
 						.Select(id => new ProtekDoc(line, id.Value))
 						.ToList();
 			}
-
-			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
 
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 			document.CalculateValues(); // расчет недостающих значений
