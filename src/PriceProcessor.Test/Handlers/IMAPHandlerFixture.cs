@@ -87,5 +87,33 @@ namespace PriceProcessor.Test.Handlers
 			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
 		}
 		 
+		[Test(Description = "обрабатываем исключения при разборе письма")]
+		public void ProcessReaderException()
+		{
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			ImapHelper.StoreMessage(@"..\..\Data\Unparse.eml");
+
+			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
+			imapReader.Stub(s => s.IMAPAuth(null))
+				.IgnoreArguments()
+				.Do(new Action<IMAP_Client>(client => {client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);}) );
+
+			var exception = new Exception("ошибка при разборе письма в reader'е");
+
+			imapReader.Stub(s => s.ProcessMime(null))
+				.IgnoreArguments()
+				.Do(new Action<Mime>(mime => {throw exception;}) );
+			var handler = new IMAPHandler(imapReader);
+
+			handler.ProcessIMAPFolder();
+
+			imapReader.AssertWasCalled(r => r.IMAPAuth(Arg<IMAP_Client>.Is.Anything));
+			imapReader.AssertWasCalled(r => r.PingReader());
+			imapReader.AssertWasCalled(r => r.ProcessMime(Arg<Mime>.Is.Anything));
+			imapReader.AssertWasCalled(r => r.ProcessBrokenMessage(Arg<IMAP_FetchItem>.Is.Anything, Arg<IMAP_FetchItem[]>.Is.Anything, Arg<Exception>.Is.Equal(exception)));
+
+			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
+		}
 	}
 }
