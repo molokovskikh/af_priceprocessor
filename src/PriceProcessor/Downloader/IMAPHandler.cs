@@ -11,7 +11,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		void IMAPAuth(IMAP_Client client);
 		void ProcessMime(Mime mime);
 		void ProcessBrokenMessage(IMAP_FetchItem item, IMAP_FetchItem[] oneItem, Exception ex);
-		void Ping();
+		void PingReader();
 	}
 
 	public class IMAPHandler
@@ -66,11 +66,11 @@ namespace Inforoom.PriceProcessor.Downloader
 					IMAP_FetchItem[] items;
 					do
 					{
-						ImapReader.Ping();
+						ImapReader.PingReader();
 
 						items = FetchUIDs();
 
-						ImapReader.Ping();
+						ImapReader.PingReader();
 
 						if (items == null || items.Length == 0)
 							continue;
@@ -86,17 +86,13 @@ namespace Inforoom.PriceProcessor.Downloader
 
 								CurrentUID = item.UID;
 
-								ImapReader.Ping();
+								ImapReader.PingReader();
 								ImapReader.ProcessMime(Message);
 							}
 							catch (Exception ex)
 							{
 								Message = null;
 								ImapReader.ProcessBrokenMessage(item, OneItem, ex);
-								
-								//_logger.Error("Ошибка при обработке письма", ex);
-								//_message = null;
-								//SendBrokenMessage(item, OneItem, ex);
 							}
 						}
 

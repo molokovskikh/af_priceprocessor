@@ -79,7 +79,7 @@ namespace PriceProcessor.Test.Handlers
 			handler.ProcessIMAPFolder();
 
 			imapReader.AssertWasCalled(r => r.IMAPAuth(Arg<IMAP_Client>.Is.Anything));
-			imapReader.AssertWasCalled(r => r.Ping());
+			imapReader.AssertWasCalled(r => r.PingReader());
 			imapReader.AssertWasCalled(r => r.ProcessMime(Arg<Mime>.Is.Anything));
 			imapReader.AssertWasNotCalled(r => r.ProcessBrokenMessage(Arg<IMAP_FetchItem>.Is.Anything, Arg<IMAP_FetchItem[]>.Is.Anything, Arg<Exception>.Is.Anything));
 

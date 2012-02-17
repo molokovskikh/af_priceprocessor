@@ -17,15 +17,13 @@ using System.Net.Mail;
 
 namespace Inforoom.Downloader
 {
-	public class EMAILSourceHandler : BasePriceSourceHandler
+	public class EMAILSourceHandler : BasePriceSourceHandler, IIMAPReader
 	{
-		//UID текущего обрабатываемого письма
-		protected int currentUID;
-
-		private Mime _message;
+		protected IMAPHandler IMAPHandler;
 
 		public EMAILSourceHandler()
 		{
+			IMAPHandler = new IMAPHandler(this);
 			SourceType = "EMAIL";
 		}
 
@@ -51,77 +49,29 @@ namespace Inforoom.Downloader
 
 		protected override void ProcessData()
 		{
-			var imapSourceFolder = Settings.Default.IMAPSourceFolder;
-			using (var imapClient = new IMAP_Client())
-			{
-				imapClient.Connect(Settings.Default.IMAPHost, 143);
-				IMAPAuth(imapClient);
-				imapClient.SelectFolder(imapSourceFolder);
-
-				try
-				{
-					IMAP_FetchItem[] items;
-					do
-					{
-						Ping();
-						var sequence_set = new IMAP_SequenceSet();
-						sequence_set.Parse("1:*", long.MaxValue);
-						items = imapClient.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false);
-						Ping();
-
-						if (items == null || items.Length == 0)
-							continue;
-
-						foreach (var item in items)
-						{
-							IMAP_FetchItem[] OneItem = null;
-							try
-							{
-								var sequence_Mess = new IMAP_SequenceSet();
-								sequence_Mess.Parse(item.UID.ToString(), long.MaxValue);
-								OneItem = imapClient.FetchMessages(sequence_Mess, IMAP_FetchItem_Flags.Message, false, true);
-								_message = Mime.Parse(OneItem[0].MessageData);
-								currentUID = item.UID;
-								Ping();
-								ProcessMime(_message);
-							}
-							catch (Exception ex)
-							{
-								_logger.Error("Ошибка при обработке письма", ex);
-								_message = null;
-								SendBrokenMessage(item, OneItem, ex);
-							}
-						}
-
-						//Производим удаление писем
-						var sequence = new IMAP_SequenceSet();
-
-						sequence.Parse(String.Join(",", items.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
-						imapClient.DeleteMessages(sequence, true);
-					}
-					while (items != null && items.Length > 0);
-				}
-				finally
-				{
-					_message = null;
-				}
-			}
+			IMAPHandler.ProcessIMAPFolder();
 		}
 
-		private void SendBrokenMessage(IMAP_FetchItem item, IMAP_FetchItem[] OneItem, Exception ex)
+		public void ProcessBrokenMessage(IMAP_FetchItem item, IMAP_FetchItem[] OneItem, Exception ex)
 		{
+			_logger.Error("Ошибка при обработке письма", ex);
 			MemoryStream ms = null;
 			if (OneItem != null && OneItem.Length > 0 && OneItem[0].MessageData != null)
 				ms = new MemoryStream(OneItem[0].MessageData);
 			ErrorMailSend(item.UID, ex.ToString(), ms);
 		}
 
-		protected virtual void IMAPAuth(IMAP_Client c)
+		public void PingReader()
+		{
+			Ping();
+		}
+
+		public virtual void IMAPAuth(IMAP_Client c)
 		{
 			c.Authenticate(Settings.Default.IMAPUser, Settings.Default.IMAPPass);
 		}
 
-		protected void ProcessMime(Mime m)
+		public void ProcessMime(Mime m)
 		{
 			var from = GetAddressList(m);
 			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
@@ -266,7 +216,7 @@ namespace Inforoom.Downloader
 			string SavedFile = DownHandlerPath + PriceID + ".eml";
 			try
 			{
-				_message.ToFile(SavedFile);
+				IMAPHandler.Message.ToFile(SavedFile);
 				File.Copy(SavedFile, HistoryFileName);
 				File.Delete(SavedFile);
 			}
