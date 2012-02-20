@@ -172,7 +172,7 @@ where
 			}
 		}
 
-		protected override void IMAPAuth(IMAP_Client client)
+		public override void IMAPAuth(IMAP_Client client)
 		{
 			client.Authenticate(_imapUser, _imapPassword);
 		}

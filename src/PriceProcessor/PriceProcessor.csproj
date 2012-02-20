@@ -142,6 +142,7 @@
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EmailByMiniMailsException.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
+    <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
     <Compile Include="Downloader\ProtekContract.cs" />
     <Compile Include="Downloader\ProtekWaybillHandler.cs" />

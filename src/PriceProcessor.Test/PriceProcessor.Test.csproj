@@ -130,6 +130,7 @@
     <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
     <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
     <Compile Include="Handlers\HandlerFixture.cs" />
+    <Compile Include="Handlers\IMAPHandlerFixture.cs" />
     <Compile Include="Handlers\IndexerHandlerFixture.cs" />
     <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />

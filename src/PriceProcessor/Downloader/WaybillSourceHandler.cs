@@ -77,7 +77,7 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected override void IMAPAuth(IMAP_Client client)
+		public override void IMAPAuth(IMAP_Client client)
 		{
 			client.Authenticate(_imapUser, _imapPassword);
 		}
@@ -289,7 +289,7 @@ WHERE
 					_clientId,
 					null,
 					comment,
-					currentUID);
+					IMAPHandler.CurrentUID);
 			}
 			catch (Exception exMatch)
 			{
@@ -365,7 +365,7 @@ WHERE
 						fromList.ToAddressListString(), 
 						m.MainEntity.To.ToAddressListString(), 
 						attachments),
-						currentUID);
+						IMAPHandler.CurrentUID);
 			}
 			catch (Exception exMatch)
 			{
@@ -466,7 +466,7 @@ WHERE clients.Id = ?ClientId
 							WriteLog(_currentDocumentType.DocType,
 								Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),
 								_clientId, Path.GetFileName(CurrFileName),
-								"Не удалось распаковать файл", currentUID);
+								"Не удалось распаковать файл", IMAPHandler.CurrentUID);
 							Cleanup();
 							continue;
 						}
@@ -544,7 +544,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
 				addressId,
 				file,
 				_currentDocumentType.DocType,
-				currentUID);
+				IMAPHandler.CurrentUID);
 			log.CopyDocumentToClientDirectory();
 			return log;
 		}
