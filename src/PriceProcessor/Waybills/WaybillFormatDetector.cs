@@ -103,7 +103,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (extention == ".dbf")
 					type = DetectDbfParser(file);
 				else if (extention == ".sst")
-					type = typeof (UkonParser);
+					type = DetectSstParser(file);
 				else if (extention == ".xls")
 					type = DetectXlsParser(file);
 				else if ((extention == ".xml") || (extention == ".data"))
@@ -147,6 +147,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static Type DetectXlsParser(string file)
 		{
 			return DetectParser(file, "Xls");
+		}
+
+		private static Type DetectSstParser(string file)
+		{
+			return DetectParser(file, "Sst");
 		}
 
 		private static Type DetectParser(string file, string group)

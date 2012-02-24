@@ -7,7 +7,7 @@ using System.Text;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 {
 	public class UkonParser : IDocumentParser
 	{
@@ -189,6 +189,30 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				}
 			}
 			return document;
+		}
+
+		public static bool CheckFileFormat(string file)
+		{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
+			{
+				var parser = new HeaderBodyParser(reader, CommentSymbol.ToString());
+				var headerLine = parser.Header().FirstOrDefault();
+				if (headerLine == null)
+					return false;
+				var header = headerLine.Split(';');
+				DateTime dt;
+				if (!DateTime.TryParse(header[1], out dt))
+					return false;
+				if (header.Length != 9 && header.Length != 18 && header.Length != 11 && header.Length != 10  && header.Length != 17 && header.Length != 6)
+					return false;
+				var bodyLine = parser.Body().FirstOrDefault();
+				if (bodyLine == null)
+					return false;
+				var body = bodyLine.Split(';');
+				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26  && body.Length != 21 && body.Length != 31)
+					return false;
+			}
+			return true;
 		}
 	}
 }
