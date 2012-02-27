@@ -12,13 +12,27 @@ import file from Migration.bake
 import file from Test.bake
 import file from Tools.bake
 import file from DB.bake
+import file from MySql.bake
 
 [ServiceContract]
 interface IWaybillService:
 	[OperationContract]
 	def ParseWaybill(uints as (uint)) as (uint)
 
-Task @ParseWaybills:
+
+Global(
+	Project : "PriceProcessor",
+	Server : "fms.adc.analit.net",
+	HumanReadableName : "Служба обработки прайс-листов",
+	ServiceName : "PriceProcessorService",
+	Profile: @catalog,
+	Port: 3309
+)
+
+unless string.Equals(System.Environment.MachineName, @devsrv, StringComparison.OrdinalIgnoreCase):
+	Globals.Environment = @Local
+
+task @ParseWaybills:
 	binding = NetTcpBinding()
 	binding.Security.Mode = SecurityMode.None
 	factory = ChannelFactory[of IWaybillService](binding, "net.tcp://fms:901/WaybillService")
@@ -29,18 +43,13 @@ Task @ParseWaybills:
 	for result in results:
 		print result
 
-Global(
-	Project : "PriceProcessor",
-	Server : "fms.adc.analit.net",
-	HumanReadableName : "Служба обработки прайс-листов",
-	ServiceName : "PriceProcessorService"
-)
+task @default, [@Build]
 
-unless string.Equals(System.Environment.MachineName, @devsrv, StringComparison.OrdinalIgnoreCase):
-	Globals.Environment = @Local
+task @Build, [@BuildService]
 
-Task @default, [@BuildService]
-Task @deploy, [@BuildService, @StopServices, @Production, @Migrate, @Backup, @SimpleDeployService, @SendDeployNotification]
+task @deploy, [@ServiceDeployPipeline]
+
+task @BeforeTest, [@RunMySql, @PrepareLocal]
 
 def IsDocument(mime as Mime):
 	for box in mime.MainEntity.To.Mailboxes:

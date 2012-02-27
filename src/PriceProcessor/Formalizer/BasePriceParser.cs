@@ -224,7 +224,6 @@ namespace Inforoom.Formalizer
 		public static string colBillingStatus = "BillingStatus";
 		public static string colFirmStatus = "FirmStatus";
 		public static string colCostType = "CostType";
-		public static string colFirmSegment = "FirmSegment";
 		public static string colPriceFormatId = "PriceFormatId";
 	}
 

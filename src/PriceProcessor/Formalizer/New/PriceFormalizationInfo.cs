@@ -32,11 +32,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
 
 			PricePurpose = PricePurpose.Normal;
-			var firmSegment = Convert.ToInt16(row[FormRules.colFirmSegment]);
 			if (IsAssortmentPrice)
 				PricePurpose |= PricePurpose.Assortment;
-			if (firmSegment == 1)
-				PricePurpose |= PricePurpose.Helper;
 			PrevRowCount = row[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(row[FormRules.colPrevRowCount]);
 		}
 

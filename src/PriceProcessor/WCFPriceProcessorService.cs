@@ -40,7 +40,6 @@ SELECT
   logs.ExtrFileName as DExtrFileName,
   sp.Name as DFirmName,
   r.Region as DRegion,
-  sp.Segment as DFirmSegment,
   if(pd.CostType = 1, concat('[Колонка] ', pc.CostName), pd.PriceName) as DPriceName,
   pim.Id as DPriceItemId,
   pd.PriceCode as DPriceCode,
@@ -89,8 +88,8 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
 			if (ArchiveHelper.IsArchive(filename))
 			{
-                if (File.Exists(tempDirectory))
-                    File.Delete(tempDirectory);
+				if (File.Exists(tempDirectory))
+					File.Delete(tempDirectory);
 				if (Directory.Exists(tempDirectory))
 					Directory.Delete(tempDirectory, true);
 				Directory.CreateDirectory(tempDirectory);
@@ -197,7 +196,7 @@ from
   farm.formrules fr,
   farm.pricefmts pf
 where
-    (pd.PriceCode = ?priceId or pd.ParentSynonym = ?priceId)
+	(pd.PriceCode = ?priceId or pd.ParentSynonym = ?priceId)
 and pd.AgencyEnabled = 1
 and s.Id = pd.FirmCode
 and s.Disabled = 0
@@ -450,9 +449,9 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 			}
 		}
 
-        public string[] FindSynonyms(uint priceItemId)
-        {
-        	long taskId = 0;
+		public string[] FindSynonyms(uint priceItemId)
+		{
+			long taskId = 0;
 			try {
 
 				log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
@@ -478,44 +477,44 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				log.Warn("Ошибка в функции FindSynonyms:", e);
 				throw;
 			}
-        	return new [] {"Success", taskId.ToString()}; // задача успешно создана           
-        }
+			return new [] {"Success", taskId.ToString()}; // задача успешно создана           
+		}
 
-        public string[] FindSynonymsResult(string taskId)
-        {
-            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
-            if(task == null)
-                return new [] {"Error", String.Format("Задача {0} не найдена", taskId)};
-            if(task.State == TaskState.Error)
-                return new[] { "Error", task.Error };
-            if (task.State == TaskState.Success)
-                return IndexerHandler.TransformToStringArray(task.Matches);   
-            if (task.State == TaskState.Running)
-                return new [] { "Running", task.Rate.ToString() };
-            if (task.State == TaskState.Canceled)
-                return new[] { "Canceled", task.Rate.ToString() };
-            return new[] {task.State.ToString()};
-        }
+		public string[] FindSynonymsResult(string taskId)
+		{
+			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+			if(task == null)
+				return new [] {"Error", String.Format("Задача {0} не найдена", taskId)};
+			if(task.State == TaskState.Error)
+				return new[] { "Error", task.Error };
+			if (task.State == TaskState.Success)
+				return IndexerHandler.TransformToStringArray(task.Matches);   
+			if (task.State == TaskState.Running)
+				return new [] { "Running", task.Rate.ToString() };
+			if (task.State == TaskState.Canceled)
+				return new[] { "Canceled", task.Rate.ToString() };
+			return new[] {task.State.ToString()};
+		}
 
-        public void StopFindSynonyms(string taskId)
-        {
-            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-            SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
-            if(task != null) task.Stop();
-        }
+		public void StopFindSynonyms(string taskId)
+		{
+			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+			if(task != null) task.Stop();
+		}
 
-        public void AppendToIndex(string[] synonymsIds)
-        {
-            IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-            IList<int> ids = new List<int>();
-            foreach (var sid in synonymsIds)
-            {
-                int val;
-                if(Int32.TryParse(sid, out val))                
-                    ids.Add(val);                
-            }
-            handler.AppendToIndex(ids);            
-        }
+		public void AppendToIndex(string[] synonymsIds)
+		{
+			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			IList<int> ids = new List<int>();
+			foreach (var sid in synonymsIds)
+			{
+				int val;
+				if(Int32.TryParse(sid, out val))                
+					ids.Add(val);                
+			}
+			handler.AppendToIndex(ids);            
+		}
 	}
 }

@@ -29,63 +29,64 @@ namespace Inforoom.Formalizer
 			if (dtFormRules.Rows.Count == 0)
 				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, shortFileName));
 
-			var currentParserClassName = dtFormRules.Rows[0][FormRules.colParserClassName].ToString();
+			var dataRow = dtFormRules.Rows[0];
+			var currentParserClassName = dataRow[FormRules.colParserClassName].ToString();
 
 			//«десь будем производить копирование файла
-			int CopyErrorCount = 0;
-			bool CopySucces = false;
+			var copyErrorCount = 0;
+			var copySucces = false;
 			do
 			{
 				try
 				{
 					File.Copy(fileName, tempFileName, true);
-					CopySucces = true;
+					copySucces = true;
 				}
 				catch(Exception e)
 				{
-					if (CopyErrorCount < 10 )
+					if (copyErrorCount < 10 )
 					{
-						CopyErrorCount++;
+						copyErrorCount++;
 						System.Threading.Thread.Sleep(500);
 					}
 					else
 						throw new FormalizeException(
 							String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e), 
-							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]), 
-							Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-							(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-							(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+							Convert.ToInt64(dataRow[FormRules.colFirmCode]), 
+							Convert.ToInt64(dataRow[FormRules.colPriceCode]),
+							(string)dataRow[FormRules.colFirmShortName],
+							(string)dataRow[FormRules.colSelfPriceName]);
 				}
 			}
-			while(!CopySucces);
+			while(!copySucces);
 
 			fileName = tempFileName;
 
-			if (dtFormRules.Rows[0][FormRules.colFirmStatus].ToString() == "0")
+			if (dataRow[FormRules.colFirmStatus].ToString() == "0")
 				throw new WarningFormalizeException(
 					Settings.Default.DisableByFirmStatusError,
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+					Convert.ToInt64(dataRow[FormRules.colFirmCode]),
+					Convert.ToInt64(dataRow[FormRules.colPriceCode]),
+					(string)dataRow[FormRules.colFirmShortName],
+					(string)dataRow[FormRules.colSelfPriceName]);
 
 			//ѕровер€ем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
-			if (dtFormRules.Rows[0].IsNull(FormRules.colCostType) || !Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dtFormRules.Rows[0][FormRules.colCostType])))
+			if (dataRow.IsNull(FormRules.colCostType) || !Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dataRow[FormRules.colCostType])))
 				throw new WarningFormalizeException(
-					String.Format(Settings.Default.UnknowCostTypeError, dtFormRules.Rows[0][FormRules.colCostType]),
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+					String.Format(Settings.Default.UnknowCostTypeError, dataRow[FormRules.colCostType]),
+					Convert.ToInt64(dataRow[FormRules.colFirmCode]),
+					Convert.ToInt64(dataRow[FormRules.colPriceCode]),
+					(string)dataRow[FormRules.colFirmShortName],
+					(string)dataRow[FormRules.colSelfPriceName]);
 
 			var parserClass = GetParserClassName(currentParserClassName);
 			if (parserClass == null)
 				throw new WarningFormalizeException(
 					String.Format(Settings.Default.UnknownPriceFMTError, currentParserClassName),
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colFirmCode]),
-					Convert.ToInt64(dtFormRules.Rows[0][FormRules.colPriceCode]),
-					(string)dtFormRules.Rows[0][FormRules.colFirmShortName],
-					(string)dtFormRules.Rows[0][FormRules.colSelfPriceName]);
+					Convert.ToInt64(dataRow[FormRules.colFirmCode]),
+					Convert.ToInt64(dataRow[FormRules.colPriceCode]),
+					(string)dataRow[FormRules.colFirmShortName],
+					(string)dataRow[FormRules.colSelfPriceName]);
 
 			return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, dtFormRules}));
 		}
@@ -106,7 +107,6 @@ select
   s.Name as FirmShortName,
   r.Region,
   not s.Disabled as FirmStatus,
-  s.Segment as FirmSegment,
   FR.JunkPos as SelfJunkPos,
   FR.AwaitPos as SelfAwaitPos,
   FR.VitallyImportantMask as SelfVitallyImportantMask,
@@ -126,7 +126,7 @@ from
   farm.pricefmts)
   join Farm.Regions r on r.RegionCode = s.HomeRegion
 where
-    pi.Id = {0}
+	pi.Id = {0}
 and pc.PriceItemId = pi.Id
 and pd.PriceCode = pc.PriceCode
 and ((pd.CostType = 1) or (pc.BaseCost = 1))
