@@ -209,7 +209,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				if (bodyLine == null)
 					return false;
 				var body = bodyLine.Split(';');
-				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26  && body.Length != 21 && body.Length != 31)
+				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26  && body.Length != 21 && body.Length != 31 &&  body.Length != 20)
 					return false;
 			}
 			return true;
