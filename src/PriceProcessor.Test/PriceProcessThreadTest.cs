@@ -73,7 +73,7 @@ namespace PriceProcessor.Test
 			}
 
 			/// <summary>
-			/// Проверка connection на попытку выборки из clientsdata. Если выборка не будет успешной, то генерируем ошибку.
+			/// Проверка connection на попытку выборки из select now(). Если выборка не будет успешной, то генерируем ошибку.
 			/// </summary>
 			/// <param name="myconn"></param>
 			private void CheckConnection(MySqlConnection myconn)
@@ -124,7 +124,7 @@ InnoDB Status            =
 
 						_logger.InfoFormat("При проверке соединения получили 0 записей : {0}", techInfo);
 
-						throw new Exception("При попытке выборки из clientsdata не получили записей. Перезапустите PriceProcessor.");
+						throw new Exception("При попытке выборки из select now() не получили записей. Перезапустите PriceProcessor.");
 					}
 
 				}
