@@ -286,6 +286,14 @@ namespace Inforoom.PriceProcessor.Downloader
 			//Протек-36 Оренбург
 			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
 			Load(266508, 1080034);
+
+			//Протек-36 Оренбург
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(266508, 1080034);
+
+			//Протек-17 Уфы
+			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			Load(274265, 1091749);
 		}
 
 		protected void Load(int clientId, int instanceId)
