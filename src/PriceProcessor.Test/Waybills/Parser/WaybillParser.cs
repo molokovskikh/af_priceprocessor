@@ -35,8 +35,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 			if (!File.Exists(filePath))
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
 			var parser = detector.DetectParser(filePath, documentLog);
-			if(!detector.IsSpecialParser(parser))
+			if (!detector.IsSpecialParser(parser)) { 
 				CheckUniqueDbfParser(filePath);
+				CheckUniqueSstParser(filePath);
+			}
 			if (parser == null)
 				return null;
 			var doc = parser.Parse(filePath, new Document());
@@ -54,6 +56,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 				return;
 
 			var parsers = WaybillFormatDetector.GetSuitableParsers(file, "Dbf").ToList();
+
+			if (parsers.Count > 1)
+				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));
+		}
+
+		private static void CheckUniqueSstParser(string file)
+		{
+			if (Path.GetExtension(file.ToLower()) != ".sst")
+				return;
+
+			var parsers = WaybillFormatDetector.GetSuitableParsers(file, "Sst").ToList();
 
 			if (parsers.Count > 1)
 				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));

@@ -162,6 +162,7 @@
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
+    <Compile Include="UkoParserNaklTest.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\DocSourceHandlerFixture.cs" />
