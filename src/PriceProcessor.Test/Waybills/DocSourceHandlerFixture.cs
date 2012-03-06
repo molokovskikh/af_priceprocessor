@@ -548,9 +548,9 @@ namespace PriceProcessor.Test.Waybills
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.TestProcessMime(_info.Mime);
-			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
-			Assert.That(existsMessages.Count, Is.EqualTo(1), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
-			Assert.That(existsMessages[0].Envelope.Subject, Is.EqualTo("Ваше Сообщение не доставлено одной или нескольким аптекам").IgnoreCase);
+			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, ImapHelper.INBOXFolder);
+			Assert.That(existsMessages.Count, Is.GreaterThan(1), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
+			Assert.That(existsMessages.Any(m => m.Envelope.Subject.Equals("Ваше Сообщение не доставлено одной или нескольким аптекам", StringComparison.CurrentCultureIgnoreCase)), Is.True);
 			
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();

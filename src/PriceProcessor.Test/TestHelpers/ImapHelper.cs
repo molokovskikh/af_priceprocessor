@@ -14,6 +14,8 @@ namespace PriceProcessor.Test.TestHelpers
 {
 	public class ImapHelper
 	{
+		public static string INBOXFolder = "INBOX";
+
 		public static void ClearImapFolder()
 		{
 			ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
