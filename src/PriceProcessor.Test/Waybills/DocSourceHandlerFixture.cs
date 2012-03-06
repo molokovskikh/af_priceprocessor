@@ -50,6 +50,7 @@ namespace PriceProcessor.Test.Waybills
 	public class DocSourceHandlerFixture
 	{
 		private DocSourceHandlerTestInfo _info;
+		private string _responseSubject = "Ваше Сообщение не доставлено одной или нескольким аптекам";
 
 		[SetUp]
 		public void DeleteDirectories()
@@ -58,6 +59,13 @@ namespace PriceProcessor.Test.Waybills
 			_info = null;
 			TestHelper.RecreateDirectories();
 			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, ImapHelper.INBOXFolder, _responseSubject);
+		}
+
+		[TestFixtureTearDown]
+		public void DeleteResponeLetters()
+		{
+			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, ImapHelper.INBOXFolder, _responseSubject);
 		}
 
 		private void SetDefaultValues()
@@ -67,11 +75,11 @@ namespace PriceProcessor.Test.Waybills
 
 				values.AllowedMiniMailExtensions = "doc, xls, gif, tiff, tif, jpg, pdf, txt";
 
-				values.ResponseSubjectMiniMailOnUnknownProvider = "Ваше Сообщение не доставлено одной или нескольким аптекам";
-				values.ResponseSubjectMiniMailOnEmptyRecipients = "Ваше Сообщение не доставлено одной или нескольким аптекам";
-				values.ResponseSubjectMiniMailOnMaxAttachment = "Ваше Сообщение не доставлено одной или нескольким аптекам";
-				values.ResponseSubjectMiniMailOnAllowedExtensions = "Ваше Сообщение не доставлено одной или нескольким аптекам";
-				values.ResponseSubjectMiniMailOnEmptyLetter = "Ваше Сообщение не доставлено одной или нескольким аптекам";
+				values.ResponseSubjectMiniMailOnUnknownProvider = _responseSubject;
+				values.ResponseSubjectMiniMailOnEmptyRecipients = _responseSubject;
+				values.ResponseSubjectMiniMailOnMaxAttachment = _responseSubject;
+				values.ResponseSubjectMiniMailOnAllowedExtensions = _responseSubject;
+				values.ResponseSubjectMiniMailOnEmptyLetter = _responseSubject;
 
 				values.ResponseBodyMiniMailOnUnknownProvider = "Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением";
 				values.ResponseBodyMiniMailOnEmptyRecipients = "Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением";
@@ -549,8 +557,9 @@ namespace PriceProcessor.Test.Waybills
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.TestProcessMime(_info.Mime);
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, ImapHelper.INBOXFolder);
-			Assert.That(existsMessages.Count, Is.GreaterThan(1), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
-			Assert.That(existsMessages.Any(m => m.Envelope.Subject.Equals("Ваше Сообщение не доставлено одной или нескольким аптекам", StringComparison.CurrentCultureIgnoreCase)), Is.True);
+			Assert.That(existsMessages.Count, Is.GreaterThanOrEqualTo(1), "Не найдены письма в IMAP-папке");
+			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(_responseSubject, StringComparison.CurrentCultureIgnoreCase));
+			Assert.That(responseCount, Is.EqualTo(1), "Не найдено письмо с загловком '{0}'", _responseSubject);
 			
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
