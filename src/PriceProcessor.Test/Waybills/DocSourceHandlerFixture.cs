@@ -84,10 +84,12 @@ namespace PriceProcessor.Test.Waybills
 
 		private void PrepareSupplier(TestSupplier supplier, string from)
 		{
-			var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
-			group.AddContact(ContactType.Email, from);
-			group.CreateAndFlush();
-			supplier.Save();
+			using (new TransactionScope()) {
+				var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
+				group.AddContact(ContactType.Email, from);
+				group.Save();
+				supplier.Save();
+			}
 		}
 
 		private void SetUp(IList<TestUser> users, TestRegion region, string subject, string body, IList<string> fileNames)
