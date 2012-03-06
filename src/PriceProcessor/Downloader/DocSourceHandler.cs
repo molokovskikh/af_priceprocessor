@@ -388,14 +388,14 @@ where
 			Ping();
 
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-				mail.Create();
+				mail.Save();
 				mail.Attachments.ForEach(a =>
 					File.Copy(
 						a.LocalFileName,
 						Path.Combine(Settings.Default.AttachmentPath, a.GetSaveFileName())));
 
-				mailLogs.ForEach(l => l.Create());
-				attachmentLogs.ForEach(l => l.Create());
+				mailLogs.ForEach(l => l.Save());
+				attachmentLogs.ForEach(l => l.Save());
 
 				transaction.VoteCommit();
 			}

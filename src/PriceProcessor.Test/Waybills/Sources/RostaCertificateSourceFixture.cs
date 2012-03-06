@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 				};
 				_source.Suppliers = new List<Supplier>();
 				_source.Suppliers.Add(realSupplier);
-				_source.Create();
+				_source.Save();
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 					CatalogProduct = product.CatalogProduct,
 					OriginFilePath = Path.GetRandomFileName()
 				};
-				catalog.Create();
+				catalog.Save();
 			}
 
 			Assert.That(rostaSource.CertificateExists(line), Is.True);
@@ -83,7 +83,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 					SupplierCode = task.DocumentLine.Code,
 					OriginFilePath = "005/0052602p-0.gif"
 				};
-				catalog.Create();
+				catalog.Save();
 
 				catalog = new CertificateSourceCatalog {
 					CertificateSource = _source,
@@ -91,7 +91,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 					SupplierCode = task.DocumentLine.Code,
 					OriginFilePath = "005/0052602pd-0.gif"
 				};
-				catalog.Create();
+				catalog.Save();
 			}
 
 			var files = rostaSource.GetCertificateFiles(task);
