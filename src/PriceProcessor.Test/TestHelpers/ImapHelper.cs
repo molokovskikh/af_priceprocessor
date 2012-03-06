@@ -45,12 +45,9 @@ namespace PriceProcessor.Test.TestHelpers
 				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
 				if ((items != null) && (items.Length > 0))
 				{
-					foreach (var item in items)
-					{
-						var sequenceMessages = new IMAP_SequenceSet();
-						sequenceMessages.Parse(item.UID.ToString());
-						imapClient.DeleteMessages(sequenceMessages, true);
-					}
+					var sequenceMessages = new IMAP_SequenceSet();
+					sequenceMessages.Parse(String.Join(",", items.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
+					imapClient.DeleteMessages(sequenceMessages, true);
 				}
 			}
 		}

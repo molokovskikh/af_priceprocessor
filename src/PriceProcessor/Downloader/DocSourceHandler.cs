@@ -36,6 +36,16 @@ namespace Inforoom.Downloader
 
 		public Dictionary<User, MailRecipient> Users { get; set; }
 
+		public uint BodyLength
+		{
+			get
+			{
+				if (Body == null)
+					return 0;
+				return (uint)Body.Length;
+			}
+		}
+
 		public void ParseRecipients(Mime mime)
 		{
 			ParseRecipientAddresses(mime.MainEntity.To);
@@ -361,7 +371,7 @@ where
 				SaveAttachement(entity);
 				mail.Attachments.Add(new Attachment(mail, CurrFileName));
 			}
-			mail.Size = (uint)(_context.Body.Length + mail.Attachments.Sum(a => a.Size));
+			mail.Size = (uint)(_context.BodyLength + mail.Attachments.Sum(a => a.Size));
 
 			foreach (var verifyRecipient in _context.VerifiedRecipients) {
 				verifyRecipient.Mail = mail;

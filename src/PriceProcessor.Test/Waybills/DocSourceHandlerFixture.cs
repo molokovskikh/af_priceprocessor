@@ -706,6 +706,42 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test(Description = "отправляем письмо, которого нет текстовой части, но есть вложение")]
+		public void SendWithEmptyBody()
+		{
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				"Это письмо пользователю",
+				"Это текст письма пользователю",
+				null);
+
+			var mimeEmptyBody = Mime.Parse(@"..\..\Data\UnparseWithEmptyBody.eml");
+			Assert.IsNotNull(mimeEmptyBody.MainEntity.Subject);
+			Assert.IsNotNull(mimeEmptyBody.BodyText);
+			Assert.That(mimeEmptyBody.BodyText, Is.EqualTo(String.Empty));
+			Assert.IsNull(mimeEmptyBody.BodyHtml);
+			mimeEmptyBody.MainEntity.To = _info.Mime.MainEntity.To;
+			mimeEmptyBody.MainEntity.From = _info.Mime.MainEntity.From;
+			_info.Mime = mimeEmptyBody;
+
+			Process();
+			
+			using (new SessionScope()) {
+				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+				Assert.That(mails.Count, Is.EqualTo(1));
+
+				var mailLog = mails[0];
+				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Отказы по заявке № АХ1-1131222"));
+				Assert.That(mailLog.Mail.Body, Is.Null);
+				Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(1));
+				Assert.That(mailLog.Mail.Attachments[0].FileName, Is.EqualTo("K1795MZАХ1-1131222D120305.xls"));
+			}
+		}
 
 	}
 }
