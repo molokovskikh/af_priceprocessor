@@ -99,7 +99,7 @@ namespace PriceProcessor.Test.Waybills
 
 				source.Suppliers = new List<Supplier>();
 				source.Suppliers.Add(supplier);
-				source.Create();
+				source.Save();
 			}
 
 			return source;
@@ -172,7 +172,7 @@ namespace PriceProcessor.Test.Waybills
 						CertificateSource = anotherSupplierSource
 					}
 				);
-				existsCertificate.Create();
+				existsCertificate.Save();
 			}
 
 			var document = new Document{
@@ -387,7 +387,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 
 				documentLine.CertificateFilename = Path.GetFileNameWithoutExtension(certificateFile);
 				documentLine.Save();
@@ -511,7 +511,7 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificateFile.OriginFilename = existsFileId;
 				existsCertificateFile.ExternalFileId = existsFileId;
 				existsCertificateFile.Extension = ".tif";
-				existsCertificate.Create();
+				existsCertificate.Save();
 			}
 
 			File.WriteAllText(Path.Combine(destinationDir, existsCertificateFile.Id + ".tif"), "Это тестовый сертификат", Encoding.GetEncoding(1251));
@@ -540,7 +540,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 
 				documentLine.CertificateFilename = Path.GetFileNameWithoutExtension(certificateFile);
 				documentLine.Save();
@@ -645,7 +645,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 			}
 
 			Assert.That(task.Id, Is.GreaterThan(0));
@@ -720,7 +720,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 			}
 
 			Assert.That(task.Id, Is.GreaterThan(0));
@@ -749,7 +749,7 @@ namespace PriceProcessor.Test.Waybills
 					task.CatalogProduct = Catalog.Find(catalog.Id);
 					task.SerialNumber = serialNumber;
 					task.DocumentLine = realDocumentLine;
-					task.Create();
+					task.Save();
 				}
 
 				handler.TestProcessData();
@@ -762,7 +762,7 @@ namespace PriceProcessor.Test.Waybills
 					task.CatalogProduct = Catalog.Find(catalog.Id);
 					task.SerialNumber = serialNumber;
 					task.DocumentLine = realDocumentLine;
-					task.Create();
+					task.Save();
 				}
 
 				handler.TestProcessData();
@@ -791,7 +791,7 @@ namespace PriceProcessor.Test.Waybills
 					task.CatalogProduct = Catalog.Find(catalog.Id);
 					task.SerialNumber = serialNumber;
 					task.DocumentLine = realDocumentLine;
-					task.Create();
+					task.Save();
 				}
 				handler.TestProcessData();
 				var eventsAfterSuccess = memoryAppender.GetEvents();

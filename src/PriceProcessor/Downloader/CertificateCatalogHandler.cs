@@ -135,7 +135,7 @@ where
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 				}
 
-				catalogList.ForEach(c => c.Create());
+				catalogList.ForEach(c => c.Save());
 
 				var sessionUpdate = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
 				try

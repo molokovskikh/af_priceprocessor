@@ -53,7 +53,7 @@ namespace PriceProcessor.Test.Waybills
 				ftpSource = (IRemoteFtpSource)_source.GetCertificateSource();
 				_source.Suppliers = new List<Supplier>();
 				_source.Suppliers.Add(realSupplier);
-				_source.Create();
+				_source.Save();
 			}
 		}
 

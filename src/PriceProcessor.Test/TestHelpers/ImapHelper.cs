@@ -14,6 +14,8 @@ namespace PriceProcessor.Test.TestHelpers
 {
 	public class ImapHelper
 	{
+		public static string INBOXFolder = "INBOX";
+
 		public static void ClearImapFolder()
 		{
 			ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
@@ -31,9 +33,9 @@ namespace PriceProcessor.Test.TestHelpers
 		}
 
 		/// <summary>
-		/// Удаляет все сообщения из IMAP папки
+		/// Удаляет все сообщения из IMAP папки по фильтру subject
 		/// </summary>
-		public static void ClearImapFolder(string mailbox, string password, string folder)
+		public static void ClearImapFolder(string mailbox, string password, string folder, string subject)
 		{
 			using (var imapClient = new IMAP_Client())
 			{
@@ -42,17 +44,29 @@ namespace PriceProcessor.Test.TestHelpers
 				imapClient.SelectFolder(folder);
 				var sequenceSet = new IMAP_SequenceSet();
 				sequenceSet.Parse("1:*", Int64.MaxValue);
-				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false);
+				var items = String.IsNullOrEmpty(subject) 
+					? imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false) 
+					: imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
+				
+				//производим фильтрацию, если параметр subject установлен
+				if (!String.IsNullOrEmpty(subject) && items != null && items.Length > 0)
+					items = items.Where(i => i.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+
 				if ((items != null) && (items.Length > 0))
 				{
-					foreach (var item in items)
-					{
-						var sequenceMessages = new IMAP_SequenceSet();
-						sequenceMessages.Parse(item.UID.ToString());
-						imapClient.DeleteMessages(sequenceMessages, true);
-					}
+					var sequenceMessages = new IMAP_SequenceSet();
+					sequenceMessages.Parse(String.Join(",", items.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
+					imapClient.DeleteMessages(sequenceMessages, true);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Удаляет все сообщения из IMAP папки
+		/// </summary>
+		public static void ClearImapFolder(string mailbox, string password, string folder)
+		{
+			ClearImapFolder(mailbox, password, folder, null);
 		}
 
 		public static List<IMAP_FetchItem> CheckImapFolder(string mailbox, string password, string folder)

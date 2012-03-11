@@ -64,7 +64,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 			}
 
 			Assert.That(task.Id, Is.GreaterThan(0));
@@ -92,7 +92,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 			}
 
 			Assert.That(task.Id, Is.GreaterThan(0));
@@ -109,7 +109,7 @@ namespace PriceProcessor.Test.Waybills
 
 			try {
 				using (new TransactionScope()) {
-					doubleTask.Create();
+					doubleTask.Save();
 				}
 
 				Assert.Fail("При сохранении должны были получить исключение с нарушением уникального ключа");
@@ -130,7 +130,7 @@ namespace PriceProcessor.Test.Waybills
 					};
 					source.Suppliers = new List<Supplier>();
 					source.Suppliers.Add(supplier);
-					source.Create();
+					source.Save();
 				}
 			return source;
 		}
@@ -148,7 +148,7 @@ namespace PriceProcessor.Test.Waybills
 				certificate.CatalogProduct = Catalog.Find(catalog.Id);
 				certificate.SerialNumber = serialNumber;
 				CreateFiles(certificateSource, certificate, 2);
-				certificate.Create();
+				certificate.Save();
 			}
 
 			Assert.That(certificate.Id, Is.GreaterThan(0));
@@ -210,7 +210,7 @@ namespace PriceProcessor.Test.Waybills
 
 			try {
 				using (new TransactionScope()) {
-					doubleСertificate.Create();
+					doubleСertificate.Save();
 				}
 
 				Assert.Fail("При сохранении должны были получить исключение с нарушением уникального ключа");
@@ -263,7 +263,7 @@ namespace PriceProcessor.Test.Waybills
 				task.CatalogProduct = Catalog.Find(catalog.Id);
 				task.SerialNumber = serialNumber;
 				task.DocumentLine = realDocumentLine;
-				task.Create();
+				task.Save();
 			}
 
 			Assert.That(task.Id, Is.GreaterThan(0));
@@ -291,7 +291,7 @@ namespace PriceProcessor.Test.Waybills
 				if (existsTask)
 					doubleTask.SerialNumber = anotherSerialNumber;
 
-				doubleTask.Create();
+				doubleTask.Save();
 
 				transaction.VoteCommit();
 			}

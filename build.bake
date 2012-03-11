@@ -58,9 +58,22 @@ def IsDocument(mime as Mime):
 			or domain.EndsWith("refused.analit.net")
 	return false
 
-def Resend(attachment as MimeEntity):
+def IsMiniMail(mime as Mime):
+	return false if not mime.MainEntity.To
+	for box in mime.MainEntity.To.Mailboxes:
+		domain = box.Domain.ToLower()
+		return true if domain.EndsWith("docs.analit.net")
+	return false
+
+def Resend(attachment as MimeEntity, miniMails as bool):
 	attachedMime = Mime.Parse(attachment.Data)
-	if not IsDocument(attachedMime):
+	letterDomain = "root@waybills.analit.net"
+	if miniMails:
+		letterDomain = "alldocs@docs.analit.net"
+	if not miniMails and not IsDocument(attachedMime):
+		print "Ignored ${attachedMime.MainEntity.Subject}"
+		return
+	if miniMails and not IsMiniMail(attachedMime):
 		print "Ignored ${attachedMime.MainEntity.Subject}"
 		return
 	print "Resend ${attachedMime.MainEntity.Subject}"
@@ -68,17 +81,10 @@ def Resend(attachment as MimeEntity):
 		25,
 		Environment.MachineName,
 		"service@analit.net",
-		("root@waybills.analit.net",),
+		(letterDomain,),
 		MemoryStream(attachment.Data))
 
-Desc """
-Переотправляет не обработанные накладные, берет письмо из kvasovtest и переотправляет его
-
-Полезна если что то поломалось а пришли накладные
-Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
-или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
-"""
-Task @ResendWaybills:
+def ResendLetters(miniMails as bool):
 	using client = IMAP_Client():
 		client.Connect("box.analit.net", 143)
 		client.Authenticate("kvasovtest@analit.net", "12345678")
@@ -94,7 +100,28 @@ Task @ResendWaybills:
 			mine = Mime.Parse(message[0].MessageData)
 			for attachment in mine.Attachments:
 				if attachment.ContentType_Name == "Unparse.eml":
-					Resend(attachment)
+					Resend(attachment, miniMails)
 				else:
 					attachedMime = Mime.Parse(attachment.Data)
-					Resend(attachedMime.Attachments[0])
+					Resend(attachedMime.Attachments[0], miniMails)
+
+Desc """
+Переотправляет не обработанные накладные, берет письмо из kvasovtest и переотправляет его
+
+Полезна если что то поломалось а пришли накладные
+Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
+или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
+"""
+Task @ResendWaybills:
+	ResendLetters(false)
+
+
+Desc """
+Переотправляет не обработанные мини-письма, берет письмо из kvasovtest и переотправляет его
+
+Полезна если что-то поломалось, а пришли мини-письма, или 
+Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
+или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
+"""
+Task @ResendMiniMails:
+	ResendLetters(true)
