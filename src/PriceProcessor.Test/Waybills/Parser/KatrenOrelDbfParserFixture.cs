@@ -45,13 +45,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void CheckFileFormat()
 		{
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\fm21554.dbf")));
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
-			Assert.IsFalse(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\95472.dbf")));
-			Assert.IsTrue(KatrenOrelDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\83504.dbf")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\fm21554.dbf")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1040150.DBF")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\8916.dbf")));
+			Assert.IsFalse(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\95472.dbf")));
+			Assert.IsTrue(SiaAstrahanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\83504.dbf")));
 		}
 
 		[Test]
