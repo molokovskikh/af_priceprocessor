@@ -173,6 +173,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BioMaster2394ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Inko5969ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KoraKosmeticsKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KrasotaIZdorovieKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\LenFarmFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Medkom_Mp_Spb_Fixture.cs" />
