@@ -59,8 +59,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				   data.Columns.Contains("PRICE2N") &&
 				   data.Columns.Contains("GDATE") &&
 				   data.Columns.Contains("SERTIF") &&
-				   data.Columns.Contains("NUMGTD") &&
-				   data.Columns.Contains("SUMPAY");
+				   data.Columns.Contains("QNTPACK") &&
+				   data.Columns.Contains("REGPRC");
 		}
 	}
 }
