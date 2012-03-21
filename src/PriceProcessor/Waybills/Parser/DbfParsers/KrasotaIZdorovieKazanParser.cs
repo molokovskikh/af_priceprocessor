@@ -25,6 +25,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "NAME")
 
+				.Line(l => l.Country, "COUNTRY")
+				.Line(l => l.Producer, "PROIZV")
+				.Line(l => l.SerialNumber, "SERIYA")
+				.Line(l => l.Period, "SROK")
+
 				.Line(l => l.SupplierCostWithoutNDS, "CENA")
 
 				.Line(l => l.Amount, "TOTAL")
