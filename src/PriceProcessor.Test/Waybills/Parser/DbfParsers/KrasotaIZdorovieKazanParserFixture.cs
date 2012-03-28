@@ -51,7 +51,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(144.07));
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.Amount, Is.EqualTo(170));
-			Assert.That(line.NdsAmount, Is.EqualTo(25.93));
+			Assert.That(line.NdsAmount, Is.EqualTo(25.93m));
 		}
 	}
 }

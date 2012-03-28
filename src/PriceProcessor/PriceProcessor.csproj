@@ -270,6 +270,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KrasotaIZdorovieKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\LenFarmParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Medkom_Mp_Spb.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PromServiceParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmCheboksaryParser.cs" />
