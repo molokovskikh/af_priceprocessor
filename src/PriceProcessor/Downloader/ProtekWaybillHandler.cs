@@ -170,10 +170,112 @@ namespace Inforoom.PriceProcessor.Downloader
 		public OrderHead Order { get; set; }
 	}
 
+	public class ProtekServiceConfig
+	{
+		public string Url;
+		public int ClientId;
+		public int InstanceId;
+		public uint SupplierId;
+
+		public ProtekServiceConfig(string url, int clientId, int instanceId, uint supplierId)
+		{
+			Url = url;
+			ClientId = clientId;
+			InstanceId = instanceId;
+			SupplierId = supplierId;
+		}
+	}
+
 	public class ProtekWaybillHandler : AbstractHandler
 	{
 		private string uri;
 		private IList<OrderHead> orders = new List<OrderHead>();
+
+		public static List<ProtekServiceConfig> Configs = new List<ProtekServiceConfig> {
+			//калуга
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				79888, 1024847, 3287),
+
+			//воронеж
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				123108, 1064974, 5),
+
+			//Курск/Белгород
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				118855, 1053374, 220),
+
+			//тамбов
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				261544, 1072996, 2399),
+
+			//Москва
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				83674, 1033812, 180),
+
+			//Смоленск
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				83868, 1033815, 2495),
+
+			//Казань
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				231691, 1072909, 2777),
+
+			//Екатеринбург
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				261542, 1072994, 3752),
+
+			//Пермь
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				215115, 1072912, 7114),
+
+			//Челябинск
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				261543, 1072995, 3),
+
+			//Киров
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				215116, 1072913, 7743),
+
+			//Орел
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				83472, 1033813, 5375),
+
+			//Тюмень
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				250434, 1072911, 7088),
+
+			//ХМАО-Югра
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				245011, 1072914, 7740),
+
+			//Омск
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				265488, 1077902, 3777),
+
+			//Протек-02 Волгоград
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				266327, 1079618, 4166),
+
+			//Протек-12 Самара
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				266329, 1079620, 3745),
+
+			//Протек-16 Новосибирск
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				266337, 1079622, 4631),
+
+			//Протек-05 Нижний Новгород
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				86980, 1036488, 3444),
+
+			//Протек-36 Оренбург
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				266508, 1080034, 3496),
+
+			//Протек-17 Уфы
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				274265, 1091749, 12297),
+		};
 
 		public virtual void WithService(string uri, Action<ProtekService> action)
 		{
@@ -207,93 +309,10 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		protected override void ProcessData()
 		{
-			//калуга
-			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(79888, 1024847);
-
-			//воронеж
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(123108, 1064974);
-
-			//Курск/Белгород
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(118855, 1053374);
-
-			//тамбов
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(261544, 1072996);
-
-			//Москва
-			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(83674, 1033812);
-
-			//Смоленск
-			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(83868, 1033815);
-
-			//Казань
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(231691, 1072909);
-
-			//Екатеринбург
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(261542, 1072994);
-
-			//Пермь
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(215115, 1072912);
-
-			//Челябинск
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(261543, 1072995);
-
-			//Киров
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(215116, 1072913);
-
-			//Орел
-			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(83472, 1033813);
-
-			//Тюмень
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(250434, 1072911);
-
-			//ХМАО-Югра
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(245011, 1072914);
-
-			//Омск
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(265488, 1077902);
-
-			//Протек-02 Волгоград
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(266327, 1079618);
-
-			//Протек-12 Самара
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(266329, 1079620);
-
-			//Протек-16 Новосибирск
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(266337, 1079622);
-
-			//Протек-05 Нижний Новгород
-			uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(86980, 1036488);
-
-			//Протек-36 Оренбург
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(266508, 1080034);
-
-			//Протек-36 Оренбург
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(266508, 1080034);
-
-			//Протек-17 Уфы
-			uri = "http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
-			Load(274265, 1091749);
+			foreach (var config in Configs) {
+				uri = config.Url;
+				Load(config.ClientId, config.InstanceId);
+			}
 		}
 
 		protected void Load(int clientId, int instanceId)

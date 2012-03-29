@@ -9,6 +9,12 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 	public abstract class AbstractCertifcateSource
 	{
 		public abstract void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files);
+		protected ILog Log;
+
+		protected AbstractCertifcateSource()
+		{
+			Log = LogManager.GetLogger(GetType());
+		}
 
 		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
 		{
@@ -20,8 +26,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			}
 			catch {
-				var _logger = LogManager.GetLogger(this.GetType());
-
 				//Удаляем временные закаченные файлы
 				result.ForEach(f => {
 					try {
@@ -29,7 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 							File.Delete(f.LocalFile);
 					}
 					catch (Exception exception) {
-						_logger.WarnFormat("Ошибка при удалении временного файла {0} по задаче {1}: {2}", f.LocalFile, task, exception);
+						Log.WarnFormat("Ошибка при удалении временного файла {0} по задаче {1}: {2}", f.LocalFile, task, exception);
 					}
 				});
 				throw;

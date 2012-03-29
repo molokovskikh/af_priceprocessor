@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Waybills.Models;
 
@@ -15,12 +16,16 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
-			var uri = "http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/";
+			var supplierId = task.DocumentLine.Document.FirmCode;
 
-			new ProtekWaybillHandler().WithService(uri, s => {
+			var config = ProtekWaybillHandler.Configs.FirstOrDefault(c => c.SupplierId == supplierId);
+			if (config == null)
+				throw new Exception(String.Format("Не найдена конфигурация для получения сертификатов от поставщика № {0}", supplierId));
+
+			new ProtekWaybillHandler().WithService(config.Url, s => {
 				foreach (var id in task.DocumentLine.ProtekDocIds)
 				{
-					var response = s.getSertImages(new getSertImagesRequest(83674, 1033812, id.DocId));
+					var response = s.getSertImages(new getSertImagesRequest(config.ClientId, config.InstanceId, id.DocId));
 					var index = 1;
 					foreach(var sertImage in response.@return.sertImage)
 					{
