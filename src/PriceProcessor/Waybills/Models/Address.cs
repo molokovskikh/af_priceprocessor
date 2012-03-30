@@ -3,7 +3,7 @@ using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
-	[ActiveRecord("Addresses", Schema = "Future", Lazy = true)]
+	[ActiveRecord("Addresses", Schema = "Customers", Lazy = true)]
 	public class Address : ActiveRecordLinqBase<Address>
 	{
 		[PrimaryKey]

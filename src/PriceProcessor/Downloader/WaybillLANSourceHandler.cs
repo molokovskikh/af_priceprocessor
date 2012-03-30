@@ -40,7 +40,7 @@ SELECT
   st.EMailFrom,
   st.ReaderClassName
 FROM
-  Future.Suppliers as s
+  Customers.Suppliers as s
   INNER JOIN Documents.Waybill_Sources AS st ON s.Id = st.FirmCode
 WHERE
 s.Disabled = 0

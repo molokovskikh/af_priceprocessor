@@ -272,7 +272,7 @@ where pricecode = ?PriceId", c);
 					command.ExecuteNonQuery();
 
 					command = new MySqlCommand(@"
-update Future.Intersection i
+update Customers.Intersection i
 set i.AvailableForClient = 0
 where i.PriceId = ?priceId", c);
 					command.Parameters.AddWithValue("?priceId", cost.Price.Id);
@@ -281,7 +281,7 @@ where i.PriceId = ?priceId", c);
 					foreach (var customer in customers)
 					{
 						command.CommandText = @"
-update Future.Intersection i
+update Customers.Intersection i
 set i.AvailableForClient = 1, i.PriceMarkup = ?priceMarkup
 where i.SupplierClientId = ?id and i.PriceId = ?priceId";
 						command.Parameters.Clear();

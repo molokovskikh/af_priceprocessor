@@ -53,7 +53,7 @@ SELECT
   pricefmts.FileExtention as DFileExtention
 FROM
   logs.downlogs as logs,
-  Future.Suppliers sp,
+  Customers.Suppliers sp,
   usersettings.pricesdata pd,
   usersettings.pricescosts pc,
   usersettings.PriceItems pim,
@@ -190,7 +190,7 @@ select
   pf.FileExtention
 from
   usersettings.pricesdata pd,
-  Future.Suppliers s,
+  Customers.Suppliers s,
   usersettings.pricescosts pc,
   usersettings.priceitems pim,
   farm.formrules fr,

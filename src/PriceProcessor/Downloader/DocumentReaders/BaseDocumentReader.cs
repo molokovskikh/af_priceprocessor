@@ -62,10 +62,10 @@ GROUP BY AddressId";
 SELECT
     Addr.Id as AddressId
 FROM
-	future.Addresses Addr
-JOIN future.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
+	Customers.Addresses Addr
+JOIN Customers.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
 JOIN usersettings.PricesData pd ON pd.FirmCode = ?SupplierId
-JOIN future.Intersection FutureInter ON FutureInter.Id = AddrInter.IntersectionId AND FutureInter.PriceId = pd.PriceCode
+JOIN Customers.Intersection FutureInter ON FutureInter.Id = AddrInter.IntersectionId AND FutureInter.PriceId = pd.PriceCode
 WHERE
 " + sqlCondition;
 			return sqlQuery;

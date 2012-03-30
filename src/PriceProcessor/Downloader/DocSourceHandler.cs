@@ -133,7 +133,7 @@ namespace Inforoom.Downloader
 select
   s.Id
 from
-  future.Suppliers s
+  Customers.Suppliers s
   inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
   inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
 where

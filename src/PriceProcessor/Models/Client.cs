@@ -4,7 +4,7 @@ using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Models
 {
-	[ActiveRecord("Clients", Schema = "Future")]
+	[ActiveRecord("Clients", Schema = "Customers")]
 	public class Client : ActiveRecordLinqBase<Client>
 	{
 		public Client()

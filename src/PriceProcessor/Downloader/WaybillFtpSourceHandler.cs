@@ -67,7 +67,7 @@ SELECT
 	max(dl.LogTime) as LastDownloadTime
 FROM
 	Documents.Waybill_Sources AS st
-	JOIN Future.Suppliers as s ON s.Id = st.FirmCode
+	JOIN Customers.Suppliers as s ON s.Id = st.FirmCode
 	JOIN farm.regions as r ON r.RegionCode = s.HomeRegion
 	LEFT JOIN logs.document_logs dl ON dl.FirmCode = st.FirmCode
 WHERE

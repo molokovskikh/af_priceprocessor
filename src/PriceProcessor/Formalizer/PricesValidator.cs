@@ -120,7 +120,7 @@ from
   (usersettings.PriceItems pi,
   usersettings.pricescosts pc,
   UserSettings.PricesData pd,
-  Future.Suppliers s,
+  Customers.Suppliers s,
   Farm.formrules FR,
   Farm.FormRules PFR,
   farm.pricefmts)

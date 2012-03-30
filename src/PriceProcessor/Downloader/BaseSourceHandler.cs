@@ -160,7 +160,7 @@ FROM
   usersettings.PriceItems pi,
   usersettings.PricesCosts pc,
   UserSettings.PricesData  as PD,
-  Future.Suppliers as s,
+  Customers.Suppliers as s,
   farm.regions             as r,
   farm.FormRules           AS fr,
   farm.pricefmts           AS pf
@@ -278,7 +278,7 @@ and pd.AgencyEnabled= 1",
 		}
 
 		/// <summary>
-		/// Выдает код клиента из таблицы future.Addresses по
+		/// Выдает код клиента из таблицы Customers.Addresses по
 		/// Id
 		/// </summary>
 		/// <param name="addressId">Id в таблице Addresses
@@ -295,7 +295,7 @@ and pd.AgencyEnabled= 1",
 
 				var queryGetClientCodeByAddressId = String.Format(@"
 SELECT Addr.ClientId
-FROM future.Addresses Addr
+FROM Customers.Addresses Addr
 WHERE Addr.Id = {0}", address);
 
 				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);

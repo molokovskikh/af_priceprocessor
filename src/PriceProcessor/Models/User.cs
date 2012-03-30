@@ -5,7 +5,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Models
 {
-	[ActiveRecord("Users", Schema = "future")]
+	[ActiveRecord("Users", Schema = "Customers")]
 	public class User : ActiveRecordLinqBase<User>
 	{
 		public User()
@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Models
 		[HasAndBelongsToMany(typeof (Address),
 			Lazy = true,
 			ColumnKey = "UserId",
-			Schema = "future",
+			Schema = "Customers",
 			Table = "UserAddresses",
 			ColumnRef = "AddressId")]
 		public virtual IList<Address> AvaliableAddresses { get; set; }

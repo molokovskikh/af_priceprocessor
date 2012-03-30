@@ -143,14 +143,14 @@ namespace Inforoom.Downloader
 
 		/// <summary>
 		/// Проверяет, существует ли клиент с указанным кодом.
-		/// Также ищет указанный код среди адресов в таблице future.Addresses,
+		/// Также ищет указанный код среди адресов в таблице Customers.Addresses,
 		/// поэтому можно сказать, что также проверяет адрес клиента на существование
 		/// </summary>
 		private bool ClientExists(uint checkClientCode)
 		{
 			var queryGetClientCode = String.Format(@"
 SELECT Addr.Id
-FROM Future.Addresses Addr
+FROM Customers.Addresses Addr
 WHERE Addr.Id = {0}", checkClientCode);
 			return With.Connection(c => {
 				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCode);
@@ -236,7 +236,7 @@ SELECT
 	st.EMailFrom	
 FROM
 	Documents.Waybill_Sources st
-	INNER JOIN future.suppliers s ON s.Id = st.FirmCode
+	INNER JOIN Customers.suppliers s ON s.Id = st.FirmCode
 	INNER JOIN farm.regions r ON r.RegionCode = s.HomeRegion
 WHERE	
 	st.SourceID = 1";
@@ -385,10 +385,10 @@ WHERE
 
 			return With.Connection(c => Convert.ToInt32(MySqlHelper.ExecuteScalar(c,@"
 SELECT count(i.Id)
-FROM future.clients
-	JOIN Future.Suppliers as s ON s.Id = ?SupplierId
+FROM Customers.clients
+	JOIN Customers.Suppliers as s ON s.Id = ?SupplierId
 	JOIN usersettings.pricesdata as prices ON prices.FirmCode = s.Id AND prices.enabled = 1 AND prices.AgencyEnabled = 1
-	JOIN future.intersection as i ON
+	JOIN Customers.intersection as i ON
 		i.ClientId = clients.Id
 		AND i.PriceId = prices.PriceCode
 		AND i.AgencyEnabled = 1

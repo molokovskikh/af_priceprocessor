@@ -169,11 +169,11 @@ namespace PriceProcessor.Test
 			With.Connection(connection =>
 			{
 				var command = new MySqlCommand(@"
-insert into Future.AddressIntersection(AddressId, IntersectionId, SupplierDeliveryId)
+insert into Customers.AddressIntersection(AddressId, IntersectionId, SupplierDeliveryId)
 select a.Id, i.Id, ?supplierDeliveryId
-from Future.Intersection i
-	join Future.Addresses a on a.ClientId = i.ClientId
-	left join Future.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
+from Customers.Intersection i
+	join Customers.Addresses a on a.ClientId = i.ClientId
+	left join Customers.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
 where 
 	a.Id = ?AddressId
 and ai.Id is null", connection);
@@ -184,9 +184,9 @@ and ai.Id is null", connection);
 				if (insertCount == 0) {
 					command.CommandText = @"
 update
-  Future.Intersection i,
-  Future.Addresses a,
-  Future.AddressIntersection ai
+  Customers.Intersection i,
+  Customers.Addresses a,
+  Customers.AddressIntersection ai
 set
   ai.SupplierDeliveryId = ?supplierDeliveryId,
   i.SupplierClientId = ?supplierClientId
@@ -352,9 +352,9 @@ and a.Id = ?AddressId
 			{
 				var command = new MySqlCommand(@"
 update
-  Future.Intersection i,
-  Future.Addresses a,
-  Future.AddressIntersection ai
+  Customers.Intersection i,
+  Customers.Addresses a,
+  Customers.AddressIntersection ai
 set
   ai.SupplierDeliveryId = null,
   i.SupplierClientId = null
