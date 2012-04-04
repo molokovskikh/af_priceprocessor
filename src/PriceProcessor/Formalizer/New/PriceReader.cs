@@ -19,6 +19,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	{
 		IEnumerable<FormalizationPosition> Read();
 		List<CostDescription> CostDescriptions { get; set; }
+		IEnumerable<Customer> Settings();
 		void SendWaring(PriceLoggingStat stat);
 	}
 
@@ -93,6 +94,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			return ((DescriptionAttribute)descriptions[0]).Description;
 		}
 
+
+		public IEnumerable<Customer> Settings()
+		{
+			return Enumerable.Empty<Customer>();
+		}
 
 		public void SendWaring(PriceLoggingStat stat)
 		{
@@ -192,19 +198,19 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private void ValidateCosts()
 		{
 			if (CostDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)
-				throw new WarningFormalizeException(Settings.Default.CostsNotExistsError, _priceInfo);
+				throw new WarningFormalizeException(PriceProcessor.Settings.Default.CostsNotExistsError, _priceInfo);
 
 			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
 			if (!_priceInfo.IsAssortmentPrice &&  _priceInfo.CostType == CostTypes.MultiColumn)
 			{
 				var baseCosts = CostDescriptions.Where(c => c.IsBaseCost).ToArray();
 				if (baseCosts.Length == 0)
-					throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, _priceInfo);
+					throw new WarningFormalizeException(PriceProcessor.Settings.Default.BaseCostNotExistsError, _priceInfo);
 
 				if (baseCosts.Length > 1)
 				{
 					throw new WarningFormalizeException(
-						String.Format(Settings.Default.DoubleBaseCostsError,
+						String.Format(PriceProcessor.Settings.Default.DoubleBaseCostsError,
 							baseCosts[0].Id,
 							baseCosts[1].Id),
 						_priceInfo);
@@ -212,7 +218,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				var baseCost = baseCosts.Single();
 
 				if (baseCost.Begin == -1 && baseCost.End == -1 && String.Empty == baseCost.FieldName)
-					throw new WarningFormalizeException(Settings.Default.FieldNameBaseCostsError, _priceInfo);
+					throw new WarningFormalizeException(PriceProcessor.Settings.Default.FieldNameBaseCostsError, _priceInfo);
 			}
 		}
 

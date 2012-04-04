@@ -135,6 +135,7 @@
     <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
+    <Compile Include="Loader\UniversalXmlReader.cs" />
     <Compile Include="Loader\XmlReaderFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
@@ -314,6 +315,10 @@
     <ProjectReference Include="..\Common.MySql\Common.MySql\Common.MySql.csproj">
       <Project>{8A680813-C83B-497A-85E6-E8F07B7D7650}</Project>
       <Name>Common.MySql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common.Tools\Common.Tools.Test\Common.Tools.Tests.csproj">
+      <Project>{A2C4864F-8976-4C5B-A2BF-60AE31749BB7}</Project>
+      <Name>Common.Tools.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Common.Tools\Common.Tools\Common.Tools.csproj">
       <Project>{72AFCFE8-C9E9-45FA-9698-BEE896A517A3}</Project>

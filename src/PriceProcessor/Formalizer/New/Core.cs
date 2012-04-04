@@ -9,8 +9,14 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	public class Cost
 	{
 		public decimal Value;
+		public decimal RequestRatio;
+		public decimal MinOrderSum;
+		public uint MinOrderCount;
 
 		public CostDescription Description;
+
+		public Cost()
+		{}
 
 		public Cost(CostDescription description)
 		{
@@ -126,9 +132,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public string Period;
 		public string Doc;
 		public decimal RegistryCost;
+		public decimal ProducerCost;
 		public bool Junk;
 		public bool Await;
 		public bool VitallyImportant;
+		public uint Nds;
 
 		public decimal MinBoundCost;
 		public decimal MaxBoundCost;
