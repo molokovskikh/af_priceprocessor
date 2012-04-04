@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		IEnumerable<FormalizationPosition> Read();
 		List<CostDescription> CostDescriptions { get; set; }
 		IEnumerable<Customer> Settings();
-		void SendWaring(PriceLoggingStat stat);
+		void SendWarning(PriceLoggingStat stat);
 	}
 
 	public class PriceReader : IReader
@@ -100,7 +100,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			return Enumerable.Empty<Customer>();
 		}
 
-		public void SendWaring(PriceLoggingStat stat)
+		public void SendWarning(PriceLoggingStat stat)
 		{
 			ProcessUndefinedCost(stat);
 			ProcessZeroCost(stat);

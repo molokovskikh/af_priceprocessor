@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	public class Cost
 	{
 		public decimal Value;
-		public decimal RequestRatio;
+		public uint RequestRatio;
 		public decimal MinOrderSum;
 		public uint MinOrderCount;
 

@@ -487,7 +487,7 @@ order by c.Id", _priceInfo.PriceCode);
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
 			if (Downloaded)
-				_reader.SendWaring(_loggingStat);
+				_reader.SendWarning(_loggingStat);
 
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);

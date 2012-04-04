@@ -446,7 +446,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			return String.Equals(_reader.Name, name, StringComparison.InvariantCultureIgnoreCase);
 		}
 
-		public void SendWaring(PriceLoggingStat stat)
+		public void SendWarning(PriceLoggingStat stat)
 		{}
 	}
 }

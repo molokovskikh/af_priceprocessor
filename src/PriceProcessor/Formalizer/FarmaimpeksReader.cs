@@ -119,7 +119,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public List<CostDescription> CostDescriptions { get; set; }
 
-		public void SendWaring(PriceLoggingStat stat)
+		public void SendWarning(PriceLoggingStat stat)
 		{}
 	}
 }

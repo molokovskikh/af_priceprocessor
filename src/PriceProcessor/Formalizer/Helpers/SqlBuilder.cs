@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 
@@ -19,7 +20,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			Name = info.Name;
 			_coreField = info;
-			_newCoreField = typeof (NewCore).GetFields().Where(f => f.Name == Name).Single();
+			_newCoreField = typeof (NewCore).GetFields().Single(f => f.Name == Name);
 		}
 
 		public string Name { get; private set;}
@@ -138,47 +139,15 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		public static string InsertCoreCommand(PriceFormalizationInfo info, NewCore core)
 		{
+			if (_fieldMaps == null)
+				_fieldMaps = InitFieldMap();
+
 			var command = new StringBuilder();
-			command.Append("insert into farm.Core0("
-				+ "PriceCode,"
-				+ "ProductId,"
-				+ "CodeFirmCr,"
-				+ "SynonymCode,"
-				+ "SynonymFirmCrCode,"
-				+ "Period, Junk, Await, MinBoundCost, VitallyImportant, RequestRatio,"
-				+ "RegistryCost, MaxBoundCost, OrderCost, MinOrderCount, "
-				+ "Code,"
-				+ "CodeCr,"
-				+ "Unit,"
-				+ "Volume,"
-				+ "Quantity,"
-				+ "Note,"
-				+ "Doc"
-				+") values (");
-			var invariantCulture = CultureInfo.InvariantCulture;
-			command
+			command.Append("insert into farm.Core0(PriceCode,")
+				.Append(_fieldMaps.Select(m => m.Name).Implode())
+				.Append(") values (")
 				.Append(info.PriceCode + ",")
-				.Append(core.ProductId.ToString(invariantCulture) + ",")
-				.Append(GetNullableValue(core.CodeFirmCr) + ",")
-				.Append(core.SynonymCode.ToString(invariantCulture) + ",")
-				.Append(GetNullableValue(core.SynonymFirmCrCode) + ",")
-				.Append(GetStringValue(core.Period) + ",")
-				.Append(GetBoolValue(core.Junk) + ",")
-				.Append(GetBoolValue(core.Await) + ",")
-				.Append(GetDecimalValue(core.MinBoundCost) + ",")
-				.Append(GetBoolValue(core.VitallyImportant) + ",")
-				.Append(GetNullableValue(core.RequestRatio) + ",")
-				.Append(GetDecimalValue(core.RegistryCost) + ",")
-				.Append(GetDecimalValue(core.MaxBoundCost) + ",")
-				.Append(GetDecimalValue(core.OrderCost) + ",")
-				.Append(GetNullableValue(core.MinOrderCount) + ",")
-				.Append(GetStringValue(core.Code) + ",")
-				.Append(GetStringValue(core.CodeCr) + ",")
-				.Append(GetStringValue(core.Unit) + ",")
-				.Append(GetStringValue(core.Volume) + ",")
-				.Append(GetStringValue(core.Quantity) + ",")
-				.Append(GetStringValue(core.Note) + ",")
-				.Append(GetStringValue(core.Doc))
+				.Append(_fieldMaps.Select(m => ToSql(m.GetValue(core))).Implode())
 				.Append(");")
 				.Append("set @LastCoreID = last_insert_id();");
 			return command.ToString();
@@ -212,25 +181,63 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return value.ToString(CultureInfo.InvariantCulture);
 		}
 
-		public static string InsertCostsCommand(NewCore core)
-		{
-			var command = new StringBuilder()
-				.AppendLine("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ")
-				.Append(String.Join(",", core.Costs.Where(c => c.Value > 0).Select(c => String.Format("(@LastCoreID, {0}, {1})", c.Description.Id, c.Value.ToString(CultureInfo.InvariantCulture))).ToArray()))
-				.AppendLine(";");
-			return command.ToString();
-		}
-
 		public static string UpdateCoreCommand(NewCore core)
 		{
 			if (_fieldMaps == null)
 				_fieldMaps = InitFieldMap();
 
-			var fields = String.Join(", ", _fieldMaps.Where(m => !m.Equal(core)).Select(m => String.Format("{0} = {1}", m.Name, ToSql(m.GetValue(core)))).ToArray());
+			var fields = _fieldMaps.Where(m => !m.Equal(core)).Select(m => String.Format("{0} = {1}", m.Name, ToSql(m.GetValue(core)))).Implode();
 			if (fields.Length == 0)
 				return null;
 
 			return String.Format("update farm.Core0 set {0} where Id = {1};\r\n", fields, core.ExistsCore.Id);
+		}
+
+		public static string InsertCostsCommand(NewCore core)
+		{
+			var command = new StringBuilder()
+				.AppendLine("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ")
+				.Append(core.Costs.Where(c => c.Value > 0).Select(c => String.Format("(@LastCoreID, {0}, {1}, {2}, {3}, {4})",
+					c.Description.Id,
+					ToSql(c.Value),
+					ToSql(c.RequestRatio),
+					ToSql(c.MinOrderSum),
+					ToSql(c.MinOrderCount))).Implode())
+				.AppendLine(";");
+			return command.ToString();
+		}
+
+		public static string UpdateCostsCommand(NewCore core)
+		{
+			var command = new StringBuilder();
+			foreach(var cost in core.Costs) {
+				var existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
+				if (existsCost == null) {
+					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ({0}, {1}, {2}, {3}, {4}, {5});",
+						core.ExistsCore.Id,
+						cost.Description.Id,
+						ToSql(cost.Value),
+						ToSql(cost.RequestRatio),
+						ToSql(cost.MinOrderSum),
+						ToSql(cost.MinOrderCount));
+				}
+				else if (cost.Value != existsCost.Value) {
+					command.AppendFormat("update farm.CoreCosts set Cost = {2}, RequestRatio = {3}, MinOrderSum = {4}, MinOrderCount = {5} where Core_Id = {0} and PC_CostCode = {1};", 
+						core.ExistsCore.Id,
+						cost.Description.Id,
+						ToSql(cost.Value),
+						ToSql(cost.RequestRatio),
+						ToSql(cost.MinOrderSum),
+						ToSql(cost.MinOrderCount));
+				}
+			}
+			var costsToDelete = core.ExistsCore.Costs
+				.Where(c => !core.Costs.Any(nc => nc.Description.Id == c.Description.Id))
+				.Select(c => c.Description.Id.ToString()).ToArray();
+			if (costsToDelete.Length > 0)
+				command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", core.ExistsCore.Id, String.Join(", ", costsToDelete));
+
+			return command.ToString();
 		}
 
 		private static string ToSql(object value)
@@ -249,32 +256,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		private static FieldMap[] InitFieldMap()
 		{
 			return typeof (Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
-		}
-
-		public static string UpdateCostsCommand(NewCore core)
-		{
-			var command = new StringBuilder();
-			foreach(var cost in core.Costs)
-			{
-				var existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
-				if (existsCost == null)
-				{
-					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ({0}, {1}, {2});",
-						core.ExistsCore.Id, cost.Description.Id, GetDecimalValue(cost.Value));
-				}
-				else if (cost.Value != existsCost.Value)
-				{
-					command.AppendFormat("update farm.CoreCosts set Cost = {2} where Core_Id = {0} and PC_CostCode = {1};", 
-						core.ExistsCore.Id, cost.Description.Id, GetDecimalValue(cost.Value));
-				}
-			}
-			var costsToDelete = core.ExistsCore.Costs
-				.Where(c => !core.Costs.Any(nc => nc.Description.Id == c.Description.Id))
-				.Select(c => c.Description.Id.ToString()).ToArray();
-			if (costsToDelete.Length > 0)
-				command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", core.ExistsCore.Id, String.Join(", ", costsToDelete));
-
-			return command.ToString();
 		}
 	}
 }
