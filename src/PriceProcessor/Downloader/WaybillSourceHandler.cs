@@ -543,7 +543,7 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
 				clientId,
 				addressId,
 				file,
-				_currentDocumentType.DocType,
+				_currentDocumentType.DocType, "Получен по Email",
 				IMAPHandler.CurrentUID);
 			log.CopyDocumentToClientDirectory();
 			return log;

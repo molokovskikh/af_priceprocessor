@@ -234,7 +234,8 @@ GROUP BY SupplierId
 							clientId,
 							addrId,
 							file,
-							documentType);
+							documentType,
+							"Получен с клиентского FTP");
 						_logger.InfoFormat("WaybillFtpSourceHandler: обработка файла {0}", file);
 						documentLogs.Add(log);
 					}

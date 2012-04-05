@@ -413,7 +413,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				ClientCode = order.ClientCode,
 				Address = order.Address,
 				Supplier = order.Price.Supplier,
-				IsFake = true
+				IsFake = true,
+				Comment = "Получен через сервис Протек"
 			};
 
 			var document = new Document(log) {

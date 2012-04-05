@@ -290,7 +290,8 @@ and st.SourceID = 4";
 								clientId,
 								clientAddressId,
 								formatFile,
-								_currentDocumentType.DocType);
+								_currentDocumentType.DocType,
+								"Получен с нашего FTP");
 
 						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
