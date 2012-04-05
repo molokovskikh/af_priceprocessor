@@ -16,7 +16,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 	public class Customer
 	{
 		public string SupplierClientId;
-		public string SupplierPayerId;
+		public string SupplierPaymentId;
 		public decimal? PriceMarkup;
 		public string CostId;
 		public bool? Available;
@@ -41,11 +41,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private ILog _log = LogManager.GetLogger(typeof (FarmaimpeksFormalizer));
 
 		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, DataTable data)
-		{
-			_fileName = filename;
-			_data = data;
-			_priceInfo = new PriceFormalizationInfo(data.Rows[0]);
-		}
+			: base(filename, connection, data)
+		{}
 
 		public IList<string> GetAllNames()
 		{
@@ -103,7 +100,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 						continue;
 					}
 
-					FormalizePrice(reader, cost);
+					_priceInfo.IsUpdating = true;
+					_priceInfo.CostCode = cost.Id;
+					_priceInfo.PriceItemId = cost.PriceItemId;
+					_priceInfo.PriceCode = cost.Price.Id;
+
+					FormalizePrice(reader);
 
 					var customers = reader.Settings().ToList();
 					With.Transaction((c, t) => {
@@ -123,7 +125,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						command.Parameters.AddWithValue("?priceId", cost.Price.Id);
 						command.ExecuteNonQuery();
 
-						UpdateIntersection(command, cost, customers);
+						UpdateIntersection(command, customers, reader.CostDescriptions);
 					});
 				}
 			}

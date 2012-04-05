@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Loader
 				var cost = price.Costs[0];
 				cost.Name = "2";
 				priceItem = cost.PriceItem;
-				priceItem.Format.PriceFormat = PriceFormatType.FarmImpeks;
+				priceItem.Format.PriceFormat = PriceFormatType.FarmaimpeksXml;
 				price.SaveAndFlush();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);

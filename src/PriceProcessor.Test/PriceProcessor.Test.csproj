@@ -135,8 +135,9 @@
     <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
+    <Compile Include="Loader\UniversalFormalizerFixture.cs" />
     <Compile Include="Loader\UniversalXmlReader.cs" />
-    <Compile Include="Loader\XmlReaderFixture.cs" />
+    <Compile Include="Loader\FarmaimpeksReaderFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />

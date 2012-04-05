@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
@@ -11,21 +12,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class UniversalFormalizer : BaseFormalizer, IPriceFormalizer
 	{
+		public UniversalFormalizer(string filename, MySqlConnection connection, DataTable data)
+			: base(filename, connection, data)
+		{}
+
 		public void Formalize()
 		{
 			using(var stream = File.OpenRead(_fileName)) {
 				var reader = new UniversalReader(stream);
 
 				var settings = reader.Settings().ToList();
-				var costId = ((uint)_priceInfo.CostCode);
-				PriceCost cost;
-				using(new SessionScope())
-					cost = PriceCost.Find(costId);
 
-				FormalizePrice(reader, cost);
+				FormalizePrice(reader);
 				With.Connection(c => {
 					var command = new MySqlCommand("", c);
-					UpdateIntersection(command, cost, settings);
+					UpdateIntersection(command, settings, reader.CostDescriptions);
 				});
 			}
 		}

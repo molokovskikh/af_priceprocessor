@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.New;
@@ -14,6 +15,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 		protected PriceFormalizationInfo _priceInfo;
 		protected string _fileName;
 		protected DataTable _data;
+
+		public BaseFormalizer(string filename, MySqlConnection connection, DataTable data)
+		{
+			_fileName = filename;
+			_data = data;
+			_priceInfo = new PriceFormalizationInfo(data.Rows[0]);
+		}
 
 		public bool Downloaded { get; set; }
 		public string InputFileName { get; set; }
@@ -47,20 +55,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 			get { return _priceInfo.PriceName; }
 		}
 
-		protected static void UpdateIntersection(MySqlCommand command, PriceCost cost, List<Customer> customers)
+		protected void UpdateIntersection(MySqlCommand command, List<Customer> customers, List<CostDescription> costs)
 		{
 			foreach (var customer in customers) {
 				command.Parameters.Clear();
 				var filterSql = new List<string>();
-				if (!String.IsNullOrEmpty(customer.SupplierClientId)) {
-					filterSql.Add("i.SupplierClientId = ?supplierClientId");
-					command.Parameters.AddWithValue("?supplierClientId", customer.SupplierClientId);
-				}
-
-				if (!String.IsNullOrEmpty(customer.SupplierPayerId)) {
-					filterSql.Add("i.SupplierPayerId = ?supplierPayerId");
-					command.Parameters.AddWithValue("?supplierPayerId", customer.SupplierPayerId);
-				}
+				AppendFilter(command, filterSql, customer);
 
 				if (filterSql.Count == 0)
 					continue;
@@ -77,25 +77,27 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 
 				if (!String.IsNullOrEmpty(customer.CostId)) {
-					setSql.Add("i.CostId = ?costId");
-					command.Parameters.AddWithValue("?costId", null);
+					var cost = costs.FirstOrDefault(c => c.Name.Match(customer.CostId));
+					if (cost != null && cost.Id > 0) {
+						setSql.Add("i.CostId = ?costId");
+						command.Parameters.AddWithValue("?costId", cost.Id);
+					}
 				}
 
-				if (setSql.Count > 0)
-				{
+				if (setSql.Count > 0) {
 					command.CommandText = String.Format(@"
 update Customers.Intersection i
 set {0}
 where {1} and i.PriceId = ?priceId", setSql.Implode(), filterSql.Implode(" and "));
-					command.Parameters.AddWithValue("?priceId", cost.Price.Id);
+					command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
 					command.ExecuteNonQuery();
 				}
 
-				UpdateAddressIntersection(command, cost, customer, filterSql);
+				UpdateAddressIntersection(command, customer, filterSql);
 			}
 		}
 
-		private static void UpdateAddressIntersection(MySqlCommand command, PriceCost cost, Customer customer, List<string> intersectionFilter)
+		private void UpdateAddressIntersection(MySqlCommand command, Customer customer, List<string> intersectionFilter)
 		{
 			foreach (var address in customer.Addresses) {
 				command.Parameters.Clear();
@@ -105,6 +107,10 @@ where {1} and i.PriceId = ?priceId", setSql.Implode(), filterSql.Implode(" and "
 					filterSql.Add("ai.SupplierDeliveryId = ?supplierDeliveryId");
 					command.Parameters.AddWithValue("supplierDeliveryId", address.SupplierAddressId);
 				}
+				AppendFilter(command, filterSql, customer);
+
+				if (filterSql.Count == 0)
+					continue;
 
 				var setSql = new List<string>();
 				if (address.MinReq.HasValue) {
@@ -117,7 +123,7 @@ where {1} and i.PriceId = ?priceId", setSql.Implode(), filterSql.Implode(" and "
 					command.Parameters.AddWithValue("controlMinReq", address.ControlMinReq.Value);
 				}
 
-				if (filterSql.Count == 0 && setSql.Count == 0)
+				if (setSql.Count == 0)
 					continue;
 
 				command.CommandText = String.Format( @"
@@ -128,23 +134,27 @@ where {1} and {2} and i.PriceId = ?priceId",
 					setSql.Implode(),
 					filterSql.Implode(" and "),
 					intersectionFilter.Implode(" and "));
-				command.Parameters.AddWithValue("?priceId", cost.Price.Id);
+				command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
 				command.ExecuteNonQuery();
 			}
 		}
 
-		protected void FormalizePrice(IReader reader, PriceCost cost)
+		private static void AppendFilter(MySqlCommand command, List<string> filterSql, Customer customer)
 		{
-			var priceInfo = _data.Rows[0];
+			if (!String.IsNullOrEmpty(customer.SupplierClientId)) {
+				filterSql.Add("i.SupplierClientId = ?supplierClientId");
+				command.Parameters.AddWithValue("?supplierClientId", customer.SupplierClientId);
+			}
 
-			var info = new PriceFormalizationInfo(priceInfo);
+			if (!String.IsNullOrEmpty(customer.SupplierPaymentId)) {
+				filterSql.Add("i.SupplierPaymentId = ?supplierPaymentId");
+				command.Parameters.AddWithValue("?supplierPaymentId", customer.SupplierPaymentId);
+			}
+		}
 
-			info.IsUpdating = true;
-			info.CostCode = cost.Id;
-			info.PriceItemId = cost.PriceItemId;
-			info.PriceCode = cost.Price.Id;
-
-			var parser = new BasePriceParser2(reader, info);
+		protected void FormalizePrice(IReader reader)
+		{
+			var parser = new BasePriceParser2(reader, _priceInfo);
 			parser.Downloaded = Downloaded;
 			parser.Formalize();
 			formCount += parser.Stat.formCount;

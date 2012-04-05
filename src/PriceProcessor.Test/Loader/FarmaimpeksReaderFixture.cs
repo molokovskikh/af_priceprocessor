@@ -8,13 +8,13 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Loader
 {
 	[TestFixture]
-	public class XmlReaderFixture
+	public class FarmaimpeksReaderFixture
 	{
 		[Test]
 		public void Read_price()
 		{
 			var reader = new FarmaimpeksReader(@"..\..\Data\FarmaimpeksPrice.xml");
-			Assert.That(reader.Prices().ToList().Count, Is.EqualTo(35));
+			Assert.That(reader.Prices().Count(), Is.EqualTo(35));
 		}
 
 		[Test]

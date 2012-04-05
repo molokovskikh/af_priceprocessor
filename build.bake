@@ -25,12 +25,10 @@ Global(
 	Server : "fms.adc.analit.net",
 	HumanReadableName : "Служба обработки прайс-листов",
 	ServiceName : "PriceProcessorService",
+	Environment: @Local,
 	Profile: @catalog,
 	Port: 3309
 )
-
-unless string.Equals(System.Environment.MachineName, @devsrv, StringComparison.OrdinalIgnoreCase):
-	Globals.Environment = @Local
 
 task @ParseWaybills:
 	binding = NetTcpBinding()

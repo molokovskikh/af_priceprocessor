@@ -5,12 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.Helpers;
 using Inforoom.PriceProcessor;
 using log4net;
 using MySql.Data.MySqlClient;
+using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
+
 #if BUTCHER
 using MySql.Data.MySqlClient.Source;
 #endif
@@ -59,8 +61,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		//родительский синоним : прайс-родитель, нужен для выбора различных параметров
 		protected long parentSynonym;
-		//Кол-во распознаных позиций в прошлый раз
-		protected long prevRowCount;
 
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
@@ -102,8 +102,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			priceItemId = _priceInfo.PriceItemId;
 			parentSynonym = _priceInfo.ParentSynonym;
 			costType = _priceInfo.CostType;
-
-			prevRowCount = _priceInfo.PrevRowCount;
 
 			string selectCostFormRulesSQL;
 			if (costType == CostTypes.MultiColumn)
@@ -328,9 +326,8 @@ select @LastSynonymFirmCrCode;");
 		private void LoadCore()
 		{
 			string existsCoreSQL;
-			var columns = String.Join(", ", typeof(ExistsCore).GetFields().Where(f => f.Name != "Costs" && f.Name != "NewCore").Select(f => f.Name).ToArray());
 			if (costType == CostTypes.MultiColumn)
-				existsCoreSQL = String.Format("SELECT {1} FROM farm.Core0 WHERE PriceCode={0} order by Id", _priceInfo.PriceCode, columns);
+				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0 WHERE PriceCode={0} order by Id", _priceInfo.PriceCode);
 			else
 				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", _priceInfo.PriceCode, _priceInfo.CostCode);
 
@@ -366,7 +363,10 @@ select @LastSynonymFirmCrCode;");
 
 						RequestRatio = GetUintOrDbNUll(reader, 19),
 						OrderCost = GetDecimalOrDbNull(reader, 20),
-						MinOrderCount = GetUintOrDbNUll(reader, 21)
+						MinOrderCount = GetUintOrDbNUll(reader, 21),
+
+						ProducerCost = GetDecimalOrDbNull(reader, 24),
+						Nds = GetUintOrDbNUll(reader, 25)
 					});
 				}
 			}
@@ -377,7 +377,7 @@ select @LastSynonymFirmCrCode;");
 			string existsCoreCostsSQL;
 			if (costType == CostTypes.MultiColumn)
 				existsCoreCostsSQL = String.Format(@"
-select cc.Core_id, cc.PC_CostCode, cc.Cost
+select cc.*
 from farm.Core0 c
 	join farm.CoreCosts cc on cc.Core_Id = c.id
 where c.PriceCode = {0} 
@@ -412,7 +412,11 @@ order by c.Id", _priceInfo.PriceCode);
 						if (core == null)
 							throw new Exception(String.Format("Не удалось найти позицию в Core, Id = {0}", coreId));
 					}
-					costs.Add(new Cost(description, reader.GetDecimal(2)));
+					costs.Add(new Cost(description, reader.GetDecimal(2)) {
+						RequestRatio = GetUintOrDbNUll(reader, 3),
+						MinOrderSum = GetDecimalOrDbNull(reader, 4),
+						MinOrderCount = GetUintOrDbNUll(reader, 5),
+					});
 				}
 				core.Costs = costs.ToArray();
 			}
@@ -492,7 +496,7 @@ order by c.Id", _priceInfo.PriceCode);
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
 
-			if (_loggingStat.formCount * 1.6 < prevRowCount)
+			if (_loggingStat.formCount * 1.6 < _priceInfo.PrevRowCount)
 				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, _priceInfo, _loggingStat);
 
 			var done = false;
@@ -506,6 +510,7 @@ order by c.Id", _priceInfo.PriceCode);
 				try
 				{
 					InsertNewProducerSynonyms(transaction);
+					InsertNewCosts();
 #if BUTCHER
 					var buffer = new byte[10 * 1024 * 1024];
 					var batcher = new Batcher(_connection);
@@ -536,7 +541,7 @@ order by c.Id", _priceInfo.PriceCode);
 				{
 					transaction.Rollback();
 
-					if (!(tryCount <= Settings.Default.MaxRepeatTranCount && (1213 == ex.Number || 1205 == ex.Number || 1422 == ex.Number)))
+					if (!(tryCount <= Settings.Default.MaxRepeatTranCount && ExceptionHelper.IsDeadLockOrSimilarExceptionInChain(ex)))
 						throw;
 
 					tryCount++;
@@ -557,7 +562,7 @@ order by c.Id", _priceInfo.PriceCode);
 				_loggingStat.maxLockCount = tryCount;
 		}
 
-		private IEnumerable<int> PrepareData(/*byte[] buffer, */Action<string, int> populateCommand)
+		private IEnumerable<int> PrepareData(Action<string, int> populateCommand)
 		{
 			var MaxPacketSize = 500*1024;
 			var MaxCommandCount = 500;
@@ -882,6 +887,19 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 				position.Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
 				position.Junk = Convert.ToBoolean(row["Junk"]);
 				position.AddStatus(UnrecExpStatus.NameForm);
+			}
+		}
+
+		public void InsertNewCosts()
+		{
+			var toCreate = _reader.CostDescriptions.Where(d => d.Id == 0);
+			foreach (var description in toCreate) {
+				description.Id = CostCollumnCreator.CreateCost(_connection,
+					_priceInfo.PriceCode,
+					(int)_priceInfo.CostType,
+					description.Name,
+					true,
+					true);
 			}
 		}
 	}

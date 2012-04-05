@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Formalization
 		private TestPriceItem priceItem;
 
 		[Test]
-        [Ignore("Починить")]
+		[Ignore("Починить")]
 		public void Test()
 		{
 			using (var scope = new TransactionScope(OnDispose.Rollback))
@@ -52,37 +52,37 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(data.Tables[0].Rows[2]["RequestRatio"], Is.EqualTo(245));
 		}
 
-        [Test]
-        public void GetAllNamesTest()
-        {         
-            using (var scope = new TransactionScope(OnDispose.Rollback))
-            {
-                price = TestSupplier.CreateTestSupplierWithPrice(p =>
-                {
-                    var rules = p.Costs.Single().PriceItem.Format;
-                    rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
-                    rules.Delimiter = ";";
-                    rules.FName1 = "F2";
-                    rules.FFirmCr = "F3";
-                    rules.FQuantity = "F5";                    
-                    p.Costs.Single().FormRule.FieldName = "F4";
-                    rules.FRequestRatio = "F6";
-                    p.ParentSynonym = 5;
-                });
-                priceItem = price.Costs.First().PriceItem;
-                scope.VoteCommit();
-            }
-            string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
-            if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
+		[Test]
+		public void GetAllNamesTest()
+		{         
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				price = TestSupplier.CreateTestSupplierWithPrice(p =>
+				{
+					var rules = p.Costs.Single().PriceItem.Format;
+					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
+					rules.Delimiter = ";";
+					rules.FName1 = "F2";
+					rules.FFirmCr = "F3";
+					rules.FQuantity = "F5";                    
+					p.Costs.Single().FormRule.FieldName = "F4";
+					rules.FRequestRatio = "F6";
+					p.ParentSynonym = 5;
+				});
+				priceItem = price.Costs.First().PriceItem;
+				scope.VoteCommit();
+			}
+			string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
+			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
 
-            File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.GetFullPath(@"..\..\Data\2222.txt"));       
-            File.Move(Path.GetFullPath(@"..\..\Data\2222.txt"), Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
-                       
-            PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
-            var names = item.GetAllNames();
-            File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
-            Assert.That(names.Count(), Is.EqualTo(35));
-        }
+			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.GetFullPath(@"..\..\Data\2222.txt"));       
+			File.Move(Path.GetFullPath(@"..\..\Data\2222.txt"), Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
+					   
+			PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
+			var names = item.GetAllNames();
+			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
+			Assert.That(names.Count(), Is.EqualTo(35));
+		}
 
 		[Test]
 		public void GetFileTest()

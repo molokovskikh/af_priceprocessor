@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Common.Tools.Test;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 
@@ -8,6 +10,16 @@ namespace PriceProcessor.Test.Loader
 	[TestFixture]
 	public class UniversalXmlReader
 	{
+		private static List<Customer> settings;
+		private static List<FormalizationPosition> positions;
+
+		[SetUp]
+		public void Setup()
+		{
+			settings = null;
+			positions = null;
+		}
+
 		[Test]
 		public void Read_settings()
 		{
@@ -40,13 +52,12 @@ namespace PriceProcessor.Test.Loader
 </Group>
 </Settings>
 ";
-			var reader = Read(xml);
+			Read(xml);
 
-			var customers = reader.Settings().ToList();
-			Assert.That(customers.Count, Is.EqualTo(2));
-			var customer = customers[0];
+			Assert.That(settings.Count, Is.EqualTo(2));
+			var customer = settings[0];
 			Assert.That(customer.SupplierClientId, Is.EqualTo("122341"));
-			Assert.That(customer.SupplierPayerId, Is.EqualTo("21"));
+			Assert.That(customer.SupplierPaymentId, Is.EqualTo("21"));
 			Assert.That(customer.CostId, Is.EqualTo("0000-Крик_122341"));
 			Assert.That(customer.Addresses.Count, Is.EqualTo(2));
 			var address = customer.Addresses[0];
@@ -83,9 +94,8 @@ namespace PriceProcessor.Test.Loader
 	</Item>
 </Price>
 ";
-			var reader = Read(xml);
+			Read(xml);
 
-			var positions = reader.Read().ToList();
 			Assert.That(positions.Count, Is.EqualTo(2));
 			var position = positions[0];
 			Assert.That(position.PositionName, Is.EqualTo("Таблетки От Кашля Х10"));
@@ -130,17 +140,17 @@ namespace PriceProcessor.Test.Loader
 	</Price>
 </PriceAndSettings>";
 
-			var reader = Read(xml);
-
-			var settings = reader.Settings().ToList();
-			var positions = reader.Read().ToList();
+			Read(xml);
+			
 			Assert.That(positions.Count, Is.EqualTo(1));
 			Assert.That(settings.Count, Is.EqualTo(1));
 		}
 
-		private static UniversalReader Read(string xml)
+		private static void Read(string xml)
 		{
-			return new UniversalReader(new StringStream(xml));
+			var reader = new UniversalReader(new StringStream(xml));
+			settings = reader.Settings().ToList();
+			positions = reader.Read().ToList();
 		}
 	}
 }

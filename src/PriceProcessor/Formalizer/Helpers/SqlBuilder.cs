@@ -153,34 +153,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return command.ToString();
 		}
 
-		public static string GetBoolValue(bool value)
-		{
-			return value ? "1" : "0";
-		}
-
-		public static string GetStringValue(string value)
-		{
-			if (value == null)
-				return "''";
-			return "'" + StringToMySqlString(value) + "'";
-		}
-
-		public static string GetNullableValue(uint value)
-		{
-			if (value == 0)
-				return "null";
-
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string GetDecimalValue(decimal value)
-		{
-			if (value == 0)
-				return "null";
-
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
 		public static string UpdateCoreCommand(NewCore core)
 		{
 			if (_fieldMaps == null)
@@ -251,6 +223,34 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			if (value is string)
 				return GetStringValue((string) value);
 			throw new Exception(String.Format("Не знаю как преобразовать {0}", value));
+		}
+
+		public static string GetBoolValue(bool value)
+		{
+			return value ? "1" : "0";
+		}
+
+		public static string GetStringValue(string value)
+		{
+			if (value == null)
+				return "''";
+			return "'" + StringToMySqlString(value) + "'";
+		}
+
+		public static string GetNullableValue(uint value)
+		{
+			if (value == 0)
+				return "null";
+
+			return value.ToString(CultureInfo.InvariantCulture);
+		}
+
+		public static string GetDecimalValue(decimal value)
+		{
+			if (value == 0)
+				return "null";
+
+			return value.ToString(CultureInfo.InvariantCulture);
 		}
 
 		private static FieldMap[] InitFieldMap()

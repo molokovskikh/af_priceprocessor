@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 
@@ -71,57 +72,57 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var position = _position;
 			var core = position.Core;
-			if (UniversalReader.IsMatch(tag, "Code")) {
+			if (tag.Match("Code")) {
 				core.Code = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "CodeCr")) {
+			if (tag.Match("CodeCr")) {
 				core.CodeCr = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Product")) {
+			if (tag.Match("Product")) {
 				position.PositionName = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Producer")) {
+			if (tag.Match("Producer")) {
 				position.FirmCr = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Unit")) {
+			if (tag.Match("Unit")) {
 				core.Unit = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Volume")) {
+			if (tag.Match("Volume")) {
 				core.Volume = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Quantity")) {
+			if (tag.Match("Quantity")) {
 				core.Quantity = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Note")) {
+			if (tag.Match("Note")) {
 				core.Note = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Period")) {
+			if (tag.Match("Period")) {
 				core.Period = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Doc")) {
+			if (tag.Match("Doc")) {
 				core.Doc = value;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Junk")) {
+			if (tag.Match("Junk")) {
 				if (value == "0")
 					core.Junk = false;
 				else if (value == "1")
@@ -129,7 +130,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Await")) {
+			if (tag.Match("Await")) {
 				if (value == "0")
 					core.Await = false;
 				else if (value == "1")
@@ -137,7 +138,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "VitallyImportant")) {
+			if (tag.Match("VitallyImportant")) {
 				if (value == "0")
 					core.VitallyImportant = false;
 				else if (value == "1")
@@ -145,56 +146,56 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "NDS")) {
+			if (tag.Match("NDS")) {
 				uint nds;
 				if (uint.TryParse(value, out nds))
 					core.Nds = nds;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MinBoundCost")) {
+			if (tag.Match("MinBoundCost")) {
 				decimal minBoindCost;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out minBoindCost))
 					core.MinBoundCost = minBoindCost;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MaxBoundCost")) {
+			if (tag.Match("MaxBoundCost")) {
 				decimal maxBoundCost;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out maxBoundCost))
 					core.MaxBoundCost = maxBoundCost;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "RegistryCost")) {
+			if (tag.Match("RegistryCost")) {
 				decimal registryCost;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out registryCost))
 					core.RegistryCost = registryCost;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "ProducerCost")) {
+			if (tag.Match("ProducerCost")) {
 				decimal producerCost;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out producerCost))
 					core.ProducerCost = producerCost;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "RequestRatio")) {
+			if (tag.Match("RequestRatio")) {
 				uint requestRatio;
 				if (uint.TryParse(value, out requestRatio))
 					core.RequestRatio = requestRatio;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MinOrderSum")) {
+			if (tag.Match("MinOrderSum")) {
 				decimal minOrderSum;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out minOrderSum))
 					core.OrderCost = minOrderSum;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MinOrderCount")) {
+			if (tag.Match("MinOrderCount")) {
 				uint minOrderCount;
 				if (uint.TryParse(value, out minOrderCount))
 					core.MinOrderCount = minOrderCount;
@@ -217,13 +218,23 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void BeginConsume()
 		{
 			_cost = new Cost();
-			((PriceItemState)Prev).Costs.Add(_cost);
+			
+		}
+
+		public override object EndConsume()
+		{
+			if (_cost.Description != null)
+				((PriceItemState)Prev).Costs.Add(_cost);
+			return null;
 		}
 
 		public override void Read(string tag, string value)
 		{
-			if (UniversalReader.IsMatch(tag, "Id")) {
-				_cost.Description = _descriptions.FirstOrDefault(d => d.Name == value);
+			if (tag.Match("Id")) {
+				if (String.IsNullOrEmpty(value))
+					return;
+
+				_cost.Description = _descriptions.FirstOrDefault(d => d.Name.Match(value));
 				if (_cost.Description == null) {
 					var costDescription = new CostDescription {Name = value};
 					_cost.Description = costDescription;
@@ -232,28 +243,28 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "Value")) {
+			if (tag.Match("Value")) {
 				decimal cost;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out cost))
 					_cost.Value = cost;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "RequestRatio")) {
+			if (tag.Match("RequestRatio")) {
 				uint requestRatio;
 				if (uint.TryParse(value, out requestRatio))
 					_cost.RequestRatio = requestRatio;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MinOrderSum")) {
+			if (tag.Match("MinOrderSum")) {
 				decimal minOrderSum;
 				if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out minOrderSum))
 					_cost.MinOrderSum = minOrderSum;
 				return;
 			}
 
-			if (UniversalReader.IsMatch(tag, "MinOrderCount")) {
+			if (tag.Match("MinOrderCount")) {
 				uint minOrderCount;
 				if (uint.TryParse(value, out minOrderCount))
 					_cost.MinOrderCount = minOrderCount;
@@ -281,7 +292,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			var state = new ParserState("", new ParserState("Price", new PriceItemState("Item", new PriceCostState("Cost", CostDescriptions))));
 			var currentState = state;
 			string valueTag = null;
-			while (_reader.Read()) {
+			do {
 				if (_reader.NodeType == XmlNodeType.Element) {
 					if (currentState.Next != null && IsTag(currentState.Next.Tag)) {
 						currentState = currentState.Next;
@@ -311,7 +322,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 							currentState = currentState.Prev;
 					}
 				}
-			}
+			} while (_reader.Read());
 		}
 
 		public enum State
@@ -322,13 +333,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 			Address
 		}
 
-		public IEnumerable<Customer>	Settings()
+		public IEnumerable<Customer> Settings()
 		{
 			Customer customer = null;
 			string valueTag = null;
 			while (_reader.Read()) {
 
 				if (_reader.NodeType == XmlNodeType.Element) {
+					if (_state == State.None && IsTag("Price"))
+						yield break;
+
 					if (_state == State.None && IsTag("Settings")) {
 						_state = State.Settings;
 						continue;
@@ -387,25 +401,25 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var customer = item as Customer;
 			if (customer != null) {
-				if (IsMatch(name, "ClientId")) {
+				if (name.Match("ClientId")) {
 					customer.SupplierClientId = value;
 					return;
 				}
-				if (IsMatch(name, "PayerId")) {
-					customer.SupplierPayerId = value;
+				if (name.Match("PayerId")) {
+					customer.SupplierPaymentId = value;
 					return;
 				}
-				if (IsMatch(name, "CostId")) {
+				if (name.Match("CostId")) {
 					customer.CostId = value;
 					return;
 				}
-				if (IsMatch(name, "Markup")) {
+				if (name.Match("Markup")) {
 					decimal markup;
 					if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out markup))
 						customer.PriceMarkup = markup;
 					return;
 				}
-				if (IsMatch(name, "Available")) {
+				if (name.Match("Available")) {
 					if (value == "1")
 						customer.Available = true;
 					else if (value == "0")
@@ -416,18 +430,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			var address = item as AddressSettings;
 			if (address != null) {
-				if (IsMatch(name, "AddressId")) {
+				if (name.Match("AddressId")) {
 					address.SupplierAddressId = value;
 					return;
 				}
-				if (IsMatch(name, "ControlMinReq")) {
+				if (name.Match("ControlMinReq")) {
 					if (value == "1")
 						address.ControlMinReq = true;
 					else if (value == "0")
 						address.ControlMinReq = false;
 					return;
 				}
-				if (IsMatch(name, "MinReq")) {
+				if (name.Match("MinReq")) {
 					uint minReq;
 					if (uint.TryParse(value, out minReq))
 						address.MinReq = minReq;
@@ -436,14 +450,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 		}
 
-		public static bool IsMatch(string name, string name1)
-		{
-			return String.Equals(name1, name, StringComparison.InvariantCultureIgnoreCase);
-		}
-
 		private bool IsTag(string name)
 		{
-			return String.Equals(_reader.Name, name, StringComparison.InvariantCultureIgnoreCase);
+			return _reader.Name.Match(name);
 		}
 
 		public void SendWarning(PriceLoggingStat stat)
