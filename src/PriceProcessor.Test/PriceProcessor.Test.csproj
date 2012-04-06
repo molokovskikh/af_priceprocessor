@@ -217,6 +217,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\CSMedicaKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\DedenkoTxtParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\FarmPartnerKalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\KazMedFarmParserFixture.cs" />
