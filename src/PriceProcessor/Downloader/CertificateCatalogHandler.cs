@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			SleepTime = 5;
 		}
 		
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			using (new SessionScope()) {
 				var sources = CertificateSource.Queryable.ToArray();

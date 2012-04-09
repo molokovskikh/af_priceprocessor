@@ -114,12 +114,6 @@ namespace PriceProcessor.Test.Handlers
 
 
 			IList<SynonymProduct> synonyms = new List<SynonymProduct>();
-			/*synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[0] });
-			synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[1] });
-			synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[2] });
-			synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price2, Synonym = names[3] });
-			synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price2, Synonym = names[4] });
-			synonyms.Add(new SynonymProduct() { ProductId = (int?)product.Id, Junk = false, Price = price1, Synonym = names[4] });*/
 
 			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[0] });
 			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[1] });

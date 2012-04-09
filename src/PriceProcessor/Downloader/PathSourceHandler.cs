@@ -34,9 +34,9 @@ namespace Inforoom.Downloader
 		/// <summary>
 		/// Коллекция источников, поледнее обращение к которым завершилось неудачей
 		/// </summary>
-		protected ArrayList FailedSources = new ArrayList();
+		public ArrayList FailedSources = new ArrayList();
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			//набор строк похожих источников
 			FillSourcesTable();
@@ -143,7 +143,7 @@ namespace Inforoom.Downloader
 		/// true - интервал истек, нужно обратиться
 		/// false - интервал еще не истек, не нужно обращаться
 		/// </returns>
-		protected bool IsReadyForDownload(PriceSource source)
+		public bool IsReadyForDownload(PriceSource source)
 		{
 			// downloadInterval - в секундах
 			if (FailedSources.Contains(source.PriceItemId))
@@ -199,7 +199,7 @@ namespace Inforoom.Downloader
 		/// <summary>
 		/// Получить прайс-листы, у которых истоники совпадают с первым в списке
 		/// </summary>
-		protected abstract DataRow[] GetLikeSources(PriceSource currentSource);
+		public abstract DataRow[] GetLikeSources(PriceSource currentSource);
 
 		protected virtual void FileProcessed() { }
 	}

@@ -140,12 +140,11 @@
     <Compile Include="Loader\FarmaimpeksReaderFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
-    <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
     <Compile Include="PriceSourceFixture.cs" />
     <Compile Include="Services\ErrorHandlerFixture.cs" />
     <Compile Include="SetupFixture.cs" />
-    <Compile Include="Handlers\PathSourceHandlerTest.cs" />
+    <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
     <Compile Include="MySqlUtilsFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
@@ -158,6 +157,7 @@
     <Compile Include="ShareFileHelperTest.cs" />
     <Compile Include="SiaPriceFixture.cs" />
     <Compile Include="StressTest.cs" />
+    <Compile Include="TestHelpers\BaseHandlerFixture.cs" />
     <Compile Include="TestHelpers\ImapHelper.cs" />
     <Compile Include="TestHelpers\TestHelper.cs" />
     <Compile Include="TextFixture.cs" />

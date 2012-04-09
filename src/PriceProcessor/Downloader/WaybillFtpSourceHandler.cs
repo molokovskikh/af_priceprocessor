@@ -77,7 +77,7 @@ GROUP BY SupplierId
 ", Convert.ToUInt32(WaybillSourceType.FtpSupplier));
 		}
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			FillSourcesTable();
 			foreach (DataRow sourceRow in dtSources.Rows)

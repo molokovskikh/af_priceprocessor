@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
+using Test.Support.Suppliers;
 using PriceSourceType = Test.Support.PriceSourceType;
 
 namespace PriceProcessor.Test.Handlers
@@ -16,12 +17,31 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class LanSourceHandlerFixture
 	{
+		private TestPriceSource source;
+		private TestSupplier supplier;
+		private LANSourceHandler handler;
+		private string dir;
+
 		[SetUp]
 		public void Setup()
 		{
 			TestHelper.InitDirs(
 				Settings.Default.FTPOptBoxPath,
 				Settings.Default.InboundPath);
+
+			handler = new LANSourceHandler();
+
+			supplier = TestSupplier.Create();
+			source = supplier.Prices[0].Costs[0].PriceItem.Source;
+			source.SourceType = PriceSourceType.Lan;
+			source.PricePath = "www.ru";
+			source.PriceMask = "552.zip";
+			source.ExtrMask = "552.dbf";
+
+			dir = Path.Combine(Settings.Default.FTPOptBoxPath, supplier.Id.ToString());
+			if (Directory.Exists(dir))
+				Directory.Delete(dir, true);
+			Directory.CreateDirectory(dir);
 		}
 
 		[Test, Ignore("Починить")]
@@ -36,20 +56,11 @@ namespace PriceProcessor.Test.Handlers
 			}
 
 			var begin = DateTime.Now;
-			var source = TestPriceSource.CreateLanPriceSource("552.zip", "552.dbf");
-
-			var dir = Path.Combine(Settings.Default.FTPOptBoxPath, "1179");
-			if (Directory.Exists(dir))
-				Directory.Delete(dir, true);
-			Directory.CreateDirectory(dir);
 
 			var ftpFile = Path.Combine(dir, "552.zip");
 			File.Copy(@"..\..\Data\HandlersTests\552.zip", ftpFile);
 
-			var handler = new LANSourceHandler();
-			handler.StartWork();
-			Thread.Sleep(10000);
-			handler.StopWork();
+			handler.ProcessData();
 
 			Assert.That(File.Exists(ftpFile), Is.False, "не удалили файл с ftp");
 			using (new SessionScope())

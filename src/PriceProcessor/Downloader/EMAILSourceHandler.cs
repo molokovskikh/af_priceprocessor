@@ -32,7 +32,7 @@ namespace Inforoom.Downloader
 			return Source.Replace("'", String.Empty).Trim();
 		}
 
-		protected bool IsMailAddress(string address)
+		public bool IsMailAddress(string address)
 		{
 			try
 			{
@@ -47,7 +47,7 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			IMAPHandler.ProcessIMAPFolder();
 		}

@@ -113,10 +113,10 @@ group by pi.Id",
 			var dtRules = PricesValidator.LoadFormRules(priceItemId);
 			if(dtRules.Rows.Count == 0) return null;
 			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
-			var files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.BasePath),
+			var files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.BasePath),
 											String.Format(@"{0}.*", priceItemId));
 			if(files.Count() == 0)
-				files = Directory.GetFiles(Common.FileHelper.NormalizeDir(Settings.Default.InboundPath),
+				files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.InboundPath),
 											String.Format(@"{0}.*", priceItemId));
 
 			string filename = String.Empty;
@@ -135,7 +135,7 @@ group by pi.Id",
 			var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
 			 
 			if (Directory.Exists(tempPath))
-				Common.FileHelper.DeleteDir(tempPath);
+				global::Common.Tools.FileHelper.DeleteDir(tempPath);
 			Directory.CreateDirectory(tempPath);
 			try
 			{

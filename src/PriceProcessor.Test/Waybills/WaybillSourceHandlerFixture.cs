@@ -16,7 +16,7 @@ using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
 
-namespace PriceProcessor.Test
+namespace PriceProcessor.Test.Waybills
 {
 	public class SummaryInfo
 	{

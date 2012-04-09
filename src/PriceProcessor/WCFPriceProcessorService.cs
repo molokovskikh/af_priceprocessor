@@ -108,7 +108,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				return;
 
 			var priceExtention = drFocused["DFileExtention"].ToString();
-			var destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.InboundPath) + 
+			var destinationFile = global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.InboundPath) + 
 				"d" + drFocused["DPriceItemId"] + "_" + downlogId + priceExtention;
 
 			if (File.Exists(destinationFile))
@@ -133,7 +133,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
 			if (downlogId > 0)
 			{
-				destinationFile = Common.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId +
+				destinationFile = global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.HistoryPath) + downlogId +
 					Path.GetExtension(sourceArchiveFileName);
 				File.Copy(sourceArchiveFileName, destinationFile);
 			}

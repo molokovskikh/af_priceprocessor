@@ -9,6 +9,7 @@ using log4net;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using RemotePriceProcessor;
+using FileHelper = Inforoom.PriceProcessor.FileHelper;
 
 namespace PriceProcessor.Test
 {

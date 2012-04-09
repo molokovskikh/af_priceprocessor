@@ -3,7 +3,7 @@ using System.IO;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using log4net;
-using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {

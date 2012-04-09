@@ -9,7 +9,7 @@ using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using Inforoom.Common;
-using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Common.Tools.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
@@ -70,7 +70,7 @@ namespace Inforoom.Downloader
 		/// <summary>
 		/// Таблица с источниками
 		/// </summary>
-		protected DataTable dtSources = new DataTable();
+		public DataTable dtSources = new DataTable();
 
 		/// <summary>
 		/// Код текущего обрабатываемого прайса
@@ -181,7 +181,7 @@ and pd.AgencyEnabled= 1",
 				type);
 		}
 
-		protected void CreateDirectoryPath()
+		public void CreateDirectoryPath()
 		{
 			CreateDownHandlerPath();
 
@@ -190,7 +190,7 @@ and pd.AgencyEnabled= 1",
 				Directory.CreateDirectory(DownHistoryPath);
 		}
 
-		protected void FillSourcesTable()
+		public void FillSourcesTable()
 		{
 			using(var connection = new MySqlConnection(Literals.ConnectionString()))
 			{

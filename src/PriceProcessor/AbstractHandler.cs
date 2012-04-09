@@ -170,7 +170,7 @@ namespace Inforoom.PriceProcessor
 		}
 
 		//Метод для обработки данных для каждого источника - свой
-		protected abstract void ProcessData();
+		public abstract void ProcessData();
 
 		protected void LoggingToService(string addition)
 		{

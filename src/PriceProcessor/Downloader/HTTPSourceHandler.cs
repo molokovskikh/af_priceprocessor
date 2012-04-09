@@ -82,7 +82,7 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected override DataRow[] GetLikeSources(PriceSource source)
+		public override DataRow[] GetLikeSources(PriceSource source)
 		{
 			return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}')",
 						SourcesTableColumns.colPricePath, source.PricePath,

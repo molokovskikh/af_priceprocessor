@@ -236,9 +236,14 @@ namespace Inforoom.PriceProcessor.Downloader
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
 				215116, 1072913, 7743),
 
+			//у протека один филиал для орел и брянск а у нас два разных постащика, вторая конфигурация нужна для того что бы
+			//знать откуда получать сертификаты
 			//Орел
 			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
 				83472, 1033813, 5375),
+			//Брянск, Протек-32
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				83472, 1033813, 64),
 
 			//Тюмень
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
@@ -307,7 +312,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		}
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			foreach (var config in Configs) {
 				uri = config.Url;

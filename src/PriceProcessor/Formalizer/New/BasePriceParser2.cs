@@ -352,21 +352,21 @@ select @LastSynonymFirmCrCode;");
 						Period = reader.GetString(11),
 						Doc = reader.GetString(12),
 
-						RegistryCost = GetDecimalOrDbNull(reader, 13),
+						RegistryCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("RegistryCost")),
 
-						Junk = reader.GetBoolean(14),
-						Await = reader.GetBoolean(15),
-						VitallyImportant = reader.GetBoolean(16),
+						Junk = reader.GetBoolean("Junk"),
+						Await = reader.GetBoolean("Await"),
+						VitallyImportant = reader.GetBoolean("VitallyImportant"),
 
-						MinBoundCost = GetDecimalOrDbNull(reader, 17),
-						MaxBoundCost = GetDecimalOrDbNull(reader, 18),
+						MinBoundCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("MinBoundCost")),
+						MaxBoundCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("MaxBoundCost")),
 
-						RequestRatio = GetUintOrDbNUll(reader, 19),
-						OrderCost = GetDecimalOrDbNull(reader, 20),
-						MinOrderCount = GetUintOrDbNUll(reader, 21),
+						RequestRatio = GetUintOrDbNUll(reader, reader.GetOrdinal("RequestRatio")),
+						OrderCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("OrderCost")),
+						MinOrderCount = GetUintOrDbNUll(reader, reader.GetOrdinal("MinOrderCount")),
 
-						ProducerCost = GetDecimalOrDbNull(reader, 24),
-						Nds = GetUintOrDbNUll(reader, 25)
+						ProducerCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("ProducerCost")),
+						Nds = GetUintOrDbNUll(reader, reader.GetOrdinal("Nds"))
 					});
 				}
 			}

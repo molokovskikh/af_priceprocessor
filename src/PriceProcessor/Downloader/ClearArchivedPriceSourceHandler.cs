@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Inforoom.PriceProcessor;
-using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -16,7 +16,7 @@ namespace Inforoom.Downloader
 			lastScan = DateTime.MinValue;
         }
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			//Сканируем через некоторое время
 			if (DateTime.Now.Subtract(lastScan).TotalHours <= Settings.Default.ClearScanInterval) 

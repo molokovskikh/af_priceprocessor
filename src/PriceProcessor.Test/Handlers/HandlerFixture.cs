@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Handlers
 
 		public class TestSourceHandler : BaseSourceHandler
 		{
-			protected override void ProcessData()
+			public override void ProcessData()
 			{
 			}
 

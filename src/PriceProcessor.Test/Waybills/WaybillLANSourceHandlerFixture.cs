@@ -13,21 +13,16 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
 using PriceProcessor.Test.TestHelpers;
-using log4net;
-using log4net.Appender;
-using log4net.Config;
+using PriceProcessor.Test.Waybills;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
 using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
-using Test.Support.log4net;
 using Test.Support.Suppliers;
-using Address = LumiSoft.Net.Mime.Address;
-using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using WaybillSourceType = Test.Support.WaybillSourceType;
-using FileHelper = Inforoom.Common.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test
 {
@@ -108,7 +103,7 @@ namespace PriceProcessor.Test
 		public FakeWaybillLANSourceHandler(string readerClassName)
 		{
 			FillSourcesTable();
-			drLanSource = dtSources.Rows.Cast<DataRow>().Where(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader").FirstOrDefault();			
+			drLanSource = dtSources.Rows.Cast<DataRow>().FirstOrDefault(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader");
 			Type result;
 			var types = Assembly.GetExecutingAssembly()
 								.GetModules()[0]
@@ -308,17 +303,17 @@ and a.Id = ?AddressId
 
 			using (new SessionScope())
 			{
-				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.Client.Id == client.Id &&
-					log.Supplier.Id == supplier.Id &&
-					log.AddressId == client.Addresses[0].Id);
+				var logs = TestDocumentLog.Queryable.Where(l =>
+					l.Client.Id == client.Id &&
+					l.Supplier.Id == supplier.Id &&
+					l.AddressId == client.Addresses[0].Id);
 				
 				Assert.That(logs.Count(), Is.EqualTo(2));
-				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
-				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
+				Assert.That(logs.Count(l => l.IsFake), Is.EqualTo(1));
+				Assert.That(logs.Count(l => !l.IsFake), Is.EqualTo(1));
 				
-				var _log = logs.Where(l => !l.IsFake).SingleOrDefault();
-				var file_dbf = GetFileForAddress(DocType.Waybill).Where(f => f.IndexOf(Path.GetFileNameWithoutExtension(_log.FileName)) > -1).Single();
+				var log = logs.SingleOrDefault(l => !l.IsFake);
+				var file_dbf = GetFileForAddress(DocType.Waybill).Single(f => f.IndexOf(Path.GetFileNameWithoutExtension(log.FileName)) > -1);
 				
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));

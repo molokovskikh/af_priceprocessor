@@ -15,7 +15,7 @@ using Inforoom.PriceProcessor;
 using System.Data.OleDb;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
-using FileHelper = Inforoom.Common.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 

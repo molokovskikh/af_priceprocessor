@@ -175,7 +175,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					//todo: здесь не понятно, что надо делать, т.к. прайс-лист не добавили по причине скаченного нового. Сейчас удаляю
 					try
 					{
-						Common.FileHelper.FileDelete(priceFile);
+						global::Common.Tools.FileHelper.FileDelete(priceFile);
 					}
 					catch (Exception ex)
 					{
@@ -188,7 +188,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				LoggingToService(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(priceFile)));
 				try
 				{
-					Common.FileHelper.FileDelete(priceFile);
+					global::Common.Tools.FileHelper.FileDelete(priceFile);
 				}
 				catch (Exception ex)
 				{
@@ -197,7 +197,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 		}
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			//накладываем lock на список во время обработки процедуры, что не проверять по два раза
 			lock (PriceItemList.list)
@@ -269,7 +269,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						//если нет нитки на формализацию, то просто удаляем файл из папки
 						try
 						{
-							Common.FileHelper.FileDelete(item.FilePath);
+							global::Common.Tools.FileHelper.FileDelete(item.FilePath);
 						}
 						catch (Exception ex)
 						{
@@ -425,7 +425,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					_lastFormalizationDate = DateTime.UtcNow;
 					_formalizationFail = false;
 					//удаляем файл
-					Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
+					global::Common.Tools.FileHelper.FileDelete(p.ProcessItem.FilePath);
 					//удаляем информацию о последних ошибках
 					_errorMessages.Remove(p.ProcessItem.FilePath);
 					//удаляем из списка на обработку
@@ -443,7 +443,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					try
 					{
 						//удаляем файл
-						Common.FileHelper.FileDelete(p.ProcessItem.FilePath);
+						global::Common.Tools.FileHelper.FileDelete(p.ProcessItem.FilePath);
 						//удаляем информацию о последних ошибках
 						_errorMessages.Remove(p.ProcessItem.FilePath);
 					}
@@ -471,9 +471,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						try
 						{
-							if (File.Exists(Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath)))
-								File.Delete(Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
-							File.Move(p.ProcessItem.FilePath, Common.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
+							if (File.Exists(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath)))
+								File.Delete(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
+							File.Move(p.ProcessItem.FilePath, global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
 						}
 						catch (Exception e)
 						{

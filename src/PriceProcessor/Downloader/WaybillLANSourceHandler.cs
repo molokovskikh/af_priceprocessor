@@ -15,7 +15,7 @@ using System.Reflection;
 using Inforoom.Common;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Attachment = System.Net.Mail.Attachment;
-using FileHelper = Inforoom.Common.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -47,7 +47,7 @@ s.Disabled = 0
 and st.SourceID = 4";
 		}
 
-		protected override void ProcessData()
+		public override void ProcessData()
 		{
 			//набор строк похожих источников
 			DataRow drLanSource;

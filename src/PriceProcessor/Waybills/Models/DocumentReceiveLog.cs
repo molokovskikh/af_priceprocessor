@@ -88,7 +88,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			{
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,
-					Common.FileHelper.FileNameToWindows1251(Supplier.Name),
+					global::Common.Tools.FileHelper.FileNameToWindows1251(Supplier.Name),
 					Path.GetFileNameWithoutExtension(FileName),
 					Path.GetExtension(FileName));
 				return Path.Combine(documentDir, file);
@@ -162,7 +162,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		//для того что бы этого не произошло чистим имя файла
 		private static string CleanupFilename(string fileName)
 		{
-			var convertedFileName = Common.FileHelper.FileNameToWindows1251(Path.GetFileName(fileName));
+			var convertedFileName = global::Common.Tools.FileHelper.FileNameToWindows1251(Path.GetFileName(fileName));
 			if (!convertedFileName.Equals(Path.GetFileName(fileName), StringComparison.CurrentCultureIgnoreCase))
 			{
 				//Если результат преобразования отличается от исходного имени, то переименовываем файл

@@ -220,8 +220,8 @@ namespace PriceProcessor.Test.Waybills
 				foreach (var documentLog in logs)
 				{
 					var count = documentLog.IsFake
-						? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
-						: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
+						? Document.Queryable.Count(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake)
+						: Document.Queryable.Count(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake);
 					//у нас только одна запись в documentsheaders
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}

@@ -6,7 +6,7 @@ using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using Inforoom.PriceProcessor;
-using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Common.Tools.FileHelper;
 
 namespace Inforoom.Formalizer
 {

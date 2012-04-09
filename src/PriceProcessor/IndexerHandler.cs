@@ -363,7 +363,7 @@ namespace Inforoom.PriceProcessor
             return false;
         }
 
-        protected override void ProcessData()
+        public override void ProcessData()
         {
             if (!Directory.Exists(IdxDir)) // если при запуске индекса нет - делаем его
                 DoIndex();

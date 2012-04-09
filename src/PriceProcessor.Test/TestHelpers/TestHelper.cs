@@ -7,6 +7,7 @@ using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
+using FileHelper = Common.Tools.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test.TestHelpers
@@ -212,7 +213,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 
 			dirs.Each(d => {
 				if (Directory.Exists(d))
-					Inforoom.Common.FileHelper.DeleteDir(d);
+					FileHelper.DeleteDir(d);
 				Directory.CreateDirectory(d);
 			});
 		}

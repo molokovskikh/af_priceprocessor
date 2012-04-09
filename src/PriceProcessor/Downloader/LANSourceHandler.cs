@@ -6,7 +6,7 @@ using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor;
 using Inforoom.Common;
 using System.Threading;
-using FileHelper = Inforoom.Common.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -105,7 +105,7 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected override DataRow[] GetLikeSources(PriceSource source)
+		public override DataRow[] GetLikeSources(PriceSource source)
 		{
 			if (String.IsNullOrEmpty(source.PriceMask))
 				return dtSources.Select(String.Format("({0} = {1}) and ({2} is null)",

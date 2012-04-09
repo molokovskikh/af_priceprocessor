@@ -8,7 +8,7 @@ using Inforoom.PriceProcessor;
 using log4net;
 using LumiSoft.Net.FTP.Client;
 using System.Threading;
-using FileHelper=Inforoom.Common.FileHelper;
+using FileHelper=Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader.Ftp
 {
@@ -290,7 +290,7 @@ namespace Inforoom.Downloader.Ftp
 			}
 		}
 
-		protected override DataRow[] GetLikeSources(PriceSource source)
+		public override DataRow[] GetLikeSources(PriceSource source)
 		{
 			var downloader = new FtpDownloader();
 			return downloader.GetLikeSources(dtSources, source);

@@ -9,8 +9,7 @@ using Inforoom.PriceProcessor.Formalizer;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
-using Inforoom.Common;
-using FileHelper = Inforoom.Common.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test.Formalization
 {
@@ -54,31 +53,31 @@ namespace PriceProcessor.Test.Formalization
 
 		[Test]
 		public void GetAllNamesTest()
-		{         
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				price = TestSupplier.CreateTestSupplierWithPrice(p =>
-				{
-					var rules = p.Costs.Single().PriceItem.Format;
-					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
-					rules.Delimiter = ";";
-					rules.FName1 = "F2";
-					rules.FFirmCr = "F3";
-					rules.FQuantity = "F5";                    
-					p.Costs.Single().FormRule.FieldName = "F4";
-					rules.FRequestRatio = "F6";
-					p.ParentSynonym = 5;
-				});
-				priceItem = price.Costs.First().PriceItem;
-				scope.VoteCommit();
-			}
-			string basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
+		{
+			var supplier =  TestSupplier.Create();
+			var price = supplier.Prices[0];
+			price.CostType = CostType.MultiColumn;
+
+			priceItem = price.Costs.First().PriceItem;
+			var format = price.Costs.Single().PriceItem.Format;
+			format.PriceFormat = PriceFormatType.NativeDelimiter1251;
+			format.Delimiter = ";";
+			format.FName1 = "F2";
+			format.FFirmCr = "F3";
+			format.FQuantity = "F5";
+			format.FRequestRatio = "F6";
+			var costFormRule = price.Costs.Single().FormRule;
+			costFormRule.FieldName = "F4";
+			
+			price.Save();
+
+			var basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
 			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
 
-			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.GetFullPath(@"..\..\Data\2222.txt"));       
+			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.GetFullPath(@"..\..\Data\2222.txt"));
 			File.Move(Path.GetFullPath(@"..\..\Data\2222.txt"), Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
-					   
-			PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItem.Id);
+
+			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
 			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
 			Assert.That(names.Count(), Is.EqualTo(35));
@@ -87,14 +86,14 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void GetFileTest()
 		{
-			string[] files = new string[] {"file1.txt", "file2", "file3.dbf", "file5.xls"};
+			var files = new[] {"file1.txt", "file2", "file3.dbf", "file5.xls"};
 
 			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file1.txt"));
 			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeXls), Is.EqualTo("file5.xls"));
 			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDbf), Is.EqualTo("file3.dbf"));
 			Assert.That(PriceProcessItem.GetFile(files, FormatType.Xml), Is.EqualTo("file1.txt"));
 
-			files = new string[] {"file"};
+			files = new[] {"file"};
 			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file"));
 		}
 	}
