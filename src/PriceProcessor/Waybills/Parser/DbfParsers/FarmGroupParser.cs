@@ -40,6 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		{
 			return (table.Columns.Contains("DATEB") || table.Columns.Contains("DETEB"))
 				&& table.Columns.Contains("GOOD")
+				&& table.Columns.Contains("DATEDOC")
 				&& table.Columns.Contains("SERT")
 				&& table.Columns.Contains("PRICEWONDS")
 				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV") || table.Columns.Contains("JVLS") || table.Columns.Contains("GNVLS"));
