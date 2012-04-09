@@ -44,8 +44,8 @@ namespace PriceProcessor.Test.Loader
 </Price>
 ";
 
+			var supplier = TestSupplier.Create();
 			using (new SessionScope()) {
-				var supplier = TestSupplier.Create();
 				price = supplier.Prices[0];
 				priceItem = price.Costs[0].PriceItem;
 				var format = priceItem.Format;

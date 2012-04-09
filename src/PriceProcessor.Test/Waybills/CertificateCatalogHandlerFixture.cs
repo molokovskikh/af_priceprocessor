@@ -12,6 +12,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
+using Test.Support.log4net;
 
 namespace PriceProcessor.Test.Waybills
 {
