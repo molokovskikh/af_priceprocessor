@@ -337,20 +337,20 @@ select @LastSynonymFirmCrCode;");
 				while (reader.Read())
 				{
 					_existsCores.Add(new ExistsCore {
-						Id = reader.GetUInt64(0),
-						ProductId = reader.GetUInt32(1),
-						CodeFirmCr = GetUintOrDbNUll(reader, 2),
-						SynonymCode = GetUintOrDbNUll(reader, 3),
-						SynonymFirmCrCode = GetUintOrDbNUll(reader, 4),
+						Id = reader.GetUInt64("Id"),
+						ProductId = reader.GetUInt32("ProductId"),
+						CodeFirmCr = GetUintOrDbNUll(reader, reader.GetOrdinal("CodeFirmCr")),
+						SynonymCode = GetUintOrDbNUll(reader, reader.GetOrdinal("SynonymCode")),
+						SynonymFirmCrCode = GetUintOrDbNUll(reader, reader.GetOrdinal("SynonymFirmCrCode")),
 
-						Code = reader.GetString(5),
-						CodeCr = reader.GetString(6),
-						Unit = reader.GetString(7),
-						Volume = reader.GetString(8),
-						Quantity = reader.GetString(9),
-						Note = reader.GetString(10),
-						Period = reader.GetString(11),
-						Doc = reader.GetString(12),
+						Code = reader.GetString("Code"),
+						CodeCr = reader.GetString("CodeCr"),
+						Unit = reader.GetString("Unit"),
+						Volume = reader.GetString("Volume"),
+						Quantity = reader.GetString("Quantity"),
+						Note = reader.GetString("Note"),
+						Period = reader.GetString("Period"),
+						Doc = reader.GetString("Doc"),
 
 						RegistryCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("RegistryCost")),
 
@@ -412,10 +412,10 @@ order by c.Id", _priceInfo.PriceCode);
 						if (core == null)
 							throw new Exception(String.Format("Не удалось найти позицию в Core, Id = {0}", coreId));
 					}
-					costs.Add(new Cost(description, reader.GetDecimal(2)) {
-						RequestRatio = GetUintOrDbNUll(reader, 3),
-						MinOrderSum = GetDecimalOrDbNull(reader, 4),
-						MinOrderCount = GetUintOrDbNUll(reader, 5),
+					costs.Add(new Cost(description, reader.GetDecimal("Cost")) {
+						RequestRatio = GetUintOrDbNUll(reader, reader.GetOrdinal("RequestRatio")),
+						MinOrderSum = GetDecimalOrDbNull(reader, reader.GetOrdinal("MinOrderSum")),
+						MinOrderCount = GetUintOrDbNUll(reader, reader.GetOrdinal("MinOrderCount")),
 					});
 				}
 				core.Costs = costs.ToArray();

@@ -1,21 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using Common.MySql;
+using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
-using Inforoom.PriceProcessor.Waybills.Parser;
-using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
-using MySql.Data.MySqlClient;
-using NUnit.Framework;
-using PriceProcessor.Test.Waybills.Parser.Multifile;
 using Test.Support;
 using Test.Support.Suppliers;
 
@@ -89,8 +80,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 				var file = filePath;
 				if (!File.Exists(file))
 					file = Path.Combine(@"..\..\Data\Waybills\multifile", filePath);
+
 				var log = new TestDocumentLog(supplier, client, Path.GetFileName(filePath));
-				log.SaveAndFlush();
+				using (new SessionScope()) {
+					log.SaveAndFlush();
+				}
 				resultList.Add(log.Id);
 				var clientDir = Path.Combine(Settings.Default.DocumentPath, log.AddressId.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");

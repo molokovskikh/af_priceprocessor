@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using Castle.ActiveRecord;
 using NUnit.Framework;
 using System.IO;
 using System.ServiceModel;
 using System.Net;
 using Inforoom.PriceProcessor;
-using PriceProcessor.Test.Handlers;
 using PriceProcessor.Test.TestHelpers;
 using RemotePriceProcessor;
 using Test.Support;
 using System.Collections.Generic;
 using Test.Support.Catalog;
 using Test.Support.Suppliers;
-using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test.Services
 {
@@ -24,7 +21,10 @@ namespace PriceProcessor.Test.Services
 		private ServiceHost _serviceHost;
 		private IRemotePriceProcessor priceProcessor;
 
-		private static readonly string DataDirectory = @"..\..\Data";
+		private string DataDirectory = @"..\..\Data";
+		private TestSupplier supplier;
+		private TestPriceSource source;
+		private TestPriceItem priceItem;
 
 		[SetUp]
 		public void SetUp()
@@ -38,6 +38,14 @@ namespace PriceProcessor.Test.Services
 			_serviceHost.Open();
 			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, url);
 			priceProcessor = factory.CreateChannel();
+
+			supplier = TestSupplier.Create();
+
+			var price = supplier.Prices[0];
+			price.SetFormat(PriceFormatType.NativeDbf);
+			priceItem = price.Costs[0].PriceItem;
+			source = priceItem.Source;
+			priceItem.Format.Save();
 		}
 
 		[TearDown]
@@ -80,29 +88,20 @@ namespace PriceProcessor.Test.Services
 		[Test, Description("Тест для перепосылки прайса, присланного по email")]
 		public void Resend_eml_price()
 		{
-			var archiveFileName = @"price.zip";
-			var externalFileName = @"price.txt";
-			var password = "123";
-			var emailFrom = "KvasovTest@analit.net";
-			var emailTo = "KvasovTest@analit.net";
-			PriceDownloadLog downloadLog;
+			source.SourceType = PriceSourceType.Email;
+			source.EmailFrom = "KvasovTest@analit.net";
+			source.EmailTo = "KvasovTest@analit.net";
+			source.PricePath = "price.zip";
+			source.ExtrMask = "price.txt";
+			source.Save();
 
-			TestPriceItem priceItem = null;
+			PriceDownloadLog downloadLog;
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				//priceItem = TestPriceSource.CreateEmailPriceSource(emailFrom, emailTo, archiveFileName,
-				//													   externalFileName, password);
-				scope.VoteCommit();
-			}
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				var priceCost = TestPriceCost.Queryable.FirstOrDefault(c => c.PriceItem.Id == priceItem.Id);
-				priceCost.BaseCost = true;
-				priceCost.Save();
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
-					ArchFileName = archiveFileName,
-					ExtrFileName = externalFileName,
+					ArchFileName = "price.zip",
+					ExtrFileName = "price.txt",
 					Host = Environment.MachineName,
 					LogTime = DateTime.Now,
 					PriceItemId = priceItem.Id,
@@ -114,8 +113,8 @@ namespace PriceProcessor.Test.Services
 
 			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
 			{
-				var attachments = new List<string> { Path.Combine(Path.GetFullPath(@"..\..\Data\"), archiveFileName) };
-				var message = ImapHelper.BuildMessageWithAttachments(emailTo, emailFrom, attachments.ToArray());
+				var attachments = new List<string> { Path.Combine(Path.GetFullPath(@"..\..\Data\"), "price.zip") };
+				var message = ImapHelper.BuildMessageWithAttachments("KvasovTest@analit.net", "KvasovTest@analit.net", attachments.ToArray());
 				var bytes = message.ToByteData();
 				sw.Write(bytes, 0, bytes.Length);
 			}
@@ -130,22 +129,14 @@ namespace PriceProcessor.Test.Services
 			var archiveFileName = @"price_in_dir.zip";
 			var externalFileName = @"price.txt";
 
-			
-			PriceDownloadLog downloadLog;
-			TestPriceItem priceItem = null;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				//priceItem = TestPriceSource.CreateHttpPriceSource(archiveFileName, archiveFileName, externalFileName);
-				//scope.VoteCommit();
-			}
+			source.PricePath  = archiveFileName;
+			source.ExtrMask = externalFileName;
+			source.Save();
 
+			PriceDownloadLog downloadLog;
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				var priceCost = TestPriceCost.Queryable.FirstOrDefault(c => c.PriceItem.Id == priceItem.Id);
-				priceCost.BaseCost = true;
-				priceCost.Save();
-				downloadLog = new PriceDownloadLog
-				{
+				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
 					ArchFileName = archiveFileName,
 					ExtrFileName = externalFileName,
@@ -172,33 +163,28 @@ namespace PriceProcessor.Test.Services
 			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
 			var externalFileName = "сводныйпрайсч.txt";// archFileName;
 			var email = "test@test.test";
-			PriceDownloadLog downloadLog;
-			TestPriceItem priceItem = null;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-//				priceItem = TestPriceSource.CreateEmailPriceSource(email, email, archFileName, externalFileName);
-				scope.VoteCommit();
-			}
+			source.SourceType = PriceSourceType.Email;
+			source.EmailFrom = email;
+			source.EmailTo = email;
+			source.PricePath = archFileName;
+			source.ExtrMask = externalFileName;
+			source.Save();
 
+			PriceDownloadLog downloadLog;
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				var priceCost = TestPriceCost.Queryable.FirstOrDefault(c => c.PriceItem.Id == priceItem.Id);
-				priceCost.BaseCost = true;
-				priceCost.Save();
-				downloadLog = new PriceDownloadLog
-				{
+				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
 					ArchFileName = archFileName,
 					ExtrFileName = externalFileName,
 					Host = Environment.MachineName,
 					LogTime = DateTime.Now,
-//					PriceItemId = priceItem.Id,
+					PriceItemId = priceItem.Id,
 					ResultCode = 2
 				};
 				downloadLog.Save();
 				scope.VoteCommit();
 			}
-
 
 			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + sourceFileName;
 			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
@@ -216,10 +202,9 @@ namespace PriceProcessor.Test.Services
 		{
 			TestPrice rootPrice;
 			TestPrice childPrice;
-			var supplier1 = TestSupplier.Create();
 			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				rootPrice = supplier1.Prices[0];
+				rootPrice = supplier.Prices[0];
 				rootPrice.SetFormat(PriceFormatType.NativeDbf);
 				rootPrice.Save();
 				scope.VoteCommit();
