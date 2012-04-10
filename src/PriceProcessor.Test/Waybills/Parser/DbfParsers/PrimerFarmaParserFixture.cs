@@ -14,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			Assert.IsTrue(PrimerFarmaParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\2505.DBF")));
+			Assert.IsTrue(FarmGroupParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\2505.DBF")));
 			var document = WaybillParser.Parse("2505.DBF");
 
 			var line = document.Lines[0];
