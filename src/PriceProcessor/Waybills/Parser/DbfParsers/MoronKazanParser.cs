@@ -32,6 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("NOMER")
 				&& data.Columns.Contains("DATA")
 				&& data.Columns.Contains("KOD")
+				&& data.Columns.Contains("PRICE_PROI")
 				&& data.Columns.Contains("NM");
 		}
 	}

@@ -17,7 +17,7 @@ namespace PriceProcessor.Test.Waybills
 			var now = DateTime.Now;
 			var doc = WaybillParser.Parse("14356_4.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("14356_4"));
-			Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(now.ToString()));
+			Assert.That(doc.DocumentDate.Value.Date.ToString(), Is.EqualTo(now.Date.ToString()));
 			Assert.That(doc.Lines.Count, Is.EqualTo(1));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("3345"));

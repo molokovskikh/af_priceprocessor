@@ -55,6 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("PRICMNDS") &&
 				   data.Columns.Contains("SROKGODN") &&
 				   data.Columns.Contains("REESTR") &&
+				   data.Columns.Contains("NDOCREG") &&
 				   data.Columns.Contains("NM") &&
 				   data.Columns.Contains("SERTIF") &&
 				   data.Columns.Contains("KLI");
