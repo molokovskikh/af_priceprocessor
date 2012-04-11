@@ -88,10 +88,12 @@ namespace PriceProcessor.Test.Services
 		[Test, Description("Тест для перепосылки прайса, присланного по email")]
 		public void Resend_eml_price()
 		{
+			var file = "price1.zip";
+
 			source.SourceType = PriceSourceType.Email;
 			source.EmailFrom = "KvasovTest@analit.net";
 			source.EmailTo = "KvasovTest@analit.net";
-			source.PricePath = "price.zip";
+			source.PricePath = file;
 			source.ExtrMask = "price.txt";
 			source.Save();
 
@@ -100,7 +102,7 @@ namespace PriceProcessor.Test.Services
 			{
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
-					ArchFileName = "price.zip",
+					ArchFileName = file,
 					ExtrFileName = "price.txt",
 					Host = Environment.MachineName,
 					LogTime = DateTime.Now,
@@ -113,7 +115,7 @@ namespace PriceProcessor.Test.Services
 
 			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
 			{
-				var attachments = new List<string> { Path.Combine(Path.GetFullPath(@"..\..\Data\"), "price.zip") };
+				var attachments = new List<string> { Path.Combine(DataDirectory, file) };
 				var message = ImapHelper.BuildMessageWithAttachments("KvasovTest@analit.net", "KvasovTest@analit.net", attachments.ToArray());
 				var bytes = message.ToByteData();
 				sw.Write(bytes, 0, bytes.Length);
@@ -126,11 +128,12 @@ namespace PriceProcessor.Test.Services
 		[Test, Description("Тест для перепосылки прайса, находящегося в папке и в архиве (когда разархивируем, получим папку, в которой лежит прайс)")]
 		public void Resend_archive_with_files_in_folder()
 		{
-			var archiveFileName = @"price_in_dir.zip";
-			var externalFileName = @"price.txt";
+			var file = "price_in_dir.zip";
+			var priceFile = "price.txt";
 
-			source.PricePath  = archiveFileName;
-			source.ExtrMask = externalFileName;
+			source.SourceType = PriceSourceType.Lan;
+			source.PricePath = file;
+			source.ExtrMask = priceFile;
 			source.Save();
 
 			PriceDownloadLog downloadLog;
@@ -138,8 +141,8 @@ namespace PriceProcessor.Test.Services
 			{
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
-					ArchFileName = archiveFileName,
-					ExtrFileName = externalFileName,
+					ArchFileName = file,
+					ExtrFileName = priceFile,
 					Host = Environment.MachineName,
 					LogTime = DateTime.Now,
 					PriceItemId = priceItem.Id,
@@ -148,9 +151,8 @@ namespace PriceProcessor.Test.Services
 				downloadLog.Save();
 				scope.VoteCommit();
 			}
-			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + archiveFileName;
-			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
-								Path.GetExtension(archiveFileName);
+			var priceSrcPath = Path.Combine(DataDirectory, file);
+			var priceDestPath = Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + Path.GetExtension(file));
 			File.Copy(priceSrcPath, priceDestPath, true);
 			WcfCallResendPrice(downloadLog.Id);
 			Assert.That(PriceItemList.list.FirstOrDefault(i => i.PriceItemId == priceItem.Id), Is.Not.Null, "Прайса нет в очереди на формализацию");
