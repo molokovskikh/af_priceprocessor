@@ -61,6 +61,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			resultValue = Math.Round(resultValue, 6);
 			return resultValue;
 		}
+
+		public bool IsValid()
+		{
+			return Description != null && Value > 0;
+		}
 	}
 
 	public class CostDescription

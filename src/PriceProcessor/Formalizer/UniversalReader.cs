@@ -219,12 +219,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void BeginConsume()
 		{
 			_cost = new Cost();
-			
 		}
 
 		public override object EndConsume()
 		{
-			if (_cost.Description != null)
+			if (_cost.IsValid())
 				((PriceItemState)Prev).Costs.Add(_cost);
 			return null;
 		}
