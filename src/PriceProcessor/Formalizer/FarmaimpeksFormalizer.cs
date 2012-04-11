@@ -108,6 +108,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 					FormalizePrice(reader);
 
 					var customers = reader.Settings().ToList();
+
+					//фармаимпекс не передает флаг доступности клиенту, подразумевается что если есть настройка
+					//то прайс доступен
+					foreach (var customer in customers)
+						customer.Available = true;
+
 					With.Transaction((c, t) => {
 
 						var command = new MySqlCommand(@"

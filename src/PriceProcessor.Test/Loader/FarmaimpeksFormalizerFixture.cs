@@ -13,7 +13,7 @@ using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test.Loader
 {
-	[TestFixture, Ignore("Нет синонимов для формализации надо что то придумать")]
+	[TestFixture]
 	public class FarmaimpeksFormalizerFixture
 	{
 		private List<TestPrice> prices;
@@ -27,22 +27,23 @@ namespace PriceProcessor.Test.Loader
 			{
 				var supplier = TestSupplier.Create();
 				var price = supplier.Prices[0];
-				price.ParentSynonym = 4745;
 				var cost = price.Costs[0];
-				cost.Name = "2";
+				cost.Name = "116";
 				priceItem = cost.PriceItem;
 				priceItem.Format.PriceFormat = PriceFormatType.FarmaimpeksXml;
 				price.SaveAndFlush();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
+				price.CreateAssortmentBoundSynonyms("Аспирин-С №10 таб.шип.", "Bayer AG, Франция");
+				price.CreateAssortmentBoundSynonyms("Абактал 400мг №10 таб.п/о", "Lek, Словения");
+
 				price = new TestPrice(supplier) {
 					CostType = CostType.MultiColumn,
-					ParentSynonym = 4745,
-					PriceName = "11"
+					ParentSynonym = price.Id,
 				};
 				cost = price.Costs[0];
-				cost.Name = "11";
+				cost.Name = "2";
 				price.SaveAndFlush();
 				supplier.Maintain();
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
@@ -53,7 +54,7 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Load_xml_source()
 		{
-			Formalize("FarmaimpeksPrice.xml");
+			Formalize("FarmaimpeksSmallPrice.xml");
 			using(new SessionScope())
 			foreach (var price in prices)
 			{
@@ -71,12 +72,12 @@ namespace PriceProcessor.Test.Loader
 			using(new SessionScope())
 			{
 				var trustedIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == trustedClient);
-				trustedIntersection.SupplierClientId = "4873";
+				trustedIntersection.SupplierClientId = "3273";
 				trustedIntersection.PriceMarkup = -1;
 				trustedIntersection.Save();
 			}
 
-			Formalize("FarmaimpeksPrice.xml");
+			Formalize("FarmaimpeksSmallPrice.xml");
 			using(new SessionScope())
 			{
 				var regularIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == normalClient);
@@ -91,18 +92,12 @@ namespace PriceProcessor.Test.Loader
 		public void Update_price_name_from_source_file()
 		{
 			Formalize("FarmaimpeksSmallPrice.xml");
-			var price = TestPrice.Find(prices[0].Id);
+			var price = TestPrice.Find(prices[1].Id);
 			Assert.That(price.PriceName, Is.EqualTo("Прайс Опт ДП"));
 		}
 
-		private void Formalize(string file)
-		{
-			var formalizer = PricesValidator.Validate(Path.Combine(@"..\..\Data\", file), Path.GetTempFileName(), priceItem.Id);
-			formalizer.Formalize();
-		}
-
 		[Test]
-		public void GetAllNamesTest()
+		public void Get_all_names()
 		{
 			var basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
 			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
@@ -112,7 +107,13 @@ namespace PriceProcessor.Test.Loader
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
 			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
-			Assert.That(names.Count(), Is.EqualTo(9286));
+			Assert.That(names.Count(), Is.EqualTo(9818));
+		}
+
+		private void Formalize(string file)
+		{
+			var formalizer = PricesValidator.Validate(Path.Combine(@"..\..\Data\", file), Path.GetTempFileName(), priceItem.Id);
+			formalizer.Formalize();
 		}
 	}
 }
