@@ -65,13 +65,9 @@ order by writeTime desc;").SetResultTransformer(Transformers.AliasToBean(typeof(
 						var doc = WaybillParser.Parse(file);
 					}
 					catch (Exception e) {
-						Console.WriteLine("message : {3} file: {0}, firmCode : {1}, count: {2}", file, document.FirmCode, docs.Count, e.Message);
 						Assert.That(docs.Count, Is.LessThan(50));
 						Assert.That(e.Message, Is.EqualTo("Не удалось определить тип парсера"));
 					}
-					/*var result = FarmImpeksKalugaParser.CheckFileFormat(file);
-					if (!result)
-						Console.WriteLine("file: {0}, firmCode : {1}, count: {2}", file, document.FirmCode, docs.Count);*/
 				}
 			}
 		}

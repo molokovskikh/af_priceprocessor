@@ -105,6 +105,7 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(cost.Value, Is.EqualTo(10.50));
 			cost = position.Core.Costs[1];
 			Assert.That(cost.Value, Is.EqualTo(10));
+			Assert.That(positions[1].Core.Costs.Length, Is.EqualTo(1));
 		}
 
 		[Test]

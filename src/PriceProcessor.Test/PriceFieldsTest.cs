@@ -18,7 +18,6 @@ namespace PriceProcessor.Test
 		[Test]
 		public void GetEnumDescriptionTest()
 		{
-			Console.WriteLine("Description {0} : {1}", PriceFields.MaxBoundCost, GetDescription(PriceFields.MaxBoundCost));
 			Assert.AreEqual("Цена максимальная", GetDescription(PriceFields.MaxBoundCost), "Полученное значение Description некорректно.");
 		}
 	}

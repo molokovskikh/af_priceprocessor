@@ -74,7 +74,6 @@ namespace PriceProcessor.Test.Handlers
 				Assert.That(log.ResultCode, Is.EqualTo(2));
 
 				var inboundFile = Path.Combine(Settings.Default.InboundPath, String.Format("d{0}_{1}.dbf", reloaded.Id, log.Id));
-				Console.WriteLine(inboundFile);
 				Assert.That(File.Exists(inboundFile), Is.True, "не скопировали файл в inbound");
 			}
 		}

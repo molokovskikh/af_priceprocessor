@@ -65,6 +65,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override object EndConsume()
 		{
 			_position.Core.Costs = Costs.ToArray();
+			Costs.Clear();
 			return _position;
 		}
 

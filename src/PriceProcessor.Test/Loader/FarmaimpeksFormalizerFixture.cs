@@ -109,7 +109,6 @@ namespace PriceProcessor.Test.Loader
 			File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"));
 			File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),
 					  Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
-			Console.WriteLine(priceItem.Id);
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
 			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));

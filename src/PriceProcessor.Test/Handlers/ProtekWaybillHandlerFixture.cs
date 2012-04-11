@@ -42,8 +42,12 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class ProtekWaybillHandlerFixture
 	{
-		private TestOrder order;
+		private TestClient client1;
+		private TestOrder order1;
+
+		private TestClient client2;
 		private TestOrder order2;
+
 		private FakeProtekHandler fake;
 		private Blading blading;
 		private DateTime begin;
@@ -52,14 +56,14 @@ namespace PriceProcessor.Test.Handlers
 		public void SetUp()
 		{			
 			using (new SessionScope()) {
-				var client1 = TestClient.Create();
-				var client2 = TestClient.Create();
+				client1 = TestClient.Create();
+				client2 = TestClient.Create();
 				var price = TestSupplier.CreateTestSupplierWithPrice();
-				order = new TestOrder();
-				order.Client = client1;
-				order.Address = client1.Addresses[0];
-				order.Price = price;
-				order.Save();
+				order1 = new TestOrder();
+				order1.Client = client1;
+				order1.Address = client1.Addresses[0];
+				order1.Price = price;
+				order1.Save();
 
 				order2 = new TestOrder();
 				order2.Client = client2;
@@ -82,7 +86,7 @@ namespace PriceProcessor.Test.Handlers
 
 			blading = new Blading {
 				bladingId = 1,
-				@uint = (int?) order.Id,
+				@uint = (int?) order1.Id,
 				bladingItems = new [] {
 					new BladingItem {
 						itemId = 3345,
@@ -111,7 +115,7 @@ namespace PriceProcessor.Test.Handlers
 		public void Process_protek_waybills()
 		{
 			using (new SessionScope()) {
-				var settings = WaybillSettings.Find(order.Client.Id);
+				var settings = WaybillSettings.Find(order1.Client.Id);
 				//Формат сохранения в dbf теперь не является форматом по умолчанию
 				settings.ProtekWaybillSavingType = ProtekWaybillSavingType.DBF;
 				settings.Save();
@@ -139,7 +143,7 @@ namespace PriceProcessor.Test.Handlers
 		public void ProcessProtekWaybillsSst()
 		{
 			using (new SessionScope()) {
-				var settings = WaybillSettings.Find(order.Client.Id);
+				var settings = WaybillSettings.Find(order1.Client.Id);
 				//По умолчанию форматом сохранения является формат sst
 				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(ProtekWaybillSavingType.SST));
 			}
@@ -164,14 +168,14 @@ namespace PriceProcessor.Test.Handlers
 
 		private List<Document> Documents()
 		{
-			var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order.Client.Id).ToList();
+			var documents = Document.Queryable.Where(d => d.WriteTime >= begin && d.ClientCode == order1.Client.Id).ToList();
 			return documents;
 		}
 
 		[Test]
 		public void Save_document_id()
 		{
-			blading.bladingItems[0].bladingItemSeries = new BladingItemSeries[] {
+			blading.bladingItems[0].bladingItemSeries = new[] {
 				new BladingItemSeries {
 					bladingItemSeriesCertificates = new [] {
 						new BladingItemSeriesCertificate {
@@ -204,7 +208,7 @@ namespace PriceProcessor.Test.Handlers
 						orderNum = "", 
 						orderUdat = null, 
 						orderUdec = null, 
-						orderUint = (int?)order.Id, 
+						orderUint = (int?)order1.Id, 
 						orderUstr = ""
 					},
 				new BladingFolder
@@ -233,7 +237,7 @@ namespace PriceProcessor.Test.Handlers
 				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
 				Assert.That(documents[0].Log, Is.Not.Null);
 				Check_DocumentLine_SetProductId(documents[0]);
-				Assert.That(documents[0].OrderId, Is.EqualTo(order.Id));
+				Assert.That(documents[0].OrderId, Is.EqualTo(order1.Id));
 			}
 		}
 
@@ -248,7 +252,7 @@ namespace PriceProcessor.Test.Handlers
 
 			if (priceCodes.Count < 0)
 			{
-				Assert.True(document.Lines.Where(l => l.ProductEntity == null).Count() == document.Lines.Count);
+				Assert.True(document.Lines.Count(l => l.ProductEntity == null) == document.Lines.Count);
 				return;
 			}
 
@@ -270,14 +274,16 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Test_Parse_and_Convert_to_Dbf()
 		{
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == order.Client.Id).SingleOrDefault();
+			client1.Settings.IsConvertFormat = true;
+			var settings = TestDrugstoreSettings.Queryable.SingleOrDefault(s => s.Id == order1.Client.Id);
+			
 			using (new TransactionScope())
 			{
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
-			}			
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, order.Address != null ? order.Address.Id.ToString() : order.Client.Id.ToString());
+			}
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address != null ? order1.Address.Id.ToString() : order1.Client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);

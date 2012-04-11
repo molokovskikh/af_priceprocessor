@@ -290,7 +290,6 @@ namespace PriceProcessor.Test.Waybills
 				var files = Directory.GetFiles(waybillsPath, "*.dbf");
 				Assert.That(files.Count(), Is.EqualTo(2), files.Implode());
 	
-				Console.WriteLine(waybillsPath);
 				var data = Dbf.Load(resultDoc.GetFileName(), Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
 				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
