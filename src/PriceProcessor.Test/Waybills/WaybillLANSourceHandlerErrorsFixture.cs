@@ -93,7 +93,7 @@ namespace PriceProcessor.Test.Waybills
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(supplierId));
-				Assert.That(logs[0].Comment, Is.Null);
+				Assert.That(logs[0].Comment, Is.EqualTo("Получен с нашего FTP"));
 			}
 		}
 	}
