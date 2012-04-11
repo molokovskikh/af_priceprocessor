@@ -401,16 +401,13 @@ namespace PriceProcessor.Test.Waybills
 			var doc = WaybillParser.Parse("9046752.DBF");
 			using (new TransactionScope())
 			{
-				var testsupplier = (TestSupplier)TestSupplier.Find(2779u);
-				var supplier = Supplier.Find(testsupplier.Id);
-				var settings = TestDrugstoreSettings.Find(10365u);
-				Assert.That(settings.IsConvertFormat, Is.True);
-				Assert.That(settings.AssortimentPriceId, Is.Not.Null);
-				var client = (TestClient)TestClient.Find(settings.Id);
+				settings.IsConvertFormat = true;
+				settings.AssortimentPriceId = price.Id;
+				settings.Save();
 				var order = TestOrder.FindFirst();
 				var address = Address.Find(client.Addresses[0].Id);
-				DocumentReceiveLog log = new DocumentReceiveLog() {
-					Supplier = supplier,
+				var log = new DocumentReceiveLog {
+					Supplier = Supplier.Find(supplier.Id),
 					ClientCode = settings.Id,
 					Address = address,
 					MessageUid = 123,
@@ -448,8 +445,6 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(data.Rows[1]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
 			}
 		}
-		
-		
 
 		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
 		public void check_parse_waybill_if_file_is_not_local()
