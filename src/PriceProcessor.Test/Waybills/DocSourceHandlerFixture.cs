@@ -343,7 +343,7 @@ namespace PriceProcessor.Test.Waybills
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			handler.VIPMailPayerId = _info.Supplier.Payer.Id;
+			TemplateHolder.Values.VIPMailPayerId = _info.Supplier.Payer.Id;
 			handler.TestProcessMime(_info.Mime);
 
 			using (new SessionScope()) {
