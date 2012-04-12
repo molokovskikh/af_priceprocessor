@@ -238,6 +238,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				bool res;
 				if (Boolean.TryParse(value.ToString(), out res))
 					return res;
+				var lowerValue = value.ToString().ToLower();
+				if (lowerValue == "нет")
+					return false;
+				if (lowerValue == "да")
+					return true;
 				return Convert.ToBoolean(Convert.ToInt32(value));
 			}
 			throw new Exception("Преобразование для этого типа не реализовано");
