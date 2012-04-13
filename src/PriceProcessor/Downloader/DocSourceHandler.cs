@@ -4,8 +4,8 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Castle.ActiveRecord.Framework;
 using Castle.Core;
-using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
@@ -14,7 +14,6 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using MySql.Data.MySqlClient;
-using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
 {
@@ -46,6 +45,8 @@ namespace Inforoom.Downloader
 			}
 		}
 
+
+
 		public void ParseRecipients(Mime mime)
 		{
 			ParseRecipientAddresses(mime.MainEntity.To);
@@ -58,7 +59,7 @@ namespace Inforoom.Downloader
 						var users = recipient.GetUsers(Suppliers[0].RegionMask);
 						if (users.Count > 0) {
 							for (int i = users.Count-1; i > -1; i--) {
-								var mails = MailSendLog.Queryable.Where(
+								var mails = ActiveRecordLinqBase<MailSendLog>.Queryable.Where(
 									log => log.Mail.LogTime > DateTime.Now.AddDays(-1) && log.Mail.SHA256Hash == SHA256MailHash && log.User.Id == users[i].Id).ToList();
 								if (mails.Count > 0)
 									users.RemoveAt(i);
@@ -105,6 +106,14 @@ namespace Inforoom.Downloader
 
 		public List<MailRecipient> DiscardedRecipients { get {return Recipients.Where(r => r.Status != RecipientStatus.Verified && r.Status != RecipientStatus.Duplicate).ToList();} }
 
+		public bool IsMailFromVipSupplier
+		{
+			get
+			{
+				return Suppliers.Count > 0 && Suppliers[0].Payer == TemplateHolder.Values.VIPMailPayerId;
+			}
+		}
+
 		public string GetCauseList()
 		{
 			return DiscardedRecipients.Select(r => r.Email + " : " + r.Status.GetDescription()).Implode("\r\n");
@@ -145,13 +154,18 @@ where
 			var result = new List<Supplier>();
 			using (new SessionScope()) {
 				foreach (DataRow dataRow in dtSuppliers.Rows) {
-					result.Add(Supplier.Find(Convert.ToUInt32(dataRow["Id"])));
+					result.Add(ActiveRecordBase<Supplier>.Find(Convert.ToUInt32(dataRow["Id"])));
 				}
 			}
 
 			return result;
 		}
 
+		public bool IsValidExtension(string extension)
+		{
+			return TemplateHolder.Values.ExtensionAllow(extension)
+				|| (IsMailFromVipSupplier && extension.Match(".html"));
+		}
 	}
 
 	public class DocSourceHandler : EMAILSourceHandler
@@ -164,8 +178,6 @@ where
 		private string _imapPassword = Settings.Default.DocIMAPPass;
 
 		private MailContext _context;
-
-		public uint VIPMailPayerId = 921;
 
 		public DocSourceHandler()
 		{
@@ -246,14 +258,15 @@ where
 				foreach (var attachment in m.GetValidAttachements()) {
 
 					var fileName = attachment.GetFilename();
-					if (!String.IsNullOrWhiteSpace(fileName) && !TemplateHolder.Values.ExtensionAllow(Path.GetExtension(fileName)))
+					var extension = Path.GetExtension(fileName);
+					if (!context.IsValidExtension(extension))
 					{
 						nonAllowedExtension = true;
-						errorExtension = Path.GetExtension(fileName);
+						errorExtension = extension;
 						break;
 					}
-
 				}
+
 				if (nonAllowedExtension) {
 					throw new MiniMailOnAllowedExtensionsException(
 						"Письмо содержит вложение недопустимого типа.",
@@ -264,7 +277,7 @@ where
 
 			_context = context;
 		}
-		
+
 		public void SendErrorLetterToSupplier(MiniMailException e, Mime sourceLetter)
 		{
 			try
@@ -274,13 +287,13 @@ where
 				if (e.MailTemplate.IsValid()) {
 					var FromList = GetAddressList(sourceLetter);
 
-					var _from = new AddressList();
-					_from.Parse("farm@analit.net");
+					var from = new AddressList();
+					from.Parse("farm@analit.net");
 
 					var responseMime = new Mime();
-					responseMime.MainEntity.From = _from;
+					responseMime.MainEntity.From = from;
 	#if DEBUG
-					var toList = new AddressList { new MailboxAddress(Settings.Default.SMTPUserFail) };				
+					var toList = new AddressList { new MailboxAddress(Settings.Default.SMTPUserFail) };
 					responseMime.MainEntity.To = toList;
 	#else
 					responseMime.MainEntity.To = FromList;
@@ -356,15 +369,7 @@ where
 
 			Cleanup();
 
-			var mail = new Mail {
-				Supplier = _context.Suppliers[0],
-				SupplierEmail = _context.SupplierEmails,
-				Subject = _context.Subject,
-				Body = _context.Body,
-				LogTime = DateTime.Now,
-				SHA256Hash = _context.SHA256MailHash,
-				IsVIPMail = VIPMailPayerId == _context.Suppliers[0].Payer
-			};
+			var mail = new Mail(_context);
 
 			var attachments = m.GetValidAttachements();
 			foreach (var entity in attachments) {

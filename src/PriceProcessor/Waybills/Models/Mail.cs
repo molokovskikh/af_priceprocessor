@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
@@ -13,6 +14,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			Attachments = new List<Attachment>();
 			MailRecipients = new List<MailRecipient>();
+		}
+
+		public Mail(MailContext context)
+			: this()
+		{
+			Supplier = context.Suppliers[0];
+			SupplierEmail = context.SupplierEmails;
+			Subject = context.Subject;
+			Body = context.Body;
+			LogTime = DateTime.Now;
+			SHA256Hash = context.SHA256MailHash;
+			IsVIPMail = context.IsMailFromVipSupplier;
 		}
 
 		[PrimaryKey]

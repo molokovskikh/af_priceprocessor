@@ -44,6 +44,8 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public string ResponseBodyMiniMailOnEmptyLetter { get; set; }
 
+		public uint VIPMailPayerId = 921;
+
 		public static DefaultValues Get()
 		{
 			return FindAll().First();

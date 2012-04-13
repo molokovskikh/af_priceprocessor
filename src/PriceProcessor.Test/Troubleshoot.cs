@@ -3,6 +3,7 @@ using System.IO;
 using System.ServiceModel;
 using Common.Tools;
 using Inforoom.Downloader;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using log4net;
@@ -19,8 +20,10 @@ namespace PriceProcessor.Test
 		[Test, Ignore]
 		public void shoot_it()
 		{
-			//7399851
-			Console.WriteLine(ExtractFileFromAttachment(@"C:\7399851.eml", "СводныйПрайсЧ.rar", "СводныйПрайсЧ.txt"));
+			var file = @"C:\tovar_out.xml";
+			var formalizer = PricesValidator.Validate(file, Path.GetTempFileName(), 2601);
+			formalizer.Formalize();
+			Assert.That(formalizer.formCount, Is.GreaterThan(0));
 		}
 
 		[Test]
