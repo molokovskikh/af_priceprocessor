@@ -18,8 +18,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			ProducerCostWithoutNdsIndex = -1;
 			SupplierCostWithoutNdsIndex = 6;
-			SupplierCostIndex = -1;
-			NdsIndex = -1;
+			SupplierCostIndex = 7;
+			NdsIndex = 8;
+			PeriodIndex = 11;
 			SupplierPriceMarkupIndex = -1;
 			SerialNumberIndex = -1;
 			CertificatesIndex = -1;
@@ -47,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					return false;
 				if (GetDecimal(body[6]) == null)
 					return false;
-				if (GetDateTime(body[10]) == null)
+				if (GetDateTime(body[11]) == null)
 					return false;
 			}
 			return true;
