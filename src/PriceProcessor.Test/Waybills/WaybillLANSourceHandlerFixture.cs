@@ -436,7 +436,9 @@ and  i.SupplierClientId = ?supplierClientId
 				var logs = TestDocumentLog.Queryable.Where(d => d.Client.Id == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				var log = logs.Single();
-				Assert.That(log.LogTime, Is.GreaterThanOrEqualTo(beign));
+				var logTime = log.LogTime;
+				Assert.That(logTime.Date.AddHours(logTime.Hour).AddMinutes(logTime.Minute).AddSeconds(logTime.Second),
+					Is.GreaterThanOrEqualTo(beign.Date.AddHours(beign.Hour).AddMinutes(beign.Minute).AddSeconds(beign.Second)));
 				Assert.That(log.DocumentSize, Is.GreaterThan(0));
 
 				var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
