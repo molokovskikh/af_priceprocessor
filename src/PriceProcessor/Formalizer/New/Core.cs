@@ -150,6 +150,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public decimal OrderCost;
 		public uint MinOrderCount;
 
+		/// <summary>
+		/// Код EAN-13 (штрих-код)
+		/// </summary>
+		public string EAN13;
+		public string CodeOKP;
+		public string Series;
+
 		public Cost[] Costs;
 	}
 }

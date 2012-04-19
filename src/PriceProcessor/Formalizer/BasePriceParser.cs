@@ -69,7 +69,13 @@ namespace Inforoom.Formalizer
 		[Description("Минимальная сумма")]
 		OrderCost,
 		[Description("Минимальное количество")]
-		MinOrderCount
+		MinOrderCount,
+		[Description("Код EAN-13 (штрих-код)")]
+		EAN13,
+		[Description("код ОКП")]
+		CodeOKP,
+		[Description("Серия")]
+		Series
 	}
 
 	public enum CostTypes
@@ -587,6 +593,10 @@ namespace Inforoom.Formalizer
 			var nds = GetFieldValueObject(PriceFields.Nds);
 			if ((nds is int) && (Convert.ToUInt32(nds) >= 0))
 				drCore["Nds"] = Convert.ToUInt32(nds);
+
+			drCore["EAN13"] = GetFieldValue(PriceFields.EAN13);
+			drCore["CodeOKP"] = GetFieldValue(PriceFields.CodeOKP);
+			drCore["Series"] = GetFieldValue(PriceFields.Series);
 
 			object dt = GetFieldValueObject(PriceFields.Period);
 			string st;
@@ -2047,6 +2057,9 @@ where
 				case (int)PriceFields.Note:
 				case (int)PriceFields.Unit:
 				case (int)PriceFields.Volume:
+				case (int)PriceFields.EAN13:
+				case (int)PriceFields.CodeOKP:
+				case (int)PriceFields.Series:
 				case (int)PriceFields.OriginalName:
 					return GetFieldValue(PF);
 
@@ -2083,7 +2096,7 @@ where
 				{
 					NumberFormatInfo nfi = CultureInfo.CurrentCulture.NumberFormat;
 					String res = String.Empty;
-					foreach (Char c in CostValue.ToCharArray())
+					foreach (var c in CostValue)
 					{
 						if (Char.IsDigit(c))
 							res = String.Concat(res, c);

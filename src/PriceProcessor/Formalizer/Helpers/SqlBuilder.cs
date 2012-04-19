@@ -38,16 +38,41 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return value;
 		}
 
+		public void SetValue(object value, Core core)
+		{
+			_coreField.SetValue(core, value);
+		}
+
 		public override string ToString()
 		{
 			return Name;
+		}
+
+		private static FieldMap[] GetCoreFieldMaps()
+		{
+			return typeof (Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
+		}
+
+		private static FieldMap[] _fieldMaps;
+
+		public static FieldMap[] CoreFieldMaps
+		{
+			get
+			{
+				if (_fieldMaps == null)
+					_fieldMaps = GetCoreFieldMaps();
+				return _fieldMaps;
+			}
+		}
+
+		public Type Type
+		{
+			get { return _coreField.FieldType; }
 		}
 	}
 
 	public class SqlBuilder
 	{
-		private static FieldMap[] _fieldMaps;
-
 		public static string StringToMySqlString(string s)
 		{
 			s = s.Replace("\\", "\\\\");
@@ -139,15 +164,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		public static string InsertCoreCommand(PriceFormalizationInfo info, NewCore core)
 		{
-			if (_fieldMaps == null)
-				_fieldMaps = InitFieldMap();
-
 			var command = new StringBuilder();
 			command.Append("insert into farm.Core0(PriceCode,")
-				.Append(_fieldMaps.Select(m => m.Name).Implode())
+				.Append(FieldMap.CoreFieldMaps.Select(m => m.Name).Implode())
 				.Append(") values (")
 				.Append(info.PriceCode + ",")
-				.Append(_fieldMaps.Select(m => ToSql(m.GetValue(core))).Implode())
+				.Append(FieldMap.CoreFieldMaps.Select(m => ToSql(m.GetValue(core))).Implode())
 				.Append(");")
 				.Append("set @LastCoreID = last_insert_id();");
 			return command.ToString();
@@ -155,10 +177,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		public static string UpdateCoreCommand(NewCore core)
 		{
-			if (_fieldMaps == null)
-				_fieldMaps = InitFieldMap();
-
-			var fields = _fieldMaps.Where(m => !m.Equal(core)).Select(m => String.Format("{0} = {1}", m.Name, ToSql(m.GetValue(core)))).Implode();
+			var fields = FieldMap.CoreFieldMaps.Where(m => !m.Equal(core)).Select(m => String.Format("{0} = {1}", m.Name, ToSql(m.GetValue(core)))).Implode();
 			if (fields.Length == 0)
 				return null;
 
@@ -251,11 +270,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				return "null";
 
 			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		private static FieldMap[] InitFieldMap()
-		{
-			return typeof (Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
 		}
 	}
 }

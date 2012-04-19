@@ -250,13 +250,16 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.MinOrderCount),
 				RequestRatio = GetFieldValueObject(PriceFields.RequestRatio) is DBNull ? 0 : Convert.ToUInt32(GetFieldValueObject(PriceFields.RequestRatio)),
 				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
+
+				Nds = GetFieldValueObject(PriceFields.Nds) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.Nds),
+
+				CodeOKP = GetFieldValue(PriceFields.CodeOKP),
+				EAN13 = GetFieldValue(PriceFields.EAN13),
+				Series = GetFieldValue(PriceFields.Series)
 			};
 
 			if (quantity is int)
 				core.QuantityAsInt = (int) quantity;
-/*
-			if (position.InternalProducerSynonymId.HasValue)
-				drCore["InternalProducerSynonymId"] = position.InternalProducerSynonymId;*/
 
 			var rawPeriodValue = GetFieldValueObject(PriceFields.Period);
 			string periodValue;

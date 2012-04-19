@@ -202,6 +202,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 					core.MinOrderCount = minOrderCount;
 				return;
 			}
+
+			if (tag.Match("CodeOKP")) {
+				core.CodeOKP = value;
+				return;
+			}
+
+			if (tag.Match("EAN13")) {
+				core.EAN13 = value;
+				return;
+			}
+
+			if (tag.Match("Series")) {
+				core.Series = value;
+				return;
+			}
 		}
 	}
 

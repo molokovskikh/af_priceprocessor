@@ -9,6 +9,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
 using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
@@ -334,40 +335,14 @@ select @LastSynonymFirmCrCode;");
 			var command = new MySqlCommand(existsCoreSQL, _connection);
 			using(var reader = command.ExecuteReader())
 			{
-				while (reader.Read())
-				{
-					_existsCores.Add(new ExistsCore {
-						Id = reader.GetUInt64("Id"),
-						ProductId = reader.GetUInt32("ProductId"),
-						CodeFirmCr = GetUintOrDbNUll(reader, reader.GetOrdinal("CodeFirmCr")),
-						SynonymCode = GetUintOrDbNUll(reader, reader.GetOrdinal("SynonymCode")),
-						SynonymFirmCrCode = GetUintOrDbNUll(reader, reader.GetOrdinal("SynonymFirmCrCode")),
-
-						Code = reader.GetString("Code"),
-						CodeCr = reader.GetString("CodeCr"),
-						Unit = reader.GetString("Unit"),
-						Volume = reader.GetString("Volume"),
-						Quantity = reader.GetString("Quantity"),
-						Note = reader.GetString("Note"),
-						Period = reader.GetString("Period"),
-						Doc = reader.GetString("Doc"),
-
-						RegistryCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("RegistryCost")),
-
-						Junk = reader.GetBoolean("Junk"),
-						Await = reader.GetBoolean("Await"),
-						VitallyImportant = reader.GetBoolean("VitallyImportant"),
-
-						MinBoundCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("MinBoundCost")),
-						MaxBoundCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("MaxBoundCost")),
-
-						RequestRatio = GetUintOrDbNUll(reader, reader.GetOrdinal("RequestRatio")),
-						OrderCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("OrderCost")),
-						MinOrderCount = GetUintOrDbNUll(reader, reader.GetOrdinal("MinOrderCount")),
-
-						ProducerCost = GetDecimalOrDbNull(reader, reader.GetOrdinal("ProducerCost")),
-						Nds = GetUintOrDbNUll(reader, reader.GetOrdinal("Nds"))
-					});
+				while (reader.Read()) {
+					var existsCore = new ExistsCore {
+						Id = reader.GetUInt64("Id")
+					};
+					foreach (var map in FieldMap.CoreFieldMaps) {
+						map.SetValue(GetReaderValue(reader, reader.GetOrdinal(map.Name), map.Type), existsCore);
+					}
+					_existsCores.Add(existsCore);
 				}
 			}
 		}
@@ -421,6 +396,20 @@ order by c.Id", _priceInfo.PriceCode);
 				core.Costs = costs.ToArray();
 			}
 			_logger.Debug("Загрузили цены");
+		}
+
+		public object GetReaderValue(MySqlDataReader reader, int index, Type type)
+		{
+			if (type == typeof(uint))
+				return GetUintOrDbNUll(reader, index);
+			if (type == typeof(decimal))
+				return GetDecimalOrDbNull(reader, index);
+			if (type == typeof(string))
+				return reader.GetString(index);
+			if (type == typeof(bool))
+				return reader.GetBoolean(index);
+
+			throw new Exception(String.Format("Не знаю как считать тип {0}", type));
 		}
 
 		public uint GetUintOrDbNUll(MySqlDataReader reader, int index)

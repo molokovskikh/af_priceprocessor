@@ -31,6 +31,9 @@ namespace PriceProcessor.Test.Loader
 		<VitallyImportant>0</VitallyImportant>
 		<NDS>10</NDS>
 		<RequestRatio>20</RequestRatio>
+		<CodeOKP>test</CodeOKP>
+		<Series>123</Series>
+		<EAN13>456</EAN13>
 		<Cost>
 			<Id>PRICE6</Id>
 			<Value>10.0</Value>

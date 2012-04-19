@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -33,7 +34,16 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IList<string> GetAllNames()
 		{
-			throw new System.NotImplementedException();
+			using(var stream = File.OpenRead(_fileName)) {
+				var reader = new UniversalReader(stream);
+
+				//нужно считать настройки, если этого не сделать то данные прайса могут быть не прочитаны
+				var settings = reader.Settings().ToList();
+				return reader.Read()
+					.Select(p => p.PositionName)
+					.Where(n => !String.IsNullOrEmpty(n))
+					.ToList();
+			}
 		}
 	}
 }

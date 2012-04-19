@@ -89,21 +89,21 @@ group by pi.Id",
 		public static string GetFile(string[] files, FormatType format)
 		{
 			if(files.Length == 0) return null;
-			string filename = String.Empty;
-			switch (format) {					
-					case FormatType.NativeDbf :
-						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf").FirstOrDefault();
-						break;					
-					case FormatType.NativeXls :
-						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls").FirstOrDefault();
-						break;
-					case FormatType.NativeDelimiter1251 :
-						filename = files.Where(f =>  !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt").FirstOrDefault();
-						break;
-					default:
-						filename = files[0];
-						break;
-				}
+			var filename = String.Empty;
+			switch (format) {
+				case FormatType.NativeDbf :
+					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf");
+					break;
+				case FormatType.NativeXls :
+					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls");
+					break;
+				case FormatType.NativeDelimiter1251 :
+					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt");
+					break;
+				default:
+					filename = files[0];
+					break;
+			}
 			if(String.IsNullOrEmpty(filename)) filename = files[0];
 			return filename;
 		}
@@ -115,12 +115,12 @@ group by pi.Id",
 			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
 			var files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.BasePath),
 											String.Format(@"{0}.*", priceItemId));
-			if(files.Count() == 0)
+			if(!files.Any())
 				files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.InboundPath),
 											String.Format(@"{0}.*", priceItemId));
 
 			string filename = String.Empty;
-			if (files.Count() > 0) 
+			if (files.Any()) 
 				filename = GetFile(files, fmt);
 			else return null;
 			if (String.IsNullOrEmpty(filename)) return null;
@@ -166,7 +166,7 @@ group by pi.Id",
 			if (!isSeasoned)
 				return false;
 
-			if (processList.Count() == 0)
+			if (!processList.Any())
 				return true;
 
 			//не запущен ли он уже в работу?
