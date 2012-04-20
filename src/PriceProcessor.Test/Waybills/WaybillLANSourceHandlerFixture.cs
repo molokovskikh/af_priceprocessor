@@ -237,12 +237,17 @@ and a.Id = ?AddressId
 			}
 		}
 
+		/// <summary>
+		/// Если раскоментировать строки, будет попытка разобрать файл с заведомо неправильным кодом клиента
+		/// </summary>
 		[Test]
 		public void Parse_waybills()
 		{
 			var filePath = @"..\..\Data\Waybills\890579.dbf";
+			//var filePath = @"..\..\Data\Waybills\208278_274202_264947_1.txt";
 
 			File.Copy(filePath, Path.Combine(waybillDir, String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
+			//File.Copy(filePath, Path.Combine(waybillDir, String.Format("{0}", Path.GetFileName(filePath))));
 			PrepareLanSource();
 			MaitainAddressIntersection(client.Addresses[0].Id);
 
