@@ -3,9 +3,11 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
+using Test.Support.log4net;
 
 namespace PriceProcessor.Test.Loader
 {
@@ -31,9 +33,6 @@ namespace PriceProcessor.Test.Loader
 		<VitallyImportant>0</VitallyImportant>
 		<NDS>10</NDS>
 		<RequestRatio>20</RequestRatio>
-		<CodeOKP>test</CodeOKP>
-		<Series>123</Series>
-		<EAN13>456</EAN13>
 		<Cost>
 			<Id>PRICE6</Id>
 			<Value>10.0</Value>
@@ -157,6 +156,23 @@ namespace PriceProcessor.Test.Loader
 				Assert.That(price.Costs[1].Name, Is.EqualTo("PRICE6"));
 				Assert.That(price.Costs[2].Name, Is.EqualTo("PRICE1"));
 			}
+		}
+
+		[Test]
+		public void Check_core_loading()
+		{
+			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
+
+			Formalize();
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+
+				Assert.That(price.Core.Count, Is.GreaterThan(0));
+				var core = price.Core[0];
+				core.CodeOKP = null;
+				core.Save();
+			}
+			Formalize();
 		}
 
 		[Test]
