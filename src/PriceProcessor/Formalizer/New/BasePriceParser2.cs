@@ -405,7 +405,7 @@ order by c.Id", _priceInfo.PriceCode);
 			if (type == typeof(decimal))
 				return GetDecimalOrDbNull(reader, index);
 			if (type == typeof(string))
-				return reader.GetString(index);
+				return reader.IsDBNull(index) ? "" : reader.GetString(index);
 			if (type == typeof(bool))
 				return reader.GetBoolean(index);
 

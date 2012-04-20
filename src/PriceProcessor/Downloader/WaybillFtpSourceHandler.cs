@@ -289,10 +289,9 @@ GROUP BY SupplierId
 				var restoredFilesMessage = new StringBuilder();
 				foreach (var source in FailedSources)
 				{
-					var exists = downloader.FailedFiles.Where(file =>
-						source.ToString().Contains(
-							String.Format("{0}_{1}", waybillSource.SupplierId, file.FileName)
-						)).Count() > 0;
+					var exists = downloader.FailedFiles.Any(file => source
+						.ToString()
+						.Contains(String.Format("{0}_{1}", waybillSource.SupplierId, file.FileName)));
 
 					// Если файла нет в FailedFiles, но он еще есть в FailedSources, это значит что была ошибка, но теперь все хорошо
 					// поэтому удаляем этот файл из FailedSources и пишем сообщение что он загружен
