@@ -164,15 +164,49 @@ namespace PriceProcessor.Test.Loader
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 
 			Formalize();
+
+			int firstCoreCount;
 			using (new SessionScope()) {
 				price = TestPrice.Find(price.Id);
 
 				Assert.That(price.Core.Count, Is.GreaterThan(0));
+				firstCoreCount = price.Core.Count;
 				var core = price.Core[0];
 				core.CodeOKP = null;
 				core.Save();
 			}
+
 			Formalize();
+
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+
+				Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
+			}
+		}
+
+		[Test(Description = "UniversalFormalizer всегда обновляет позиции в Core")]
+		public void DoubleFormalize()
+		{
+			//если строка "_priceInfo.IsUpdating = true;" в UniversalFormalizer будет удалена, 
+			//а BasePriceParser2 не будет починен, то этот тест должен поломаться.
+			Formalize();
+
+			int firstCoreCount;
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+
+				Assert.That(price.Core.Count, Is.GreaterThan(0));
+				firstCoreCount = price.Core.Count;
+			}
+
+			Formalize();
+
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+
+				Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
+			}
 		}
 
 		[Test]

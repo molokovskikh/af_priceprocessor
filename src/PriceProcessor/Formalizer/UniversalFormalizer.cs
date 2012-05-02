@@ -20,6 +20,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public void Formalize()
 		{
 			using(var stream = File.OpenRead(_fileName)) {
+
+				//В качестве решения по "Ошибка #9597 Трэдифарм Белгород" все прайс-листы с форматом UniversalFormalizer делаем "обновляемыми", 
+				//т.к. BasePriceParser2 не умеет удалять "старые" позиции при простой формализации
+				_priceInfo.IsUpdating = true;
+
 				var reader = new UniversalReader(stream);
 
 				var settings = reader.Settings().ToList();
