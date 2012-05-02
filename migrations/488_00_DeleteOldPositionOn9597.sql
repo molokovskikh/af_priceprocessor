@@ -1,0 +1,1 @@
+﻿delete from farm.Core0 where PriceCode in (5151, 5809, 5811, 5813);
