@@ -17,6 +17,9 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.IsTrue(BikovCheboksary12649Parser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\Б0001213.DBF")));
 			var document = WaybillParser.Parse("Б0001213.DBF");
 
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Б0001213"));
+			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("24.04.2012"));
+
 			var invoice = document.Invoice;
 			Assert.That(invoice, Is.Not.Null);
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("Б0001213"));

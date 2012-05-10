@@ -26,6 +26,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
+				.DocumentHeader(h => h.DocumentDate, "DATA_SHET")
+				.DocumentHeader(h => h.ProviderDocumentId, "NOM_SHET")
+
 				.DocumentInvoice(i=> i.InvoiceNumber, "NOM_SHET")
 				.DocumentInvoice(i=> i.InvoiceDate, "DATA_SHET")
 				.DocumentInvoice(i=> i.BuyerName, "APTEKA")
