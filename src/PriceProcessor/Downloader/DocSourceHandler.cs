@@ -288,7 +288,7 @@ where
 					var FromList = GetAddressList(sourceLetter);
 
 					var from = new AddressList();
-                    //from.Parse("farm@analit.net");
+
                     from.Parse("tech@analit.net");
 
 					var responseMime = new Mime();
