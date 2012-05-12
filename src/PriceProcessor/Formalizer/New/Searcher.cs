@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var key = GetKey(core);
 			if (!_searchHash.ContainsKey(key))
 				return null;
-			return (ExistsCore)((List<Core>) _searchHash[key]).First();
+			return ((List<Core>) _searchHash[key]).Cast<ExistsCore>().FirstOrDefault(c => c.NewCore == null);
 		}
 
 		private string GetKey(Core core)
