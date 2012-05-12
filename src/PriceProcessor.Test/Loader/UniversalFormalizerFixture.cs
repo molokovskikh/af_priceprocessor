@@ -249,6 +249,68 @@ namespace PriceProcessor.Test.Loader
 			}
 		}
 
+		[Test]
+		public void Formalize_duplicate_postions()
+		{
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE1</Id>
+			<Value>100</Value>
+		</Cost>
+	</Item>
+</Price>";
+			Formalize();
+
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE2</Id>
+			<Value>100.50</Value>
+		</Cost>
+	</Item>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>5</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE2</Id>
+			<Value>100.30</Value>
+		</Cost>
+	</Item>
+</Price>";
+			Formalize();
+
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+				Assert.That(price.Core.Count, Is.EqualTo(2));
+			}
+		}
+
 		private void Formalize()
 		{
 			file = Path.GetTempFileName();
