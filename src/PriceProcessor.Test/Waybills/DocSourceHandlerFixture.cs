@@ -21,6 +21,7 @@ using log4net;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Filter;
+using System.Net.Mail;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -537,6 +538,44 @@ namespace PriceProcessor.Test.Waybills
 
 				Assert.That(mailLog.Id, Is.EqualTo(firstLog.Id));
 			}
+		}
+
+		[Test(Description = "обрабатываем два одинаковых письма, обработчик должен запротоколировать о дубликате")]
+		public void PrepareDublicateMessage()
+		{
+			//Создаем обработчик и пытаемся обработать два одинаковых письма 
+			//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
+			string subject = "Тест на дубликаты";
+			string body = "Дублирующее сообщение";
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			//создаем обработчик
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.CreateDirectoryPath();
+			//подготовили сообщение
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				subject,
+				body,
+				null);
+			//обрабатываем сообщение первый раз
+			handler.ProcessMime(this._info.Mime);
+			//подготовили сообщение
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				subject,
+				body,
+				null);
+			//обрабатываем сообщение второй раз
+			handler.ProcessMime(this._info.Mime);
+			//смотрим, пришло ли письмо о дубликате на почту 
+			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
+			                                               ImapHelper.INBOXFolder);
+			//количество присланных писем о дубликате должно быть равным 0
+			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase));
+			Assert.That(responseCount, Is.EqualTo(0), "В ящике найдены письма о дубликате в количестве: {0}", responseCount);
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
