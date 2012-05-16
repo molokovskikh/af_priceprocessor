@@ -138,6 +138,19 @@ namespace PriceProcessor.Test.Waybills
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
 		}
+		//проверяем вхождение фразы в тексте к-л файла
+		private int CheckEntryCount(string entry, string filePath)
+		{
+			int result = 0;
+			var regex = new System.Text.RegularExpressions.Regex(entry);
+			using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
+				{
+					string text = streamReader.ReadToEnd();
+					result = regex.Matches(text).Count;
+				}
+			return result;
+		}
 
 		[Test(Description = "Простой разбор письма")]
 		public void SimpleParseMails()
@@ -540,27 +553,18 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		//Создаем обработчик и пытаемся обработать два одинаковых письма 
+		//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
 		[Test(Description = "обрабатываем два одинаковых письма, обработчик должен запротоколировать о дубликате")]
 		public void PrepareDublicateMessage()
 		{
-			//Создаем обработчик и пытаемся обработать два одинаковых письма 
-			//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
 			string subject = "Тест на дубликаты";
 			string body = "Дублирующее сообщение";
 			//получаем название файла
 			string logFileName = String.Format("PriceProcessor_{0:yyyy-MM-dd}.log", DateTime.Now);
 
-			var regex = new System.Text.RegularExpressions.Regex(subject);
 			//Инициализируем log4net
 			XmlConfigurator.Configure();
-
-			int countBefore = 0;
-			using (var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
-				{
-					string text = streamReader.ReadToEnd();
-					countBefore = regex.Matches(text).Count;
-				}
 
 			var client = TestClient.Create();
 			var user = client.Users[0];
@@ -583,7 +587,10 @@ namespace PriceProcessor.Test.Waybills
 				subject,
 				body,
 				null);
-			
+
+			//количество вхождений в логе до обработки дубликата
+			int countBefore = CheckEntryCount(subject, logFileName);
+
 			//обрабатываем сообщение второй раз
 			handler.ProcessMime(this._info.Mime);
 			//смотрим, пришло ли письмо о дубликате на почту 
@@ -593,15 +600,8 @@ namespace PriceProcessor.Test.Waybills
 			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase));
 			Assert.That(responseCount, Is.EqualTo(0), "В ящике найдены письма о дубликате в количестве: {0}", responseCount);
 			
-			//смотрим лог
-			int countAfter = 0;
-			using (var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
-				{
-					string text = streamReader.ReadToEnd();
-					countAfter = regex.Matches(text).Count;
-				}
-
+			//смотрим лог после обработки дублирующего сообщения
+			int countAfter = CheckEntryCount(subject, logFileName);
 			Assert.That(countAfter, Is.GreaterThan(countBefore), "В файле лога не найдена запись");
 
 		}
