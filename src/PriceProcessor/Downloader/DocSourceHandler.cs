@@ -338,7 +338,7 @@ where
 					if (e is EmailDoubleMessageException)
 					{
 						//обрабатываем случай сообщений-дубликатов - логирование как Warning
-						_logger.WarnFormat("Произошла отправка дубликата письма: {0}", e);
+						_logger.InfoFormat("Произошла отправка дубликата письма: {0}", e.Message);
 					}
 					else
 						//отправляем письмо в tech для разбора

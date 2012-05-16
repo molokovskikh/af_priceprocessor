@@ -547,6 +547,21 @@ namespace PriceProcessor.Test.Waybills
 			//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
 			string subject = "Тест на дубликаты";
 			string body = "Дублирующее сообщение";
+			//получаем название файла
+			string logFileName = String.Format("PriceProcessor_{0:yyyy-MM-dd}.log", DateTime.Now);
+
+			var regex = new System.Text.RegularExpressions.Regex(subject);
+			//Инициализируем log4net
+			XmlConfigurator.Configure();
+
+			int countBefore = 0;
+			using (var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
+				{
+					string text = streamReader.ReadToEnd();
+					countBefore = regex.Matches(text).Count;
+				}
+
 			var client = TestClient.Create();
 			var user = client.Users[0];
 			//создаем обработчик
@@ -568,6 +583,7 @@ namespace PriceProcessor.Test.Waybills
 				subject,
 				body,
 				null);
+			
 			//обрабатываем сообщение второй раз
 			handler.ProcessMime(this._info.Mime);
 			//смотрим, пришло ли письмо о дубликате на почту 
@@ -576,6 +592,18 @@ namespace PriceProcessor.Test.Waybills
 			//количество присланных писем о дубликате должно быть равным 0
 			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase));
 			Assert.That(responseCount, Is.EqualTo(0), "В ящике найдены письма о дубликате в количестве: {0}", responseCount);
+			
+			//смотрим лог
+			int countAfter = 0;
+			using (var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
+				{
+					string text = streamReader.ReadToEnd();
+					countAfter = regex.Matches(text).Count;
+				}
+
+			Assert.That(countAfter, Is.GreaterThan(countBefore), "В файле лога не найдена запись");
+
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
