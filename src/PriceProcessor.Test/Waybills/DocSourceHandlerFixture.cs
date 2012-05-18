@@ -143,10 +143,18 @@ namespace PriceProcessor.Test.Waybills
 		{
 			int result = 0;
 			var regex = new System.Text.RegularExpressions.Regex(entry);
+			
 			using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
 				{
+					
+					FileInfo fi = new FileInfo("");
+					
+					//streamReader.Re
 					string text = streamReader.ReadToEnd();
+					//text.Length
+					char[] asdf = new char[]{'a', 'b', 'c'};
+					//asdf.to
 					result = regex.Matches(text).Count;
 				}
 			return result;
@@ -568,9 +576,11 @@ namespace PriceProcessor.Test.Waybills
 
 			var client = TestClient.Create();
 			var user = client.Users[0];
+			
 			//создаем обработчик
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.CreateDirectoryPath();
+			
 			//подготовили сообщение
 			SetUp(
 				new List<TestUser> {user},
@@ -578,32 +588,39 @@ namespace PriceProcessor.Test.Waybills
 				subject,
 				body,
 				null);
+			
 			//обрабатываем сообщение первый раз
 			handler.ProcessMime(this._info.Mime);
-			//подготовили сообщение
-			SetUp(
-				new List<TestUser> {user},
-				null,
-				subject,
-				body,
-				null);
-
-			//количество вхождений в логе до обработки дубликата
-			int countBefore = CheckEntryCount(subject, logFileName);
-
+			//смотрим размер файла лога
+			FileInfo fileInfo = new FileInfo(logFileName);
+			
+			//смотрим длину файла
+			long fileSizeBefore = fileInfo.Length;
 			//обрабатываем сообщение второй раз
 			handler.ProcessMime(this._info.Mime);
 			//смотрим, пришло ли письмо о дубликате на почту 
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
 			                                               ImapHelper.INBOXFolder);
+			
 			//количество присланных писем о дубликате должно быть равным 0
 			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase));
 			Assert.That(responseCount, Is.EqualTo(0), "В ящике найдены письма о дубликате в количестве: {0}", responseCount);
-			
 			//смотрим лог после обработки дублирующего сообщения
-			int countAfter = CheckEntryCount(subject, logFileName);
-			Assert.That(countAfter, Is.GreaterThan(countBefore), "В файле лога не найдена запись");
+			fileInfo = new FileInfo(logFileName);
+			
+			//смотрим длину файла
+			long fileSizeAfter = fileInfo.Length;
+			Assert.That(fileSizeAfter, Is.GreaterThan(fileSizeBefore), "Размер файла не увеличился, запись в лог произведена не была");
+			
+			//читаем добавленные символы
+			var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			var streamReader = new StreamReader(fileStream, Encoding.Default);
 
+			//берем последнюю запись
+			string newText = streamReader.ReadToEnd().Substring((int)(fileSizeBefore>1?fileSizeBefore:0));
+
+			//ищем вхождение subject в добавленном тексте
+			Assert.That(newText.Contains(subject), Is.True, String.Format("Строка '{0}' в логе не найдена", subject));
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
