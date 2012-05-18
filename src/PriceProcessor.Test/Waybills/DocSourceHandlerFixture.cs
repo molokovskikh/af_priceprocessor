@@ -138,27 +138,6 @@ namespace PriceProcessor.Test.Waybills
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
 		}
-		//проверяем вхождение фразы в тексте к-л файла
-		private int CheckEntryCount(string entry, string filePath)
-		{
-			int result = 0;
-			var regex = new System.Text.RegularExpressions.Regex(entry);
-			
-			using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-				using (var streamReader = new StreamReader(fileStream, Encoding.Default))
-				{
-					
-					FileInfo fi = new FileInfo("");
-					
-					//streamReader.Re
-					string text = streamReader.ReadToEnd();
-					//text.Length
-					char[] asdf = new char[]{'a', 'b', 'c'};
-					//asdf.to
-					result = regex.Matches(text).Count;
-				}
-			return result;
-		}
 
 		[Test(Description = "Простой разбор письма")]
 		public void SimpleParseMails()
