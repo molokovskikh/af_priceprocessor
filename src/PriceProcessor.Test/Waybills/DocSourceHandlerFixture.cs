@@ -10,7 +10,6 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
-using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -35,9 +34,13 @@ namespace PriceProcessor.Test.Waybills
 
 	public class DocSourceHandlerForTesting : DocSourceHandler
 	{
-		public DocSourceHandlerForTesting(string mailbox, string password)
+		//Флаг отправки сообщения в тесте на дублирование
+		public bool MessageSended { get; set; }
+		private bool isTestingDoubleMessages;
+		public DocSourceHandlerForTesting(string mailbox, string password, bool testDoubleMessages = false)
 			: base(mailbox, password)
 		{
+			isTestingDoubleMessages = testDoubleMessages;
 		}
 
 		public void TestProcessMime(Mime m)
@@ -45,20 +48,13 @@ namespace PriceProcessor.Test.Waybills
 			CreateDirectoryPath();
 			ProcessMime(m);
 		}
-	}
-	//класс для тестирования обработки дублирующихся сообщений
-	public class DocSourceHandlerForTestingDublicateMessages : DocSourceHandlerForTesting
-	{
-		public bool MessageSended { get; set; }
-
-		public DocSourceHandlerForTestingDublicateMessages(string mailbox, string password):base(mailbox, password)
-		{
-			MessageSended = false;
-		}
-		//заглушка при отправке сообщения при ошибке
+		//перегружаем метод отправки ошибки
 		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
 		{
-			MessageSended = true;
+			if (isTestingDoubleMessages)
+				MessageSended = true;
+			else
+				base.SendUnrecLetter(m, fromList, e);
 		}
 	}
 
@@ -570,8 +566,8 @@ namespace PriceProcessor.Test.Waybills
 				subject,
 				body,
 				null);
-			var filter = new EventFilter<DocSourceHandlerForTestingDublicateMessages>(log4net.Core.Level.All);
-			var handler = new DocSourceHandlerForTestingDublicateMessages(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			var filter = new EventFilter<DocSourceHandlerForTesting>(log4net.Core.Level.All);
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, true);
 			handler.CreateDirectoryPath();
 			//вызываем обработку первый раз
 			handler.ProcessMime(this._info.Mime);
