@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -21,7 +22,6 @@ using log4net;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Filter;
-using System.Net.Mail;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -44,6 +44,21 @@ namespace PriceProcessor.Test.Waybills
 		{
 			CreateDirectoryPath();
 			ProcessMime(m);
+		}
+	}
+	//класс для тестирования обработки дублирующихся сообщений
+	public class DocSourceHandlerForTestingDublicateMessages : DocSourceHandlerForTesting
+	{
+		public bool MessageSended { get; set; }
+
+		public DocSourceHandlerForTestingDublicateMessages(string mailbox, string password):base(mailbox, password)
+		{
+			MessageSended = false;
+		}
+		//заглушка при отправке сообщения при ошибке
+		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
+		{
+			MessageSended = true;
 		}
 	}
 
@@ -547,59 +562,27 @@ namespace PriceProcessor.Test.Waybills
 		{
 			string subject = "Тест на дубликаты";
 			string body = "Дублирующее сообщение";
-			//получаем название файла
-			string logFileName = String.Format("PriceProcessor_{0:yyyy-MM-dd}.log", DateTime.Now);
-
-			//Инициализируем log4net
-			XmlConfigurator.Configure();
-
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
-			//создаем обработчик
-			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			handler.CreateDirectoryPath();
-			
-			//подготовили сообщение
 			SetUp(
 				new List<TestUser> {user},
 				null,
 				subject,
 				body,
 				null);
-			
-			//обрабатываем сообщение первый раз
+			var filter = new EventFilter<DocSourceHandlerForTestingDublicateMessages>(log4net.Core.Level.All);
+			var handler = new DocSourceHandlerForTestingDublicateMessages(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler.CreateDirectoryPath();
+			//вызываем обработку первый раз
 			handler.ProcessMime(this._info.Mime);
-			//смотрим размер файла лога
-			FileInfo fileInfo = new FileInfo(logFileName);
-			
-			//смотрим длину файла
-			long fileSizeBefore = fileInfo.Length;
-			//обрабатываем сообщение второй раз
+			//вызываем обработку второй раз
 			handler.ProcessMime(this._info.Mime);
-			//смотрим, пришло ли письмо о дубликате на почту 
-			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass,
-			                                               ImapHelper.INBOXFolder);
-			
-			//количество присланных писем о дубликате должно быть равным 0
-			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase));
-			Assert.That(responseCount, Is.EqualTo(0), "В ящике найдены письма о дубликате в количестве: {0}", responseCount);
-			//смотрим лог после обработки дублирующего сообщения
-			fileInfo = new FileInfo(logFileName);
-			
-			//смотрим длину файла
-			long fileSizeAfter = fileInfo.Length;
-			Assert.That(fileSizeAfter, Is.GreaterThan(fileSizeBefore), "Размер файла не увеличился, запись в лог произведена не была");
-			
-			//читаем добавленные символы
-			var fileStream = new FileStream(logFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-			var streamReader = new StreamReader(fileStream, Encoding.Default);
-
-			//берем последнюю запись
-			string newText = streamReader.ReadToEnd().Substring((int)(fileSizeBefore>1?fileSizeBefore:0));
-
-			//ищем вхождение subject в добавленном тексте
-			Assert.That(newText.Contains(subject), Is.True, String.Format("Строка '{0}' в логе не найдена", subject));
+			//проверяем, был ли вызван перекрытый метод отправки письма
+			Assert.That(handler.MessageSended, Is.EqualTo(false));
+			//смотрим, пришло ли сообщение в лог
+			Assert.That(filter.Events.Count, Is.EqualTo(1));
+			//смотрим, содержит ли строка сообщения заголовок письма
+			Assert.That(filter.Events[0].GetLoggingEventData().Message.Contains(subject), Is.EqualTo(true));
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
