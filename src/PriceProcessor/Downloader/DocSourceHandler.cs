@@ -327,18 +327,26 @@ where
 
 		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
-			try
-			{
+			try {
 				if (e is MiniMailException) {
 					//отправляем письмо поставщику
 					SendErrorLetterToSupplier((MiniMailException)e, m);
 				}
+<<<<<<< HEAD
 				else 
 					//отправляем письмо в tech для разбора
 					SendUnrecLetter(m, from, e);
+=======
+				else
+					if (e is EmailDoubleMessageException) 
+						//обрабатываем случай сообщений-дубликатов - логирование как Warning
+						_logger.InfoFormat("Произошла отправка дубликата письма: {0}", e.Message);
+					else
+						//отправляем письмо в tech для разбора
+						SendUnrecLetter(m, from, e);
+>>>>>>> task9811
 			}
-			catch (Exception exMatch)
-			{
+			catch (Exception exMatch) {
 				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
