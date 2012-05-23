@@ -372,5 +372,11 @@ namespace Inforoom.Downloader
 		public string Body { get; set; }
 		public string Subject { get; set; }
 	}
+	//Класс исключений для ситуации возникновения "Письмо было отброшено как дубликат."
+	public class EmailDoubleMessageException : EMailSourceHandlerException
+	{
+		public EmailDoubleMessageException(string message) : base(message)
+		{}
+	}
 
 }

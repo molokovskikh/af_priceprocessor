@@ -34,15 +34,27 @@ namespace PriceProcessor.Test.Waybills
 
 	public class DocSourceHandlerForTesting : DocSourceHandler
 	{
-		public DocSourceHandlerForTesting(string mailbox, string password)
+		//Флаг отправки сообщения в тесте на дублирование
+		public bool MessageSended { get; set; }
+		private bool isTestingDoubleMessages;
+		public DocSourceHandlerForTesting(string mailbox, string password, bool testDoubleMessages = false)
 			: base(mailbox, password)
 		{
+			isTestingDoubleMessages = testDoubleMessages;
 		}
 
 		public void TestProcessMime(Mime m)
 		{
 			CreateDirectoryPath();
 			ProcessMime(m);
+		}
+		//перегружаем метод отправки ошибки
+		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
+		{
+			if (isTestingDoubleMessages)
+				MessageSended = true;
+			else
+				base.SendUnrecLetter(m, fromList, e);
 		}
 	}
 
@@ -537,6 +549,36 @@ namespace PriceProcessor.Test.Waybills
 
 				Assert.That(mailLog.Id, Is.EqualTo(firstLog.Id));
 			}
+		}
+
+		//Создаем обработчик и пытаемся обработать два одинаковых письма 
+		//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
+		[Test(Description = "обрабатываем два одинаковых письма, обработчик должен запротоколировать о дубликате")]
+		public void PrepareDublicateMessage()
+		{
+			string subject = "Тест на дубликаты";
+			string body = "Дублирующее сообщение";
+			var client = TestClient.Create();
+			var user = client.Users[0];
+			SetUp(
+				new List<TestUser> {user},
+				null,
+				subject,
+				body,
+				null);
+			var filter = new EventFilter<DocSourceHandlerForTesting>(log4net.Core.Level.All);
+			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, true);
+			handler.CreateDirectoryPath();
+			//вызываем обработку первый раз
+			handler.ProcessMime(this._info.Mime);
+			//вызываем обработку второй раз
+			handler.ProcessMime(this._info.Mime);
+			//проверяем, был ли вызван перекрытый метод отправки письма
+			Assert.That(handler.MessageSended, Is.EqualTo(false));
+			//смотрим, пришло ли сообщение в лог
+			Assert.That(filter.Events.Count, Is.EqualTo(1));
+			//смотрим, содержит ли строка сообщения заголовок письма
+			Assert.That(filter.Events[0].GetLoggingEventData().Message.Contains(subject), Is.EqualTo(true));
 		}
 
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
