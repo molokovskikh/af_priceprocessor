@@ -233,7 +233,7 @@ where
 			if (context.Users.Count == 0)
 			{
 				if (context.Recipients.All(r => r.Status == RecipientStatus.Duplicate))
-					throw new EMailSourceHandlerException("Письмо было отброшено как дубликат.");
+					throw new EmailDoubleMessageException("Письмо было отброшено как дубликат. "+context.SupplierEmails+" "+context.Subject);
 				else 
 					throw new MiniMailOnEmptyRecipientsException(
 							"Не найден пользователь.", 
@@ -332,19 +332,17 @@ where
 					//отправляем письмо поставщику
 					SendErrorLetterToSupplier((MiniMailException)e, m);
 				}
-<<<<<<< HEAD
-				else 
-					//отправляем письмо в tech для разбора
-					SendUnrecLetter(m, from, e);
-=======
 				else
-					if (e is EmailDoubleMessageException) 
+				{
+					if (e is EmailDoubleMessageException)
+					{
 						//обрабатываем случай сообщений-дубликатов - логирование как Warning
-						_logger.InfoFormat("Произошла отправка дубликата письма: {0}", e.Message);
+						_logger.WarnFormat("Произошла отправка дубликата письма: {0}", e);
+					}
 					else
 						//отправляем письмо в tech для разбора
 						SendUnrecLetter(m, from, e);
->>>>>>> task9811
+				}
 			}
 			catch (Exception exMatch) {
 				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
