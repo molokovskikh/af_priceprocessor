@@ -9,7 +9,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 	[TestFixture]
 	class TredifarmCheboksaryParserFixture
 	{
-		[Test, Ignore("Файл накладной содержит повторяющиеся столбцы, тест не работает")]
+		[Test]
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse("Накладная.dbf");
@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Test()
 		{
-			var doc = WaybillParser.Parse("7967575.dbf");
+			var doc = WaybillParser.Parse("Накладная.dbf");
 		}
 	}	
 }
