@@ -42,7 +42,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& table.Columns.Contains("GOOD")
 				&& table.Columns.Contains("SERT")
 				&& table.Columns.Contains("PRICEWONDS")
-				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV") || table.Columns.Contains("JVLS") || table.Columns.Contains("GNVLS"));
+				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV") || table.Columns.Contains("JVLS") || table.Columns.Contains("GNVLS"))
+				&& !table.Columns.Contains("PRICEROZ");
 		}
 	}
 }

@@ -175,6 +175,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASTIFarmacevtika12799ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BikovCheboksary12649ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BiolainAMPFarmpreparatyParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BiolainDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioMaster2394ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDFixture.cs" />
