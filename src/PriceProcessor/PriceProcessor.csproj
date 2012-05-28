@@ -271,7 +271,6 @@
     <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParcer.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BikovCheboksary12649Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\BiolainAMPFarmpreparatyParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioMaster2394Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />

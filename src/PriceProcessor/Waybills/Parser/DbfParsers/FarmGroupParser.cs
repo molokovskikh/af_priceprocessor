@@ -22,6 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCost, "PRICE")
 				.Line(l => l.Quantity, "QUANT")
 				.Line(l => l.Certificates, "SERT")
+				.Line(l => l.CertificatesDate, "DATES")
 				.Line(l => l.SupplierPriceMarkup, "MARGIN")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.RegistryCost, "REESTR")
@@ -42,8 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& table.Columns.Contains("GOOD")
 				&& table.Columns.Contains("SERT")
 				&& table.Columns.Contains("PRICEWONDS")
-				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV") || table.Columns.Contains("JVLS") || table.Columns.Contains("GNVLS"))
-				&& !table.Columns.Contains("PRICEROZ");
+				&& (table.Columns.Contains("PV") || table.Columns.Contains("GV") || table.Columns.Contains("JVLS") || table.Columns.Contains("GNVLS"));
 		}
 	}
 }
