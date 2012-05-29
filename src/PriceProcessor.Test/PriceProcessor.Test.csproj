@@ -231,6 +231,7 @@
     <Compile Include="Waybills\Parser\Txt\FarmPartnerKalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\KazMedFarmParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\Rafel2758TxtParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\SiaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParserFixture.cs" />

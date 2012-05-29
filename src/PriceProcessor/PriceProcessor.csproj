@@ -303,6 +303,7 @@
     <Compile Include="Waybills\Parser\TxtParsers\CSMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\DedenkoTxtParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KazMedFarmParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\Rafel2758TxtParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\SiaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParser.cs" />
