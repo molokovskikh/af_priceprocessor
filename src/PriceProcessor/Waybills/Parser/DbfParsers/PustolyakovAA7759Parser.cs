@@ -55,8 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("ADRESS_TT")
 				&& data.Columns.Contains("Kod_TT")
 				&& data.Columns.Contains("SERYA")
-				&& data.Columns.Contains("SHTRIHKOD")
-				&& data.Columns.Contains("KEM_VIDAN");
+				&& data.Columns.Contains("SHTRIHKOD");
 		}
 
 	}
