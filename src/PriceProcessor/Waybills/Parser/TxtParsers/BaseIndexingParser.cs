@@ -91,6 +91,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int ProducerIndex = -1;
 		protected int CountryIndex = -1;
 		protected int QuantityIndex = -1;
+		protected int ProducerCostIndex = -1;
 		protected int ProducerCostWithoutNdsIndex = -1;
 		protected int SupplierCostIndex = -1;
 		protected int NdsIndex = -1;
@@ -398,6 +399,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))
 				docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
 
+			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex && !String.IsNullOrEmpty(parts[ProducerCostIndex]))
+				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
 			/*if (CalculateSupplierPriceMarkup) 
 				docLine.SetSupplierPriceMarkup();*/
 		}
