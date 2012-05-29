@@ -31,37 +31,41 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					&& c.CatalogProduct.Id == task.DocumentLine.ProductEntity.CatalogProduct.Id)
 				.ToList();
 
-			if (catalogs.Count > 0) {
-				var tempDowloadDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-				if (!Directory.Exists(tempDowloadDir))
-					Directory.CreateDirectory(tempDowloadDir);
-
-				var downloader = new FtpDownloader();
-
-				foreach (var certificateSourceCatalog in catalogs) {
-					var dirName = ExtractFtpDir(certificateSourceCatalog.OriginFilePath);
-					var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
-
-					var downloadFiles = downloader.GetFilesFromSource(
-						Settings.Default.RostaCertificateFtp,
-						21,
-						dirName,
-						Settings.Default.RostaCertificateFtpUserName,
-						Settings.Default.RostaCertificateFtpPassword,
-						fileName,
-						DateTime.MinValue,
-						tempDowloadDir);
-
-					if (downloadFiles.Count > 0)
-						files.Add(new CertificateFile(
-							downloadFiles[0].FileName,
-							certificateSourceCatalog.OriginFilePath,
-							fileName,
-							task.CertificateSource));
-
-				}
-
+			if (catalogs.Count == 0) {
+				task.DocumentLine.CertificateError = "Нет записи в таблице перекодировки";
+				return;
 			}
+
+			var tempDowloadDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+			if (!Directory.Exists(tempDowloadDir))
+				Directory.CreateDirectory(tempDowloadDir);
+
+			var downloader = new FtpDownloader();
+
+			foreach (var certificateSourceCatalog in catalogs) {
+				var dirName = ExtractFtpDir(certificateSourceCatalog.OriginFilePath);
+				var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
+
+				var downloadFiles = downloader.GetFilesFromSource(
+					Settings.Default.RostaCertificateFtp,
+					21,
+					dirName,
+					Settings.Default.RostaCertificateFtpUserName,
+					Settings.Default.RostaCertificateFtpPassword,
+					fileName,
+					DateTime.MinValue,
+					tempDowloadDir);
+
+				if (downloadFiles.Count > 0)
+					files.Add(new CertificateFile(
+						downloadFiles[0].FileName,
+						certificateSourceCatalog.OriginFilePath,
+						fileName,
+						task.CertificateSource));
+			}
+
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
 		}
 
 		private string ExtractFileName(string originFilePath)

@@ -11,7 +11,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
-			return line.ProtekDocIds != null && line.ProtekDocIds.Count > 0;
+			var exists = line.ProtekDocIds != null && line.ProtekDocIds.Count > 0;
+			if (!exists)
+				line.CertificateError = "Поставщик не предоставляет сертификаты для данной позиции";
+			return exists;
 		}
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
@@ -37,7 +40,9 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					}
 				}
 			});
-		}
 
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Поставщик не предоставил ни одного сертификата";
+		}
 	}
 }

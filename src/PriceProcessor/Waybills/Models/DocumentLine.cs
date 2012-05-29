@@ -219,6 +219,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string PassportFilename { get; set; }
 
+		/// <summary>
+		/// ошибка говорящая о том почему не удалось загрузить сертификт
+		/// </summary>
+		[Property]
+		public string CertificateError { get; set; }
+
 		//список идентификаторов документов которые отдает протек
 		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
 		[HasMany(Cascade = ManyRelationCascadeEnum.All)]

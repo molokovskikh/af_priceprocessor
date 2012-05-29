@@ -80,6 +80,8 @@ namespace Inforoom.PriceProcessor.Downloader
 			else
 				_logger.WarnFormat("Ошибка при обработки задачи для сертификата {0} : {1}", task, exception);
 			using (new TransactionScope()) {
+				task.DocumentLine.CertificateError = exception.ToString();
+				ActiveRecordMediator.Save(task.DocumentLine);
 				task.Delete();
 			}
 		}
@@ -88,8 +90,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			CertificateTaskErrorInfo result;
 
-			if (Errors.ContainsKey(task.GetErrorId()))
-			{
+			if (Errors.ContainsKey(task.GetErrorId())) {
 				result = Errors[task.GetErrorId()];
 				result.UpdateError(exception);
 			}

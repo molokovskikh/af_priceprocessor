@@ -17,8 +17,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			var catalogId = task.DocumentLine.ProductEntity.CatalogProduct.Id;
 			var catalogs = GetSourceCatalog(catalogId, task.SerialNumber);
 
-			if (catalogs.Count == 0)
+			if (catalogs.Count == 0) {
+				task.DocumentLine.CertificateError = "Нет записи в таблице перекодировки";
 				return;
+			}
 
 			foreach (var certificateSourceCatalog in catalogs) {
 				var filename = certificateSourceCatalog.OriginFilePath;
@@ -49,6 +51,9 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					}
 				}
 			}
+
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
 		}
 
 		public bool CertificateExists(DocumentLine line)

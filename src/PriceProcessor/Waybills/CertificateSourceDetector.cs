@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					source.CertificateSourceParser = source.GetCertificateSource();
 				}
 				catch (Exception exception) {
-					ILog _logger = LogManager.GetLogger(typeof (CertificateSourceDetector));
+					var _logger = LogManager.GetLogger(typeof (CertificateSourceDetector));
 					_logger.WarnFormat("Ошибка при создании экземпляра для разбора сертификатов {0}: {1}", source.SourceClassName, exception);
 				}
 				return source.CertificateSourceParser != null ? source : null;
@@ -38,9 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills
 									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == source.Id));
 						if (certificate != null)
 							documentLine.Certificate = certificate;
-						else 
-							if (source.CertificateSourceParser.CertificateExists(documentLine))
-								document.AddCertificateTask(documentLine, source);
+						else if (source.CertificateSourceParser.CertificateExists(documentLine))
+							document.AddCertificateTask(documentLine, source);
 					}
 				}
 			}

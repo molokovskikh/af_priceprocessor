@@ -14,16 +14,18 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
-			if (Directory.Exists(certificatesPath)) {
-
-				if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
-					AddFile(certificatesPath, task.DocumentLine.CertificateFilename, files);
-
-			}
-			else 
+			if (!Directory.Exists(certificatesPath)) {
 				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
 					certificatesPath,
 					task);
+				return;
+			}
+
+			if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
+				AddFile(certificatesPath, task.DocumentLine.CertificateFilename, files);
+
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp Инфорум";
 		}
 
 		private void AddFile(string certificatesPath, string certificateFilename, IList<CertificateFile> list)
@@ -35,8 +37,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				File.Copy(originFileName, tempFile, true);
 				var certificateFile = new CertificateFile(tempFile, certificateFilename, originFileName);
 				if (String.IsNullOrWhiteSpace(certificateFile.Extension) 
-					|| (!certificateFile.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) && !certificateFile.Extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase))
-					)
+					|| (!certificateFile.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) && !certificateFile.Extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)))
 					certificateFile.Extension = ".tif";
 				list.Add(certificateFile);
 			}
@@ -44,7 +45,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public bool CertificateExists(DocumentLine line)
 		{
-			return !String.IsNullOrEmpty(line.CertificateFilename);
+			var exists = !String.IsNullOrEmpty(line.CertificateFilename);
+			if (!exists)
+				line.CertificateError = "Поставщик не указал имя файла сертификата в накладной";
+			return exists;
 		}
 	}
 }

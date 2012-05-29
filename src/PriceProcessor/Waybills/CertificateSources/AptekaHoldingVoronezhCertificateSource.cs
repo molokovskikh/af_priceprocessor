@@ -12,31 +12,37 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public bool CertificateExists(DocumentLine documentLine)
 		{
-			return !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
-			       !String.IsNullOrEmpty(documentLine.ProtocolFilemame) ||
-			       !String.IsNullOrEmpty(documentLine.PassportFilename);
+			var exists = !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
+				!String.IsNullOrEmpty(documentLine.ProtocolFilemame) ||
+				!String.IsNullOrEmpty(documentLine.PassportFilename);
+			if (!exists)
+				documentLine.CertificateError = "Поставщик не указал имя файла сертификата в накладной";
+			return exists;
 		}
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
-			if (Directory.Exists(certificatesPath)) {
-
-				if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
-					AddFiles(certificatesPath, task.DocumentLine.CertificateFilename, files);
-
-				if (!String.IsNullOrEmpty(task.DocumentLine.ProtocolFilemame))
-					AddFiles(certificatesPath, task.DocumentLine.ProtocolFilemame, files);
-
-				if (!String.IsNullOrEmpty(task.DocumentLine.PassportFilename))
-					AddFiles(certificatesPath, task.DocumentLine.PassportFilename, files);
-
-			}
-			else 
+			if (!Directory.Exists(certificatesPath))
+			{
 				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
 					certificatesPath,
 					task);
+				return;
+			}
+
+			if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
+				AddFiles(certificatesPath, task.DocumentLine.CertificateFilename, files);
+
+			if (!String.IsNullOrEmpty(task.DocumentLine.ProtocolFilemame))
+				AddFiles(certificatesPath, task.DocumentLine.ProtocolFilemame, files);
+
+			if (!String.IsNullOrEmpty(task.DocumentLine.PassportFilename))
+				AddFiles(certificatesPath, task.DocumentLine.PassportFilename, files);
+
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
 		}
 
 		private void AddFiles(string certificatesPath, string certificateFilenameMask, IList<CertificateFile> list)
