@@ -187,6 +187,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\MedtehKomplektParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PrimerFarmaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PromServiceParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PustolyakovAA7759ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmCheboksaryFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParserFixture.cs" />
