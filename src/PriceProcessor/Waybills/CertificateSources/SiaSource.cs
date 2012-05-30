@@ -15,7 +15,14 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 	{
 		public bool CertificateExists(DocumentLine line)
 		{
-			return !String.IsNullOrEmpty(line.Code) && !String.IsNullOrEmpty(line.SerialNumber);
+			var exists = !String.IsNullOrEmpty(line.Code) && !String.IsNullOrEmpty(line.SerialNumber);
+			if (!exists) {
+				if (String.IsNullOrEmpty(line.Code))
+					line.CertificateError = "Поставщик не указал код";
+				else if (String.IsNullOrEmpty(line.SerialNumber))
+					line.CertificateError = "Поставщик не указал серию";
+			}
+			return exists;
 		}
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
@@ -27,17 +34,18 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			});
 			var text = Encoding.GetEncoding(1251).GetString(data);
 			
-			var _logger = LogManager.GetLogger(this.GetType());
-			_logger.DebugFormat("Текст для разбора {0} для обработки задачи {1}", text, task);
+			Log.DebugFormat("Текст для разбора {0} для обработки задачи {1}", text, task);
 
-			foreach (var file in ParseFiles(text))
-			{
+			foreach (var file in ParseFiles(text)) {
 				var localFile = Path.GetTempFileName();
 				var uri = "http://sds.siachel.ru/DOCS/" + file.Replace("\\", "/");
-				_logger.DebugFormat("Будет производиться закачка файла {0} в локальный файл {1}", file, localFile);
+				Log.DebugFormat("Будет производиться закачка файла {0} в локальный файл {1}", file, localFile);
 				client.DownloadFile(uri, localFile);
 				files.Add(new CertificateFile(localFile, file, file));
 			}
+
+			if (files.Count == 0)
+				task.DocumentLine.CertificateError = "Поставщик не предоставил ни одного сертификата";
 		}
 
 		public static IEnumerable<string> ParseFiles(string data)

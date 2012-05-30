@@ -12,12 +12,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("CertificateSources", Schema = "documents")]
 	public class CertificateSource : ActiveRecordLinqBase<CertificateSource>
 	{
+		public static Assembly Assembly = Assembly.GetExecutingAssembly();
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
 		[BelongsTo("FtpSupplierId")]
 		public virtual Supplier FtpSupplier { get; set; }
-		
+
 		[Property]
 		public string SourceClassName { get; set; }
 
@@ -35,14 +37,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			ColumnRef = "SupplierId")]
 		public virtual IList<Supplier> Suppliers { get; set; }
 
-
 		public ICertificateSource CertificateSourceParser;
 
 		public ICertificateSource GetCertificateSource()
 		{
 			var sourceClassName = SourceClassName;
 			Type result = null;
-			var types = Assembly.GetExecutingAssembly()
+			var types = Assembly
 				.GetModules()[0]
 				.FindTypes(Module.FilterTypeNameIgnoreCase, sourceClassName);
 			if (types.Length > 1)
