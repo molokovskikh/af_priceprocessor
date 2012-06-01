@@ -40,7 +40,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private ILog _log = LogManager.GetLogger(typeof (FarmaimpeksFormalizer));
 
-		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, DataTable data)
+		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
 			: base(filename, connection, data)
 		{}
 
@@ -69,7 +69,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 						continue;
 					}
 
-					var info = new PriceFormalizationInfo(priceInfo);
+					var info = new PriceFormalizationInfo(priceInfo, cost.Price);
 
 					var parser = new BasePriceParser2(reader, info);
 					parser.Downloaded = Downloaded;

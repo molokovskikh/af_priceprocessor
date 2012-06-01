@@ -178,39 +178,34 @@ namespace Inforoom.Formalizer
 					re.ForbCount);
 			}
 
-			LogToDb(command =>
-			        	{
-			        		if (-1 == e.priceCode)
-			        		{
-			        			command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
-			        			command.Parameters.Clear();
-			        		}
-			        		else
-			        		{
-			        			command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs)";
-			        			command.Parameters.Clear();
-			        			if (e is RollbackFormalizeException)
-			        			{
-			        				command.Parameters.AddWithValue("?Form", ((RollbackFormalizeException)e).FormCount);
-			        				command.Parameters.AddWithValue("?Unform", ((RollbackFormalizeException)e).UnformCount);
-			        				command.Parameters.AddWithValue("?Zero", ((RollbackFormalizeException)e).ZeroCount);
-			        				command.Parameters.AddWithValue("?Forb", ((RollbackFormalizeException)e).ForbCount);
-			        			}
-			        			else
-			        			{
-			        				command.Parameters.AddWithValue("?Form", DBNull.Value);
-			        				command.Parameters.AddWithValue("?Unform", DBNull.Value);
-			        				command.Parameters.AddWithValue("?Zero", DBNull.Value);
-			        				command.Parameters.AddWithValue("?Forb", DBNull.Value);
-			        			}
-			        		}
-			        		command.Parameters.AddWithValue("?Host", Environment.MachineName);
-			        		command.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
-			        		command.Parameters.AddWithValue("?Addition", addition);
-			        		command.Parameters.AddWithValue("?ResultId", FormResults.Error);
-			        		command.Parameters.AddWithValue("?TotalSecs", FormSecs);
-			        		command.ExecuteNonQuery();
-			        	});
+			LogToDb(command => {
+				if (-1 == e.priceCode) {
+					command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
+					command.Parameters.Clear();
+				}
+				else {
+					command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition,Form, Unform, Zero, Forb, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs)";
+					command.Parameters.Clear();
+					if (e is RollbackFormalizeException) {
+						command.Parameters.AddWithValue("?Form", ((RollbackFormalizeException)e).FormCount);
+						command.Parameters.AddWithValue("?Unform", ((RollbackFormalizeException)e).UnformCount);
+						command.Parameters.AddWithValue("?Zero", ((RollbackFormalizeException)e).ZeroCount);
+						command.Parameters.AddWithValue("?Forb", ((RollbackFormalizeException)e).ForbCount);
+					}
+					else {
+						command.Parameters.AddWithValue("?Form", DBNull.Value);
+						command.Parameters.AddWithValue("?Unform", DBNull.Value);
+						command.Parameters.AddWithValue("?Zero", DBNull.Value);
+						command.Parameters.AddWithValue("?Forb", DBNull.Value);
+					}
+				}
+				command.Parameters.AddWithValue("?Host", Environment.MachineName);
+				command.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
+				command.Parameters.AddWithValue("?Addition", addition);
+				command.Parameters.AddWithValue("?ResultId", FormResults.Error);
+				command.Parameters.AddWithValue("?TotalSecs", FormSecs);
+				command.ExecuteNonQuery();
+			});
 
 
 			Mailer.SendToWarningList(messageSubject, messageBody);

@@ -16,11 +16,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		protected string _fileName;
 		protected DataTable _data;
 
-		public BaseFormalizer(string filename, MySqlConnection connection, DataTable data)
+		public BaseFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
 		{
 			_fileName = filename;
-			_data = data;
-			_priceInfo = new PriceFormalizationInfo(data.Rows[0]);
+			_data = data.FormRulesData;
+			_priceInfo = data;
 		}
 
 		public bool Downloaded { get; set; }

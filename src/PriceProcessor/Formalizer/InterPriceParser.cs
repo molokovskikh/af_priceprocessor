@@ -8,12 +8,13 @@ namespace Inforoom.Formalizer
 {
 	public class InterPriceParser : BasePriceParser
 	{
-		public InterPriceParser(string priceFileName, MySqlConnection connection, DataTable data) : base(priceFileName, connection, data)
+		public InterPriceParser(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data) : base(priceFileName, connection, data)
 		{
 			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 			{
 				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
-				SetFieldName(pf, data.Rows[0][tmpName] is DBNull ? String.Empty : (string)data.Rows[0][tmpName]);
+				var row = data.FormRulesData.Rows[0];
+				SetFieldName(pf, row[tmpName] is DBNull ? String.Empty : (string)row[tmpName]);
 			}
 		}
 

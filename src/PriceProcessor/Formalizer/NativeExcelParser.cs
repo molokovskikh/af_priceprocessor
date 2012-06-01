@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using ExcelLibrary.BinaryFileFormat;
 using ExcelLibrary.SpreadSheet;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer
@@ -14,12 +15,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private readonly ExcelLoader _loader;
 
-		public NativeExcelParser(string priceFileName, MySqlConnection connection, DataTable table)
-			: base(priceFileName, connection, table)
+		public NativeExcelParser(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
+			: base(priceFileName, connection, data)
 		{
+			var row = data.FormRulesData.Rows[0];
 			_loader = new ExcelLoader(
-				table.Rows[0]["ListName"].ToString().Replace("$", ""), 
-				table.Rows[0]["StartLine"] is DBNull ? 0 : Convert.ToInt32(table.Rows[0]["StartLine"]));
+				row["ListName"].ToString().Replace("$", ""), 
+				row["StartLine"] is DBNull ? 0 : Convert.ToInt32(row["StartLine"]));
 
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
 		}

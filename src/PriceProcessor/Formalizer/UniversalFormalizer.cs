@@ -6,6 +6,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 
@@ -13,7 +14,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class UniversalFormalizer : BaseFormalizer, IPriceFormalizer
 	{
-		public UniversalFormalizer(string filename, MySqlConnection connection, DataTable data)
+		public UniversalFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
 			: base(filename, connection, data)
 		{}
 

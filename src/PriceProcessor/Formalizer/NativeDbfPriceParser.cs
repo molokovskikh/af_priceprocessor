@@ -2,14 +2,15 @@
 using System.Text;
 using Common.Tools;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class NativeDbfPriceParser : InterPriceParser
 	{
-		public NativeDbfPriceParser(string PriceFileName, MySqlConnection conn, DataTable mydr) 
-			: base(PriceFileName, conn, mydr)
+		public NativeDbfPriceParser(string file, MySqlConnection conn, PriceFormalizationInfo data)
+			: base(file, conn, data)
 		{}
 
 		public override void Open()

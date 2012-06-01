@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
-using Inforoom.PriceProcessor.Formalizer;
 
 namespace Inforoom.PriceProcessor.Models
 {
@@ -19,6 +18,12 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual uint? ParentSynonym { get; set; }
+
+		[Property]
+		public virtual bool IsRejects { get; set; }
+
+		[Property]
+		public virtual bool IsRejectCancellations { get; set; }
 
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }

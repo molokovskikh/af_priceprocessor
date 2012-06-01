@@ -7,6 +7,7 @@ using System.Xml.Xsl;
 using System.Resources;
 using System.IO;
 using System.Data;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor;
 
@@ -15,8 +16,8 @@ namespace Inforoom.Formalizer
 {
 	class CommerceMLParser : InterPriceParser
 	{
-		public CommerceMLParser(string PriceFileName, MySqlConnection conn, DataTable mydr)
-			: base(PriceFileName, conn, mydr)
+		public CommerceMLParser(string file, MySqlConnection conn, PriceFormalizationInfo data)
+			: base(file, conn, data)
 		{
 			conn.Close();
 		}

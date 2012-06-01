@@ -1,19 +1,22 @@
 using System;
 using System.IO;
 using System.Data;
+using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor;
 using System.Reflection;
+using NHibernate;
 
 namespace Inforoom.Formalizer
 {
 	public class PricesValidator
 	{
-		public static Type GetParserClassName(string ParserClassName)
+		public static Type GetParserClassName(string className)
 		{
-			var types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, ParserClassName);
+			var types = Assembly.GetExecutingAssembly().GetModules()[0].FindTypes(Module.FilterTypeNameIgnoreCase, className);
 			if (types.Length == 1)
 				return types[0];
 			return null;
@@ -88,7 +91,13 @@ namespace Inforoom.Formalizer
 					(string)dataRow[FormRules.colFirmShortName],
 					(string)dataRow[FormRules.colSelfPriceName]);
 
-			return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, dtFormRules}));
+			PriceFormalizationInfo priceInfo;
+			using(new SessionScope()) {
+				var price = Price.Find(Convert.ToUInt32(dataRow[FormRules.colPriceCode]));
+				NHibernateUtil.Initialize(price);
+				priceInfo = new PriceFormalizationInfo(dataRow, price);
+			}
+			return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, priceInfo}));
 		}
 
 		public static DataTable LoadFormRules(uint priceItemId)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Config;
 using Common.MySql;
@@ -28,8 +29,8 @@ namespace Inforoom.PriceProcessor
 			var log = LogManager.GetLogger(typeof(Program));
 			try
 			{				
-			    With.DefaultConnectionStringName = Literals.GetConnectionName();
-				InitActiveRecord();
+				With.DefaultConnectionStringName = Literals.GetConnectionName();
+				InitActiveRecord(new[] {typeof (Document).Assembly});
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG
 				InitDirs(new[] {
@@ -40,7 +41,7 @@ namespace Inforoom.PriceProcessor
 					Settings.Default.HistoryPath
 				});
 				
-			    var monitor = Monitor.GetInstance();
+				var monitor = Monitor.GetInstance();
 				monitor.Start();
 				MessageBox.Show("Для остановки нажмите Ok...", "PriceProcessor");
 				monitor.Stop();
@@ -60,19 +61,20 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
-		private static void InitActiveRecord()
+		public static void InitActiveRecord(Assembly[] assemblies)
 		{
 			var config = new InPlaceConfigurationSource();
+			config.PluralizeTableNames = true;
 			config.Add(typeof (ActiveRecordBase),
 				new Dictionary<string, string> {
 					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
 					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
 					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-                    {Environment.ConnectionStringName, Literals.GetConnectionName()},
+					{Environment.ConnectionStringName, Literals.GetConnectionName()},
 					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
 					{Environment.Hbm2ddlKeyWords, "none"}
 				});
-			ActiveRecordStarter.Initialize(new[] {typeof (Document).Assembly}, config);
+			ActiveRecordStarter.Initialize(assemblies, config);
 		}
 
 		public static void InitDirs(IEnumerable<string> dirs)

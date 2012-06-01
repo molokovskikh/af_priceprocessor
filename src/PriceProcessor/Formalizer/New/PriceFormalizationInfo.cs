@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Formalizer.New
 {
@@ -11,9 +12,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public long PriceItemId;
 		public long ParentSynonym;
 		public long PrevRowCount;
+		public Price Price;
+		public DataTable FormRulesData;
 
-		public PriceFormalizationInfo(DataRow row)
+		public PriceFormalizationInfo(DataRow row, Price price)
 		{
+			Price = price;
+			FormRulesData = row.Table;
 			Region = row["region"].ToString();
 			CostName = row["CostName"].ToString();
 			PriceName = row[FormRules.colSelfPriceName].ToString();

@@ -391,6 +391,7 @@ namespace Inforoom.Formalizer
 		protected bool convertedToANSI;
 
 		private ProducerResolver _producerResolver;
+		private RejectUpdater _rejectUpdater = new RejectUpdater();
 
 		protected ToughDate toughDate;
 		protected ToughMask toughMask;
@@ -407,8 +408,9 @@ namespace Inforoom.Formalizer
 		/// <summary>
 		/// Конструктор парсера
 		/// </summary>
-		public BasePriceParser(string priceFileName, MySqlConnection connection, DataTable data)
+		public BasePriceParser(string priceFileName, MySqlConnection connection, PriceFormalizationInfo priceInfo)
 		{
+			_info = priceInfo;
 			_logger = LogManager.GetLogger(GetType());
 			_logger.DebugFormat("Создали класс для обработки файла {0}", priceFileName);
 			//TODO: Все необходимые проверки вынести в конструкторы, чтобы не пытаться открыть прайс-файл
@@ -432,8 +434,7 @@ namespace Inforoom.Formalizer
 			CoreCosts = new List<List<CoreCost>>();
 			FieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
 
-			var row = data.Rows[0];
-			_info = new PriceFormalizationInfo(row);
+			var row = priceInfo.FormRulesData.Rows[0];
 			priceName = row[FormRules.colSelfPriceName].ToString();
 			
 			firmShortName = row[FormRules.colFirmShortName].ToString();
@@ -1810,10 +1811,11 @@ where
 					MyConn.Close();
 				}
 
-				if (buyingMatrix)
-				{
+				if (buyingMatrix) {
 					new BuyingMatrixProcessor().UpdateBuyingMatrix((uint) priceCode);
 				}
+				if (_info.Price.IsRejects || _info.Price.IsRejectCancellations)
+					_rejectUpdater.Save(_info.Price.IsRejectCancellations);
 			}
 			finally
 			{
@@ -1892,9 +1894,17 @@ where
 
 				if (position.IsNotSet(UnrecExpStatus.FullForm))
 					InsertToUnrec(position);
+				PostProcessPosition(position);
 
 			}
 			while (Next());
+		}
+
+		private void PostProcessPosition(FormalizationPosition position)
+		{
+			if (_info.Price.IsRejects || _info.Price.IsRejectCancellations) {
+				_rejectUpdater.Process(position, dtPrice.Rows[CurrPos]);
+			}
 		}
 
 		/// <summary>

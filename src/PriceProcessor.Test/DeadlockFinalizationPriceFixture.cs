@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using Inforoom.Formalizer;
 using System.Reflection;
@@ -22,20 +25,24 @@ namespace PriceProcessor.Test
 		long priceCode;
 		long costCode;
 		int etalonRowCount;
+		private PriceFormalizationInfo info;
 
 		[SetUp]
 		public void prepare_price_formalization()
 		{
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
-
 			var priceItemInfo = TestHelper.Fill(String.Format(
 				" select pc.PriceCode, pc.CostCode, pd.CostType " +
-			    " from usersettings.pricescosts pc, usersettings.pricesdata pd " + 
+				" from usersettings.pricescosts pc, usersettings.pricesdata pd " + 
 				" where (pc.PriceItemId = {0}) and (pd.PriceCode = pc.PriceCode)",
 				priceItemId));
 			var costType = Convert.ToByte(priceItemInfo.Tables[0].Rows[0]["CostType"]);
 			costCode = Convert.ToInt64(priceItemInfo.Tables[0].Rows[0]["CostCode"]);
 			priceCode = Convert.ToInt64(priceItemInfo.Tables[0].Rows[0]["PriceCode"]);
+			using(new SessionScope()) {
+				var price = Price.Find(priceCode);
+				info = new PriceFormalizationInfo(rules.Rows[0], price);
+			}
 			Assert.That(costType, Is.EqualTo(1), "Тест поломан. Тип ценовой колонки для PriceCode = {0} не соответствует.", priceCode);
 
 			//удаляем записи, т.к. будет формализовать прайс-лист для эталона
@@ -46,7 +53,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1}"
 				,
@@ -65,14 +72,14 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode));
 			etalonRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(					
-                    Literals.ConnectionString(),
+					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(etalonRowCount, Is.EqualTo(core.Tables[0].Rows.Count), "Не совпадает кол-во позиций в Core и RowCount в PriceItems.");
@@ -86,7 +93,7 @@ set
   Core0.CodeCr = 'тест',
   Core0.Quantity = 10
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1}"
 				, 
@@ -114,7 +121,7 @@ and CoreCosts.PC_CostCode = {1}"
 			{
 				try
 				{
-                    using (var connection = new MySqlConnection(Literals.ConnectionString()))
+					using (var connection = new MySqlConnection(Literals.ConnectionString()))
 					{
 						connection.Open();
 
@@ -134,7 +141,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = ?PriceCode
 and CoreCosts.PC_CostCode = ?CostCode
 group by 1
@@ -172,10 +179,10 @@ for update"
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
 			
-            using (var connection = new MySqlConnection(Literals.ConnectionString()))
+			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 				
-				var parser = new DelimiterNativeTextParser1251(file, connection, rules);
+				var parser = new DelimiterNativeTextParser1251(file, connection, info);
 
 				//Добавляем выбранный прайс-лист в список прайс-листов, которые обновляются с помощью Update
 				foreach (var field in typeof(BasePriceParser).GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
@@ -199,7 +206,7 @@ for update"
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(					
-                    Literals.ConnectionString(),
+					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(currentRowCount, Is.EqualTo(etalonRowCount), "Не совпадает новое значение RowCount и эталлонное значение RowCount в PriceItems.");
@@ -212,7 +219,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1}",
 				priceCode,
@@ -227,10 +234,10 @@ and CoreCosts.PC_CostCode = {1}",
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
 			
-            using (var connection = new MySqlConnection(Literals.ConnectionString()))
+			using (var connection = new MySqlConnection(Literals.ConnectionString()))
 			{
 
-				var parser = new DelimiterNativeTextParser1251(file, connection, rules);
+				var parser = new DelimiterNativeTextParser1251(file, connection, info);
 
 				//Удаляем выбранный прайс-лист из списока прайс-листов, которые обновляются с помощью Update, если он там есть
 				foreach (var field in typeof(BasePriceParser).GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
@@ -254,7 +261,7 @@ and CoreCosts.PC_CostCode = {1}",
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
 				MySqlHelper.ExecuteScalar(					
-                    Literals.ConnectionString(),
+					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
 			Assert.That(currentRowCount, Is.EqualTo(etalonRowCount), "Не совпадает новое значение RowCount и эталлонное значение RowCount в PriceItems.");
@@ -267,7 +274,7 @@ from
   farm.CoreCosts,
   farm.Core0
 where
-    CoreCosts.Core_Id = Core0.Id
+	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
 and CoreCosts.PC_CostCode = {1}",
 				priceCode,

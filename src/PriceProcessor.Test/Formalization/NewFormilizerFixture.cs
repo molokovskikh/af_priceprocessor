@@ -491,8 +491,9 @@ namespace PriceProcessor.Test.Formalization
 		{
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
-			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, new PriceFormalizationInfo(row));
-			formalizer = new BasePriceParser2(reader, row);
+			var info = new PriceFormalizationInfo(row, null);
+			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
+			formalizer = new BasePriceParser2(reader, info);
 			formalizer.Formalize();
 		}
 	}

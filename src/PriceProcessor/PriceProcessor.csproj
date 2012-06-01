@@ -155,6 +155,7 @@
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
     <Compile Include="Formalizer\FarmaimpeksReader.cs" />
+    <Compile Include="Formalizer\RejectUpdater.cs" />
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
     <Compile Include="Models\Price.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
+    <Compile Include="Models\Reject.cs" />
     <Compile Include="Waybills\Models\SstExporter.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />

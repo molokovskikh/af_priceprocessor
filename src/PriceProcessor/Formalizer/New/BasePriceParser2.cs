@@ -116,10 +116,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			_logger.DebugFormat("Загрузили цены {0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode);
 		}
 
-		public BasePriceParser2(IReader reader, DataRow priceInfo)
-			: this(reader, new PriceFormalizationInfo(priceInfo))
-		{}
-
 		/// <summary>
 		/// Вставка в таблицу запрещенных предложений
 		/// </summary>
