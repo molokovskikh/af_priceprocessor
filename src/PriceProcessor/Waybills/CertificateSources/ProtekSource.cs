@@ -44,5 +44,16 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Поставщик не предоставил ни одного сертификата";
 		}
+
+		protected List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
+		{
+			var name = GetType().Name;
+			return CertificateSourceCatalog.Queryable
+				.Where(
+					c => c.CertificateSource.SourceClassName == name
+						&& c.SerialNumber == serialNumber
+							&& c.CatalogProduct.Id == catalogId)
+				.ToList();
+		}
 	}
 }

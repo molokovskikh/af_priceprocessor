@@ -852,6 +852,17 @@ namespace PriceProcessor.Test.Waybills
 				else
 					return CertificateExistsAction(line);
 			}
+
+			protected List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
+			{
+				var name = GetType().Name;
+				return CertificateSourceCatalog.Queryable
+					.Where(
+						c => c.CertificateSource.SourceClassName == name
+							&& c.SerialNumber == serialNumber
+								&& c.CatalogProduct.Id == catalogId)
+					.ToList();
+			}
 		}
 
 		[Test(Description = "Проверяем удаление локальных файлов при ошибке в CertifcateSource")]

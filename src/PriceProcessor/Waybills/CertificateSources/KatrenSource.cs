@@ -10,7 +10,7 @@ using LumiSoft.Net.FTP.Client;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class KatrenSource : AbstractCertifcateSource, ICertificateSource, IRemoteFtpSource
+	public class KatrenSource : FtpCertifcateSource, IRemoteFtpSource
 	{
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
@@ -54,22 +54,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
-		}
-
-		public bool CertificateExists(DocumentLine line)
-		{
-			return GetSourceCatalog(line.ProductEntity.CatalogProduct.Id, line.SerialNumber).Count > 0;
-		}
-
-		private List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
-		{
-			var name = GetType().Name;
-			return CertificateSourceCatalog.Queryable
-				.Where(
-					c => c.CertificateSource.SourceClassName == name
-						&& c.SerialNumber == serialNumber
-						&& c.CatalogProduct.Id == catalogId)
-				.ToList();
 		}
 
 		public string FtpHost

@@ -8,19 +8,8 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class RostaCertificateSource : AbstractCertifcateSource, ICertificateSource, IRemoteFtpSource
+	public class RostaCertificateSource : FtpCertifcateSource, IRemoteFtpSource
 	{
-		public bool CertificateExists(DocumentLine line)
-		{
-			var catalog = CertificateSourceCatalog.Queryable
-				.Where(
-					c =>
-					c.CertificateSource.SourceClassName == this.GetType().Name && c.SerialNumber == line.SerialNumber &&
-					c.CatalogProduct.Id == line.ProductEntity.CatalogProduct.Id)
-				.FirstOrDefault();
-			return catalog != null;
-		}
-
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var catalogs = CertificateSourceCatalog.Queryable

@@ -53,5 +53,16 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			var reg = new Regex("DOCS.+?GIF");
 			return reg.Matches(data).Cast<Match>().SelectMany(m => m.Captures.Cast<Capture>().Select(c => c.Value));
 		}
+
+		protected List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
+		{
+			var name = GetType().Name;
+			return CertificateSourceCatalog.Queryable
+				.Where(
+					c => c.CertificateSource.SourceClassName == name
+						&& c.SerialNumber == serialNumber
+							&& c.CatalogProduct.Id == catalogId)
+				.ToList();
+		}
 	}
 }
