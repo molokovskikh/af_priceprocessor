@@ -143,6 +143,7 @@
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
     <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
     <Compile Include="Models\MailContextFixture.cs" />
+    <Compile Include="Models\RejectFixture.cs" />
     <Compile Include="PriceSourceFixture.cs" />
     <Compile Include="Services\ErrorHandlerFixture.cs" />
     <Compile Include="SetupFixture.cs" />

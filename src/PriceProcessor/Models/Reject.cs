@@ -78,7 +78,8 @@ namespace Inforoom.PriceProcessor.Models
 				return false;
 
 			var canceled = ProductId == saved.ProductId
-				&& Series == saved.Series;
+				&& Series == saved.Series
+				&& saved.LetterDate <= LetterDate;
 			if (canceled)
 				saved.CancelDate = LetterDate;
 			return canceled;
