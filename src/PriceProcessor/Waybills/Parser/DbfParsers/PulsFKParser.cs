@@ -36,9 +36,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("GDATE")
-				&& data.Columns.Contains("PROCNDB")
-				//&& data.Columns.Contains("MAKERPRICE")
-				&& data.Columns.Contains("PRICE2");
+				&& data.Columns.Contains("PRICE2")
+				&& !data.Columns.Contains("SUMITEM");
 		}
 	}
 }

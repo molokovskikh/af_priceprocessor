@@ -17,10 +17,10 @@ DATEDOC type="D" len="8" Дата накладной+
 CODEPST type="C" len="12" Код препарата из справочника поставщика+
 EAN13 type="C" len="30" Штрихкод производителя+
 PRICE1 type="N" len="11" prec="4" Цена производителя+
-PRICE2 type="N" len="11" prec="4" Цена оптовая с НДС-
-PRICE2N type="N" len="11" prec="4" Цена оптовая без НДС-
+PRICE2 type="N" len="11" prec="4" Цена оптовая с НДС+
+PRICE2N type="N" len="11" prec="4" Цена оптовая без НДС+
 PRCIMP type="N" len="11" prec="4" Наценка импортера-
-PRCOPT type="N" len="11" prec="4" Наценка оптового звена-
+PRCOPT type="N" len="11" prec="4" Наценка оптового звена+
 QNT type="N" len="9" prec="2" Количество+
 SER type="C" len="20" Серия +
 GDATE type="D" len="8" Срок годности +
@@ -72,6 +72,11 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.ProducerCost, "PRICE1")
+
+				.Line(l => l.SupplierCost, "PRICE2")
+				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
+				.Line(l => l.SupplierPriceMarkup, "PRCOPT")
+
 				.Line(l => l.Quantity, "QNT")
 				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.Period, "GDATE")
@@ -90,7 +95,7 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return data.Columns.Contains("PRICE1")
+			return data.Columns.Contains("PRCOPT")
 					&& data.Columns.Contains("GNVLS")
 					&& data.Columns.Contains("SUMITEM")
 					&& data.Columns.Contains("SUMS0");
