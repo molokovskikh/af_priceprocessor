@@ -6,6 +6,7 @@ using System.Text;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 {
@@ -39,7 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				if (!hasOpt || String.IsNullOrEmpty(position.XPathSelectElement("НаценОпт").Value)) 
 					line.SupplierPriceMarkup = null;
 				else
-					line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
+					line.SupplierPriceMarkup = SafeConvert.ToDecimal(position.XPathSelectElement("НаценОпт").Value);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
 
@@ -57,8 +58,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				{
 					string nds = position.XPathSelectElement("СтавкаНДС").Value;
 					nds = nds.Replace('%', ' ');
-					nds = nds.Trim();                  
-					line.Nds = (uint?)Convert.ToDecimal(nds, CultureInfo.InvariantCulture);
+					nds = nds.Trim();
+					line.Nds = (uint?)SafeConvert.ToDecimal(nds);
 				}
 				else
 				{
@@ -71,9 +72,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;
 
 				if (position.XPathSelectElement("ЖНВЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖНВЛС").Value))
-					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
+					line.VitallyImportant = SafeConvert.ToInt32(position.XPathSelectElement("ЖНВЛС").Value) == 1;
 				else if (position.XPathSelectElement("ЖВНЛС") != null && !String.IsNullOrEmpty(position.XPathSelectElement("ЖВНЛС").Value))
-					line.VitallyImportant = Convert.ToInt32(position.XPathSelectElement("ЖВНЛС").Value) == 1;
+					line.VitallyImportant = SafeConvert.ToInt32(position.XPathSelectElement("ЖВНЛС").Value) == 1;
 
 				if (hasSerialNum)
 					line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;
