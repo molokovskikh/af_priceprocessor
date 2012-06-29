@@ -54,15 +54,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				}
 				else line.ProducerCostWithoutNDS = null;
 				
-				if(hasNds)
-				{
+				if(hasNds) {
 					string nds = position.XPathSelectElement("СтавкаНДС").Value;
 					nds = nds.Replace('%', ' ');
 					nds = nds.Trim();
 					line.Nds = (uint?)SafeConvert.ToDecimal(nds);
 				}
-				else
-				{
+				else {
 					line.Nds = null;
 				}
 				
