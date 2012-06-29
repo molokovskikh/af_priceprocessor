@@ -277,6 +277,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhNewParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Inko5969Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KrasotaIZdorovieKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Lekomed12223Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\LenFarmParser.cs" />
