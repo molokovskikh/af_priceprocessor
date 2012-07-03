@@ -17,30 +17,29 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
-		[Test, Ignore("тестирование корректной обработки вложенного WarningFormalizeException")]
+		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
 		{
-			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 1, @"C:\tmp\107.dbf", null);
-			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
-			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
-				Thread.Sleep(500);
-			Assert.True(_priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
+			var priceProcessItem = new PriceProcessItem(false, 0, null, 1, @"Data\781.dbf", null);
+			var priceProcessThread = new PriceProcessThread(priceProcessItem);
+			priceProcessThread.ThreadWork();
+			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
 		}
 
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
-			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
-			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
-			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive)
+			var priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
+			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty);
+			while ((priceProcessThread.ThreadState != ThreadState.Running) && priceProcessThread.ThreadIsAlive)
 			{
 				Thread.Sleep(500);
 			}
-			_priceProcessThread.AbortThread();
-			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
-			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
+			priceProcessThread.AbortThread();
+			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			while (!priceProcessThread.FormalizeEnd && ((priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
 				Thread.Sleep(500);
-			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
 		}
 
 		enum CorruptDBThreadState

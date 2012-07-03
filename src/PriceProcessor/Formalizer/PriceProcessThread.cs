@@ -77,6 +77,19 @@ namespace Inforoom.Formalizer
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
 			_thread.Start();
 		}
+		/// <summary>
+		/// —оздает нитку дл€ формализации, но не запускает
+		/// </summary>
+		public PriceProcessThread(PriceProcessItem item)
+		{
+			StartDate = DateTime.UtcNow;
+			ProcessItem = item;
+			ProcessState = PriceProcessState.None;
+
+			_log = new PriceProcessLogger(String.Empty, item);
+			_thread = new Thread(ThreadWork);
+			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
+		}
 
 		public bool FormalizeOK { get; private set; }
 
@@ -202,11 +215,6 @@ namespace Inforoom.Formalizer
 					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
-				catch (WarningFormalizeException e)
-				{
-					_logger.Warn(e.Message,e);
-					FormalizeOK = true;
-				}
 				finally
 				{
 					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
@@ -225,14 +233,16 @@ namespace Inforoom.Formalizer
 				File.SetLastWriteTimeUtc(outPriceFileName, ft);
 				File.SetLastAccessTimeUtc(outPriceFileName, ft);
 			}
+			catch (ThreadAbortException e)
+			{
+				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+			}
 			catch(Exception e)
 			{
-				if (e.InnerException is WarningFormalizeException) {
-					_logger.Warn(e.InnerException.Message,e.InnerException);
+				if (e.InnerException is WarningFormalizeException || e is WarningFormalizeException) {
+					_logger.Warn("‘ормализаци€ прайс листа завершена с предупреждением", e);
 					FormalizeOK = true;
 				}
-				else if (e is ThreadAbortException)
-					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				else
 				{
 					_log.ErrodLog(_workPrice, e);
