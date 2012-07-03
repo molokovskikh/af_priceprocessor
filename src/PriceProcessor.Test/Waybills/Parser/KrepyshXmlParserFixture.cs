@@ -50,12 +50,21 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("03.12.2009"));
 		}
 
-        [Test]
-        public void Parse_without_producer_cost_and_nds_with_symbol_percent()
-        {
-            var document = WaybillParser.Parse(@"..\..\Data\Waybills\8817928.xml");
-            document = WaybillParser.Parse(@"..\..\Data\Waybills\8817930.xml");
-            document = WaybillParser.Parse(@"..\..\Data\Waybills\8817942.xml");
-        }
+		[Test]
+		public void Parse_without_producer_cost_and_nds_with_symbol_percent()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\8817928.xml");
+			document = WaybillParser.Parse(@"..\..\Data\Waybills\8817930.xml");
+			document = WaybillParser.Parse(@"..\..\Data\Waybills\8817942.xml");
+		}
+
+		[Test]
+		public void Parse_with_invalid_data()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\20101119_8055_250829_1.xml");
+			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(0));
+			Assert.That(document.Lines[0].VitallyImportant.Value, Is.EqualTo(false));
+			Assert.That(document.Lines[0].SupplierPriceMarkup.Value, Is.EqualTo(0));
+		}
 	}
 }
