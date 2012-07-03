@@ -204,7 +204,7 @@ namespace Inforoom.Formalizer
 				}
 				catch (WarningFormalizeException e)
 				{
-					_log.WarningLog(e, e.Message);
+					_logger.Warn(e.Message,e);
 					FormalizeOK = true;
 				}
 				finally
@@ -227,7 +227,11 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				if (e is ThreadAbortException)
+				if (e.InnerException is WarningFormalizeException) {
+					_logger.Warn(e.InnerException.Message,e.InnerException);
+					FormalizeOK = true;
+				}
+				else if (e is ThreadAbortException)
 					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				else
 				{

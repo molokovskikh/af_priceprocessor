@@ -17,6 +17,16 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
+		[Test, Ignore("тестирование корректной обработки вложенного WarningFormalizeException")]
+		public void CatchWarningFormalizeExceptionTest()
+		{
+			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 1, @"C:\tmp\107.dbf", null);
+			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
+			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
+				Thread.Sleep(500);
+			Assert.True(_priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
+		}
+
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
