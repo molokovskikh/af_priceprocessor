@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			
 			Assert.That(document.Lines[0].Code, Is.EqualTo("4845409"));
 			Assert.That(document.Lines[0].EAN13, Is.EqualTo("4607027761356"));
-			Assert.That(document.Lines[0].ProducerCost, Is.EqualTo(13.24));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(13.24));
 
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(16.28));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(14.8));
