@@ -66,7 +66,7 @@ namespace Inforoom.Formalizer
 
 		private IPriceFormalizer _workPrice;
 
-		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage)
+		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread=true)
 		{
 			StartDate = DateTime.UtcNow;
 			ProcessItem = item;
@@ -75,22 +75,14 @@ namespace Inforoom.Formalizer
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
-			_thread.Start();
+			if(runThread)
+				_thread.Start();
 		}
-		/// <summary>
-		/// —оздает нитку дл€ формализации, но не запускает
-		/// </summary>
-		public PriceProcessThread(PriceProcessItem item)
+		
+		private  void PriceProcessThreadInit(PriceProcessItem item, string prevErrorMessage)
 		{
-			StartDate = DateTime.UtcNow;
-			ProcessItem = item;
-			ProcessState = PriceProcessState.None;
-
-			_log = new PriceProcessLogger(String.Empty, item);
-			_thread = new Thread(ThreadWork);
-			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
+			
 		}
-
 		public bool FormalizeOK { get; private set; }
 
 		/// <summary>

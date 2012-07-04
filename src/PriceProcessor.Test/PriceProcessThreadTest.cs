@@ -21,7 +21,7 @@ namespace PriceProcessor.Test
 		public void CatchWarningFormalizeExceptionTest()
 		{
 			var priceProcessItem = new PriceProcessItem(false, 0, null, 1, @"Data\781.dbf", null);
-			var priceProcessThread = new PriceProcessThread(priceProcessItem);
+			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
 			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
 		}
