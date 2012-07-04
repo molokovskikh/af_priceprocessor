@@ -86,19 +86,14 @@ namespace PriceProcessor.Test.Waybills
 
 			CertificateSourceDetector.DetectAndParse(document);
 
-			Assert.That(document.Tasks.Count, Is.EqualTo(5));
+			Assert.That(document.Tasks.Count, Is.EqualTo(4));
 			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == firstCatalog.Id && task[0].SerialNumber == "крутая серия 1");
-			Assert.AreEqual(firstCatalog.Id, task[2].CatalogProduct.Id);
-			Assert.AreEqual("крутая серия 2", task[2].SerialNumber);
-
-			Assert.AreEqual(secondCatalog.Id, task[3].CatalogProduct.Id);
-			Assert.AreEqual("крутая серия 1", task[3].SerialNumber);
-
-			Assert.AreEqual(secondCatalog.Id, task[4].CatalogProduct.Id);
-			Assert.AreEqual(DocumentLine.EmptySerialNumber, task[4].SerialNumber);
+			Assert.That(task[1].CatalogProduct.Id == firstCatalog.Id && task[1].SerialNumber == "крутая серия 2");
+			Assert.That(task[2].CatalogProduct.Id == secondCatalog.Id && task[2].SerialNumber == "крутая серия 1");
+			Assert.That(task[3].CatalogProduct.Id == secondCatalog.Id && task[3].SerialNumber == DocumentLine.EmptySerialNumber);
 		}
 
 		private CertificateSource CreateSourceForSupplier(Supplier supplier, string sourceClassName)
@@ -228,17 +223,14 @@ namespace PriceProcessor.Test.Waybills
 
 			CertificateSourceDetector.DetectAndParse(document);
 
-			Assert.That(document.Tasks.Count, Is.EqualTo(5));
+			Assert.That(document.Tasks.Count, Is.EqualTo(4));
 			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks.OrderBy(t => t.CatalogProduct.Id).ThenBy(t => t.SerialNumber).ToList();
 			Assert.That(task[0].CatalogProduct.Id == existsCatalog.Id && task[0].SerialNumber == "крутая серия 1");
-			Assert.AreEqual(existsCatalog.Id, task[2].CatalogProduct.Id);
-			Assert.AreEqual("крутая серия 2", task[2].SerialNumber);
-
-			Assert.AreEqual(nonExistCatalog.Id, task[3].CatalogProduct.Id);
-			Assert.AreEqual("крутая серия 2", task[3].SerialNumber);
-			Assert.That(task[4].CatalogProduct.Id == nonExistCatalog.Id && task[4].SerialNumber == serialNumber);
+			Assert.That(task[1].CatalogProduct.Id == existsCatalog.Id && task[1].SerialNumber == "крутая серия 2");
+			Assert.That(task[2].CatalogProduct.Id == nonExistCatalog.Id && task[2].SerialNumber == "крутая серия 2");
+			Assert.That(task[3].CatalogProduct.Id == nonExistCatalog.Id && task[3].SerialNumber == serialNumber);
 
 			Assert.That(document.Lines[0].Certificate.Id, Is.EqualTo(existsCertificate.Id));
 			Assert.That(document.Lines[4].Certificate.Id, Is.EqualTo(existsCertificate.Id));
@@ -933,7 +925,7 @@ namespace PriceProcessor.Test.Waybills
 
 			CertificateSourceDetector.DetectAndParse(document);
 
-			Assert.That(document.Tasks.Count, Is.EqualTo(5));
+			Assert.That(document.Tasks.Count, Is.EqualTo(1));
 			Assert.That(document.Tasks.TrueForAll(t => t.CertificateSource.Id == certificateSource.Id));
 
 			var task = document.Tasks[0];
