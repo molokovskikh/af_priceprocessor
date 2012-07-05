@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
+using Test.Support;
 using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
@@ -12,6 +14,7 @@ using log4net;
 using System.Data;
 using System.Reflection;
 using PriceProcessor.Test.TestHelpers;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test
 {
@@ -21,43 +24,32 @@ namespace PriceProcessor.Test
 		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
 		{
-			try 
+			uint priceItemId = 1;
+			try
 			{
-				CatchWarningFormalizeExceptionTestPrepareData();
+				priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
 			}
-			catch 
+			catch
 			{
 				Assert.Fail("Произошла ошибка при подготовки данных для теста");
 			}
-			var priceProcessItem = new PriceProcessItem(false, 0, null, 1, @"Data\781.dbf", null);
+			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
 			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
 		}
-
-		private void CatchWarningFormalizeExceptionTestPrepareData(int payerId=1, int formRulesId=1, int priceFormatId=8, int suppliersId=1, 
-			int priceCode=1, int priceItemsId=1, int rowCount=2, int costCode=1)
+		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
 		{
-			TestHelper.Execute(@"
-DELETE FROM farm.formrules WHERE id={0};
-INSERT INTO farm.formrules (id,PriceFormatId) VALUES({0},{1});", formRulesId, priceFormatId);
-			TestHelper.Execute(@"
-DELETE FROM customers.suppliers WHERE id={0};", suppliersId);
-			TestHelper.Execute(@"
-DELETE FROM billing.payers WHERE payerid={0};
-INSERT INTO billing.payers(payerid, shortname,autolock,notificationtype,havecontract,sendregisteredletter,sendscanneddocuments,discountvalue, discounttype,showdiscount) 
-VALUES({0},'TestPayer',0,0,0,0,0,0,0,0);", payerId);
-			TestHelper.Execute(@"
-INSERT INTO customers.suppliers (id, Name, FullName,HomeRegion,Payer) VALUES({0},'TestSupp','TestSupp',1,{1});", suppliersId, payerId);
-			TestHelper.Execute(@"
-DELETE FROM usersettings.pricesdata WHERE PriceCode={0};
-INSERT INTO usersettings.pricesdata (PriceCode,FirmCode,CostType) VALUES({0},{1},0);", priceCode, suppliersId);
-			TestHelper.Execute(@"
-DELETE FROM usersettings.priceitems WHERE id={0};
-INSERT INTO usersettings.priceitems (id,formruleid,sourceid,rowcount) VALUES({0},{1},1,{2});", priceItemsId, formRulesId, rowCount);
-			TestHelper.Execute(@"
-DELETE FROM usersettings.pricescosts WHERE CostCode={0};
-INSERT INTO usersettings.pricescosts (CostCode,PriceCode,BaseCost,PriceItemId) VALUES({0},{1},1,{2});", costCode, priceCode, priceItemsId);
+			var supplier = TestSupplier.Create();
+			var price = supplier.Prices[0];
+			price.CostType = priceCostType;
+
+			var item = price.Costs.First().PriceItem;
+			var format = price.Costs.Single().PriceItem.Format;
+			format.PriceFormat = priceFormatId;
+
+			price.Save();
+			return item.Id;
 		}
 
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]

@@ -78,11 +78,7 @@ namespace Inforoom.Formalizer
 			if(runThread)
 				_thread.Start();
 		}
-		
-		private  void PriceProcessThreadInit(PriceProcessItem item, string prevErrorMessage)
-		{
-			
-		}
+
 		public bool FormalizeOK { get; private set; }
 
 		/// <summary>
