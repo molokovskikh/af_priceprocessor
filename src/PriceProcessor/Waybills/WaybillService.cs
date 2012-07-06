@@ -171,9 +171,14 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillOrderMatcher));
 
+		/// <summary>
+		/// Показывает, что в процессе сопоставления произошла ошибка
+		/// </summary>
+		public static bool WasError { get; private set; }
+
 		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
-			if (document == null) return;			
+			if (document == null || document.Lines == null) return;
 			using (new SessionScope())
 			{
 				try
@@ -210,10 +215,12 @@ namespace Inforoom.PriceProcessor.Waybills
 							orderLines.ForEach(itemOrd => AddToAssociativeTable(line.Id, itemOrd.Id));
 						}
 					}
+					WasError = false;
 				}
 				catch (Exception e)
 				{
 					_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
+					WasError = true;
 				}
 			}
 		}
