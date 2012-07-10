@@ -24,15 +24,7 @@ namespace PriceProcessor.Test
 		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
 		{
-			uint priceItemId = 1;
-			try
-			{
-				priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
-			}
-			catch
-			{
-				Assert.Fail("Произошла ошибка при подготовки данных для теста");
-			}
+			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
 			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
