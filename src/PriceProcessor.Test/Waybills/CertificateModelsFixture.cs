@@ -78,55 +78,6 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(task.Id, Is.GreaterThan(0));
 		}
 
-		[Test(Description = "создаем задачу на разбор сертификата с повторением уникального ключа")]
-		public void CreateTaskOnUniqueKey()
-		{
-			var certificateSource = CreateSourceForSupplier();
-			var documentLine = CreateBodyLine();
-			var catalog = TestCatalogProduct.Queryable.First();
-			var serialNumber = "Мама мыла раму";
-			var realDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
-
-			using (new TransactionScope()) {
-				var certificateTasks =
-					CertificateTask.Queryable.Where(c => c.SerialNumber.Equals(serialNumber)).ToList();
-				certificateTasks.ForEach(c => c.Delete());
-			}
-
-			var task = new CertificateTask();
-			using (new TransactionScope()) {
-				task.CertificateSource = certificateSource;
-				task.CatalogProduct = Catalog.Find(catalog.Id);
-				task.SerialNumber = serialNumber;
-				task.DocumentLine = realDocumentLine;
-				task.Save();
-			}
-
-			Assert.That(task.Id, Is.GreaterThan(0));
-
-			var doubleDocumentLine = CreateBodyLine();
-			var doubleRealDocumentLine = Document.Find(documentLine.Waybill.Id).Lines[0];
-
-			var doubleTask = new CertificateTask {
-				CertificateSource = certificateSource,
-				CatalogProduct = task.CatalogProduct,
-				SerialNumber = "мАМА мыла рАМУ",
-				DocumentLine = doubleRealDocumentLine
-			};
-
-			try {
-				using (new TransactionScope()) {
-					doubleTask.Save();
-				}
-
-				Assert.Fail("При сохранении должны были получить исключение с нарушением уникального ключа");
-			}
-			catch (Exception exception) {
-				if (!ExceptionHelper.IsDuplicateEntryExceptionInChain(exception))
-					throw;
-			}
-		}
-
 		private CertificateSource CreateSourceForSupplier()
 		{
 			var source = CertificateSource.Queryable.FirstOrDefault(s => s.Suppliers.FirstOrDefault(certificateSupplier => certificateSupplier.Id == supplier.Id) != null);
