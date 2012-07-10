@@ -172,17 +172,13 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillOrderMatcher));
 
 		/// <summary>
-		/// Показывает, что в процессе сопоставления произошла ошибка
+		/// Не обрабатывает исключения, используй ComparisonWithOrders
 		/// </summary>
-		public static bool WasError { get; private set; }
-
-		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
+		public static void ComparisonWithOrdersEr(Document document, IList<OrderHead> orders)
 		{
 			if (document == null || document.Lines == null) return;
 			using (new SessionScope())
 			{
-				try
-				{					
 					if (orders != null) // заказы переданы отдельно и не связаны с позициями в накладной
 					{
 						var waybillPositions = document.Lines.Where(l => l != null && !String.IsNullOrEmpty(l.Code)).ToList();
@@ -215,13 +211,18 @@ namespace Inforoom.PriceProcessor.Waybills
 							orderLines.ForEach(itemOrd => AddToAssociativeTable(line.Id, itemOrd.Id));
 						}
 					}
-					WasError = false;
-				}
-				catch (Exception e)
-				{
-					_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
-					WasError = true;
-				}
+			}
+		}
+
+		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
+		{
+			try
+			{
+				ComparisonWithOrdersEr(document,orders);
+			}
+			catch (Exception e)
+			{
+				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
 			}
 		}
 

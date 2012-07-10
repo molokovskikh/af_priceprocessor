@@ -241,7 +241,7 @@ namespace PriceProcessor.Test.Waybills
 			return order1;
 		}
 
-		[Test]
+		[Test(Description = "Проверка корректности обработки пустого документа")]
 		public void ComparisonWithOrdersIfEmptyTest()
 		{
 			Document document;
@@ -252,8 +252,7 @@ namespace PriceProcessor.Test.Waybills
 				log.Save();
 				document.Save();
 			}
-			WaybillOrderMatcher.ComparisonWithOrders(document, null);
-			Assert.False(WaybillOrderMatcher.WasError, "Произошла ошибка при обработке пустого документа");
+			WaybillOrderMatcher.ComparisonWithOrdersEr(document, null);
 		}
 	}
 }
