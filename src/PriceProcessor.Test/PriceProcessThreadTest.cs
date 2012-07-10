@@ -9,11 +9,9 @@ using log4net.Config;
 using NUnit.Framework;
 using System.Threading;
 using MySql.Data.MySqlClient;
-using System.Configuration;
 using log4net;
 using System.Data;
 using System.Reflection;
-using PriceProcessor.Test.TestHelpers;
 using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test
@@ -24,12 +22,13 @@ namespace PriceProcessor.Test
 		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
 		{
-			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
+			var priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
 			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
 			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
 		}
+
 		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
 		{
 			var supplier = TestSupplier.Create();
