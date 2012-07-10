@@ -97,7 +97,7 @@ namespace PriceProcessor.Test.Waybills
 				orders.Add(order2);	
 			}
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, orders);
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
 
 			string inStr = String.Empty;
 			foreach (var line in document.Lines)
@@ -193,7 +193,7 @@ namespace PriceProcessor.Test.Waybills
 				order2 = OrderHead.Find(order2.Id);
 			}
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, null);
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, null);
 
 			string inStr = String.Empty;
 			foreach (var line in document.Lines)
@@ -245,14 +245,19 @@ namespace PriceProcessor.Test.Waybills
 		public void ComparisonWithOrdersIfEmptyTest()
 		{
 			Document document;
-			using (new SessionScope())
-			{
-				var log = new DocumentReceiveLog { Supplier = appSupplier, ClientCode = client.Id, Address = address, MessageUid = 123, DocumentSize = 100};
+			using (new SessionScope()) {
+				var log = new DocumentReceiveLog {
+					Supplier = appSupplier,
+					ClientCode = client.Id,
+					Address = address,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
 				document = new Document(log);
 				log.Save();
 				document.Save();
 			}
-			WaybillOrderMatcher.ComparisonWithOrdersEr(document, null);
+			WaybillOrderMatcher.ComparisonWithOrders(document, null);
 		}
 	}
 }
