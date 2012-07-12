@@ -13,6 +13,7 @@ using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
+using System.IO;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -96,7 +97,7 @@ namespace PriceProcessor.Test.Waybills
 				orders.Add(order2);	
 			}
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, orders);
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
 
 			string inStr = String.Empty;
 			foreach (var line in document.Lines)
@@ -192,7 +193,7 @@ namespace PriceProcessor.Test.Waybills
 				order2 = OrderHead.Find(order2.Id);
 			}
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, null);
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, null);
 
 			string inStr = String.Empty;
 			foreach (var line in document.Lines)
@@ -238,6 +239,25 @@ namespace PriceProcessor.Test.Waybills
 				Price = Price.Find(price.Id)
 			};
 			return order1;
+		}
+
+		[Test(Description = "Проверка корректности обработки пустого документа")]
+		public void ComparisonWithOrdersIfEmptyTest()
+		{
+			Document document;
+			using (new SessionScope()) {
+				var log = new DocumentReceiveLog {
+					Supplier = appSupplier,
+					ClientCode = client.Id,
+					Address = address,
+					MessageUid = 123,
+					DocumentSize = 100
+				};
+				document = new Document(log);
+				log.Save();
+				document.Save();
+			}
+			WaybillOrderMatcher.ComparisonWithOrders(document, null);
 		}
 	}
 }

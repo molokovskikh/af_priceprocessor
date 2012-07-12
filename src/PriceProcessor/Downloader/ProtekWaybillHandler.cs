@@ -367,7 +367,7 @@ namespace Inforoom.PriceProcessor.Downloader
 										DbfExporter.SaveProtek(document);
 
 								scope.VoteCommit();
-								WaybillOrderMatcher.ComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
+								WaybillOrderMatcher.SafeComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
 						}

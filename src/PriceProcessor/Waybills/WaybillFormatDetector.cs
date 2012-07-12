@@ -210,7 +210,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				doc.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
 				doc.CalculateValues(); // расчет недостающих значений 
 				if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
-				WaybillOrderMatcher.ComparisonWithOrders(doc, null); // сопоставляем позиции в накладной с позициями в заказе
+				WaybillOrderMatcher.SafeComparisonWithOrders(doc, null); // сопоставляем позиции в накладной с позициями в заказе
 				//сопоставление сертификатов для позиций накладной
 				CertificateSourceDetector.DetectAndParse(doc);
 			}
