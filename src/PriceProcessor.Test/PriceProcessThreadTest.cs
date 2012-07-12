@@ -1,62 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
-using Test.Support;
 using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
 using System.Threading;
 using MySql.Data.MySqlClient;
+using System.Configuration;
 using log4net;
 using System.Data;
 using System.Reflection;
-using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test
 {
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
-		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
-		public void CatchWarningFormalizeExceptionTest()
-		{
-			var priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
-			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
-			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
-			priceProcessThread.ThreadWork();
-			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
-		}
-
-		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
-		{
-			var supplier = TestSupplier.Create();
-			var price = supplier.Prices[0];
-			price.CostType = priceCostType;
-
-			var item = price.Costs.First().PriceItem;
-			var format = price.Costs.Single().PriceItem.Format;
-			format.PriceFormat = priceFormatId;
-
-			price.Save();
-			return item.Id;
-		}
-
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
-			var priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
-			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty);
-			while ((priceProcessThread.ThreadState != ThreadState.Running) && priceProcessThread.ThreadIsAlive)
+			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
+			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
+			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive)
 			{
 				Thread.Sleep(500);
 			}
-			priceProcessThread.AbortThread();
-			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
-			while (!priceProcessThread.FormalizeEnd && ((priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
+			_priceProcessThread.AbortThread();
+			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
 				Thread.Sleep(500);
-			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
 		}
 
 		enum CorruptDBThreadState

@@ -66,7 +66,7 @@ namespace Inforoom.Formalizer
 
 		private IPriceFormalizer _workPrice;
 
-		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread=true)
+		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage)
 		{
 			StartDate = DateTime.UtcNow;
 			ProcessItem = item;
@@ -75,8 +75,7 @@ namespace Inforoom.Formalizer
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
-			if(runThread)
-				_thread.Start();
+			_thread.Start();
 		}
 
 		public bool FormalizeOK { get; private set; }
@@ -203,6 +202,11 @@ namespace Inforoom.Formalizer
 					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
+				catch (WarningFormalizeException e)
+				{
+					_log.WarningLog(e, e.Message);
+					FormalizeOK = true;
+				}
 				finally
 				{
 					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
@@ -221,16 +225,10 @@ namespace Inforoom.Formalizer
 				File.SetLastWriteTimeUtc(outPriceFileName, ft);
 				File.SetLastAccessTimeUtc(outPriceFileName, ft);
 			}
-			catch (ThreadAbortException e)
-			{
-				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
-			}
 			catch(Exception e)
 			{
-				if (e.InnerException is WarningFormalizeException || e is WarningFormalizeException) {
-					_logger.Warn("Формализация прайс листа завершена с предупреждением", e);
-					FormalizeOK = true;
-				}
+				if (e is ThreadAbortException)
+					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				else
 				{
 					_log.ErrodLog(_workPrice, e);
