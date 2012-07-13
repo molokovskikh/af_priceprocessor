@@ -189,8 +189,7 @@ namespace Inforoom.Formalizer
 
 				Directory.CreateDirectory(tempPath);
 
-				try
-				{
+				try {
 					ProcessState = PriceProcessState.CallValidate;
 					_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
 
@@ -203,8 +202,11 @@ namespace Inforoom.Formalizer
 					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
-				finally
-				{
+				catch (WarningFormalizeException e) {
+					_log.WarningLog(e, e.Message);
+					FormalizeOK = true;
+				}
+				finally {
 					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
 					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
 					allWorkTimeString = tsFormalize.ToString();
@@ -227,7 +229,7 @@ namespace Inforoom.Formalizer
 			}
 			catch(Exception e)
 			{
-				if (e.InnerException is WarningFormalizeException || e is WarningFormalizeException) {
+				if (e.InnerException is WarningFormalizeException) {
 					_logger.Warn("Формализация прайс листа завершена с предупреждением", e);
 					FormalizeOK = true;
 				}

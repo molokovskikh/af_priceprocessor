@@ -11,11 +11,9 @@ using log4net.Config;
 using NUnit.Framework;
 using System.Threading;
 using MySql.Data.MySqlClient;
-using System.Configuration;
 using log4net;
 using System.Data;
 using System.Reflection;
-using PriceProcessor.Test.TestHelpers;
 using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
@@ -26,10 +24,10 @@ namespace PriceProcessor.Test
 	{
 		private TestPriceItem _priceItem;
 		private TestPrice _price;
-		[Test]
+		[Test(Description = "проверка корректности логирования при возникновении WarningFormalizeException")]
 		public void CheckPriceProcessLoggerWithWarningFormalizeExceptionTest()
 		{
-			CheckPriceProcessLoggerWithWarningFormalizeExceptionTestPrepareData();
+			PrepareCorrectXMLData();
 			With.Connection(connection =>
 				MySqlHelper.ExecuteNonQuery(connection,
 					String.Format("update usersettings.priceitems set rowcount={0} where id={1}",
@@ -40,28 +38,31 @@ namespace PriceProcessor.Test
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
 
-			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage));
+			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage), "Отсутствует информация о произошедшем исключении");
+			Assert.True(priceProcessThread.FormalizeOK, "Формализация закончилась с ошибкой");
 
 			using (new SessionScope()) {
 				var log =  Inforoom.PriceProcessor.Models.FormLog.Queryable
-					.Where(l => l.PriceItemId == _priceItem.Id).ToList();
-				Assert.That(log.Count, Is.GreaterThan(0));
+					.Where(l => l.PriceItemId == _priceItem.Id
+						&& l.Host.Equals(Environment.MachineName)
+						&& l.ResultId == (int?)FormResults.Error
+						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage)).ToList();
+				Assert.That(log.Count, Is.GreaterThan(0),"Информация о предупреждении отсутствует в БД");
 			}
 		}
 
-		public void CheckPriceProcessLoggerWithWarningFormalizeExceptionTestPrepareData()
+		public void PrepareCorrectXMLData()
 		{
 			var supplier = TestSupplier.Create();
 			using (new SessionScope()) {
 				_price = supplier.Prices[0];
 				_priceItem = _price.Costs[0].PriceItem;
-				_price.SaveAndFlush();
 				var format = _priceItem.Format;
 				format.PriceFormat = PriceFormatType.UniversalXml;
 				format.Save();
 
 				_price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м",
-				                                    "Вухан Лифарма Кемикалз Ко");
+					"Вухан Лифарма Кемикалз Ко");
 			}
 		}
 
