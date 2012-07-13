@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Castle.ActiveRecord;
+using Common.MySql;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
 using Test.Support;
@@ -15,12 +17,54 @@ using System.Data;
 using System.Reflection;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support.Suppliers;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace PriceProcessor.Test
 {
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
+		private TestPriceItem _priceItem;
+		private TestPrice _price;
+		[Test]
+		public void CheckPriceProcessLoggerWithWarningFormalizeExceptionTest()
+		{
+			CheckPriceProcessLoggerWithWarningFormalizeExceptionTestPrepareData();
+			With.Connection(connection =>
+				MySqlHelper.ExecuteNonQuery(connection,
+					String.Format("update usersettings.priceitems set rowcount={0} where id={1}",
+					1000,
+					_priceItem.Id))
+				);
+			var priceProcessItem = new PriceProcessItem(false, 0, null, _priceItem.Id, @"Data\109054.xml", null);
+			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
+			priceProcessThread.ThreadWork();
+
+			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage));
+
+			using (new SessionScope()) {
+				var log =  Inforoom.PriceProcessor.Models.FormLog.Queryable
+					.Where(l => l.PriceItemId == _priceItem.Id).ToList();
+				Assert.That(log.Count, Is.GreaterThan(0));
+			}
+		}
+
+		public void CheckPriceProcessLoggerWithWarningFormalizeExceptionTestPrepareData()
+		{
+			var supplier = TestSupplier.Create();
+			using (new SessionScope()) {
+				_price = supplier.Prices[0];
+				_priceItem = _price.Costs[0].PriceItem;
+				_price.SaveAndFlush();
+				var format = _priceItem.Format;
+				format.PriceFormat = PriceFormatType.UniversalXml;
+				format.Save();
+
+				_price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м",
+				                                    "Вухан Лифарма Кемикалз Ко");
+			}
+		}
+
 		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
 		{
