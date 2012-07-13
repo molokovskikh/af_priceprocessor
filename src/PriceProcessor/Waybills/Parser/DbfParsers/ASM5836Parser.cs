@@ -30,23 +30,23 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		}
 
 		public static bool CheckFileFormat(DataTable data)
-        {
-            return data.Columns.Contains("NUMDOC")
-                && data.Columns.Contains("DATE")
-                && data.Columns.Contains("KONTRAGENT")
-                && data.Columns.Contains("CODE")
-                && data.Columns.Contains("NAME")
-                && data.Columns.Contains("KOL")
-                && data.Columns.Contains("CENA")
-                && data.Columns.Contains("NDS_TAX")
-                && data.Columns.Contains("NDS_SUM")
-                && data.Columns.Contains("SUMMA")
-                && data.Columns.Contains("SERIA")
-                && data.Columns.Contains("SERTIFICAT")
-                && data.Columns.Contains("GTD")
-                && data.Columns.Contains("COUNTRY")
+		{
+			return data.Columns.Contains("NUMDOC")
+				&& data.Columns.Contains("DATE")
+				&& data.Columns.Contains("KONTRAGENT")
+				&& data.Columns.Contains("CODE")
+				&& data.Columns.Contains("NAME")
+				&& data.Columns.Contains("KOL")
+				&& data.Columns.Contains("CENA")
+				&& data.Columns.Contains("NDS_TAX")
+				&& data.Columns.Contains("NDS_SUM")
+				&& data.Columns.Contains("SUMMA")
+				&& data.Columns.Contains("SERIA")
+				&& data.Columns.Contains("SERTIFICAT")
+				&& data.Columns.Contains("GTD")
+				&& data.Columns.Contains("COUNTRY")
 				&& data.Columns.Contains("MAKER")
-                && data.Columns.Contains("COMMENT");
-        }
+				&& data.Columns.Contains("COMMENT");
+		}
 	}
 }
