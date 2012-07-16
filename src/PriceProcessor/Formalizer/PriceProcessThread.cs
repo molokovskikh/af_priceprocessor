@@ -230,7 +230,7 @@ namespace Inforoom.Formalizer
 			catch(Exception e)
 			{
 				if (e.InnerException is WarningFormalizeException) {
-					_logger.Warn("Формализация прайс листа завершена с предупреждением", e);
+					_log.WarningLog((WarningFormalizeException)e.InnerException, e.InnerException.Message);
 					FormalizeOK = true;
 				}
 				else

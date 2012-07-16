@@ -22,19 +22,11 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
-		private TestPriceItem _priceItem;
-		private TestPrice _price;
 		[Test(Description = "проверка корректности логирования при возникновении WarningFormalizeException")]
-		public void CheckPriceProcessLoggerWithWarningFormalizeExceptionTest()
+		public void CatchWarningFormalizeExceptionTest()
 		{
-			PrepareCorrectXMLData();
-			With.Connection(connection =>
-				MySqlHelper.ExecuteNonQuery(connection,
-					String.Format("update usersettings.priceitems set rowcount={0} where id={1}",
-					1000,
-					_priceItem.Id))
-				);
-			var priceProcessItem = new PriceProcessItem(false, 0, null, _priceItem.Id, @"Data\109054.xml", null);
+			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
+			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
 			priceProcessThread.ThreadWork();
 
@@ -43,7 +35,7 @@ namespace PriceProcessor.Test
 
 			using (new SessionScope()) {
 				var log =  Inforoom.PriceProcessor.Models.FormLog.Queryable
-					.Where(l => l.PriceItemId == _priceItem.Id
+					.Where(l => l.PriceItemId == priceItemId
 						&& l.Host.Equals(Environment.MachineName)
 						&& l.ResultId == (int?)FormResults.Error
 						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage)).ToList();
@@ -51,30 +43,6 @@ namespace PriceProcessor.Test
 			}
 		}
 
-		public void PrepareCorrectXMLData()
-		{
-			var supplier = TestSupplier.Create();
-			using (new SessionScope()) {
-				_price = supplier.Prices[0];
-				_priceItem = _price.Costs[0].PriceItem;
-				var format = _priceItem.Format;
-				format.PriceFormat = PriceFormatType.UniversalXml;
-				format.Save();
-
-				_price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м",
-					"Вухан Лифарма Кемикалз Ко");
-			}
-		}
-
-		[Test(Description = "проверка корректности обработки вложенного WarningFormalizeException")]
-		public void CatchWarningFormalizeExceptionTest()
-		{
-			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
-			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
-			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
-			priceProcessThread.ThreadWork();
-			Assert.True(priceProcessThread.FormalizeOK, "Исключение обработано некорректно либо сгенерировано исключение иного типа");
-		}
 		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
 		{
 			var supplier = TestSupplier.Create();
