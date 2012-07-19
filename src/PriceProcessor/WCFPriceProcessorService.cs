@@ -18,7 +18,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor
 {
-	public class WCFPriceProcessorService : IRemotePriceProcessor
+	public class WCFPriceProcessorService : IRemotePriceProcessor, IRemotePriceProcessorOneWay
 	{
 		private ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
 

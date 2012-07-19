@@ -111,7 +111,7 @@ namespace Inforoom.PriceProcessor
 
 			_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof (IRemotePriceProcessor),
 				typeof (WCFPriceProcessorService),
-				sbUrlService.ToString());
+				sbUrlService.ToString(), Settings.Default.WCFQueueName);
 
 			_waybillServiceHost = new ServiceHost(typeof (WaybillService));
 

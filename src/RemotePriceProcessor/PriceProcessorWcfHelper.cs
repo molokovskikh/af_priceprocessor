@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Messaging;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
@@ -8,6 +9,7 @@ using System.ServiceModel;
 using System.Net.Security;
 using System.IO;
 using log4net;
+using Message = System.ServiceModel.Channels.Message;
 
 namespace RemotePriceProcessor
 {
@@ -55,17 +57,27 @@ namespace RemotePriceProcessor
 	/// </summary>
 	public class PriceProcessorWcfHelper
 	{
-		private ChannelFactory<IRemotePriceProcessor> _channelFactory;
+		protected ChannelFactory<IRemotePriceProcessor> _channelFactory;
+		protected ChannelFactory<IRemotePriceProcessorOneWay> _msmqChannelFactory;
 
 		private IRemotePriceProcessor _clientProxy;
+		private IRemotePriceProcessorOneWay _msmqClientProxy;
 
 		private const int MaxBufferSize = 524288;
 
-		public PriceProcessorWcfHelper(string wcfServiceUrl)
+		public PriceProcessorWcfHelper(string wcfServiceUrl) : this(wcfServiceUrl, string.Empty)
+		{}
+
+		public PriceProcessorWcfHelper(string wcfServiceUrl, string wcfQueueName)
 		{
 			var binding = CreateTcpBinding();
 			_channelFactory = new ChannelFactory<IRemotePriceProcessor>(binding, wcfServiceUrl);
 			_channelFactory.Endpoint.Behaviors.Add(new MessageInspectorRegistrator(new [] { new AuditInfoInspector() }));
+			if (!string.IsNullOrEmpty(wcfQueueName)) {
+				var msmqBinding = CreateMsmqBinding();
+				_msmqChannelFactory = new ChannelFactory<IRemotePriceProcessorOneWay>(msmqBinding, wcfQueueName);
+				_msmqChannelFactory.Endpoint.Behaviors.Add(new MessageInspectorRegistrator(new [] { new AuditInfoInspector() }));
+			}
 		}
 
 		public void Dispose()
@@ -84,14 +96,41 @@ namespace RemotePriceProcessor
 			return binding;
 		}
 
-		public static ServiceHost StartService(Type serviceInterfaceType, Type serviceImplementationType, string wcfServiceUrl)
+		public static NetMsmqBinding CreateMsmqBinding()
+		{
+			var binding = new NetMsmqBinding();
+			binding.Security.Transport.MsmqProtectionLevel = ProtectionLevel.EncryptAndSign;
+			binding.Security.Mode = NetMsmqSecurityMode.None;
+			binding.MaxReceivedMessageSize = Int32.MaxValue;
+			binding.Name = "MsmqBindingNonTransactionalNoSecurity";
+			binding.ExactlyOnce = false;
+			return binding;
+		}
+
+		public static ServiceHost StartService(Type serviceInterfaceType, Type serviceImplementationType, string wcfServiceUrl, string wcfQueueName)
 		{
 			var serviceHost = new ServiceHost(serviceImplementationType);
-			var binding = CreateTcpBinding();
-			serviceHost.AddServiceEndpoint(serviceInterfaceType, binding, wcfServiceUrl);
+			var tcpBinding = CreateTcpBinding();
+			var msmqBinding = CreateMsmqBinding();
+			serviceHost.AddServiceEndpoint(serviceInterfaceType, tcpBinding, wcfServiceUrl);
+
+			var queueName = GetShortQueueName(wcfQueueName);
+			if (!string.IsNullOrEmpty(queueName))
+				if (!MessageQueue.Exists(queueName))
+					MessageQueue.Create(queueName, false);
+
+			serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessorOneWay), msmqBinding, wcfQueueName);
 			serviceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
 			serviceHost.Open();
 			return serviceHost;
+		}
+
+		private static string GetShortQueueName(string name)
+		{
+			var parts = name.Split(new [] {'/'});
+			if (parts.Length > 1)
+				return string.Format(@".\{1}$\{0}", parts.Last(), parts[parts.Length - 2]);
+			return string.Empty;
 		}
 
 		public static void StopService(ServiceHost serviceHost)
@@ -108,6 +147,12 @@ namespace RemotePriceProcessor
 		{
 			if (((ICommunicationObject)_clientProxy).State != CommunicationState.Closed)
 				((ICommunicationObject)_clientProxy).Abort();
+		}
+
+		private void AbortMsmqClientProxy()
+		{
+			if (((ICommunicationObject)_msmqClientProxy).State != CommunicationState.Closed)
+				((ICommunicationObject)_msmqClientProxy).Abort();
 		}
 
 		public bool ResendPrice(ulong downlogId)
@@ -154,20 +199,37 @@ namespace RemotePriceProcessor
 
 		public bool RetransPrice(ulong priceItemId)
 		{
+			return RetransPrice(priceItemId, false);
+		}
+
+		public bool RetransPrice(ulong priceItemId, bool msmqUse)
+		{
 			LastErrorMessage = String.Empty;
 			try
 			{
-				var parameter = new WcfCallParameter() {
+				var parameter = new WcfCallParameter()
+				{
 					Value = priceItemId,
-					LogInformation = new LogInformation() {
+					LogInformation = new LogInformation()
+					{
 						ComputerName = Environment.MachineName,
 						UserName = Environment.UserName
 					}
 				};
-
-				_clientProxy = _channelFactory.CreateChannel();
-				_clientProxy.RetransPrice(parameter);
-				((ICommunicationObject)_clientProxy).Close();
+				if (!msmqUse)
+				{
+					_clientProxy = _channelFactory.CreateChannel();
+					_clientProxy.RetransPrice(parameter);
+					((ICommunicationObject)_clientProxy).Close();
+				}
+				else
+				{
+					if (_msmqChannelFactory != null) {
+						_msmqClientProxy = _msmqChannelFactory.CreateChannel();
+						_msmqClientProxy.RetransPrice(parameter);
+						((ICommunicationObject)_msmqClientProxy).Close();
+					}
+				}
 			}
 			catch (FaultException faultException)
 			{
@@ -176,7 +238,11 @@ namespace RemotePriceProcessor
 			}
 			finally
 			{
-				AbortClientProxy();
+				if (!msmqUse)
+					AbortClientProxy();
+				else
+					if (_msmqChannelFactory != null)
+						AbortMsmqClientProxy();
 			}
 			return true;
 		}

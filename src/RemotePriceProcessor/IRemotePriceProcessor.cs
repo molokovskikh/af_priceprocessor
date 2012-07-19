@@ -113,6 +113,17 @@ namespace RemotePriceProcessor
 		}
 	}
 
+
+	/// <summary>
+	/// интерфейс для удаленного взаимодействия через MSMQ
+	/// </summary>
+	[ServiceContract]
+	public interface IRemotePriceProcessorOneWay
+	{
+		[OperationContract(IsOneWay = true)]
+		void RetransPrice(WcfCallParameter downlogId);
+	}
+
 	/// <summary>
 	/// интерфейс для удаленного взаимодействия с PriceProcessor'ом
 	/// </summary>

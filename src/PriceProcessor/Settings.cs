@@ -778,6 +778,17 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("net.msmq://localhost/private/PriceProcessorWCFQueue")]
+		public string WCFQueueName
+		{
+			get
+			{
+				return ((string)(this["WCFQueueName"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("143")]
 		public string IMAPPort
 		{

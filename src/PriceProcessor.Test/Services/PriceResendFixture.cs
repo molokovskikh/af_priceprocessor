@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using Castle.ActiveRecord;
 using NUnit.Framework;
 using System.IO;
@@ -25,6 +27,9 @@ namespace PriceProcessor.Test.Services
 		private TestSupplier supplier;
 		private TestPriceSource source;
 		private TestPriceItem priceItem;
+
+		private TestPrice rootPrice;
+		private	TestPrice childPrice;
 
 		[SetUp]
 		public void SetUp()
@@ -78,6 +83,30 @@ namespace PriceProcessor.Test.Services
 				};
 				r.ResendPrice(paramDownlogId);
 			});
+		}
+
+		private void CreatePrices()
+		{
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				rootPrice = supplier.Prices[0];
+				rootPrice.SetFormat(PriceFormatType.NativeDbf);
+				rootPrice.Save();
+				scope.VoteCommit();
+			}
+
+			var supplier2 = TestSupplier.Create();
+			using (var scope = new TransactionScope(OnDispose.Rollback))
+			{
+				childPrice = supplier2.Prices[0];
+				childPrice.SetFormat(PriceFormatType.NativeDbf);
+
+				new TestUnrecExp("test", "test", childPrice).Save();
+				new TestUnrecExp("test", "test", rootPrice).Save();
+				childPrice.ParentSynonym = rootPrice.Id;
+				childPrice.Save();
+				scope.VoteCommit();
+			}
 		}
 
 		private void WcfCall(Action<IRemotePriceProcessor> action)
@@ -202,28 +231,7 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Smart_resend_should_resend_price_and_all_related_prices()
 		{
-			TestPrice rootPrice;
-			TestPrice childPrice;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				rootPrice = supplier.Prices[0];
-				rootPrice.SetFormat(PriceFormatType.NativeDbf);
-				rootPrice.Save();
-				scope.VoteCommit();
-			}
-
-			var supplier2 = TestSupplier.Create();
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				childPrice = supplier2.Prices[0];
-				childPrice.SetFormat(PriceFormatType.NativeDbf);
-
-				new TestUnrecExp("test", "test", childPrice).Save();
-				new TestUnrecExp("test", "test", rootPrice).Save();
-				childPrice.ParentSynonym = rootPrice.Id;
-				childPrice.Save();
-				scope.VoteCommit();
-			}
+			CreatePrices();
 
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
@@ -232,6 +240,43 @@ namespace PriceProcessor.Test.Services
 
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
+		}
+
+		[Test]
+		public void Msmq_test_retrans_price()
+		{
+			ServiceHost _priceProcessorHost = null;
+			try
+			{
+				CreatePrices();
+
+				var sbUrlService = new StringBuilder();
+				sbUrlService.Append(@"net.tcp://")
+					.Append(Dns.GetHostName()).Append(":")
+					.Append(Settings.Default.WCFServicePort).Append("/")
+					.Append(Settings.Default.WCFServiceName);
+
+				_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof(IRemotePriceProcessor),
+					typeof(WCFPriceProcessorService),
+					sbUrlService.ToString(), Settings.Default.WCFQueueName);
+
+				var priceProcessor = new PriceProcessorWcfHelper(sbUrlService.ToString(), Settings.Default.WCFQueueName);
+
+				File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+				File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+
+				priceProcessor.RetransPrice(rootPrice.Costs[0].PriceItem.Id, true);
+				priceProcessor.RetransPrice(childPrice.Costs[0].PriceItem.Id, true);
+
+				Thread.Sleep(1000);
+
+				Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
+				Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
+			}
+			finally {
+				if (_priceProcessorHost != null)
+					PriceProcessorWcfHelper.StopService(_priceProcessorHost);
+			}
 		}
 	}
 }
