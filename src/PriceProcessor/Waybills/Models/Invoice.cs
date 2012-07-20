@@ -57,10 +57,22 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string ShipperInfo { get; set; }
 
 		/// <summary>
-		/// Грузополучатель и его адрес
+		/// Код грузополучателя в кодировке поставщика
 		/// </summary>
 		[Property]
-		public string ConsigneeInfo { get; set; }
+		public string RecipientName { get; set; }
+
+		/// <summary>
+		/// Название грузополучателя
+		/// </summary>
+		[Property]
+		public int? RecipientId { get; set; }
+
+		/// <summary>
+		/// Грузополучатель и его адрес
+		/// </summary>
+		[Property("ConsigneeInfo")]
+		public string RecipientAddress { get; set; }
 
 		/// <summary>
 		/// Поле К платежно-расчетному документу N
@@ -68,6 +80,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string PaymentDocumentInfo { get; set; }
 		
+		/// <summary>
+		/// Код полупателя в кодировки поставщика
+		/// </summary>
+		[Property]
+		public int? BuyerId { get; set; }
+
 		/// <summary>
 		/// Наименование покупателя
 		/// </summary>
@@ -151,6 +169,30 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public decimal? Amount { get; set; }
+
+		/// <summary>
+		/// Отсрочка платежа (календарные дни)
+		/// </summary>
+		[Property]
+		public int? DelayOfPaymentInDays { get; set; }
+
+		/// <summary>
+		/// Отсрочка платежа (банковские дни)
+		/// </summary>
+		[Property]
+		public int? DelayOfPaymentInBankDays { get; set; }
+
+		/// <summary>
+		/// Номер договора (коммисии)
+		/// </summary>
+		[Property]
+		public string CommissionFeeContractId { get; set; }
+
+		/// <summary>
+		/// Ставка коммисионного вознаграждения
+		/// </summary>
+		[Property]
+		public decimal? CommissionFee { get; set; }
 
 		private int ToIntX100(decimal val)
 		{

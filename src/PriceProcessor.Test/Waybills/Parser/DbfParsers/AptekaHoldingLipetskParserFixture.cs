@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(invoice.SellerINN, Is.EqualTo("7729350817"));
             Assert.That(invoice.SellerKPP, Is.EqualTo("623403001"));
             Assert.That(invoice.ShipperInfo, Is.EqualTo("филиал ЗАО \"Аптека-Холдинг\" в г. Рязани, Адрес:390013,г. Рязань,Товарный двор станции Рязань-2,строение 31"));
-            Assert.That(invoice.ConsigneeInfo, Is.EqualTo("ОГУП Липецкфармация, аптека, пр. Победы, д.59 \"а\", помещение №2, 398024, г. Липецк, пр. Победы, д.59 \"а\", помещение №2"));
+            Assert.That(invoice.RecipientAddress, Is.EqualTo("ОГУП Липецкфармация, аптека, пр. Победы, д.59 \"а\", помещение №2, 398024, г. Липецк, пр. Победы, д.59 \"а\", помещение №2"));
             Assert.That(invoice.PaymentDocumentInfo, Is.EqualTo("0"));
             Assert.That(invoice.BuyerName, Is.EqualTo("Областное государственное унитарное предприятие \"Липецкфармация\""));
             Assert.That(invoice.BuyerAddress, Is.EqualTo("398043, г.Липецк, ул.Гагарина, д.113"));

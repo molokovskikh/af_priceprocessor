@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			var invoice = document.Invoice;
 			Assert.That(invoice, Is.Not.Null);
-			Assert.That(invoice.ConsigneeInfo, Is.EqualTo("ГУП А-2"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("ГУП А-2"));
 
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("000000534"));
@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			invoice = document2.Invoice;
 			Assert.That(invoice, Is.Not.Null);
-			Assert.That(invoice.ConsigneeInfo, Is.EqualTo("ГУП А-371"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("ГУП А-371"));
 
 			line = document2.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("000000458"));

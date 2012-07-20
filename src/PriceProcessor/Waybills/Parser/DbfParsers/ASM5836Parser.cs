@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(h => h.ProviderDocumentId, "NUMDOC")
 				.DocumentHeader(h => h.DocumentDate, "DATE")
 				.DocumentInvoice(i => i.ShipperInfo, "KONTRAGENT")
-				.DocumentInvoice(i => i.ConsigneeInfo, "COMMENT")
+				.DocumentInvoice(i => i.RecipientAddress, "COMMENT")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Quantity, "KOL")

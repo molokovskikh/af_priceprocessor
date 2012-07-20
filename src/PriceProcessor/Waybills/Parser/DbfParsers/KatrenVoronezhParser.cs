@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
                 .DocumentInvoice(i => i.SellerINN, "SINN")
                 .DocumentInvoice(i => i.SellerKPP, "SINN")
                 .DocumentInvoice(i => i.ShipperInfo, "GAddress")
-                .DocumentInvoice(i => i.ConsigneeInfo, "CAddress")
+                .DocumentInvoice(i => i.RecipientAddress, "CAddress")
                 .DocumentInvoice(i => i.PaymentDocumentInfo, "CAccount")
                 .DocumentInvoice(i => i.BuyerName, "Contractor")
                 .DocumentInvoice(i => i.BuyerAddress, "StAddress")

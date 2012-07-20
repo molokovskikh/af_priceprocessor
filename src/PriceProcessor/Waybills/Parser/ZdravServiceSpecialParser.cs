@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
                 .DocumentInvoice(i => i.SellerINN, "PINNKPP")
                 .DocumentInvoice(i => i.SellerKPP, "PINNKPP")
                 .DocumentInvoice(i => i.ShipperInfo, "CONSIGNOR")
-                .DocumentInvoice(i => i.ConsigneeInfo, "CONSIGNEE")
+                .DocumentInvoice(i => i.RecipientAddress, "CONSIGNEE")
                 .DocumentInvoice(i => i.PaymentDocumentInfo, "NPAYDOC")
                 .DocumentInvoice(i => i.BuyerName, "PAYER")
                 .DocumentInvoice(i => i.BuyerAddress, "PAYERADDR")

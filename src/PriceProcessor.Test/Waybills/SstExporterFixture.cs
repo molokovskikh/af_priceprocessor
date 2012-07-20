@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -10,10 +11,13 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class SstExporterFixture
 	{
-		[Test]
-		public void ExportProtekSstFile()
+		private Document document;
+		private DocumentReceiveLog log;
+
+		[SetUp]
+		public void Setup()
 		{
-			var log = new DocumentReceiveLog {
+			log = new DocumentReceiveLog {
 				Id = 100,
 				Supplier = new Supplier {
 					Id = 201,
@@ -29,7 +33,7 @@ namespace PriceProcessor.Test.Waybills
 					}
 				}
 			};
-			var document = new Document(log) {
+			document = new Document(log) {
 				ProviderDocumentId = "001-01"
 			};
 			document.NewLine(new DocumentLine {
@@ -46,6 +50,12 @@ namespace PriceProcessor.Test.Waybills
 				Quantity = 4,
 				Nds = 10,
 			});
+			document.CalculateValues();
+		}
+
+		[Test]
+		public void ExportProtekSstFile()
+		{
 			SstExporter.Save(document);
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).sst");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
@@ -61,6 +71,16 @@ namespace PriceProcessor.Test.Waybills
 			var bytes = Encoding.GetEncoding(1251).GetBytes(serialString);
 			Assert.That(bytes.Length, Is.EqualTo(7));
 			Assert.That(bytes[6], Is.EqualTo(127), "Разделителем не является символ с кодом 127");
+		}
+
+		[Test]
+		public void Write_additional_fields()
+		{
+			SstExporter.Save(document);
+			document.Lines[0].CertificateAuthority = "Test";
+			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).sst");
+			var content = File.ReadLines(resultFile, Encoding.GetEncoding(1251)).ToArray();
+			Console.WriteLine(content[3], Is.StringEnding("432.04;Test;10;39.28;;;"));
 		}
 	}
 }

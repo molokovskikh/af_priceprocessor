@@ -49,7 +49,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(invoice.SellerINN, Is.EqualTo("5408130693"));
             Assert.That(invoice.SellerKPP, Is.EqualTo("366502001"));
             Assert.That(invoice.ShipperInfo, Is.EqualTo("Филиал ЗАО НПК \"Катрен\" в г.Воронеж,394065, Россия, г. Воронеж, пр-т Патриотов д. 57а"));
-            Assert.That(invoice.ConsigneeInfo, Is.EqualTo("Аптека №116, г. Липецк, ул. Неделина, д.31А, нежилое помещение№1"));
+            Assert.That(invoice.RecipientAddress, Is.EqualTo("Аптека №116, г. Липецк, ул. Неделина, д.31А, нежилое помещение№1"));
             Assert.That(invoice.PaymentDocumentInfo, Is.Null);
             Assert.That(invoice.BuyerName, Is.EqualTo("ЛИПЕЦК, ОГУП* ЛИПЕЦКФАРМАЦИЯ *"));
             Assert.That(invoice.BuyerAddress, Is.EqualTo("г. Липецк, ул. Гагарина,д. 113"));
