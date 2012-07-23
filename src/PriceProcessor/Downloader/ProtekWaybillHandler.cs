@@ -361,10 +361,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.CreateCertificateTasks();
 
 								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
-									if (settings.ProtekWaybillSavingType == ProtekWaybillSavingType.SST)
-										SstExporter.Save(document);
-									else 
-										DbfExporter.SaveProtek(document);
+									Exporter.Save(document, settings.ProtekWaybillSavingType);
 
 								scope.VoteCommit();
 								WaybillOrderMatcher.SafeComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе

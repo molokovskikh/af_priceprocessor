@@ -45,7 +45,7 @@ namespace PriceProcessor.Test.Waybills
 				Quantity = 4,
 				Nds = 10,
 			});
-			DbfExporter.SaveProtek(document);
+			Exporter.Save(document, WaybillFormat.DBF);
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).dbf");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 			Assert.That(log.FileName, Is.EqualTo("001-01.dbf"));

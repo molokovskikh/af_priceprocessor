@@ -164,7 +164,7 @@
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="Models\Reject.cs" />
-    <Compile Include="Waybills\Models\SstExporter.cs" />
+    <Compile Include="Waybills\Models\Exporter.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
     <Compile Include="Models\Assortment.cs" />
