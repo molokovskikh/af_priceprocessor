@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using Castle.ActiveRecord;
@@ -117,7 +117,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new SessionScope()) {
 				var settings = WaybillSettings.Find(order1.Client.Id);
 				//Формат сохранения в dbf теперь не является форматом по умолчанию
-				settings.ProtekWaybillSavingType = ProtekWaybillSavingType.DBF;
+				settings.ProtekWaybillSavingType = WaybillFormat.DBF;
 				settings.Save();
 			}
 
@@ -145,7 +145,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new SessionScope()) {
 				var settings = WaybillSettings.Find(order1.Client.Id);
 				//По умолчанию форматом сохранения является формат sst
-				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(ProtekWaybillSavingType.SST));
+				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(WaybillFormat.SST));
 			}
 
 			fake.Process();

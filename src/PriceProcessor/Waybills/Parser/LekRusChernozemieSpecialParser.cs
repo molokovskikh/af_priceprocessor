@@ -31,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 				.DocumentInvoice(i => i.InvoiceNumber, "NUM_SF")
 				.DocumentInvoice(i => i.InvoiceDate, "DATE_SF")
-				.DocumentInvoice(i => i.ConsigneeInfo, "ADRESS_G")
+				.DocumentInvoice(i => i.RecipientAddress, "ADRESS_G")
 				.DocumentInvoice(i => i.ShipperInfo, "ADRESS_P")
 				.DocumentInvoice(i => i.AmountWithoutNDS0, "SUMBNDS0")
 				.DocumentInvoice(i => i.AmountWithoutNDS10, "SUMBNDS10")

@@ -175,6 +175,7 @@
     <Compile Include="Waybills\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ASM5836ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASTIFarmacevtika12799ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BikovCheboksary12649ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BiolainDbfParserFixture.cs" />

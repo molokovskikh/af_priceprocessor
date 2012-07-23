@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(h => h.ProviderDocumentId, "NSF")
 				.DocumentHeader(h => h.DocumentDate, "DTOTG")
 
-				.DocumentInvoice(i=> i.ConsigneeInfo, "ADRPOTR")
+				.DocumentInvoice(i=> i.RecipientAddress, "ADRPOTR")
 
 				.Line(l => l.Code, "NFS")
 				.Line(l => l.Product, "NMFS")

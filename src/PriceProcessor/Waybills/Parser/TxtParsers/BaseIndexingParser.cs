@@ -275,7 +275,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				document.SetInvoice().ShipperInfo = GetString(header[ShipperInfoIndex]);
 
 			if ((ConsigneeInfoIndex >= 0) && header.Length > ConsigneeInfoIndex)
-				document.SetInvoice().ConsigneeInfo = GetString(header[ConsigneeInfoIndex]);
+				document.SetInvoice().RecipientAddress = GetString(header[ConsigneeInfoIndex]);
 
 			if ((PaymentDocumentInfoIndex >= 0) && header.Length > PaymentDocumentInfoIndex)
 				document.SetInvoice().PaymentDocumentInfo = GetString(header[PaymentDocumentInfoIndex]);

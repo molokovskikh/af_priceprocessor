@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				.DocumentInvoice(i=> i.InvoiceNumber, "BILLNUM")
 				.DocumentInvoice(i=> i.InvoiceDate, "BILLDT")
-				.DocumentInvoice(i=> i.ConsigneeInfo, "PODR")
+				.DocumentInvoice(i=> i.RecipientAddress, "PODR")
 
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")

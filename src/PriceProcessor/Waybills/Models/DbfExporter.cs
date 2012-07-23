@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return table;
 		}
 
-		public static void SaveProtek(Document document)
+		public static void SaveProtek(Document document, string filename)
 		{
 			var table = new DataTable();
 
@@ -181,15 +181,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				table.Rows.Add(row);
 			}
 
-			document.Log.IsFake = false;
-			var id = document.ProviderDocumentId;
-			if (string.IsNullOrEmpty(id))
-				id = document.Log.Id.ToString();
-
-			document.Log.FileName = id + ".dbf";
-			var filename = document.Log.GetRemoteFileNameExt();
 			Dbf.Save(table, filename);
-			document.Log.DocumentSize = new FileInfo(filename).Length;
 		}
 	}
 }

@@ -71,7 +71,7 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.EAN13, "EAN13")
-				.Line(l => l.ProducerCost, "PRICE1")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE1")
 
 				.Line(l => l.SupplierCost, "PRICE2")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")

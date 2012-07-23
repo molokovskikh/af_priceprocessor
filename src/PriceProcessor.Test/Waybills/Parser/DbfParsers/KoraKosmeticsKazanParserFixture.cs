@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			
 			var invoice = document.Invoice;
 			Assert.That(invoice, Is.Not.Null);
-			Assert.That(invoice.ConsigneeInfo, Is.EqualTo("ГУП А-370"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("ГУП А-370"));
 
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("000000531"));

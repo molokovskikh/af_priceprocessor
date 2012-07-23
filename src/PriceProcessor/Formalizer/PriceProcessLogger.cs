@@ -14,7 +14,6 @@ namespace Inforoom.Formalizer
 		private readonly PriceProcessItem _processItem;
 
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
-		private bool _letterAboutConnectionSended;
 
 		public string CurrentErrorMessage { get; private set; }
 		public long FormSecs { get; set; }
@@ -23,22 +22,6 @@ namespace Inforoom.Formalizer
 		{
 			_prevErrorMessage = prevErrorMessage;
 			_processItem = priceProcessItem;
-		}
-
-		public void SendMySqlFailMessage(string info)
-		{
-			if (_letterAboutConnectionSended)
-				return;
-
-			Mailer.Send(Settings.Default.ServiceMail,
-			            Settings.Default.ServiceMail,
-			            "!!! Необходимо перезапустить PriceProcessor",
-			            String.Format(@"
-Необходимо перезапустить PriceProcessor, т.к. в нитке формализации был получен connection, который не возвращает записей при выполнении команд.
-Техническая информация:
-{0}", info));
-
-			_letterAboutConnectionSended = true;
 		}
 
 		public void SuccesLog(IPriceFormalizer p)

@@ -72,12 +72,27 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string CertificatesDate { get; set; }
+
+		/// <summary>
+		/// Орган, выдавший документа качества
+		/// </summary>
+		[Property]
+		public string CertificateAuthority { get; set; }
 		
 		/// <summary>
 		/// Срок годности. А точнее Дата окончания срока годности.
 		/// </summary>
 		[Property]
 		public string Period { get; set; }
+
+		/// <summary>
+		/// Срок годности в месяцах
+		/// </summary>
+		[Property]
+		public int? ExpireInMonths { get; set; }
+
+		[Property]
+		public DateTime? DateOfManufacture { get; set; }
 
 		/// <summary>
 		/// Id производителя
@@ -113,6 +128,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public decimal? RegistryCost { get; set; }
+
+		/// <summary>
+		/// Дата регистрации цены в ГосРеестре
+		/// </summary>
+		[Property]
+		public DateTime? RegistryDate { get; set; }
 
 		/// <summary>
 		/// Наценка поставщика

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Castle.ActiveRecord;
-using Common.MySql;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
 using Test.Support;
@@ -16,6 +15,7 @@ using System.Data;
 using System.Reflection;
 using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
+
 
 namespace PriceProcessor.Test
 {
@@ -60,17 +60,17 @@ namespace PriceProcessor.Test
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
-			var priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
-			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty);
-			while ((priceProcessThread.ThreadState != ThreadState.Running) && priceProcessThread.ThreadIsAlive)
+			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
+			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
+			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive)
 			{
 				Thread.Sleep(500);
 			}
-			priceProcessThread.AbortThread();
-			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
-			while (!priceProcessThread.FormalizeEnd && ((priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
+			_priceProcessThread.AbortThread();
+			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			while (!_priceProcessThread.FormalizeEnd && ((_priceProcessThread.ThreadState & ThreadState.Stopped) == 0))
 				Thread.Sleep(500);
-			Assert.That(!priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
+			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
 		}
 
 		enum CorruptDBThreadState

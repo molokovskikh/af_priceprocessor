@@ -165,7 +165,7 @@
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="Models\Reject.cs" />
-    <Compile Include="Waybills\Models\SstExporter.cs" />
+    <Compile Include="Waybills\Models\Exporter.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
     <Compile Include="Models\Assortment.cs" />
@@ -267,6 +267,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingCheboksaryParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingLipetskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ASM5836Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASTIFarmacevtika12799Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
