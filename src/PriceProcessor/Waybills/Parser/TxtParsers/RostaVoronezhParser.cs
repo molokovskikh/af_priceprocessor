@@ -77,7 +77,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     document.SetInvoice().SellerKPP = GetString(headers[SellerINNIndex].Split('/')[1]);
                 }
                 document.SetInvoice().ShipperInfo = GetString(headers[ShipperInfoIndex]);
-                document.SetInvoice().ConsigneeInfo = GetString(headers[ConsigneeInfoIndex]);
+                document.SetInvoice().RecipientAddress = GetString(headers[ConsigneeInfoIndex]);
                 document.SetInvoice().BuyerName = GetString(headers[BuyerNameIndex]);
                 document.SetInvoice().BuyerAddress = GetString(headers[BuyerAddressIndex]);
                 if (headers[BuyerINNIndex].Contains("/"))

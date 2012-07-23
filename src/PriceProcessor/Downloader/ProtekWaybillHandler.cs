@@ -361,10 +361,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								document.CreateCertificateTasks();
 
 								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
-									if (settings.ProtekWaybillSavingType == ProtekWaybillSavingType.SST)
-										SstExporter.Save(document);
-									else 
-										DbfExporter.SaveProtek(document);
+									Exporter.Save(document, settings.ProtekWaybillSavingType);
 
 								scope.VoteCommit();
 								WaybillOrderMatcher.SafeComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
@@ -443,16 +440,23 @@ namespace Inforoom.PriceProcessor.Downloader
 			invoice.SellerName = blading.protekNameAddr;
 			invoice.SellerINN = blading.protekInnKpp;
 			invoice.ShipperInfo = blading.protekAddr;
-			invoice.ConsigneeInfo = blading.recipientAddr;
+			invoice.RecipientId = blading.recipientId;
+			invoice.RecipientName = blading.recipientName;
+			invoice.RecipientAddress = blading.recipientAddr;
 			invoice.PaymentDocumentInfo = blading.baseId;
+			invoice.BuyerId = blading.payerId;
 			invoice.BuyerName = blading.payerName;
 			invoice.BuyerINN = blading.payerInn;
+			invoice.CommissionFee = (decimal?)blading.ksMin;
+			invoice.CommissionFeeContractId = blading.ncontr2;
 			invoice.AmountWithoutNDS = (decimal?)blading.sumbyWonds;
 			invoice.AmountWithoutNDS10 = (decimal?)blading.sumbyNdsrate10;
 			invoice.NDSAmount10 = (decimal?)blading.nds10;
 			invoice.AmountWithoutNDS18 = (decimal?)blading.sumbyNdsrate18;
 			invoice.NDSAmount18 = (decimal?)blading.nds20;
 			invoice.Amount = (decimal?)blading.rprice;
+			invoice.DelayOfPaymentInBankDays = blading.dbd;
+			invoice.DelayOfPaymentInDays = blading.dkd;
 
 			foreach (var bladingItem in blading.bladingItems)
 			{
@@ -463,27 +467,42 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Quantity = (uint?) bladingItem.bitemQty;
 				line.Country = bladingItem.country;
 				line.Certificates = bladingItem.seria;
+				line.CertificateAuthority = "";
+
+				line.ExpireInMonths = bladingItem.expiry;
 				line.Period = bladingItem.prodexpiry != null ? bladingItem.prodexpiry.Value.ToShortDateString() : null;
+				line.DateOfManufacture = bladingItem.proddt;
+
 				line.RegistryCost = (decimal?) bladingItem.reestrPrice;
+				line.RegistryDate = bladingItem.reestrDate;
+
 				line.SupplierPriceMarkup = (decimal?) bladingItem.distrProc;
 				line.NdsAmount = (decimal?) bladingItem.sumVat;
 				line.Nds = (uint?) bladingItem.vat;
 				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
 				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
 				line.ProducerCostWithoutNDS = (decimal?)bladingItem.prodPriceWonds;
-				line.VitallyImportant = bladingItem.vitalMed != null ? bladingItem.vitalMed.Value == 1 : false;
+				line.VitallyImportant = bladingItem.vitalMed != null && bladingItem.vitalMed.Value == 1;
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
 				line.EAN13 = bladingItem.prodsbar;
-				if (bladingItem.bladingItemSeries != null)
-					line.ProtekDocIds = bladingItem.bladingItemSeries
+				if (bladingItem.bladingItemSeries != null) {
+					var certificates = bladingItem.bladingItemSeries
 						.Where(s => s.bladingItemSeriesCertificates != null)
 						.SelectMany(s => s.bladingItemSeriesCertificates)
-						.Where(c => c != null)
+						.Where(c => c != null);
+
+					line.ProtekDocIds = certificates
 						.Select(c => c.docId)
 						.Where(id => id != null)
 						.Select(id => new ProtekDoc(line, id.Value))
 						.ToList();
+
+					line.CertificateAuthority = certificates
+						.Select(c => c.regOrg)
+						.DefaultIfEmpty()
+						.FirstOrDefault();
+				}
 			}
 
 			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной

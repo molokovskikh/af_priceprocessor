@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
             Assert.That(invoice.SellerINN, Is.EqualTo("5408130693"));
             Assert.That(invoice.SellerKPP, Is.EqualTo("366502001"));
             Assert.That(invoice.ShipperInfo, Is.EqualTo("394065, Россия, г. Воронеж, пр-т Патриотов д. 57а"));
-            Assert.That(invoice.ConsigneeInfo, Is.EqualTo(", г. Воронеж, ул. Димитрова, д. 127"));
+            Assert.That(invoice.RecipientAddress, Is.EqualTo(", г. Воронеж, ул. Димитрова, д. 127"));
             Assert.That(invoice.PaymentDocumentInfo, Is.Null);
             Assert.That(invoice.BuyerName, Is.EqualTo("ВОРОНЕЖ, ИП *Воронова М.В.*"));
             Assert.That(invoice.BuyerAddress, Is.EqualTo("г. Воронеж, Набережная Авиастроителей, дом 18 кв. 360"));

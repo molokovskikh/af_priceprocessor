@@ -43,13 +43,25 @@ namespace Inforoom.PriceProcessor.Downloader
 		public double? prodPriceWonds { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public DateTime? prodexpiry { get; set; }
-
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public string prodseria { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public string prodsbar { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public DateTime? prodexpiry { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? expiry { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public DateTime? proddt { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public double? reestrPrice { get; set; }
+
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public DateTime? reestrDate { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public double? vat { get; set; }
@@ -65,9 +77,6 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public string unit { get; set; }
-
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public string prodsbar { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public double? positionsum { get; set; }
@@ -98,7 +107,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	[Serializable]
 	[XmlType(Namespace="http://domain.ezakaz.protek.ru/xsd")]
-	public partial class BladingItemSeries
+	public class BladingItemSeries
 	{
 		[XmlElement(Form=XmlSchemaForm.Unqualified)]
 		public int? bitemId { get;set; }

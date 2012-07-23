@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(invoice, Is.Not.Null);
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("00039401"));
 			Assert.That(invoice.InvoiceDate.Value.ToShortDateString(), Is.EqualTo("13.09.2011"));
-			Assert.That(invoice.ConsigneeInfo, Is.EqualTo("Аптека № 59, Липецк, п.Дачный,ул.Писарева,10а"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("Аптека № 59, Липецк, п.Дачный,ул.Писарева,10а"));
 			Assert.That(invoice.ShipperInfo, Is.EqualTo("394040, Воронеж, пгт Придонской, Мазлумова, дом № 25А, корпус а"));
 			Assert.That(invoice.AmountWithoutNDS0, Is.EqualTo(0.00));
 			Assert.That(invoice.AmountWithoutNDS10, Is.EqualTo(865.53));

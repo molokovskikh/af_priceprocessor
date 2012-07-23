@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(invoice.SellerINN, Is.EqualTo("4027085792"));
             Assert.That(invoice.SellerKPP, Is.EqualTo("402945001"));
             Assert.That(invoice.ShipperInfo, Is.EqualTo("ООО \"ВЕКТОР ГРУПП\", 248009, г.Калуга, ул.Грабцевское шоссе, д.33"));
-            Assert.That(invoice.ConsigneeInfo, Is.EqualTo("Общество с ограниченной ответственностью \"Елена\", г.Калуга, ул.Ленина, 47"));
+            Assert.That(invoice.RecipientAddress, Is.EqualTo("Общество с ограниченной ответственностью \"Елена\", г.Калуга, ул.Ленина, 47"));
             Assert.That(invoice.PaymentDocumentInfo, Is.Null);
             Assert.That(invoice.BuyerName, Is.EqualTo("Общество с ограниченной ответственностью \"Елена\""));
             Assert.That(invoice.BuyerAddress, Is.EqualTo("г.Калуга, ул.Воронина, 25"));
@@ -104,7 +104,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(invoice.SellerINN, Is.EqualTo("4028030080"));
             Assert.That(invoice.SellerKPP, Is.EqualTo("482543001"));
             Assert.That(invoice.ShipperInfo, Is.EqualTo("Липецкий филиал ООО Компания \"Вектор\", 398042, г.Липецк, Поперечный проезд, д.1А"));
-            Assert.That(invoice.ConsigneeInfo, Is.EqualTo("Областное государственное унитарное предприятие \"Липецкфармация\" св. о рег.№1024840823688, с.Хлевное, ул.Свободы, д.51"));
+            Assert.That(invoice.RecipientAddress, Is.EqualTo("Областное государственное унитарное предприятие \"Липецкфармация\" св. о рег.№1024840823688, с.Хлевное, ул.Свободы, д.51"));
             Assert.That(invoice.PaymentDocumentInfo, Is.Null);
             Assert.That(invoice.BuyerName, Is.EqualTo("Областное государственное унитарное предприятие \"Липецкфармация\" св. о рег.№1024840823688"));
             Assert.That(invoice.BuyerAddress, Is.EqualTo("г.Липецк,ул.Гагарина, д.113"));

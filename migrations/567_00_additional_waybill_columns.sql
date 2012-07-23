@@ -1,0 +1,11 @@
+alter table documents.InvoiceHeaders add column RecipientName VARCHAR(255);
+alter table documents.InvoiceHeaders add column RecipientId INTEGER;
+alter table documents.InvoiceHeaders add column BuyerId INTEGER;
+alter table documents.InvoiceHeaders add column DelayOfPaymentInDays INTEGER;
+alter table documents.InvoiceHeaders add column DelayOfPaymentInBankDays INTEGER;
+alter table documents.InvoiceHeaders add column CommissionFeeContractId VARCHAR(255);
+alter table documents.InvoiceHeaders add column CommissionFee NUMERIC(19,5);
+alter table documents.DocumentBodies add column CertificateAuthority VARCHAR(255);
+alter table documents.DocumentBodies add column ExpireInMonths INTEGER;
+alter table documents.DocumentBodies add column DateOfManufacture DATETIME;
+alter table documents.DocumentBodies add column RegistryDate DATETIME;

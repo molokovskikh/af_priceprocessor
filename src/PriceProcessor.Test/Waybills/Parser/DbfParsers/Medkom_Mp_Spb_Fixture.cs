@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(invoice, Is.Not.Null);
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("СКЛ-006792"));
 			Assert.That(invoice.InvoiceDate.Value.ToShortDateString(), Is.EqualTo("30.01.2012"));
-			Assert.That(invoice.ConsigneeInfo, Is.EqualTo("ООО \"УК Здоровые Люди\",196105, Санкт-Петербург г, Московский пр-кт,  дом 143 лит.А 12Н"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("ООО \"УК Здоровые Люди\",196105, Санкт-Петербург г, Московский пр-кт,  дом 143 лит.А 12Н"));
 
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("ММ-1016160"));

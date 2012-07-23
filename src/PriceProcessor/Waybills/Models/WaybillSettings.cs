@@ -23,7 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public bool OnlyParseWaybills { get; set; }
 
 		[Property]
-		public ProtekWaybillSavingType ProtekWaybillSavingType { get; set; }
+		public WaybillFormat ProtekWaybillSavingType { get; set; }
 
 		public bool ShouldParseWaybill()
 		{

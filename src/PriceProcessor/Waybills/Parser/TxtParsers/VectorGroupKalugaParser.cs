@@ -68,7 +68,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
                     if (key == "грузоотправитель и его адрес")
                         document.SetInvoice().ShipperInfo = GetString(parts[1]);
                     if (key == "грузополучатель и его адрес")
-                        document.SetInvoice().ConsigneeInfo = GetString(parts[1]);
+                        document.SetInvoice().RecipientAddress = GetString(parts[1]);
                     if (key == "к платежно-расчетному документу n")
                         document.SetInvoice().PaymentDocumentInfo = GetString(parts[1]);
                     if (key == "покупатель")
