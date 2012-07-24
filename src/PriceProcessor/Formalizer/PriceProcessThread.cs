@@ -66,7 +66,7 @@ namespace Inforoom.Formalizer
 
 		private IPriceFormalizer _workPrice;
 
-		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage)
+		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread=true)
 		{
 			StartDate = DateTime.UtcNow;
 			ProcessItem = item;
@@ -75,7 +75,8 @@ namespace Inforoom.Formalizer
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
-			_thread.Start();
+			if(runThread)
+				_thread.Start();
 		}
 
 		public bool FormalizeOK { get; private set; }
@@ -188,8 +189,7 @@ namespace Inforoom.Formalizer
 
 				Directory.CreateDirectory(tempPath);
 
-				try
-				{
+				try {
 					ProcessState = PriceProcessState.CallValidate;
 					_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
 
@@ -202,13 +202,7 @@ namespace Inforoom.Formalizer
 					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
-				catch (WarningFormalizeException e)
-				{
-					_log.WarningLog(e, e.Message);
-					FormalizeOK = true;
-				}
-				finally
-				{
+				finally {
 					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
 					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
 					allWorkTimeString = tsFormalize.ToString();
@@ -225,12 +219,18 @@ namespace Inforoom.Formalizer
 				File.SetLastWriteTimeUtc(outPriceFileName, ft);
 				File.SetLastAccessTimeUtc(outPriceFileName, ft);
 			}
-			catch(Exception e)
+			catch (ThreadAbortException e)
 			{
-				if (e is ThreadAbortException)
-					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
-				else
-				{
+				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+			}
+			catch(Exception e) {
+				WarningFormalizeException warning =
+					(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
+				if(warning != null) {
+					_log.WarningLog(warning, warning.Message);
+					FormalizeOK = true;
+				}
+				else {
 					_log.ErrodLog(_workPrice, e);
 					Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
 				}

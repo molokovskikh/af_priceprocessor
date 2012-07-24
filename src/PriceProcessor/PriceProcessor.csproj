@@ -158,6 +158,7 @@
     <Compile Include="Formalizer\RejectUpdater.cs" />
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
+    <Compile Include="Models\FormLog.cs" />
     <Compile Include="Models\Price.cs" />
     <Compile Include="Models\PriceCost.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />

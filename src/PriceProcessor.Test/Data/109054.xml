@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE6</Id>
+			<Value>10.0</Value>
+			<MinOrderCount>20</MinOrderCount>
+		</Cost>
+		<Cost>
+			<Id>PRICE1</Id>
+			<Value>10.0</Value>
+			<MinOrderCount>20</MinOrderCount>
+		</Cost>
+	</Item>
+</Price>

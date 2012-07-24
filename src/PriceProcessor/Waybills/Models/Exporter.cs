@@ -59,9 +59,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			streamWriter.WriteLine("[Header]");
 			streamWriter.WriteLine("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12};{13};{14};{15};{16};",
-				document.ProviderDocumentId, //0_ : Код документа;	
+				document.ProviderDocumentId, //0_ : Код документа;
 				document.DocumentDate == null ? null : String.Format("{0:dd.MM.yyyy}", document.DocumentDate),
-				//1 : Дата оформления документа;	
+				//1 : Дата оформления документа;
 				null, //2_ Здесь должно быть : Сумма по документу со статусом "Отправлен ваптеку" (с НДС)
 				null, //3_ Здесь должно быть : Тип поставки ("КОМИССИЯ" или "ПОСТАВКА ");
 				document.Invoice == null ? null : NullableDecimalToString(document.Invoice.NDSAmount10), //4_  Сумма НДС 10%;
@@ -97,8 +97,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					line.Period, //10_ Заводской срок годности в месяцах;
 					line.BillOfEntryNumber.Slice(30), //11_ Грузовая Таможенная Декларация (ГТД);
 					GetSNumAndCrtAndCrtDate(line), //12_ Блок, описывающий следующие параметры:
-					/*                            
-							Серия препарата (в конце разделитель ^),
+					/*		Серия препарата (в конце разделитель ^),
 							Регистрационный номер сертификата (в конце разделитель ^),
 							Дата и орган, выдавший сертификат*/
 					line.SerialNumber.Slice(35), //13_ Здесь должно быть : Серия производителя
@@ -228,7 +227,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 			return str;
 		}
-		
+
 		private static string NullableDecimalToString(decimal? value)
 		{
 			return value.HasValue ? DecimalToString(value.Value) : null;

@@ -376,6 +376,9 @@
     <Content Include="Data\104-etalon.xml" />
     <Content Include="Data\104-rules.xml" />
     <Content Include="Data\104.txt" />
+    <Content Include="Data\109054.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Data\138-etalon.xml" />
     <Content Include="Data\138-rules.xml" />
     <Content Include="Data\138.txt" />

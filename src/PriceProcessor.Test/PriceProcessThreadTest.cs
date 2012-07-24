@@ -1,22 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Castle.ActiveRecord;
 using Inforoom.PriceProcessor;
 using Inforoom.Formalizer;
+using Test.Support;
 using log4net.Appender;
 using log4net.Config;
 using NUnit.Framework;
 using System.Threading;
 using MySql.Data.MySqlClient;
-using System.Configuration;
 using log4net;
 using System.Data;
 using System.Reflection;
+using Test.Support.Suppliers;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
+
 
 namespace PriceProcessor.Test
 {
 	[TestFixture]
 	public class PriceProcessThreadTest
 	{
+		[Test(Description = "проверка корректности логирования при возникновении WarningFormalizeException")]
+		public void CatchWarningFormalizeExceptionTest()
+		{
+			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
+			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
+			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
+			priceProcessThread.ThreadWork();
+
+			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage), "Отсутствует информация о произошедшем исключении");
+			Assert.True(priceProcessThread.FormalizeOK, "Формализация закончилась с ошибкой");
+
+			using (new SessionScope()) {
+				var log =  Inforoom.PriceProcessor.Models.FormLog.Queryable
+					.Where(l => l.PriceItemId == priceItemId
+						&& l.Host.Equals(Environment.MachineName)
+						&& l.ResultId == (int?)FormResults.Error
+						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage)).ToList();
+				Assert.That(log.Count, Is.GreaterThan(0),"Информация о предупреждении отсутствует в БД");
+			}
+		}
+
+		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
+		{
+			var supplier = TestSupplier.Create();
+			var price = supplier.Prices[0];
+			price.CostType = priceCostType;
+
+			var item = price.Costs.First().PriceItem;
+			var format = price.Costs.Single().PriceItem.Format;
+			format.PriceFormat = priceFormatId;
+
+			price.Save();
+			return item.Id;
+		}
+
 		[Test, Ignore("тестирование методов AbortThread и IsAbortingLong")]
 		public void AbortingThreadTest()
 		{
