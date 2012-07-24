@@ -31,23 +31,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return data.Columns.Contains("NUM")
-				&& data.Columns.Contains("CODE")
-				&& data.Columns.Contains("GOOD")
-				&& data.Columns.Contains("SERIAL")
+			return data.Columns.Contains("GOOD")
 				&& data.Columns.Contains("DETEB")
-				&& data.Columns.Contains("PRICE")
-				&& data.Columns.Contains("QUANT")
 				&& data.Columns.Contains("SERT")
-				&& data.Columns.Contains("DATES")
 				&& data.Columns.Contains("SERTWHO")
-				&& data.Columns.Contains("MARGIN")
-				&& data.Columns.Contains("NDS")
-				&& data.Columns.Contains("REESTR")
-				&& data.Columns.Contains("ENTERP")
-				&& data.Columns.Contains("COUNTRY")
-				&& data.Columns.Contains("PRICEWONDS")
-				&& data.Columns.Contains("PRICEENT")
 				&& !data.Columns.Contains("PV");
 		}
 	}
