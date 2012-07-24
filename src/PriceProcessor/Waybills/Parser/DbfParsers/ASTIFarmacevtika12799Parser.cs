@@ -72,6 +72,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")//GTD = Номер ГТД = BillOfEntryNumber
 				.Line(l => l.Certificates, "SertNom")//SertNom = Номер Сертификата
 				.Line(l => l.CertificatesDate, "SertData")//SertData = Серт. выдан до
+				.Line(l => l.CertificateAuthority, "SertOrg")//SertOrg = Орг.-ция выдавшая серт-т
 				.Line(l => l.SupplierPriceMarkup, "Proc")//Proc = Процент наценки (над ценой пр-ля)
 				.Line(l => l.RegistryCost, "Creestr")//Creestr = Цена реестра (в данный момент заменяется на Зарегистрированную, т.е. тоже самое что и CZareg)
 				.Line(l => l.VitallyImportant, "GN2")//GN2 - числовое обозначение ЖВ	- использовать это
