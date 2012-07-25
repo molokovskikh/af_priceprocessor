@@ -235,8 +235,8 @@ namespace Inforoom.Formalizer
 				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 			}
 			catch(Exception e) {
-					_log.ErrodLog(_workPrice, e);
-					Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
+				_log.ErrodLog(_workPrice, e);
+				Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
 			}
 			finally
 			{
