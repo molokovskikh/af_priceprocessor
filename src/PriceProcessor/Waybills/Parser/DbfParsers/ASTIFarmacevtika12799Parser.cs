@@ -88,7 +88,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& columns.Contains("CPwoNDS")
 				&& columns.Contains("CPwNDS")
 				&& columns.Contains("StNDS")
-				&& columns.Contains("Creestr");
+				&& columns.Contains("Creestr")
+				&& columns.Contains("NAPT");;
 		}
 	}
 }

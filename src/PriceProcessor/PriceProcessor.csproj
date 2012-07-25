@@ -269,6 +269,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASM5836Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASTIFarmacevtika12799Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ASTIPlus12714Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorYoshkarOlaParser.cs" />

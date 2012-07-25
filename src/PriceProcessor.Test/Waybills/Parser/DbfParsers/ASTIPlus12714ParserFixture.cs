@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Common.Tools;
+﻿using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 
@@ -14,7 +10,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			Assert.IsTrue(ASTIFarmacevtika12799Parser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\70713.dbf")));
+			Assert.IsTrue(ASTIPlus12714Parser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\70713.dbf")));
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\70713.dbf");
 
 			Assert.That(document.Lines.Count, Is.EqualTo(15));
@@ -35,7 +31,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(128.84));
 			Assert.That(line.ProducerCost, Is.EqualTo(141.72));
 			Assert.That(line.Nds, Is.EqualTo(10));
-
 			Assert.That(line.NdsAmount, Is.EqualTo(13.37));
 			Assert.That(line.Amount, Is.EqualTo(147.02));
 			Assert.That(line.Period, Is.EqualTo("16.08.2014"));
@@ -44,11 +39,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС DE.ФМ11.Д20016"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("26.09.2011"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО\"Формат качества\""));
-
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line.EAN13, Is.EqualTo("4008500120057"));
-
-			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(3.60));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 		}
 	}
