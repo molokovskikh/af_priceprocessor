@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor;
@@ -28,8 +29,9 @@ namespace PriceProcessor.Test
 			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
 			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
+			var outPriceFileName = Common.Tools.FileHelper.NormalizeDir(Settings.Default.BasePath) + priceProcessItem.PriceItemId + Path.GetExtension(priceProcessItem.FilePath);
+			File.Delete(outPriceFileName);
 			priceProcessThread.ThreadWork();
-
 			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage), "Отсутствует информация о произошедшем исключении");
 			Assert.True(priceProcessThread.FormalizeOK, "Формализация закончилась с ошибкой");
 
@@ -41,6 +43,8 @@ namespace PriceProcessor.Test
 						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage)).ToList();
 				Assert.That(log.Count, Is.GreaterThan(0),"Информация о предупреждении отсутствует в БД");
 			}
+			//Проверяем, что копирование файла прошло успешно
+			Assert.IsTrue(File.Exists(outPriceFileName));
 		}
 
 		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)

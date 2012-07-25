@@ -202,6 +202,17 @@ namespace Inforoom.Formalizer
 					FormalizeOK = true;
 					_log.SuccesLog(_workPrice);
 				}
+				catch(Exception e) {
+					WarningFormalizeException warning =
+						(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
+					if (warning != null) {
+						_log.WarningLog(warning, warning.Message);
+						FormalizeOK = true;
+					}
+					else {
+						throw;
+					}
+				}
 				finally {
 					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
 					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
@@ -224,16 +235,8 @@ namespace Inforoom.Formalizer
 				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 			}
 			catch(Exception e) {
-				WarningFormalizeException warning =
-					(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
-				if(warning != null) {
-					_log.WarningLog(warning, warning.Message);
-					FormalizeOK = true;
-				}
-				else {
 					_log.ErrodLog(_workPrice, e);
 					Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
-				}
 			}
 			finally
 			{
