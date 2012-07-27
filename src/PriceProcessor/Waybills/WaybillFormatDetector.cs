@@ -197,7 +197,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (result)
 					yield return type;
 			}
-			yield break;
 		}
 			
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
@@ -205,8 +204,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var parser = DetectParser(file, log);
 			if (parser == null)
 				return null;
-			var document = new Document(log);
-			document.Parser = parser.GetType().Name;
+			var document = new Document(log, parser.GetType().Name);
 			var doc = parser.Parse(file, document);
 
 			return ProcessDocument(doc);

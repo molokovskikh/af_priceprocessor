@@ -22,7 +22,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public Document()
 		{}
 
-		public Document(DocumentReceiveLog log)
+		public Document(DocumentReceiveLog log, string parser = null)
 		{
 			Log = log;
 			WriteTime = DateTime.Now;

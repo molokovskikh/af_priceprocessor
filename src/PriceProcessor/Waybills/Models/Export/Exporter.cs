@@ -49,6 +49,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			} else {
 				log.IsFake = true;
 				log = new DocumentReceiveLog(log, extention);
+				ActiveRecordMediator.SaveAndFlush(log);
 			}
 
 			var filename = log.GetRemoteFileNameExt();

@@ -424,11 +424,10 @@ namespace Inforoom.PriceProcessor.Downloader
 				Comment = "Получен через сервис Протек"
 			};
 
-			var document = new Document(log) {
+			var document = new Document(log, "ProtekHandler") {
 				OrderId = orderId,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
-				Parser = "ProtekHandler",
 			};
 			document.SetInvoice();
 			var invoice = document.Invoice;
