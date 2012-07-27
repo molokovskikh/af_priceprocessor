@@ -1,6 +1,7 @@
 ﻿using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -24,6 +25,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[Property]
 		public WaybillFormat ProtekWaybillSavingType { get; set; }
+
+		[Property]
+		public WaybillFormat WaybillConvertFormat { get; set; }
 
 		public bool ShouldParseWaybill()
 		{

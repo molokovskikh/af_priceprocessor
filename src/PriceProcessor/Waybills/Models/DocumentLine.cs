@@ -91,6 +91,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public int? ExpireInMonths { get; set; }
 
+		/// <summary>
+		/// Дата изготовления
+		/// </summary>
 		[Property]
 		public DateTime? DateOfManufacture { get; set; }
 

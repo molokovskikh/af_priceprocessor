@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using log4net;
 using MySql.Data.MySqlClient;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
@@ -86,11 +87,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-					if (doc != null && settings != null && settings.IsConvertFormat)
-					{
-						using (var scope = new TransactionScope(OnDispose.Rollback))
-						{
-							DbfExporter.ConvertAndSaveDbfFormatIfNeeded(doc);
+					if (doc != null && settings != null) {
+						using (var scope = new TransactionScope(OnDispose.Rollback)) {
+							Exporter.ConvertIfNeeded(doc, settings);
 							scope.VoteCommit();
 						}
 					}
@@ -149,8 +148,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 				using (var transaction = new TransactionScope(OnDispose.Rollback))
 				{
-					if (settings.IsConvertFormat)
-						DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document);
+					Exporter.ConvertIfNeeded(document, settings);
 
 					if(log.IsFake) log.Save();
 					document.Save();

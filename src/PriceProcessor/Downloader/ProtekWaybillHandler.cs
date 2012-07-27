@@ -16,6 +16,7 @@ using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
@@ -353,20 +354,17 @@ namespace Inforoom.PriceProcessor.Downloader
 								if (document == null)
 									continue;
 
-								var settings = WaybillSettings.Find(document.ClientCode);
-
 								CertificateSourceDetector.DetectAndParse(document);
 								document.Log.Save();
 								document.Save();
 								document.CreateCertificateTasks();
 
-								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
-									Exporter.Save(document, settings.ProtekWaybillSavingType);
+								Exporter.SaveProtek(document);
 
 								scope.VoteCommit();
 								WaybillOrderMatcher.SafeComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
-								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
+							_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 						}
 					}
 				}

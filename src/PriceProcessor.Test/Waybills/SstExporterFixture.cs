@@ -5,6 +5,7 @@ using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills
@@ -58,7 +59,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void ExportProtekSstFile()
 		{
-			Exporter.Save(document, WaybillFormat.SST);
+			Exporter.Convert(document, WaybillFormat.Sst);
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).sst");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 			Assert.That(log.FileName, Is.EqualTo("001-01.sst"));
@@ -114,7 +115,7 @@ namespace PriceProcessor.Test.Waybills
 			line.NdsAmount = 81.63m;
 			document.CalculateValues();
 
-			Exporter.Save(document, WaybillFormat.SSTLong);
+			Exporter.Convert(document, WaybillFormat.SstLong);
 			document.Lines[0].CertificateAuthority = "Test";
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(24681251-001).sst");
 			var content = File.ReadLines(resultFile, Encoding.GetEncoding(1251)).ToArray();

@@ -53,14 +53,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public DocumentReceiveLog()
 		{}
 
-		public DocumentReceiveLog(DocumentReceiveLog log)
+		public DocumentReceiveLog(DocumentReceiveLog log, string extention)
 		{
 			ClientCode = log.ClientCode;
 			Address = log.Address;
 			Supplier = log.Supplier;
-			Comment = "Сконвертированный Dbf файл";
+			Comment = "Сконвертированный файл";
 			DocumentType = log.DocumentType;
-			FileName = Path.GetFileNameWithoutExtension(log.FileName) + ".dbf";
+			FileName = Path.GetFileNameWithoutExtension(log.FileName) + extention;
 		}
 
 		public bool FileIsLocal()

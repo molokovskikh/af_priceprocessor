@@ -57,13 +57,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string ShipperInfo { get; set; }
 
 		/// <summary>
-		/// Код грузополучателя в кодировке поставщика
+		/// Название грузополучателя
 		/// </summary>
 		[Property]
 		public string RecipientName { get; set; }
 
 		/// <summary>
-		/// Название грузополучателя
+		/// Код грузополучателя в кодировке поставщика
 		/// </summary>
 		[Property]
 		public int? RecipientId { get; set; }
@@ -111,7 +111,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string BuyerKPP { get; set; }
 
 		/// <summary>
-		/// Стоимость товаров без налога для группы товаров, облагаемых ставкой 0% НДС
+		/// Стоимость товаров для группы товаров, облагаемых ставкой 0% НДС
 		/// </summary>
 		[Property]
 		public decimal? AmountWithoutNDS0 { get; set; }

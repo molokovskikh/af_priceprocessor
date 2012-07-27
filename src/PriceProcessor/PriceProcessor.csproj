@@ -165,7 +165,6 @@
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="Models\Reject.cs" />
-    <Compile Include="Waybills\Models\Exporter.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
     <Compile Include="Models\Assortment.cs" />
@@ -254,10 +253,12 @@
     <Compile Include="Waybills\Models\CertificateSource.cs" />
     <Compile Include="Waybills\Models\CertificateSourceCatalog.cs" />
     <Compile Include="Waybills\Models\CertificateTask.cs" />
-    <Compile Include="Waybills\Models\DbfExporter.cs" />
     <Compile Include="Waybills\Models\Document.cs" />
     <Compile Include="Waybills\Models\DocumentLine.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLog.cs" />
+    <Compile Include="Waybills\Models\Export\DbfExporter.cs" />
+    <Compile Include="Waybills\Models\Export\Exporter.cs" />
+    <Compile Include="Waybills\Models\Export\SstExport.cs" />
     <Compile Include="Waybills\Models\Invoice.cs" />
     <Compile Include="Waybills\Models\Mail.cs" />
     <Compile Include="Waybills\Models\MailRecipient.cs" />

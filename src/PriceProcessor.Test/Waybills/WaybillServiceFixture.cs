@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using NUnit.Framework;
 using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
@@ -425,7 +426,7 @@ namespace PriceProcessor.Test.Waybills
 				var path = Path.GetDirectoryName(log.GetRemoteFileNameExt());
 				Directory.Delete(path, true);
 
-				DbfExporter.ConvertAndSaveDbfFormatIfNeeded(doc);
+				Exporter.ConvertIfNeeded(doc, WaybillSettings.Find(doc.ClientCode));
 
 				var files_dbf = Directory.GetFiles(path, "*.dbf");
 				Assert.That(files_dbf.Count(), Is.EqualTo(1));

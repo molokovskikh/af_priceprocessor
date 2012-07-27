@@ -1,60 +1,13 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Linq;
 using Common.Tools;
 
-namespace Inforoom.PriceProcessor.Waybills.Models
+namespace Inforoom.PriceProcessor.Waybills.Models.Export
 {
-	public enum WaybillFormat
+	public class SstExport
 	{
-		[Description("SST")]
-		SST = 0,
-		[Description("DBF")]
-		DBF = 1,
-		SSTLong = 2
-	}
-
-
-	/// <summary>
-	/// Осуществляет сохранение накладной в SST формате.
-	/// </summary>
-	public class Exporter
-	{
-		/// <summary>
-		/// Сохраняет данные в файл.
-		/// </summary>
-		public static void Save(Document document, WaybillFormat type)
-		{
-			document.Log.IsFake = false;
-			var id = document.ProviderDocumentId;
-			if (string.IsNullOrEmpty(id))
-				id = document.Log.Id.ToString();
-
-			if (type == WaybillFormat.DBF)
-				document.Log.FileName = id + ".dbf";
-			else
-				document.Log.FileName = id + ".sst";
-			var filename = document.Log.GetRemoteFileNameExt();
-
-			if (type == WaybillFormat.DBF) {
-				DbfExporter.SaveProtek(document, filename);
-			} else {
-				using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
-					using (var sw = new StreamWriter(fs, Encoding.GetEncoding(1251))) {
-						if (type == WaybillFormat.SST)
-							SaveShort(document, sw);
-						else
-							SaveLong(document, sw);
-					}
-				}
-			}
-
-			document.Log.DocumentSize = new FileInfo(filename).Length;
-		}
-
 		public static void SaveShort(Document document, StreamWriter streamWriter)
 		{
 			streamWriter.WriteLine("[Header]");

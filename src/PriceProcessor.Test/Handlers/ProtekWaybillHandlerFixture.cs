@@ -7,6 +7,7 @@ using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using NHibernate.Criterion;
 using NUnit.Framework;
 using Rhino.Mocks;
@@ -117,7 +118,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new SessionScope()) {
 				var settings = WaybillSettings.Find(order1.Client.Id);
 				//Формат сохранения в dbf теперь не является форматом по умолчанию
-				settings.ProtekWaybillSavingType = WaybillFormat.DBF;
+				settings.ProtekWaybillSavingType = WaybillFormat.ProtekDbf;
 				settings.Save();
 			}
 
@@ -145,7 +146,7 @@ namespace PriceProcessor.Test.Handlers
 			using (new SessionScope()) {
 				var settings = WaybillSettings.Find(order1.Client.Id);
 				//По умолчанию форматом сохранения является формат sst
-				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(WaybillFormat.SST));
+				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(WaybillFormat.Sst));
 			}
 
 			fake.Process();
