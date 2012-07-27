@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Waybills
 				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
 				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
 
-				var log = new DocumentReceiveLog { Supplier = appSupplier, ClientCode = client.Id, Address = address, MessageUid = 123, DocumentSize = 100};
+				var log = new DocumentReceiveLog(appSupplier, address) { MessageUid = 123, DocumentSize = 100};
 				document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
 
 				var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
@@ -138,10 +138,12 @@ namespace PriceProcessor.Test.Waybills
 		public class WaybillFormatDetectorFake : WaybillFormatDetector
 		{
 			private Document doc;
+
 			public WaybillFormatDetectorFake(Document doc)
 			{
 				this.doc = doc;
-			}			
+			}
+
 			public override IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
 			{
 				return new ParserFake(doc);

@@ -350,21 +350,19 @@ namespace Inforoom.PriceProcessor.Downloader
 							using (var scope = new TransactionScope(OnDispose.Rollback))
 							{
 								var document = ToDocument(body);
+								document = WaybillFormatDetector.ProcessDocument(document, orders);
 								if (document == null)
 									continue;
 
-								var settings = WaybillSettings.Find(document.ClientCode);
-
-								CertificateSourceDetector.DetectAndParse(document);
 								document.Log.Save();
 								document.Save();
 								document.CreateCertificateTasks();
 
+								var settings = WaybillSettings.Find(document.ClientCode);
 								if (!DbfExporter.ConvertAndSaveDbfFormatIfNeeded(document))
 									Exporter.Save(document, settings.ProtekWaybillSavingType);
 
 								scope.VoteCommit();
-								WaybillOrderMatcher.SafeComparisonWithOrders(document, orders); // сопоставляем позиции в документе с позициями в заказе
 								_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 							}
 						}
@@ -504,9 +502,6 @@ namespace Inforoom.PriceProcessor.Downloader
 						.FirstOrDefault();
 				}
 			}
-
-			document.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
-			document.CalculateValues(); // расчет недостающих значений
 
 			return document;
 		}

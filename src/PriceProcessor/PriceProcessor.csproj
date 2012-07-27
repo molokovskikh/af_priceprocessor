@@ -402,6 +402,7 @@
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParser2.cs" />
     <Compile Include="Waybills\WaybillFormatDetector.cs" />
     <Compile Include="Waybills\WaybillHelper.cs" />
+    <Compile Include="Waybills\WaybillOrderMatcher.cs" />
     <Compile Include="Waybills\WaybillService.cs" />
     <Compile Include="WCFPriceProcessorService.cs" />
   </ItemGroup>
