@@ -17,6 +17,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[Property]
 		public virtual bool Enabled { get; set; }
+
+		[Property]
+		public virtual uint ClientId { get; set; }
 	}
 
 	[ActiveRecord("LegalEntities", Schema = "Billing", Lazy = true)]
