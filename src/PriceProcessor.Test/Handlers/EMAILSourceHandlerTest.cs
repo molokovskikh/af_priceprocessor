@@ -95,8 +95,6 @@ namespace PriceProcessor.Test.Handlers
 			source.ExtrMask = "Прайс-лист.xls";
 			source.Save();
 
-			//var badPriceItem = TestPriceSource.CreateEmailPriceSource("order.moron@gmail.com", "prices@volgograd.analit.net", "price.zip", "price.dbf");
-
 			Send(@"..\..\Data\EmailSourceHandlerTest\Bad.eml");
 			Send(@"..\..\Data\EmailSourceHandlerTest\Good.eml");
 

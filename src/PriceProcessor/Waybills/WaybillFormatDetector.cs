@@ -5,10 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Common.Tools;
+using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -123,7 +126,7 @@ namespace Inforoom.PriceProcessor.Waybills
 #endif
 			}
 
-			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
+			var constructor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
 			if (constructor == null)
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
@@ -194,7 +197,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (result)
 					yield return type;
 			}
-			yield break;
 		}
 			
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
@@ -202,18 +204,38 @@ namespace Inforoom.PriceProcessor.Waybills
 			var parser = DetectParser(file, log);
 			if (parser == null)
 				return null;
-			var document = new Document(log);
-			document.Parser = parser.GetType().Name;
+			var document = new Document(log, parser.GetType().Name);
 			var doc = parser.Parse(file, document);
-			if (doc != null)
-			{
-				doc.SetProductId(); // сопоставляем идентификаторы названиям продуктов в накладной
-				doc.CalculateValues(); // расчет недостающих значений 
-				if (!doc.DocumentDate.HasValue) doc.DocumentDate = DateTime.Now;
-				WaybillOrderMatcher.SafeComparisonWithOrders(doc, null); // сопоставляем позиции в накладной с позициями в заказе
-				//сопоставление сертификатов для позиций накладной
-				CertificateSourceDetector.DetectAndParse(doc);
+
+			return ProcessDocument(doc);
+		}
+
+		public static Document ProcessDocument(Document doc, IList<OrderHead> orders = null)
+		{
+			if (doc == null)
+				return null;
+
+			if (!String.IsNullOrEmpty(doc.ProviderDocumentId)) {
+				var isDuplicate = SessionHelper.WithSession(s => {
+					return s.Query<Document>().Any(d => d.Id != doc.Id
+						&& d.FirmCode == doc.FirmCode
+						&& d.ProviderDocumentId == doc.ProviderDocumentId);
+				});
+
+				if (isDuplicate)
+					return null;
 			}
+
+			//сопоставляем идентификаторы названиям продуктов в накладной
+			doc.SetProductId();
+			//расчет недостающих значений
+			doc.CalculateValues();
+			if (!doc.DocumentDate.HasValue)
+				doc.DocumentDate = DateTime.Now;
+			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders); // сопоставляем позиции в накладной с позициями в заказе
+			//сопоставление сертификатов для позиций накладной
+			CertificateSourceDetector.DetectAndParse(doc);
+
 			return doc;
 		}
 	}

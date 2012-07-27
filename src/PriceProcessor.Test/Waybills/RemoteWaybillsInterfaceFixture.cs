@@ -10,7 +10,9 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 
@@ -60,16 +62,6 @@ namespace PriceProcessor.Test.Waybills
 			return fullName;
 		}
 
-		private string GetRemoteFileNameExt(string Supplier_ShortName, uint? AddressId, uint? ClientCode, string FileName, uint logId)
-		{
-			var clientDirectory = GetDocumentDir(AddressId, ClientCode);
-
-			if (!Directory.Exists(clientDirectory))
-				Directory.CreateDirectory(clientDirectory);
-
-			return GetRemoteFileName(FileName, logId, Supplier_ShortName, AddressId, ClientCode);
-		}
-
 		[TearDown]
 		public void TearDown()
 		{
@@ -103,6 +95,7 @@ namespace PriceProcessor.Test.Waybills
 			{
 				settings.AssortimentPriceId = price.Id;
 				settings.IsConvertFormat = true;
+				settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
 				settings.SaveAndFlush();
 			}
 
