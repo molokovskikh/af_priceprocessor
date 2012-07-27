@@ -48,6 +48,9 @@ namespace PriceProcessor.Test.TestHelpers
 		protected void Process()
 		{
 			source.Save();
+
+			//var query = @"update farm.sources set sourcetypeid = 2 where sourcetypeid = 3";
+			//With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, query); });
 			handler.ProcessData();
 		}
 	}

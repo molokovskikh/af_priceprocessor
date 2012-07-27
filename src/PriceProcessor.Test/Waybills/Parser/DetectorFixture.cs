@@ -16,26 +16,20 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class DetectorFixture
 	{
-		private WaybillFormatDetector detector;
-
-		[SetUp]
-		public void Setup()
-		{
-			detector = new WaybillFormatDetector();
-		}
-
 		[Test]
 		public void Detect_xml_format()
 		{
+			var detector = new WaybillFormatDetector();
 			var parser = detector.DetectParser(@"..\..\Data\Waybills\8041496-001.xml", null);
 			Assert.That(parser, Is.InstanceOf<ProtekXmlParser>());
 		}
 
 		[Test]
-		public void Parser_not_found()
+		public static void Parser_not_found()
 		{
 			try
 			{
+				var detector = new WaybillFormatDetector();
 				detector.DetectParser(@"..\..\Data\Waybills\3677177_0_3677175_0_3676850_Сиа Интернейшнл(1064837).db", null);
 			}
 			catch(Exception) { return; }
@@ -45,32 +39,40 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void detect()
 		{	
+			var detector = new WaybillFormatDetector();
 			var parser = detector.DetectParser(@"..\..\Data\Waybills\5189569_ФораФарм_лоджик-Москва_506462_.dbf", null);
 			Assert.That(parser, Is.InstanceOf<SiaParser>());
 
-			var parser1 = detector.DetectParser(@"..\..\Data\Waybills\6854217_Катрен_23157_.txt", null);
+			var detector1 = new WaybillFormatDetector();
+			var parser1 = detector1.DetectParser(@"..\..\Data\Waybills\6854217_Катрен_23157_.txt", null);
 			Assert.That(parser1, Is.InstanceOf<KatrenVrnParser>());
 
-			var parser2 = detector.DetectParser(@"..\..\Data\Waybills\6155143_Катрен(1849).txt", null);
+			var detector2 = new WaybillFormatDetector();
+			var parser2 = detector2.DetectParser(@"..\..\Data\Waybills\6155143_Катрен(1849).txt", null);
 			Assert.That(parser2, Is.InstanceOf<KatrenVrnParser>());
 
-			var parser3 = detector.DetectParser(@"..\..\Data\Waybills\6161231_Сиа Интернейшнл(Р2346542).DBF", null);
+			var detect = new WaybillFormatDetector();
+			var parser3 = detect.DetectParser(@"..\..\Data\Waybills\6161231_Сиа Интернейшнл(Р2346542).DBF", null);
 			Assert.That(parser3, Is.InstanceOf<FarmGroupParser>());
 
-			var parser4 = detector.DetectParser(@"..\..\Data\Waybills\761517.dbf", null);
+			var detect1 = new WaybillFormatDetector();
+			var parser4 = detect1.DetectParser(@"..\..\Data\Waybills\761517.dbf", null);
 			Assert.That(parser4, Is.InstanceOf<FarmGroupParser>());
 			
-			var parser5 = detector.DetectParser(@"..\..\Data\Waybills\169976_21.dbf", null);
+			var detect2 = new WaybillFormatDetector();
+			var parser5 = detect2.DetectParser(@"..\..\Data\Waybills\169976_21.dbf", null);
 			Assert.That(parser5, Is.InstanceOf<GenesisNNParser>());
 		}
 
 		[Test]
 		public void DetectSpecialParserTest()
 		{
-			var type = typeof(Avesta_6256_SpecialParser);
-			var constructor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
+			var detector = new WaybillFormatDetector();
 
-			var parser = (IDocumentParser)constructor.Invoke(new object[0]);
+			var type = typeof(Avesta_6256_SpecialParser);
+			var constructor = type.GetConstructors().Where(c => c.GetParameters().Count() == 0).FirstOrDefault();
+
+			IDocumentParser parser = (IDocumentParser)constructor.Invoke(new object[0]);
 			bool res = detector.IsSpecialParser(parser);
 			Assert.True(res);
 		}

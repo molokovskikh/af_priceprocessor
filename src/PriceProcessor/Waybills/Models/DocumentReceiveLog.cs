@@ -63,13 +63,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			FileName = Path.GetFileNameWithoutExtension(log.FileName) + extention;
 		}
 
-		public DocumentReceiveLog(Supplier supplier, Address address)
-		{
-			Supplier = supplier;
-			Address = address;
-			ClientCode = address.ClientId;
-		}
-
 		public bool FileIsLocal()
 		{
 			return !String.IsNullOrEmpty(_localFile);

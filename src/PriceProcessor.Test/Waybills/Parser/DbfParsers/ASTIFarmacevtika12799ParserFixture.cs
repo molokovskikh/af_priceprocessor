@@ -41,7 +41,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/281111/0026488/18"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС DE.ФМ08.Д52854"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("31.08.2014"));
-			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО\"Окружной центр контроля и качества\""));
 
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
 			Assert.That(line.EAN13, Is.EqualTo("9006968003115"));
