@@ -24,6 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public Document(DocumentReceiveLog log, string parser = null)
 		{
+			Parser = parser;
 			Log = log;
 			WriteTime = DateTime.Now;
 			FirmCode = Convert.ToUInt32(log.Supplier.Id);
