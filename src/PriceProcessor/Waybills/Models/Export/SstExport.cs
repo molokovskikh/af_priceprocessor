@@ -92,11 +92,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				//7_ Здесь должно быть : Курс (коэффициент пересчета в рубли);
 				null,
 				//8_ Здесь должно быть : Ставка комиссионного вознаграждения;
-				document.Invoice == null ? null : document.Invoice.CommissionFee,
+				"0",
 				//9_ Здесь должно быть : Номер договора комиссии;
 				document.Invoice == null ? null : document.Invoice.CommissionFeeContractId,
 				//10_ Здесь должно быть : Наименование поставщика ("ЦВ Протек");
-				document.Invoice == null ? null : document.Invoice.SellerName,
+				"Протек",
 				//11_ Здесь должно быть : Код плательщика;
 				document.Invoice == null ? null : document.Invoice.BuyerId,
 				//12_ Здесь должно быть : Наименование плательщика;
@@ -117,9 +117,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			streamWriter.WriteLine("[Body]");
 
 			foreach (var line in document.Lines) {
+				var name = line.Product == null ? null : line.Product.ToUpper();
+				if (!String.IsNullOrEmpty(name)
+					&& line.VitallyImportant.GetValueOrDefault())
+					name += " --ЖНиВЛС--";
 				items = new object[] {
 					line.Code, //0_ Код препарата в ЦВ Протек;
-					line.Product == null ? null : line.Product.Slice(128).ToUpper(), //1_ Название препарата в верхнем регистре;
+					name, //1_ Название препарата в верхнем регистре;
 					line.Producer, //2_ Название производителя препарата;
 					line.Country, //3_ Название страны производителя;
 					line.Quantity, //4_ Количество;
@@ -130,8 +134,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					line.SupplierPriceMarkup, //9_ Наценка посредника (Торговая надбавка оптового звена);
 					line.ExpireInMonths, //10_ Заводской срок годности в месяцах;
 					line.BillOfEntryNumber, //11_ Грузовая Таможенная Декларация (ГТД);
-					line.Certificates, //12_ Блок, описывающий следующие параметры:
-					line.SerialNumber, //13_ Здесь должно быть : Серия производителя
+					line.Certificates, //12 Серии сертификатов
+					line.SerialNumber, //13 Здесь должно быть : Серия производителя
 					line.DateOfManufacture, //14_ Здесь должно быть : Дата выпуска препарата;
 					line.Period, //15_ Здесь должно быть : Дата истекания срока годности данной серии;
 					line.EAN13, //16_ Штрих-код производителя;
@@ -145,9 +149,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					line.CertificateAuthority, //Кто выдал сертификат
 					line.Nds, //НДС
 					line.NdsAmount, //Сумма НДС
-					null, //Цена производителя (в валюте, без НДС)
+					null, //Цена производителя (в валюте, без НДС),
+					//Название валюты цены производителя (поля 36)
+					null
 				};
-				streamWriter.WriteLine(String.Join(";", items.Select(ConvertValue)) + ";");
+				streamWriter.WriteLine(String.Join(";", items.Select(ConvertValue)));
 			}
 		}
 
