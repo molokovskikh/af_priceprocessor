@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[BelongsTo("SynonymCode", NotFoundBehaviour = NotFoundBehaviour.Ignore)]
 		public virtual ProductSynonym ProductSynonym { get; set; }
 
-		[BelongsTo("SynonymFirmCr", NotFoundBehaviour = NotFoundBehaviour.Ignore)]
+		[BelongsTo("SynonymFirmCrCode", NotFoundBehaviour = NotFoundBehaviour.Ignore)]
 		public virtual ProducerSynonym ProducerSynonym { get; set; }
 
 		[BelongsTo("OrderId")]
