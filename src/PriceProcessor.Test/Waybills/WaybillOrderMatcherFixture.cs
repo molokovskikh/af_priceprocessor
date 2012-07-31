@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
@@ -99,14 +100,7 @@ namespace PriceProcessor.Test.Waybills
 
 			WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
 
-			string inStr = String.Empty;
-			foreach (var line in document.Lines)
-			{
-				if (!String.IsNullOrEmpty(inStr)) inStr += ",";
-				inStr += line.Id.ToString();
-			}
-			var ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
-			var table = ds.Tables[0];
+			var table = GetMatches(document);
 			Assert.That(table.Rows.Count, Is.EqualTo(7));
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
 			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
@@ -122,6 +116,15 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
 			Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
 			Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
+		}
+
+		private static DataTable GetMatches(Document document)
+		{
+			var ds =
+				TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in ({0});",
+					document.Lines.Implode(l => l.Id)));
+			var table = ds.Tables[0];
+			return table;
 		}
 
 		public class ParserFake : IDocumentParser
@@ -195,16 +198,9 @@ namespace PriceProcessor.Test.Waybills
 				order2 = OrderHead.Find(order2.Id);
 			}
 
-			WaybillOrderMatcher.SafeComparisonWithOrders(document, null);
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, new List<OrderHead>{order1, order2});
 
-			string inStr = String.Empty;
-			foreach (var line in document.Lines)
-			{
-				if (!String.IsNullOrEmpty(inStr)) inStr += ",";
-				inStr += line.Id.ToString();
-			}
-			var ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
-			var table = ds.Tables[0];
+			var table = GetMatches(document);
 			Assert.That(table.Rows.Count, Is.EqualTo(6));
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
 			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
@@ -219,14 +215,12 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[6].Id));
 			Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
 
-			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
+			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id)));
 
 			var detector = new WaybillFormatDetectorFake(document); // проверяем вызов функции ComparisonWithOrders из детектора
 			detector.DetectAndParse(log, null);
 
-			ds.Clear();
-			ds = TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in {0};", String.Format("({0})", inStr)));
-			table = ds.Tables[0];
+			table = GetMatches(document);
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
 			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
 		}

@@ -25,8 +25,7 @@ namespace Inforoom.Downloader
 			{
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("Try get file from LAN source. FirmCode = {0}, PriceItemId = {1}", source.FirmCode, source.PriceItemId);
-				var pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) + source.FirmCode.ToString().PadLeft(3, '0') +
-				                Path.DirectorySeparatorChar;
+				var pricePath = Path.Combine(Settings.Default.FTPOptBoxPath, source.FirmCode.ToString().PadLeft(3, '0'));
 				var files = Directory.GetFiles(pricePath, source.PriceMask);
 
 				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым

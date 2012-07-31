@@ -29,7 +29,7 @@ namespace PriceProcessor.Test
 			uint priceItemId = CatchWarningFormalizeExceptionTestPrepareData();
 			var priceProcessItem = new PriceProcessItem(false, 0, null, priceItemId, @"Data\781.dbf", null);
 			var priceProcessThread = new PriceProcessThread(priceProcessItem, String.Empty, false);
-			var outPriceFileName = Common.Tools.FileHelper.NormalizeDir(Settings.Default.BasePath) + priceProcessItem.PriceItemId + Path.GetExtension(priceProcessItem.FilePath);
+			var outPriceFileName = Path.Combine(Settings.Default.BasePath, priceProcessItem.PriceItemId + Path.GetExtension(priceProcessItem.FilePath));
 			File.Delete(outPriceFileName);
 			priceProcessThread.ThreadWork();
 			Assert.False(String.IsNullOrEmpty(priceProcessThread.CurrentErrorMessage), "Отсутствует информация о произошедшем исключении");

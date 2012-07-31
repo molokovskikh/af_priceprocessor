@@ -177,9 +177,9 @@ and st.SourceID = 4";
 			{
 				// Путь к папке, из которой нужно забирать накладную
 				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
-				pricePath = FileHelper.NormalizeDir(Settings.Default.FTPOptBoxPath) +
-					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0') +
-					Path.DirectorySeparatorChar + _currentDocumentType.FolderName;
+				pricePath = Path.Combine(Settings.Default.FTPOptBoxPath,
+					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0'),
+					_currentDocumentType.FolderName);
 				// Получаем все файлы из этой папки
 				var ff = Directory.GetFiles(pricePath);
 				// Отсекаем файлы с некорректным расширением

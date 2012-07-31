@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Inforoom.PriceProcessor;
-using FileHelper=Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -9,12 +8,12 @@ namespace Inforoom.Downloader
 	{
 		//Время последнего сканирования каталога
 		private DateTime lastScan;
-		private readonly string _downHistoryPath = FileHelper.NormalizeDir(Settings.Default.HistoryPath);
+		private readonly string _downHistoryPath = Settings.Default.HistoryPath;
 
 		public ClearArchivedPriceSourceHandler()
 		{
 			lastScan = DateTime.MinValue;
-        }
+		}
 
 		public override void ProcessData()
 		{

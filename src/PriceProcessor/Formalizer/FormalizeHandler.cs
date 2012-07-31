@@ -471,9 +471,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 						}
 						try
 						{
-							if (File.Exists(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath)))
-								File.Delete(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
-							File.Move(p.ProcessItem.FilePath, global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.ErrorFilesPath) + Path.GetFileName(p.ProcessItem.FilePath));
+							var file = Path.Combine(Settings.Default.ErrorFilesPath, Path.GetFileName(p.ProcessItem.FilePath));
+							if (File.Exists(file))
+								File.Delete(file);
+							File.Move(p.ProcessItem.FilePath, file);
 						}
 						catch (Exception e)
 						{

@@ -212,8 +212,8 @@ namespace Inforoom.Downloader
 
 		protected override void CopyToHistory(UInt64 PriceID)
 		{
-			string HistoryFileName = DownHistoryPath + PriceID + ".eml";
-			string SavedFile = DownHandlerPath + PriceID + ".eml";
+			string HistoryFileName = Path.Combine(DownHistoryPath, PriceID + ".eml");
+			string SavedFile = Path.Combine(DownHandlerPath, PriceID + ".eml");
 			try
 			{
 				IMAPHandler.Message.ToFile(SavedFile);

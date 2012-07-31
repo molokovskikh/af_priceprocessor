@@ -113,10 +113,10 @@ group by pi.Id",
 			var dtRules = PricesValidator.LoadFormRules(priceItemId);
 			if(dtRules.Rows.Count == 0) return null;
 			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
-			var files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.BasePath),
+			var files = Directory.GetFiles(Settings.Default.BasePath,
 											String.Format(@"{0}.*", priceItemId));
 			if(!files.Any())
-				files = Directory.GetFiles(global::Common.Tools.FileHelper.NormalizeDir(Settings.Default.InboundPath),
+				files = Directory.GetFiles(Settings.Default.InboundPath,
 											String.Format(@"{0}.*", priceItemId));
 
 			string filename = String.Empty;

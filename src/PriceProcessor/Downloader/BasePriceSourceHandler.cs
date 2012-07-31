@@ -20,7 +20,7 @@ namespace Inforoom.Downloader
 					DownPriceResultCode.SuccessDownload, archFileName,
 					(String.IsNullOrEmpty(extrFileName)) ? null : Path.GetFileName(extrFileName), c);
 
-				var downloadedFileName = FileHelper.NormalizeDir(Settings.Default.InboundPath) + "d" + CurrPriceItemId + "_" + downloadLogId + GetExt();
+				var downloadedFileName = Path.Combine(Settings.Default.InboundPath, "d" + CurrPriceItemId + "_" + downloadLogId + GetExt());
 				var item = CreatePriceProcessItem(downloadedFileName);
 				item.CopyToInbound(extrFileName, c, t);
 				CopyToHistory(downloadLogId);

@@ -99,14 +99,16 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Get_all_names()
 		{
-			var basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
-			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
-			File.Copy(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml"), Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"), true);
-			File.Move(Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice_tmp.xml"),
-					  Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
+			var basepath = Settings.Default.BasePath;
+			if (!Directory.Exists(basepath))
+				Directory.CreateDirectory(basepath);
+
+			var source = Path.GetFullPath(@"..\..\Data\FarmaimpeksPrice.xml");
+			var destination = Path.GetFullPath(Path.Combine(basepath, priceItem.Id.ToString() + ".xml"));
+			File.Copy(source, destination);
+
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
-			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.xml", basepath, priceItem.Id)));
 			Assert.That(names.Count(), Is.EqualTo(9818));
 		}
 

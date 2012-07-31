@@ -185,7 +185,7 @@ and pd.AgencyEnabled= 1",
 		{
 			CreateDownHandlerPath();
 
-			DownHistoryPath = FileHelper.NormalizeDir(Settings.Default.HistoryPath);
+			DownHistoryPath = Settings.Default.HistoryPath;
 			if (!Directory.Exists(DownHistoryPath))
 				Directory.CreateDirectory(DownHistoryPath);
 		}

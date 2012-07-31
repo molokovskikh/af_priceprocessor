@@ -173,7 +173,8 @@ namespace Inforoom.Formalizer
 			try
 			{
 				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-				var outPriceFileName = FileHelper.NormalizeDir(Settings.Default.BasePath) + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
+				var outPriceFileName = Path.Combine(Settings.Default.BasePath,
+					ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath));
 				//Используем идентификатор нитки в качестве названия временной папки
 				var tempPath = Path.GetTempPath() + TID + "\\";
 				//изменяем имя файла, что оно было без недопустимых символов ('_')

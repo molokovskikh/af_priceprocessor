@@ -71,15 +71,17 @@ namespace PriceProcessor.Test.Formalization
 			
 			price.Save();
 
-			var basepath = FileHelper.NormalizeDir(Settings.Default.BasePath);
-			if (!Directory.Exists(basepath)) Directory.CreateDirectory(basepath);
+			var basepath = Settings.Default.BasePath;
+			if (!Directory.Exists(basepath))
+				Directory.CreateDirectory(basepath);
 
-			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.GetFullPath(@"..\..\Data\2222.txt"));
-			File.Move(Path.GetFullPath(@"..\..\Data\2222.txt"), Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
+			var source = Path.GetFullPath(@"..\..\Data\222.txt");
+			var destination = Path.GetFullPath(Path.Combine(basepath, priceItem.Id + ".txt"));
+			File.Copy(source, destination);
 
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
-			File.Delete(Path.GetFullPath(String.Format(@"{0}{1}.txt", basepath, priceItem.Id)));
+			File.Delete(destination);
 			Assert.That(names.Count(), Is.EqualTo(35));
 		}
 

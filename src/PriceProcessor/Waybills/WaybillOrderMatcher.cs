@@ -78,6 +78,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			try {
 				using (new SessionScope()) {
 					ComparisonWithOrders(document, orders);
+					ActiveRecordMediator.SaveAndFlush(document);
 				}
 			}
 			catch (Exception e) {

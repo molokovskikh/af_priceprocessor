@@ -179,7 +179,7 @@ namespace Inforoom.Downloader
 
 		protected override void CopyToHistory(UInt64 downloadLogId)
 		{
-			var HistoryFileName = DownHistoryPath + downloadLogId + Path.GetExtension(CurrFileName);
+			var HistoryFileName = Path.Combine(DownHistoryPath, downloadLogId + Path.GetExtension(CurrFileName));
 			FileHelper.Safe(() => File.Copy(CurrFileName, HistoryFileName));
 		}
 
