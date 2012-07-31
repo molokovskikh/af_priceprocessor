@@ -76,10 +76,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public static void SafeComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
 			try {
-				using (new SessionScope()) {
-					ComparisonWithOrders(document, orders);
-					ActiveRecordMediator.SaveAndFlush(document);
-				}
+				ComparisonWithOrders(document, orders);
 			}
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
@@ -11,7 +10,6 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
 using log4net;
-using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -29,17 +27,17 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public uint[] ParseWaybill(uint[] ids)
 		{
-			try
-			{
-				using (new SessionScope())
-				{
-					return ParseWaybills(DocumentReceiveLog.LoadByIds(ids), false)
+			try {
+				using (var scope = new TransactionScope(OnDispose.Rollback)) {
+					var result = ParseWaybills(DocumentReceiveLog.LoadByIds(ids), false)
 						.Select(d => d.Id)
 						.ToArray();
+
+					scope.VoteCommit();
+					return result;
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_log.Error("Ошибка при разборе накладных", e);
 			}
 			return new uint[0];
@@ -47,12 +45,14 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public static void ParseWaybills(List<DocumentReceiveLog> logs)
 		{
-			try
-			{
-				ParseWaybills(logs, true);
+			try {
+				using (var scope = new TransactionScope(OnDispose.Rollback)) {
+					ParseWaybills(logs, true);
+
+					scope.VoteCommit();
+				}
 			}
-			catch(Exception e)
-			{
+			catch(Exception e) {
 				_log.Error("Ошибка при разборе накладных", e);
 			}
 		}
@@ -65,8 +65,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			var docs = docsForParsing.Select(d => {
 				
-				try
-				{
+				try {
 					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
 					
 					if (d.DocumentLog.DocumentType == DocType.Reject)
@@ -81,20 +80,15 @@ namespace Inforoom.PriceProcessor.Waybills
 					}
 
 					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
-					
 					// для мульти файла, мы сохраняем в источнике все файлы, 
 					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 					if (doc != null && settings != null) {
-						using (var scope = new TransactionScope(OnDispose.Rollback)) {
-							Exporter.ConvertIfNeeded(doc, settings);
-							scope.VoteCommit();
-						}
+						Exporter.ConvertIfNeeded(doc, settings);
 					}
 
 					return doc;
 				}
-				catch (Exception e)
-				{
+				catch (Exception e) {
 					var filename = d.FileName;
 					_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
 					SaveWaybill(filename);
@@ -103,21 +97,16 @@ namespace Inforoom.PriceProcessor.Waybills
 			}).Where(d => d != null).ToList();
 			MultifileDocument.DeleteMergedFiles(docsForParsing);
 
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-
-				docs.Each(d => {
-					if(d.Log.IsFake) d.Log.Save();
-					d.Save();
-					d.CreateCertificateTasks();
-				});
-				scope.VoteCommit();
-			}
+			docs.Each(d => {
+				if(d.Log.IsFake) d.Log.Save();
+				d.Save();
+				d.CreateCertificateTasks();
+			});
 			return docs;
 		}
 
 		public static void SaveWaybill(string filename)
-		{			
+		{
 			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
 				Directory.CreateDirectory(Settings.Default.DownWaybillsPath);
 
@@ -129,8 +118,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var file = log.GetFileName();
 
-			try
-			{
+			try {
 				var settings = WaybillSettings.Find(log.ClientCode.Value);
 					
 				if (!settings.IsConvertFormat)
@@ -143,8 +131,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (document == null)
 					return;
 
-				using (var transaction = new TransactionScope(OnDispose.Rollback))
-				{
+				using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 					Exporter.ConvertIfNeeded(document, settings);
 
 					if(log.IsFake) log.Save();

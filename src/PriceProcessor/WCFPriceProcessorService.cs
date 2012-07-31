@@ -357,9 +357,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var newFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			// Сохраняем новый файл
-			using (var fileStream = File.Create(newFile))
-			{
-				file.Copy(fileStream);
+			using (var fileStream = File.Create(newFile)) {
+				file.CopyTo(fileStream);
 			}
 		}
 
@@ -395,9 +394,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 						Path.GetFileName(newBaseFile));
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 				}
-			using (var fileStream = File.Create(newBaseFile))
-			{
-				file.Copy(fileStream);
+			using (var fileStream = File.Create(newBaseFile)) {
+				file.CopyTo(fileStream);
 			}
 		}
 

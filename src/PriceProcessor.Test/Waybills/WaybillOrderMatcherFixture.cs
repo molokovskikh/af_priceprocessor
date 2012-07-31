@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
-using Inforoom.PriceProcessor.Downloader;
-using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -14,7 +10,6 @@ using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
-using System.IO;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -27,7 +22,7 @@ namespace PriceProcessor.Test.Waybills
 		protected Supplier appSupplier;
 
 		OrderHead order1;
-		OrderHead order2;		
+		OrderHead order2;
 		DocumentReceiveLog log;
 
 		[SetUp]
@@ -95,10 +90,11 @@ namespace PriceProcessor.Test.Waybills
 				order1 = OrderHead.Find(order1.Id);
 				order2 = OrderHead.Find(order2.Id);
 				orders.Add(order1);
-				orders.Add(order2);	
-			}
+				orders.Add(order2);
 
-			WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
+				WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
+				document.SaveAndFlush();
+			}
 
 			var table = GetMatches(document);
 			Assert.That(table.Rows.Count, Is.EqualTo(7));
@@ -193,12 +189,12 @@ namespace PriceProcessor.Test.Waybills
 			}
 
 			using (new SessionScope())
-			{				
+			{
 				order1 = OrderHead.Find(order1.Id);
 				order2 = OrderHead.Find(order2.Id);
+				WaybillOrderMatcher.SafeComparisonWithOrders(document, new List<OrderHead>{order1, order2});
+				document.SaveAndFlush();
 			}
-
-			WaybillOrderMatcher.SafeComparisonWithOrders(document, new List<OrderHead>{order1, order2});
 
 			var table = GetMatches(document);
 			Assert.That(table.Rows.Count, Is.EqualTo(6));
@@ -219,6 +215,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var detector = new WaybillFormatDetectorFake(document); // проверяем вызов функции ComparisonWithOrders из детектора
 			detector.DetectAndParse(log, null);
+			document.SaveAndFlush();
 
 			table = GetMatches(document);
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
