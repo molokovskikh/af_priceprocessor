@@ -5,8 +5,16 @@ using Inforoom.PriceProcessor.Formalizer;
 namespace Inforoom.PriceProcessor.Models
 {
 	[ActiveRecord("Synonym", Schema = "farm")]
-	public class SynonymProduct : ActiveRecordLinqBase<SynonymProduct>
+	public class ProductSynonym : ActiveRecordLinqBase<ProductSynonym>
 	{
+		public ProductSynonym()
+		{}
+
+		public ProductSynonym(string synonym)
+		{
+			Synonym = synonym;
+		}
+
 		/// <summary>
 		/// Id Синонима. Ключевое поле.
 		/// </summary>
@@ -33,13 +41,13 @@ namespace Inforoom.PriceProcessor.Models
 
 		/// <summary>
 		/// Прайс-лист
-		/// </summary>		
+		/// </summary>
 		[BelongsTo("PriceCode")]
 		public Price Price { get; set; }
 
 		/// <summary>
 		/// Код, присвоенный поставщиком
-		/// </summary>		
+		/// </summary>
 		[Property]
 		public string SupplierCode { get; set; }
 	}

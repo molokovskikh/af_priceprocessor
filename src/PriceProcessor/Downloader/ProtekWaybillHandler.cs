@@ -10,7 +10,6 @@ using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
 using Castle.ActiveRecord;
-using Castle.ActiveRecord.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
@@ -125,50 +124,6 @@ namespace Inforoom.PriceProcessor.Downloader
 			this.instCode = instCode;
 			this.theDocId = theDocId;
 		}
-	}
-
-	[ActiveRecord("OrdersHead", Schema = "Orders")]
-	public class OrderHead : ActiveRecordLinqBase<OrderHead>
-	{
-		[PrimaryKey("RowId")]
-		public virtual uint Id { get; set; }
-
-		[Property]
-		public DateTime WriteTime { get; set; }
-
-		[BelongsTo("AddressId")]
-		public virtual Address Address { get; set; }
-
-		[Property]
-		public virtual uint ClientCode { get; set; }
-
-		[BelongsTo("PriceCode")]
-		public virtual Price Price { get; set; }
-
-		[HasMany(ColumnKey = "OrderId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
-		public IList<OrderItem> Items { get; set; }
-	}
-
-	[ActiveRecord("OrdersList", Schema = "Orders")]
-	public class OrderItem : ActiveRecordLinqBase<OrderItem>
-	{
-		[PrimaryKey("RowId")]
-		public uint Id { get; set; }
-
-		[Property]
-		public uint? Quantity { get; set; }
-
-		[Property]
-		public ulong? CoreId { get; set; }
-
-		[Property]
-		public float? Cost { get; set; }
-
-		[Property]
-		public string Code { get; set; }
-
-		[BelongsTo("OrderId")]
-		public OrderHead Order { get; set; }
 	}
 
 	public class ProtekServiceConfig

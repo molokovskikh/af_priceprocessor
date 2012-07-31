@@ -374,7 +374,7 @@ namespace Inforoom.PriceProcessor
             DoIndex();
         }
 
-        protected bool DoIndex(IList<SynonymProduct> synonyms, bool append, bool optimize)
+        protected bool DoIndex(IList<ProductSynonym> synonyms, bool append, bool optimize)
         {            
             if (append && !Directory.Exists(IdxDir)) return false;
             FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));
@@ -446,12 +446,12 @@ namespace Inforoom.PriceProcessor
         {                        
             if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
             _logger.Info("Загрузка синонимов из БД...");
-        	IList<SynonymProduct> synonyms;
+			IList<ProductSynonym> synonyms;
 			using(new SessionScope())
 			{
-				synonyms = SynonymProduct.Queryable.Select(s => s).ToList();
+				synonyms = ProductSynonym.Queryable.Select(s => s).ToList();
 			}
-        	_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+			_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
             DoIndex(synonyms, false, true);
         }
 
@@ -460,12 +460,12 @@ namespace Inforoom.PriceProcessor
             if (ids.Count == 0) return;
             _logger.Info("Добавление синонимов к индексу...");
             _logger.Info("Загрузка синонимов из БД...");
-        	IList<SynonymProduct> synonyms;
+			IList<ProductSynonym> synonyms;
 			using (new SessionScope())
 			{
-				synonyms = SynonymProduct.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
+				synonyms = ProductSynonym.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
 			}
-        	_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
+			_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
             bool res = DoIndex(synonyms, true, false);
             if(res)
                 _logger.Info("Добавление завершено...");

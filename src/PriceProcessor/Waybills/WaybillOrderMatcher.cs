@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Castle.ActiveRecord;
 using Common.MySql;
+using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
@@ -19,57 +21,68 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
-			if (document == null || document.Lines == null) return;
-			using (new SessionScope()) {
-				if (orders != null) { // заказы переданы отдельно и не связаны с позициями в накладной
-					var waybillPositions = document.Lines.Where(l => l != null && !String.IsNullOrEmpty(l.Code)).ToList();
-					while (waybillPositions.Count > 0) {
-						var line = waybillPositions.First();
-						var code = line.Code.Trim().ToLower();
-						var waybillLines = waybillPositions.Where(l => l.Code.Trim().ToLower() == code).ToList();
-						waybillLines.ForEach(waybillLine => waybillPositions.Remove(waybillLine));
-						foreach (var itemW in waybillLines) {
-							foreach (var order in orders) {
-								var orderLines = order.Items.Where(i => i != null && !String.IsNullOrEmpty(i.Code) && i.Code.Trim().ToLower() == code).ToList();
-								orderLines.ForEach(itemOrd => AddToAssociativeTable(itemW.Id, itemOrd.Id));
-							}
-						}
-					}
-				}
-				else {
-					var waybillPositions = document.Lines.Where(l => l != null && l.OrderId != null && !String.IsNullOrEmpty(l.Code)).ToList();
-					foreach(var line in waybillPositions) { // номер заказа выставлен для каждой позиции в накладной
-						var code = line.Code.Trim().ToLower();
-						var order = OrderHead.TryFind(line.OrderId);
-						if (order == null) continue;
-						var orderLines = order.Items.Where(i => i.Code.Trim().ToLower() == code).ToList();
-						orderLines.ForEach(itemOrd => AddToAssociativeTable(line.Id, itemOrd.Id));
-					}
-				}
+			if (document == null)
+				return;
+
+			var documentLines = document.Lines;
+			foreach (var lineGroup in documentLines.GroupBy(d => d.OrderId)) {
+				var currentOrders = orders;
+				if (lineGroup.Key != null)
+					currentOrders = orders.Where(o => o.Id == lineGroup.Key.Value).ToList();
+
+				ComparisonWithOrders(lineGroup.ToList(), currentOrders);
 			}
+		}
+
+		private static void ComparisonWithOrders(IList<DocumentLine> documentLines, IList<OrderHead> orders)
+		{
+			var orderItems = orders.SelectMany(o => o.Items);
+			var codeLookup = orderItems
+				.Where(o => !String.IsNullOrEmpty(o.Code))
+				.ToLookup(o => o.Code.Trim().ToLower());
+
+			var synonymLookup = orderItems.Where(o => o.ProductSynonym != null)
+				.ToLookup(o => GetLookupKey(
+					o.ProductSynonym.Synonym,
+					o.ProducerSynonym != null ? o.ProducerSynonym.Synonym : ""));
+
+			foreach (var documentLine in documentLines) {
+				var items = Enumerable.Empty<OrderItem>();
+
+				if (!String.IsNullOrEmpty(documentLine.Code)) {
+					var key = documentLine.Code.Trim().ToLower();
+					items = codeLookup[key];
+				}
+
+				if (!items.Any() && !String.IsNullOrEmpty(documentLine.Product)) {
+					var synonymKey = GetLookupKey(documentLine.Product, documentLine.Producer);
+					items = synonymLookup[synonymKey];
+				}
+
+				items.Each(i => documentLine.OrderItems.Add(i));
+			}
+		}
+
+		public static string GetLookupKey(params string[] part)
+		{
+			var reg = new Regex(@"\s");
+			var items = part
+				.Where(String.IsNullOrEmpty)
+				.Select(p => p.Trim().ToLower())
+				.Select(p => reg.Replace(p, ""));
+			return String.Join("", items);
 		}
 
 		public static void SafeComparisonWithOrders(Document document, IList<OrderHead> orders)
 		{
 			try {
-				ComparisonWithOrders(document,orders);
+				using (new SessionScope()) {
+					ComparisonWithOrders(document, orders);
+				}
 			}
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
 			}
-		}
-
-		private static void AddToAssociativeTable(uint docLineId, uint ordLineId)
-		{
-			With.Connection(c => {
-				var command = new MySqlCommand(@"
-insert into documents.waybillorders(DocumentLineId, OrderLineId)
-values(?DocumentLineId, ?OrderLineId);
-", c);
-				command.Parameters.AddWithValue("?DocumentLineId", docLineId);
-				command.Parameters.AddWithValue("?OrderLineId", ordLineId);
-				command.ExecuteNonQuery();
-			});
 		}
 	}
 }

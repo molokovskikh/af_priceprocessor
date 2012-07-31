@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Handlers
 			base.DoIndex();
 		}
 
-		public new bool DoIndex(IList<SynonymProduct> synonyms, bool append, bool optimize)
+		public new bool DoIndex(IList<ProductSynonym> synonyms, bool append, bool optimize)
 		{
 			return base.DoIndex(synonyms, append, optimize);
 		}
@@ -113,14 +113,14 @@ namespace PriceProcessor.Test.Handlers
 			names.Add(String.Format("Тестовое наименование 5 ({0})", now));
 
 
-			IList<SynonymProduct> synonyms = new List<SynonymProduct>();
+			IList<ProductSynonym> synonyms = new List<ProductSynonym>();
 
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[0] });
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[1] });
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[2] });
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price2, Synonym = names[3] });
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price2, Synonym = names[4] });
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[4] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[0] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[1] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[2] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price2, Synonym = names[3] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price2, Synonym = names[4] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[4] });
 
 			using (new TransactionScope())
 			{
@@ -172,7 +172,7 @@ namespace PriceProcessor.Test.Handlers
 
 			names.Add(String.Format("Тестовое наименование 6 ({0})", now));
 			synonyms.Clear();
-			synonyms.Add(new SynonymProduct() { Product = product, Junk = false, Price = price1, Synonym = names[5] });
+			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[5] });
 			using (new TransactionScope()){ synonyms[0].Save(); }
 			_handler.DoIndex(synonyms, true, false);
 			

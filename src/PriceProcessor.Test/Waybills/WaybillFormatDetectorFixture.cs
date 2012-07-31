@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Models;
+﻿using System.Collections.Generic;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
@@ -29,12 +30,12 @@ namespace PriceProcessor.Test.Waybills
 			var document = new Document(log) {ProviderDocumentId = "i-1"};
 			var document1 = new Document(log) {ProviderDocumentId = "i-1"};
 
-			document = WaybillFormatDetector.ProcessDocument(document);
+			document = WaybillFormatDetector.ProcessDocument(document, new List<OrderHead>());
 			Assert.That(document, Is.EqualTo(document));
 			session.Save(log);
 			session.Save(document);
 
-			document = WaybillFormatDetector.ProcessDocument(document1);
+			document = WaybillFormatDetector.ProcessDocument(document1, new List<OrderHead>());
 			Assert.That(document, Is.Null);
 		}
 	}

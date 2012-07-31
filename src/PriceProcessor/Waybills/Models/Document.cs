@@ -20,9 +20,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		private readonly int _batchSize = 100;
 
 		public Document()
-		{}
+		{
+			Lines = new List<DocumentLine>();
+		}
 
 		public Document(DocumentReceiveLog log, string parser = null)
+			: this()
 		{
 			Parser = parser;
 			Log = log;
@@ -32,7 +35,57 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Address = log.Address;
 			DocumentType = DocType.Waybill;
 		}
+
+		[PrimaryKey]
+		public uint Id { get; set; }
+
+		[Property]
+		public DateTime WriteTime { get; set; }
+
+		[Property]
+		public uint FirmCode { get; set; }
+
+		[Property]
+		public uint ClientCode { get; set; }
+
+		[BelongsTo("AddressId")]
+		public Address Address { get; set; }
+
+		[Property]
+		public DocType DocumentType { get; set; }
+
+		/// <summary>
+		/// Номер накладной.
+		/// </summary>
+		[Property]
+		public string ProviderDocumentId { get; set; }
+
+		/// <summary>
+		/// Дата накладной.
+		/// </summary>
+		[Property]
+		public DateTime? DocumentDate { get; set; }
+
+		[Property]
+		public string Parser { get; set; }
+
+		/// <summary>
+		/// наш номер заявки, на основании кот. сформирована накладная
+		/// </summary>
+		[Property]
+		public uint? OrderId { get; set; }
+
+		[BelongsTo("DownloadId")]
+		public DocumentReceiveLog Log { get; set; }
 		
+		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
+		public IList<DocumentLine> Lines { get; set; }
+
+		[OneToOne(Cascade = CascadeEnum.All)]
+		public Invoice Invoice { get; private set; }
+
+		public List<CertificateTask> Tasks = new List<CertificateTask>();
+
 		private int GetCount(int batchSize, int index)
 		{
 			return (batchSize + index) <= Lines.Count ? batchSize : Lines.Count - index;
@@ -89,7 +142,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					// получаем Id прайсов, из которых мы будем брать синонимы.
 					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
 						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-					if (priceCodes.Count <= 0 || Lines == null) return this;
+					if (priceCodes.Count <= 0)
+						return this;
+
 					// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
 					// Если накладная большая, то будем выбирать из неё продукты блоками.
 					int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
@@ -106,16 +161,16 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(
 								line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
 						//получаем из базы данные для выбранной части продуктов из накладной.
-						var dbListSynonym = GetListSynonymFromDb<SynonymProduct>(productNames, priceCodes);
+						var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(productNames, priceCodes);
 						//получаем из базы данные для выбранной части производителей из накладной.
-						var dbListSynonymFirm = GetListSynonymFromDb<SynonymFirm>(firmNames, priceCodes);
+						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(firmNames, priceCodes);
 						//выбираем из накладной коды
 						var сodes =
 							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Code)).Select(
 								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
 
-						var dbListSynonymByCodes = GetListSynonymFromDb<SynonymProduct>(сodes, priceCodes, "SupplierCode");
-						var dbListSynonymFirmByCodes = GetListSynonymFromDb<SynonymFirm>(сodes, priceCodes, "SupplierCode");
+						var dbListSynonymByCodes = GetListSynonymFromDb<ProductSynonym>(сodes, priceCodes, "SupplierCode");
+						var dbListSynonymFirmByCodes = GetListSynonymFromDb<ProducerSynonym>(сodes, priceCodes, "SupplierCode");
 
 						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						foreach (var line in Lines) {
@@ -170,55 +225,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public  void CalculateValues() 
 		{
-			if(Lines != null) Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
+			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
 			if(Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
 		}
 
-		[PrimaryKey]
-		public uint Id { get; set; }
-
-		[Property]
-		public DateTime WriteTime { get; set; }
-
-		[Property]
-		public uint FirmCode { get; set; }
-
-		[Property]
-		public uint ClientCode { get; set; }
-
-		[BelongsTo("AddressId")]
-		public Address Address { get; set; }
-
-		[Property]
-		public DocType DocumentType { get; set; }
-
-        /// <summary>
-        /// Номер накладной.
-        /// </summary>
-		[Property]
-		public string ProviderDocumentId { get; set; }
-
-        /// <summary>
-        /// Дата накладной.
-        /// </summary>
-		[Property]
-		public DateTime? DocumentDate { get; set; }
-
-		[Property]
-		public string Parser { get; set; }
-
-		/// <summary>
-		/// наш номер заявки, на основании кот. сформирована накладная
-		/// </summary>
-		[Property]
-		public uint? OrderId { get; set; }
-
-		[BelongsTo("DownloadId")]
-		public DocumentReceiveLog Log { get; set; }
-		
-		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
-		public IList<DocumentLine> Lines { get; set; }
-		
 		public DocumentLine NewLine()
 		{
 			return NewLine(new DocumentLine());
@@ -226,16 +236,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public DocumentLine NewLine(DocumentLine line)
 		{
-			if (Lines == null)
-				Lines = new List<DocumentLine>();
-
 			line.Document = this;
 			Lines.Add(line);
 			return line;
 		}
-
-		[OneToOne(Cascade = CascadeEnum.All)]
-		public Invoice Invoice { get; private set; }
 
 		public Invoice SetInvoice()
 		{
@@ -265,8 +269,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				.Replace("-", String.Empty)
 				.Replace("/", String.Empty);
 		}
-
-		public List<CertificateTask> Tasks = new List<CertificateTask>();
 
 		public void AddCertificateTask(DocumentLine documentLine, CertificateSource certificateSource)
 		{

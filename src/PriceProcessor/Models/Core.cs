@@ -18,10 +18,10 @@ namespace Inforoom.PriceProcessor.Models
 		public Price Price { get; set; }
 
 		[BelongsTo("SynonymCode")]
-		public SynonymProduct ProductSynonym { get; set; }
+		public ProductSynonym ProductSynonym { get; set; }
 
 		[BelongsTo("SynonymFirmCrCode")]
-		public SynonymFirm ProducerSynonym { get; set; }
+		public ProducerSynonym ProducerSynonym { get; set; }
 
 		[Property]
 		public int? ProductId { get; set; }

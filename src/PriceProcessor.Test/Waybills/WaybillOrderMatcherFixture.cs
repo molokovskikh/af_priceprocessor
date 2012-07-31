@@ -261,5 +261,106 @@ namespace PriceProcessor.Test.Waybills
 			}
 			WaybillOrderMatcher.ComparisonWithOrders(document, null);
 		}
+
+		[Test]
+		public void Match_by_name()
+		{
+			var document = GetDocument();
+			var line = document.NewLine();
+			line.Product = "АЛМАГЕЛЬ   А 170МЛ ФЛАК СУСП";
+			line.Code = "10062";
+			line.Producer = "Балканфарма - Троян АД";
+
+			var order = new OrderHead {
+				Address = document.Address,
+				ClientCode = 1
+			};
+			var orderItem = new OrderItem {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order.Items.Add(orderItem);
+
+			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order });
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {orderItem}));
+		}
+
+		[Test]
+		public void Match_without_code()
+		{
+			var document = GetDocument();
+			var line = document.NewLine();
+			line.Product = "АЛМАГЕЛЬ   А 170МЛ ФЛАК СУСП";
+			line.Producer = "Балканфарма - Троян АД";
+
+			var order = new OrderHead {
+				Address = document.Address,
+				ClientCode = 1
+			};
+			var orderItem = new OrderItem {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order.Items.Add(orderItem);
+
+			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order });
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {orderItem}));
+		}
+
+		[Test]
+		public void Respect_order_id()
+		{
+			var document = GetDocument();
+			var line1 = document.NewLine();
+			line1.Product = "АЛМАГЕЛЬ   А 170МЛ ФЛАК СУСП";
+			line1.Producer = "Балканфарма - Троян АД";
+			line1.OrderId = 1;
+
+			var line2 = document.NewLine();
+			line2.Product = "АЛМАГЕЛЬ   А 170МЛ ФЛАК СУСП";
+			line2.Producer = "Балканфарма - Троян АД";
+			line2.OrderId = 2;
+
+			var order1 = new OrderHead {
+				Id = 1,
+				Address = document.Address,
+				ClientCode = 1
+			};
+			var orderItem1 = new OrderItem {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order1.Items.Add(orderItem1);
+
+			var order2 = new OrderHead {
+				Id = 2,
+				Address = document.Address,
+				ClientCode = 1
+			};
+			var orderItem2 = new OrderItem {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order2.Items.Add(orderItem2);
+			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order1, order2 });
+			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
+			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
+		}
+
+		private static Document GetDocument()
+		{
+			var log = new DocumentReceiveLog {
+				Supplier = new Supplier {Name = "Тест"},
+				ClientCode = 1,
+				Address = new Address {Id = 2, Name = "Тест"},
+				MessageUid = 123,
+				DocumentSize = 100
+			};
+			return new Document(log);
+		}
 	}
 }

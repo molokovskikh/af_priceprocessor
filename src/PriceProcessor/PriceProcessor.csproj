@@ -176,8 +176,8 @@
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\Region.cs" />
     <Compile Include="Models\Supplier.cs" />
-    <Compile Include="Models\SynonymFirm.cs" />
-    <Compile Include="Models\SynonymProduct.cs" />
+    <Compile Include="Models\ProducerSynonym.cs" />
+    <Compile Include="Models\ProductSynonym.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="Downloader\FTPSourceHandler.cs" />
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
@@ -263,6 +263,8 @@
     <Compile Include="Waybills\Models\Mail.cs" />
     <Compile Include="Waybills\Models\MailRecipient.cs" />
     <Compile Include="Waybills\Models\MailSendLog.cs" />
+    <Compile Include="Waybills\Models\OrderHead.cs" />
+    <Compile Include="Waybills\Models\OrderItem.cs" />
     <Compile Include="Waybills\Models\WaybillSettings.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingCheboksaryParser.cs" />

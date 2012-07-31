@@ -37,6 +37,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("DocumentBodies", Schema = "documents")]
 	public class DocumentLine
 	{
+		public DocumentLine()
+		{
+			OrderItems = new List<OrderItem>();
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 
@@ -253,6 +258,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
 		[HasMany(Cascade = ManyRelationCascadeEnum.All)]
 		public IList<ProtekDoc> ProtekDocIds { get; set; }
+
+		[HasAndBelongsToMany(Schema = "documents",
+			Table = "waybillorders",
+			ColumnKey = "DocumentLineId",
+			ColumnRef = "OrderLineId")]
+		public IList<OrderItem> OrderItems { get; set; }
 
 		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }
 

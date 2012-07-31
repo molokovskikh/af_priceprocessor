@@ -29,9 +29,9 @@ namespace Inforoom.PriceProcessor.Models
 		public virtual IList<PriceCost> Costs { get; set; }
 
 		[HasMany(ColumnKey = "PriceCode", Cascade = ManyRelationCascadeEnum.AllDeleteOrphan, Lazy = true)]
-		public virtual IList<SynonymProduct> ProductSynonyms { get; set; }
+		public virtual IList<ProductSynonym> ProductSynonyms { get; set; }
 
 		[HasMany(ColumnKey = "PriceCode", Cascade = ManyRelationCascadeEnum.AllDeleteOrphan, Lazy = true)]
-		public virtual IList<SynonymFirm> ProducerSynonyms { get; set; }
+		public virtual IList<ProducerSynonym> ProducerSynonyms { get; set; }
 	}
 }
