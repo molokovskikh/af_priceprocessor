@@ -67,7 +67,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			var reg = new Regex(@"\s");
 			var items = part
-				.Where(String.IsNullOrEmpty)
+				.Where(p => !String.IsNullOrEmpty(p))
 				.Select(p => p.Trim().ToLower())
 				.Select(p => reg.Replace(p, ""));
 			return String.Join("", items);
