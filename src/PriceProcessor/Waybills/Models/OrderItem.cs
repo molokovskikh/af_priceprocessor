@@ -8,6 +8,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("OrdersList", Schema = "Orders")]
 	public class OrderItem : ActiveRecordLinqBase<OrderItem>
 	{
+		public OrderItem()
+		{}
+
+		public OrderItem(OrderHead order)
+		{
+			Order = order;
+		}
+
 		[PrimaryKey("RowId")]
 		public virtual uint Id { get; set; }
 

@@ -6,6 +6,8 @@ using Inforoom.Downloader;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Waybills;
+using PriceProcessor.Test.Waybills.Parser;
 using log4net;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
@@ -20,10 +22,8 @@ namespace PriceProcessor.Test
 		[Test, Ignore]
 		public void shoot_it()
 		{
-			var file = @"C:\tovar_out.xml";
-			var formalizer = PricesValidator.Validate(file, Path.GetTempFileName(), 2601);
-			formalizer.Formalize();
-			Assert.That(formalizer.formCount, Is.GreaterThan(0));
+			Console.WriteLine(WaybillParser.Parse(@"C:\n9769406.dbf").ProviderDocumentId);
+			//new WaybillFormatDetector().DetectAndParse()
 		}
 
 		[Test]

@@ -14,6 +14,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Items = new List<OrderItem>();
 		}
 
+		public OrderHead(Address address, Price price)
+			: this()
+		{
+			WriteTime = DateTime.Now;
+			Address = address;
+			ClientCode = address.ClientId;
+			Price = price;
+		}
+
 		[PrimaryKey("RowId")]
 		public virtual uint Id { get; set; }
 

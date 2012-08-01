@@ -219,15 +219,13 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (doc == null)
 				return null;
 
+			var isDuplicate = false;
 			if (!String.IsNullOrEmpty(doc.ProviderDocumentId)) {
-				var isDuplicate = SessionHelper.WithSession(s => {
+				isDuplicate = SessionHelper.WithSession(s => {
 					return s.Query<Document>().Any(d => d.Id != doc.Id
 						&& d.FirmCode == doc.FirmCode
 						&& d.ProviderDocumentId == doc.ProviderDocumentId);
 				});
-
-				if (isDuplicate)
-					return null;
 			}
 
 			//сопоставляем идентификаторы названиям продуктов в накладной
@@ -236,7 +234,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			doc.CalculateValues();
 			if (!doc.DocumentDate.HasValue)
 				doc.DocumentDate = DateTime.Now;
-			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders); // сопоставляем позиции в накладной с позициями в заказе
+			//сопоставляем позиции в накладной с позициями в заказе
+			if (!isDuplicate)
+				WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders);
 			//сопоставление сертификатов для позиций накладной
 			CertificateSourceDetector.DetectAndParse(doc);
 
