@@ -206,6 +206,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 			var document = new Document(log, parser.GetType().Name);
 			var doc = parser.Parse(file, document);
+			if (doc == null)
+				return null;
+
 			var orders = doc.Lines.Where(l => l.OrderId != null)
 					.Select(l => OrderHead.TryFind(l.OrderId.Value))
 					.Where(o => o != null)
