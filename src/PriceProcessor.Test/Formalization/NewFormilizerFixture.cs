@@ -294,6 +294,7 @@ namespace PriceProcessor.Test.Formalization
 				var assortment2 = TestAssortment.Queryable.FirstOrDefault(a => a.Producer == producer2 && a.Catalog == product2.CatalogProduct);
 				if (assortment2 == null)
 					new TestAssortment(product2, producer2).Save();
+				price.Save();
 			}
 
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -354,6 +355,7 @@ namespace PriceProcessor.Test.Formalization
 				price.CreateAssortmentBoundSynonyms(
 					"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
 					"Валента Фармацевтика/Королев Ф");
+				price.Save();
 			}
 
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;

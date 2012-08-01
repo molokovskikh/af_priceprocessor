@@ -56,6 +56,7 @@ namespace PriceProcessor.Test.Loader
 				format.Save();
 
 				price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м", "Вухан Лифарма Кемикалз Ко");
+				price.Save();
 			}
 		}
 
