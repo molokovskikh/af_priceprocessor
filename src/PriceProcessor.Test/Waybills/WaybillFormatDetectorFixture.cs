@@ -22,7 +22,7 @@ namespace PriceProcessor.Test.Waybills
 			var testSupplier = TestSupplier.Create();
 			price = session.Load<Price>(testSupplier.Prices[0].Id);
 
-			var testClient = TestClient.Create();
+			var testClient = TestClient.CreateNaked();
 			supplier = session.Load<Supplier>(testSupplier.Id);
 			address = session.Load<Address>(testClient.Addresses[0].Id);
 		}
