@@ -6,6 +6,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
+using Test.Support.log4net;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -34,6 +35,7 @@ namespace PriceProcessor.Test.Waybills
 			var order = new OrderHead(address, price);
 
 			order.Items.Add(new OrderItem(order) {Code = "1"});
+			order.Items.Add(new OrderItem(order) {Code = "2"});
 
 			var document = new Document(log) {ProviderDocumentId = "i-1"};
 			var line = document.NewLine();
@@ -41,21 +43,26 @@ namespace PriceProcessor.Test.Waybills
 
 			var document1 = new Document(log) {ProviderDocumentId = "i-1"};
 			var line1 = document1.NewLine();
-			line.Code = "1";
+			line1.Code = "1";
+			var line2 = document1.NewLine();
+			line2.Code = "2";
 
 			session.Save(order);
 			line.OrderId = order.Id;
-			line.OrderId = order.Id;
+			line1.OrderId = order.Id;
+			line2.OrderId = order.Id;
 
 			document = WaybillFormatDetector.ProcessDocument(document, new List<OrderHead> {order});
 			Assert.That(document, Is.EqualTo(document));
 			Assert.That(line.OrderItems.Count, Is.EqualTo(1));
 			session.Save(log);
 			session.Save(document);
+			session.Flush();
 
 			document = WaybillFormatDetector.ProcessDocument(document1, new List<OrderHead> {order});
 			Assert.That(document, Is.EqualTo(document1));
-			Assert.That(line1.OrderItems, Is.Empty);
+			Assert.That(line1.OrderItems.Count, Is.EqualTo(0));
+			Assert.That(line2.OrderItems.Count, Is.EqualTo(1));
 		}
 	}
 }

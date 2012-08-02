@@ -8,6 +8,8 @@ using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
+using NHibernate;
+using NHibernate.Linq;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -19,24 +21,22 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <summary>
 		/// Не обрабатывает исключения, используй SafeComparisonWithOrders
 		/// </summary>
-		public static void ComparisonWithOrders(Document document, IList<OrderHead> orders)
+		public static void ComparisonWithOrders(Document document, IList<OrderItem> orderItems)
 		{
 			if (document == null)
 				return;
 
 			var documentLines = document.Lines;
 			foreach (var lineGroup in documentLines.GroupBy(d => d.OrderId)) {
-				var currentOrders = orders;
 				if (lineGroup.Key != null)
-					currentOrders = orders.Where(o => o.Id == lineGroup.Key.Value).ToList();
+					orderItems = orderItems.Where(o => o.Order.Id == lineGroup.Key.Value).ToList();
 
-				ComparisonWithOrders(lineGroup.ToList(), currentOrders);
+				ComparisonWithOrders(lineGroup.ToList(), orderItems);
 			}
 		}
 
-		private static void ComparisonWithOrders(IList<DocumentLine> documentLines, IList<OrderHead> orders)
+		private static void ComparisonWithOrders(IList<DocumentLine> documentLines, IList<OrderItem> orderItems)
 		{
-			var orderItems = orders.SelectMany(o => o.Items);
 			var codeLookup = orderItems
 				.Where(o => !String.IsNullOrEmpty(o.Code))
 				.ToLookup(o => o.Code.Trim().ToLower());
@@ -73,14 +73,22 @@ namespace Inforoom.PriceProcessor.Waybills
 			return String.Join("", items);
 		}
 
-		public static void SafeComparisonWithOrders(Document document, IList<OrderHead> orders)
+		public static void SafeComparisonWithOrders(Document document, IList<OrderItem> orderItems)
 		{
 			try {
-				ComparisonWithOrders(document, orders);
+				ComparisonWithOrders(document, orderItems);
 			}
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
 			}
+		}
+
+		public static IList<OrderItem> FilterOrderItems(ISession session, IEnumerable<OrderItem> orderItems)
+		{
+			var ids = session.CreateSQLQuery("select OrderLineId from documents.waybillorders where OrderLineId in (:ids)")
+				.SetParameterList("ids", orderItems.Select(i => i.Id).ToArray())
+				.List<uint>();
+			return orderItems.Where(i => !ids.Contains(i.Id)).ToList();
 		}
 	}
 }

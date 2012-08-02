@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
@@ -25,9 +26,12 @@ namespace PriceProcessor.Test.Waybills
 		OrderHead order2;
 		DocumentReceiveLog log;
 
+		List<OrderHead> orders;
+
 		[SetUp]
 		public void Setup()
 		{
+			orders = new List<OrderHead>();
 			using (new SessionScope())
 			{
 				client = TestClient.Create();
@@ -83,8 +87,6 @@ namespace PriceProcessor.Test.Waybills
 				document.Save();
 			}
 
-			IList<OrderHead> orders = new List<OrderHead>();
-
 			using (new SessionScope())
 			{
 				order1 = OrderHead.Find(order1.Id);
@@ -92,7 +94,7 @@ namespace PriceProcessor.Test.Waybills
 				orders.Add(order1);
 				orders.Add(order2);
 
-				WaybillOrderMatcher.SafeComparisonWithOrders(document, orders);
+				Match(document);
 				document.SaveAndFlush();
 			}
 
@@ -192,7 +194,10 @@ namespace PriceProcessor.Test.Waybills
 			{
 				order1 = OrderHead.Find(order1.Id);
 				order2 = OrderHead.Find(order2.Id);
-				WaybillOrderMatcher.SafeComparisonWithOrders(document, new List<OrderHead>{order1, order2});
+				orders.Add(order1);
+				orders.Add(order2);
+
+				Match(document);
 				document.SaveAndFlush();
 			}
 
@@ -220,6 +225,12 @@ namespace PriceProcessor.Test.Waybills
 			table = GetMatches(document);
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
 			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
+		}
+
+		private void Match(Document document)
+		{
+			var orderItems = orders.SelectMany(o => o.Items).ToList();
+			WaybillOrderMatcher.SafeComparisonWithOrders(document, orderItems);
 		}
 
 		private OrderHead BuildOrder()
@@ -280,7 +291,7 @@ namespace PriceProcessor.Test.Waybills
 			order.Items.Add(orderItem1);
 			order.Items.Add(orderItem2);
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order });
+			WaybillOrderMatcher.ComparisonWithOrders(document, order.Items);
 			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
 			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
 		}
@@ -304,7 +315,7 @@ namespace PriceProcessor.Test.Waybills
 			};
 			order.Items.Add(orderItem);
 
-			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order });
+			WaybillOrderMatcher.ComparisonWithOrders(document, order.Items);
 			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {orderItem}));
 		}
 
@@ -345,7 +356,7 @@ namespace PriceProcessor.Test.Waybills
 				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
 			};
 			order2.Items.Add(orderItem2);
-			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order1, order2 });
+			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order1, order2 }.SelectMany(o => o.Items).ToList());
 			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
 			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
 		}

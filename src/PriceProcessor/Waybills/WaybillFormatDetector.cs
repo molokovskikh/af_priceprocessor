@@ -210,10 +210,10 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 
 			var orders = doc.Lines.Where(l => l.OrderId != null)
-					.Select(l => OrderHead.TryFind(l.OrderId.Value))
-					.Where(o => o != null)
-					.Distinct()
-					.ToList();
+				.Select(l => OrderHead.TryFind(l.OrderId.Value))
+				.Where(o => o != null)
+				.Distinct()
+				.ToList();
 			return ProcessDocument(doc, orders);
 		}
 
@@ -222,24 +222,19 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (doc == null)
 				return null;
 
-			var isDuplicate = false;
-			if (!String.IsNullOrEmpty(doc.ProviderDocumentId)) {
-				isDuplicate = SessionHelper.WithSession(s => {
-					return s.Query<Document>().Any(d => d.Id != doc.Id
-						&& d.FirmCode == doc.FirmCode
-						&& d.ProviderDocumentId == doc.ProviderDocumentId);
-				});
-			}
-
 			//сопоставляем идентификаторы названиям продуктов в накладной
 			doc.SetProductId();
 			//расчет недостающих значений
 			doc.CalculateValues();
 			if (!doc.DocumentDate.HasValue)
 				doc.DocumentDate = DateTime.Now;
+
 			//сопоставляем позиции в накладной с позициями в заказе
-			if (!isDuplicate)
-				WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders);
+			var orderItems = SessionHelper.WithSession(s => {
+				return WaybillOrderMatcher.FilterOrderItems(s, orders.SelectMany(o => o.Items));
+			});
+			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orderItems);
+
 			//сопоставление сертификатов для позиций накладной
 			CertificateSourceDetector.DetectAndParse(doc);
 
