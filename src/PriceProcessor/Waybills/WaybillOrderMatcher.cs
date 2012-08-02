@@ -83,12 +83,16 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public static IList<OrderItem> FilterOrderItems(ISession session, IEnumerable<OrderItem> orderItems)
+		public static IList<OrderItem> FilterOrderItems(ISession session, IList<OrderItem> orderItems)
 		{
-			var ids = session.CreateSQLQuery("select OrderLineId from documents.waybillorders where OrderLineId in (:ids)")
-				.SetParameterList("ids", orderItems.Select(i => i.Id).ToArray())
+			if (orderItems.Count == 0)
+				return orderItems;
+
+			var ids = orderItems.Select(i => i.Id).ToArray();
+			var existed = session.CreateSQLQuery("select OrderLineId from documents.waybillorders where OrderLineId in (:ids)")
+				.SetParameterList("ids", ids)
 				.List<uint>();
-			return orderItems.Where(i => !ids.Contains(i.Id)).ToList();
+			return orderItems.Where(i => !existed.Contains(i.Id)).ToList();
 		}
 	}
 }

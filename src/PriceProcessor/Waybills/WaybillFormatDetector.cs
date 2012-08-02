@@ -231,7 +231,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			//сопоставляем позиции в накладной с позициями в заказе
 			var orderItems = SessionHelper.WithSession(s => {
-				return WaybillOrderMatcher.FilterOrderItems(s, orders.SelectMany(o => o.Items));
+				return WaybillOrderMatcher.FilterOrderItems(s, orders.SelectMany(o => o.Items).ToList());
 			});
 			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orderItems);
 
