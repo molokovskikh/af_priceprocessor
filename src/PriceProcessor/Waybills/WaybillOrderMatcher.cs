@@ -28,10 +28,11 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			var documentLines = document.Lines;
 			foreach (var lineGroup in documentLines.GroupBy(d => d.OrderId)) {
+				var currentOrderItems = orderItems;
 				if (lineGroup.Key != null)
-					orderItems = orderItems.Where(o => o.Order.Id == lineGroup.Key.Value).ToList();
+					currentOrderItems = orderItems.Where(o => o.Order.Id == lineGroup.Key.Value).ToList();
 
-				ComparisonWithOrders(lineGroup.ToList(), orderItems);
+				ComparisonWithOrders(lineGroup.ToList(), currentOrderItems);
 			}
 		}
 

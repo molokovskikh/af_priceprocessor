@@ -338,7 +338,7 @@ namespace PriceProcessor.Test.Waybills
 				Address = document.Address,
 				ClientCode = 1
 			};
-			var orderItem1 = new OrderItem {
+			var orderItem1 = new OrderItem(order1) {
 				Code = "14934026",
 				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
 				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
@@ -350,7 +350,7 @@ namespace PriceProcessor.Test.Waybills
 				Address = document.Address,
 				ClientCode = 1
 			};
-			var orderItem2 = new OrderItem {
+			var orderItem2 = new OrderItem(order2) {
 				Code = "14934026",
 				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
 				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
