@@ -32,7 +32,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (lineGroup.Key != null)
 					currentOrderItems = orderItems.Where(o => o.Order.Id == lineGroup.Key.Value).ToList();
 
-				ComparisonWithOrders(lineGroup.ToList(), currentOrderItems);
+				var notMatched = currentOrderItems.Except(documentLines.SelectMany(l => l.OrderItems)).ToList();
+				ComparisonWithOrders(lineGroup.ToList(), notMatched);
 			}
 		}
 
@@ -60,7 +61,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					items = synonymLookup[synonymKey];
 				}
 
-				items.Each(i => documentLine.OrderItems.Add(i));
+				var item = items.Except(documentLines.SelectMany(l => l.OrderItems)).FirstOrDefault();
+				if (item != null)
+					documentLine.OrderItems.Add(item);
 			}
 		}
 

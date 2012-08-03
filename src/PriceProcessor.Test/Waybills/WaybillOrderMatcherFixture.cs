@@ -15,7 +15,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
-	class WaybillOrderMatcherFixture
+	public class WaybillOrderMatcherFixture
 	{
 		protected TestClient client;
 		protected Address address;
@@ -42,14 +42,8 @@ namespace PriceProcessor.Test.Waybills
 				appSupplier = Supplier.Find(supplier.Id);
 			}
 		}
-
-		[Test]
-		public void ComparisonWithOrdersTest()
-		{
-			ComparisonWithOrdersIfOrderIdInOrderHeadTest();
-			ComparisonWithOrdersTestIfOrderIdInDocumentLineTest();
-		}
 	
+		[Test]
 		public void ComparisonWithOrdersIfOrderIdInOrderHeadTest()
 		{
 			Document document;
@@ -98,59 +92,26 @@ namespace PriceProcessor.Test.Waybills
 				document.SaveAndFlush();
 			}
 
-			var table = GetMatches(document);
-			Assert.That(table.Rows.Count, Is.EqualTo(7));
-			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
-			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
-			Assert.That(table.Rows[1]["DocumentLineId"], Is.EqualTo(document.Lines[1].Id));
-			Assert.That(table.Rows[1]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
-			Assert.That(table.Rows[2]["DocumentLineId"], Is.EqualTo(document.Lines[2].Id));
-			Assert.That(table.Rows[2]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
-			Assert.That(table.Rows[3]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-			Assert.That(table.Rows[3]["OrderLineId"], Is.EqualTo(order1.Items[2].Id));
-			Assert.That(table.Rows[4]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-			Assert.That(table.Rows[4]["OrderLineId"], Is.EqualTo(order2.Items[0].Id));
-			Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-			Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
-			Assert.That(table.Rows[6]["DocumentLineId"], Is.EqualTo(document.Lines[5].Id));
-			Assert.That(table.Rows[6]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
+			var line = document.Lines[0];
+			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new [] {order1.Items[0]}));
+
+			line = document.Lines[1];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[1]}));
+
+			line = document.Lines[2];
+			Assert.That(line.OrderItems, Is.Empty);
+
+			line = document.Lines[3];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[2]}));
+
+			line = document.Lines[4];
+			Assert.That(line.OrderItems, Is.Empty);
+
+			line = document.Lines[5];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[2]}));
 		}
 
-		private static DataTable GetMatches(Document document)
-		{
-			var ds =
-				TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in ({0});",
-					document.Lines.Implode(l => l.Id)));
-			var table = ds.Tables[0];
-			return table;
-		}
-
-		public class ParserFake : IDocumentParser
-		{
-			private Document doc;
-			public ParserFake(Document doc)
-			{
-				this.doc = doc;
-			}
-			public Document Parse(string file, Document d) { return doc; }
-			public static bool CheckFileFormat(DataTable data) { return true; }
-		}
-
-		public class WaybillFormatDetectorFake : WaybillFormatDetector
-		{
-			private Document doc;
-
-			public WaybillFormatDetectorFake(Document doc)
-			{
-				this.doc = doc;
-			}
-
-			public override IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
-			{
-				return new ParserFake(doc);
-			}
-		}
-
+		[Test]
 		public void ComparisonWithOrdersTestIfOrderIdInDocumentLineTest()
 		{
 			Document document;
@@ -201,20 +162,26 @@ namespace PriceProcessor.Test.Waybills
 				document.SaveAndFlush();
 			}
 
-			var table = GetMatches(document);
-			Assert.That(table.Rows.Count, Is.EqualTo(6));
-			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
-			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
-			Assert.That(table.Rows[1]["DocumentLineId"], Is.EqualTo(document.Lines[1].Id));
-			Assert.That(table.Rows[1]["OrderLineId"], Is.EqualTo(order1.Items[1].Id));
-			Assert.That(table.Rows[2]["DocumentLineId"], Is.EqualTo(document.Lines[3].Id));
-			Assert.That(table.Rows[2]["OrderLineId"], Is.EqualTo(order1.Items[2].Id));
-			Assert.That(table.Rows[3]["DocumentLineId"], Is.EqualTo(document.Lines[4].Id));
-			Assert.That(table.Rows[3]["OrderLineId"], Is.EqualTo(order2.Items[0].Id));
-			Assert.That(table.Rows[4]["DocumentLineId"], Is.EqualTo(document.Lines[4].Id));
-			Assert.That(table.Rows[4]["OrderLineId"], Is.EqualTo(order2.Items[1].Id));
-			Assert.That(table.Rows[5]["DocumentLineId"], Is.EqualTo(document.Lines[6].Id));
-			Assert.That(table.Rows[5]["OrderLineId"], Is.EqualTo(order2.Items[2].Id));
+			var line = document.Lines[0];
+			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new [] {order1.Items[0]}));
+
+			line = document.Lines[1];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[1]}));
+
+			line = document.Lines[2];
+			Assert.That(line.OrderItems, Is.Empty);
+
+			line = document.Lines[3];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[2]}));
+
+			line = document.Lines[4];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[0]}));
+
+			line = document.Lines[5];
+			Assert.That(line.OrderItems, Is.Empty);
+
+			line = document.Lines[6];
+			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[2]}));
 
 			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id)));
 
@@ -222,7 +189,7 @@ namespace PriceProcessor.Test.Waybills
 			detector.DetectAndParse(log, null);
 			document.SaveAndFlush();
 
-			table = GetMatches(document);
+			var table = GetMatches(document);
 			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
 			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
 		}
@@ -333,10 +300,8 @@ namespace PriceProcessor.Test.Waybills
 			line2.Producer = "Балканфарма - Троян АД";
 			line2.OrderId = 2;
 
-			var order1 = new OrderHead {
+			var order1 = new OrderHead(document.Address, null) {
 				Id = 1,
-				Address = document.Address,
-				ClientCode = 1
 			};
 			var orderItem1 = new OrderItem(order1) {
 				Code = "14934026",
@@ -345,10 +310,8 @@ namespace PriceProcessor.Test.Waybills
 			};
 			order1.Items.Add(orderItem1);
 
-			var order2 = new OrderHead {
+			var order2 = new OrderHead(document.Address, null) {
 				Id = 2,
-				Address = document.Address,
-				ClientCode = 1
 			};
 			var orderItem2 = new OrderItem(order2) {
 				Code = "14934026",
@@ -361,12 +324,81 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
 		}
 
+		[Test]
+		public void Do_not_create_duplication_in_order()
+		{
+			var document = GetDocument();
+			var line1 = document.NewLine();
+			line1.Product = "АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП";
+			line1.Code = "14934026";
+			line1.Producer = "Балканфарма - Троян АД";
+			line1.OrderId = 1;
+			var line2 = document.NewLine();
+			line2.Product = "АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП";
+			line2.Producer = "Балканфарма - Троян АД";
+			line2.OrderId = 1;
+			var order1 = new OrderHead(document.Address, null) {
+				Id = 1,
+			};
+			var orderItem1 = new OrderItem(order1) {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order1.Items.Add(orderItem1);
+			var orderItem2 = new OrderItem(order1) {
+				Code = "14934026",
+				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
+				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
+			};
+			order1.Items.Add(orderItem2);
+
+			WaybillOrderMatcher.ComparisonWithOrders(document, order1.Items);
+			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
+			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
+		}
+
+		private static DataTable GetMatches(Document document)
+		{
+			var ds =
+				TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in ({0});",
+					document.Lines.Implode(l => l.Id)));
+			var table = ds.Tables[0];
+			return table;
+		}
+
+		public class ParserFake : IDocumentParser
+		{
+			private Document doc;
+			public ParserFake(Document doc)
+			{
+				this.doc = doc;
+			}
+			public Document Parse(string file, Document d) { return doc; }
+			public static bool CheckFileFormat(DataTable data) { return true; }
+		}
+
+		public class WaybillFormatDetectorFake : WaybillFormatDetector
+		{
+			private Document doc;
+
+			public WaybillFormatDetectorFake(Document doc)
+			{
+				this.doc = doc;
+			}
+
+			public override IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
+			{
+				return new ParserFake(doc);
+			}
+		}
+
 		private static Document GetDocument()
 		{
 			var log = new DocumentReceiveLog {
 				Supplier = new Supplier {Name = "Тест"},
 				ClientCode = 1,
-				Address = new Address {Id = 2, Name = "Тест"},
+				Address = new Address {Id = 2, Name = "Тест", ClientId = 1},
 				MessageUid = 123,
 				DocumentSize = 100
 			};
