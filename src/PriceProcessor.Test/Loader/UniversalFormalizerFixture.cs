@@ -320,5 +320,32 @@ namespace PriceProcessor.Test.Loader
 				priceItem.Id);
 			formalizer.Formalize();
 		}
+
+		[Test]
+		public void DublicateCostsTest()
+		{
+			xml =
+				@"<Price>
+<Item>
+<Code>185</Code>
+<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+<Producer>>Вухан Лифарма Кемикалз Ко</Producer>
+<Unit>шт.</Unit>
+<Volume>42,112</Volume>
+<Quantity>8</Quantity>
+<Period>15.05.2012</Period>
+<Junk>0</Junk>
+<VitallyImportant>0</VitallyImportant><NDS>10</NDS><RegistryCost>0</RegistryCost><ProducerCost>0</ProducerCost><RequestRatio>0</RequestRatio>
+<Cost><Id>P10094549</Id><Value>34.55</Value><MinOrderCount>3</MinOrderCount></Cost>
+<Cost><Id>P10094549</Id><Value>32.59</Value><MinOrderCount>6</MinOrderCount></Cost>
+<Cost><Id>P10094674</Id><Value>35.08</Value><MinOrderCount>3</MinOrderCount></Cost>
+</Item>
+</Price>";
+			Formalize();
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+				Assert.That(price.Costs.Count, Is.EqualTo(3));
+			}
+		}
 	}
 }

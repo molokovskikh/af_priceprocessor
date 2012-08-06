@@ -238,7 +238,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override object EndConsume()
 		{
-			if (_cost.IsValid())
+			if (_cost.IsValid() && ((PriceItemState)Prev).Costs.FirstOrDefault(c => c.Description.Name == _cost.Description.Name) == null)
 				((PriceItemState)Prev).Costs.Add(_cost);
 			return null;
 		}
