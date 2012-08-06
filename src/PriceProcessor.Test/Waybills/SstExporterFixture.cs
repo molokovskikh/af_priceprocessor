@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.Waybills
 				Product = "Алька-прим шип.таб. Х10",
 				Code = "21603",
 				SerialNumber = "S123S",
-				Certificates = "РОСС PL.ФМ01.Д70041",
+				Certificates = "200112^Паспорт (рус)^01.01.2012 ООО\"ОЦКК\"  Москва",
 				Period = "01.12.2012",
 				Producer = "Polfa/Polpharma",
 				Country = "Польша",
@@ -67,13 +67,11 @@ namespace PriceProcessor.Test.Waybills
 
 			var content = File.ReadAllText(resultFile, Encoding.GetEncoding(1251));
 			Assert.That(content, Is.StringContaining("[Header]"));
+			Assert.That(content, Is.StringContaining("001-01;;432.04;ПОСТАВКА;39.28;0;РУБЛЬ;;;;ЦВ Протек;;;;;;;"));
 			Assert.That(content, Is.StringContaining("[Body]"));
 			var index = content.IndexOf(";S123S");
 			Assert.That(index, Is.GreaterThan(0));
-			var serialString = content.Substring(index, 7);
-			var bytes = Encoding.GetEncoding(1251).GetBytes(serialString);
-			Assert.That(bytes.Length, Is.EqualTo(7));
-			Assert.That(bytes[6], Is.EqualTo(127), "Разделителем не является символ с кодом 127");
+			Assert.That(content, Is.StringContaining("200112^Паспорт (рус)^01.01.2012 ООО\"ОЦКК\"  Москва"));
 		}
 
 		[Test]
