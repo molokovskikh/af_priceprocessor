@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills
 			address = session.Load<Address>(testClient.Addresses[0].Id);
 		}
 
-		[Test]
+		[Test, Ignore("Пока не удалось получить комментарии о проверке уникальности, удалить после 01.09.2012")]
 		public void Do_not_match_with_order_duplicate_document()
 		{
 			var log = new DocumentReceiveLog(supplier, address);

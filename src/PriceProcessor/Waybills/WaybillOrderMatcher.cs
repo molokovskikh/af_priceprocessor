@@ -2,14 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Castle.ActiveRecord;
-using Common.MySql;
 using Common.Tools;
-using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Waybills.Models;
-using MySql.Data.MySqlClient;
 using NHibernate;
-using NHibernate.Linq;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -32,8 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (lineGroup.Key != null)
 					currentOrderItems = orderItems.Where(o => o.Order.Id == lineGroup.Key.Value).ToList();
 
-				var notMatched = currentOrderItems.Except(documentLines.SelectMany(l => l.OrderItems)).ToList();
-				ComparisonWithOrders(lineGroup.ToList(), notMatched);
+				ComparisonWithOrders(lineGroup.ToList(), currentOrderItems);
 			}
 		}
 
@@ -61,9 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					items = synonymLookup[synonymKey];
 				}
 
-				var item = items.Except(documentLines.SelectMany(l => l.OrderItems)).FirstOrDefault();
-				if (item != null)
-					documentLine.OrderItems.Add(item);
+				items.Each(i => documentLine.OrderItems.Add(i));
 			}
 		}
 
@@ -85,18 +77,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
 			}
-		}
-
-		public static IList<OrderItem> FilterOrderItems(ISession session, IList<OrderItem> orderItems)
-		{
-			if (orderItems.Count == 0)
-				return orderItems;
-
-			var ids = orderItems.Select(i => i.Id).ToArray();
-			var existed = session.CreateSQLQuery("select OrderLineId from documents.waybillorders where OrderLineId in (:ids)")
-				.SetParameterList("ids", ids)
-				.List<uint>();
-			return orderItems.Where(i => !existed.Contains(i.Id)).ToList();
 		}
 	}
 }

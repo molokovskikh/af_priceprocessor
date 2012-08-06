@@ -59,33 +59,28 @@ namespace Inforoom.PriceProcessor.Waybills
 			var parsersTypes = specParsers.ContainsKey(firmCode) ? specParsers[firmCode] : null;
 			if (parsersTypes == null) return null;
 
-			foreach (var parserType in parsersTypes)
-			{
-				MethodInfo checkMethod = parserType.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+			foreach (var parserType in parsersTypes) {
+				var checkMethod = parserType.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (checkMethod == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", parserType));
 
 				var paramClass = checkMethod.GetParameters()[0].ParameterType.FullName;
 				object[] args;
-				bool check = false;
-				if (extention == ".dbf" && paramClass.Contains("DataTable"))
-				{
-					MethodInfo loadMethod = parserType.GetMethod("Load", BindingFlags.Static | BindingFlags.Public);
+				var check = false;
+				if (extention == ".dbf" && paramClass.Contains("DataTable")) {
+					var loadMethod = parserType.GetMethod("Load", BindingFlags.Static | BindingFlags.Public);
 					DataTable table;
-					if (loadMethod != null)
-					{
+					if (loadMethod != null) {
 						args = new[] { file };
 						table = (DataTable)loadMethod.Invoke(null, args);
 					}
-					else
-					{
+					else {
 						table = Dbf.Load(file);
 					}
 					args = new[] { table };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
-				else if ((extention == ".sst" || extention == ".txt") && paramClass.Contains("String"))
-				{
+				else if ((extention == ".sst" || extention == ".txt") && paramClass.Contains("String")) {
 					args = new[] {file};
 					check = (bool)checkMethod.Invoke(null, args);
 				}
@@ -101,8 +96,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			type = GetSpecialParser(file, documentLog);
 			
-			if (type == null)
-			{
+			if (type == null) {
 				if (extention == ".dbf")
 					type = DetectDbfParser(file);
 				else if (extention == ".sst")
@@ -116,8 +110,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				else if (extention == ".txt")
 					type = DetectTxtParser(file);
 			}
-			if (type == null)
-			{
+			if (type == null) {
 				log4net.LogManager.GetLogger(typeof(WaybillService)).WarnFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
 #if !DEBUG
 				return null;
@@ -177,18 +170,15 @@ namespace Inforoom.PriceProcessor.Waybills
 			types = types.OrderBy(t => t.Name).ToList();
 			
 			object[] args;
-			if (group == "Dbf")
-			{
+			if (group == "Dbf") {
 				var data = Dbf.Load(file);
 				args = new[] { data };
 			}
-			else
-			{
+			else {
 				args = new[] { file };
 			}
 
-			foreach (var type in types)
-			{
+			foreach (var type in types) {
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
@@ -230,10 +220,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				doc.DocumentDate = DateTime.Now;
 
 			//сопоставляем позиции в накладной с позициями в заказе
-			var orderItems = SessionHelper.WithSession(s => {
-				return WaybillOrderMatcher.FilterOrderItems(s, orders.SelectMany(o => o.Items).ToList());
-			});
-			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orderItems);
+			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders.SelectMany(o => o.Items).ToList());
 
 			//сопоставление сертификатов для позиций накладной
 			CertificateSourceDetector.DetectAndParse(doc);
