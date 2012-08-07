@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Common.Tools;
 using log4net;
@@ -257,6 +258,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 					row.SetField("com_fee_id", invoice.CommissionFeeContractId);
 					row.SetField("com_fee", invoice.CommissionFee);
+				}
+
+				var columns = table.Columns.Cast<DataColumn>().Where(c => c.MaxLength != -1);
+				foreach (var column in columns) {
+					var value = row[column] as string;
+					if (value != null
+						&& value.Length > column.MaxLength) {
+						row[column] = value.Slice(column.MaxLength);
+					}
 				}
 
 				table.Rows.Add(row);

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data;
 using System.IO;
+using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -66,14 +68,28 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Export_universal_dbf()
 		{
+			var data = ExportFile();
+			Assert.That(data.Rows.Count, Is.EqualTo(1));
+			Assert.That(data.Rows[0]["name_post"], Is.EqualTo("Алька-прим шип.таб. Х10"));
+		}
+
+		[Test]
+		public void Export_long_data()
+		{
+			document.Lines[0].Certificates = new String(Enumerable.Repeat('-', 200).ToArray());
+			var data = ExportFile();
+			Assert.That(data.Rows[0]["sert"].ToString().Length, Is.EqualTo(150));
+		}
+
+		private DataTable ExportFile()
+		{
 			var file = "Export_universal_dbf.dbf";
 			if (File.Exists(file))
 				File.Delete(file);
 			DbfExporter.SaveUniversalDbf(document, file);
 			Assert.That(File.Exists(file));
 			var data = Dbf.Load(file);
-			Assert.That(data.Rows.Count, Is.EqualTo(1));
-			Assert.That(data.Rows[0]["name_post"], Is.EqualTo("Алька-прим шип.таб. Х10"));
+			return data;
 		}
 	}
 }
