@@ -46,6 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("PRCOPT")
 					&& data.Columns.Contains("GNVLS")
 					&& data.Columns.Contains("SUMS1")
+					&& data.Columns.Contains("PUNKT")
 					&& data.Columns.Contains("SUMS0");
 		}
 	}
