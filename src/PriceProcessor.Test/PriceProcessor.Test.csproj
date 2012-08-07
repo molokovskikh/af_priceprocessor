@@ -169,7 +169,6 @@
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
-    <Compile Include="UkoParserNaklTest.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\DocSourceHandlerFixture.cs" />
@@ -325,7 +324,6 @@
     <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillOrderMatcherFixture.cs" />
-    <Compile Include="Waybills\WayBillRetransFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />
   </ItemGroup>

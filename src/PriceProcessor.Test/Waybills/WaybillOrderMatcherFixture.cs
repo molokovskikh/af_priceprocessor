@@ -324,40 +324,6 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
 		}
 
-		[Test, Ignore("Пока не удалось получить комментарии о проверке уникальности, удалить после 01.09.2012")]
-		public void Do_not_create_duplication_in_order()
-		{
-			var document = GetDocument();
-			var line1 = document.NewLine();
-			line1.Product = "АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП";
-			line1.Code = "14934026";
-			line1.Producer = "Балканфарма - Троян АД";
-			line1.OrderId = 1;
-			var line2 = document.NewLine();
-			line2.Product = "АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП";
-			line2.Producer = "Балканфарма - Троян АД";
-			line2.OrderId = 1;
-			var order1 = new OrderHead(document.Address, null) {
-				Id = 1,
-			};
-			var orderItem1 = new OrderItem(order1) {
-				Code = "14934026",
-				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
-				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
-			};
-			order1.Items.Add(orderItem1);
-			var orderItem2 = new OrderItem(order1) {
-				Code = "14934026",
-				ProductSynonym = new ProductSynonym("АЛМАГЕЛЬ А 170МЛ ФЛАК СУСП"),
-				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
-			};
-			order1.Items.Add(orderItem2);
-
-			WaybillOrderMatcher.ComparisonWithOrders(document, order1.Items);
-			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
-			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
-		}
-
 		private static DataTable GetMatches(Document document)
 		{
 			var ds =

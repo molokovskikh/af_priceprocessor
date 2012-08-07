@@ -1,7 +1,9 @@
-﻿using Common.MySql;
+﻿using System;
+using Common.MySql;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Waybills.Models;
+using NHibernate;
 using NUnit.Framework;
 using Test.Support;
 

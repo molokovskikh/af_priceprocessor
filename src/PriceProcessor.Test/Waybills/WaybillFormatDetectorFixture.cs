@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		[Test, Ignore("Пока не удалось получить комментарии о проверке уникальности, удалить после 01.09.2012")]
-		public void Do_not_match_with_order_duplicate_document()
+		public void Ignore_duplicate_document()
 		{
 			var log = new DocumentReceiveLog(supplier, address);
 			var order = new OrderHead(address, price);
@@ -37,20 +37,19 @@ namespace PriceProcessor.Test.Waybills
 			order.Items.Add(new OrderItem(order) {Code = "1"});
 			order.Items.Add(new OrderItem(order) {Code = "2"});
 
-			var document = new Document(log) {ProviderDocumentId = "i-1"};
+			var document = new Document(log) {ProviderDocumentId = "i-1", DocumentDate = DateTime.Now};
 			var line = document.NewLine();
 			line.Code = "1";
+			line.Quantity = 1;
 
-			var document1 = new Document(log) {ProviderDocumentId = "i-1"};
+			var document1 = new Document(log) {ProviderDocumentId = "i-1", DocumentDate = document.DocumentDate};
 			var line1 = document1.NewLine();
 			line1.Code = "1";
-			var line2 = document1.NewLine();
-			line2.Code = "2";
+			line1.Quantity = 1;
 
 			session.Save(order);
 			line.OrderId = order.Id;
 			line1.OrderId = order.Id;
-			line2.OrderId = order.Id;
 
 			document = WaybillFormatDetector.ProcessDocument(document, new List<OrderHead> {order});
 			Assert.That(document, Is.EqualTo(document));
@@ -62,7 +61,6 @@ namespace PriceProcessor.Test.Waybills
 			document = WaybillFormatDetector.ProcessDocument(document1, new List<OrderHead> {order});
 			Assert.That(document, Is.EqualTo(document1));
 			Assert.That(line1.OrderItems.Count, Is.EqualTo(0));
-			Assert.That(line2.OrderItems.Count, Is.EqualTo(1));
 		}
 	}
 }

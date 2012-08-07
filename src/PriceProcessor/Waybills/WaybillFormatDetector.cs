@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
+using NHibernate.Criterion;
 using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
@@ -220,7 +221,26 @@ namespace Inforoom.PriceProcessor.Waybills
 				doc.DocumentDate = DateTime.Now;
 
 			//сопоставляем позиции в накладной с позициями в заказе
-			WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders.SelectMany(o => o.Items).ToList());
+			var totalQuantity = doc.Lines.Sum(l => l.Quantity);
+			var lineCount = doc.Lines.Count;
+			var isDuplicate = SessionHelper.WithSession(s => {
+				return s.CreateCriteria<Document>("d")
+					.Add(Expression.Eq("d.ProviderDocumentId", doc.ProviderDocumentId))
+					.Add(Expression.Eq("d.FirmCode", doc.FirmCode))
+					.Add(Expression.Eq("d.DocumentDate", doc.DocumentDate))
+					.Add(Subqueries.Eq(totalQuantity,
+						DetachedCriteria.For<DocumentLine>("l")
+							.Add(Expression.EqProperty("d.Id", "l.Document.Id"))
+							.SetProjection(Projections.Sum("Quantity"))))
+					.Add(Subqueries.Eq(lineCount,
+						DetachedCriteria.For<DocumentLine>("l")
+							.Add(Expression.EqProperty("d.Id", "l.Document.Id"))
+							.SetProjection(Projections.Count("l.Id"))))
+					.SetProjection(Projections.Count("d.Id"))
+					.UniqueResult<int>() > 0;
+			});
+			if (!isDuplicate)
+				WaybillOrderMatcher.SafeComparisonWithOrders(doc, orders.SelectMany(o => o.Items).ToList());
 
 			//сопоставление сертификатов для позиций накладной
 			CertificateSourceDetector.DetectAndParse(doc);
