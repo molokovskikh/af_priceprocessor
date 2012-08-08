@@ -2,8 +2,10 @@
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools.Test;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
@@ -341,11 +343,10 @@ namespace PriceProcessor.Test.Loader
 <Cost><Id>P10094674</Id><Value>35.08</Value><MinOrderCount>3</MinOrderCount></Cost>
 </Item>
 </Price>";
-			Formalize();
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				Assert.That(price.Costs.Count, Is.EqualTo(3));
-			}
+
+			var reader = new UniversalReader(new StringStream(xml));
+			var positions = reader.Read().ToList();
+			Assert.That(positions[0].Core.Costs.Length, Is.EqualTo(2));
 		}
 	}
 }
