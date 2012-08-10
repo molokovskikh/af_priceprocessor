@@ -475,8 +475,10 @@ order by c.Id", _priceInfo.PriceCode);
 		public void FinalizePrice()
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
-			if (Downloaded)
+			if (Downloaded){
 				_reader.SendWarning(_loggingStat);
+				SendWarning(_loggingStat);
+			}
 
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
@@ -740,6 +742,39 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 			foreach (var core in _newCores.Where(c => c.CreatedProducerSynonym != null))
 				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProducerSynonym["SynonymFirmCrCode"]);
+		}
+
+		/// <summary>
+		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
+		/// </summary>
+		private void ProcessUndefinedCost(PriceLoggingStat stat)
+		{
+			var stringBuilder = new StringBuilder();
+			foreach (var cost in _reader.CostDescriptions)
+				if (cost.UndefinedCostCount > stat.formCount * 0.05)
+					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
+
+			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
+
+		}
+
+		/// <summary>
+		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
+		/// </summary>
+		private void ProcessZeroCost(PriceLoggingStat stat)
+		{
+			var stringBuilder = new StringBuilder();
+			foreach (var cost in _reader.CostDescriptions)
+				if ((cost.ZeroCostCount > 0 && stat.formCount == 0) || cost.ZeroCostCount == stat.formCount)
+					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
+
+			Alerts.ZeroCostAlert(stringBuilder, _priceInfo);
+		}
+
+		private void SendWarning(PriceLoggingStat stat)
+		{
+			ProcessZeroCost(stat);
+			ProcessUndefinedCost(stat);
 		}
 
 		/// <summary>

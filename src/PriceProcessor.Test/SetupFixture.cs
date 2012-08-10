@@ -6,6 +6,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using NHibernate;
 using NUnit.Framework;
 using Test.Support;
+using log4net.Config;
 
 namespace PriceProcessor.Test
 {
@@ -15,6 +16,7 @@ namespace PriceProcessor.Test
 		[SetUp]
 		public void Setup()
 		{
+			XmlConfigurator.Configure();
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			With.DefaultConnectionStringName = Literals.GetConnectionName();
 			Program.InitActiveRecord(new[] {typeof (TestClient).Assembly, typeof (Document).Assembly});

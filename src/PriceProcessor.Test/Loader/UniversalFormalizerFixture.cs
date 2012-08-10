@@ -314,12 +314,60 @@ namespace PriceProcessor.Test.Loader
 			}
 		}
 
+		[Test]
+		public void Alert_test()
+		{
+			var logFile = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.log").FirstOrDefault(f => f.Contains("PriceProcessor_"));
+			if (!string.IsNullOrEmpty(logFile) && File.Exists(logFile))
+				File.Delete(logFile);
+
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE2</Id>
+			<Value>0</Value>
+		</Cost>
+	</Item>
+	<Item>
+		<Code>109055</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>5</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>Тестовая</Id>
+			<Value>-1</Value>
+		</Cost>
+	</Item>
+</Price>";
+			Formalize();
+
+			Assert.IsNotNullOrEmpty(logFile);
+			var text = File.ReadAllText(logFile);
+			Assert.That(text, Is.StringContaining("имеются ценовые колонки, полностью заполненные ценой '0'."));
+			Assert.That(text, Is.StringContaining("имеются позиции с незаполненными ценами."));
+		}
+
 		private void Formalize()
 		{
 			file = Path.GetTempFileName();
 			File.WriteAllText(file, xml);
 			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
 				priceItem.Id);
+			formalizer.Downloaded = true;
 			formalizer.Formalize();
 		}
 
