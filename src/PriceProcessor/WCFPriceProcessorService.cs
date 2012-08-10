@@ -184,7 +184,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				if (price.ParentSynonym != null)
 					priceId = price.ParentSynonym.Value;
 
-				Console.WriteLine(priceId);
 				var adapter = new MySqlDataAdapter(@"
 select
   pc.PriceItemId,
@@ -217,7 +216,6 @@ and pf.Id = fr.PriceFormatId", c);
 				{
 					try
 					{
-						Console.WriteLine(row["PriceItemId"]);
 						RetransPrice(row, Settings.Default.BasePath);
 					}
 					catch (Exception e)

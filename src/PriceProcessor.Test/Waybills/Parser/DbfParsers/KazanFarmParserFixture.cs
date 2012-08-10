@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Get_ParserName()
 		{
-			Console.WriteLine(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\P-965021.dbf", null));
+			new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\P-965021.dbf", null);
 		}
 
 		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)

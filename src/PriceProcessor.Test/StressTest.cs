@@ -100,15 +100,12 @@ namespace PriceProcessor.Test
 		[Test, Ignore]
 		public void t()
 		{
-			Console.WriteLine("end {0}", DateTime.Now);
 			Prepare();
-			Console.WriteLine("end {0}", DateTime.Now);
 		}
 
 		[Test, Ignore]
 		public void Load_data()
 		{
-			Console.WriteLine("begin {0}", DateTime.Now);
 			using (var connection = new MySqlConnection("server=sql.analit.net;username=Kvasov; password=ghjgtkkth;port=3308;database=farm; pooling=true; Convert Zero Datetime=true; Allow User Variables=true;"))
 			{
 				var data = new DataSet();
@@ -148,7 +145,6 @@ order by Core0.Id;", connection);
 
 				dataAdapter.Fill(costsCopy);
 			}
-			Console.WriteLine("end {0}", DateTime.Now);
 		}
 
 		public class Cost
@@ -162,11 +158,9 @@ order by Core0.Id;", connection);
 		public void Load_self()
 		{
 			var stopwatch = Stopwatch.StartNew();
-			Console.WriteLine("begin {0}", DateTime.Now);
 			using (var connection = new MySqlConnection("server=sql.analit.net;username=Kvasov; password=ghjgtkkth;port=3308;database=farm; pooling=true; Convert Zero Datetime=true; Allow User Variables=true;Logging=true;Use Usage Advisor=true"))
 			{
 				connection.Open();
-				Console.WriteLine("open connection");
 				var command = new MySqlCommand(@"
 SELECT
   Core_id,
@@ -186,7 +180,6 @@ order by Core0.Id;", connection);
 				var costs = new System.Collections.Generic.List<Cost>(/*1834973*/);
 				using(var reader = command.ExecuteReader(CommandBehavior.SequentialAccess))
 				{
-					Console.WriteLine("reader opened {0}", DateTime.Now);
 					while (reader.Read())
 					{
 						costs.Add(new Cost {
@@ -196,11 +189,8 @@ order by Core0.Id;", connection);
 						});
 					}
 				}
-				Console.WriteLine(costs.Count);
 			}
 			stopwatch.Stop();
-			Console.WriteLine(stopwatch.Elapsed);
-			Console.WriteLine("end {0}", DateTime.Now);
 		}
 
 		public void Prepare()
@@ -395,9 +385,7 @@ order by Core0.Id", 3779);
 			Settings.Default.SyncPriceCodes.Add("3779");
 			Settings.Default.SyncPriceCodes.Add("2819");
 
-			Console.WriteLine("being {0}", DateTime.Now);
 			TestHelper.Formalize(Path.GetFullPath(@"..\..\Data\StressTest\old_599.dbf"), 599);
-			Console.WriteLine("being {0}", DateTime.Now);
 		}
 
 		[Test, Ignore]
@@ -422,7 +410,6 @@ order by Core0.Id", 3779);
 					command.ExecuteNonQuery();
 				}
 				stopWatch.Stop();
-				Console.WriteLine(stopWatch.Elapsed.TotalSeconds);
 
 /*				var command = new MySqlCommand(commandText.ToString(), connection);
 				command.ExecuteNonQuery();*/
@@ -435,15 +422,13 @@ order by Core0.Id", 3779);
 			using (var connection = new MySqlConnection("server=testsql.analit.net;user=system;password=newpass;Allow User Variables=true"))
 			{
 				connection.Open();
-/*				Console.WriteLine("1");
+/*
 				var command = new MySqlCommand(File.ReadAllText("dump_0.sql"), connection);
 				command.ExecuteNonQuery();
 
-				Console.WriteLine("2");
 				var command1 = new MySqlCommand(File.ReadAllText("dump_1.sql"), connection);
 				command1.ExecuteNonQuery();
 
-				Console.WriteLine("3");
 				var command2 = new MySqlCommand(File.ReadAllText("dump_2.sql"), connection);
 				command2.ExecuteNonQuery();*/
 
@@ -452,11 +437,9 @@ order by Core0.Id", 3779);
 				var data1 = File.ReadAllBytes("dump_1.sql");
 				var data2 = File.ReadAllBytes("dump_2.sql");
 				butcher.Send(data);
-				Console.WriteLine("send 1");
 				butcher.Send(data1);
-				Console.WriteLine("send 2");
 				butcher.Send(data2);
-				Console.WriteLine("send 3");*/
+*/
 			}
 		}
 

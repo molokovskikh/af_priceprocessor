@@ -19,13 +19,6 @@ namespace PriceProcessor.Test
 	[TestFixture, Ignore("Тест что бы разбирать проблемные ситуации")]
 	public class Troubleshoot
 	{
-		[Test, Ignore]
-		public void shoot_it()
-		{
-			Console.WriteLine(WaybillParser.Parse(@"C:\n9769406.dbf").ProviderDocumentId);
-			//new WaybillFormatDetector().DetectAndParse()
-		}
-
 		[Test]
 		public void Get_sert()
 		{
@@ -37,13 +30,8 @@ namespace PriceProcessor.Test
 			});
 			foreach (var image in response.@return.sertImage)
 			{
-				Console.WriteLine(image.docId);
-				Console.WriteLine(image.imageSize);
-				Console.WriteLine(image.saveTypeId);
-				Console.WriteLine(image.leafNumber);
 				File.WriteAllBytes(image.docId.ToString() + ".tif", image.image);
 			}
-			response.ToXml(Console.Out);
 		}
 
 		private string ExtractFileFromAttachment(string filename, string archFileName, string externalFileName)
