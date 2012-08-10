@@ -167,16 +167,16 @@ namespace RemotePriceProcessor
 		[OperationContract]
 		void RetransErrorPrice(WcfCallParameter priceItemId);
 
-        [OperationContract]
-        string[] FindSynonyms(uint priceItemId);
+		[OperationContract]
+		string[] FindSynonyms(uint priceItemId);
 
-	    [OperationContract]
-	    string[] FindSynonymsResult(string taskId);
+		[OperationContract]
+		string[] FindSynonymsResult(string taskId);
 
-	    [OperationContract]
-	    void StopFindSynonyms(string taskId);
+		[OperationContract]
+		void StopFindSynonyms(string taskId);
 
-	    [OperationContract]
-	    void AppendToIndex(string[] synonymsId);
+		[OperationContract]
+		void AppendToIndex(string[] synonymsId);
 	}
 }
