@@ -122,6 +122,9 @@ namespace RemotePriceProcessor
 	{
 		[OperationContract(IsOneWay = true)]
 		void RetransPrice(WcfCallParameter downlogId);
+
+		[OperationContract(IsOneWay = true)]
+		void RetransPriceSmart(uint priceId);
 	}
 
 	/// <summary>

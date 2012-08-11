@@ -197,6 +197,23 @@ namespace RemotePriceProcessor
 			}
 		}
 
+		public void RetransPriceSmartMsMq(uint priceId)
+		{
+			try
+			{
+				if (_msmqChannelFactory != null) {
+					_msmqClientProxy = _msmqChannelFactory.CreateChannel();
+					_msmqClientProxy.RetransPriceSmart(priceId);
+					((ICommunicationObject)_msmqClientProxy).Close();
+				}
+
+			}
+			finally
+			{
+				AbortMsmqClientProxy();
+			}
+		}
+
 		public bool RetransPrice(ulong priceItemId)
 		{
 			return RetransPrice(priceItemId, false);
