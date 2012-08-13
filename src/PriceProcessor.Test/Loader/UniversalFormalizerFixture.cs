@@ -2,14 +2,17 @@
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Common.Tools.Test;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
 using Test.Support.log4net;
+using log4net.Core;
 
 namespace PriceProcessor.Test.Loader
 {
@@ -317,9 +320,7 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Alert_test()
 		{
-			var logFile = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.log").FirstOrDefault(f => f.Contains("PriceProcessor_"));
-			if (!string.IsNullOrEmpty(logFile) && File.Exists(logFile))
-				File.Delete(logFile);
+			var filter = new EventFilter<Alerts>(Level.Debug);
 
 			xml = @"<Price>
 	<Item>
@@ -355,10 +356,7 @@ namespace PriceProcessor.Test.Loader
 </Price>";
 			Formalize();
 
-			Assert.IsNotNullOrEmpty(logFile);
-			var text = File.ReadAllText(logFile);
-			Assert.That(text, Is.StringContaining("имеются ценовые колонки, полностью заполненные ценой '0'."));
-			Assert.That(text, Is.StringContaining("имеются позиции с незаполненными ценами."));
+			Assert.That(filter.Events.Count, Is.EqualTo(2));
 		}
 
 		private void Formalize()
