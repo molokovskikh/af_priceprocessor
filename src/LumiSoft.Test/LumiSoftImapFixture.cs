@@ -27,7 +27,6 @@ namespace LumiSoftTest
 				{
 					message += error.ToString() + "\n";
 				}
-				Console.WriteLine(message);
 				Assert.Fail(message);
 			}			
 		}
