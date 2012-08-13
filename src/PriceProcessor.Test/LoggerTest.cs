@@ -24,7 +24,7 @@ namespace PriceProcessor.Test
 			logger.Error("Не удалось разобрать накладную", new DbfException(String.Format("Не могу преобразовать значение '{0}' к числу, строка {1} столбец {2}",
 					1, 2, 3)));
 			logger.Error("Не удалось разобрать накладную",new IndexOutOfRangeException("Индекс находился вне границ массива"));
-						Assert.That(session.QueryOver<Log>().Where(l => l.Source == "PriceProcessor" &&
+			Assert.That(session.QueryOver<Log>().Where(l => l.Source == "PriceProcessor" &&
 				l.Message == "Не удалось разобрать накладную").List().Count, Is.EqualTo(3));
 			Assert.That(session.QueryOver<Log>().Where(l => l.Source == "FilterPriceProcessor" &&
 				l.Message == "Не удалось разобрать накладную").List().Count, Is.EqualTo(1));

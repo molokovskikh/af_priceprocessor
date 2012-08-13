@@ -6,7 +6,7 @@ using Castle.ActiveRecord;
 
 namespace Inforoom.PriceProcessor.Models
 {
-	[ActiveRecord("Log", Schema = "Analit")]
+	[ActiveRecord("Logs", Schema = "Analit")]
 	public class Log
 	{
 		[PrimaryKey]

@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `analit`.`Log`;
-CREATE TABLE  `analit`.`Log` (
+DROP TABLE IF EXISTS `analit`.`Logs`;
+CREATE TABLE  `analit`.`Logs` (
   `Id` int unsigned NOT NULL AUTO_INCREMENT,
   `Date` datetime NOT NULL,
   `Level` varchar(50) NOT NULL,
