@@ -15,55 +15,6 @@ namespace PriceProcessor.Test.Handlers
 	[TestFixture]
 	public class IMAPHandlerFixture
 	{
-
-		interface ITestCall
-		{
-			 void ImplementationMethod();
-		}
-
-		class BaseClass : ITestCall
-		{
-			public int T = 0;
-
-			public virtual void ImplementationMethod()
-			{
-				T = 1;
-			}
-
-			public ITestCall GetInterface()
-			{
-				return this;
-			}
-		}
-
-		class ChildClass : BaseClass
-		{
-			public int C = 2;
-
-			public override void ImplementationMethod()
-			{
-				C = 3;
-			}
-		}
-
-		[Test(Description = "проверка того, какой метод будет вызываться, если метод интефейса переопределен потомком")]
-		public void InterfaceCallMethod()
-		{
-			var parent = new BaseClass();
-			Assert.That(parent.T, Is.EqualTo(0));
-			var testCall = parent.GetInterface();
-			testCall.ImplementationMethod();
-			Assert.That(parent.T, Is.EqualTo(1));
-
-			var child = new ChildClass();
-			Assert.That(child.T, Is.EqualTo(0));
-			Assert.That(child.C, Is.EqualTo(2));
-			testCall = child.GetInterface();
-			testCall.ImplementationMethod();
-			Assert.That(child.T, Is.EqualTo(0));
-			Assert.That(child.C, Is.EqualTo(3));
-		}
-
 		[Test(Description = "простая проверка работоспособности класс IMAPHandler")]
 		public void SimpleProcessImap()
 		{
@@ -73,7 +24,7 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => {client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);}) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
 
 			var handler = new IMAPHandler(imapReader);
 
@@ -97,7 +48,7 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => {client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);}) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
 
 			var exception = new Exception("ошибка при разборе письма в reader'е");
 
@@ -156,7 +107,7 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => {client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);}) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
 
 			var exception = new Exception("ошибка при разборе письма в reader'е");
 

@@ -14,7 +14,6 @@ using LumiSoft.Net.SMTP.Client;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
 using System.Net.Mail;
 
-
 namespace Inforoom.Downloader
 {
 	public class EMAILSourceHandler : BasePriceSourceHandler, IIMAPReader
@@ -36,9 +35,7 @@ namespace Inforoom.Downloader
 		{
 			try
 			{
-#pragma warning disable 168
-				var mailAddress = new MailAddress(address);
-#pragma warning restore 168
+				new MailAddress(address);
 				return true;
 			}
 			catch (FormatException)
@@ -83,7 +80,7 @@ namespace Inforoom.Downloader
 			}
 			catch (EMailSourceHandlerException e)
 			{
-				// Формируем список приложений, чтобы использовать 
+				// Формируем список приложений, чтобы использовать
 				// его при отчете о нераспознанном письме
 				ErrorOnMessageProcessing(m, from, e);
 			}
@@ -109,9 +106,9 @@ namespace Inforoom.Downloader
 					new[] { Settings.Default.UnrecLetterMail },
 					ms);
 #endif
-				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(), 
+				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, exception.Message);
-				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}", 
+				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}",
 					exception.Message, m.MainEntity.Subject, from.ToAddressListString()));
 			}
 			catch (Exception exMatch)
@@ -120,7 +117,7 @@ namespace Inforoom.Downloader
 			}
 		}
 
-		protected virtual void ProcessAttachs(Mime m, AddressList from)
+		protected virtual void ProcessAttachs(Mime m, AddressList fromList)
 		{
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			var matched = false;
@@ -131,7 +128,7 @@ namespace Inforoom.Downloader
 			foreach (var entity in attachments)
 			{
 				attachmentFileName = SaveAttachement(entity);
-				UnPack(m, ref matched, from, attachmentFileName);
+				UnPack(m, ref matched, fromList, attachmentFileName);
 				Cleanup();
 			}
 
@@ -153,20 +150,18 @@ namespace Inforoom.Downloader
 		/// </summary>
 		private void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName)
 		{
-			DataRow[] drLS;
-
 			//Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
 			foreach (var mbFrom in FromList.Mailboxes)
 			{
 				//Раньше не проверялся весь список TO, теперь это делается
 				foreach (var mba in m.MainEntity.To.Mailboxes)
 				{
-					drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
+					var drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
 						SourcesTableColumns.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
 						SourcesTableColumns.colEMailFrom, mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS)
 					{
-						if ((drS[SourcesTableColumns.colPriceMask] is String) && 
+						if ((drS[SourcesTableColumns.colPriceMask] is String) &&
 							!String.IsNullOrEmpty(drS[SourcesTableColumns.colPriceMask].ToString()))
 						{
 							var priceMask = (string) drS[SourcesTableColumns.colPriceMask];
@@ -176,27 +171,27 @@ namespace Inforoom.Downloader
 								SetCurrentPriceCode(drS);
 
 								// Пробуем разархивировать
-								var CorrectArchive = CheckFile(drS["ArchivePassword"].ToString());
+								var correctArchive = CheckFile(drS["ArchivePassword"].ToString());
 
-								if (CorrectArchive)
+								if (correctArchive)
 								{
-									string ExtrFile = String.Empty;
-									if (ProcessPriceFile(CurrFileName, out ExtrFile, (ulong)PriceSourceType.EMail))
+									string extrFile;
+									if (ProcessPriceFile(CurrFileName, out extrFile, (ulong)PriceSourceType.EMail))
 									{
 										Matched = true;
-										LogDownloadedPrice((ulong)PriceSourceType.EMail, Path.GetFileName(CurrFileName), ExtrFile);
+										LogDownloadedPrice((ulong)PriceSourceType.EMail, Path.GetFileName(CurrFileName), extrFile);
 									}
 									else
 									{
-										LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось обработать файл '" + 
-											Path.GetFileName(CurrFileName) + "'", 
+										LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось обработать файл '" +
+											Path.GetFileName(CurrFileName) + "'",
 											Path.GetFileName(CurrFileName));
 									}
 								}
 								else
 								{
-									LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось распаковать файл '" + 
-										Path.GetFileName(CurrFileName) + "'. Файл поврежден", 
+									LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось распаковать файл '" +
+										Path.GetFileName(CurrFileName) + "'. Файл поврежден",
 										Path.GetFileName(CurrFileName));
 								}
 								drS.Delete();
@@ -212,13 +207,13 @@ namespace Inforoom.Downloader
 
 		protected override void CopyToHistory(UInt64 PriceID)
 		{
-			string HistoryFileName = Path.Combine(DownHistoryPath, PriceID + ".eml");
-			string SavedFile = Path.Combine(DownHandlerPath, PriceID + ".eml");
+			var historyFileName = Path.Combine(DownHistoryPath, PriceID + ".eml");
+			var savedFile = Path.Combine(DownHandlerPath, PriceID + ".eml");
 			try
 			{
-				IMAPHandler.Message.ToFile(SavedFile);
-				File.Copy(SavedFile, HistoryFileName);
-				File.Delete(SavedFile);
+				IMAPHandler.Message.ToFile(savedFile);
+				File.Copy(savedFile, historyFileName);
+				File.Delete(savedFile);
 			}
 			catch { }
 		}
@@ -232,7 +227,7 @@ namespace Inforoom.Downloader
 			// адрес из поля Sender, может быть не установлен
 			string senderAddress = null;
 			// Если поле установлено и адрес не пустой
-			if ((m.MainEntity.Sender != null) && 
+			if ((m.MainEntity.Sender != null) &&
 				!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress))
 			{
 				// получаем корректный адрес
@@ -255,7 +250,7 @@ namespace Inforoom.Downloader
 						if (IsMailAddress(correctAddress))
 						{
 							from.Add(new MailboxAddress(correctAddress));
-							if (!String.IsNullOrEmpty(senderAddress) && 
+							if (!String.IsNullOrEmpty(senderAddress) &&
 								senderAddress.Equals(correctAddress, StringComparison.OrdinalIgnoreCase))
 								senderFound = true;
 						}
@@ -266,7 +261,7 @@ namespace Inforoom.Downloader
 			if (!String.IsNullOrEmpty(senderAddress) && !senderFound)
 				from.Add(new MailboxAddress(senderAddress));
 
-			// Иногда список адресов оказывается пуст - СПАМ, 
+			// Иногда список адресов оказывается пуст - СПАМ,
 			// в этом случае создаем пустую коллекцию, чтобы все было в порядке
 			if (m.MainEntity.To == null)
 				m.MainEntity.To = new AddressList();
@@ -321,6 +316,60 @@ namespace Inforoom.Downloader
 			return filename;
 		}
 
+		public void SendErrorLetterToSupplier(EMailSourceHandlerException e, Mime sourceLetter)
+		{
+			try
+			{
+				var miniMailException = e as MiniMailException;
+				if (miniMailException != null)
+					e.MailTemplate = TemplateHolder.GetTemplate(miniMailException.Template);
+
+				if (e.MailTemplate.IsValid()) {
+					var FromList = GetAddressList(sourceLetter);
+
+					var from = new AddressList();
+
+					@from.Parse("tech@analit.net");
+
+					var responseMime = new Mime();
+					responseMime.MainEntity.From = @from;
+#if DEBUG
+					var toList = new AddressList { new MailboxAddress(Settings.Default.SMTPUserFail) };
+					responseMime.MainEntity.To = toList;
+#else
+					responseMime.MainEntity.To = FromList;
+#endif
+					responseMime.MainEntity.Subject = e.MailTemplate.Subject;
+					responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+
+					var testEntity  = responseMime.MainEntity.ChildEntities.Add();
+					testEntity.ContentType = MediaType_enum.Text_plain;
+					testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
+					testEntity.DataText = e.GetBody(sourceLetter);
+
+					var attachEntity  = responseMime.MainEntity.ChildEntities.Add();
+					attachEntity.ContentType = MediaType_enum.Application_octet_stream;
+					attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
+					attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
+					attachEntity.ContentDisposition_FileName = (!String.IsNullOrEmpty(sourceLetter.MainEntity.Subject)) ? sourceLetter.MainEntity.Subject + ".eml" : "Unrec.eml";
+					attachEntity.Data = sourceLetter.ToByteData();
+
+					Send(responseMime);
+				}
+				else
+					_logger.ErrorFormat("Для исключения '{0}' не установлен шаблон", e.GetType());
+
+			}
+			catch (Exception exception) {
+				_logger.WarnFormat("Ошибка при отправке письма поставщику: {0}", exception);
+			}
+		}
+
+		//для того что бы перекрыть в тестах
+		protected virtual void Send(Mime mime)
+		{
+			SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, String.Empty, mime);
+		}
 	}
 
 	public static class MimeEntityExtentions
@@ -365,12 +414,15 @@ namespace Inforoom.Downloader
 
 		public EMailSourceHandlerException(string message, string subject, string body) : base(message)
 		{
-			Body = body;
-			Subject = subject;
+			MailTemplate = new MailTemplate(ResponseTemplate.MiniMailOnEmptyRecipients, subject, body);
 		}
 
-		public string Body { get; set; }
-		public string Subject { get; set; }
+		public MailTemplate MailTemplate { get; set; }
+
+		public virtual string GetBody(Mime mime)
+		{
+			return String.Format(MailTemplate.Body, mime.MainEntity.Subject);
+		}
 	}
 	//Класс исключений для ситуации возникновения "Письмо было отброшено как дубликат."
 	public class EmailDoubleMessageException : EMailSourceHandlerException

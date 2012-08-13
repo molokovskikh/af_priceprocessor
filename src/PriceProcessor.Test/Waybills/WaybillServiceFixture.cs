@@ -14,6 +14,7 @@ using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
+using Test.Support.log4net;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -399,6 +400,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
 		public void check_parse_waybill_if_file_is_not_local()
 		{
+			QueryCatcher.Catch();
 			var file = "9229370.dbf";
 			var log = new TestDocumentLog(supplier, testAddress, file);
 			using (new TransactionScope())
@@ -411,10 +413,10 @@ namespace PriceProcessor.Test.Waybills
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count(), Is.EqualTo(1));
 				Assert.That(ids.Length, Is.EqualTo(0));
-				// Проверяем наличие записей в documentheaders				
-				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(0));
+				// Проверяем наличие записей в documentheaders
+				Assert.That(Document.Queryable.Count(doc => doc.Log.Id == logs[0].Id), Is.EqualTo(0));
 			}
-			Thread thread = new Thread(() =>
+			var thread = new Thread(() =>
 			{
 				Thread.Sleep(3000);
 				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
@@ -428,7 +430,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(logs.Count(), Is.EqualTo(1));
 				Assert.That(ids.Length, Is.EqualTo(1));
 				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1));
-			}		
+			}
 		}
 
 		[Test(Description = "Тестирует сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]

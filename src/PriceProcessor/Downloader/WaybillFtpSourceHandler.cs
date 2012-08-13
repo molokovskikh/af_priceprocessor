@@ -98,7 +98,7 @@ GROUP BY SupplierId
 						var logs = ProcessWaybill(documentType.DocType, waybillSource, downloadedWaybill);
 
 						foreach (var log in logs)
-							WaybillService.ParserDocument(log);
+							WaybillService.ParseWaybill(log);
 
 						// Удаление временных файлов
 						Cleanup();
@@ -184,16 +184,7 @@ GROUP BY SupplierId
 			{
 				var addressIds = With.Connection(c => reader.GetClientCodes(c, waybillSource.SupplierId, waybill.FileName, waybill.FileName));
 
-				foreach (var addressId in addressIds)
-				{
-					var addrId = (uint?) addressId;
-					var clientId = GetClientIdByAddress(ref addrId);
-					if (clientId == null)
-					{
-						clientId = addrId;
-						addrId = null;
-					}
-
+				foreach (var addressId in addressIds) {
 					// Если накладная - это архив, разархивируем логируем каждый файл и копируем в папку клиенту
 					var waybillFiles = new string[0];
 					if (ArchiveHelper.IsArchive(waybill.FileName))
@@ -225,14 +216,12 @@ GROUP BY SupplierId
 
 					foreach (var file in waybillFiles)
 					{
-						if (!IsNewWaybill(Path.GetFileName(file), waybill.FileDate, waybillSource.SupplierId, clientId, addrId))
-						{
+						if (!IsNewWaybill(Path.GetFileName(file), waybill.FileDate, waybillSource.SupplierId, (uint)addressId)) {
 							_log.DebugFormat("Файл {0} не является новой накладной, не обрабатываем его", file);
 							continue;
 						}
-						var log = DocumentReceiveLog.Log(waybillSource.SupplierId,
-							clientId,
-							addrId,
+						var log = DocumentReceiveLog.LogNoCommit(waybillSource.SupplierId,
+							(uint)addressId,
 							file,
 							documentType,
 							"Получен с клиентского FTP");
@@ -248,23 +237,20 @@ GROUP BY SupplierId
 			return documentLogs;
 		}
 
-		private bool IsNewWaybill(string waybillFileName, DateTime waybillDate, uint supplierId, uint? clientId, uint? addressId)
+		private bool IsNewWaybill(string waybillFileName, DateTime waybillDate, uint supplierId, uint? addressId)
 		{
-			using (new SessionScope(FlushAction.Never))
-			{
+			using (new SessionScope(FlushAction.Never)) {
 				var docs = DocumentReceiveLog.Queryable
 					.Where(d => d.Supplier.Id == supplierId
 						&& d.FileName == waybillFileName
-						&& d.LogTime > waybillDate
-						&& d.ClientCode == clientId);
-				if (addressId.HasValue)
-				{
+						&& d.LogTime > waybillDate);
+
+				if (addressId.HasValue) {
 					var id = addressId.Value;
 					docs = docs.Where(d => d.Address.Id == id);
 				}
 
-				var count = docs.Count();
-				return count == 0;
+				return !docs.Any();
 			}
 		}
 

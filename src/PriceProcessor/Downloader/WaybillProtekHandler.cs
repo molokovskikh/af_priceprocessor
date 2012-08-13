@@ -142,7 +142,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		}
 	}
 
-	public class ProtekWaybillHandler : AbstractHandler
+	public class WaybillProtekHandler : AbstractHandler
 	{
 		private string uri;
 		private IList<OrderHead> orders = new List<OrderHead>();
@@ -335,7 +335,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
 
 			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
-			
+
 			IList<uint> orderIds = new List<uint>();
 
 			if(orderId != null) orderIds.Add(orderId.Value);
@@ -370,11 +370,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				if(ord != null) orders.Add(ord);
 			}
 
-			var log = new DocumentReceiveLog {
+			var log = new DocumentReceiveLog(order.Price.Supplier, order.Address) {
 				DocumentType = DocType.Waybill,
-				ClientCode = order.ClientCode,
-				Address = order.Address,
-				Supplier = order.Price.Supplier,
 				IsFake = true,
 				Comment = "Получен через сервис Протек"
 			};

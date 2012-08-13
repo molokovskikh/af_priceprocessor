@@ -19,12 +19,12 @@ using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
-	public class WaybillLANSourceHandler : BaseSourceHandler
+	public class WaybillLanSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
 		protected InboundDocumentType _currentDocumentType;
 
-		public WaybillLANSourceHandler()
+		public WaybillLanSourceHandler()
 		{
 			SourceType = "WAYBILLLAN";
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
@@ -125,8 +125,7 @@ and st.SourceID = 4";
 									else
 									{
 										var supplierId = Convert.ToUInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
-										WriteLog(documentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
-											String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+										DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), documentType.DocType, String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
 										//Распаковать файл не удалось, поэтому удаляем его из папки
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
@@ -246,8 +245,7 @@ and st.SourceID = 4";
 			catch (Exception exDivide)
 			{
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				WriteLog(_currentDocumentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
-					String.Format("Не удалось разделить файлы: {0}", exDivide));
+				DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), _currentDocumentType.DocType, String.Format("Не удалось разделить файлы: {0}", exDivide));
 				return false;
 			}
 
@@ -263,63 +261,36 @@ and st.SourceID = 4";
 
 		protected bool MoveWaybill(string archFileName, string fileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			using (var cleaner = new FileCleaner())
-			{
+			using (var cleaner = new FileCleaner()) {
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				try
-				{
+				try {
 					var addresses = With.Connection(c => documentReader.GetClientCodes(c, supplierId, archFileName, fileName));
 					var formatFile = documentReader.FormatOutputFile(fileName, drCurrent);
 
 					cleaner.Watch(fileName);
 					cleaner.Watch(formatFile);
 
-					foreach (var addressId in addresses)
-					{
-						var clientAddressId = (uint?) addressId;
-						var clientId = GetClientIdByAddress(ref clientAddressId);
-						if (clientId == null)
-						{
-							clientId = clientAddressId;
-							clientAddressId = null;
-						}
+					foreach (var addressId in addresses) {
+						var log = DocumentReceiveLog.LogNoCommit(supplierId,
+							(uint)addressId,
+							formatFile,
+							_currentDocumentType.DocType,
+							"Получен с нашего FTP");
 
-						DocumentReceiveLog log;
-						using(new SessionScope())
-							log = DocumentReceiveLog.LogNoCommit(supplierId,
-								clientId,
-								clientAddressId,
-								formatFile,
-								_currentDocumentType.DocType,
-								"Получен с нашего FTP");
-
-						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
+						_logger.InfoFormat("WaybillLanSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
-						WaybillService.ParserDocument(log);
+						WaybillService.ParseWaybill(log);
 					}
 				}
-				catch(Exception e)
-				{
+				catch(Exception e) {
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
-					DocumentReceiveLog.Log(supplierId, null, null, fileName, _currentDocumentType.DocType, message);
+					_logger.ErrorFormat("WaybillLanSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
+					DocumentReceiveLog.Log(supplierId, null, fileName, _currentDocumentType.DocType, message);
 					return false;
 				}
 			}
 
 			return true;
-		}
-
-		private void WriteLog(DocType documentType, uint supplierId, uint? addressId, string logFileName, string comment)
-		{
-			var clientId = GetClientIdByAddress(ref addressId);
-			if (clientId == null)
-			{
-				clientId = addressId;
-				addressId = null;
-			}
-
-			DocumentReceiveLog.Log(supplierId, clientId, addressId, logFileName, documentType, comment);
 		}
 
 		private static BaseDocumentReader GetDocumentReader(string readerClassName)

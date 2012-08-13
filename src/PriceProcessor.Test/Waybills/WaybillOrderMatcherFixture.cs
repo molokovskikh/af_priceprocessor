@@ -364,7 +364,7 @@ namespace PriceProcessor.Test.Waybills
 			var log = new DocumentReceiveLog {
 				Supplier = new Supplier {Name = "Тест"},
 				ClientCode = 1,
-				Address = new Address {Id = 2, Name = "Тест", ClientId = 1},
+				Address = new Address {Id = 2, Name = "Тест", Client = new Client {Id = 1}},
 				MessageUid = 123,
 				DocumentSize = 100
 			};

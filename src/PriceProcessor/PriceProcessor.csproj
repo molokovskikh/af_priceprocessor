@@ -145,7 +145,7 @@
     <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
     <Compile Include="Downloader\ProtekContract.cs" />
-    <Compile Include="Downloader\ProtekWaybillHandler.cs" />
+    <Compile Include="Downloader\WaybillProtekHandler.cs" />
     <Compile Include="Downloader\CertificateCatalogHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
     <Compile Include="Formalizer\BaseFormalizer.cs" />
@@ -159,6 +159,7 @@
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
     <Compile Include="Models\FormLog.cs" />
+    <Compile Include="Models\MailContext.cs" />
     <Compile Include="Models\Price.cs" />
     <Compile Include="Models\PriceCost.cs" />
     <Compile Include="Helpers\FileCleaner.cs" />
@@ -183,8 +184,8 @@
     <Compile Include="Downloader\HTTPSourceHandler.cs" />
     <Compile Include="Downloader\LANSourceHandler.cs" />
     <Compile Include="Downloader\PathSourceHandler.cs" />
-    <Compile Include="Downloader\WaybillLANSourceHandler.cs" />
-    <Compile Include="Downloader\WaybillSourceHandler.cs" />
+    <Compile Include="Downloader\WaybillLanSourceHandler.cs" />
+    <Compile Include="Downloader\WaybillEmailSourceHandler.cs" />
     <Compile Include="Formalizer\BasePriceParser.cs" />
     <Compile Include="Formalizer\New\BasePriceParser2.cs" />
     <Compile Include="Formalizer\CommerceMLParser.cs" />

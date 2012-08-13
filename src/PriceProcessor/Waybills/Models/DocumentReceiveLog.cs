@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Models;
 using NHibernate;
 using log4net;
@@ -67,16 +68,17 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			Supplier = supplier;
 			Address = address;
-			ClientCode = address.ClientId;
+			if (address != null)
+				ClientCode = address.Client.Id;
 		}
 
-		public bool FileIsLocal()
+		public virtual bool FileIsLocal()
 		{
 			return !String.IsNullOrEmpty(_localFile);
 		}
 
 		//файл документа может быть локальным (если он прошел через PriceProcessor и лежит в temp) или пришедшим от клиента тогда он лежит на ftp
-		public string GetFileName()
+		public virtual string GetFileName()
 		{
 			if (!String.IsNullOrEmpty(_localFile))
 				return _localFile;
@@ -112,24 +114,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return Path.Combine(clientDir, DocumentType + "s");
 		}
 
-		public static DocumentReceiveLog Log(uint supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, int messageId)
-		{
-			return Log(supplierId, clientId, addressId, fileName, documentType, null, messageId);
-		}
-
-		public static DocumentReceiveLog Log(uint? supplierId, uint? clientId, uint? addressId, string fileName, DocType documentType, string comment = null, int? messageId = null, bool isFake = false)
-		{
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
-				var document = LogNoCommit(supplierId, clientId, addressId, fileName, documentType, comment, messageId, isFake);
-				document.Save();
-				scope.VoteCommit();
-				return document;
-			}
-		}
-
-		public static DocumentReceiveLog LogNoCommit(uint? supplierId,
-			uint? clientId,
+		public static DocumentReceiveLog Log(uint? supplierId,
 			uint? addressId,
 			string fileName,
 			DocType documentType,
@@ -137,29 +122,53 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			int? messageId = null,
 			bool isFake = false)
 		{
-			fileName = CleanupFilename(fileName);
-			var localFile = fileName;
-			fileName = Path.GetFileName(fileName);
-			var document = new DocumentReceiveLog {
-				ClientCode = clientId,
-				FileName = fileName,
-				_localFile = localFile,
-				DocumentType = documentType,
-				Comment = comment,
-				MessageUid = messageId,
-				IsFake = isFake
-			};
-			if (File.Exists(localFile))
-				document.DocumentSize = new FileInfo(localFile).Length;
-			if (supplierId != null)
-				document.Supplier = Supplier.Find(supplierId.Value);
-			if (addressId != null && addressId != 0)
+			using (var scope = new TransactionScope(OnDispose.Rollback))
 			{
-				document.Address = Address.Find(addressId.Value);
-				NHibernateUtil.Initialize(document.Address);
-				NHibernateUtil.Initialize(document.Address.Org);
+				var document = LogNoCommit(supplierId, addressId, fileName, documentType, comment, messageId, isFake);
+				document.Save();
+				scope.VoteCommit();
+				return document;
 			}
-			return document;
+		}
+
+		public static DocumentReceiveLog LogNoCommit(uint? supplierId,
+			uint? addressId,
+			string fileName,
+			DocType documentType,
+			string comment = null,
+			int? messageId = null,
+			bool isFake = false)
+		{
+			using(new SessionScope()) {
+				fileName = CleanupFilename(fileName);
+				var localFile = fileName;
+				fileName = Path.GetFileName(fileName);
+
+				Supplier supplier = null;
+				if (supplierId != null)
+					supplier = Supplier.Find(supplierId.Value);
+
+				Address address = null;
+				if (addressId != null) {
+					address = Address.TryFind(addressId.Value);
+					if (address != null) {
+						NHibernateUtil.Initialize(address);
+						NHibernateUtil.Initialize(address.Org);
+						NHibernateUtil.Initialize(address.Client);
+					}
+				}
+				var document = new DocumentReceiveLog(supplier, address) {
+					FileName = fileName,
+					_localFile = localFile,
+					DocumentType = documentType,
+					Comment = comment,
+					MessageUid = messageId,
+					IsFake = isFake
+				};
+				if (File.Exists(localFile))
+					document.DocumentSize = new FileInfo(localFile).Length;
+				return document;
+			}
 		}
 
 		//теоритически имя файла может содержать символы которых нет в 1251
@@ -181,7 +190,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return fileName;
 		}
 
-		public string GetRemoteFileNameExt()
+		public virtual string GetRemoteFileNameExt()
 		{
 			var clientDirectory = GetDocumentDir();
 
@@ -191,7 +200,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return GetRemoteFileName();
 		}
 
-		public void CopyDocumentToClientDirectory()
+		public virtual void CopyDocumentToClientDirectory()
 		{
 			var destinationFileName = GetRemoteFileNameExt();
 
@@ -211,5 +220,28 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			return ids.Select(id => Find(id)).ToList();
 		}
+
+		public virtual void Check()
+		{
+			if (!Address.Enabled || !Address.Client.Enabled)
+				throw new EMailSourceHandlerException(
+					String.Format("Адрес доставки {0} отключен", Address.Id),
+					"Ваше Сообщение не доставлено одной или нескольким аптекам",
+					"Добрый день.\r\n\r\n"
+					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. аптека отключена в рамках системы АналитФармация.\r\n\r\n"
+					+ "С уважением, АК \"Инфорум\".");
+
+			if ((Address.Client.MaskRegion & Supplier.RegionMask) == 0)
+				throw new EMailSourceHandlerException(
+					String.Format("Адрес доставки {0} не доступен поставщику {1}", Address.Id, Supplier.Id),
+					"Ваше Сообщение не доставлено одной или нескольким аптекам",
+					"Добрый день.\r\n\r\n"
+					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
+					+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
+					+ "С уважением, АК \"Инфорум\".");
+		}
 	}
+
+	public class NotificationException : Exception
+	{}
 }

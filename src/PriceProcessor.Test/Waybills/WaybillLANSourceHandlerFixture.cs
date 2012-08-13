@@ -26,7 +26,7 @@ using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test
 {
-	public class WaybillLANSourceHandlerForTesting : WaybillLANSourceHandler
+	public class WaybillLANSourceHandlerForTesting : WaybillLanSourceHandler
 	{
 		public void Process()
 		{
@@ -92,7 +92,7 @@ namespace PriceProcessor.Test
 		}
 	}
 
-	public class FakeWaybillLANSourceHandler : WaybillLANSourceHandler
+	public class FakeWaybillLANSourceHandler : WaybillLanSourceHandler
 	{
 		private readonly DataRow drLanSource;
 		private readonly BaseDocumentReader reader;
@@ -482,8 +482,8 @@ and  i.SupplierClientId = ?supplierClientId
 
 		private void Process()
 		{
-			var filter = new EventFilter<WaybillSourceHandler>();
-			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			var filter = new EventFilter<WaybillEmailSourceHandler>();
+			var handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
 			Assert.That(filter.Events.Count, Is.EqualTo(0), "во премя обработки произошли ошибки, {0}", filter.Events.Implode(m => m.ExceptionObject.ToString()));
 		}

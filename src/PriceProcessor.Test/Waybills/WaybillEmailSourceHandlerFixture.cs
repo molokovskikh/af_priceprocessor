@@ -18,15 +18,11 @@ using Castle.ActiveRecord;
 
 namespace PriceProcessor.Test.Waybills
 {
-	public class SummaryInfo
+	public class WaybillEmailSourceHandlerForTesting : WaybillEmailSourceHandler
 	{
-		public TestClient Client { get; set; }
-		public TestSupplier Supplier { get; set; }
-	}
+		public List<Mime> Sended = new List<Mime>();
 
-	public class WaybillSourceHandlerForTesting : WaybillSourceHandler
-	{		
-		public WaybillSourceHandlerForTesting(string mailbox, string password)
+		public WaybillEmailSourceHandlerForTesting(string mailbox, string password)
 			: base(mailbox, password)
 		{
 		}
@@ -36,14 +32,21 @@ namespace PriceProcessor.Test.Waybills
 			CreateDirectoryPath();
 			ProcessData();
 		}
+
+		protected override void Send(Mime mime)
+		{
+			Sended.Add(mime);
+		}
 	}
 
 	[TestFixture]
-	public class WaybillSourceHandlerFixture
+	public class WaybillEmailSourceHandlerFixture
 	{
-		private SummaryInfo _summary = new SummaryInfo();
+		public TestClient Client { get; set; }
+		public TestSupplier Supplier { get; set; }
 
 		private bool IsEmlFile;
+		private WaybillEmailSourceHandlerForTesting handler;
 
 		[SetUp]
 		public void DeleteDirectories()
@@ -94,15 +97,15 @@ namespace PriceProcessor.Test.Waybills
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
 				Settings.Default.IMAPSourceFolder, bytes);
-			_summary.Client = client;
-			_summary.Supplier = supplier;
+			Client = client;
+			Supplier = supplier;
 		}
 
 		private void CheckClientDirectory(int waitingFilesCount, DocType documentsType)
 		{
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, documentsType + "s"), "*.*", SearchOption.AllDirectories);
-			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));			
+			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));
 		}
 
 		private void CheckDocumentLogEntry(int waitingCountEntries)
@@ -110,9 +113,9 @@ namespace PriceProcessor.Test.Waybills
 			using (new SessionScope())
 			{
 				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.Client.Id == _summary.Client.Id &&
-					log.Supplier.Id == _summary.Supplier.Id &&
-					log.AddressId == _summary.Client.Addresses[0].Id);
+					log.Client.Id == Client.Id &&
+					log.Supplier.Id == Supplier.Id &&
+					log.AddressId == Client.Addresses[0].Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
 		}
@@ -121,18 +124,17 @@ namespace PriceProcessor.Test.Waybills
 		{
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
-					doc.ClientCode == _summary.Client.Id &&
-					doc.Address.Id == _summary.Client.Addresses[0].Id);
+				var documents = Document.Queryable.Where(doc => doc.FirmCode == Supplier.Id &&
+					doc.ClientCode == Client.Id &&
+					doc.Address.Id == Client.Addresses[0].Id);
 				Assert.That(documents.Count(), Is.EqualTo(waitingCountEntries));
-			}			
+			}
 		}
 
 		private void Process()
-		{			
-			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+		{
+			handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
-			return;
 		}
 
 		[Test, Description("Проверка вставки даты документа после разбора накладной")]
@@ -142,9 +144,9 @@ namespace PriceProcessor.Test.Waybills
 			Process();
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id &&
-					doc.ClientCode == _summary.Client.Id &&
-					doc.Address.Id == _summary.Client.Addresses[0].Id &&
+				var documents = Document.Queryable.Where(doc => doc.FirmCode == Supplier.Id &&
+					doc.ClientCode == Client.Id &&
+					doc.Address.Id == Client.Addresses[0].Id &&
 					doc.DocumentDate != null);
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
@@ -159,7 +161,7 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(GetSavedFiles("*(0000470553).dbf").Count(), Is.EqualTo(1));
 
-			var tempFilePath = Path.Combine(Settings.Default.TempPath, typeof(WaybillSourceHandlerForTesting).Name);
+			var tempFilePath = Path.Combine(Settings.Default.TempPath, typeof(WaybillEmailSourceHandlerForTesting).Name);
 			tempFilePath = Path.Combine(tempFilePath, "0000470553.dbf");
 			Assert.IsFalse(File.Exists(tempFilePath));
 		}
@@ -171,7 +173,7 @@ namespace PriceProcessor.Test.Waybills
 			SetUp(fileNames);
 
 			var supplier = TestSupplier.Create(64UL);
-			PrepareSupplier(supplier, String.Format("{0}@test.test", _summary.Client));
+			PrepareSupplier(supplier, String.Format("{0}@test.test", Client));
 			Process();
 
 			var savedFiles = GetSavedFiles("*(0000470553).dbf");
@@ -188,7 +190,7 @@ namespace PriceProcessor.Test.Waybills
 			SetUp(files);
 			Process();
 
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			var savedFiles = Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), "*.*", SearchOption.AllDirectories);
 			Assert.That(savedFiles.Count(), Is.EqualTo(2));
 
@@ -199,13 +201,13 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(headerFile.Count(), Is.EqualTo(1));
 			using (new SessionScope())
 			{
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == _summary.Supplier.Id
-					&& doc.ClientCode == _summary.Client.Id
-					&& doc.Address.Id == _summary.Client.Addresses[0].Id);
+				var documents = Document.Queryable.Where(doc => doc.FirmCode == Supplier.Id
+					&& doc.ClientCode == Client.Id
+					&& doc.Address.Id == Client.Addresses[0].Id);
 				Assert.That(documents.Count(), Is.EqualTo(1));
 			}
 
-			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillSourceHandlerForTesting).Name), "*.*");
+			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillEmailSourceHandlerForTesting).Name), "*.*");
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временный файл {0}", tmpFiles.Implode());
 		}
 
@@ -234,7 +236,7 @@ namespace PriceProcessor.Test.Waybills
 
 		private string[] GetSavedFiles(string mask = "*.*")
 		{
-			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, _summary.Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
+			var clientDirectory = Path.Combine(Settings.Default.DocumentPath, Client.Addresses[0].Id.ToString().PadLeft(3, '0'));
 			return Directory.GetFiles(Path.Combine(clientDirectory, "Waybills"), mask, SearchOption.AllDirectories);
 		}
 
@@ -307,13 +309,13 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 
-			var handler = new WaybillSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			var handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			var message = Mime.Parse(@"..\..\Data\EmailSourceHandlerTest\WithCC.eml");
 
 			message.MainEntity.To.Clear();
 			message.MainEntity.Cc.Clear();
 
-			var addrTo = new GroupAddress();		
+			var addrTo = new GroupAddress();
 			addrTo.GroupMembers.Add(new MailboxAddress("klpuls@mail.ru"));
 			message.MainEntity.To.Add(addrTo);
 
@@ -343,12 +345,48 @@ namespace PriceProcessor.Test.Waybills
 				Settings.Default.TestIMAPUser,
 				Settings.Default.TestIMAPPass,
 				Settings.Default.IMAPSourceFolder, bytes);
-			_summary.Supplier = supplier;
+			Supplier = supplier;
 
 			Process();
 
 			var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
 			Assert.That(docs.Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void Reject_message_for_client_with_another_region()
+		{
+			Client = TestClient.Create(2, 2);
+			Supplier = TestSupplier.Create();
+			Supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			Supplier.WaybillSource.EMailFrom = String.Format("{0}@sup.com", Supplier.Id);
+			Supplier.Save();
+
+			handler = new WaybillEmailSourceHandlerForTesting("", "");
+			handler.CreateDirectoryPath();
+
+			var mime = new Mime();
+			mime.MainEntity.Subject = "Тестовое сообщение";
+			mime.MainEntity.To = new AddressList {
+				new MailboxAddress(String.Format("{0}@waybills.analit.net", Client.Addresses[0].Id))
+			};
+			mime.MainEntity.From = new AddressList {
+				new MailboxAddress(String.Format("{0}@sup.com", Supplier.Id))
+			};
+			mime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
+			mime.MainEntity.ChildEntities.Add(new MimeEntity {
+				ContentDisposition = ContentDisposition_enum.Attachment,
+				ContentType = MediaType_enum.Text_plain,
+				ContentTransferEncoding = ContentTransferEncoding_enum.Base64,
+				ContentDisposition_FileName = "text.txt",
+				Data = Enumerable.Repeat(100, 100).Select(i => (byte)i).ToArray()
+			});
+			handler.ProcessMime(mime);
+
+			Assert.That(handler.Sended.Count, Is.EqualTo(1));
+			var message = handler.Sended[0];
+			Assert.That(message.MainEntity.Subject, Is.EqualTo("Ваше Сообщение не доставлено одной или нескольким аптекам"));
+			Assert.That(message.MainEntity.ChildEntities[0].DataText, Is.StringContaining("с темой: \"Тестовое сообщение\" не были доставлены аптеке, т.к. указанный адрес получателя"));
 		}
 	}
 }
