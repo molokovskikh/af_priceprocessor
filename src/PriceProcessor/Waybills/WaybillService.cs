@@ -100,7 +100,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			return logs.Select(l => {
 				try {
-					l.Check();
+					SessionHelper.WithSession(s => l.Check(s));
 					l.SaveAndFlush();
 					var settings = WaybillSettings.Find(l.ClientCode.Value);
 

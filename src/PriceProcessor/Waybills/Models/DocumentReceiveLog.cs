@@ -221,7 +221,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return ids.Select(id => Find(id)).ToList();
 		}
 
-		public virtual void Check()
+		public virtual void Check(ISession session)
 		{
 			if (!Address.Enabled || !Address.Client.Enabled)
 				throw new EMailSourceHandlerException(
@@ -238,6 +238,20 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					"Добрый день.\r\n\r\n"
 					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
 					+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
+					+ "С уважением, АК \"Инфорум\".");
+
+			var lastUpdate = session.CreateSQLQuery(@"select max(AFTime)
+from logs.AuthorizationDates d
+join Customers.UserAddresses ua on ua.UserId = d.UserId
+where ua.AddressId = :addressId")
+				.SetParameter("addressId", Address.Id)
+				.UniqueResult<DateTime?>();
+			if (lastUpdate == null || lastUpdate.Value < DateTime.Now.AddMonths(-1))
+				throw new EMailSourceHandlerException(
+					String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
+					"Ваше Сообщение не доставлено одной или нескольким аптекам",
+					"Добрый день.\r\n\r\n"
+					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
 					+ "С уважением, АК \"Инфорум\".");
 		}
 	}

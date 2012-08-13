@@ -160,7 +160,6 @@
     <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="ShareFileHelperTest.cs" />
     <Compile Include="SiaPriceFixture.cs" />
-    <Compile Include="StressTest.cs" />
     <Compile Include="TestHelpers\BaseHandlerFixture.cs" />
     <Compile Include="TestHelpers\DocumentFixture.cs" />
     <Compile Include="TestHelpers\ImapHelper.cs" />
