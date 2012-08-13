@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
@@ -19,7 +22,9 @@ namespace PriceProcessor.Test
 		public void DBLoggerTest()
 		{
 			ILog logger = LogManager.GetLogger(GetType());
-			XmlConfigurator.Configure();
+			var l4n = ConfigurationManager.GetSection("log4net");
+			XmlConfigurator.Configure(l4n as XmlElement);
+
 			logger.Error("Не удалось разобрать накладную",new Exception("Ошибка!"));
 			logger.Error("Не удалось разобрать накладную", new DbfException(String.Format("Не могу преобразовать значение '{0}' к числу, строка {1} столбец {2}",
 					1, 2, 3)));
