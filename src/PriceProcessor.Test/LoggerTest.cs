@@ -21,9 +21,8 @@ namespace PriceProcessor.Test
 		[Test]
 		public void DBLoggerTest()
 		{
-			ConfigurationManager.RefreshSection("log4net");
 			ILog logger = LogManager.GetLogger(GetType());
-			XmlConfigurator.Configure();
+			XmlConfigurator.Configure(new FileInfo(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
 			logger.Error("Не удалось разобрать накладную",new Exception("Ошибка!"));
 			logger.Error("Не удалось разобрать накладную", new DbfException(String.Format("Не могу преобразовать значение '{0}' к числу, строка {1} столбец {2}",
 					1, 2, 3)));
