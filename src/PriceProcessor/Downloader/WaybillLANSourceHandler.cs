@@ -62,7 +62,8 @@ and st.SourceID = 4";
 					// Берем нулевую строку (с данными о поставщике)
 					drLanSource = dtSources.Rows[0];
 
-					var documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
+					var clazz = drLanSource[WaybillSourcesTable.colReaderClassName].ToString();
+					var documentReader = ReflectionHelper.GetDocumentReader<BaseDocumentReader>(clazz);
 
 					foreach(var documentType in _documentTypes)
 						try
@@ -291,21 +292,6 @@ and st.SourceID = 4";
 			}
 
 			return true;
-		}
-
-		private static BaseDocumentReader GetDocumentReader(string readerClassName)
-		{
-			Type result = null;
-			var types = Assembly.GetExecutingAssembly()
-								.GetModules()[0]
-								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
-			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", readerClassName));
-			if (types.Length == 1)
-				result = types[0];
-			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", readerClassName));
-			return (BaseDocumentReader)Activator.CreateInstance(result);
 		}
 	}
 }

@@ -4,6 +4,7 @@ using System.Data;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor;

@@ -9,6 +9,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Downloader.DocumentReaders;
 using Inforoom.Downloader.Documents;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
@@ -104,12 +105,7 @@ namespace PriceProcessor.Test
 		{
 			FillSourcesTable();
 			drLanSource = dtSources.Rows.Cast<DataRow>().FirstOrDefault(r => r["ReaderClassName"].ToString() == "SIAMoscow_2788_Reader");
-			Type result;
-			var types = Assembly.GetExecutingAssembly()
-								.GetModules()[0]
-								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
-			result = types[0];
-			reader = (BaseDocumentReader)Activator.CreateInstance(result);
+			reader = ReflectionHelper.GetDocumentReader<BaseDocumentReader>(readerClassName);
 			_currentDocumentType = new WaybillType();
 		}
 
