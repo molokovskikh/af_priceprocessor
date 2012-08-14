@@ -78,17 +78,14 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		public void ProcessIMAPFolder()
 		{
-			using (var imapClient = new IMAP_Client())
-			{
+			using (var imapClient = new IMAP_Client()) {
 				_imapClient = imapClient;
 				ConnectToIMAP();
 
-				try
-				{
+				try {
 					IMAP_FetchItem[] items;
 					var toDelete = new List<IMAP_FetchItem>();
-					do
-					{
+					do {
 						toDelete.Clear();
 
 						ImapReader.PingReader();
@@ -100,11 +97,9 @@ namespace Inforoom.PriceProcessor.Downloader
 						if (items == null || items.Length == 0)
 							continue;
 
-						foreach (var item in items)
-						{
+						foreach (var item in items) {
 							IMAP_FetchItem[] OneItem = null;
-							try
-							{
+							try {
 								OneItem = FetchMessages(item.UID);
 
 								Message = Mime.Parse(OneItem[0].MessageData);
@@ -115,8 +110,7 @@ namespace Inforoom.PriceProcessor.Downloader
 								ImapReader.ProcessMime(Message);
 								toDelete.Add(item);
 							}
-							catch (Exception ex)
-							{
+							catch (Exception ex) {
 								Message = null;
 								var errorInfo = GetErrorInfo(item.UID);
 								if (UIDTimeout(errorInfo)) {
@@ -134,11 +128,9 @@ namespace Inforoom.PriceProcessor.Downloader
 							sequence.Parse(String.Join(",", toDelete.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
 							imapClient.DeleteMessages(sequence, true);
 						}
-					}
-					while (items != null && items.Length > 0 && toDelete.Count > 0);
+					} while (items != null && items.Length > 0 && toDelete.Count > 0);
 				}
-				finally
-				{
+				finally {
 					Message = null;
 				}
 			}

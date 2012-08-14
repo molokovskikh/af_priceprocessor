@@ -41,11 +41,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("CODE")
-			       && data.Columns.Contains("GOODE")
-			       && data.Columns.Contains("SERIAL")
-			       && data.Columns.Contains("PPRICEWT")
-			       && data.Columns.Contains("PRICE")
-			       && data.Columns.Contains("PRODUSER");
+				&& data.Columns.Contains("GOODE")
+				&& data.Columns.Contains("SERIAL")
+				&& data.Columns.Contains("PPRICEWT")
+				&& data.Columns.Contains("PRICE")
+				&& data.Columns.Contains("PRODUSER");
 		}
 	}
 }

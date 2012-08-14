@@ -10,7 +10,6 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
-
 	public class CertificateTaskErrorInfo
 	{
 		public CertificateTask Task { get; set; }
@@ -61,7 +60,6 @@ namespace Inforoom.PriceProcessor.Downloader
 							Ping(); // чтобы монитор не перезапустил рабочий поток во время обработки задач сертификатов
 							OnTaskError(certificateTask, exception);
 						}
-					
 					}
 			}
 		}
@@ -116,9 +114,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 				if (files.Count > 0)
 					try {
-
 						CreateCertificate(certificateTask, source.CertificateSourceParser, files);
-
 					}
 					finally {
 						foreach (var certificateFileEntry in files) {
@@ -128,13 +124,12 @@ namespace Inforoom.PriceProcessor.Downloader
 								}
 								catch (Exception exception) {
 									_logger.WarnFormat(
-										"Для задачи сертификата {0} возникла ошибка при удалении локального файла {1}: {2}", 
-										certificateTask, 
+										"Для задачи сертификата {0} возникла ошибка при удалении локального файла {1}: {2}",
+										certificateTask,
 										certificateFileEntry.LocalFile,
 										exception);
 								}
 						}
-					
 					}
 				else {
 					_logger.WarnFormat("Для задачи сертификата {0} не были получены файлы", certificateTask);
@@ -153,7 +148,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private CertificateFile Find(CertificateFile file)
 		{
-			return 
+			return
 				CertificateFile.Queryable.FirstOrDefault(
 					e => e.CertificateSource.Id == file.CertificateSource.Id && e.ExternalFileId == file.ExternalFileId);
 		}
@@ -163,12 +158,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			var savedFiles = new List<CertificateFile>();
 
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-				
 				var certificate = Certificate.Queryable.FirstOrDefault(
 					c => c.CatalogProduct.Id == task.CatalogProduct.Id && c.SerialNumber == task.SerialNumber);
 
-				if (certificate == null)
-				{
+				if (certificate == null) {
 					certificate = new Certificate {
 						CatalogProduct = task.CatalogProduct,
 						SerialNumber = task.SerialNumber
@@ -182,8 +175,7 @@ namespace Inforoom.PriceProcessor.Downloader
 					file.CertificateSource = task.CertificateSource;
 					var exist = Find(file) ?? file;
 					certificate.NewFile(exist);
-					if (exist != file)
-					{
+					if (exist != file) {
 						exist.LocalFile = file.LocalFile;
 						_logger.DebugFormat("При обработке задачи {0} будет использоваться файл сертификата {1}", task, exist);
 					}
@@ -196,9 +188,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 				task.Delete();
 
-				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
-				try
-				{
+				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+				try {
 					session.CreateSQLQuery(@"
 	update  
 		documents.Certificates c,
@@ -219,8 +210,7 @@ namespace Inforoom.PriceProcessor.Downloader
 						.SetParameter("serialNumber", task.DocumentLine.SerialNumber)
 						.ExecuteUpdate();
 				}
-				finally
-				{
+				finally {
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 				}
 
@@ -236,7 +226,7 @@ namespace Inforoom.PriceProcessor.Downloader
 					if (File.Exists(fullFileName)) {
 						File.Delete(fullFileName);
 						_logger.InfoFormat(
-							"Будет произведено обновление файла сертификата {0} с Id {1} для сертификата {2}", 
+							"Будет произведено обновление файла сертификата {0} с Id {1} для сертификата {2}",
 							file.LocalFile,
 							file.Id,
 							task);
@@ -246,9 +236,9 @@ namespace Inforoom.PriceProcessor.Downloader
 				}
 				catch (Exception exception) {
 					_logger.WarnFormat(
-						"При копировании файла {0} для сертификата {1} возникла ошибка: {2}", 
+						"При копировании файла {0} для сертификата {1} возникла ошибка: {2}",
 						file.LocalFile,
-						task, 
+						task,
 						exception);
 				}
 			}

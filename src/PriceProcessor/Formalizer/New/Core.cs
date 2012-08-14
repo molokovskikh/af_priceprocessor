@@ -16,7 +16,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public CostDescription Description;
 
 		public Cost()
-		{}
+		{
+		}
 
 		public Cost(CostDescription description)
 		{
@@ -45,8 +46,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 			var format = CultureInfo.CurrentCulture.NumberFormat;
 			var result = String.Empty;
-			foreach (var charValue in stringValue)
-			{
+			foreach (var charValue in stringValue) {
 				if (Char.IsDigit(charValue))
 					result = String.Concat(result, charValue);
 				else if (!Char.IsWhiteSpace(charValue) && result != String.Empty && result.IndexOf(format.CurrencyDecimalSeparator) == -1)
@@ -71,14 +71,15 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	public class CostDescription
 	{
 		public CostDescription()
-		{}
+		{
+		}
 
 		public CostDescription(DataRow row)
 		{
 			Id = Convert.ToUInt32(row["CostCode"]);
-			Name = (string) row["CostName"];
+			Name = (string)row["CostName"];
 			IsBaseCost = ("1" == row["BaseCost"].ToString());
-			FieldName = (string) row["FieldName"];
+			FieldName = (string)row["FieldName"];
 			Begin = (row["TxtBegin"] is DBNull) ? -1 : Convert.ToInt32(row["TxtBegin"]);
 			End = (row["TxtEnd"] is DBNull) ? -1 : Convert.ToInt32(row["TxtEnd"]);
 		}
@@ -154,6 +155,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// Код EAN-13 (штрих-код)
 		/// </summary>
 		public string EAN13;
+
 		public string CodeOKP;
 		public string Series;
 

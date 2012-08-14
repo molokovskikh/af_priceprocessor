@@ -28,8 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("SERT"))
 				certificatesColumn = "SERT";
 
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NTTN"].ToString();
 				if (!Convert.IsDBNull(r["DTTN"]))
 					document.DocumentDate = Convert.ToDateTime(r["DTTN"]);
@@ -61,15 +60,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NTTN") &&
-				   data.Columns.Contains("DTTN") &&
-				   data.Columns.Contains("IZGOT") &&
-				   data.Columns.Contains("KOD") &&
-				   data.Columns.Contains("CENAIZG") &&
-				   data.Columns.Contains("CENAOPT") &&
-				   data.Columns.Contains("SRGOD") &&
-				   data.Columns.Contains("SERIA") &&
-				   data.Columns.Contains("STAVKANDS") &&
-				   !data.Columns.Contains("CENIZGBNDS");
+				data.Columns.Contains("DTTN") &&
+				data.Columns.Contains("IZGOT") &&
+				data.Columns.Contains("KOD") &&
+				data.Columns.Contains("CENAIZG") &&
+				data.Columns.Contains("CENAOPT") &&
+				data.Columns.Contains("SRGOD") &&
+				data.Columns.Contains("SERIA") &&
+				data.Columns.Contains("STAVKANDS") &&
+				!data.Columns.Contains("CENIZGBNDS");
 		}
 	}
 }

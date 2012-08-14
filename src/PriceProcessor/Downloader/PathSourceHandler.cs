@@ -7,7 +7,7 @@ using Common.Tools;
 using Inforoom.Common;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
-using FileHelper=Inforoom.PriceProcessor.FileHelper;
+using FileHelper = Inforoom.PriceProcessor.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -40,46 +40,37 @@ namespace Inforoom.Downloader
 		{
 			//набор строк похожих источников
 			FillSourcesTable();
-			while (dtSources.Rows.Count > 0)
-			{
+			while (dtSources.Rows.Count > 0) {
 				DataRow[] drLS = null;
 				var currentSource = dtSources.Rows[0];
 				var priceSource = new PriceSource(currentSource);
-				if (!IsReadyForDownload(priceSource))
-				{
+				if (!IsReadyForDownload(priceSource)) {
 					currentSource.Delete();
 					dtSources.AcceptChanges();
 					continue;
 				}
-				try
-				{
+				try {
 					drLS = GetLikeSources(priceSource);
-					try
-					{
+					try {
 						CurrFileName = String.Empty;
 						GetFileFromSource(priceSource);
 						priceSource.UpdateLastCheck();
 					}
-					catch (PathSourceHandlerException pathException)
-					{
+					catch (PathSourceHandlerException pathException) {
 						FailedSources.Add(priceSource.PriceItemId);
 						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, pathException.ToString(), pathException.ErrorMessage);
 					}
-					catch (Exception e)
-					{
+					catch (Exception e) {
 						FailedSources.Add(priceSource.PriceItemId);
 						DownloadLogEntity.Log(priceSource.SourceTypeId, priceSource.PriceItemId, e.ToString());
 					}
 
-					if (!String.IsNullOrEmpty(CurrFileName))
-					{
+					if (!String.IsNullOrEmpty(CurrFileName)) {
 						var correctArchive = ProcessArchiveIfNeeded(priceSource);
-						foreach (var drS in drLS)
-						{
+						foreach (var drS in drLS) {
 							SetCurrentPriceCode(drS);
 							string extractFile = null;
-							try
-							{
+							try {
 								if (!correctArchive)
 									throw new PricePreprocessingException("Не удалось распаковать файл '" + Path.GetFileName(CurrFileName) + "'. Файл поврежден", CurrFileName);
 
@@ -89,39 +80,32 @@ namespace Inforoom.Downloader
 								LogDownloadedPrice(priceSource.SourceTypeId, Path.GetFileName(CurrFileName), extractFile);
 								FileProcessed();
 							}
-							catch (PricePreprocessingException e)
-							{
+							catch (PricePreprocessingException e) {
 								LogDownloaderFail(priceSource.SourceTypeId, e.Message, e.FileName);
 								FileProcessed();
 							}
-							catch (Exception e)
-							{
+							catch (Exception e) {
 								LogDownloaderFail(priceSource.SourceTypeId, e.Message, extractFile);
 							}
-							finally
-							{
+							finally {
 								drS.Delete();
 							}
 						}
 						Cleanup();
 					}
-					else
-					{
+					else {
 						foreach (var drDel in drLS)
 							drDel.Delete();
 					}
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					var error = String.Empty;
-					if (drLS != null && drLS.Length > 1)
-					{
+					if (drLS != null && drLS.Length > 1) {
 						error += String.Join(", ", drLS.Select(r => r[SourcesTableColumns.colPriceCode].ToString()).ToArray());
 						drLS.Each(r => FileHelper.Safe(r.Delete));
 						error = "Источники : " + error;
 					}
-					else
-					{
+					else {
 						error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
 						FileHelper.Safe(currentSource.Delete);
 					}
@@ -129,8 +113,7 @@ namespace Inforoom.Downloader
 					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
 						LoggingToService(error);
 				}
-				finally
-				{
+				finally {
 					FileHelper.Safe(() => dtSources.AcceptChanges());
 				}
 			}
@@ -146,8 +129,7 @@ namespace Inforoom.Downloader
 		public bool IsReadyForDownload(PriceSource source)
 		{
 			// downloadInterval - в секундах
-			if (FailedSources.Contains(source.PriceItemId))
-			{
+			if (FailedSources.Contains(source.PriceItemId)) {
 				FailedSources.Remove(source.PriceItemId);
 				return true;
 			}
@@ -158,16 +140,12 @@ namespace Inforoom.Downloader
 		{
 			bool CorrectArchive = true;
 			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-			if (ArchiveHelper.IsArchive(CurrFileName))
-			{
-				if (ArchiveHelper.TestArchive(CurrFileName, priceSource.ArchivePassword))
-				{
-					try
-					{
+			if (ArchiveHelper.IsArchive(CurrFileName)) {
+				if (ArchiveHelper.TestArchive(CurrFileName, priceSource.ArchivePassword)) {
+					try {
 						FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix, priceSource.ArchivePassword);
 					}
-					catch (ArchiveHelper.ArchiveException)
-					{
+					catch (ArchiveHelper.ArchiveException) {
 						CorrectArchive = false;
 					}
 				}
@@ -201,7 +179,9 @@ namespace Inforoom.Downloader
 		/// </summary>
 		public abstract DataRow[] GetLikeSources(PriceSource currentSource);
 
-		protected virtual void FileProcessed() { }
+		protected virtual void FileProcessed()
+		{
+		}
 	}
 
 	public class PathSourceHandlerException : Exception
@@ -211,7 +191,8 @@ namespace Inforoom.Downloader
 		public static string ThreadAbortErrorMessage = "Загрузка файла была прервана";
 
 		public PathSourceHandlerException()
-		{ }
+		{
+		}
 
 		public PathSourceHandlerException(string message, Exception innerException)
 			: base(message, innerException)

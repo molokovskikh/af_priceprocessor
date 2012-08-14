@@ -39,7 +39,7 @@ namespace Inforoom.Downloader
 		}
 
 		public string FileName { get; set; }
-		public DocumentReceiveLog DocumentLog { get; set;}
+		public DocumentReceiveLog DocumentLog { get; set; }
 	}
 
 	public class WaybillEmailSourceHandler : EMAILSourceHandler
@@ -70,8 +70,7 @@ namespace Inforoom.Downloader
 		public WaybillEmailSourceHandler(string imapUser, string imapPassword)
 			: this()
 		{
-			if (!String.IsNullOrEmpty(imapUser) && !String.IsNullOrEmpty(imapPassword))
-			{
+			if (!String.IsNullOrEmpty(imapUser) && !String.IsNullOrEmpty(imapPassword)) {
 				_imapUser = imapUser;
 				_imapPassword = imapPassword;
 			}
@@ -91,12 +90,12 @@ namespace Inforoom.Downloader
 
 			// Получаем кол-во корректных адресов, т.е. отправленных
 			// на @waybills.analit.net или на @refused.analit.net
-			if(m.MainEntity.To != null)
+			if (m.MainEntity.To != null)
 				CorrectClientAddress(m.MainEntity.To, ref emailList);
-			if(m.MainEntity.Cc != null)
+			if (m.MainEntity.Cc != null)
 				CorrectClientAddress(m.MainEntity.Cc, ref emailList);
 
-			emailList  = emailList.ConvertAll(s => s.ToUpper()).Distinct().ToList();
+			emailList = emailList.ConvertAll(s => s.ToUpper()).Distinct().ToList();
 
 			var correctAddresCount = emailList.Count;
 
@@ -118,10 +117,10 @@ namespace Inforoom.Downloader
 					Settings.Default.ResponseDocBodyTemplateOnMultiDomen);
 			}
 			if (m.Attachments.Length > 0) {
-				var attachmentsIsBigger = m.Attachments.Any(attachment => (attachment.Data.Length/1024.0) > Settings.Default.MaxWaybillAttachmentSize);
+				var attachmentsIsBigger = m.Attachments.Any(attachment => (attachment.Data.Length / 1024.0) > Settings.Default.MaxWaybillAttachmentSize);
 				if (attachmentsIsBigger) {
 					throw new EMailSourceHandlerException(String.Format("Письмо содержит вложение размером больше максимально допустимого значения ({0} Кб).",
-							Settings.Default.MaxWaybillAttachmentSize),
+						Settings.Default.MaxWaybillAttachmentSize),
 						Settings.Default.ResponseDocSubjectTemplateOnMaxWaybillAttachment,
 						String.Format(Settings.Default.ResponseDocBodyTemplateOnMaxWaybillAttachment,
 							Settings.Default.MaxWaybillAttachmentSize));
@@ -160,25 +159,20 @@ WHERE Addr.Id = {0}", checkClientCode);
 			InboundDocumentType testType = null;
 			uint? testClientCode = null;
 
-			foreach (var documentType in _documentTypes)
-			{
+			foreach (var documentType in _documentTypes) {
 				uint clientCode;
 
 				// Пытаемся извлечь код клиента из email адреса
-				if (documentType.ParseEmail(emailAddress, out clientCode))
-				{
+				if (documentType.ParseEmail(emailAddress, out clientCode)) {
 					testClientCode = clientCode;
 					testType = documentType;
 					break;
 				}
 			}
 
-			if (testType != null)
-			{
-				if (ClientExists(testClientCode.Value))
-				{
-					if (_currentDocumentType == null)
-					{
+			if (testType != null) {
+				if (ClientExists(testClientCode.Value)) {
+					if (_currentDocumentType == null) {
 						_currentDocumentType = testType;
 						_addressId = testClientCode;
 					}
@@ -198,7 +192,7 @@ WHERE Addr.Id = {0}", checkClientCode);
 			// Пробегаемся по всем адресам TO и ищем адрес вида
 			// <\d+@waybills.analit.net> или <\d+@refused.analit.net>
 			// Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
-			foreach(var mailbox in  addressList.Mailboxes) {
+			foreach (var mailbox in addressList.Mailboxes) {
 				currentClientCode = GetClientCode(GetCorrectEmailAddress(mailbox.EmailAddress));
 				if (currentClientCode.HasValue) {
 					emailList.Add(GetCorrectEmailAddress(mailbox.EmailAddress));
@@ -230,13 +224,11 @@ WHERE
 
 		protected override void ErrorOnMessageProcessing(Mime m, AddressList from, EMailSourceHandlerException e)
 		{
-			try
-			{
+			try {
 				var subject = e.MailTemplate.Subject;
 				var body = e.MailTemplate.Body;
 				var message = e.Message;
-				if (String.IsNullOrEmpty(body))
-				{
+				if (String.IsNullOrEmpty(body)) {
 					SendUnrecLetter(m, from, e);
 					return;
 				}
@@ -244,8 +236,7 @@ WHERE
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				SendErrorLetterToSupplier(e, m);
 
-				if (e is EmailFromUnregistredMail)
-				{
+				if (e is EmailFromUnregistredMail) {
 					var ms = new MemoryStream(m.ToByteData());
 					FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
 						m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, body);
@@ -268,8 +259,7 @@ WHERE
 
 				DocumentReceiveLog.Log(GetFirmCodeByFromList(@from), _addressId, null, _currentDocumentType.DocType, comment, IMAPHandler.CurrentUID);
 			}
-			catch (Exception exMatch)
-			{
+			catch (Exception exMatch) {
 				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
@@ -281,8 +271,7 @@ WHERE
 
 		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
 		{
-			try
-			{
+			try {
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
 				FailMailSend(m.MainEntity.Subject, fromList.ToAddressListString(),
@@ -301,8 +290,7 @@ WHERE
 					m.MainEntity.To.ToAddressListString(),
 					attachments), IMAPHandler.CurrentUID);
 			}
-			catch (Exception exMatch)
-			{
+			catch (Exception exMatch) {
 				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
 			}
 		}
@@ -315,7 +303,7 @@ WHERE
 			var address = new MySqlParameter("?AddressId", MySqlDbType.Int32);
 			address.Value = addressId;
 
-			return With.Connection(c => Convert.ToInt32(MySqlHelper.ExecuteScalar(c,@"
+			return With.Connection(c => Convert.ToInt32(MySqlHelper.ExecuteScalar(c, @"
 SELECT count(i.Id)
 FROM Customers.Addresses a
 	JOIN Customers.Suppliers as s ON s.Id = ?SupplierId
@@ -420,7 +408,7 @@ WHERE a.Id = ?AddressId
 				Cleanup();
 				source.Delete();
 				dtSources.AcceptChanges();
-			}//foreach (MailboxAddress mbFrom in FromList.Mailboxes)
+			} //foreach (MailboxAddress mbFrom in FromList.Mailboxes)
 
 			if (!matched)
 				throw new EmailFromUnregistredMail(
@@ -431,8 +419,7 @@ WHERE a.Id = ?AddressId
 
 		private uint? GetFirmCodeByFromList(AddressList FromList)
 		{
-			foreach (MailboxAddress address in FromList)
-			{
+			foreach (MailboxAddress address in FromList) {
 				var firmCode = With.Connection(c => MySqlHelper.ExecuteScalar(
 					c,
 					String.Format(@"

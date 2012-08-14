@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("Document_logs", Schema = "logs")]
 	public class DocumentReceiveLog : ActiveRecordLinqBase<DocumentReceiveLog>
 	{
-		private static readonly ILog _logger = LogManager.GetLogger(typeof (DocumentReceiveLog));
+		private static readonly ILog _logger = LogManager.GetLogger(typeof(DocumentReceiveLog));
 
 		[PrimaryKey("RowId")]
 		public uint Id { get; set; }
@@ -52,7 +52,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		private string _localFile;
 
 		public DocumentReceiveLog()
-		{}
+		{
+		}
 
 		public DocumentReceiveLog(DocumentReceiveLog log, string extention)
 		{
@@ -93,8 +94,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				Id,
 				Path.GetFileName(FileName));
 			var fullName = Path.Combine(documentDir, file);
-			if (!File.Exists(fullName))
-			{
+			if (!File.Exists(fullName)) {
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,
 					global::Common.Tools.FileHelper.FileNameToWindows1251(Supplier.Name),
@@ -122,8 +122,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			int? messageId = null,
 			bool isFake = false)
 		{
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				var document = LogNoCommit(supplierId, addressId, fileName, documentType, comment, messageId, isFake);
 				document.Save();
 				scope.VoteCommit();
@@ -139,7 +138,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			int? messageId = null,
 			bool isFake = false)
 		{
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				fileName = CleanupFilename(fileName);
 				var localFile = fileName;
 				fileName = Path.GetFileName(fileName);
@@ -179,8 +178,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		private static string CleanupFilename(string fileName)
 		{
 			var convertedFileName = global::Common.Tools.FileHelper.FileNameToWindows1251(Path.GetFileName(fileName));
-			if (!convertedFileName.Equals(Path.GetFileName(fileName), StringComparison.CurrentCultureIgnoreCase))
-			{
+			if (!convertedFileName.Equals(Path.GetFileName(fileName), StringComparison.CurrentCultureIgnoreCase)) {
 				//Если результат преобразования отличается от исходного имени, то переименовываем файл
 				convertedFileName = Path.Combine(Path.GetDirectoryName(fileName), convertedFileName);
 
@@ -228,17 +226,17 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					String.Format("Адрес доставки {0} отключен", Address.Id),
 					"Ваше Сообщение не доставлено одной или нескольким аптекам",
 					"Добрый день.\r\n\r\n"
-					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. аптека отключена в рамках системы АналитФармация.\r\n\r\n"
-					+ "С уважением, АК \"Инфорум\".");
+						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. аптека отключена в рамках системы АналитФармация.\r\n\r\n"
+						+ "С уважением, АК \"Инфорум\".");
 
 			if ((Address.Client.MaskRegion & Supplier.RegionMask) == 0)
 				throw new EMailSourceHandlerException(
 					String.Format("Адрес доставки {0} не доступен поставщику {1}", Address.Id, Supplier.Id),
 					"Ваше Сообщение не доставлено одной или нескольким аптекам",
 					"Добрый день.\r\n\r\n"
-					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
-					+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
-					+ "С уважением, АК \"Инфорум\".");
+						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
+						+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
+						+ "С уважением, АК \"Инфорум\".");
 
 			var lastUpdate = session.CreateSQLQuery(@"select max(AFTime)
 from logs.AuthorizationDates d
@@ -251,8 +249,8 @@ where ua.AddressId = :addressId")
 					String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
 					"Ваше Сообщение не доставлено одной или нескольким аптекам",
 					"Добрый день.\r\n\r\n"
-					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
-					+ "С уважением, АК \"Инфорум\".");
+						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
+						+ "С уважением, АК \"Инфорум\".");
 		}
 	}
 }

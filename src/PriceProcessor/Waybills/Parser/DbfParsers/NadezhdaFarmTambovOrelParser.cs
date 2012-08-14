@@ -35,10 +35,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable table)
 		{
 			return table.Columns.Contains("ORDERNUM") &&
-			       table.Columns.Contains("NAMEGOOD") &&
-			       table.Columns.Contains("IDGOOD") &&
-			       table.Columns.Contains("PRICEOUT") &&
-			       table.Columns.Contains("PRICEOPT");
+				table.Columns.Contains("NAMEGOOD") &&
+				table.Columns.Contains("IDGOOD") &&
+				table.Columns.Contains("PRICEOUT") &&
+				table.Columns.Contains("PRICEOPT");
 		}
 	}
 }

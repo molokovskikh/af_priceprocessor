@@ -39,8 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 						.Select(r => r["Name"].ToString())
 						.Where(n => FileHelper.CheckMask(n, mask))
 						.ToList();
-					foreach (var file in filesToDownload)
-					{
+					foreach (var file in filesToDownload) {
 						var tempFileName = Path.GetTempFileName();
 						ftpClient.ReceiveFile(file, tempFileName);
 						files.Add(new CertificateFile(

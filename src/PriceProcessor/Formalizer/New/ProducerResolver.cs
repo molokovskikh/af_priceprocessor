@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class ProducerResolver
 	{
-		private ILog _logger = LogManager.GetLogger(typeof (ProducerResolver));
+		private ILog _logger = LogManager.GetLogger(typeof(ProducerResolver));
 
 		private PriceFormalizationInfo _priceInfo;
 		private FormalizeStats _stats;
@@ -31,8 +31,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (!position.IsSet(UnrecExpStatus.NameForm))
 				return;
 
-			if (String.IsNullOrEmpty(position.FirmCr))
-			{
+			if (String.IsNullOrEmpty(position.FirmCr)) {
 				position.AddStatus(UnrecExpStatus.FirmForm);
 				return;
 			}
@@ -44,13 +43,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (!Convert.IsDBNull(synonym["CodeFirmCr"]))
 				position.CodeFirmCr = Convert.ToInt64(synonym["CodeFirmCr"]);
 			position.IsAutomaticProducerSynonym = Convert.ToBoolean(synonym["IsAutomatic"]);
-			if (Convert.IsDBNull(synonym["InternalProducerSynonymId"]))
-			{
+			if (Convert.IsDBNull(synonym["InternalProducerSynonymId"])) {
 				_stats.ProducerSynonymUsedExistCount++;
 				position.SynonymFirmCrCode = Convert.ToInt64(synonym["SynonymFirmCrCode"]);
 			}
-			else
-			{
+			else {
 				position.InternalProducerSynonymId = Convert.ToInt64(synonym["InternalProducerSynonymId"]);
 				if (position.Core != null)
 					position.Core.CreatedProducerSynonym = synonym;
@@ -87,7 +84,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public void Update(MySqlConnection connection)
 		{
 			var da = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", connection);
-			var excludesBuilder  = new MySqlCommandBuilder(da);
+			var excludesBuilder = new MySqlCommandBuilder(da);
 			da.InsertCommand = excludesBuilder.GetInsertCommand();
 			da.InsertCommand.CommandTimeout = 0;
 			da.Update(_assortment);
@@ -116,13 +113,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
 			var assortment = _assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
-			foreach (var productSynonym in synonyms)
-			{
+			foreach (var productSynonym in synonyms) {
 				if (productSynonym["CodeFirmCr"] is DBNull)
 					continue;
 
-				using (_stats.AssortmentSearch())
-				{
+				using (_stats.AssortmentSearch()) {
 					if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
 						return productSynonym;
 				}
@@ -137,7 +132,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 			DataRow[] dr;
 
-			using(_stats.ExludeSearch())
+			using (_stats.ExludeSearch())
 				dr = _excludes.Select(String.Format("CatalogId = {0} and ProducerSynonym = '{1}'",
 					position.CatalogId,
 					position.FirmCr.Replace("'", "''")));
@@ -155,8 +150,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private void CreateExclude(FormalizationPosition position)
 		{
-			try
-			{
+			try {
 				var drExclude = _excludes.NewRow();
 				drExclude["PriceCode"] = _priceInfo.ParentSynonym;
 				drExclude["CatalogId"] = position.CatalogId.Value;
@@ -164,8 +158,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				drExclude["OriginalSynonymId"] = position.SynonymCode;
 				_excludes.Rows.Add(drExclude);
 			}
-			catch (ConstraintException)
-			{}
+			catch (ConstraintException) {
+			}
 		}
 
 		private DataRow CreateProducerSynonym(FormalizationPosition position)
@@ -184,7 +178,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public void Load(MySqlConnection connection)
 		{
 			var daAssortment = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment", connection);
-			var excludesBuilder  = new MySqlCommandBuilder(daAssortment);
+			var excludesBuilder = new MySqlCommandBuilder(daAssortment);
 			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
 			daAssortment.InsertCommand.CommandTimeout = 0;
 			_assortment = new DataTable();

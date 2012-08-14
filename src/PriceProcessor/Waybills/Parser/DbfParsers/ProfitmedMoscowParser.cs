@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class ProfitmedMoscowParser: BaseDbfParser
+	public class ProfitmedMoscowParser : BaseDbfParser
 	{
 		public override DbfParser GetParser()
 		{

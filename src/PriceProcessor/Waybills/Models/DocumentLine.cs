@@ -16,7 +16,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	public class ProtekDoc
 	{
 		public ProtekDoc()
-		{}
+		{
+		}
 
 		public ProtekDoc(DocumentLine line, int docId)
 		{
@@ -47,13 +48,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("DocumentId")]
 		public Document Document { get; set; }
-		
+
 		/// <summary>
 		/// Если не null, то содержит ссылку на сопоставленный продукт из catalogs.products
 		/// </summary>
 		[BelongsTo("ProductId")]
 		public Product ProductEntity { get; set; }
-		
+
 		/// <summary>
 		/// Наименование продукта
 		/// </summary>
@@ -83,7 +84,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string CertificateAuthority { get; set; }
-		
+
 		/// <summary>
 		/// Срок годности. А точнее Дата окончания срока годности.
 		/// </summary>
@@ -220,7 +221,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// </summary>
 		[Property]
 		public string EAN13 { get; set; }
-		
+
 		/// <summary>
 		/// Код ОКДП
 		/// </summary>
@@ -292,19 +293,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public void SetAmount()
 		{
-			if(!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
-				Amount = SupplierCost*Quantity;
+			if (!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
+				Amount = SupplierCost * Quantity;
 		}
 
 		public void SetNdsAmount()
 		{
-			if (!NdsAmount.HasValue && SupplierCost.HasValue && 
-				SupplierCostWithoutNDS.HasValue && Quantity.HasValue)
-			{
+			if (!NdsAmount.HasValue && SupplierCost.HasValue &&
+				SupplierCostWithoutNDS.HasValue && Quantity.HasValue) {
 				NdsAmount = Math.Round((SupplierCost.Value - SupplierCostWithoutNDS.Value) * Quantity.Value, 2);
 			}
 		}
-		
+
 		public void CalculateValues()
 		{
 			if (!SupplierCostWithoutNDS.HasValue && !Nds.HasValue && SupplierCost.HasValue && Quantity.HasValue)
@@ -315,17 +315,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				SetNds(Nds.Value);
 			if (!SupplierCost.HasValue && Nds.HasValue && SupplierCostWithoutNDS.HasValue)
 				SetSupplierCostByNds(Nds.Value);
-			if (!Nds.HasValue && !SupplierCost.HasValue && NdsAmount.HasValue && 
-				Quantity.HasValue && Quantity > 0 && SupplierCostWithoutNDS.HasValue && SupplierCostWithoutNDS > 0)
-			{
-				Nds = (uint?)Math.Round(NdsAmount.Value/Quantity.Value * 100 / SupplierCostWithoutNDS.Value);
+			if (!Nds.HasValue && !SupplierCost.HasValue && NdsAmount.HasValue &&
+				Quantity.HasValue && Quantity > 0 && SupplierCostWithoutNDS.HasValue && SupplierCostWithoutNDS > 0) {
+				Nds = (uint?)Math.Round(NdsAmount.Value / Quantity.Value * 100 / SupplierCostWithoutNDS.Value);
 				SetSupplierCostByNds(Nds.Value);
 			}
 			if (!SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && Nds.HasValue)
 				SetSupplierCostByNds(Nds.Value);
-			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && Nds.HasValue)
-			{
-				if (Convert.ToInt32(Math.Round(SupplierCost.Value, 2) * 100) < Convert.ToInt32(Math.Round(SupplierCostWithoutNDS.Value, 2)*100))
+			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && Nds.HasValue) {
+				if (Convert.ToInt32(Math.Round(SupplierCost.Value, 2) * 100) < Convert.ToInt32(Math.Round(SupplierCostWithoutNDS.Value, 2) * 100))
 					SetSupplierCostByNds(Nds.Value);
 			}
 			SetSupplierPriceMarkup();
@@ -339,15 +337,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value / (1 + nds / 100), 2);
 			else if (!SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue)
 				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value * (1 + nds / 100), 2);
-			Nds = (uint?) nds;
+			Nds = (uint?)nds;
 		}
 
 		public void SetSupplierCostWithoutNds()
 		{
 			if (SupplierCost.HasValue && NdsAmount.HasValue && Quantity.HasValue &&
-				!SupplierCostWithoutNDS.HasValue)
-			{
-				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value - (NdsAmount.Value/Quantity.Value), 2);
+				!SupplierCostWithoutNDS.HasValue) {
+				SupplierCostWithoutNDS = Math.Round(SupplierCost.Value - (NdsAmount.Value / Quantity.Value), 2);
 			}
 		}
 
@@ -355,33 +352,30 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			SupplierCostWithoutNDS = cost;
 			Nds = null;
-			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && (SupplierCostWithoutNDS.Value != 0))
-			{
-				decimal nds = (Math.Round((SupplierCost.Value/SupplierCostWithoutNDS.Value - 1)*100));
+			if (SupplierCost.HasValue && SupplierCostWithoutNDS.HasValue && (SupplierCostWithoutNDS.Value != 0)) {
+				decimal nds = (Math.Round((SupplierCost.Value / SupplierCostWithoutNDS.Value - 1) * 100));
 				Nds = nds < 0 ? 0 : (uint?)nds;
-			}			
+			}
 		}
 
 		public void SetSupplierCostByNds(decimal? nds)
 		{
-			Nds = (uint?) nds;
+			Nds = (uint?)nds;
 			SupplierCost = null;
 			if (SupplierCostWithoutNDS.HasValue && Nds.HasValue)
-				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value*(1 + ((decimal) Nds.Value/100)), 2);
+				SupplierCost = Math.Round(SupplierCostWithoutNDS.Value * (1 + ((decimal)Nds.Value / 100)), 2);
 		}
 
 		public void SetSupplierPriceMarkup()
 		{
 			if (!ProducerCostWithoutNDS.HasValue && !ProducerCostWithoutNDS.HasValue) return;
 			if (!SupplierPriceMarkup.HasValue && ProducerCostWithoutNDS.HasValue
-				&& SupplierCostWithoutNDS.HasValue && (ProducerCostWithoutNDS.Value != 0))
-			{
+				&& SupplierCostWithoutNDS.HasValue && (ProducerCostWithoutNDS.Value != 0)) {
 				SupplierPriceMarkup = null;
 				SupplierPriceMarkup = Math.Round(((SupplierCostWithoutNDS.Value / ProducerCostWithoutNDS.Value - 1) * 100), 2);
 			}
-			else if(!SupplierPriceMarkup.HasValue && ProducerCost.HasValue
-				&& SupplierCost.HasValue && (ProducerCost.Value != 0))
-			{
+			else if (!SupplierPriceMarkup.HasValue && ProducerCost.HasValue
+				&& SupplierCost.HasValue && (ProducerCost.Value != 0)) {
 				SupplierPriceMarkup = Math.Round(((SupplierCost.Value / ProducerCost.Value - 1) * 100), 2);
 			}
 		}

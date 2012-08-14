@@ -27,8 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			else if (data.Columns.Contains("VE_NAME"))
 				producerColumn = "VE_NAME";
 
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r[documentIdColumn], CultureInfo.InvariantCulture);
 				var line = document.NewLine();
 				line.Code = Convert.ToString(r["ITEM_ID"], CultureInfo.InvariantCulture);
@@ -40,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				line.SupplierCost = Convert.ToDecimal(r["PRICE_TAX"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["QNTY"]);
-				line.Period = Convert.IsDBNull(r["EXP_DATE"]) ? null : Convert.ToDateTime(r["EXP_DATE"]).ToShortDateString();				
+				line.Period = Convert.IsDBNull(r["EXP_DATE"]) ? null : Convert.ToDateTime(r["EXP_DATE"]).ToShortDateString();
 				line.Certificates = r["CER_NUMBER"].ToString();
 				line.Nds = Convert.ToUInt32(r["TAX_RATE"], CultureInfo.InvariantCulture);
 				line.RegistryCost = Convert.IsDBNull(r["PRICE_RR"]) ? null : (decimal?)Convert.ToDecimal(r["PRICE_RR"]);
@@ -61,7 +60,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				table.Columns.Contains("QNTY") &&
 				table.Columns.Contains("EXP_DATE") &&
 				table.Columns.Contains("PRICE") &&
-				table.Columns.Contains("PRICE_TAX");			
+				table.Columns.Contains("PRICE_TAX");
 		}
 	}
 }

@@ -6,15 +6,13 @@ namespace Inforoom.PriceProcessor
 	public static class PriceItemList
 	{
 		public static List<PriceProcessItem> list = new List<PriceProcessItem>();
- 
+
 		//Возвращает true, если был добавлен в очередь, если false, значит есть скаченный, то добавлять не надо
 		public static bool AddItem(PriceProcessItem item)
 		{
-			lock (list)
-			{
+			lock (list) {
 				//Если элемент только что скачан, то добавляем его в список
-				if (item.Downloaded)
-				{
+				if (item.Downloaded) {
 					list.Add(item);
 					return true;
 				}
@@ -30,9 +28,11 @@ namespace Inforoom.PriceProcessor
 		public static PriceProcessItem GetLastestDownloaded(ulong PriceItemId)
 		{
 			var downloadedList = list.FindAll(item => item.Downloaded && (item.PriceItemId == PriceItemId));
-			if (downloadedList.Count > 0)
-			{
-				downloadedList.Sort(delegate(PriceProcessItem a, PriceProcessItem b) { if (a.FileTime > b.FileTime) return -1; else return 1; });
+			if (downloadedList.Count > 0) {
+				downloadedList.Sort(delegate(PriceProcessItem a, PriceProcessItem b) {
+					if (a.FileTime > b.FileTime) return -1;
+					else return 1;
+				});
 				return downloadedList[0];
 			}
 			return null;
@@ -40,7 +40,6 @@ namespace Inforoom.PriceProcessor
 
 		public static bool DownloadedExists(ulong PriceItemId)
 		{
-
 			return list.Exists(item => (item.Downloaded && (item.PriceItemId == PriceItemId)));
 		}
 
@@ -55,7 +54,7 @@ namespace Inforoom.PriceProcessor
 		}
 
 		public static int GetDownloadedCount()
-		{ 
+		{
 			return GetDownloadedItemList().Count;
 		}
 	}

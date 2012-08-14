@@ -7,5 +7,4 @@ namespace Inforoom.PriceProcessor.Models
 		[Description("Накладная")] Waybill = 1,
 		[Description("Отказ")] Reject = 2
 	}
-
 }

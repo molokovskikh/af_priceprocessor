@@ -29,11 +29,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			var client = new WebClient();
 			var data = client.UploadValues("http://sds.siachel.ru/sds/index.php", new NameValueCollection {
-				{"Kod", task.DocumentLine.Code},
-				{"Seria", task.DocumentLine.SerialNumber},
+				{ "Kod", task.DocumentLine.Code },
+				{ "Seria", task.DocumentLine.SerialNumber },
 			});
 			var text = Encoding.GetEncoding(1251).GetString(data);
-			
+
 			Log.DebugFormat("Текст для разбора {0} для обработки задачи {1}", text, task);
 
 			foreach (var file in ParseFiles(text)) {
@@ -61,7 +61,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				.Where(
 					c => c.CertificateSource.SourceClassName == name
 						&& c.SerialNumber == serialNumber
-							&& c.CatalogProduct.Id == catalogId)
+						&& c.CatalogProduct.Id == catalogId)
 				.ToList();
 		}
 	}

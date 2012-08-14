@@ -26,8 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("SERT"))
 				certificatesColumn = "SERT";
 
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = r["NTTN"].ToString();
 				if (!Convert.IsDBNull(r["DTTN"]))
 					document.DocumentDate = Convert.ToDateTime(r["DTTN"]);
@@ -44,7 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null :
-						(decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
+						                                                                   (decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
 					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
@@ -61,14 +60,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NTTN") &&
-				   data.Columns.Contains("TOVAR") &&
-				   data.Columns.Contains("STAVKANDS") &&
-				   data.Columns.Contains("STRANA") &&
-				   data.Columns.Contains("CENAOPT") &&
-				   data.Columns.Contains("CENOPTBNDS") &&
-				   data.Columns.Contains("IZGOT") &&
-				   data.Columns.Contains("CENIZGBNDS") &&
-				   data.Columns.Contains("KOL");
+				data.Columns.Contains("TOVAR") &&
+				data.Columns.Contains("STAVKANDS") &&
+				data.Columns.Contains("STRANA") &&
+				data.Columns.Contains("CENAOPT") &&
+				data.Columns.Contains("CENOPTBNDS") &&
+				data.Columns.Contains("IZGOT") &&
+				data.Columns.Contains("CENIZGBNDS") &&
+				data.Columns.Contains("KOL");
 		}
 	}
 }

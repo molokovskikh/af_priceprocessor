@@ -44,15 +44,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "N2")
 				.DocumentHeader(d => d.ProviderDocumentId, "N3")
-
 				.DocumentInvoice(i => i.SellerName, "N1")
-
 				.Line(l => l.Code, "N4")
 				.Line(l => l.Product, "N5")
 				.Line(l => l.EAN13, "N6")
 				.Line(l => l.Nds, "N7")
 				.Line(l => l.Certificates, "N8")
-				.Line(l => l.CertificatesDate, "N9")//дата выдачи
+				.Line(l => l.CertificatesDate, "N9") //дата выдачи
 				.Line(l => l.Country, "N11")
 				.Line(l => l.BillOfEntryNumber, "N12")
 				.Line(l => l.Producer, "N13")
@@ -66,19 +64,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Amount, "N23")
 				.Line(l => l.VitallyImportant, "N25")
 				.Line(l => l.RegistryCost, "N26");
-
-
 		}
+
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return 
-				data.Columns[0].ColumnName=="N1"
-				&& data.Columns.Contains("N8")
-				&& data.Columns.Contains("N9")
-				&& data.Columns.Contains("N17")
-				&& data.Columns.Contains("N23")
-				&& data.Columns.Contains("N26")
-				&& data.Columns.Contains("N29");
+			return
+				data.Columns[0].ColumnName == "N1"
+					&& data.Columns.Contains("N8")
+					&& data.Columns.Contains("N9")
+					&& data.Columns.Contains("N17")
+					&& data.Columns.Contains("N23")
+					&& data.Columns.Contains("N26")
+					&& data.Columns.Contains("N29");
 		}
 	}
 }

@@ -77,7 +77,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("DownloadId")]
 		public DocumentReceiveLog Log { get; set; }
-		
+
 		[HasMany(ColumnKey = "DocumentId", Cascade = ManyRelationCascadeEnum.All, Inverse = true)]
 		public IList<DocumentLine> Lines { get; set; }
 
@@ -136,9 +136,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// 
 		public Document SetProductId()
 		{
-			try
-			{
-				using(new SessionScope()) {
+			try {
+				using (new SessionScope()) {
 					// получаем Id прайсов, из которых мы будем брать синонимы.
 					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
 						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
@@ -177,11 +176,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							var productName =
 								(String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 							var code =
-									(String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+								(String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 							var listSynonym =
 								dbListSynonym.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
-							if (listSynonym.Count == 0) 
-							{
+							if (listSynonym.Count == 0) {
 								listSynonym =
 									dbListSynonymByCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.SupplierCode.Trim().ToUpper() == code && syn.Product != null).ToList();
 								if (listSynonym.Count == 0) continue;
@@ -190,18 +188,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							// если сопоставили позицию по продукту, сопоставляем по производителю
 							var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 							var listSynonymFirmCr =
-									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
-								if (listSynonymFirmCr.Count == 0) {
-									listSynonymFirmCr =
-										dbListSynonymFirmByCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.SupplierCode.Trim().ToUpper() == code && syn.CodeFirmCr != null).
-											ToList();
-									if (listSynonymFirmCr.Count == 0) continue;
-								}
+								dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
+							if (listSynonymFirmCr.Count == 0) {
+								listSynonymFirmCr =
+									dbListSynonymFirmByCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.SupplierCode.Trim().ToUpper() == code && syn.CodeFirmCr != null)
+										.ToList();
+								if (listSynonymFirmCr.Count == 0) continue;
+							}
 
 							if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика							
 								line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
-							else // если фармацевтика, то производителя ищем с учетом ассортимента
-							{
+							// если фармацевтика, то производителя ищем с учетом ассортимента
+							else {
 								var assortment = Assortment.Queryable.Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
 								foreach (var producerSynonym in listSynonymFirmCr) {
 									if (assortment.Any(a => a.ProducerId == producerSynonym.CodeFirmCr)) {
@@ -216,17 +214,16 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					}
 				}
 			}
-			catch (Exception e)
-			{
-				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);				
+			catch (Exception e) {
+				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);
 			}
 			return this;
 		}
 
-		public  void CalculateValues() 
+		public void CalculateValues()
 		{
 			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
-			if(Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
+			if (Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
 		}
 
 		public DocumentLine NewLine()
@@ -243,8 +240,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public Invoice SetInvoice()
 		{
-			if (Invoice == null)
-			{
+			if (Invoice == null) {
 				Invoice = new Invoice();
 				Invoice.Document = this;
 			}

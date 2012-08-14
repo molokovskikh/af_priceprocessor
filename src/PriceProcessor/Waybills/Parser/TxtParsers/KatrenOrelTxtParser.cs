@@ -13,10 +13,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				"зао \"надежда-фарм\" тамбовский ф-л",
 				"ооо \"норман-плюс\""});
 		}*/
+
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
@@ -27,14 +27,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))
 					return false;
-				
+
 				var body = reader.ReadLine().Split(';');
 				if (GetDecimal(body[6]) == null)
 					return false;
 
 				//дополнительная проверка для даты. Так как может быть например строка 02/10, которая воспринимается как дата. 
 				//На количество столбцов не смог привязаться, так как есть накладные для парсера KetrenVrnParser, у которых тоже 20 столбцов.
-				if ((body[10].IndexOf("/") > -1 && body[10].Split('/').Length < 3) || 
+				if ((body[10].IndexOf("/") > -1 && body[10].Split('/').Length < 3) ||
 					(body[10].IndexOf("-") > -1 && body[10].Split('-').Length < 3))
 					return false;
 				if (GetDateTime(body[10]) == null)
@@ -42,6 +42,5 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			}
 			return true;
 		}
-
 	}
 }

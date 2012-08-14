@@ -46,7 +46,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				if (string.IsNullOrEmpty(id))
 					id = document.Log.Id.ToString();
 				log.FileName = id + extention;
-			} else {
+			}
+			else {
 				log.IsFake = true;
 				log = new DocumentReceiveLog(log, extention);
 				ActiveRecordMediator.SaveAndFlush(log);

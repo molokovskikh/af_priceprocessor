@@ -17,7 +17,7 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual string Name { get; set; }
-		
+
 		[Property("Status")]
 		public virtual bool Enabled { get; set; }
 

@@ -44,10 +44,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("PRCOPT")
-					&& data.Columns.Contains("GNVLS")
-					&& data.Columns.Contains("SUMS1")
-					&& data.Columns.Contains("PUNKT")
-					&& data.Columns.Contains("SUMS0");
+				&& data.Columns.Contains("GNVLS")
+				&& data.Columns.Contains("SUMS1")
+				&& data.Columns.Contains("PUNKT")
+				&& data.Columns.Contains("SUMS0");
 		}
 	}
 }

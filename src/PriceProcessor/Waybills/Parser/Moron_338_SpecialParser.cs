@@ -16,18 +16,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
 
 		public Document Parse(string file, Document document)
-		{			
+		{
 			var data = Load(file);
 			string vitallyImportantColumn = null;
 			string certificatesColumn = null;
@@ -78,13 +76,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.Producer = r["PROIZ"].ToString();
 				line.Country = r["COUNTRY"].ToString();
 				line.ProducerCostWithoutNDS = Convert.IsDBNull(r["PR_PROIZ"])
-				                    	? null
-				                    	: (decimal?) Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
+					? null
+					: (decimal?)Convert.ToDecimal(r["PR_PROIZ"], CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = Convert.ToDecimal(r["PRICE"], CultureInfo.InvariantCulture);
 				if (data.Columns.Contains("NACENKA"))
 					line.SupplierPriceMarkup = Convert.IsDBNull(r["NACENKA"])
-					                           	? null
-					                           	: (decimal?) Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
+						? null
+						: (decimal?)Convert.ToDecimal(r["NACENKA"], CultureInfo.InvariantCulture);
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
 
@@ -94,24 +92,24 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				line.SetSupplierCostByNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn])
-					                        	? null
-					                        	: (bool?) (Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
+						? null
+						: (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
 				if (!String.IsNullOrEmpty(registryCostColumn))
-					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : (decimal?) Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
+					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : (decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
 				return line;
 			}).ToList();
 			return document;
 		}
-	
+
 		public static bool CheckFileFormat(DataTable data)
-		{			
+		{
 			return data.Columns.Contains("CODE_TOVAR") &&
-				   data.Columns.Contains("NAME_TOVAR") &&
-				   data.Columns.Contains("PROIZ") &&
-				   data.Columns.Contains("COUNTRY") &&
-				   data.Columns.Contains("PR_PROIZ") &&
-				   data.Columns.Contains("PCT_NDS") &&
-				   data.Columns.Contains("VOLUME");
+				data.Columns.Contains("NAME_TOVAR") &&
+				data.Columns.Contains("PROIZ") &&
+				data.Columns.Contains("COUNTRY") &&
+				data.Columns.Contains("PR_PROIZ") &&
+				data.Columns.Contains("PCT_NDS") &&
+				data.Columns.Contains("VOLUME");
 		}
 	}
 }

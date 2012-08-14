@@ -33,6 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "GN2")
 				.Line(l => l.EAN13, "EAN");
 		}
+
 		public static bool CheckFileFormat(DataTable data)
 		{
 			var columns = data.Columns;

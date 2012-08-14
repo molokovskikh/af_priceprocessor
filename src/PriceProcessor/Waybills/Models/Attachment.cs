@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[Property]
 		public string FileName { get; set; }
-		
+
 		[Property]
 		public string Extension { get; set; }
 

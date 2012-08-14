@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public DateTime? FtpFileDate { get; set; }
 
-		[HasAndBelongsToMany(typeof (Supplier),
+		[HasAndBelongsToMany(typeof(Supplier),
 			Lazy = true,
 			ColumnKey = "CertificateSourceId",
 			Table = "SourceSuppliers",
@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	{
 		string FtpHost { get; }
 		string FtpDir { get; }
-		string FtpUser { get;  }
+		string FtpUser { get; }
 		string FtpPassword { get; }
 		string Filename { get; }
 		void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row);

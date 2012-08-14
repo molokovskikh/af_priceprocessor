@@ -20,8 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 			DateTime docDate;
 			if (DateTime.TryParse(sheet.Cells[1, 2].StringValue, out docDate))
 				document.DocumentDate = docDate;
-			foreach (var row in sheet.Cells.Rows.Values.Skip(23))
-			{
+			foreach (var row in sheet.Cells.Rows.Values.Skip(23)) {
 				var line = document.NewLine();
 				line.Product = row.GetCell(1).StringValue;
 				line.Code = row.GetCell(2).StringValue;
@@ -49,8 +48,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 			var workbook = Workbook.Load(file);
 			var sheet = workbook.Worksheets[0];
 			return (sheet.Cells[23, 1].StringValue.ToLower().Equals("товар")) &&
-				   (sheet.Cells[23, 14].StringValue.ToLower().Equals("производитель")) &&
-				   (sheet.Cells[23, 6].StringValue.ToLower().Equals("кол"));
+				(sheet.Cells[23, 14].StringValue.ToLower().Equals("производитель")) &&
+				(sheet.Cells[23, 6].StringValue.ToLower().Equals("кол"));
 		}
 	}
 }

@@ -8,7 +8,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	public class MailSendLog : ActiveRecordLinqBase<MailSendLog>
 	{
 		public MailSendLog()
-		{}
+		{
+		}
 
 		public MailSendLog(User user, MailRecipient recipient)
 		{

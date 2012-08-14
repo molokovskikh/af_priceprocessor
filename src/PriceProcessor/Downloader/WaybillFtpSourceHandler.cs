@@ -80,18 +80,15 @@ GROUP BY SupplierId
 		public override void ProcessData()
 		{
 			FillSourcesTable();
-			foreach (DataRow sourceRow in dtSources.Rows)
-			{
+			foreach (DataRow sourceRow in dtSources.Rows) {
 				var waybillSource = new WaybillSource(sourceRow);
 				_log.InfoFormat("Попытка забрать накладные с FTP поставщика. Код поставщика = {0}", waybillSource.SupplierId);
 				if (!IsNeedToDownload(waybillSource))
 					continue;
 
-				foreach (var documentType in _documentTypes)
-				{
+				foreach (var documentType in _documentTypes) {
 					var downloadedWaybills = ReceiveDocuments(documentType, waybillSource);
-					foreach (var downloadedWaybill in downloadedWaybills)
-					{
+					foreach (var downloadedWaybill in downloadedWaybills) {
 						CurrFileName = downloadedWaybill.FileName;
 
 						// Обработка накладной(или отказа), помещение ее в папку клиенту
@@ -116,8 +113,7 @@ GROUP BY SupplierId
 			IList<DownloadedFile> downloadedWaybills = new List<DownloadedFile>();
 
 			var downloader = new FtpDownloader();
-			try
-			{
+			try {
 				if (documentsType.DocType == DocType.Waybill)
 					url = waybillSource.WaybillUrl;
 				else if (documentsType.DocType == DocType.Reject)
@@ -134,22 +130,19 @@ GROUP BY SupplierId
 				downloadedWaybills = downloader.GetFilesFromSource(host, port, directory, waybillSource.UserName,
 					waybillSource.Password, "*.*", waybillSource.LastDownloadTime, DownHandlerPath);
 
-				if (FailedSources.Contains(waybillSource.SupplierId))
-				{
+				if (FailedSources.Contains(waybillSource.SupplierId)) {
 					FailedSources.Remove(waybillSource.SupplierId);
 					_log.ErrorFormat("После возникновения ошибок загрузка накладных прошла успешно. Код поставщика: {0}", waybillSource.SupplierId);
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				var errorMessage = String.Format(@"Ошибка при попытке забрать документы с FTP поставщика
 Код поставщика: {0}
 Хост: {1}
 Порт: {2}
 Директория: {3}", waybillSource.SupplierId, host, port, directory);
-				
-				if (!FailedSources.Contains(waybillSource.SupplierId))
-				{
+
+				if (!FailedSources.Contains(waybillSource.SupplierId)) {
 					FailedSources.Add(waybillSource.SupplierId);
 					_log.Error(errorMessage, e);
 				}
@@ -180,42 +173,35 @@ GROUP BY SupplierId
 			var documentLogs = new List<DocumentReceiveLog>();
 			var reader = new SupplierFtpReader();
 
-			try
-			{
+			try {
 				var addressIds = With.Connection(c => reader.GetClientCodes(c, waybillSource.SupplierId, waybill.FileName, waybill.FileName));
 
 				foreach (var addressId in addressIds) {
 					// Если накладная - это архив, разархивируем логируем каждый файл и копируем в папку клиенту
 					var waybillFiles = new string[0];
-					if (ArchiveHelper.IsArchive(waybill.FileName))
-					{
-						if (!ArchiveHelper.TestArchive(waybill.FileName))
-						{
+					if (ArchiveHelper.IsArchive(waybill.FileName)) {
+						if (!ArchiveHelper.TestArchive(waybill.FileName)) {
 							_log.DebugFormat("Некорректный архив {0}", waybill.FileName);
 							WaybillService.SaveWaybill(waybill.FileName);
 							continue;
 						}
 						// Разархивируем
-						try
-						{
+						try {
 							FileHelper.ExtractFromArhive(waybill.FileName, waybill.FileName + ExtrDirSuffix);
 						}
-						catch (ArchiveHelper.ArchiveException)
-						{
+						catch (ArchiveHelper.ArchiveException) {
 							_log.DebugFormat("Ошибка при извлечении файлов из архива {0}", waybill.FileName);
 							WaybillService.SaveWaybill(waybill.FileName);
 							continue;
 						}
-						if (ArchiveHelper.IsArchive(waybill.FileName))
-						{
+						if (ArchiveHelper.IsArchive(waybill.FileName)) {
 							// Получаем файлы, распакованные из архива
 							waybillFiles = Directory.GetFiles(waybill.FileName + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*",
 								SearchOption.AllDirectories);
 						}
 					}
 
-					foreach (var file in waybillFiles)
-					{
+					foreach (var file in waybillFiles) {
 						if (!IsNewWaybill(Path.GetFileName(file), waybill.FileDate, waybillSource.SupplierId, (uint)addressId)) {
 							_log.DebugFormat("Файл {0} не является новой накладной, не обрабатываем его", file);
 							continue;
@@ -230,8 +216,7 @@ GROUP BY SupplierId
 					}
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при обработке документа, забранного с FTP поставщика"), e);
 			}
 			return documentLogs;
@@ -256,11 +241,9 @@ GROUP BY SupplierId
 
 		private void SendDownloadingErrorMessages(FtpDownloader downloader, WaybillSource waybillSource)
 		{
-			try
-			{
+			try {
 				var message = new StringBuilder();
-				foreach (var failedFile in downloader.FailedFiles)
-				{
+				foreach (var failedFile in downloader.FailedFiles) {
 					var failedEntry = String.Format("{0}_{1}", waybillSource.SupplierId, failedFile.FileName);
 					if (FailedSources.Contains(failedEntry))
 						continue;
@@ -270,31 +253,28 @@ GROUP BY SupplierId
 
 				if (!String.IsNullOrEmpty(message.ToString()))
 					_log.ErrorFormat("При загрузке файлов с FTP поставщика возникли ошибки (код поставщика: {0})\n{1}",
-									 waybillSource.SupplierId, message);
+						waybillSource.SupplierId, message);
 
 				var restoredFilesMessage = new StringBuilder();
-				foreach (var source in FailedSources)
-				{
+				foreach (var source in FailedSources) {
 					var exists = downloader.FailedFiles.Any(file => source
 						.ToString()
 						.Contains(String.Format("{0}_{1}", waybillSource.SupplierId, file.FileName)));
 
 					// Если файла нет в FailedFiles, но он еще есть в FailedSources, это значит что была ошибка, но теперь все хорошо
 					// поэтому удаляем этот файл из FailedSources и пишем сообщение что он загружен
-					if (!exists)
-					{
+					if (!exists) {
 						FailedSources.Remove(source);
 						restoredFilesMessage.AppendLine(String.Format("Файл {0}", source.ToString().Split('_')[1]));
 					}
 				}
-				
+
 				if (!String.IsNullOrEmpty(restoredFilesMessage.ToString()))
 					_log.ErrorFormat(
 						"После ошибок загрузки с FTP поставщика следующие документы были загружены (код поставщика: {0})\n{1}",
 						waybillSource.SupplierId, restoredFilesMessage);
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_log.Error("При отправке сообщения об ошибках при загрузке накладных с FTP поставщика возникла ошибка", e);
 			}
 		}

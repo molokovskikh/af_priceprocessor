@@ -11,7 +11,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	{
 		[PrimaryKey]
 		public uint Id { get; set; }
-		
+
 		[BelongsTo("CertificateSourceId")]
 		public virtual CertificateSource CertificateSource { get; set; }
 

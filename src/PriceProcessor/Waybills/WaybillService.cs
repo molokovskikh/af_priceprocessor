@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
 	public class WaybillService : IWaybillService
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof (WaybillService));
+		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
 
 		public List<EMailSourceHandlerException> Exceptions = new List<EMailSourceHandlerException>();
 
@@ -48,8 +48,9 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public static void ParseWaybill(DocumentReceiveLog log)
 		{
-			ParseWaybills(new [] {log}.ToList());
+			ParseWaybills(new[] { log }.ToList());
 		}
+
 		public void Process(List<DocumentReceiveLog> logs)
 		{
 			try {
@@ -59,7 +60,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					scope.VoteCommit();
 				}
 			}
-			catch(Exception e) {
+			catch (Exception e) {
 				_log.Error("Ошибка при разборе накладных", e);
 			}
 		}
@@ -89,7 +90,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			MultifileDocument.DeleteMergedFiles(docsForParsing);
 
 			docs.Each(d => {
-				if(d.Log.IsFake) d.Log.Save();
+				if (d.Log.IsFake) d.Log.Save();
 				d.Save();
 				d.CreateCertificateTasks();
 			});
@@ -108,7 +109,7 @@ namespace Inforoom.PriceProcessor.Waybills
 						l.CopyDocumentToClientDirectory();
 					return l;
 				}
-				catch(EMailSourceHandlerException e) {
+				catch (EMailSourceHandlerException e) {
 					_log.Warn(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
 					Exceptions.Add(e);
 					return null;

@@ -13,7 +13,6 @@ namespace LumiSoft.Net.Mime
 		public static string GetSHA256Hash(this Mime mime)
 		{
 			using (var stream = new MultiBufferStream()) {
-
 				if (!String.IsNullOrWhiteSpace(mime.MainEntity.Subject))
 					stream.AddBuffer(Encoding.ASCII.GetBytes(mime.MainEntity.Subject));
 				if (!String.IsNullOrWhiteSpace(mime.BodyText))
@@ -59,14 +58,12 @@ namespace LumiSoft.Net.Mime
 
 			var html = mime.BodyHtml;
 			var converter = new Microsoft.Exchange.Data.TextConverters.HtmlToText(
-				 Microsoft.Exchange.Data.TextConverters.TextExtractionMode.ExtractText
-				 );
+				Microsoft.Exchange.Data.TextConverters.TextExtractionMode.ExtractText);
 			var sb = new StringBuilder();
 			using (var sr = new System.IO.StringReader(html))
-				using (var sw = new System.IO.StringWriter(sb))
-					converter.Convert(sr, sw);
+			using (var sw = new System.IO.StringWriter(sb))
+				converter.Convert(sr, sw);
 			return sb.ToString();
 		}
-
 	}
 }

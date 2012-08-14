@@ -21,8 +21,7 @@ namespace Inforoom.Downloader
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
-			try
-			{
+			try {
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("Try get file from LAN source. FirmCode = {0}, PriceItemId = {1}", source.FirmCode, source.PriceItemId);
 				var pricePath = Path.Combine(Settings.Default.FTPOptBoxPath, source.FirmCode.ToString().PadLeft(3, '0'));
@@ -31,8 +30,7 @@ namespace Inforoom.Downloader
 				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
 				var sortedFileList = new SortedList<DateTime, string>();
 
-				foreach (var file in files)
-				{
+				foreach (var file in files) {
 					var fileLastWriteTime = File.GetLastWriteTime(file);
 					if (_logger.IsDebugEnabled)
 						_logger.DebugFormat("File: {0}. LastWriteTime: {1}", file, fileLastWriteTime);
@@ -50,33 +48,28 @@ namespace Inforoom.Downloader
 				var newFile = DownHandlerPath + Path.GetFileName(downloadedFileName);
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("Path: {0}", newFile);
-				if (File.Exists(newFile))
-				{
+				if (File.Exists(newFile)) {
 					FileHelper.ClearReadOnly(newFile);
 					File.Delete(newFile);
 				}
 				FileHelper.ClearReadOnly(downloadedFileName);
 				_downloadedFile = downloadedFileName;
-				try
-				{
+				try {
 					if (_logger.IsDebugEnabled)
 						_logger.DebugFormat("Copying from {0} to {1}", downloadedFileName, newFile);
 					File.Copy(downloadedFileName, newFile);
 					CurrFileName = newFile;
 					CurrPriceDate = downloadedLastWriteTime;
 				}
-				catch (IOException e)
-				{
+				catch (IOException e) {
 					var errorCode = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
 					var errorAlreadyWas = ErrorPriceLogging.ErrorMessages.ContainsKey(source.PriceItemId) &&
-					                      ErrorPriceLogging.ErrorMessages.ContainsValue(e.ToString());
+						ErrorPriceLogging.ErrorMessages.ContainsValue(e.ToString());
 					// Проверяем, если это ошибка совместного доступа  к файлу, и эта ошибка уже происходила для этого файла
-					if ((errorCode == 32) && errorAlreadyWas)
-					{
+					if ((errorCode == 32) && errorAlreadyWas) {
 						throw;
 					}
-					else if ((errorCode == 32) && !errorAlreadyWas)
-					{
+					else if ((errorCode == 32) && !errorAlreadyWas) {
 						// Если для данного файла ошибка еще не происходила, добавляем ее в словарь
 						ErrorPriceLogging.ErrorMessages.Add(CurrPriceItemId, e.ToString());
 					}
@@ -86,20 +79,17 @@ namespace Inforoom.Downloader
 				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceItemId))
 					ErrorPriceLogging.ErrorMessages.Remove(CurrPriceItemId);
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				throw new LanSourceHandlerException(e);
 			}
 		}
 
 		protected override void FileProcessed()
 		{
-			try
-			{
+			try {
 				File.Delete(_downloadedFile);
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при удалении файла {0}", _downloadedFile), e);
 			}
 		}
@@ -119,11 +109,12 @@ namespace Inforoom.Downloader
 	public class LanSourceHandlerException : PathSourceHandlerException
 	{
 		public LanSourceHandlerException()
-		{}
+		{
+		}
 
 		public LanSourceHandlerException(Exception innerException)
 			: base(null, innerException)
-		{			
+		{
 			ErrorMessage = GetShortErrorMessage(innerException);
 		}
 

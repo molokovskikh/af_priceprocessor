@@ -36,15 +36,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-		return data.Columns.Contains("DOK") &&
-				   data.Columns.Contains("IDNOM") &&
-				   data.Columns.Contains("NAME") &&
-				   data.Columns.Contains("NAME_PRO") &&
-				   data.Columns.Contains("COUNTRY") &&
-				   data.Columns.Contains("PRICE_ZI") &&
-				   data.Columns.Contains("ISLIVE") &&
-				   data.Columns.Contains("NOM_SERT") &&
-				   data.Columns.Contains("KOL");
+			return data.Columns.Contains("DOK") &&
+				data.Columns.Contains("IDNOM") &&
+				data.Columns.Contains("NAME") &&
+				data.Columns.Contains("NAME_PRO") &&
+				data.Columns.Contains("COUNTRY") &&
+				data.Columns.Contains("PRICE_ZI") &&
+				data.Columns.Contains("ISLIVE") &&
+				data.Columns.Contains("NOM_SERT") &&
+				data.Columns.Contains("KOL");
 		}
 	}
 }

@@ -14,6 +14,5 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual string ShortAliase { get; set; }
-		
 	}
 }

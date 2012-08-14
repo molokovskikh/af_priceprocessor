@@ -20,10 +20,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			CertificateSource source = null)
 			: this()
 		{
-			LocalFile =localFile;
+			LocalFile = localFile;
 			ExternalFileId = externalFileId;
-			if (!String.IsNullOrEmpty(originFile))
-			{
+			if (!String.IsNullOrEmpty(originFile)) {
 				OriginFilename = Path.GetFileName(originFile);
 				Extension = Path.GetExtension(originFile);
 			}
@@ -33,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[PrimaryKey]
 		public uint Id { get; set; }
 
-		[HasAndBelongsToMany(typeof (Certificate),
+		[HasAndBelongsToMany(typeof(Certificate),
 			Lazy = true,
 			Inverse = true,
 			ColumnKey = "CertificateFileId",
@@ -67,15 +66,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public override string ToString()
 		{
 			return string.Format(
-				"CertificateFile Id: {0},  CertificateSource: {1},  OriginFilename: {2},  ExternalFileId: {3},  Extension: {4},  LocalFile: {5}", 
-				Id, 
+				"CertificateFile Id: {0},  CertificateSource: {1},  OriginFilename: {2},  ExternalFileId: {3},  Extension: {4},  LocalFile: {5}",
+				Id,
 				CertificateSource != null ? CertificateSource.Id.ToString() : "null",
 				OriginFilename,
 				ExternalFileId,
 				Extension,
-				LocalFile
-			);
+				LocalFile);
 		}
-
 	}
 }

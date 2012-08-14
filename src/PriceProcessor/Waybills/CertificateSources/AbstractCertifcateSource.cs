@@ -16,7 +16,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				.Where(
 					c => c.CertificateSource.SourceClassName == name
 						&& c.SerialNumber == serialNumber
-							&& c.CatalogProduct.Id == catalogId)
+						&& c.CatalogProduct.Id == catalogId)
 				.ToList();
 		}
 

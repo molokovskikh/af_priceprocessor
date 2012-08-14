@@ -24,12 +24,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NDOC")
-					&& data.Columns.Contains("CNTR")
-					&& data.Columns.Contains("SERTIF")
-					&& data.Columns.Contains("GDATE")
-					&& data.Columns.Contains("QNT")
-					&& !data.Columns.Contains("PROVIDER")
-					&& !data.Columns.Contains("CONSIGNOR");
+				&& data.Columns.Contains("CNTR")
+				&& data.Columns.Contains("SERTIF")
+				&& data.Columns.Contains("GDATE")
+				&& data.Columns.Contains("QNT")
+				&& !data.Columns.Contains("PROVIDER")
+				&& !data.Columns.Contains("CONSIGNOR");
 		}
 	}
 }

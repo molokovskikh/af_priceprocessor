@@ -20,10 +20,10 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			Name = info.Name;
 			_coreField = info;
-			_newCoreField = typeof (NewCore).GetFields().Single(f => f.Name == Name);
+			_newCoreField = typeof(NewCore).GetFields().Single(f => f.Name == Name);
 		}
 
-		public string Name { get; private set;}
+		public string Name { get; private set; }
 
 		public bool Equal(NewCore core)
 		{
@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		private static FieldMap[] GetCoreFieldMaps()
 		{
-			return typeof (Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
+			return typeof(Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
 		}
 
 		private static FieldMap[] _fieldMaps;
@@ -98,10 +98,10 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 			sb.AppendLine("insert into farm.Core0 (" +
 				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
-					"Period, Junk, Await, MinBoundCost, " +
-						"VitallyImportant, RequestRatio, RegistryCost, " +
-							"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, Nds, " +
-								"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
+				"Period, Junk, Await, MinBoundCost, " +
+				"VitallyImportant, RequestRatio, RegistryCost, " +
+				"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, Nds, " +
+				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
 			sb.Append("(");
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
 				drCore["PriceCode"],
@@ -149,10 +149,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			builder.AppendLine("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ");
 			var firstInsert = true;
-			foreach (var cost in coreCosts)
-			{
-				if (cost.cost.HasValue && cost.cost > 0)
-				{
+			foreach (var cost in coreCosts) {
+				if (cost.cost.HasValue && cost.cost > 0) {
 					if (!firstInsert)
 						builder.Append(", ");
 					firstInsert = false;
@@ -201,7 +199,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		public static string UpdateCostsCommand(NewCore core)
 		{
 			var command = new StringBuilder();
-			foreach(var cost in core.Costs) {
+			foreach (var cost in core.Costs) {
 				var existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
 				if (existsCost == null) {
 					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ({0}, {1}, {2}, {3}, {4}, {5});",
@@ -213,7 +211,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 						ToSql(cost.MinOrderCount));
 				}
 				else if (cost.Value != existsCost.Value) {
-					command.AppendFormat("update farm.CoreCosts set Cost = {2}, RequestRatio = {3}, MinOrderSum = {4}, MinOrderCount = {5} where Core_Id = {0} and PC_CostCode = {1};", 
+					command.AppendFormat("update farm.CoreCosts set Cost = {2}, RequestRatio = {3}, MinOrderSum = {4}, MinOrderCount = {5} where Core_Id = {0} and PC_CostCode = {1};",
 						core.ExistsCore.Id,
 						cost.Description.Id,
 						ToSql(cost.Value),
@@ -234,13 +232,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		private static string ToSql(object value)
 		{
 			if (value is uint)
-				return GetNullableValue((uint) value);
+				return GetNullableValue((uint)value);
 			if (value is bool)
-				return GetBoolValue((bool) value);
+				return GetBoolValue((bool)value);
 			if (value is decimal)
-				return GetDecimalValue((decimal) value);
+				return GetDecimalValue((decimal)value);
 			if (value is string)
-				return GetStringValue((string) value);
+				return GetStringValue((string)value);
 			throw new Exception(String.Format("Не знаю как преобразовать {0}", value));
 		}
 

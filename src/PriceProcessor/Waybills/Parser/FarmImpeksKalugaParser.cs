@@ -33,8 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(866)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(866))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;

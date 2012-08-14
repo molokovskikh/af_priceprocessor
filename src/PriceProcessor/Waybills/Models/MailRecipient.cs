@@ -18,15 +18,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	public enum RecipientStatus
 	{
 		Verified = 0,
-		[Description("Не найдена ни одна аптека для данного адреса")]
-		NotFound = 1,
-		[Description("Аптека отключена в рамках системы АналитФармация")]
-		Disabled = 2,
-		[Description("Aптека находится вне Вашего региона работы в рамках системы АналитФармация")]
-		NotAvailable = 3,
-		[Description("письмо уже доставлялось данному получателю")]
-		Duplicate = 4
-		
+		[Description("Не найдена ни одна аптека для данного адреса")] NotFound = 1,
+		[Description("Аптека отключена в рамках системы АналитФармация")] Disabled = 2,
+		[Description("Aптека находится вне Вашего региона работы в рамках системы АналитФармация")] NotAvailable = 3,
+		[Description("письмо уже доставлялось данному получателю")] Duplicate = 4
 	}
 
 	[ActiveRecord("MailRecipients", Schema = "documents")]
@@ -49,7 +44,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("AddressId")]
 		public Address Address { get; set; }
-		
+
 		public string Email { get; set; }
 
 		public RecipientStatus Status { get; set; }
@@ -57,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public override bool Equals(object obj)
 		{
 			if (obj is MailRecipient) {
-				var recipient = (MailRecipient) obj;
+				var recipient = (MailRecipient)obj;
 				return recipient.Type == Type && recipient.Email.Equals(Email, StringComparison.OrdinalIgnoreCase);
 			}
 
@@ -81,7 +76,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							Email = email,
 							Status = address.Enabled ? RecipientStatus.Verified : RecipientStatus.Disabled
 						};
-					else 
+					else
 						recipient = new MailRecipient {
 							Type = RecipientType.Address,
 							Email = email,
@@ -97,7 +92,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							Region = region,
 							Email = email
 						};
-					else 
+					else
 						recipient = new MailRecipient {
 							Type = RecipientType.Region,
 							Email = email,
@@ -105,27 +100,26 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 						};
 				}
 			}
-			else 
-				if (email.EndsWith("@client.docs.analit.net")) {
-					var clientIdStr = email.Substring(0, email.Length - "@client.docs.analit.net".Length);
-					uint clientId;
-					if (uint.TryParse(clientIdStr, out clientId)) {
-						var client = Client.Queryable.FirstOrDefault(c => c.Id == clientId);
-						if (client != null)
-							recipient = new MailRecipient {
-								Type = RecipientType.Client,
-								Client = client,
-								Email = email,
-								Status = client.Enabled ? RecipientStatus.Verified : RecipientStatus.Disabled
-							};
-						else 
-							recipient = new MailRecipient {
-								Type = RecipientType.Client,
-								Email = email,
-								Status = RecipientStatus.NotFound
-							};
-					}
+			else if (email.EndsWith("@client.docs.analit.net")) {
+				var clientIdStr = email.Substring(0, email.Length - "@client.docs.analit.net".Length);
+				uint clientId;
+				if (uint.TryParse(clientIdStr, out clientId)) {
+					var client = Client.Queryable.FirstOrDefault(c => c.Id == clientId);
+					if (client != null)
+						recipient = new MailRecipient {
+							Type = RecipientType.Client,
+							Client = client,
+							Email = email,
+							Status = client.Enabled ? RecipientStatus.Verified : RecipientStatus.Disabled
+						};
+					else
+						recipient = new MailRecipient {
+							Type = RecipientType.Client,
+							Email = email,
+							Status = RecipientStatus.NotFound
+						};
 				}
+			}
 
 			return recipient;
 		}
@@ -145,6 +139,5 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 			return result;
 		}
-
 	}
 }

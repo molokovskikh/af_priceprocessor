@@ -33,8 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
@@ -43,7 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					return false;
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))
-					return false;				
+					return false;
 				var body = reader.ReadLine().Split(';');
 				if (body.Length != 30)
 					return false;

@@ -38,18 +38,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		public IEnumerable<string> Lines()
 		{
 			string line;
-			while ((line = _reader.ReadLine()) != null)
-			{
+			while ((line = _reader.ReadLine()) != null) {
 				yield return line;
 			}
 		}
 
 		public IEnumerable<string> Header()
 		{
-			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
-			{
-				if (part == Part.None && (line.ToLower() == "[header]" || line.ToLower() == "[заголовок]"))
-				{
+			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark))) {
+				if (part == Part.None && (line.ToLower() == "[header]" || line.ToLower() == "[заголовок]")) {
 					part = Part.Header;
 					continue;
 				}
@@ -61,10 +58,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public IEnumerable<string> Body()
 		{
-			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark)))
-			{
-				if (part == Part.Header && (line.ToLower() == "[body]" || line.ToLower() == "[таблица]"))
-				{
+			foreach (var line in Lines().Where(l => !String.IsNullOrWhiteSpace(l)).Where(l => String.IsNullOrEmpty(_commentMark) || !l.StartsWith(_commentMark))) {
+				if (part == Part.Header && (line.ToLower() == "[body]" || line.ToLower() == "[таблица]")) {
 					part = Part.Body;
 					continue;
 				}
@@ -98,7 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int SupplierPriceMarkupIndex = -1;
 		protected int SerialNumberIndex = -1;
 		protected int PeriodIndex = -1;
-		protected int CertificatesIndex = -1;		
+		protected int CertificatesIndex = -1;
 		protected int RegistryCostIndex = -1;
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
@@ -138,7 +133,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		protected string CommentMark;
 		protected bool CalculateSupplierPriceMarkup;
-		
+
 
 		protected virtual void SetIndexes()
 		{
@@ -163,7 +158,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			//CertificatesDateIndex = -1;
 		}
 
-		protected static int ? GetInteger(string value)
+		protected static int? GetInteger(string value)
 		{
 			if (String.IsNullOrEmpty(value))
 				return null;
@@ -224,8 +219,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		{
 			SetIndexes();
 
-			using(var parser = new HeaderBodyParser(file, CommentMark))
-			{
+			using (var parser = new HeaderBodyParser(file, CommentMark)) {
 				ReadHeader(document, parser.Header().First());
 				foreach (var body in parser.Body())
 					ReadBody(document, body);
@@ -245,8 +239,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((InvoiceNumberIndex >= 0) && header.Length > InvoiceNumberIndex)
 				document.SetInvoice().InvoiceNumber = GetString(header[InvoiceNumberIndex]);
 
-			if ((InvoiceDateIndex >= 0) && header.Length > InvoiceDateIndex)
-			{
+			if ((InvoiceDateIndex >= 0) && header.Length > InvoiceDateIndex) {
 				if (!String.IsNullOrEmpty(header[InvoiceDateIndex]))
 					document.SetInvoice().InvoiceDate = Convert.ToDateTime(header[InvoiceDateIndex]);
 			}
@@ -257,15 +250,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((SellerAddressIndex >= 0) && header.Length > SellerAddressIndex)
 				document.SetInvoice().SellerAddress = GetString(header[SellerAddressIndex]);
 
-			if ((SellerINNIndex >= 0) && header.Length > SellerINNIndex)
-			{
+			if ((SellerINNIndex >= 0) && header.Length > SellerINNIndex) {
 				string inn = GetString(header[SellerINNIndex]);
 				if (inn.Contains("/")) inn = inn.Split('/')[0];
 				document.SetInvoice().SellerINN = inn;
 			}
 
-			if ((SellerKPPIndex >= 0) && header.Length > SellerKPPIndex)
-			{
+			if ((SellerKPPIndex >= 0) && header.Length > SellerKPPIndex) {
 				string kpp = GetString(header[SellerKPPIndex]);
 				if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
 				document.SetInvoice().SellerKPP = kpp;
@@ -286,15 +277,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((BuyerAddressIndex >= 0) && header.Length > BuyerAddressIndex)
 				document.SetInvoice().BuyerAddress = GetString(header[BuyerAddressIndex]);
 
-			if ((BuyerINNIndex >= 0) && header.Length > BuyerINNIndex)
-			{
+			if ((BuyerINNIndex >= 0) && header.Length > BuyerINNIndex) {
 				string inn = GetString(header[BuyerINNIndex]);
 				if (inn.Contains("/")) inn = inn.Split('/')[0];
 				document.SetInvoice().BuyerINN = inn;
 			}
 
-			if ((BuyerKPPIndex >= 0) && header.Length > BuyerKPPIndex)
-			{
+			if ((BuyerKPPIndex >= 0) && header.Length > BuyerKPPIndex) {
 				string kpp = GetString(header[BuyerKPPIndex]);
 				if (kpp.Contains("/")) kpp = kpp.Split('/')[1];
 				document.SetInvoice().BuyerKPP = kpp;
@@ -337,7 +326,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			var parts = line.Split(separator.ToCharArray());
 			var docLine = document.NewLine();
 
-			if(CodeIndex >= 0)
+			if (CodeIndex >= 0)
 				docLine.Code = parts[CodeIndex];
 			docLine.Product = parts[ProductIndex];
 			docLine.Producer = parts[ProducerIndex];
@@ -365,11 +354,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((ExciseTaxIndex > 0) && (parts.Length > ExciseTaxIndex))
 				docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
 
-			if ((SerialNumberIndex > 0) && (parts.Length>SerialNumberIndex))
-			docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
+			if ((SerialNumberIndex > 0) && (parts.Length > SerialNumberIndex))
+				docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
 
 			if ((PeriodIndex > 0) && (parts.Length > PeriodIndex))
-			docLine.Period = GetString(parts[PeriodIndex]);
+				docLine.Period = GetString(parts[PeriodIndex]);
 
 			if ((CertificatesIndex > 0) && (parts.Length > CertificatesIndex))
 				docLine.Certificates = GetString(parts[CertificatesIndex]);
@@ -383,8 +372,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if ((BillOfEntryNumberIndex > 0) && (parts.Length > BillOfEntryNumberIndex))
 				docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
 
-			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex]))
-			{
+			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex])) {
 				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
 				if (parts[VitallyImportantIndex].ToLower() == "да") docLine.VitallyImportant = true;
 				if (parts[VitallyImportantIndex].ToLower() == "нет") docLine.VitallyImportant = false;
@@ -410,8 +398,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			if (Path.GetExtension(file).ToLower() != ".txt")
 				return false;
 
-			using (var parser = new HeaderBodyParser(file, commentMark))
-			{
+			using (var parser = new HeaderBodyParser(file, commentMark)) {
 				var header = parser.Header().FirstOrDefault();
 				if (header == null)
 					return false;

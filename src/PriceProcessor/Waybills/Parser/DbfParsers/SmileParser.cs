@@ -3,8 +3,8 @@
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	// Парсер для накладной поставщика Смайл (требование 3663)
-	public class SmileParser: BaseDbfParser
-	{			
+	public class SmileParser : BaseDbfParser
+	{
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
@@ -26,9 +26,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("WARESNAME")
-			       && data.Columns.Contains("WARESCODE")
-			       && data.Columns.Contains("PRODNAME")
-			       && data.Columns.Contains("WARESVALID");
+				&& data.Columns.Contains("WARESCODE")
+				&& data.Columns.Contains("PRODNAME")
+				&& data.Columns.Contains("WARESVALID");
 		}
 	}
 }

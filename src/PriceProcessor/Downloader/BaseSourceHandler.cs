@@ -9,7 +9,7 @@ using System.Data;
 using System.Net.Mail;
 using System.Collections.Generic;
 using Inforoom.Common;
-using FileHelper=Common.Tools.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
@@ -47,7 +47,6 @@ namespace Inforoom.Downloader
 
 		public static string colPriceMask = "PriceMask";
 		public static string colExtrMask = "ExtrMask";
-		
 	}
 
 	//Класс для хранения последней ошибки по каждому прайс-листу
@@ -59,7 +58,7 @@ namespace Inforoom.Downloader
 
 	//Перечисление с указанием кода результата обработки источника
 	public enum DownPriceResultCode
-	{ 
+	{
 		SuccessDownload = 2,
 		ErrorProcess = 3,
 		ErrorDownload = 5
@@ -76,21 +75,26 @@ namespace Inforoom.Downloader
 		/// Код текущего обрабатываемого прайса
 		/// </summary>
 		protected ulong CurrPriceCode;
+
 		protected ulong? CurrCostCode;
 		protected ulong CurrPriceItemId;
 		protected ulong? CurrParentSynonym;
+
 		/// <summary>
 		/// текущая обрабатываема строка в таблице
 		/// </summary>
 		protected DataRow drCurrent;
+
 		/// <summary>
 		/// текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
 		/// </summary>
 		protected string CurrFileName;
+
 		/// <summary>
 		/// директория для сохранения файлов для истории 
 		/// </summary>
 		protected string DownHistoryPath;
+
 		/// <summary>
 		/// текущая дата файла
 		/// </summary>
@@ -122,7 +126,7 @@ namespace Inforoom.Downloader
 		}
 
 		//Типа источника
-		protected string SourceType { get; set;  }
+		protected string SourceType { get; set; }
 
 		protected virtual string GetSQLSources()
 		{
@@ -177,7 +181,7 @@ and r.RegionCode = s.HomeRegion
 and fr.Id = pi.FormRuleId
 and pf.Id = fr.PriceFormatId
 and s.Disabled = 0
-and pd.AgencyEnabled= 1", 
+and pd.AgencyEnabled= 1",
 				type);
 		}
 
@@ -192,8 +196,7 @@ and pd.AgencyEnabled= 1",
 
 		public void FillSourcesTable()
 		{
-			using(var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
+			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 				dtSources.Clear();
 				connection.Open();
 				var adapter = new MySqlDataAdapter(GetSQLSources(), connection);
@@ -204,11 +207,10 @@ and pd.AgencyEnabled= 1",
 		protected static void ErrorMailSend(int UID, string ErrorMessage, Stream ms)
 		{
 			using (var mm = new MailMessage(
-				Settings.Default.FarmSystemEmail, 
+				Settings.Default.FarmSystemEmail,
 				Settings.Default.SMTPErrorList,
 				String.Format("Письмо с UID {0} не было обработано", UID),
-				String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage)))
-			{
+				String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage))) {
 				if (ms != null)
 					mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
@@ -256,19 +258,16 @@ and pd.AgencyEnabled= 1",
 		protected bool ProcessPriceFile(string InFile, out string ExtrFile, ulong sourceTypeId)
 		{
 			ExtrFile = InFile;
-			if (ArchiveHelper.IsArchive(InFile))
-			{
+			if (ArchiveHelper.IsArchive(InFile)) {
 				if ((drCurrent[SourcesTableColumns.colExtrMask] is String) &&
-					!String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString()))
-				{
+					!String.IsNullOrEmpty(drCurrent[SourcesTableColumns.colExtrMask].ToString())) {
 					ExtrFile = PriceProcessor.FileHelper.FindFromArhive(
-						InFile + ExtrDirSuffix, (string) drCurrent[SourcesTableColumns.colExtrMask]);
+						InFile + ExtrDirSuffix, (string)drCurrent[SourcesTableColumns.colExtrMask]);
 				}
 				else
 					ExtrFile = String.Empty;
 			}
-			if (String.IsNullOrEmpty(ExtrFile))
-			{
+			if (String.IsNullOrEmpty(ExtrFile)) {
 				DownloadLogEntity.Log(sourceTypeId, CurrPriceItemId, String.Format(
 					"Не удалось найти файл в архиве. Маска файла в архиве : '{0}'",
 					drCurrent[SourcesTableColumns.colExtrMask]));

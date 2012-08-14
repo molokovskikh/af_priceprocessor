@@ -126,7 +126,7 @@ where {1} and i.PriceId = ?priceId", setSql.Implode(), filterSql.Implode(" and "
 				if (setSql.Count == 0)
 					continue;
 
-				command.CommandText = String.Format( @"
+				command.CommandText = String.Format(@"
 update Customers.Intersection i
 join Customers.AddressIntersection ai on ai.IntersectionId = i.Id
 set {0}

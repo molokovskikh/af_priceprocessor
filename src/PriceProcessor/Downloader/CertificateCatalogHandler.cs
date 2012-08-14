@@ -26,13 +26,12 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			SleepTime = 5;
 		}
-		
+
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
 				var sources = CertificateSource.Queryable.ToArray();
-				foreach (var source in sources)
-				{
+				foreach (var source in sources) {
 					var ftpSource = source.GetCertificateSource() as IRemoteFtpSource;
 					if (ftpSource != null)
 						DownloadFile(source, ftpSource);
@@ -50,15 +49,13 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			Ping();
 
-			try
-			{
+			try {
 				if (catalogFile != null)
 					ImportCatalogFile(catalogFile, source, ftpSource);
 
 				Ping();
 			}
-			finally
-			{
+			finally {
 				if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
 					File.Delete(catalogFile.LocalFileName);
 			}
@@ -91,8 +88,7 @@ where
 " + filter)
 					.AddEntity("core", typeof(Core))
 					.SetParameter("sourceId", catalogFile.Source.Id)
-					.List<Core>()
-			);
+					.List<Core>());
 
 			_logger.InfoFormat("Количество загруженных позиций из Core: {0}", cores.Count);
 
@@ -108,8 +104,7 @@ where
 
 				catalogList.Add(catalog);
 
-				if (catalogList.Count % 10000 == 0)
-				{
+				if (catalogList.Count % 10000 == 0) {
 					Ping();
 					_logger.DebugFormat("Количество обработанных строк нового каталога сертификатов: {0}", catalogList.Count);
 				}
@@ -117,10 +112,8 @@ where
 
 			_logger.InfoFormat("Начата транзакция по обновлению каталога сертификатов");
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-
-				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
-				try
-				{
+				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+				try {
 					session.CreateSQLQuery(@"
 	delete from
 		documents.CertificateSourceCatalogs
@@ -130,16 +123,14 @@ where
 						.SetParameter("certificateSourceId", catalogFile.Source.Id)
 						.ExecuteUpdate();
 				}
-				finally
-				{
+				finally {
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 				}
 
 				catalogList.ForEach(c => c.Save());
 
-				var sessionUpdate = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
-				try
-				{
+				var sessionUpdate = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+				try {
 					sessionUpdate.CreateSQLQuery(@"
 	update
 		documents.CertificateSources
@@ -152,8 +143,7 @@ where
 						.SetParameter("FtpFileDate", catalogFile.FileDate)
 						.ExecuteUpdate();
 				}
-				finally
-				{
+				finally {
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(sessionUpdate);
 				}
 

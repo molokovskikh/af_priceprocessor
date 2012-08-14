@@ -38,31 +38,28 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 	public class FarmaimpeksFormalizer : BaseFormalizer, IPriceFormalizer
 	{
-		private ILog _log = LogManager.GetLogger(typeof (FarmaimpeksFormalizer));
+		private ILog _log = LogManager.GetLogger(typeof(FarmaimpeksFormalizer));
 
 		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
 			: base(filename, connection, data)
-		{}
+		{
+		}
 
 		public IList<string> GetAllNames()
 		{
 			var names = new List<string>();
-			using (var reader = new FarmaimpeksReader(_fileName))
-			{
-				foreach (var parsedPrice in reader.Prices())
-				{
+			using (var reader = new FarmaimpeksReader(_fileName)) {
+				foreach (var parsedPrice in reader.Prices()) {
 					var priceInfo = _data.Rows[0];
 					var supplierId = Convert.ToUInt32(priceInfo["FirmCode"]);
 					PriceCost cost;
-					using (new SessionScope(FlushAction.Never))
-					{
+					using (new SessionScope(FlushAction.Never)) {
 						cost =
 							PriceCost.Queryable.FirstOrDefault(
 								c => c.Price.Supplier.Id == supplierId && c.CostName == parsedPrice.Id);
 					}
 
-					if (cost == null)
-					{
+					if (cost == null) {
 						_log.WarnFormat(
 							"Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс",
 							_priceInfo.FirmShortName, parsedPrice.Id);
@@ -84,18 +81,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void Formalize()
 		{
-			using( var reader = new FarmaimpeksReader(_fileName)) {
-				foreach (var parsedPrice in reader.Prices())
-				{
+			using (var reader = new FarmaimpeksReader(_fileName)) {
+				foreach (var parsedPrice in reader.Prices()) {
 					var supplierId = _priceInfo.FirmCode;
 					PriceCost cost;
-					using (new SessionScope(FlushAction.Never))
-					{
+					using (new SessionScope(FlushAction.Never)) {
 						cost = PriceCost.Queryable.FirstOrDefault(c => c.Price.Supplier.Id == supplierId && c.CostName == parsedPrice.Id);
 					}
 
-					if (cost == null)
-					{
+					if (cost == null) {
 						_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, parsedPrice.Id);
 						continue;
 					}
@@ -115,7 +109,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 						customer.Available = true;
 
 					With.Transaction((c, t) => {
-
 						var command = new MySqlCommand(@"
 	update Usersettings.Pricesdata
 	set PriceName = ?name

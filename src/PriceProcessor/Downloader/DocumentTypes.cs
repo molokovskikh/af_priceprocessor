@@ -17,7 +17,7 @@ namespace Inforoom.Downloader.Documents
 	{
 		public DocType DocType { get; protected set; }
 
-		public string FolderName { get; protected set;  }
+		public string FolderName { get; protected set; }
 
 		public string Domen { get; protected set; }
 
@@ -25,10 +25,8 @@ namespace Inforoom.Downloader.Documents
 		{
 			clientCode = 0;
 			int Index = email.IndexOf("@" + Domen);
-			if (Index > -1)
-			{
-				if (uint.TryParse(email.Substring(0, Index), out clientCode))
-				{
+			if (Index > -1) {
+				if (uint.TryParse(email.Substring(0, Index), out clientCode)) {
 					return true;
 				}
 				return false;
@@ -56,5 +54,4 @@ namespace Inforoom.Downloader.Documents
 			Domen = "refused.analit.net";
 		}
 	}
-
 }

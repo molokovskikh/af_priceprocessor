@@ -10,8 +10,7 @@ namespace Inforoom.Formalizer
 	{
 		public InterPriceParser(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data) : base(priceFileName, connection, data)
 		{
-			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-			{
+			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields))) {
 				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
 				var row = data.FormRulesData.Rows[0];
 				SetFieldName(pf, row[tmpName] is DBNull ? String.Empty : (string)row[tmpName]);
@@ -27,8 +26,7 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
-			if (downloaded)
-			{
+			if (downloaded) {
 				var sb = new StringBuilder();
 
 				foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
@@ -49,22 +47,18 @@ namespace Inforoom.Formalizer
 			string res;
 
 			//Специальным образом обрабатываем наименование товара, если имя содержится в нескольких полях
-			if ((PriceFields.Name1 == field) || (PriceFields.OriginalName == field)) 
-			{
+			if ((PriceFields.Name1 == field) || (PriceFields.OriginalName == field)) {
 				res = base.GetFieldValue(field);
-				try
-				{
-					if (dtPrice.Columns.IndexOf( GetFieldName(PriceFields.Name2) ) > -1)
-						res = UnSpace( String.Format("{0} {1}", res, RemoveForbWords( GetFieldRawValue(PriceFields.Name2) ) ) );
-					if (dtPrice.Columns.IndexOf( GetFieldName(PriceFields.Name3) ) > -1)
-						res = UnSpace( String.Format("{0} {1}", res, RemoveForbWords( GetFieldRawValue(PriceFields.Name3) ) ) );
+				try {
+					if (dtPrice.Columns.IndexOf(GetFieldName(PriceFields.Name2)) > -1)
+						res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name2))));
+					if (dtPrice.Columns.IndexOf(GetFieldName(PriceFields.Name3)) > -1)
+						res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name3))));
 				}
-				catch
-				{
+				catch {
 				}
 
-				if (null != res && res.Length > 255)
-				{
+				if (null != res && res.Length > 255) {
 					res = res.Remove(255, res.Length - 255);
 					res = res.Trim();
 				}

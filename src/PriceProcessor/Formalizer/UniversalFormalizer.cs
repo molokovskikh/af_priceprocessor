@@ -16,12 +16,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		public UniversalFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
 			: base(filename, connection, data)
-		{}
+		{
+		}
 
 		public void Formalize()
 		{
-			using(var stream = File.OpenRead(_fileName)) {
-
+			using (var stream = File.OpenRead(_fileName)) {
 				//В качестве решения по "Ошибка #9597 Трэдифарм Белгород" все прайс-листы с форматом UniversalFormalizer делаем "обновляемыми", 
 				//т.к. BasePriceParser2 не умеет удалять "старые" позиции при простой формализации
 				_priceInfo.IsUpdating = true;
@@ -40,7 +40,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IList<string> GetAllNames()
 		{
-			using(var stream = File.OpenRead(_fileName)) {
+			using (var stream = File.OpenRead(_fileName)) {
 				var reader = new UniversalReader(stream);
 
 				//нужно считать настройки, если этого не сделать то данные прайса могут быть не прочитаны

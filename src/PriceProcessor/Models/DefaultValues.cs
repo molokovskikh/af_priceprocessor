@@ -11,7 +11,7 @@ namespace Inforoom.PriceProcessor.Models
 		[PrimaryKey]
 		public uint Id { get; set; }
 
-		[Property ]
+		[Property]
 		public string AllowedMiniMailExtensions { get; set; }
 
 		[Property]
@@ -67,6 +67,5 @@ namespace Inforoom.PriceProcessor.Models
 
 			return false;
 		}
-
 	}
 }

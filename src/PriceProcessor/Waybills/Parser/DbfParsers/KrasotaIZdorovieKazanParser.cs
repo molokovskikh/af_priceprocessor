@@ -19,24 +19,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "NOM")
 				.DocumentHeader(h => h.DocumentDate, "DATA")
-
 				.DocumentInvoice(i => i.RecipientAddress, "CONTRAGENT")
-
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "NAME")
-
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Producer, "PROIZV")
 				.Line(l => l.SerialNumber, "SERIYA")
 				.Line(l => l.Period, "SROK")
-
 				.Line(l => l.SupplierCostWithoutNDS, "CENA")
-
 				.Line(l => l.Amount, "TOTAL")
 				.Line(l => l.NdsAmount, "NDS")
-
 				.Line(l => l.Quantity, "KOL")
-
 				.ToDocument(document, data);
 
 			return document;
@@ -45,12 +38,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NOM") &&
-			       data.Columns.Contains("DATA") &&
-			       data.Columns.Contains("CONTRAGENT") &&
-			       data.Columns.Contains("TOTAL") &&
-			       data.Columns.Contains("NAME") &&
-			       data.Columns.Contains("KOD") &&
-			       data.Columns.Contains("CENA");
+				data.Columns.Contains("DATA") &&
+				data.Columns.Contains("CONTRAGENT") &&
+				data.Columns.Contains("TOTAL") &&
+				data.Columns.Contains("NAME") &&
+				data.Columns.Contains("KOD") &&
+				data.Columns.Contains("CENA");
 		}
 	}
 }

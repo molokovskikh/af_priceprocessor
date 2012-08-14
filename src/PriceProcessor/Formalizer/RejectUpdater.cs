@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void Save(bool cancellations)
 		{
-			using(var scope = new TransactionScope(OnDispose.Rollback)) {
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				var holder = ActiveRecordMediator.GetSessionFactoryHolder();
 				var session = holder.CreateSession(typeof(ActiveRecordBase));
 				try {

@@ -45,6 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			25 <ЦенаГосРеестра>;+
 			26 <ЛекЖВ>;+
 		*/
+
 		protected override void SetIndexes()
 		{
 			ProviderDocumentIdIndex = 0;
@@ -69,8 +70,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;

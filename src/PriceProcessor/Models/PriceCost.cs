@@ -7,7 +7,7 @@ namespace Inforoom.PriceProcessor.Models
 	public class PriceCost : ActiveRecordLinqBase<PriceCost>
 	{
 		[PrimaryKey("CostCode")]
-		public virtual uint Id { get; set;  }
+		public virtual uint Id { get; set; }
 
 		[BelongsTo("PriceCode")]
 		public virtual Price Price { get; set; }

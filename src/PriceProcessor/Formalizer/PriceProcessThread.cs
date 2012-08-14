@@ -6,7 +6,7 @@ using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using Inforoom.PriceProcessor;
-using FileHelper=Common.Tools.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Formalizer
 {
@@ -17,14 +17,14 @@ namespace Inforoom.Formalizer
 	}
 
 	public enum FormResults
-	{ 
+	{
 		OK = 2,
 		Warrning = 3,
 		Error = 5
 	}
 
 	public enum PriceProcessState
-	{ 
+	{
 		None,
 		Begin,
 		GetConnection,
@@ -66,7 +66,7 @@ namespace Inforoom.Formalizer
 
 		private IPriceFormalizer _workPrice;
 
-		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread=true)
+		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread = true)
 		{
 			StartDate = DateTime.UtcNow;
 			ProcessItem = item;
@@ -75,7 +75,7 @@ namespace Inforoom.Formalizer
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
 			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
-			if(runThread)
+			if (runThread)
 				_thread.Start();
 		}
 
@@ -94,18 +94,12 @@ namespace Inforoom.Formalizer
 
 		public bool ThreadIsAlive
 		{
-			get
-			{
-				return _thread.IsAlive;
-			}
+			get { return _thread.IsAlive; }
 		}
 
 		public ThreadState ThreadState
 		{
-			get
-			{
-				return _thread.ThreadState;
-			}
+			get { return _thread.ThreadState; }
 		}
 
 		public bool IsAbortingLong
@@ -113,9 +107,9 @@ namespace Inforoom.Formalizer
 			get
 			{
 				return (
-					(((_thread.ThreadState & ThreadState.AbortRequested) > 0) || ((_thread.ThreadState & ThreadState.Aborted) > 0)) 
-					&& _abortingTime.HasValue 
-					&& (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
+					(((_thread.ThreadState & ThreadState.AbortRequested) > 0) || ((_thread.ThreadState & ThreadState.Aborted) > 0))
+						&& _abortingTime.HasValue
+						&& (DateTime.UtcNow.Subtract(_abortingTime.Value).TotalSeconds > Settings.Default.AbortingThreadTimeout));
 			}
 		}
 
@@ -124,8 +118,7 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public void AbortThread()
 		{
-			if (!_abortingTime.HasValue)
-			{
+			if (!_abortingTime.HasValue) {
 				_thread.Abort();
 				_abortingTime = DateTime.UtcNow;
 			}
@@ -141,18 +134,12 @@ namespace Inforoom.Formalizer
 
 		public string TID
 		{
-			get
-			{
-				return _thread.Name;
-			}
+			get { return _thread.Name; }
 		}
 
 		public string CurrentErrorMessage
 		{
-			get
-			{
-				return _log.CurrentErrorMessage;
-			}
+			get { return _log.CurrentErrorMessage; }
 		}
 
 		/// <summary>
@@ -169,80 +156,78 @@ namespace Inforoom.Formalizer
 		{
 			ProcessState = PriceProcessState.Begin;
 			var allWorkTimeString = String.Empty;
-			using(var cleaner = new FileCleaner())
-			try
-			{
-				//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
-				var outPriceFileName = Path.Combine(Settings.Default.BasePath,
-					ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath));
-				//Используем идентификатор нитки в качестве названия временной папки
-				var tempPath = Path.GetTempPath() + TID + "\\";
-				//изменяем имя файла, что оно было без недопустимых символов ('_')
-				var tempFileName = tempPath + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
-				cleaner.Watch(tempFileName);
-				_logger.DebugFormat("Запущена нитка на обработку файла : {0}", ProcessItem.FilePath);
-
-				ProcessState = PriceProcessState.CreateTempDirectory;
-
-				//Создаем директорию для временного файла и копируем туда файл
-				if (Directory.Exists(tempPath))
-					FileHelper.DeleteDir(tempPath);
-
-				Directory.CreateDirectory(tempPath);
-
+			using (var cleaner = new FileCleaner())
 				try {
-					ProcessState = PriceProcessState.CallValidate;
-					_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
+					//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
+					var outPriceFileName = Path.Combine(Settings.Default.BasePath,
+						ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath));
+					//Используем идентификатор нитки в качестве названия временной папки
+					var tempPath = Path.GetTempPath() + TID + "\\";
+					//изменяем имя файла, что оно было без недопустимых символов ('_')
+					var tempFileName = tempPath + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
+					cleaner.Watch(tempFileName);
+					_logger.DebugFormat("Запущена нитка на обработку файла : {0}", ProcessItem.FilePath);
 
-					_workPrice.Downloaded = ProcessItem.Downloaded;
-					_workPrice.InputFileName = ProcessItem.FilePath;
+					ProcessState = PriceProcessState.CreateTempDirectory;
 
-					ProcessState = PriceProcessState.CallFormalize;
-					_workPrice.Formalize();
+					//Создаем директорию для временного файла и копируем туда файл
+					if (Directory.Exists(tempPath))
+						FileHelper.DeleteDir(tempPath);
 
-					FormalizeOK = true;
-					_log.SuccesLog(_workPrice);
-				}
-				catch(Exception e) {
-					WarningFormalizeException warning =
-						(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
-					if (warning != null) {
-						_log.WarningLog(warning, warning.Message);
+					Directory.CreateDirectory(tempPath);
+
+					try {
+						ProcessState = PriceProcessState.CallValidate;
+						_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
+
+						_workPrice.Downloaded = ProcessItem.Downloaded;
+						_workPrice.InputFileName = ProcessItem.FilePath;
+
+						ProcessState = PriceProcessState.CallFormalize;
+						_workPrice.Formalize();
+
 						FormalizeOK = true;
+						_log.SuccesLog(_workPrice);
 					}
-					else {
-						throw;
+					catch (Exception e) {
+						WarningFormalizeException warning =
+							(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
+						if (warning != null) {
+							_log.WarningLog(warning, warning.Message);
+							FormalizeOK = true;
+						}
+						else {
+							throw;
+						}
 					}
+					finally {
+						var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
+						_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
+						allWorkTimeString = tsFormalize.ToString();
+					}
+
+					ProcessState = PriceProcessState.FinalCopy;
+					//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
+					if (File.Exists(tempFileName))
+						File.Copy(tempFileName, outPriceFileName, true);
+					else
+						File.Copy(ProcessItem.FilePath, outPriceFileName, true);
+					var ft = DateTime.UtcNow;
+					File.SetCreationTimeUtc(outPriceFileName, ft);
+					File.SetLastWriteTimeUtc(outPriceFileName, ft);
+					File.SetLastAccessTimeUtc(outPriceFileName, ft);
+				}
+				catch (ThreadAbortException e) {
+					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+				}
+				catch (Exception e) {
+					_log.ErrodLog(_workPrice, e);
 				}
 				finally {
-					var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
-					_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
-					allWorkTimeString = tsFormalize.ToString();
+					ProcessState = PriceProcessState.FinalizeThread;
+					_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
+					FormalizeEnd = true;
 				}
-
-				ProcessState = PriceProcessState.FinalCopy;
-				//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
-				if (File.Exists(tempFileName))
-					File.Copy(tempFileName, outPriceFileName, true);
-				else
-					File.Copy(ProcessItem.FilePath, outPriceFileName, true);
-				var ft = DateTime.UtcNow;
-				File.SetCreationTimeUtc(outPriceFileName, ft);
-				File.SetLastWriteTimeUtc(outPriceFileName, ft);
-				File.SetLastAccessTimeUtc(outPriceFileName, ft);
-			}
-			catch (ThreadAbortException e) {
-				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
-			}
-			catch(Exception e) {
-				_log.ErrodLog(_workPrice, e);
-			}
-			finally
-			{
-				ProcessState = PriceProcessState.FinalizeThread;
-				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
-				FormalizeEnd = true;
-			}
 		}
 	}
 }

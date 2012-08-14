@@ -24,6 +24,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		}
 
 		public abstract DbfParser GetParser();
-		public virtual void PostParsing(Document doc) { return; } // Если требуется дополнительная обработка документа после разбора
+
+		public virtual void PostParsing(Document doc)
+		{
+			return;
+		}
+
+		// Если требуется дополнительная обработка документа после разбора
 	}
 }

@@ -7,12 +7,11 @@ namespace Inforoom.PriceProcessor
 {
 	public class FileHelper
 	{
-		private static ILog _log = LogManager.GetLogger(typeof (FileHelper));
+		private static ILog _log = LogManager.GetLogger(typeof(FileHelper));
 
 		public static bool CheckMask(string shortFileName, string mask)
 		{
-			Func<string, string, bool> checkAction = (fileName, fileMask) =>
-			{
+			Func<string, string, bool> checkAction = (fileName, fileMask) => {
 				return (WildcardsHelper.IsWildcards(fileMask) && WildcardsHelper.Matched(fileMask, fileName)) ||
 					(String.Compare(fileName, fileMask, true) == 0) ||
 					fileName.Equals(fileMask, StringComparison.OrdinalIgnoreCase);
@@ -27,8 +26,7 @@ namespace Inforoom.PriceProcessor
 		public static string FindFromArhive(string TempDir, string ExtrMask)
 		{
 			var files = Directory.GetFiles(TempDir + Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				if (CheckMask(Path.GetFileName(file), ExtrMask))
 					return file;
 			}
@@ -59,20 +57,17 @@ namespace Inforoom.PriceProcessor
 		public static string NormalizeFileName(string InputFilename)
 		{
 			var PathPart = String.Empty;
-			foreach (var ic in Path.GetInvalidPathChars())
-			{
+			foreach (var ic in Path.GetInvalidPathChars()) {
 				InputFilename = InputFilename.Replace(ic.ToString(), "");
 			}
 			//Пытаемся найти последний разделитель директории в пути
 			var EndDirPos = InputFilename.LastIndexOfAny(
-				new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar } );
-			if (EndDirPos > -1)
-			{
+				new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
+			if (EndDirPos > -1) {
 				PathPart = InputFilename.Substring(0, EndDirPos + 1);
 				InputFilename = InputFilename.Substring(EndDirPos + 1);
 			}
-			foreach (var ic in Path.GetInvalidFileNameChars())
-			{
+			foreach (var ic in Path.GetInvalidFileNameChars()) {
 				InputFilename = InputFilename.Replace(ic.ToString(), "");
 			}
 			return (PathPart + InputFilename);
@@ -80,12 +75,10 @@ namespace Inforoom.PriceProcessor
 
 		public static void Safe(Action action)
 		{
-			try
-			{
+			try {
 				action();
 			}
-			catch(Exception e)
-			{
+			catch (Exception e) {
 				_log.Error("Ошибка на которую можно забить", e);
 			}
 		}

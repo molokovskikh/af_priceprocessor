@@ -8,7 +8,7 @@ namespace Inforoom.PriceProcessor.Downloader
 {
 	public class DownloadLogEntity
 	{
-		private static readonly ILog _logger = LogManager.GetLogger(typeof (DownloadLogEntity));
+		private static readonly ILog _logger = LogManager.GetLogger(typeof(DownloadLogEntity));
 
 		private static MySqlCommand CreateLogCommand()
 		{
@@ -51,7 +51,7 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 		{
 			if (!String.IsNullOrEmpty(addition))
 				if (currPriceItemId.HasValue)
-					using(NDC.Push("." + currPriceItemId))
+					using (NDC.Push("." + currPriceItemId))
 						_logger.InfoFormat("Logging.Addition : {0}", addition);
 				else
 					_logger.InfoFormat("Logging.Addition : {0}", addition);
@@ -68,10 +68,8 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 			//Если это успешная загрузка, то сбрасываем все ошибки
 			//Если это ошибка, то если дополнение в словаре и совпадает, то запрещаем логирование, в другом случае добавляем или обновляем
 			ulong tmpCurrPriceItemId = (currPriceItemId.HasValue) ? currPriceItemId.Value : 0;
-			if (resultCode == DownPriceResultCode.ErrorDownload)
-			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
-				{
+			if (resultCode == DownPriceResultCode.ErrorDownload) {
+				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId)) {
 					if (ErrorPriceLogging.ErrorMessages[tmpCurrPriceItemId] == addition)
 						NeedLogging = false;
 					else
@@ -80,29 +78,22 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 				else
 					ErrorPriceLogging.ErrorMessages.Add(tmpCurrPriceItemId, addition);
 			}
-			else
-			{
-				if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
-					ErrorPriceLogging.ErrorMessages.Remove(tmpCurrPriceItemId);
-			}
+			else if (ErrorPriceLogging.ErrorMessages.ContainsKey(tmpCurrPriceItemId))
+				ErrorPriceLogging.ErrorMessages.Remove(tmpCurrPriceItemId);
 
-			if (NeedLogging)
-			{
+			if (NeedLogging) {
 				var owneConnection = false;
-				if (connection == null)
-				{
+				if (connection == null) {
 					owneConnection = true;
 					connection = new MySqlConnection(Literals.ConnectionString());
 				}
-				try
-				{
+				try {
 					if (connection.State == ConnectionState.Closed)
 						connection.Open();
 					command.Connection = connection;
 					return Convert.ToUInt64(command.ExecuteScalar());
 				}
-				finally
-				{
+				finally {
 					if (owneConnection)
 						connection.Close();
 				}

@@ -17,8 +17,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
 			if (!String.IsNullOrEmpty(docDate))
 				document.DocumentDate = Convert.ToDateTime(docDate);
-			foreach(var position in xDocument.XPathSelectElements(@"Документ/ТоварныеПозиции/ТоварнаяПозиция"))
-			{
+			foreach (var position in xDocument.XPathSelectElements(@"Документ/ТоварныеПозиции/ТоварнаяПозиция")) {
 				var line = document.NewLine();
 				line.Product = position.XPathSelectElement("Товар").Value;
 				line.Producer = position.XPathSelectElement("Изготовитель").Value;
@@ -29,11 +28,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.ProducerCostWithoutNDS = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
 				if (!hasOpt) line.SupplierPriceMarkup = null;
-					else line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
+				else line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
 				line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;
-				line.Nds = (uint?) position.Get("СтавкаНДС");
+				line.Nds = (uint?)position.Get("СтавкаНДС");
 				line.SetSupplierCostByNds(line.Nds);
 				line.NdsAmount = position.Get("СуммаНДС");
 
@@ -49,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 				//цена гос реестра есть только для жнвлс
 				//по этому если есть цена значит жнвлс
-				if (line.VitallyImportant == null 
+				if (line.VitallyImportant == null
 					&& line.RegistryCost != null && line.RegistryCost > 0)
 					line.VitallyImportant = true;
 			}

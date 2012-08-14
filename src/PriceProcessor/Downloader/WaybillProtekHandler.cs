@@ -19,7 +19,7 @@ using Inforoom.PriceProcessor.Waybills.Models.Export;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
-	[ServiceContract(Namespace="http://service.ezakaz.protek.ru")]
+	[ServiceContract(Namespace = "http://service.ezakaz.protek.ru")]
 	public interface ProtekService
 	{
 		[OperationContract(Action = "urn:getBladingHeaders", ReplyAction = "urn:getBladingHeadersResponse")]
@@ -42,21 +42,20 @@ namespace Inforoom.PriceProcessor.Downloader
 		[return: MessageParameter(Name = "return")]
 		getSertImagesResponse getSertImages(getSertImagesRequest request);
 
-		[OperationContractAttribute(Action="urn:getSertDocType", ReplyAction="urn:getSertDocTypeResponse")]
-		[XmlSerializerFormatAttribute(SupportFaults=true)]
-		[return: MessageParameterAttribute(Name="return")]
+		[OperationContractAttribute(Action = "urn:getSertDocType", ReplyAction = "urn:getSertDocTypeResponse")]
+		[XmlSerializerFormatAttribute(SupportFaults = true)]
+		[return: MessageParameterAttribute(Name = "return")]
 		getSertDocTypeResponse getSertDocType(getSertDocTypeRequest request);
 	}
 
-	[MessageContract(WrapperName="getSertDocTypeResponse", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
+	[MessageContract(WrapperName = "getSertDocTypeResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getSertDocTypeResponse
 	{
-		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
-		[XmlElement(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
-		public EZakazXML @return;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public EZakazXML @return;
 
 		public getSertDocTypeResponse()
-		{}
+		{
+		}
 
 		public getSertDocTypeResponse(EZakazXML @return)
 		{
@@ -64,19 +63,16 @@ namespace Inforoom.PriceProcessor.Downloader
 		}
 	}
 
-	[MessageContract(WrapperName="getSertDocType", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
+	[MessageContract(WrapperName = "getSertDocType", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getSertDocTypeRequest
 	{
-		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
-		[XmlElement(Form=XmlSchemaForm.Unqualified)]
-		public int clientId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int clientId;
 
-		[MessageBodyMember(Namespace="http://service.ezakaz.protek.ru")]
-		[XmlElement(Form=XmlSchemaForm.Unqualified)]
-		public int instCode;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
 
 		public getSertDocTypeRequest()
-		{}
+		{
+		}
 
 		public getSertDocTypeRequest(int clientId, int instCode)
 		{
@@ -88,12 +84,11 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getSertImagesResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getSertImagesResponse
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public EZakazXML @return;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public EZakazXML @return;
 
 		public getSertImagesResponse()
-		{}
+		{
+		}
 
 		public getSertImagesResponse(EZakazXML @return)
 		{
@@ -104,19 +99,15 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getSertImages", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getSertImagesRequest
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
-		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
-		public int clientId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElementAttribute(Form = XmlSchemaForm.Unqualified)] public int clientId;
 
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
 
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public int theDocId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int theDocId;
 
 		public getSertImagesRequest()
-		{}
+		{
+		}
 
 		public getSertImagesRequest(int clientId, int instCode, int theDocId)
 		{
@@ -252,24 +243,21 @@ namespace Inforoom.PriceProcessor.Downloader
 			var binding = new BasicHttpBinding {
 				SendTimeout = TimeSpan.FromMinutes(10),
 				ReceiveTimeout = TimeSpan.FromMinutes(10),
-				MaxBufferPoolSize = 30*1024*1024,
-				MaxBufferSize = 10*1024*1024,
-				MaxReceivedMessageSize = 10*1024*1024
+				MaxBufferPoolSize = 30 * 1024 * 1024,
+				MaxBufferSize = 10 * 1024 * 1024,
+				MaxReceivedMessageSize = 10 * 1024 * 1024
 			};
 			var factory = new ChannelFactory<ProtekService>(binding, endpoint);
 			var service = factory.CreateChannel();
 			var communicationObject = ((ICommunicationObject)service);
-			try
-			{
+			try {
 				action(service);
 				communicationObject.Close();
 			}
-			catch (FaultException e)
-			{
+			catch (FaultException e) {
 				_logger.Warn("Ошибка в сервисе протека", e);
 			}
-			catch (Exception)
-			{
+			catch (Exception) {
 				if (communicationObject.State != CommunicationState.Closed)
 					communicationObject.Abort();
 				throw;
@@ -291,20 +279,16 @@ namespace Inforoom.PriceProcessor.Downloader
 				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
 
-				try
-				{
+				try {
 					if (responce.@return.blading == null)
 						return;
 
 					_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
-					foreach (var blading in responce.@return.blading)
-					{
+					foreach (var blading in responce.@return.blading) {
 						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId.Value));
 						_logger.InfoFormat("Загрузил накладную {0}", blading.bladingId.Value);
-						foreach (var body in blanding.@return.blading)
-						{
-							using (var scope = new TransactionScope(OnDispose.Rollback))
-							{
+						foreach (var body in blanding.@return.blading) {
+							using (var scope = new TransactionScope(OnDispose.Rollback)) {
 								var document = ToDocument(body);
 								document = WaybillFormatDetector.ProcessDocument(document, orders);
 								if (document == null)
@@ -316,14 +300,12 @@ namespace Inforoom.PriceProcessor.Downloader
 
 								Exporter.SaveProtek(document);
 								scope.VoteCommit();
-
 							}
 							_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 						}
 					}
 				}
-				finally
-				{
+				finally {
 					service.closeBladingSession(new closeBladingSessionRequest(sessionId, clientId, instanceId));
 					Ping(); // чтобы монитор не перезапустил рабочий поток
 				}
@@ -334,29 +316,27 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
 
-			var orderId = (uint?) blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
+			var orderId = (uint?)blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
 
 			IList<uint> orderIds = new List<uint>();
 
-			if(orderId != null) orderIds.Add(orderId.Value);
+			if (orderId != null) orderIds.Add(orderId.Value);
 			orders.Clear(); // очистка списка заказов
 
-			if (orderId == null && blading.bladingFolder != null) // если заказы объединены (накладной соответствует несколько заказов)
-			{
+			// если заказы объединены (накладной соответствует несколько заказов)
+			if (orderId == null && blading.bladingFolder != null) {
 				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
 				orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
 			}
 
-			if (orderId == null)
-			{
+			if (orderId == null) {
 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
 			var order = OrderHead.TryFind(orderId.Value);
 
-			if (order == null)
-			{
+			if (order == null) {
 				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
 					orderId,
 					blading.bladingId,
@@ -364,10 +344,9 @@ namespace Inforoom.PriceProcessor.Downloader
 				return null;
 			}
 
-			foreach (var id in orderIds)
-			{
+			foreach (var id in orderIds) {
 				var ord = OrderHead.TryFind(id);
-				if(ord != null) orders.Add(ord);
+				if (ord != null) orders.Add(ord);
 			}
 
 			var log = new DocumentReceiveLog(order.Price.Supplier, order.Address) {
@@ -406,13 +385,12 @@ namespace Inforoom.PriceProcessor.Downloader
 			invoice.DelayOfPaymentInBankDays = blading.dbd;
 			invoice.DelayOfPaymentInDays = blading.dkd;
 
-			foreach (var bladingItem in blading.bladingItems)
-			{
+			foreach (var bladingItem in blading.bladingItems) {
 				var line = document.NewLine();
 				line.Code = bladingItem.itemId.ToString();
 				line.Product = bladingItem.itemName;
 				line.Producer = bladingItem.manufacturerName;
-				line.Quantity = (uint?) bladingItem.bitemQty;
+				line.Quantity = (uint?)bladingItem.bitemQty;
 				line.Country = bladingItem.country;
 				line.Certificates = bladingItem.seria;
 				line.CertificateAuthority = "";
@@ -421,14 +399,14 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Period = bladingItem.prodexpiry != null ? bladingItem.prodexpiry.Value.ToShortDateString() : null;
 				line.DateOfManufacture = bladingItem.proddt;
 
-				line.RegistryCost = (decimal?) bladingItem.reestrPrice;
+				line.RegistryCost = (decimal?)bladingItem.reestrPrice;
 				line.RegistryDate = bladingItem.reestrDate;
 
-				line.SupplierPriceMarkup = (decimal?) bladingItem.distrProc;
-				line.NdsAmount = (decimal?) bladingItem.sumVat;
-				line.Nds = (uint?) bladingItem.vat;
-				line.SupplierCostWithoutNDS = (decimal?) bladingItem.distrPriceWonds;
-				line.SupplierCost = (decimal?) bladingItem.distrPriceNds;
+				line.SupplierPriceMarkup = (decimal?)bladingItem.distrProc;
+				line.NdsAmount = (decimal?)bladingItem.sumVat;
+				line.Nds = (uint?)bladingItem.vat;
+				line.SupplierCostWithoutNDS = (decimal?)bladingItem.distrPriceWonds;
+				line.SupplierCost = (decimal?)bladingItem.distrPriceNds;
 				line.ProducerCostWithoutNDS = (decimal?)bladingItem.prodPriceWonds;
 				line.VitallyImportant = bladingItem.vitalMed != null && bladingItem.vitalMed.Value == 1;
 				line.Amount = (decimal?)bladingItem.positionsum;
@@ -461,7 +439,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			if (String.IsNullOrEmpty(path))
 				return;
 			var file = Path.Combine(path, DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss_fff") + ".xml");
-			using(var stream = File.OpenWrite(file))
+			using (var stream = File.OpenWrite(file))
 				blading.ToXml(stream);
 		}
 	}

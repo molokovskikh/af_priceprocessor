@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string SerialNumber { get; set; }
 
-		[HasAndBelongsToMany(typeof (CertificateFile),
+		[HasAndBelongsToMany(typeof(CertificateFile),
 			Lazy = false,
 			ColumnKey = "CertificateId",
 			Table = "FileCertificates",
@@ -48,6 +48,5 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			CertificateFiles.Add(file);
 			return file;
 		}
-
 	}
 }

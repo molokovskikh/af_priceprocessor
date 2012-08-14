@@ -20,27 +20,22 @@ namespace Inforoom.Formalizer
 	{
 		private readonly Regex re;
 		private Match m;
-		private readonly string [] reGroupName;
+		private readonly string[] reGroupName;
 
 		public ToughMask(string Mask, long clientCode, long priceCode, string clientShortName, string priceName)
 		{
 			reGroupName = new string[Enum.GetNames(typeof(NameGroup)).Length];
-			try
-			{
+			try {
 				re = new Regex(Mask);
 			}
-			catch(Exception e)
-			{
+			catch (Exception e) {
 				throw new WarningFormalizeException(String.Format(Settings.Default.ParseMaskError, e), clientCode, priceCode, clientShortName, priceName);
 			}
-			foreach(var gname in re.GetGroupNames())
-			{
+			foreach (var gname in re.GetGroupNames()) {
 				var gnameU = gname.ToUpper();
-				foreach(NameGroup ng in Enum.GetValues(typeof(NameGroup)))
-				{
+				foreach (NameGroup ng in Enum.GetValues(typeof(NameGroup))) {
 					var sNG = ng.ToString().ToUpper();
-					if (gnameU.Equals(sNG))
-					{
+					if (gnameU.Equals(sNG)) {
 						if (null == reGroupName[(int)ng])
 							reGroupName[(int)ng] = gname;
 						else
@@ -54,22 +49,17 @@ namespace Inforoom.Formalizer
 		public ToughMask(string mask, PriceFormalizationInfo priceInfo)
 		{
 			reGroupName = new string[Enum.GetNames(typeof(NameGroup)).Length];
-			try
-			{
+			try {
 				re = new Regex(mask);
 			}
-			catch(Exception e)
-			{
+			catch (Exception e) {
 				throw new WarningFormalizeException(String.Format(Settings.Default.ParseMaskError, e), priceInfo);
 			}
-			foreach(var gname in re.GetGroupNames())
-			{
+			foreach (var gname in re.GetGroupNames()) {
 				var gnameU = gname.ToUpper();
-				foreach(NameGroup ng in Enum.GetValues(typeof(NameGroup)))
-				{
+				foreach (NameGroup ng in Enum.GetValues(typeof(NameGroup))) {
 					var sNG = ng.ToString().ToUpper();
-					if (gnameU.Equals(sNG))
-					{
+					if (gnameU.Equals(sNG)) {
 						if (null == reGroupName[(int)ng])
 							reGroupName[(int)ng] = gname;
 						else
@@ -94,10 +84,8 @@ namespace Inforoom.Formalizer
 		{
 			if (null == m)
 				return String.Empty;
-			try
-			{
-				switch((int)PF)
-				{
+			try {
+				switch ((int)PF) {
 					case (int)PriceFields.Code:
 						return m.Groups[reGroupName[(int)NameGroup.Code]].Value;
 
@@ -125,8 +113,7 @@ namespace Inforoom.Formalizer
 						return String.Empty;
 				}
 			}
-			catch
-			{
+			catch {
 				return String.Empty;
 			}
 		}

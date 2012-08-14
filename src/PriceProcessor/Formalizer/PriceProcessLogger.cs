@@ -10,7 +10,7 @@ namespace Inforoom.Formalizer
 	public class PriceProcessLogger
 	{
 		private readonly string _prevErrorMessage = String.Empty;
-		
+
 		private readonly PriceProcessItem _processItem;
 
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
@@ -35,8 +35,7 @@ namespace Inforoom.Formalizer
 
 			string downloadId = null;
 			var fileName = Path.GetFileNameWithoutExtension(p.InputFileName);
-			if (fileName.IndexOf("_") > -1)
-			{
+			if (fileName.IndexOf("_") > -1) {
 				downloadId = fileName.Substring(fileName.IndexOf("_") + 1, fileName.Length - fileName.IndexOf("_") - 1);
 				uint id;
 				uint.TryParse(downloadId, out id);
@@ -138,14 +137,13 @@ namespace Inforoom.Formalizer
 			CurrentErrorMessage = addition;
 			_logger.InfoFormat("Warning Addition : {0}", addition);
 
-			if (_prevErrorMessage == CurrentErrorMessage) 
+			if (_prevErrorMessage == CurrentErrorMessage)
 				return;
 
 			//Формирование заголовков письма и 
 			GetBody("Предупреждение", ref addition, ref messageSubject, ref messageBody, e.priceCode, e.clientCode, e.FullName);
 
-			if (e is RollbackFormalizeException)
-			{
+			if (e is RollbackFormalizeException) {
 				var re = (RollbackFormalizeException)e;
 				messageBody = String.Format(
 					@"{0}
@@ -196,8 +194,7 @@ namespace Inforoom.Formalizer
 
 		private void SuccesGetBody(string mSubjPref, ref string mSubj, ref string mBody, long priceCode, long clientCode, string priceName)
 		{
-			if (-1 == priceCode)
-			{
+			if (-1 == priceCode) {
 				mSubj = mSubjPref;
 				mBody = String.Format(
 					@"Файл         : {0}
@@ -205,8 +202,7 @@ namespace Inforoom.Formalizer
 					Path.GetFileName(_processItem.FilePath),
 					DateTime.Now);
 			}
-			else
-			{
+			else {
 				mSubj = String.Format("{0} {1}", mSubjPref, priceCode);
 				mBody = String.Format(
 					@"Код фирмы       : {0}
@@ -222,8 +218,7 @@ namespace Inforoom.Formalizer
 
 		private void GetBody(string mSubjPref, ref string add, ref string subj, ref string body, long priceCode, long clientCode, string priceName)
 		{
-			if (-1 == priceCode)
-			{
+			if (-1 == priceCode) {
 				subj = mSubjPref;
 				body = String.Format(
 					@"Файл         : {0}
@@ -234,8 +229,7 @@ namespace Inforoom.Formalizer
 					add);
 				add = body;
 			}
-			else
-			{
+			else {
 				subj = String.Format("{0} {1}", mSubjPref, priceCode);
 				body = String.Format(
 					@"Код фирмы       : {0}
@@ -253,17 +247,14 @@ namespace Inforoom.Formalizer
 
 		private void LogToDb(Action<MySqlCommand> action)
 		{
-			try
-			{
-				using (var connection = new MySqlConnection(Literals.ConnectionString()))
-				{
+			try {
+				using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 					connection.Open();
 					var command = new MySqlCommand("", connection);
 					action(command);
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_logger.Error("Ошибка логирования в базу", e);
 			}
 		}

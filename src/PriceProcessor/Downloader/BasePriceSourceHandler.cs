@@ -3,7 +3,7 @@ using System.IO;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
 using log4net;
-using FileHelper=Common.Tools.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
@@ -15,7 +15,7 @@ namespace Inforoom.Downloader
 		protected void LogDownloadedPrice(ulong sourceTypeId, string archFileName, string extrFileName)
 		{
 			MySqlUtils.InTransaction((c, t) => {
-				var downloadLogId = DownloadLogEntity.Log(sourceTypeId, (uint) CurrPriceItemId, 
+				var downloadLogId = DownloadLogEntity.Log(sourceTypeId, (uint)CurrPriceItemId,
 					null, null,
 					DownPriceResultCode.SuccessDownload, archFileName,
 					(String.IsNullOrEmpty(extrFileName)) ? null : Path.GetFileName(extrFileName), c);

@@ -41,19 +41,17 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public override string ToString()
 		{
 			return string.Format(
-				"CertificateTask Id: {0},  CertificateSource: {1},  Catalog: {2},  SerialNumber: {3},  DocumentBodyId: {4}", 
-				Id, 
+				"CertificateTask Id: {0},  CertificateSource: {1},  Catalog: {2},  SerialNumber: {3},  DocumentBodyId: {4}",
+				Id,
 				CertificateSource != null ? CertificateSource.Id.ToString() : "null",
 				CatalogProduct != null ? CatalogProduct.Id.ToString() : "null",
 				SerialNumber,
-				DocumentLine != null ? DocumentLine.Id.ToString() : "null"
-			);
+				DocumentLine != null ? DocumentLine.Id.ToString() : "null");
 		}
 
 		public string GetErrorId()
 		{
 			return "{0}_{1}_{2}".Format(CertificateSource.Id, CatalogProduct.Id, SerialNumber);
 		}
-
 	}
 }

@@ -18,8 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		public static void CopyToClientDir(string srcFileName, string destFileNameFormatString)
 		{
-			if (MultifileDocument.IsMergedDocument(srcFileName))
-			{
+			if (MultifileDocument.IsMergedDocument(srcFileName)) {
 				var headerFile = MultifileDocument.GetHeaderFileName(srcFileName);
 				var destFile = String.Format(destFileNameFormatString, Path.GetFileNameWithoutExtension(headerFile));
 				DeleteIfExists(destFile);
@@ -41,11 +40,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static void DeleteIfExists(string filePath)
 		{
 			if (File.Exists(filePath))
-				try
-				{
+				try {
 					File.Delete(filePath);
 				}
-				catch { }
+				catch {
+				}
 		}
 	}
 }

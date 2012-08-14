@@ -17,13 +17,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			PeriodIndex = 10;
 			CertificatesIndex = 12;
 			RegistryCostIndex = 16;
-		    VitallyImportantIndex = 19;
-			NdsAmountIndex = 20;			
+			VitallyImportantIndex = 19;
+			NdsAmountIndex = 20;
 		}
 
 		public static bool CheckFileFormat(string file)
 		{
-			return CheckByHeaderPart(file, new [] {"Индивидуальный Предприниматель Шафиев Наиль Энверо", "ООО \"МОРОН\"", "ООО \"Ориола\""}, "-");
+			return CheckByHeaderPart(file, new[] { "Индивидуальный Предприниматель Шафиев Наиль Энверо", "ООО \"МОРОН\"", "ООО \"Ориола\"" }, "-");
 		}
 	}
 }

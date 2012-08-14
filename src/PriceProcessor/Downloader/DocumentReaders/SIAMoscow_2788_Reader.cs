@@ -23,7 +23,7 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public class SIAMoscow_2788_Reader : BaseDocumentReader
 	{
-		sealed class HeaderTable
+		private sealed class HeaderTable
 		{
 			public static string colMsgNum = "MsgNum";
 			public static string colBrecQ = "BrecQ";
@@ -35,7 +35,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			public static string colInvDt = "InvDt";
 		}
 
-		sealed class BodyTable
+		private sealed class BodyTable
 		{
 			public static string colMsgNum = "MsgNum";
 			public static string colItemId = "ItemId";
@@ -54,7 +54,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			public static string colBarCod = "BarCod";
 		}
 
-		sealed class ResultTable
+		private sealed class ResultTable
 		{
 			public static string colDocumentID = "DocID";
 			public static string colDocumentDate = "DocDate";
@@ -86,11 +86,9 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var inputList = new List<string>(InputFiles);
 			var outputList = new List<string>();
-			while (inputList.Count > 0)
-			{
+			while (inputList.Count > 0) {
 				var shortName = Path.GetFileName(inputList[0]);
-				if (shortName.EndsWith(".dbf", StringComparison.OrdinalIgnoreCase) && (shortName.StartsWith("b_", StringComparison.OrdinalIgnoreCase) || shortName.StartsWith("h_", StringComparison.OrdinalIgnoreCase)))
-				{
+				if (shortName.EndsWith(".dbf", StringComparison.OrdinalIgnoreCase) && (shortName.StartsWith("b_", StringComparison.OrdinalIgnoreCase) || shortName.StartsWith("h_", StringComparison.OrdinalIgnoreCase))) {
 					var doubleName = Path.GetFileNameWithoutExtension(shortName).Substring(2);
 					if (shortName.StartsWith("b_", StringComparison.OrdinalIgnoreCase))
 						doubleName = "h_" + doubleName + ".dbf";
@@ -100,8 +98,7 @@ namespace Inforoom.Downloader.DocumentReaders
 					var originalDoubleName = inputList.Find(s => s.Equals(Path.GetDirectoryName(inputList[0]) + Path.DirectorySeparatorChar + doubleName, StringComparison.OrdinalIgnoreCase));
 
 					//Если нашли, то архивируем оба файла, если не нашли и файл создан давно, то архивируем один файл
-					if (originalDoubleName != default(string))
-					{
+					if (originalDoubleName != default(string)) {
 						FileHelper.ClearReadOnly(inputList[0]);
 						FileHelper.ClearReadOnly(originalDoubleName);
 						//todo: filecopy здесь происходит копирование полученных файлов во временную папку для дальнейшего разбора ситуации, из-за предположения, что есть проблема с пропажей документов
@@ -111,20 +108,15 @@ namespace Inforoom.Downloader.DocumentReaders
 						File.Delete(originalDoubleName);
 						inputList.Remove(originalDoubleName);
 					}
-					else
-					{
+					else if (DateTime.Now.Subtract(File.GetLastWriteTime(inputList[0])).TotalMinutes > 6 * Settings.Default.FileDownloadInterval) {
 						//Ждали пару к файлу, но так и не дождались
-						if (DateTime.Now.Subtract(File.GetLastWriteTime(inputList[0])).TotalMinutes > 6 * Settings.Default.FileDownloadInterval)
-						{
-							outputList.Add(ArhiveFiles(new[] { inputList[0] }));
-							File.Delete(inputList[0]);
-						}
+						outputList.Add(ArhiveFiles(new[] { inputList[0] }));
+						File.Delete(inputList[0]);
 					}
 
 					inputList.RemoveAt(0);
 				}
-				else
-				{
+				else {
 					//Если это не документы накладных, то просто добавляем их в результирующий список
 					outputList.Add(inputList[0]);
 					inputList.RemoveAt(0);
@@ -139,13 +131,11 @@ namespace Inforoom.Downloader.DocumentReaders
 			if (InputFiles.Length != 2)
 				throw new Exception("Некорректный список документов : " + String.Join(", ", InputFiles));
 			string headerFile = String.Empty, bodyFile = String.Empty;
-			foreach (string s in InputFiles)
-			{
+			foreach (string s in InputFiles) {
 				if (Path.GetFileName(s).StartsWith("h_", StringComparison.OrdinalIgnoreCase))
 					headerFile = s;
-				else
-					if (Path.GetFileName(s).StartsWith("b_", StringComparison.OrdinalIgnoreCase))
-						bodyFile = s;
+				else if (Path.GetFileName(s).StartsWith("b_", StringComparison.OrdinalIgnoreCase))
+					bodyFile = s;
 			}
 			if (String.IsNullOrEmpty(headerFile))
 				throw new Exception("Не найден файл заголовка документа : " + String.Join(", ", InputFiles));
@@ -155,22 +145,18 @@ namespace Inforoom.Downloader.DocumentReaders
 			var FirmClientCode = Path.GetFileNameWithoutExtension(headerFile).Substring(2);
 
 			DataTable dtHeader, dtBody;
-			try
-			{
+			try {
 				dtHeader = Dbf.Load(headerFile);
 				dtHeader.TableName = "Header";
 			}
-			catch (Exception exDBF)
-			{
+			catch (Exception exDBF) {
 				throw new Exception("Невозможно открыть файл заголовка документа.", exDBF);
 			}
-			try
-			{
+			try {
 				dtBody = Dbf.Load(bodyFile);
 				dtBody.TableName = "Body";
 			}
-			catch (Exception exDBF)
-			{
+			catch (Exception exDBF) {
 				throw new Exception("Невозможно открыть файл содержимого документа.", exDBF);
 			}
 
@@ -178,20 +164,18 @@ namespace Inforoom.Downloader.DocumentReaders
 			DataSet dsStandaloneDocument;
 			dsSource.Tables.Add(dtHeader);
 			dsSource.Tables.Add(dtBody);
-			foreach (DataRow drHeader in dtHeader.Rows)
-			{
+			foreach (DataRow drHeader in dtHeader.Rows) {
 				string DeliveryCode = drHeader[HeaderTable.colObtCod].ToString(),
 					OrderID = drHeader[HeaderTable.colCMN].ToString();
 
-				var documentFileName = Path.Combine(ExtractDir, String.Format("{0}_{1}_{2}_{3}.xml", 
+				var documentFileName = Path.Combine(ExtractDir, String.Format("{0}_{1}_{2}_{3}.xml",
 					FirmClientCode, DeliveryCode, OrderID, drHeader[HeaderTable.colMsgNum]));
 
 				dsStandaloneDocument = dsSource.Clone();
 				var drTemp = dsStandaloneDocument.Tables["Header"].NewRow();
 				drTemp.ItemArray = drHeader.ItemArray;
 				dsStandaloneDocument.Tables["Header"].Rows.Add(drTemp);
-				foreach (var drBody in dtBody.Select("MsgNum = " + drHeader[HeaderTable.colMsgNum]))
-				{
+				foreach (var drBody in dtBody.Select("MsgNum = " + drHeader[HeaderTable.colMsgNum])) {
 					drTemp = dsStandaloneDocument.Tables["Body"].NewRow();
 					drTemp.ItemArray = drBody.ItemArray;
 					dsStandaloneDocument.Tables["Body"].Rows.Add(drTemp);
@@ -205,20 +189,18 @@ namespace Inforoom.Downloader.DocumentReaders
 
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			var list = new List<ulong>();		
+			var list = new List<ulong>();
 
-            var SQL = SqlGetClientAddressId(true, true) +
-                Environment.NewLine + GetFilterSQLFooter();
+			var SQL = SqlGetClientAddressId(true, true) +
+				Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
-			try
-			{
+			try {
 				string[] parts = Path.GetFileNameWithoutExtension(CurrentFileName).Split('_');
 				FirmClientCode = parts[0];
 				DeliveryCode = parts[1];
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
 			}
 
@@ -233,7 +215,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + 
+				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode +
 					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
 
 			return list;
@@ -244,12 +226,10 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var zipFileName = Path.GetDirectoryName(InputFiles[0]) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFiles[0]).Substring(2) + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".zip";
 
-			using (var s = new ZipOutputStream(File.Create(zipFileName)))
-			{
+			using (var s = new ZipOutputStream(File.Create(zipFileName))) {
 				s.SetLevel(5); // 0 - store only to 9 - means best compression
 
-				foreach (var file in InputFiles)
-				{
+				foreach (var file in InputFiles) {
 					var buffer = File.ReadAllBytes(file);
 					var entry = new ZipEntry(Path.GetFileName(file));
 
@@ -279,8 +259,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			var dtResult = GetResultTable();
 
 			var drHeader = dsDocument.Tables["Header"].Rows[0];
-			foreach (DataRow drBody in dsDocument.Tables["Body"].Rows)
-			{
+			foreach (DataRow drBody in dsDocument.Tables["Body"].Rows) {
 				var drResult = dtResult.NewRow();
 				drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
 				drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
@@ -308,8 +287,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				dtResult.Rows.Add(drResult);
 			}
 
-			using (var file = new StreamWriter(File.Create(outFile), Encoding.GetEncoding(866)))
-			{
+			using (var file = new StreamWriter(File.Create(outFile), Encoding.GetEncoding(866))) {
 				Dbf.Save(dtResult, file);
 			}
 
@@ -357,24 +335,22 @@ namespace Inforoom.Downloader.DocumentReaders
 			dsDocument.ReadXml(filename);
 			var providerDocumentId = dsDocument.Tables["Header"].Rows[0][HeaderTable.colInvNum].ToString();
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var doc = Document.Queryable.FirstOrDefault(d => d.FirmCode == log.Supplier.Id
 					&& d.ClientCode == log.ClientCode
 					&& d.ProviderDocumentId == providerDocumentId
 					&& d.DocumentType == log.DocumentType);
 				if (doc != null)
 					throw new Exception(String.Format(
-							"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
-							log.Supplier.Id,
-							log.ClientCode,
-							log.DocumentType,
-							providerDocumentId));
+						"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
+						log.Supplier.Id,
+						log.ClientCode,
+						log.DocumentType,
+						providerDocumentId));
 				doc = new Document(log) {
 					ProviderDocumentId = providerDocumentId
 				};
-				using(var transaction = new TransactionScope(OnDispose.Rollback))
-				{
+				using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 					log.Save();
 					doc.Save();
 					transaction.VoteCommit();

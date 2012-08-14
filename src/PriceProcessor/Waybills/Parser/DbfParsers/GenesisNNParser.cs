@@ -25,7 +25,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.NdsAmount, "NDS_SUM")
 				.Line(l => l.Amount, "SUM")
 				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN");
-
 		}
 
 		public static bool CheckFileFormat(DataTable table)

@@ -7,17 +7,15 @@ namespace Inforoom.PriceProcessor
 {
 	public class Mailer
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof (Mailer));
+		private static readonly ILog _log = LogManager.GetLogger(typeof(Mailer));
 
 		public static void Send(MailMessage message)
 		{
-			try
-			{
+			try {
 				var client = new SmtpClient(Settings.Default.SMTPHost);
 				client.Send(message);
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				_log.Error("Ошибка при отправке письма", e);
 			}
 		}
@@ -30,17 +28,17 @@ namespace Inforoom.PriceProcessor
 		public static void SendToWarningList(string subject, string body)
 		{
 			Send(Settings.Default.FarmSystemEmail,
-			     Settings.Default.SMTPWarningList, 
-				 subject, 
-				 body);
+				Settings.Default.SMTPWarningList,
+				subject,
+				body);
 		}
 
 		public static void SendUserFail(string subject, string body)
 		{
 			Send(Settings.Default.ServiceMail,
-			     Settings.Default.SMTPUserFail,
-			     subject,
-			     body);
+				Settings.Default.SMTPUserFail,
+				subject,
+				body);
 		}
 	}
 }

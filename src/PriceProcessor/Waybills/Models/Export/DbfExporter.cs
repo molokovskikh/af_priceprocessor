@@ -41,8 +41,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("ean13")
 			});
 
-			foreach (var line in document.Lines)
-			{
+			foreach (var line in document.Lines) {
 				var row = table.NewRow();
 				row["postid_af"] = document.FirmCode;
 				row["post_name_af"] = document.Log.Supplier.FullName;
@@ -79,104 +78,99 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		public static void SaveUniversalDbf(Document document, string file)
 		{
 			var table = new DataTable();
-			table.Columns.AddRange(new [] {
+			table.Columns.AddRange(new[] {
 				new DataColumn("postid_af", typeof(int)),
-				new DataColumn("post_name_af") {MaxLength = 255},
+				new DataColumn("post_name_af") { MaxLength = 255 },
 				new DataColumn("apt_af", typeof(int)),
-				new DataColumn("aname_af") {MaxLength = 255},
-				new DataColumn("ttn") {MaxLength = 50},
+				new DataColumn("aname_af") { MaxLength = 255 },
+				new DataColumn("ttn") { MaxLength = 50 },
 				new DataColumn("ttn_date", typeof(DateTime)),
 				new DataColumn("id_artis", typeof(int)),
-				new DataColumn("name_artis") {MaxLength = 255},
-				new DataColumn("przv_artis") {MaxLength = 150},
-				new DataColumn("sp_prd_id") {MaxLength = 20},
-				new DataColumn("name_post") {MaxLength = 255},
-				new DataColumn("przv_post") {MaxLength = 255},
-				new DataColumn("seria") {MaxLength = 50},
+				new DataColumn("name_artis") { MaxLength = 255 },
+				new DataColumn("przv_artis") { MaxLength = 150 },
+				new DataColumn("sp_prd_id") { MaxLength = 20 },
+				new DataColumn("name_post") { MaxLength = 255 },
+				new DataColumn("przv_post") { MaxLength = 255 },
+				new DataColumn("seria") { MaxLength = 50 },
 				new DataColumn("sgodn", typeof(DateTime)),
-				new DataColumn("sert") {MaxLength = 150},
+				new DataColumn("sert") { MaxLength = 150 },
 				new DataColumn("sert_date", typeof(DateTime)),
 				new DataColumn("prcena_bnds", typeof(decimal)) {
 					ExtendedProperties = {
-						{"presision", 12},
-						{"scale", 2},
+						{ "presision", 12 },
+						{ "scale", 2 },
 					}
 				},
 				new DataColumn("gr_cena", typeof(decimal)) {
 					ExtendedProperties = {
-						{"presision", 12},
-						{"scale", 2},
+						{ "presision", 12 },
+						{ "scale", 2 },
 					}
 				},
 				new DataColumn("pcena_bnds", typeof(decimal)) {
 					ExtendedProperties = {
-						{"presision", 12},
-						{"scale", 2},
+						{ "presision", 12 },
+						{ "scale", 2 },
 					}
 				},
 				new DataColumn("nds", typeof(int)),
 				new DataColumn("pcena_nds", typeof(decimal)) {
 					ExtendedProperties = {
-						{"presision", 12},
-						{"scale", 2},
+						{ "presision", 12 },
+						{ "scale", 2 },
 					}
 				},
 				new DataColumn("kol_tov", typeof(decimal)) {
 					ExtendedProperties = {
-						{"presision", 10},
-						{"scale", 2},
+						{ "presision", 10 },
+						{ "scale", 2 },
 					}
 				},
 				//дополнительные поля
 				new DataColumn("sp_markup", typeof(decimal)),
 				new DataColumn("p_nds_amnt", typeof(decimal)),
 				new DataColumn("p_amnt", typeof(decimal)),
-				new DataColumn("sert_auth") {MaxLength = 255},
+				new DataColumn("sert_auth") { MaxLength = 255 },
 				new DataColumn("reg_date", typeof(DateTime)),
 				new DataColumn("vt", typeof(bool)),
-				new DataColumn("unit", typeof(string)) {MaxLength = 20},
+				new DataColumn("unit", typeof(string)) { MaxLength = 20 },
 				new DataColumn("prd_in_mn", typeof(int)),
 				new DataColumn("excise_tx", typeof(decimal)),
-				new DataColumn("bll_ntr_id", typeof(string)) {MaxLength = 30},
-				new DataColumn("bar_code") {MaxLength = 13},
+				new DataColumn("bll_ntr_id", typeof(string)) { MaxLength = 30 },
+				new DataColumn("bar_code") { MaxLength = 13 },
 				new DataColumn("man_date", typeof(DateTime)),
-
-				new DataColumn("i_num") {MaxLength = 20},
+				new DataColumn("i_num") { MaxLength = 20 },
 				new DataColumn("i_date", typeof(DateTime)),
-				new DataColumn("i_sel_name") {MaxLength = 255},
-				new DataColumn("i_sel_adr") {MaxLength = 255},
-				new DataColumn("i_sel_inn") {MaxLength = 20},
-				new DataColumn("i_sel_kpp") {MaxLength = 20},
-				new DataColumn("i_ship_adr") {MaxLength = 255},
-				new DataColumn("i_res_name") {MaxLength = 255},
+				new DataColumn("i_sel_name") { MaxLength = 255 },
+				new DataColumn("i_sel_adr") { MaxLength = 255 },
+				new DataColumn("i_sel_inn") { MaxLength = 20 },
+				new DataColumn("i_sel_kpp") { MaxLength = 20 },
+				new DataColumn("i_ship_adr") { MaxLength = 255 },
+				new DataColumn("i_res_name") { MaxLength = 255 },
 				new DataColumn("i_res_id", typeof(int)),
-				new DataColumn("i_res_adr") {MaxLength = 255},
-				new DataColumn("i_doc_info") {MaxLength = 255},
+				new DataColumn("i_res_adr") { MaxLength = 255 },
+				new DataColumn("i_doc_info") { MaxLength = 255 },
 				new DataColumn("i_bu_id", typeof(int)),
-				new DataColumn("i_bu_name") {MaxLength = 255},
-				new DataColumn("i_bu_adr") {MaxLength = 255},
-				new DataColumn("i_bu_inn") {MaxLength = 20},
-				new DataColumn("i_bu_kpp") {MaxLength = 20},
+				new DataColumn("i_bu_name") { MaxLength = 255 },
+				new DataColumn("i_bu_adr") { MaxLength = 255 },
+				new DataColumn("i_bu_inn") { MaxLength = 20 },
+				new DataColumn("i_bu_kpp") { MaxLength = 20 },
 				new DataColumn("amnt_e_0", typeof(decimal)),
-
 				new DataColumn("amnt_w_10", typeof(decimal)),
 				new DataColumn("amnt_e_10", typeof(decimal)),
 				new DataColumn("amnt_n_10", typeof(decimal)),
-
 				new DataColumn("amnt_w_18", typeof(decimal)),
 				new DataColumn("amnt_e_18", typeof(decimal)),
 				new DataColumn("amnt_n_18", typeof(decimal)),
-
 				new DataColumn("amnt_n_all", typeof(decimal)),
 				new DataColumn("amnt", typeof(decimal)),
 				new DataColumn("i_del_d", typeof(int)),
 				new DataColumn("i_del_bd", typeof(int)),
-				new DataColumn("com_fee_id", typeof(string)) {MaxLength = 255},
+				new DataColumn("com_fee_id", typeof(string)) { MaxLength = 255 },
 				new DataColumn("com_fee", typeof(decimal)),
 			});
 
-			foreach (var line in document.Lines)
-			{
+			foreach (var line in document.Lines) {
 				var row = table.NewRow();
 				row.SetField("postid_af", document.FirmCode);
 				row.SetField("post_name_af", document.Log.Supplier.FullName);
@@ -272,7 +266,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				table.Rows.Add(row);
 			}
 
-			using(var writer = new StreamWriter(file, false, Encoding.GetEncoding(866)))
+			using (var writer = new StreamWriter(file, false, Encoding.GetEncoding(866)))
 				Dbf2.Save(table, writer);
 		}
 
@@ -311,8 +305,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("Ean13")
 			});
 
-			foreach (var line in document.Lines)
-			{
+			foreach (var line in document.Lines) {
 				var row = table.NewRow();
 				row.SetField("ID", document.Log.Id);
 				row.SetField("Date", document.Log.LogTime);

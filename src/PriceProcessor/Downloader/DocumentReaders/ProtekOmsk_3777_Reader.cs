@@ -13,17 +13,15 @@ namespace Inforoom.Downloader.DocumentReaders
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var list = new List<ulong>();
-			
+
 			var sql = SqlGetClientAddressId(false, true) +
 				Environment.NewLine + GetFilterSQLFooter();
 
 			string firmClientCode;
-			try
-			{
+			try {
 				firmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
 			}
-			catch(Exception ex)
-			{
+			catch (Exception ex) {
 				throw new Exception("Не получилось сформировать SupplierDeliveryId(FirmClientCode2) из имени накладной.", ex);
 			}
 

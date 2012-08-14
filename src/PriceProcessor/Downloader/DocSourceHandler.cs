@@ -32,8 +32,7 @@ namespace Inforoom.Downloader
 		public DocSourceHandler(string imapUser, string imapPassword)
 			: this()
 		{
-			if (!String.IsNullOrEmpty(imapUser) && !String.IsNullOrEmpty(imapPassword))
-			{
+			if (!String.IsNullOrEmpty(imapUser) && !String.IsNullOrEmpty(imapPassword)) {
 				_imapUser = imapUser;
 				_imapPassword = imapPassword;
 			}
@@ -75,19 +74,18 @@ namespace Inforoom.Downloader
 
 			// Все хорошо, если кол-во вложений больше 0 и распознан только один адрес как корректный
 			// Если не сопоставили с клиентом)
-			if (context.Users.Count == 0)
-			{
+			if (context.Users.Count == 0) {
 				if (context.Recipients.All(r => r.Status == RecipientStatus.Duplicate))
-					throw new EmailDoubleMessageException("Письмо было отброшено как дубликат. "+context.SupplierEmails+" "+context.Subject);
-				else 
+					throw new EmailDoubleMessageException("Письмо было отброшено как дубликат. " + context.SupplierEmails + " " + context.Subject);
+				else
 					throw new MiniMailOnEmptyRecipientsException(
-							"Не найден пользователь.", 
-							context.GetCauseList());
+						"Не найден пользователь.",
+						context.GetCauseList());
 			}
 			else if (context.DiscardedRecipients.Count > 0) {
 				SendErrorLetterToSupplier(
 					new MiniMailOnEmptyRecipientsException(
-						"Не найден пользователь.", 
+						"Не найден пользователь.",
 						context.GetCauseList()),
 					m);
 			}
@@ -96,16 +94,13 @@ namespace Inforoom.Downloader
 				throw new MiniMailOnMaxMailSizeException(
 					"Размер письма больше максимально допустимого значения ({0} Мб).".Format(Settings.Default.MaxMiniMailSize));
 
-			if (m.Attachments.Length > 0)
-			{ 
+			if (m.Attachments.Length > 0) {
 				var nonAllowedExtension = false;
 				var errorExtension = String.Empty;
 				foreach (var attachment in m.GetValidAttachements()) {
-
 					var fileName = attachment.GetFilename();
 					var extension = Path.GetExtension(fileName);
-					if (!context.IsValidExtension(extension))
-					{
+					if (!context.IsValidExtension(extension)) {
 						nonAllowedExtension = true;
 						errorExtension = extension;
 						break;
@@ -130,11 +125,11 @@ namespace Inforoom.Downloader
 				if (e is MiniMailException) {
 					SendErrorLetterToSupplier(e, m);
 				}
-				//обрабатываем случай сообщений-дубликатов - логирование как Warning
 				else if (e is EmailDoubleMessageException)
+					//обрабатываем случай сообщений-дубликатов - логирование как Warning
 					_logger.WarnFormat("Произошла отправка дубликата письма: {0}", e);
-				//отправляем письмо в tech для разбора
 				else
+					//отправляем письмо в tech для разбора
 					SendUnrecLetter(m, from, e);
 			}
 			catch (Exception exMatch) {
@@ -152,7 +147,7 @@ namespace Inforoom.Downloader
 			try {
 				var attachments = m.Attachments.Where(a => !String.IsNullOrEmpty(a.GetFilename())).Aggregate("", (s, a) => s + String.Format("\"{0}\"\r\n", a.GetFilename()));
 				var ms = new MemoryStream(m.ToByteData());
-				FailMailSend(m.MainEntity.Subject, fromList.ToAddressListString(), 
+				FailMailSend(m.MainEntity.Subject, fromList.ToAddressListString(),
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, e.Message);
 			}
 			catch (Exception exMatch) {
@@ -185,7 +180,7 @@ namespace Inforoom.Downloader
 
 			var attachmentLogs = new List<AttachmentSendLog>();
 			foreach (var attachement in mail.Attachments) {
-				attachmentLogs.AddRange(_context.Users.Select(i => new AttachmentSendLog{Attachment = attachement, User = i.Key}));
+				attachmentLogs.AddRange(_context.Users.Select(i => new AttachmentSendLog { Attachment = attachement, User = i.Key }));
 			}
 
 			Ping();
@@ -202,8 +197,6 @@ namespace Inforoom.Downloader
 
 				transaction.VoteCommit();
 			}
-
 		}
-
 	}
 }

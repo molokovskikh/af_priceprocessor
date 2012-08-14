@@ -9,12 +9,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}

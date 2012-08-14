@@ -11,7 +11,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		public NativeDbfPriceParser(string file, MySqlConnection conn, PriceFormalizationInfo data)
 			: base(file, conn, data)
-		{}
+		{
+		}
 
 		public override void Open()
 		{

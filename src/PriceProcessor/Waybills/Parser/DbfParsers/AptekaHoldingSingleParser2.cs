@@ -44,15 +44,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Period = Convert.IsDBNull(r["DATEB"]) ? null : Convert.ToDateTime(r["DATEB"]).ToShortDateString();
 
 				if (!String.IsNullOrEmpty(registryCostColumn))
-					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : (decimal?) Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
+					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null : (decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
 					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIAL"]) ? null : r["SERIAL"].ToString();
-				line.Nds  = Convert.ToUInt32(r["NDS"], CultureInfo.InvariantCulture);
+				line.Nds = Convert.ToUInt32(r["NDS"], CultureInfo.InvariantCulture);
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
-					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?) (Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
+					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
 				return line;
 			}).ToList();
 			return document;
@@ -61,11 +61,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NUM_DOC") &&
-				   data.Columns.Contains("DATA_DOC") &&
-				   data.Columns.Contains("ENTERP") &&
-				   data.Columns.Contains("PRICEENT") &&
-				   data.Columns.Contains("PRICEWONDS") &&
-				   data.Columns.Contains("QUANT");
+				data.Columns.Contains("DATA_DOC") &&
+				data.Columns.Contains("ENTERP") &&
+				data.Columns.Contains("PRICEENT") &&
+				data.Columns.Contains("PRICEWONDS") &&
+				data.Columns.Contains("QUANT");
 		}
 	}
 }

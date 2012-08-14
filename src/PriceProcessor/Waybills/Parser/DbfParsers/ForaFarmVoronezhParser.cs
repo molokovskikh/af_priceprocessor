@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "QUANTITY")
 				.Line(l => l.SupplierCost, "PRICE")
 				.Line(l => l.RegistryCost, "PRICEGRESS")
-				.Line(l => l.Period, "DATELIFE") //
+				.Line(l => l.Period, "DATELIFE")
 				.Line(l => l.SerialNumber, "SERIES")
 				.Line(l => l.Producer, "FIRMNAME")
 				.Line(l => l.Certificates, "NUMCERT")
@@ -30,12 +30,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable table)
 		{
 			return table.Columns.Contains("GOODSNAME")
-			       && table.Columns.Contains("DATELIFE")
-			       && table.Columns.Contains("FIRMNAME")
-			       //&& table.Columns.Contains("CODP")
-			       && table.Columns.Contains("NUMCERT");
-			//&& table.Columns.Contains("GNVLS")
-			//&& table.Columns.Contains("SER");
+				&& table.Columns.Contains("DATELIFE")
+				&& table.Columns.Contains("FIRMNAME")
+				&& table.Columns.Contains("NUMCERT");
 		}
 	}
 }

@@ -16,11 +16,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NOM_SHET") &&
-				   data.Columns.Contains("DATA_SHET") &&
-				   data.Columns.Contains("CENA_ZAV") &&
-				   data.Columns.Contains("CENA_OTP") &&
-				   data.Columns.Contains("NOM_SERT") &&
-				   data.Columns.Contains("DATA_SERT");
+				data.Columns.Contains("DATA_SHET") &&
+				data.Columns.Contains("CENA_ZAV") &&
+				data.Columns.Contains("CENA_OTP") &&
+				data.Columns.Contains("NOM_SERT") &&
+				data.Columns.Contains("DATA_SERT");
 		}
 
 		public override DbfParser GetParser()
@@ -28,29 +28,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(h => h.DocumentDate, "DATA_SHET")
 				.DocumentHeader(h => h.ProviderDocumentId, "NOM_SHET")
-
-				.DocumentInvoice(i=> i.InvoiceNumber, "NOM_SHET")
-				.DocumentInvoice(i=> i.InvoiceDate, "DATA_SHET")
-				.DocumentInvoice(i=> i.BuyerName, "APTEKA")
-
+				.DocumentInvoice(i => i.InvoiceNumber, "NOM_SHET")
+				.DocumentInvoice(i => i.InvoiceDate, "DATA_SHET")
+				.DocumentInvoice(i => i.BuyerName, "APTEKA")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "NAIM")
-
 				.Line(l => l.Producer, "ZAVOD")
-
 				.Line(l => l.ProducerCost, "CENA_ZAV")
 				.Line(l => l.SupplierCost, "CENA_OTP")
-
 				.Line(l => l.NdsAmount, "SUMMA_NDS")
-
 				.Line(l => l.Quantity, "KOL")
-
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.Certificates, "NOM_SERT")
 				.Line(l => l.CertificatesDate, "DATA_SERT")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.BillOfEntryNumber, "GTD")
-
 				.Line(l => l.Nds, "NDS");
 		}
 

@@ -4,7 +4,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class BagautdinovKazanParser: BaseDbfParser
+	public class BagautdinovKazanParser : BaseDbfParser
 	{
 		public override Document Parse(string file, Document document)
 		{

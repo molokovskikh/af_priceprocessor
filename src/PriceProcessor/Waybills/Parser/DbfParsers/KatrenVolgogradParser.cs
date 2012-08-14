@@ -10,8 +10,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class KatrenVolgogradParser : BaseDbfParser
 	{
-
-			/*
+		/*
 NDOC type="C" len="20" Номер накладной+
 DATEDOC type="D" len="8" Дата накладной+
 CODEPST type="C" len="12" Код препарата из справочника поставщика+
@@ -55,12 +54,12 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 "DESTID" type="C" len="14" -
 			 
 			 */
+
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NDOC")
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
-
 				.DocumentInvoice(i => i.Amount, "SUMPAY")
 				.DocumentInvoice(i => i.InvoiceDate, "DATEMADE")
 				.DocumentInvoice(i => i.Amount10, "SUMNDS10")
@@ -68,15 +67,12 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 				.DocumentInvoice(i => i.AmountWithoutNDS10, "SUM10")
 				.DocumentInvoice(i => i.AmountWithoutNDS18, "SUM20")
 				.DocumentInvoice(i => i.AmountWithoutNDS0, "SUM0")
-
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE1")
-
 				.Line(l => l.SupplierCost, "PRICE2")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
 				.Line(l => l.SupplierPriceMarkup, "PRCOPT")
-
 				.Line(l => l.Quantity, "QNT")
 				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.Period, "GDATE")
@@ -96,9 +92,9 @@ SUMS0 type="N" len="12" prec="2"  Сумма по строке НДС +
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("PRCOPT")
-					&& data.Columns.Contains("GNVLS")
-					&& data.Columns.Contains("SUMITEM")
-					&& data.Columns.Contains("SUMS0");
+				&& data.Columns.Contains("GNVLS")
+				&& data.Columns.Contains("SUMITEM")
+				&& data.Columns.Contains("SUMS0");
 		}
 	}
 }

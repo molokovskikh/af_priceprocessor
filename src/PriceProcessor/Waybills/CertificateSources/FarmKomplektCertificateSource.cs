@@ -8,14 +8,14 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public class FarmKomplektCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
-		private ILog _logger = LogManager.GetLogger(typeof (FarmKomplektCertificateSource));
+		private ILog _logger = LogManager.GetLogger(typeof(FarmKomplektCertificateSource));
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			if (!Directory.Exists(certificatesPath)) {
-				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
+				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
 					certificatesPath,
 					task);
 				return;
@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var tempFile = Path.GetTempFileName();
 				File.Copy(originFileName, tempFile, true);
 				var certificateFile = new CertificateFile(tempFile, certificateFilename, originFileName);
-				if (String.IsNullOrWhiteSpace(certificateFile.Extension) 
+				if (String.IsNullOrWhiteSpace(certificateFile.Extension)
 					|| (!certificateFile.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) && !certificateFile.Extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)))
 					certificateFile.Extension = ".tif";
 				list.Add(certificateFile);

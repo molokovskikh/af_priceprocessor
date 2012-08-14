@@ -30,13 +30,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return 
-				data.Columns[0].ColumnName=="N3"
-				&& data.Columns.Contains("N3")
-				&& data.Columns.Contains("N2")
-				&& data.Columns.Contains("N20")
-				&& data.Columns.Contains("N21")
-				&& data.Columns.Contains("N7");
+			return
+				data.Columns[0].ColumnName == "N3"
+					&& data.Columns.Contains("N3")
+					&& data.Columns.Contains("N2")
+					&& data.Columns.Contains("N20")
+					&& data.Columns.Contains("N21")
+					&& data.Columns.Contains("N7");
 		}
 	}
 }

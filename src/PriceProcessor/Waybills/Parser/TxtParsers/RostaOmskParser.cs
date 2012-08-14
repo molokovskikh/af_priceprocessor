@@ -8,13 +8,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 	{
 		public Document Parse(string file, Document document)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var header = reader.ReadLine();
 				var txtParser = new TxtParser(header, '\t');
 
-				while (txtParser.ReadLine(reader))
-				{
+				while (txtParser.ReadLine(reader)) {
 					document.ProviderDocumentId = txtParser.ProviderDocumentId;
 					document.DocumentDate = txtParser.DocumentDate;
 
@@ -40,8 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headers = reader.ReadLine().Split('\t');
 				if (headers.Length < 4)
 					return false;

@@ -7,16 +7,14 @@ using Inforoom.PriceProcessor.Waybills.Models;
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	// Парсер для Тредифарм Чебоксары (требование 3647). Формат похож на SiaKazanParser.
-	public class TrediFarmCheboksarySpecialParser: IDocumentParser 
+	public class TrediFarmCheboksarySpecialParser : IDocumentParser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -50,13 +48,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("KOD")
-			       && data.Columns.Contains("NAME")
-			       && data.Columns.Contains("PROIZV")
-			       && data.Columns.Contains("KOLVO")
-			       && data.Columns.Contains("CENAPROIZ")
-			       && data.Columns.Contains("SERII")
-			       && data.Columns.Contains("REESTR")
-			       && (data.Columns.Contains("SROK_GODN") || data.Columns.Contains("DATAEND"));
+				&& data.Columns.Contains("NAME")
+				&& data.Columns.Contains("PROIZV")
+				&& data.Columns.Contains("KOLVO")
+				&& data.Columns.Contains("CENAPROIZ")
+				&& data.Columns.Contains("SERII")
+				&& data.Columns.Contains("REESTR")
+				&& (data.Columns.Contains("SROK_GODN") || data.Columns.Contains("DATAEND"));
 		}
 	}
 }

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
-	class ProtekDocumentHeader
+	internal class ProtekDocumentHeader
 	{
 		public string[] DocumentDateHeaders = { "Дата", "DATE0", "Дата документа" };
 		public string[] ProviderDocumentIdHeaders = { "CD_A", "Номер документа", "Номер" };
@@ -46,8 +46,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			decimal value;
 			if (index >= 0 &&
-			    !String.IsNullOrEmpty(body[index]) &&
-			    decimal.TryParse(body[index], NumberStyles.Number, CultureInfo.CurrentCulture, out value))
+				!String.IsNullOrEmpty(body[index]) &&
+				decimal.TryParse(body[index], NumberStyles.Number, CultureInfo.CurrentCulture, out value))
 				return value;
 			if (index >= 0 &&
 				!String.IsNullOrEmpty(body[index]) &&
@@ -73,8 +73,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			int value;
 			if (index >= 0 &&
-			    !String.IsNullOrEmpty(body[index]) &&
-			    int.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+				!String.IsNullOrEmpty(body[index]) &&
+				int.TryParse(body[index], NumberStyles.Any, CultureInfo.InvariantCulture, out value))
 				return (value != 0);
 			return null;
 		}
@@ -83,16 +83,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			DateTime value;
 			if (index >= 0 &&
-			    !String.IsNullOrEmpty(body[index]) &&
-			    DateTime.TryParse(body[index], out value))
+				!String.IsNullOrEmpty(body[index]) &&
+				DateTime.TryParse(body[index], out value))
 				return value;
 			return null;
 		}
 
 		private string GetString(int index, string[] body)
 		{
-            if (index >= 0 && !String.IsNullOrEmpty(body[index]))
-                return body[index];
+			if (index >= 0 && !String.IsNullOrEmpty(body[index]))
+				return body[index];
 			return null;
 		}
 
@@ -221,14 +221,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		private int GetIndexOfAnyElement(IList<string> list, IEnumerable<string> elements)
 		{
-			foreach (var element in elements)
-			{
-				if (list.Contains(element))
-				{
+			foreach (var element in elements) {
+				if (list.Contains(element)) {
 					//return list.IndexOf(element) < 2 ? 0 : (list.IndexOf(element) + 1) / 3 - 1;
 					if (UseSequencedIndexing)
 						return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element);
-					return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element)/3;
+					return list.IndexOf(element) == 0 ? 0 : list.IndexOf(element) / 3;
 				}
 			}
 			return -1;

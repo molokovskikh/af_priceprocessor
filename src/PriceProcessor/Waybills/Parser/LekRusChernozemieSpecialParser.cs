@@ -12,12 +12,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -28,7 +26,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NUM_DOC")
 				.DocumentHeader(d => d.DocumentDate, "DATE_DOC")
-
 				.DocumentInvoice(i => i.InvoiceNumber, "NUM_SF")
 				.DocumentInvoice(i => i.InvoiceDate, "DATE_SF")
 				.DocumentInvoice(i => i.RecipientAddress, "ADRESS_G")
@@ -43,7 +40,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMBNDS")
 				.DocumentInvoice(i => i.Amount, "SUMALL")
 				.DocumentInvoice(i => i.NDSAmount, "SUMNDS")
-
 				.Line(l => l.Code, "CODE_TOVAR")
 				.Line(l => l.Product, "NAME_TOVAR")
 				.Line(l => l.Producer, "PROIZ")

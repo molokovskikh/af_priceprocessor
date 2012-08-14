@@ -26,12 +26,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				throw new Exception(String.Format("Не найдена конфигурация для получения сертификатов от поставщика № {0}", supplierId));
 
 			new WaybillProtekHandler().WithService(config.Url, s => {
-				foreach (var id in task.DocumentLine.ProtekDocIds)
-				{
+				foreach (var id in task.DocumentLine.ProtekDocIds) {
 					var response = s.getSertImages(new getSertImagesRequest(config.ClientId, config.InstanceId, id.DocId));
 					var index = 1;
-					foreach(var sertImage in response.@return.sertImage)
-					{
+					foreach (var sertImage in response.@return.sertImage) {
 						var tempFile = Path.GetTempFileName();
 						File.WriteAllBytes(tempFile, sertImage.image);
 						files.Add(new CertificateFile(tempFile, id.DocId + "-" + index++) {
@@ -52,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				.Where(
 					c => c.CertificateSource.SourceClassName == name
 						&& c.SerialNumber == serialNumber
-							&& c.CatalogProduct.Id == catalogId)
+						&& c.CatalogProduct.Id == catalogId)
 				.ToList();
 		}
 	}

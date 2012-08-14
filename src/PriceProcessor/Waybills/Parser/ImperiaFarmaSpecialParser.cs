@@ -8,16 +8,14 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
-	public class ImperiaFarmaSpecialParser : IDocumentParser 
+	public class ImperiaFarmaSpecialParser : IDocumentParser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -45,7 +43,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.VitallyImportant, "ISLIFE")
-				.ToDocument(document, data);			
+				.ToDocument(document, data);
 			return document;
 		}
 

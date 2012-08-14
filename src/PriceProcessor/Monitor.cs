@@ -13,6 +13,7 @@ using System.Text;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
 using RemotePriceProcessor;
+
 #if (!DEBUG)
 using Inforoom.Downloader;
 #endif
@@ -35,7 +36,7 @@ namespace Inforoom.PriceProcessor
 		private const string _strProtocol = @"net.tcp://";
 
 		private static Monitor _instance;
-		
+
 		private Monitor()
 		{
 			_handlers = new List<AbstractHandler> {
@@ -57,7 +58,7 @@ namespace Inforoom.PriceProcessor
 #endif
 			};
 
-			_monitor = new Thread(MonitorWork) {Name = "MonitorThread"};
+			_monitor = new Thread(MonitorWork) { Name = "MonitorThread" };
 		}
 
 		public static Monitor GetInstance()
@@ -67,8 +68,7 @@ namespace Inforoom.PriceProcessor
 
 		public AbstractHandler GetHandler(Type type)
 		{
-			foreach (var h in _handlers)
-			{
+			foreach (var h in _handlers) {
 				if (h.GetType() == type)
 					return h;
 			}
@@ -78,25 +78,21 @@ namespace Inforoom.PriceProcessor
 		//запускаем монитор с обработчиками
 		public void Start()
 		{
-			try
-			{
+			try {
 				StartServices();
 
 				foreach (var handler in _handlers)
-					try
-					{
+					try {
 						handler.StartWork();
 						_logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
 					}
-					catch (Exception exHan)
-					{
+					catch (Exception exHan) {
 						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
 					}
 				_monitor.Start();
 				_logger.Info("PriceProcessor запущен.");
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				_logger.Fatal("Ошибка при старте монитора", ex);
 			}
 		}
@@ -109,15 +105,15 @@ namespace Inforoom.PriceProcessor
 				.Append(Settings.Default.WCFServicePort).Append("/")
 				.Append(Settings.Default.WCFServiceName);
 
-			_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof (IRemotePriceProcessor),
-				typeof (WCFPriceProcessorService),
+			_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof(IRemotePriceProcessor),
+				typeof(WCFPriceProcessorService),
 				sbUrlService.ToString(), Settings.Default.WCFQueueName);
 
-			_waybillServiceHost = new ServiceHost(typeof (WaybillService));
+			_waybillServiceHost = new ServiceHost(typeof(WaybillService));
 
 			var binding = new NetTcpBinding();
 			binding.Security.Mode = SecurityMode.None;
-			_waybillServiceHost.AddServiceEndpoint(typeof (IWaybillService),
+			_waybillServiceHost.AddServiceEndpoint(typeof(IWaybillService),
 				binding,
 				String.Format("net.tcp://{0}:901/WaybillService", Dns.GetHostName()));
 			_waybillServiceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
@@ -127,27 +123,23 @@ namespace Inforoom.PriceProcessor
 		//Остановливаем монитор
 		public void Stop()
 		{
-			try
-			{
+			try {
 				Stopped = true;
 				Thread.Sleep(3000);
 				_monitor.Abort();
 				foreach (var handler in _handlers)
-					try
-					{
+					try {
 						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
 						handler.StopWork();
 						_logger.InfoFormat("Обработчик {0} остановлен.", handler.GetType().Name);
 					}
-					catch (Exception exHan)
-					{
+					catch (Exception exHan) {
 						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
 					}
 				PriceProcessorWcfHelper.StopService(_priceProcessorHost);
 				PriceProcessorWcfHelper.StopService(_waybillServiceHost);
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				_logger.Fatal("Ошибка при останове монитора", ex);
 			}
 			_logger.Info("PriceProcessor остановлен.");
@@ -155,20 +147,16 @@ namespace Inforoom.PriceProcessor
 
 		private void MonitorWork()
 		{
-			while (!Stopped)
-			{
-				try
-				{
-					foreach (var handler in _handlers)
-					{
+			while (!Stopped) {
+				try {
+					foreach (var handler in _handlers) {
 						if (!handler.Worked)
 							handler.RestartWork();
 					}
 
 					Thread.Sleep(500);
 				}
-				catch (Exception e)
-				{
+				catch (Exception e) {
 					_logger.Error("Ошибка в нитке", e);
 				}
 			}

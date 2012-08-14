@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 	public class PharmelKazanParser : BaseIndexingParser
 	{
 		protected override void SetIndexes()
-		{			
+		{
 			ProviderDocumentIdIndex = 0;
 			DocumentDateIndex = 1;
 
@@ -32,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		}
 
 		public static bool CheckFileFormat(string file)
-		{			
+		{
 			return CheckByHeaderPart(file, new[] { "Pharmel" });
 		}
 	}

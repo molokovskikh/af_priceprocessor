@@ -8,7 +8,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public class AptekaHoldingVoronezhCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
-		private ILog _logger = LogManager.GetLogger(typeof (AptekaHoldingVoronezhCertificateSource));
+		private ILog _logger = LogManager.GetLogger(typeof(AptekaHoldingVoronezhCertificateSource));
 
 		public bool CertificateExists(DocumentLine documentLine)
 		{
@@ -24,9 +24,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
-			if (!Directory.Exists(certificatesPath))
-			{
-				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует", 
+			if (!Directory.Exists(certificatesPath)) {
+				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
 					certificatesPath,
 					task);
 				return;
@@ -52,7 +51,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			foreach (var file in files) {
 				var tempFile = Path.GetTempFileName();
 				File.Copy(file, tempFile, true);
-				list.Add(new CertificateFile(tempFile, Path.GetFileName(file), file) { Extension = ".tif"});
+				list.Add(new CertificateFile(tempFile, Path.GetFileName(file), file) { Extension = ".tif" });
 			}
 		}
 	}
