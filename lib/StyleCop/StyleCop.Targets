@@ -5,6 +5,7 @@
   <PropertyGroup>
     <BuildDependsOn>$(BuildDependsOn);StyleCop</BuildDependsOn>
     <RebuildDependsOn>StyleCopForceFullAnalysis;$(RebuildDependsOn)</RebuildDependsOn>
+    <SourceAnalysisOverrideSettingsFile>StyleCop 4.7/Settings.StyleCop</SourceAnalysisOverrideSettingsFile>
   </PropertyGroup>
 
   <!-- Define StyleCopForceFullAnalysis property. -->
