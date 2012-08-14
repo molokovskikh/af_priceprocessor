@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			WriteTime = DateTime.Now;
 			Address = address;
-			ClientCode = address.ClientId;
+			ClientCode = address.Client.Id;
 			Price = price;
 		}
 

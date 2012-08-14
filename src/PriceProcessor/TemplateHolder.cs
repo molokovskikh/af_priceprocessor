@@ -50,7 +50,8 @@ namespace Inforoom.PriceProcessor
 
 		public static DefaultValues Values
 		{
-			get { 
+			get
+			{
 				if (NeedUpdate())
 					UpdateValues();
 				return _values;

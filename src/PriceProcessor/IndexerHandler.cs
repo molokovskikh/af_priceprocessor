@@ -162,8 +162,7 @@ namespace Inforoom.PriceProcessor
             {
                 Error = ex.ToString();
                 State = TaskState.Error;
-                _logger.ErrorFormat("Ошибка при сопоставлении синонимов. {0}", ex.ToString());
-                Mailer.SendFromServiceToService("Ошибка при сопоставлении синонимов", ex.ToString());
+                _logger.Error("Ошибка при сопоставлении синонимов. {0}", ex);
             }
         }
 

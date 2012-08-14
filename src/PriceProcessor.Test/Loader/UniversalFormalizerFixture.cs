@@ -2,14 +2,17 @@
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Common.Tools.Test;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
 using Test.Support.log4net;
+using log4net.Core;
 
 namespace PriceProcessor.Test.Loader
 {
@@ -314,12 +317,55 @@ namespace PriceProcessor.Test.Loader
 			}
 		}
 
+		[Test]
+		public void Alert_test()
+		{
+			var filter = new EventFilter<Alerts>(Level.Debug);
+
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>PRICE2</Id>
+			<Value>0</Value>
+		</Cost>
+	</Item>
+	<Item>
+		<Code>109055</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>5</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>Тестовая</Id>
+			<Value>-1</Value>
+		</Cost>
+	</Item>
+</Price>";
+			Formalize();
+
+			Assert.That(filter.Events.Count, Is.EqualTo(2));
+		}
+
 		private void Formalize()
 		{
 			file = Path.GetTempFileName();
 			File.WriteAllText(file, xml);
 			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
 				priceItem.Id);
+			formalizer.Downloaded = true;
 			formalizer.Formalize();
 		}
 

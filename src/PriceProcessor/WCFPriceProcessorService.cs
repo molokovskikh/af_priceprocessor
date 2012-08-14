@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor
 {
 	public class WCFPriceProcessorService : IRemotePriceProcessor, IRemotePriceProcessorOneWay
 	{
-		private ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
+		private static ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
 
 		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
 
@@ -440,7 +440,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 				catch (Exception ex)
 				{
-					Mailer.SendFromServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
+					log.Error("Ошибка логирования при перепосылке прайс-листа", ex);
 					return 0;
 				}
 			}

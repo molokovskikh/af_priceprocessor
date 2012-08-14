@@ -174,14 +174,13 @@ namespace Inforoom.PriceProcessor
 
 		protected void LoggingToService(string addition)
 		{
-			_logger.ErrorFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
-			if (knowErrors.Contains(addition))
-				return;
-
-			knowErrors.Add(addition);
-			Mailer.SendFromServiceToService(
-				String.Format("Ошибка в обработчике {0}", GetType().Name),
-				addition);
+			if (knowErrors.Contains(addition)) {
+				_logger.WarnFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
+			}
+			else {
+				_logger.ErrorFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
+				knowErrors.Add(addition);
+			}
 		}
 	}
 }

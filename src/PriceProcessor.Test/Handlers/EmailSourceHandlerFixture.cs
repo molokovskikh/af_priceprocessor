@@ -4,23 +4,33 @@ using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
+using LumiSoft.Net.Mime;
 using LumiSoft.Net.SMTP.Client;
 using NUnit.Framework;
 using System.IO;
 using PriceProcessor.Test.TestHelpers;
+using PriceProcessor.Test.Waybills;
 using Test.Support;
+using FileHelper = Common.Tools.FileHelper;
 using PriceSourceType = Test.Support.PriceSourceType;
 
 namespace PriceProcessor.Test.Handlers
 {
 	[TestFixture]
-	public class EmailSourceHandlerTest : BaseHandlerFixture<EMAILSourceHandler>
+	public class EmailSourceHandlerFixture : BaseHandlerFixture<EMAILSourceHandler>
 	{
 		private static string _dataDir = @"..\..\Data\";
+		private TestClient client;
+		private TestAddress address;
 
 		[SetUp]
 		public void Setup()
 		{
+			client = TestClient.Create(2, 2);
+			address = client.Addresses[0];
+
 			source.SourceType = PriceSourceType.Email;
 			source.Save();
 
@@ -118,7 +128,7 @@ namespace PriceProcessor.Test.Handlers
 			SmtpClientEx.QuickSendSmartHost("box.analit.net",
 				25,
 				Environment.MachineName,
-				"service@analit.net", 
+				"service@analit.net",
 				new[] {"KvasovTest@analit.net"},
 				File.OpenRead(email));
 		}

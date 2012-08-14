@@ -42,13 +42,5 @@ namespace Inforoom.PriceProcessor
 			     subject,
 			     body);
 		}
-
-		public static void SendFromServiceToService(string message, string body)
-		{
-			Send(Settings.Default.ServiceMail,
-				Settings.Default.ServiceMail,
-				"Ошибка в сервисе обработки прайс листов",
-				message + "\r\n" + body);
-		}
 	}
 }

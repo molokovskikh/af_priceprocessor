@@ -18,11 +18,13 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual string Name { get; set; }
 		
+		[Property("Status")]
+		public virtual bool Enabled { get; set; }
+
 		[Property]
-		public virtual bool Status { get; set; }
+		public virtual ulong MaskRegion { get; set; }
 
 		[HasMany(ColumnKey = "ClientId", Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<User> Users { get; set; }
 	}
-
 }

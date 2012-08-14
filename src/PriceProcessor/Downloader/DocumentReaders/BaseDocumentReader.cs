@@ -11,7 +11,7 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public abstract class BaseDocumentReader
 	{
-		protected string[] excludeExtentions;
+		protected string[] excludeExtentions = new string[0];
 
 		/// <summary>
 		/// Из двух файлов получает список клиентов, для которых надо транспортировать накладные.

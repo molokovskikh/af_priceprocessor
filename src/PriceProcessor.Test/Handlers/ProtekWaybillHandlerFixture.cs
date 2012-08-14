@@ -21,7 +21,7 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Handlers
 {
-	public class FakeProtekHandler : ProtekWaybillHandler
+	public class FakeProtekHandler : WaybillProtekHandler
 	{
 		public getBladingHeadersResponse headerResponce;
 		public getBladingBodyResponse bodyResponce;
@@ -302,7 +302,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Save_dump()
 		{
-			ProtekWaybillHandler.Dump(".", blading);
+			WaybillProtekHandler.Dump(".", blading);
 		}
 	}
 }

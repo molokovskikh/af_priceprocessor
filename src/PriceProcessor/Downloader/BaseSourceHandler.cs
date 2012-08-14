@@ -276,33 +276,5 @@ and pd.AgencyEnabled= 1",
 			}
 			return true;
 		}
-
-		/// <summary>
-		/// Выдает код клиента из таблицы Customers.Addresses по
-		/// Id
-		/// </summary>
-		/// <param name="addressId">Id в таблице Addresses
-		/// Если будет передан LegacyId, то в эту переменную запишется Addresses.Id</param>
-		/// <returns></returns>
-		protected uint? GetClientIdByAddress(ref uint? addressId)
-		{
-			if (addressId == null)
-				return null;
-
-			var address = addressId;
-
-			var clientId = With.Connection<uint?>(c => {
-
-				var queryGetClientCodeByAddressId = String.Format(@"
-SELECT Addr.ClientId
-FROM Customers.Addresses Addr
-WHERE Addr.Id = {0}", address);
-
-				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCodeByAddressId);
-				return Convert.ToUInt32(clientCode);
-			});
-			addressId = address;
-			return clientId;
-		}
 	}
 }

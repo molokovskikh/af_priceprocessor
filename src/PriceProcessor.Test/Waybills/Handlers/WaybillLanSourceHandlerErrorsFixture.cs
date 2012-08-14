@@ -5,9 +5,10 @@ using Common.MySql;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
+using Test.Support;
 using Test.Support.Suppliers;
 
-namespace PriceProcessor.Test.Waybills
+namespace PriceProcessor.Test.Waybills.Handlers
 {
 	[TestFixture]
 	public class WaybillLanSourceHandlerErrorsFixture
@@ -23,8 +24,12 @@ namespace PriceProcessor.Test.Waybills
 				if(count > 0)
 					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);
 			}
-			supplierId = ActiveRecordLinq.AsQueryable<TestSupplier>()
-				.First(s => s.WaybillSource.ReaderClassName == "SIAMoscow_2788_Reader").Id;
+			var supplier = TestSupplier.Create();
+			supplier.WaybillSource.SourceType = WaybillSourceType.FtpInforoom;
+			supplier.WaybillSource.ReaderClassName = "SIAMoscow_2788_Reader";
+			supplier.Save();
+
+			supplierId = supplier.Id;
 		}
 
 		[TearDown]
@@ -40,7 +45,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void GetClientCodesErrorTest()
 		{
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1");
+			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1", supplierId);
 			var res = handler.MoveWaybill("test", "test");
 
 			using(new SessionScope()) {
@@ -55,7 +60,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void FormatOutputFileError()
 		{
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader2");
+			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader2", supplierId);
 			var res = handler.MoveWaybill("test", "test");
 
 			using (new SessionScope()) {
@@ -70,7 +75,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void ImportDocumentError()
 		{
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader3");
+			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader3", supplierId);
 			var res = handler.MoveWaybill("test", "test");
 
 			using (new SessionScope()) {
@@ -85,7 +90,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void WithoutError()
 		{
-			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader4");
+			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader4", supplierId);
 			var res = handler.MoveWaybill("test", "test");
 
 			using (new SessionScope()) {

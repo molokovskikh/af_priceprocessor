@@ -64,13 +64,13 @@ namespace Inforoom.Formalizer
 
 		public void ErrodLog(IPriceFormalizer p, Exception ex)
 		{
+			_logger.Error("Ошибка при формализации прайс листа", ex);
 			string messageBody = "", messageSubject = "";
 			if (ex is FormalizeException)
 				CurrentErrorMessage = ex.Message;
 			else
 				CurrentErrorMessage = ex.ToString();
 			var addition = CurrentErrorMessage;
-			_logger.InfoFormat("Error Addition : {0}", addition);
 
 			//Если предыдущее сообщение не отличается от текущего, то не логируем его
 			if (_prevErrorMessage == CurrentErrorMessage)

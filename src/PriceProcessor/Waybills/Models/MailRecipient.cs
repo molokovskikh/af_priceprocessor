@@ -116,7 +116,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								Type = RecipientType.Client,
 								Client = client,
 								Email = email,
-								Status = client.Status ? RecipientStatus.Verified : RecipientStatus.Disabled
+								Status = client.Enabled ? RecipientStatus.Verified : RecipientStatus.Disabled
 							};
 						else 
 							recipient = new MailRecipient {
@@ -135,13 +135,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			var result = new List<User>();
 
 			if (Type == RecipientType.Region && ((Region.Id & regionMask) > 0))
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Status && (u.WorkRegionMask & Region.Id) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && (u.WorkRegionMask & Region.Id) > 0).ToList();
 
 			if (Type == RecipientType.Client)
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Status && u.Client.Id == Client.Id && (u.WorkRegionMask & regionMask) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.Client.Id == Client.Id && (u.WorkRegionMask & regionMask) > 0).ToList();
 
 			if (Type == RecipientType.Address)
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Status && u.AvaliableAddresses.Any(a => a.Id == Address.Id) && (u.WorkRegionMask & regionMask) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.AvaliableAddresses.Any(a => a.Id == Address.Id) && (u.WorkRegionMask & regionMask) > 0).ToList();
 
 			return result;
 		}
