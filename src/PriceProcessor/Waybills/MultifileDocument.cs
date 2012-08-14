@@ -156,7 +156,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					if ((headerFile != null) && (bodyFile != null))
 					{
 						var mergedFile = MergeFiles(headerFile, bodyFile);
-						resultList.Add(new DocumentForParsing(file, mergedFile));
+							resultList.Add(new DocumentForParsing(file, mergedFile));
 						documents.Remove(headerFile);
 						documents.Remove(bodyFile);
 						i--;

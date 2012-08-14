@@ -113,7 +113,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					Exceptions.Add(e);
 					return null;
 				}
-			}).ToList();
+			}).Where(l => l != null).ToList();
 		}
 
 		private static Document Process(bool shouldCheckClientSettings,

@@ -255,7 +255,4 @@ where ua.AddressId = :addressId")
 					+ "С уважением, АК \"Инфорум\".");
 		}
 	}
-
-	public class NotificationException : Exception
-	{}
 }

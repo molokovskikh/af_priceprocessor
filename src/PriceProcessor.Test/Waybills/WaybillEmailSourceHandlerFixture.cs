@@ -5,6 +5,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
@@ -15,6 +16,7 @@ using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
+using WaybillSourceType = Test.Support.WaybillSourceType;
 
 namespace PriceProcessor.Test.Waybills
 {
@@ -48,11 +50,25 @@ namespace PriceProcessor.Test.Waybills
 		private bool IsEmlFile;
 		private WaybillEmailSourceHandlerForTesting handler;
 
+		private EventFilter<WaybillService> filter;
+
 		[SetUp]
 		public void DeleteDirectories()
 		{
 			TestHelper.RecreateDirectories();
 			ImapHelper.ClearImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
+
+			filter = new EventFilter<WaybillService>();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			filter.Reset();
+			var events = filter.Events
+				.Where(e => e.ExceptionObject.Message != "Не удалось определить тип парсера")
+				.ToArray();
+			Assert.That(events, Is.Empty, filter.Events.Implode(e => e.ExceptionObject));
 		}
 
 		private static void PrepareSupplier(TestSupplier supplier, string from)
