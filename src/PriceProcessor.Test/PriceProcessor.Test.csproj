@@ -169,11 +169,13 @@
     <Compile Include="Troubleshoot.cs" />
     <Compile Include="Formalization\UpdateCoreTimestampsFixture.cs" />
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
-    <Compile Include="UkoParserNaklTest.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\DocSourceHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser2Fixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2Fixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParserFixture.cs" />
@@ -325,7 +327,6 @@
     <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillOrderMatcherFixture.cs" />
-    <Compile Include="Waybills\WayBillRetransFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />
   </ItemGroup>

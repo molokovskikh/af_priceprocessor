@@ -212,23 +212,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			return o;
 		}
 
-		private static string GetSNumAndCrtAndCrtDate(DocumentLine line)
-		{
-			var str = String.Empty;
-			char delimeter = (char)127;
-
-			if (line.SerialNumber != null)
-				str += line.SerialNumber;
-			str += delimeter;
-			if (line.Certificates != null)
-				str += line.Certificates;
-			str += delimeter;
-			if (line.CertificatesDate != null)
-				str += line.CertificatesDate;
-
-			return str;
-		}
-
 		private static string NullableDecimalToString(decimal? value)
 		{
 			return value.HasValue ? DecimalToString(value.Value) : null;
