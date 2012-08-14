@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor
 {
 	public class WCFPriceProcessorService : IRemotePriceProcessor, IRemotePriceProcessorOneWay
 	{
-		private ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
+		private static ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
 
 		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
 
@@ -184,7 +184,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				if (price.ParentSynonym != null)
 					priceId = price.ParentSynonym.Value;
 
-				Console.WriteLine(priceId);
 				var adapter = new MySqlDataAdapter(@"
 select
   pc.PriceItemId,
@@ -217,7 +216,6 @@ and pf.Id = fr.PriceFormatId", c);
 				{
 					try
 					{
-						Console.WriteLine(row["PriceItemId"]);
 						RetransPrice(row, Settings.Default.BasePath);
 					}
 					catch (Exception e)
@@ -442,7 +440,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 				}
 				catch (Exception ex)
 				{
-					Mailer.SendFromServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
+					log.Error("Ошибка логирования при перепосылке прайс-листа", ex);
 					return 0;
 				}
 			}

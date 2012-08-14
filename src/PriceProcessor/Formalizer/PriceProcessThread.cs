@@ -231,13 +231,11 @@ namespace Inforoom.Formalizer
 				File.SetLastWriteTimeUtc(outPriceFileName, ft);
 				File.SetLastAccessTimeUtc(outPriceFileName, ft);
 			}
-			catch (ThreadAbortException e)
-			{
+			catch (ThreadAbortException e) {
 				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 			}
 			catch(Exception e) {
 				_log.ErrodLog(_workPrice, e);
-				Mailer.SendFromServiceToService("Ошибка при формализации прайс листа", e.ToString());
 			}
 			finally
 			{

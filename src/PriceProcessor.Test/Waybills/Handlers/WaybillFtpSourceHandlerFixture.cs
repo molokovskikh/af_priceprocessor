@@ -9,11 +9,10 @@ using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
-using WaybillSourceType = Test.Support.WaybillSourceType;
 using Castle.ActiveRecord;
 using Common.Tools;
 
-namespace PriceProcessor.Test.Waybills
+namespace PriceProcessor.Test.Waybills.Handlers
 {
 	public class WaybillFtpSourceHandlerForTesting : WaybillFtpSourceHandler
 	{
@@ -25,7 +24,7 @@ namespace PriceProcessor.Test.Waybills
 	}
 
 	[TestFixture]
-	public class WaybillFtpSourceHandlerFixture
+	public class WaybillFtpSourceHandlerFixture : BaseWaybillHandlerFixture
 	{
 		private string ftpHost;
 		private int ftpPort;
@@ -34,10 +33,6 @@ namespace PriceProcessor.Test.Waybills
 		private string password;
 		private uint newClientDeliveryCode;
 		private string ftpRejectDirectory;
-
-		private TestSupplier supplier;
-		private TestClient client;
-		private TestAddress address;
 
 		private WaybillFtpSourceHandlerForTesting handler;
 
@@ -91,48 +86,6 @@ namespace PriceProcessor.Test.Waybills
 					source.Update();
 				}
 			}
-		}
-
-		private void SetDeliveryCodes(uint? supplierDeliveryId)
-		{
-			using(new SessionScope())
-			{
-				var id = supplier.Prices[0].Id;
-				var price = TestPrice.Find(id);
-				var intersection = price.Intersections.First(i => i.Client.Id == client.Id);
-				var addressIntersection = intersection.AddressIntersections.First(i => i.Address.Id == address.Id);
-				addressIntersection.SupplierDeliveryId = supplierDeliveryId.ToString();
-				addressIntersection.Save();
-			}
-		}
-
-		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
-		{
-			var supplier = TestSupplier.Create();
-			using (var scope = new TransactionScope())
-			{
-				var source = supplier.WaybillSource;
-				source.SourceType = WaybillSourceType.FtpSupplier;
-				source.UserName = user;
-				source.Password = password;
-				source.WaybillUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpWaybillDirectory);
-				source.RejectUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpRejectDirectory);
-				supplier.Save();
-
-				scope.VoteCommit();
-				return supplier;
-			}
-		}
-
-		private void CopyWaybillFiles(uint newClientDeliveryCode, string ftpWaybillDirectory)
-		{
-			SetDeliveryCodes(newClientDeliveryCode);
-			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);
-			if (!Directory.Exists(waybillsDir))
-				Directory.CreateDirectory(waybillsDir);
-
-			var waybillForNewClient = @"..\..\Data\Waybills\70983_906384.ZIP";
-			File.Copy(waybillForNewClient, Path.Combine(waybillsDir, String.Format("{0}_{1}", newClientDeliveryCode, Path.GetFileName(waybillForNewClient))));
 		}
 
 		[Test]
@@ -225,7 +178,7 @@ namespace PriceProcessor.Test.Waybills
 					//у нас только одна запись в documentsheaders
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}
-					
+
 				// Проверяем наличие файлов в папках клиентов
 				//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
 				var clientDir = Path.Combine(Settings.Default.DocumentPath, addressId.ToString());
@@ -244,15 +197,33 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		private void SetConvertFormat()
+		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
 		{
-			using (new TransactionScope())
+			var supplier = TestSupplier.Create();
+			using (var scope = new TransactionScope())
 			{
-				var settings = client.Settings;
-				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = supplier.Prices.First().Id;
-				settings.SaveAndFlush();
+				var source = supplier.WaybillSource;
+				source.SourceType = WaybillSourceType.FtpSupplier;
+				source.UserName = user;
+				source.Password = password;
+				source.WaybillUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpWaybillDirectory);
+				source.RejectUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpRejectDirectory);
+				supplier.Save();
+
+				scope.VoteCommit();
+				return supplier;
 			}
+		}
+
+		private void CopyWaybillFiles(uint newClientDeliveryCode, string ftpWaybillDirectory)
+		{
+			SetDeliveryCodes(newClientDeliveryCode);
+			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);
+			if (!Directory.Exists(waybillsDir))
+				Directory.CreateDirectory(waybillsDir);
+
+			var waybillForNewClient = @"..\..\Data\Waybills\70983_906384.ZIP";
+			File.Copy(waybillForNewClient, Path.Combine(waybillsDir, String.Format("{0}_{1}", newClientDeliveryCode, Path.GetFileName(waybillForNewClient))));
 		}
 	}
 }

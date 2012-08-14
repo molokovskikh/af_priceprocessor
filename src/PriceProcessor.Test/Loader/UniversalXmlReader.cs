@@ -79,7 +79,7 @@ namespace PriceProcessor.Test.Loader
 			<Value>10.50</Value>
 		</Cost>
 		<Cost>
-			<Id>P2524</Id>
+			<Id>P2526</Id>
 			<Value>10</Value>
 		</Cost>
 	</Item>
@@ -88,7 +88,7 @@ namespace PriceProcessor.Test.Loader
 		<Product>Иммунал таб. №20</Product>
 		<Producer>Lek (аптечка)</Producer>
 		<Cost>
-			<Id>P2524</Id>
+			<Id>P2525</Id>
 			<Value>50</Value>
 		</Cost>
 	</Item>

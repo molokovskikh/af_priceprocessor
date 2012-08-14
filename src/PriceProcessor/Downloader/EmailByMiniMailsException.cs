@@ -5,7 +5,6 @@ using LumiSoft.Net.Mime;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
-
 	public class MiniMailException : EMailSourceHandlerException
 	{
 		public MiniMailException(string message) : base(message)
@@ -17,13 +16,6 @@ namespace Inforoom.PriceProcessor.Downloader
 		}
 
 		public ResponseTemplate Template { get; set; }
-
-		public MailTemplate MailTemplate { get; set; }
-
-		public virtual string GetBody(Mime mime)
-		{
-			throw new NotImplementedException();
-		}
 	}
 
 	/*

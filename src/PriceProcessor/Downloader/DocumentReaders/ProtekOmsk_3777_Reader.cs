@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MySql.Data.MySqlClient;
 using System.IO;
@@ -9,22 +10,17 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public class ProtekOmsk_3777_Reader : BaseDocumentReader
 	{
-		public ProtekOmsk_3777_Reader()
-		{
-			excludeExtentions = new string[] { };
-		}
-
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var list = new List<ulong>();
 			
-            string SQL = SqlGetClientAddressId(false, true) +
-                Environment.NewLine + GetFilterSQLFooter();
+			var sql = SqlGetClientAddressId(false, true) +
+				Environment.NewLine + GetFilterSQLFooter();
 
-			string FirmClientCode;
+			string firmClientCode;
 			try
 			{
-				FirmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
+				firmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
 			}
 			catch(Exception ex)
 			{
@@ -32,16 +28,14 @@ namespace Inforoom.Downloader.DocumentReaders
 			}
 
 			var ds = MySqlHelper.ExecuteDataset(
-				connection, 
-				SQL, 
-				new MySqlParameter("?SupplierId", supplierId), 
-				new MySqlParameter("?SupplierDeliveryId", FirmClientCode));
+				connection,
+				sql,
+				new MySqlParameter("?SupplierId", supplierId),
+				new MySqlParameter("?SupplierDeliveryId", firmClientCode));
 
-			foreach (DataRow drApteka in ds.Tables[0].Rows)
-				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
-
+			list = ds.Tables[0].Rows.Cast<DataRow>().Select(r => Convert.ToUInt64(r["AddressId"])).ToList();
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + ".");
+				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + firmClientCode + ".");
 
 			return list;
 		}

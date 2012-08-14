@@ -238,9 +238,25 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override object EndConsume()
 		{
-			if (_cost.IsValid())
+			if (_cost.IsValid() && ((PriceItemState)Prev).Costs
+				.FirstOrDefault(c => c.Description.Name.ToLower() == _cost.Description.Name.ToLower()) == null)
 				((PriceItemState)Prev).Costs.Add(_cost);
+			DescriptionOparation(_cost);
 			return null;
+		}
+
+		private void DescriptionOparation(Cost cost)
+		{
+				var description = cost.Description;
+
+				var value = cost.Value;
+
+				if (value == 0)
+					description.ZeroCostCount++;
+				if (Cost.IsZeroOrLess(value))
+				{
+					description.UndefinedCostCount++;
+				}
 		}
 
 		public override void Read(string tag, string value)

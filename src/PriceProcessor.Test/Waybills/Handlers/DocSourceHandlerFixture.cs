@@ -22,7 +22,7 @@ using log4net.Appender;
 using log4net.Config;
 using log4net.Filter;
 
-namespace PriceProcessor.Test.Waybills
+namespace PriceProcessor.Test.Waybills.Handlers
 {
 	public class DocSourceHandlerTestInfo
 	{
@@ -129,7 +129,7 @@ namespace PriceProcessor.Test.Waybills
 				subject,
 				body,
 				toList.ToArray(),
-				new []{from}, 
+				new []{from},
 				fileNames != null ? fileNames.ToArray() : null);
 
 			info.Mime = message;
@@ -141,7 +141,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private void Process()
-		{			
+		{
 			Assert.That(_info, Is.Not.Null, "Перед обработкой должен быть вызван метод SetUp");
 			Assert.That(_info.Mime, Is.Not.Null, "Перед обработкой должен быть вызван метод SetUp");
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -155,7 +155,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -189,7 +189,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -261,7 +261,7 @@ namespace PriceProcessor.Test.Waybills
 			// and create a string.
 			StringBuilder sBuilder = new StringBuilder();
 
-			// Loop through each byte of the hashed data 
+			// Loop through each byte of the hashed data
 			// and format each one as a hexadecimal string.
 			for (int i = 0; i < data.Length; i++)
 			{
@@ -346,7 +346,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -382,9 +382,9 @@ namespace PriceProcessor.Test.Waybills
 
 				var events = memoryAppender.GetEvents();
 				Assert.That(
-					events.Length, 
-					Is.EqualTo(0), 
-					"Ошибки при обработки задач сертификатов:\r\n{0}", 
+					events.Length,
+					Is.EqualTo(0),
+					"Ошибки при обработки задач сертификатов:\r\n{0}",
 						events.Select(item => {
 							if (string.IsNullOrEmpty(item.GetExceptionString()))
 								return item.RenderedMessage;
@@ -403,12 +403,12 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var supplier = TestSupplier.Create();
 			var from = String.Format("{0}@supplier.test", supplier.Id);
-			
+
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test NotFoundSupplier",
 				"body NotFoundSupplier",
 				new string[] {"testUser@docs.analit.net"},
-				new []{from}, 
+				new []{from},
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -435,7 +435,7 @@ namespace PriceProcessor.Test.Waybills
 				"test NotFound",
 				"body NotFound",
 				new string[] {"testUser@docs.analit.net"},
-				new []{from}, 
+				new []{from},
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -456,7 +456,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			var supplier = TestSupplier.Create();
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
@@ -465,7 +465,7 @@ namespace PriceProcessor.Test.Waybills
 				"test AllowedExtensions",
 				"body AllowedExtensions",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from}, 
+				new []{from},
 				new string[]{@"..\..\Data\Waybills\70983_906384.zip"});
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -487,7 +487,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			var supplier = TestSupplier.Create();
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
@@ -496,7 +496,7 @@ namespace PriceProcessor.Test.Waybills
 				"test MaxAttachment",
 				"body MaxAttachment",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from}, 
+				new []{from},
 				new string[]{@"..\..\Data\BigMiniMailAttachment.xls"});
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -516,7 +516,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -551,7 +551,7 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		//Создаем обработчик и пытаемся обработать два одинаковых письма 
+		//Создаем обработчик и пытаемся обработать два одинаковых письма
 		//При обработке второго письма происходит протоколизация в лог, письмо на tech@analit.net не отсылается
 		[Test(Description = "обрабатываем два одинаковых письма, обработчик должен запротоколировать о дубликате")]
 		public void PrepareDublicateMessage()
@@ -586,7 +586,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			var inforoomRegion = TestRegion.Find(TestRegion.Inforoom);
 
 			SetUp(
@@ -602,7 +602,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(existsMessages.Count, Is.GreaterThanOrEqualTo(1), "Не найдены письма в IMAP-папке");
 			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(_responseSubject, StringComparison.CurrentCultureIgnoreCase));
 			Assert.That(responseCount, Is.EqualTo(1), "Не найдено письмо с загловком '{0}'", _responseSubject);
-			
+
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
 				Assert.That(mails.Count, Is.EqualTo(1));
@@ -617,7 +617,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			var supplier = TestSupplier.Create();
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
@@ -626,7 +626,7 @@ namespace PriceProcessor.Test.Waybills
 				"test MaxSizeLetter",
 				"body MaxSizeLetter",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from}, 
+				new []{from},
 				new string[]{@"..\..\Data\688.txt", @"..\..\Data\138.txt"});
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -681,7 +681,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			var supplier = TestSupplier.Create();
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
@@ -690,7 +690,7 @@ namespace PriceProcessor.Test.Waybills
 				"  ",
 				"   ",
 				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from}, 
+				new []{from},
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -733,7 +733,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -747,7 +747,7 @@ namespace PriceProcessor.Test.Waybills
 			_info.Mime = mimeHtml;
 
 			Process();
-			
+
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
 				Assert.That(mails.Count, Is.EqualTo(1));
@@ -764,7 +764,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var client = TestClient.Create();
 			var user = client.Users[0];
-			
+
 			SetUp(
 				new List<TestUser> {user},
 				null,
@@ -782,7 +782,7 @@ namespace PriceProcessor.Test.Waybills
 			_info.Mime = mimeEmptyBody;
 
 			Process();
-			
+
 			using (new SessionScope()) {
 				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
 				Assert.That(mails.Count, Is.EqualTo(1));

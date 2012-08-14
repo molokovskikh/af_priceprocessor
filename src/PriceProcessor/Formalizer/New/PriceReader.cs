@@ -102,36 +102,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public void SendWarning(PriceLoggingStat stat)
 		{
-			ProcessUndefinedCost(stat);
-			ProcessZeroCost(stat);
 			CheckColumnPresents();
-		}
-
-		/// <summary>
-		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
-		/// </summary>
-		private void ProcessUndefinedCost(PriceLoggingStat stat)
-		{
-			var stringBuilder = new StringBuilder();
-			foreach (var cost in CostDescriptions)
-				if (cost.UndefinedCostCount > stat.formCount * 0.05)
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
-
-			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
-
-		}
-
-		/// <summary>
-		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
-		/// </summary>
-		private void ProcessZeroCost(PriceLoggingStat stat)
-		{
-			var stringBuilder = new StringBuilder();
-			foreach (var cost in CostDescriptions)
-				if ((cost.ZeroCostCount > 0 && stat.formCount == 0) || cost.ZeroCostCount == stat.formCount)
-					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
-
-			Alerts.ZeroCostAlert(stringBuilder, _priceInfo);
 		}
 
 		/// <summary>

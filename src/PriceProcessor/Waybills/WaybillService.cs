@@ -5,6 +5,7 @@ using System.Linq;
 using System.ServiceModel;
 using Castle.ActiveRecord;
 using Common.Tools;
+using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -25,6 +26,8 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof (WaybillService));
 
+		public List<EMailSourceHandlerException> Exceptions = new List<EMailSourceHandlerException>();
+
 		public uint[] ParseWaybill(uint[] ids)
 		{
 			try {
@@ -43,7 +46,11 @@ namespace Inforoom.PriceProcessor.Waybills
 			return new uint[0];
 		}
 
-		public static void ParseWaybills(List<DocumentReceiveLog> logs)
+		public static void ParseWaybill(DocumentReceiveLog log)
+		{
+			ParseWaybills(new [] {log}.ToList());
+		}
+		public void Process(List<DocumentReceiveLog> logs)
 		{
 			try {
 				using (var scope = new TransactionScope(OnDispose.Rollback)) {
@@ -57,36 +64,20 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		private static IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
+		public static void ParseWaybills(List<DocumentReceiveLog> logs)
 		{
-			var detector = new WaybillFormatDetector();
-			
+			new WaybillService().Process(logs);
+		}
+
+		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
+		{
+			if (shouldCheckClientSettings)
+				logs = CheckDocs(logs);
+
 			var docsForParsing = MultifileDocument.Merge(logs);
-
 			var docs = docsForParsing.Select(d => {
-				
 				try {
-					var settings = WaybillSettings.Find(d.DocumentLog.ClientCode.Value);
-					
-					if (d.DocumentLog.DocumentType == DocType.Reject)
-						return null;
-					if (shouldCheckClientSettings && settings != null && !settings.ShouldParseWaybill())
-						return null;
-					
-					if(!d.DocumentLog.FileIsLocal())
-					{
-						// ждем пока файл появится в удаленной директории
-						ShareFileHelper.WaitFile(d.FileName, 5000);
-					}
-
-					var doc = detector.DetectAndParse(d.DocumentLog, d.FileName);
-					// для мульти файла, мы сохраняем в источнике все файлы, 
-					// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
-					if (doc != null && settings != null) {
-						Exporter.ConvertIfNeeded(doc, settings);
-					}
-
-					return doc;
+					return Process(shouldCheckClientSettings, d.DocumentLog, d.FileName);
 				}
 				catch (Exception e) {
 					var filename = d.FileName;
@@ -105,6 +96,51 @@ namespace Inforoom.PriceProcessor.Waybills
 			return docs;
 		}
 
+		private List<DocumentReceiveLog> CheckDocs(List<DocumentReceiveLog> logs)
+		{
+			return logs.Select(l => {
+				try {
+					SessionHelper.WithSession(s => l.Check(s));
+					l.SaveAndFlush();
+					var settings = WaybillSettings.Find(l.ClientCode.Value);
+
+					if (!(l.DocumentType == DocType.Waybill && settings.IsConvertFormat))
+						l.CopyDocumentToClientDirectory();
+					return l;
+				}
+				catch(EMailSourceHandlerException e) {
+					_log.Warn(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
+					Exceptions.Add(e);
+					return null;
+				}
+			}).Where(l => l != null).ToList();
+		}
+
+		private static Document Process(bool shouldCheckClientSettings,
+			DocumentReceiveLog log,
+			string fileName)
+		{
+			var settings = WaybillSettings.Find(log.ClientCode.Value);
+			if (log.DocumentType == DocType.Reject)
+				return null;
+
+			if (shouldCheckClientSettings
+				&& !settings.ShouldParseWaybill())
+				return null;
+
+			// ждем пока файл появится в удаленной директории
+			if (!log.FileIsLocal())
+				ShareFileHelper.WaitFile(fileName, 5000);
+
+			var doc = new WaybillFormatDetector().DetectAndParse(log, fileName);
+			// для мульти файла, мы сохраняем в источнике все файлы,
+			// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
+			if (doc != null)
+				Exporter.ConvertIfNeeded(doc, settings);
+
+			return doc;
+		}
+
 		public static void SaveWaybill(string filename)
 		{
 			if (!Directory.Exists(Settings.Default.DownWaybillsPath))
@@ -112,40 +148,6 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			if (File.Exists(filename))
 				File.Copy(filename, Path.Combine(Settings.Default.DownWaybillsPath, Path.GetFileName(filename)), true);
-		}
-
-		public static void ParserDocument(DocumentReceiveLog log)
-		{
-			var file = log.GetFileName();
-
-			try {
-				var settings = WaybillSettings.Find(log.ClientCode.Value);
-					
-				if (!settings.IsConvertFormat)
-					log.CopyDocumentToClientDirectory();
-
-				if (!settings.ShouldParseWaybill() || (log.DocumentType == DocType.Reject))
-					return;
-					
-				var document = new WaybillFormatDetector().DetectAndParse(log, file);
-				if (document == null)
-					return;
-
-				using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-					Exporter.ConvertIfNeeded(document, settings);
-
-					if(log.IsFake) log.Save();
-					document.Save();
-					document.CreateCertificateTasks();
-
-					transaction.VoteCommit();
-				}
-			}
-			catch(Exception e)
-			{
-				_log.Error(String.Format("Ошибка при разборе документа {0}", file), e);
-				SaveWaybill(file);
-			}
 		}
 	}
 }
