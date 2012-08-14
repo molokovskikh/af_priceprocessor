@@ -160,7 +160,6 @@
     <Compile Include="Formalizer\UniversalReader.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
     <Compile Include="Models\FormLog.cs" />
-    <Compile Include="Models\Log.cs" />
     <Compile Include="Models\MailContext.cs" />
     <Compile Include="Models\Price.cs" />
     <Compile Include="Models\PriceCost.cs" />
