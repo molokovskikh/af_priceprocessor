@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor
 				new WaybillLanSourceHandler(),
 				new WaybillFtpSourceHandler(),
 				new ClearArchivedPriceSourceHandler(),
-				new ProtekWaybillHandler(),
+				new WaybillProtekHandler(),
 				new CertificateSourceHandler(),
 				new CertificateCatalogHandler(),
 				new DocSourceHandler()
