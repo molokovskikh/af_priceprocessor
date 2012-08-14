@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using MySql.Data.MySqlClient;
 using System.IO;
@@ -32,7 +33,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				new MySqlParameter("?SupplierId", supplierId),
 				new MySqlParameter("?SupplierDeliveryId", firmClientCode));
 
-			ds.Tables[0].AsEnumerable().Select(r => Convert.ToUInt64(r["AddressId"]));
+			list = ds.Tables[0].Rows.Cast<DataRow>().Select(r => Convert.ToUInt64(r["AddressId"])).ToList();
 			if (list.Count == 0)
 				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + firmClientCode + ".");
 
