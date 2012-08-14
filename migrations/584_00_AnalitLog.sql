@@ -8,7 +8,7 @@ CREATE TABLE  `analit`.`Logs` (
   `User` varchar(255) DEFAULT NULL,
   `Message` text,
   `Exception` text,
-  `Source` varchar(255) DEFAULT NULL,
+  `App` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `Date` (`Date`)
 ) ENGINE=MyISAM AUTO_INCREMENT=2463 DEFAULT CHARSET=cp1251;
