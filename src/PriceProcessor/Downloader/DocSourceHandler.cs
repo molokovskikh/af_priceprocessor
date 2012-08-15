@@ -7,6 +7,7 @@ using Castle.Core;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.IMAP.Client;
@@ -51,7 +52,7 @@ namespace Inforoom.Downloader
 
 			Ping();
 
-			context.ParseMime(m, GetAddressList(m));
+			context.ParseMime(m, MimeEntityExtentions.GetAddressList(m));
 
 			Ping();
 

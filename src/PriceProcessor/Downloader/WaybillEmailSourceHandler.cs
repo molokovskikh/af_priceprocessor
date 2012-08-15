@@ -83,19 +83,15 @@ namespace Inforoom.Downloader
 
 		public override void CheckMime(Mime m)
 		{
-			var emailList = new List<string>();
-
 			_addressId = null;
 			_currentDocumentType = null;
 
 			// Получаем кол-во корректных адресов, т.е. отправленных
 			// на @waybills.analit.net или на @refused.analit.net
-			if (m.MainEntity.To != null)
-				CorrectClientAddress(m.MainEntity.To, ref emailList);
-			if (m.MainEntity.Cc != null)
-				CorrectClientAddress(m.MainEntity.Cc, ref emailList);
-
-			emailList = emailList.ConvertAll(s => s.ToUpper()).Distinct().ToList();
+			var emailList = CorrectClientAddress(m.GetRecipients())
+				.ConvertAll(s => s.ToUpper())
+				.Distinct()
+				.ToList();
 
 			var correctAddresCount = emailList.Count;
 
@@ -184,22 +180,19 @@ WHERE Addr.Id = {0}", checkClientCode);
 			return testClientCode;
 		}
 
-		private int CorrectClientAddress(AddressList addressList, ref List<string> emailList)
+		private List<string> CorrectClientAddress(string[] emails)
 		{
-			uint? currentClientCode;
-			var clientCodeCount = 0;
-
+			var result = new List<string>();
 			// Пробегаемся по всем адресам TO и ищем адрес вида
 			// <\d+@waybills.analit.net> или <\d+@refused.analit.net>
 			// Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
-			foreach (var mailbox in addressList.Mailboxes) {
-				currentClientCode = GetClientCode(GetCorrectEmailAddress(mailbox.EmailAddress));
+			foreach (var email in emails) {
+				var currentClientCode = GetClientCode(email);
 				if (currentClientCode.HasValue) {
-					emailList.Add(GetCorrectEmailAddress(mailbox.EmailAddress));
-					clientCodeCount++;
+					result.Add(email);
 				}
 			}
-			return clientCodeCount;
+			return result;
 		}
 
 		/// <summary>

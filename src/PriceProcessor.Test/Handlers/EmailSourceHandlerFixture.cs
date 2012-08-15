@@ -4,6 +4,7 @@ using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
@@ -40,11 +41,11 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void IsMailAddresTest()
 		{
-			Assert.AreEqual(true, handler.IsMailAddress("test@analit.net"), "Адрес некорректен");
-			Assert.AreEqual(false, handler.IsMailAddress("zakaz"), "Адрес некорректен");
-			Assert.AreEqual(false, handler.IsMailAddress("zakaz@"), "Адрес некорректен");
-			Assert.AreEqual(true, handler.IsMailAddress("zakaz@dsds"), "Адрес некорректен");
-			Assert.AreEqual(true, handler.IsMailAddress("<'prices@spb.analit.net'>"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("test@analit.net"), "Адрес некорректен");
+			Assert.AreEqual(false, MimeEntityExtentions.IsMailAddress("zakaz"), "Адрес некорректен");
+			Assert.AreEqual(false, MimeEntityExtentions.IsMailAddress("zakaz@"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("zakaz@dsds"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("<'prices@spb.analit.net'>"), "Адрес некорректен");
 		}
 
 		[Test(Description = "Тест для обработки прайсов, пришедших по email в запароленных архивах")]

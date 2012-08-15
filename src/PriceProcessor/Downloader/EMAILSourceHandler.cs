@@ -1,18 +1,17 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Data;
 using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Helpers;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using LumiSoft.Net.IMAP;
 using Inforoom.Common;
 using LumiSoft.Net.SMTP.Client;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
-using System.Net.Mail;
 
 namespace Inforoom.Downloader
 {
@@ -24,22 +23,6 @@ namespace Inforoom.Downloader
 		{
 			IMAPHandler = new IMAPHandler(this);
 			SourceType = "EMAIL";
-		}
-
-		public static string GetCorrectEmailAddress(string Source)
-		{
-			return Source.Replace("'", String.Empty).Trim();
-		}
-
-		public bool IsMailAddress(string address)
-		{
-			try {
-				new MailAddress(address);
-				return true;
-			}
-			catch (FormatException) {
-				return false;
-			}
 		}
 
 		public override void ProcessData()
@@ -68,7 +51,7 @@ namespace Inforoom.Downloader
 
 		public void ProcessMime(Mime m)
 		{
-			var from = GetAddressList(m);
+			var from = MimeEntityExtentions.GetAddressList(m);
 			m = UueHelper.ExtractFromUue(m, DownHandlerPath);
 			FillSourcesTable();
 			try {
@@ -148,7 +131,7 @@ namespace Inforoom.Downloader
 				//Раньше не проверялся весь список TO, теперь это делается
 				foreach (var mba in m.MainEntity.To.Mailboxes) {
 					var drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-						SourcesTableColumns.colEMailTo, GetCorrectEmailAddress(mba.EmailAddress),
+						SourcesTableColumns.colEMailTo, MimeEntityExtentions.GetCorrectEmailAddress(mba.EmailAddress),
 						SourcesTableColumns.colEMailFrom, mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS) {
 						if ((drS[SourcesTableColumns.colPriceMask] is String) &&
@@ -198,52 +181,6 @@ namespace Inforoom.Downloader
 			}
 			catch {
 			}
-		}
-
-		protected AddressList GetAddressList(Mime m)
-		{
-			// Заполняем список адресов From
-			var from = new AddressList();
-			bool senderFound = false;
-
-			// адрес из поля Sender, может быть не установлен
-			string senderAddress = null;
-			// Если поле установлено и адрес не пустой
-			if ((m.MainEntity.Sender != null) &&
-				!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) {
-				// получаем корректный адрес
-				senderAddress = GetCorrectEmailAddress(m.MainEntity.Sender.EmailAddress);
-				// Если адрес получился некорректным, то сбрасываем значение поля
-				if (!IsMailAddress(senderAddress))
-					senderAddress = null;
-			}
-			// Иногда список адресов оказывается пуст - СПАМ
-			if (m.MainEntity.From != null) {
-				foreach (var a in m.MainEntity.From.Mailboxes) {
-					//Проверяем, что адрес что-то содержит
-					if (!String.IsNullOrEmpty(a.EmailAddress)) {
-						// получам корректный адрес
-						var correctAddress = GetCorrectEmailAddress(a.EmailAddress);
-						// Если после всех проверок адрес является EMail-адресом, то добавляем в список
-						if (IsMailAddress(correctAddress)) {
-							from.Add(new MailboxAddress(correctAddress));
-							if (!String.IsNullOrEmpty(senderAddress) &&
-								senderAddress.Equals(correctAddress, StringComparison.OrdinalIgnoreCase))
-								senderFound = true;
-						}
-					}
-				}
-			}
-
-			if (!String.IsNullOrEmpty(senderAddress) && !senderFound)
-				from.Add(new MailboxAddress(senderAddress));
-
-			// Иногда список адресов оказывается пуст - СПАМ,
-			// в этом случае создаем пустую коллекцию, чтобы все было в порядке
-			if (m.MainEntity.To == null)
-				m.MainEntity.To = new AddressList();
-
-			return from;
 		}
 
 		protected bool CheckFile()
@@ -297,7 +234,7 @@ namespace Inforoom.Downloader
 					e.MailTemplate = TemplateHolder.GetTemplate(miniMailException.Template);
 
 				if (e.MailTemplate.IsValid()) {
-					var FromList = GetAddressList(sourceLetter);
+					var FromList = MimeEntityExtentions.GetAddressList(sourceLetter);
 
 					var from = new AddressList();
 
@@ -340,32 +277,6 @@ namespace Inforoom.Downloader
 		protected virtual void Send(Mime mime)
 		{
 			SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, String.Empty, mime);
-		}
-	}
-
-	public static class MimeEntityExtentions
-	{
-		public static IEnumerable<MimeEntity> GetValidAttachements(this Mime mime)
-		{
-			return mime.Attachments.Where(m => !String.IsNullOrEmpty(m.GetFilename()) && m.Data != null);
-		}
-
-		public static IEnumerable<string> GetAttachmentFilenames(this Mime mime)
-		{
-			var result = new List<string>();
-			var attachments = mime.GetValidAttachements();
-			foreach (var entity in attachments)
-				result.Add(entity.GetFilename());
-			return result;
-		}
-
-		public static string GetFilename(this MimeEntity entity)
-		{
-			if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentDisposition_FileName));
-			if (!String.IsNullOrEmpty(entity.ContentType_Name))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType_Name));
-			return null;
 		}
 	}
 

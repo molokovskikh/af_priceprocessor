@@ -6,6 +6,7 @@ using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Common.Tools;
 using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.Mime;
 using MySql.Data.MySqlClient;
@@ -76,7 +77,7 @@ namespace Inforoom.PriceProcessor.Models
 			// ѕробегаемс€ по всем адресам TO и ищем адрес вида
 			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
 			foreach (var mailbox in addressList.Mailboxes) {
-				var mail = EMAILSourceHandler.GetCorrectEmailAddress(mailbox.EmailAddress);
+				var mail = MimeEntityExtentions.GetCorrectEmailAddress(mailbox.EmailAddress);
 				var recipient = MailRecipient.Parse(mail);
 				if (recipient != null)
 					AddRecipient(recipient);

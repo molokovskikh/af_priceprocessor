@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Common.Tools;
 using Inforoom.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 
 namespace LumiSoft.Net.Mime
 {

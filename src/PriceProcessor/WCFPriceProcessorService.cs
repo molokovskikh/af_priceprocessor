@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;

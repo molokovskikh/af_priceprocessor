@@ -6,7 +6,6 @@
       <InProject>false</InProject>
     </StyleCopAdditionalAddinPaths>
   </ItemGroup>
-
   <PropertyGroup>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <StyleCopOverrideSettingsFile>..\..\lib\StyleCop\Settings.StyleCop</StyleCopOverrideSettingsFile>
@@ -166,6 +165,7 @@
     <Compile Include="Formalizer\RejectUpdater.cs" />
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
+    <Compile Include="Helpers\MimeEntityExtentions.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
     <Compile Include="Models\FormLog.cs" />
     <Compile Include="Models\MailContext.cs" />
