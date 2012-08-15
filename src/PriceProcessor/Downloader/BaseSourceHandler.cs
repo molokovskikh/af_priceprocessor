@@ -228,7 +228,7 @@ and pd.AgencyEnabled= 1",
 #if !DEBUG
 			ms.Position = 0;
 			using (var mm = new MailMessage(
-				Settings.Default.FarmSystemEmail, 
+				Settings.Default.FarmSystemEmail,
 				GetFailMail(),
 				String.Format("{0} ( {1} )", FromAddress, SourceType),
 				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}",
@@ -237,8 +237,7 @@ and pd.AgencyEnabled= 1",
 					ToAddress,
 					LetterDate,
 					cause,
-					AttachNames)))
-			{
+					AttachNames))) {
 				mm.Attachments.Add(new Attachment(ms, "Исходное письмо.eml"));
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);

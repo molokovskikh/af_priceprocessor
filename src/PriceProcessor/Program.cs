@@ -47,9 +47,8 @@ namespace Inforoom.PriceProcessor
 				monitor = null;
 #else
 				ServiceBase[] ServicesToRun;
-				ServicesToRun = new ServiceBase[] 
-				{ 
-					new PriceProcessorService() 
+				ServicesToRun = new ServiceBase[] {
+					new PriceProcessorService()
 				};
 				ServiceBase.Run(ServicesToRun);
 #endif
