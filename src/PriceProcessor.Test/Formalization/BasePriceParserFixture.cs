@@ -4,7 +4,10 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Common.MySql;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Threading;
@@ -68,7 +71,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			Assert.That(synonym, Is.EqualTo("5 дней ванна д/ног смягчающая №10 пак. 25г  "));
 		}
 
-        [Test, Ignore] 
+        [Test, Ignore]
 		public void FormalizeAssortmentPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
@@ -79,7 +82,22 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			
 		}
 
-        [Test, Ignore] 
+		[Test]
+		public void Double_synonim_test()
+		{
+			var file = @"..\..\Data\590.dbf";
+			var table = PricesValidator.LoadFormRules(590u);
+			var row = table.Rows[0];
+			var _price = Price.Find(Convert.ToUInt32(3487u));
+			var info = new PriceFormalizationInfo(row, _price);
+			With.Connection(c => {
+				c.Close();
+				var parser = new NativeDbfPriceParser(file, c, info);
+				parser.Formalize();
+			});
+		}
+
+		[Test, Ignore]
 		public void FormalizeHelpPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
