@@ -152,6 +152,7 @@ namespace PriceProcessor.Test.Services
 			WcfCallResendPrice(downloadLog.Id);
 
 			Assert.That(PriceItemList.list.FirstOrDefault(i => i.PriceItemId == priceItem.Id), Is.Not.Null, "Прайса нет в очереди на формализацию");
+			Assert.IsFalse(File.Exists(Path.Combine(Path.GetTempPath(), file)), "Не удален временный файл из темп");
 		}
 
 		[Test, Description("Тест для перепосылки прайса, находящегося в папке и в архиве (когда разархивируем, получим папку, в которой лежит прайс)")]
