@@ -35,10 +35,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IEnumerable<FarmaimpeksPrice> Prices()
 		{
-			while (ReadFromReader())
-			{
-				while (_reader.Name == "Прайс" && _reader.NodeType == XmlNodeType.Element && _readed)
-				{
+			while (ReadFromReader()) {
+				while (_reader.Name == "Прайс" && _reader.NodeType == XmlNodeType.Element && _readed) {
 					_inPrice = true;
 					_readed = false;
 					yield return new FarmaimpeksPrice {
@@ -51,17 +49,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IEnumerable<Customer> Settings()
 		{
-			do
-			{
-				if (_reader.Name == "Получатель" && _reader.NodeType == XmlNodeType.Element)
-				{
+			do {
+				if (_reader.Name == "Получатель" && _reader.NodeType == XmlNodeType.Element) {
 					yield return new Customer {
 						SupplierClientId = _reader.GetAttribute("ПолучательID"),
 						PriceMarkup = Convert.ToDecimal(_reader.GetAttribute("Наценка"))
 					};
 				}
-				else if (_reader.Name != "Получатель" && _reader.NodeType == XmlNodeType.Element)
-				{
+				else if (_reader.Name != "Получатель" && _reader.NodeType == XmlNodeType.Element) {
 					yield break;
 				}
 			} while (ReadFromReader());
@@ -70,10 +65,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public IEnumerable<FormalizationPosition> Read()
 		{
 			var cost = CostDescriptions.First();
-			while (ReadFromReader())
-			{
-				if (_inPrice && _reader.Name == "Позиция" && _reader.NodeType == XmlNodeType.Element)
-				{
+			while (ReadFromReader()) {
+				if (_inPrice && _reader.Name == "Позиция" && _reader.NodeType == XmlNodeType.Element) {
 					yield return new FormalizationPosition {
 						PositionName = _reader.GetAttribute("Наименование"),
 						FirmCr = _reader.GetAttribute("Производитель"),
@@ -91,12 +84,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 							Await = _reader.GetAttribute("Ожидаем") == "да",
 							Junk = _reader.GetAttribute("Уцененно") == "да",
 							VitallyImportant = _reader.GetAttribute("ЖВЛС") == "да",
-							Costs = new[] {new Cost(cost, GetNullable<decimal>("Цена")),},
+							Costs = new[] { new Cost(cost, GetNullable<decimal>("Цена")), },
 						}
 					};
 				}
-				else if (_reader.Name != "Позиция" && _reader.NodeType == XmlNodeType.Element)
-				{
+				else if (_reader.Name != "Позиция" && _reader.NodeType == XmlNodeType.Element) {
 					_inPrice = false;
 					yield break;
 				}
@@ -114,12 +106,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 			var value = _reader.GetAttribute(name);
 			if (String.IsNullOrWhiteSpace(value))
 				return default(T);
-			return (T)Convert.ChangeType(value, typeof (T), CultureInfo.InvariantCulture);
+			return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
 		}
 
 		public List<CostDescription> CostDescriptions { get; set; }
 
 		public void SendWarning(PriceLoggingStat stat)
-		{}
+		{
+		}
 	}
 }

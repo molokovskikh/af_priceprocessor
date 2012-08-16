@@ -4,23 +4,34 @@ using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
+using LumiSoft.Net.Mime;
 using LumiSoft.Net.SMTP.Client;
 using NUnit.Framework;
 using System.IO;
 using PriceProcessor.Test.TestHelpers;
+using PriceProcessor.Test.Waybills;
 using Test.Support;
+using FileHelper = Common.Tools.FileHelper;
 using PriceSourceType = Test.Support.PriceSourceType;
 
 namespace PriceProcessor.Test.Handlers
 {
 	[TestFixture]
-	public class EmailSourceHandlerTest : BaseHandlerFixture<EMAILSourceHandler>
+	public class EmailSourceHandlerFixture : BaseHandlerFixture<EMAILSourceHandler>
 	{
 		private static string _dataDir = @"..\..\Data\";
+		private TestClient client;
+		private TestAddress address;
 
 		[SetUp]
 		public void Setup()
 		{
+			client = TestClient.Create(2, 2);
+			address = client.Addresses[0];
+
 			source.SourceType = PriceSourceType.Email;
 			source.Save();
 
@@ -30,11 +41,11 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void IsMailAddresTest()
 		{
-			Assert.AreEqual(true, handler.IsMailAddress("test@analit.net"), "Адрес некорректен");
-			Assert.AreEqual(false, handler.IsMailAddress("zakaz"), "Адрес некорректен");
-			Assert.AreEqual(false, handler.IsMailAddress("zakaz@"), "Адрес некорректен");
-			Assert.AreEqual(true, handler.IsMailAddress("zakaz@dsds"), "Адрес некорректен");
-			Assert.AreEqual(true, handler.IsMailAddress("<'prices@spb.analit.net'>"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("test@analit.net"), "Адрес некорректен");
+			Assert.AreEqual(false, MimeEntityExtentions.IsMailAddress("zakaz"), "Адрес некорректен");
+			Assert.AreEqual(false, MimeEntityExtentions.IsMailAddress("zakaz@"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("zakaz@dsds"), "Адрес некорректен");
+			Assert.AreEqual(true, MimeEntityExtentions.IsMailAddress("<'prices@spb.analit.net'>"), "Адрес некорректен");
 		}
 
 		[Test(Description = "Тест для обработки прайсов, пришедших по email в запароленных архивах")]
@@ -118,7 +129,7 @@ namespace PriceProcessor.Test.Handlers
 			SmtpClientEx.QuickSendSmartHost("box.analit.net",
 				25,
 				Environment.MachineName,
-				"service@analit.net", 
+				"service@analit.net",
 				new[] {"KvasovTest@analit.net"},
 				File.OpenRead(email));
 		}

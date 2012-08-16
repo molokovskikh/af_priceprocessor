@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var row = data.FormRulesData.Rows[0];
 			_loader = new ExcelLoader(
-				row["ListName"].ToString().Replace("$", ""), 
+				row["ListName"].ToString().Replace("$", ""),
 				row["StartLine"] is DBNull ? 0 : Convert.ToInt32(row["StartLine"]));
 
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
@@ -32,7 +32,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			CurrPos = 0;
 
 			_loader.PeriodField = GetFieldName(PriceFields.Period);
-			_loader.PriceItemId = (uint) priceItemId;
+			_loader.PriceItemId = (uint)priceItemId;
 			dtPrice = _loader.Load(priceFileName);
 
 			base.Open();
@@ -43,7 +43,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private readonly int _startLine;
 		private readonly string _sheetName;
-		
+
 		public ExcelLoader(string sheetName, int startLine) : this()
 		{
 			_sheetName = sheetName;
@@ -51,7 +51,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 
 		public ExcelLoader()
-		{}
+		{
+		}
 
 
 		public string PeriodField { get; set; }
@@ -69,22 +70,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 			var cells = worksheet.Cells;
 			dataTable.Columns
 				.AddRange(Enumerable.Range(cells.FirstColIndex + 1, cells.LastColIndex - cells.FirstColIndex + 1)
-				.Select(i => new DataColumn("F" + i))
-				.ToArray());
+					.Select(i => new DataColumn("F" + i))
+					.ToArray());
 
-			for(var i = Math.Max(cells.FirstRowIndex, _startLine); i <= cells.LastRowIndex; i++)
-			{
+			for (var i = Math.Max(cells.FirstRowIndex, _startLine); i <= cells.LastRowIndex; i++) {
 				var row = dataTable.NewRow();
-				for (var j = cells.FirstColIndex; j <= cells.LastColIndex; j++)
-				{
+				for (var j = cells.FirstColIndex; j <= cells.LastColIndex; j++) {
 					var cell = cells[i, j];
 
 					var columnName = "F" + (j + 1);
-					if (columnName == PeriodField)
-					{
+					if (columnName == PeriodField) {
 						var dateTimeValue = cell.TryToGetValueAsDateTime();
-						if (dateTimeValue != null)
-						{
+						if (dateTimeValue != null) {
 							//медицина пишет в срок годносит 1953 год если срок годности не ограничен всякие скальпели и прочее
 							if (PriceItemId == 822u && dateTimeValue == new DateTime(1953, 01, 01))
 								row[columnName] = DBNull.Value;
@@ -103,38 +100,33 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		private void ProcessFormatIfNeeded(string columnName, Cell cell, DataRow row)
 		{
-			if (cell.Value is double 
+			if (cell.Value is double
 				&& cell.Format.FormatType == CellFormatType.Number
-				&& (cell.Format.FormatString == "0.00" || cell.Format.FormatString == "#,##0.00"))
-			{
-				row[columnName] = Math.Round((double) cell.Value, 2, MidpointRounding.AwayFromZero);
+				&& (cell.Format.FormatString == "0.00" || cell.Format.FormatString == "#,##0.00")) {
+				row[columnName] = Math.Round((double)cell.Value, 2, MidpointRounding.AwayFromZero);
 				return;
 			}
 
 			if (cell.Value is decimal
 				&& cell.Format.FormatType == CellFormatType.Custom
-				&& cell.Format.FormatString == "#,##0.0")
-			{
-				row[columnName] = Math.Round((decimal) cell.Value, 1, MidpointRounding.AwayFromZero);
+				&& cell.Format.FormatString == "#,##0.0") {
+				row[columnName] = Math.Round((decimal)cell.Value, 1, MidpointRounding.AwayFromZero);
 				return;
 			}
 
 			if (cell.Value is double
 				&& cell.Format.FormatType == CellFormatType.Custom
-				&& cell.Format.FormatString == "#,##0.0")
-			{
-				row[columnName] = Math.Round((double) cell.Value, 1, MidpointRounding.AwayFromZero);
+				&& cell.Format.FormatString == "#,##0.0") {
+				row[columnName] = Math.Round((double)cell.Value, 1, MidpointRounding.AwayFromZero);
 				return;
 			}
 
 
-			if (cell.Value is double 
+			if (cell.Value is double
 				&& cell.Format.FormatType == CellFormatType.Date
-				&& cell.Format.FormatString == "d-mmm")
-			{
+				&& cell.Format.FormatString == "d-mmm") {
 				var value = cell.TryToGetValueAsDateTime();
-				if (value != null)
-				{
+				if (value != null) {
 					row[columnName] = value.Value.ToString("dd.MMM");
 					return;
 				}
@@ -144,8 +136,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				&& cell.Format.FormatType == CellFormatType.Custom
 				&& (cell.Format.FormatString == "00000000000"
 					|| cell.Format.FormatString == "00000000"
-					|| cell.Format.FormatString == "00000"))
-			{
+					|| cell.Format.FormatString == "00000")) {
 				var padCount = cell.FormatString.Length;
 				row[columnName] = cell.Value.ToString().PadLeft(padCount, '0');
 				return;

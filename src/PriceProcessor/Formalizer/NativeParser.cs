@@ -32,8 +32,10 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override void Open()
 		{
-			var priceItemIds = new List<long>() { 903, 1177, 951, 235, 910, 996, 1170,
-				886, 1160, 90, 494, 822, 1184, 941, 468, 879, 479, 651, 977, 1004, 1032, 917, 628, 8 };
+			var priceItemIds = new List<long>() {
+				903, 1177, 951, 235, 910, 996, 1170,
+				886, 1160, 90, 494, 822, 1184, 941, 468, 879, 479, 651, 977, 1004, 1032, 917, 628, 8
+			};
 
 			convertedToANSI = true;
 
@@ -68,10 +70,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var lineIndex = -1;
 			var table = new DataTable();
-			using(var file = new StreamReader(filename, _encoding))
-			{
-				while(!file.EndOfStream)
-				{
+			using (var file = new StreamReader(filename, _encoding)) {
+				while (!file.EndOfStream) {
 					var line = file.ReadLine();
 					lineIndex++;
 					if (lineIndex < _startLine)
@@ -98,9 +98,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 	public class TxtFieldDef : IComparer, IComparable<TxtFieldDef>
 	{
-		public string FieldName { get; private set;}
-		public int Begin { get; private set;}
-		public int End { get; private set;}
+		public string FieldName { get; private set; }
+		public int Begin { get; private set; }
+		public int End { get; private set; }
 
 		public TxtFieldDef(string fieldName, int posBegin, int posEnd)
 		{
@@ -109,11 +109,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 			End = posEnd;
 		}
 
-		public TxtFieldDef() {}
-
-		public int Compare( Object x, Object y )
+		public TxtFieldDef()
 		{
-			return ( ((TxtFieldDef)x).Begin - ((TxtFieldDef)y).Begin );
+		}
+
+		public int Compare(Object x, Object y)
+		{
+			return (((TxtFieldDef)x).Begin - ((TxtFieldDef)y).Begin);
 		}
 
 		public int CompareTo(TxtFieldDef other)
@@ -143,8 +145,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		private List<TxtFieldDef> LoadRules(DataTable table)
 		{
 			var sliceRules = new List<TxtFieldDef>();
-			foreach(PriceFields field in Enum.GetValues(typeof(PriceFields)))
-			{
+			foreach (PriceFields field in Enum.GetValues(typeof(PriceFields))) {
 				_parser.SetFieldName(field, null);
 				if (field == PriceFields.OriginalName || field == PriceFields.Name2 || field == PriceFields.Name3)
 					continue;
@@ -164,16 +165,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 				sliceRules.Add(new TxtFieldDef(name, Convert.ToInt32(begin), Convert.ToInt32(end)));
 			}
 
-			foreach(var cc in _costs)
-			{
+			foreach (var cc in _costs) {
 				cc.fieldName = "Cost" + cc.costCode;
 				sliceRules.Add(
 					new TxtFieldDef(
 						cc.fieldName,
 						cc.txtBegin,
-						cc.txtEnd
-						)
-					);
+						cc.txtEnd));
 			}
 
 			if (sliceRules.Count < 1)
@@ -187,8 +185,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			if (table.Columns.Count == 0)
 				table.Columns.AddRange(_rules.Select(r => new DataColumn(r.FieldName)).ToArray());
 
-			foreach(var rule in _rules)
-			{
+			foreach (var rule in _rules) {
 				var begin = rule.Begin - 1;
 				if (begin > line.Length - 1)
 					continue;
@@ -213,20 +210,17 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void Slice(DataTable table, string line, DataRow row, bool specialProcessing)
 		{
-			if (specialProcessing)
-			{
+			if (specialProcessing) {
 				line = Regex.Replace(line, "\"\"", "\"");
 				line = Regex.Replace(line, "\t\"", "\t");
 				line = Regex.Replace(line, "\"\t", "\t");
 			}
-			else
-			{
+			else {
 				line = line.Replace("\"", "");
 			}
 			var values = line.Split(new[] { _delimiter }, StringSplitOptions.None);
 
-			if (table.Columns.Count < values.Length)
-			{
+			if (table.Columns.Count < values.Length) {
 				var begin = table.Columns.Count + 1;
 				var count = values.Length;
 				for (var i = begin; i <= count; i++)
@@ -234,8 +228,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 
 			var columnIndex = 0;
-			foreach (DataColumn column in table.Columns)
-			{
+			foreach (DataColumn column in table.Columns) {
 				if (columnIndex > values.Length - 1)
 					break;
 				row[column.ColumnName] = values[columnIndex].Trim();
@@ -274,17 +267,19 @@ namespace Inforoom.PriceProcessor.Formalizer
 				priceFileName,
 				connection,
 				data)
-		{}
+		{
+		}
 	}
 
 	public class DelimiterNativeTextParser866 : NativeParser
 	{
 		public DelimiterNativeTextParser866(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(Encoding.GetEncoding(866), 
+			: base(Encoding.GetEncoding(866),
 				new DelimiterSlicer(data.FormRulesData.Rows[0][FormRules.colDelimiter].ToString()),
 				priceFileName,
 				connection,
 				data)
-		{}
+		{
+		}
 	}
 }

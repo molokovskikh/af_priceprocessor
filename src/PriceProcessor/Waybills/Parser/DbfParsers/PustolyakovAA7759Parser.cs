@@ -31,9 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "DATA_DOK")
 				.DocumentHeader(d => d.ProviderDocumentId, "NOM_DOK")
-
 				.DocumentInvoice(i => i.BuyerAddress, "ADRESS_TT")
-
 				.Line(l => l.Code, "KOD_TOV")
 				.Line(l => l.Product, "TOVAR")
 				.Line(l => l.Nds, "STAVKA_NDS")
@@ -47,8 +45,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Producer, "PROIZV")
 				.Line(l => l.Certificates, "NOMER_SERT")
 				.Line(l => l.CertificatesDate, "DATA_SERT");
-
 		}
+
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("KOD_TOV")
@@ -57,6 +55,5 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("SERYA")
 				&& data.Columns.Contains("SHTRIHKOD");
 		}
-
 	}
 }

@@ -13,18 +13,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
 
 		public Document Parse(string file, Document document)
-		{			
+		{
 			var data = Dbf.Load(file);
 			new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "TRX_NUM")
@@ -33,11 +31,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Product, "ITEM_NAME")
 				.Line(l => l.Producer, "VEND_NAME")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE_VR")
-				.Line(l => l.Nds, "TAX_RATE")				
+				.Line(l => l.Nds, "TAX_RATE")
 				.Line(l => l.Quantity, "QNTY")
-				.Line(l => l.Period, "DUE_DATE")				
+				.Line(l => l.Period, "DUE_DATE")
 				.Line(l => l.SerialNumber, "LOT_NUMBER")
-				.Line(l => l.Certificates, "CER_NUMBER")				
+				.Line(l => l.Certificates, "CER_NUMBER")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE")
 				.Line(l => l.SupplierCost, "PRICE_TAX")
 				.Line(l => l.Amount, "FULL_AMNT")

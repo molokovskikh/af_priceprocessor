@@ -14,7 +14,7 @@ using Inforoom.PriceProcessor;
 
 namespace Inforoom.Formalizer
 {
-	class CommerceMLParser : InterPriceParser
+	internal class CommerceMLParser : InterPriceParser
 	{
 		public CommerceMLParser(string file, MySqlConnection conn, PriceFormalizationInfo data)
 			: base(file, conn, data)
@@ -25,9 +25,7 @@ namespace Inforoom.Formalizer
 		public override void Open()
 		{
 			string newXMLFile;
-			try
-			{
-
+			try {
 				// Set the validation settings.
 				XmlReaderSettings settings = new XmlReaderSettings();
 				settings.ValidationType = System.Xml.ValidationType.None;
@@ -39,8 +37,12 @@ namespace Inforoom.Formalizer
 				// Create the XmlReader object.
 				XmlReader reader = XmlReader.Create(priceFileName, settings);
 
-				// Parse the file. 
-				while (reader.Read());
+				// Parse the file.
+				// Parse the file.
+				var i = 0;
+				while (reader.Read()) {
+					i++;
+				}
 
 				//Создаем класс для выполнения XSLT-преобразований
 				XslCompiledTransform xslt = new XslCompiledTransform();
@@ -48,8 +50,7 @@ namespace Inforoom.Formalizer
 
 				//Производим преобразование
 				newXMLFile = Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "PriceProtek.xml";
-				if (File.Exists(newXMLFile))
-				{
+				if (File.Exists(newXMLFile)) {
 					File.Delete(newXMLFile);
 					System.Threading.Thread.Sleep(500);
 				}
@@ -60,10 +61,8 @@ namespace Inforoom.Formalizer
 				ds.ReadXml(newXMLFile);
 
 				dtPrice = ds.Tables["Position"];
-
 			}
-			catch (System.Xml.Schema.XmlSchemaException xex)
-			{
+			catch (System.Xml.Schema.XmlSchemaException xex) {
 				throw new Exception(String.Format("Не получилось прочитать XML-файл, строка {0}, позиция {1}, ошибка : {2}", xex.LineNumber, xex.LinePosition, xex.Message), xex);
 			}
 
@@ -73,16 +72,13 @@ namespace Inforoom.Formalizer
 		public override object ProcessPeriod(string PeriodValue)
 		{
 			DateTime res;
-			try
-			{
+			try {
 				res = DateTime.Parse(PeriodValue, System.Globalization.CultureInfo.InvariantCulture);
 				return res;
 			}
-			catch
-			{
+			catch {
 				return DBNull.Value;
 			}
 		}
-
 	}
 }

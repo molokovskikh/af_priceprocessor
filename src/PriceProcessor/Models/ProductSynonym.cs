@@ -8,7 +8,8 @@ namespace Inforoom.PriceProcessor.Models
 	public class ProductSynonym : ActiveRecordLinqBase<ProductSynonym>
 	{
 		public ProductSynonym()
-		{}
+		{
+		}
 
 		public ProductSynonym(string synonym)
 		{

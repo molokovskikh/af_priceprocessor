@@ -52,14 +52,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 			var line = reader.ReadLine();
 			while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
 				line = reader.ReadLine();
-			if (!IsStartLineForHeaders(line))
-			{
+			if (!IsStartLineForHeaders(line)) {
 				isCorrectBody = false;
 				return null;
-			}	
+			}
 			var headerParts = new List<string>();
-			while ((line != null) && !IsHeaderBeforeData(line, headerName))
-			{
+			while ((line != null) && !IsHeaderBeforeData(line, headerName)) {
 				line = reader.ReadLine();
 				if (line == null)
 					return null;
@@ -67,10 +65,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 			}
 			if (headerParts.Count == 0)
 				return null;
-			for (var i = 0; i < headerParts.Count; i++)
-			{
-				if (String.IsNullOrEmpty(headerParts[i]))
-				{
+			for (var i = 0; i < headerParts.Count; i++) {
+				if (String.IsNullOrEmpty(headerParts[i])) {
 					headerParts.RemoveAt(i--);
 					continue;
 				}
@@ -107,19 +103,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 			var parser = new HeaderBodyParser(reader, CommentSymbol.ToString());
 			var line = parser.Header().FirstOrDefault();
 
-			if (line == null)
-			{
+			if (line == null) {
 				throw new Exception("Не найден заголовок накладной");
 			}
-			
+
 			var header = line.Split(';');
 			document.ProviderDocumentId = header[0];
 			if (!String.IsNullOrEmpty(header[1]))
-					document.DocumentDate = Convert.ToDateTime(header[1]);
+				document.DocumentDate = Convert.ToDateTime(header[1]);
 
-			foreach (var body in parser.Body())
-			{
-
+			foreach (var body in parser.Body()) {
 				var parts = body.Split(';');
 				var docLine = document.NewLine();
 				docLine.Code = parts[0];
@@ -142,13 +135,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 					docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
 			}
 			return document;
-	   }
+		}
 
 		public Document Parse(string file, Document document)
 		{
 			isCorrectBody = true;
-			using(var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var line = String.Empty;
 				var headerDescription = ReadHeader(reader, HeaderCaption);
 				if (headerDescription == null)
@@ -164,8 +156,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				if (bodyDescription == null)
 					throw new Exception("Не найдено тело накладной");
 
-				while ((line = reader.ReadLine()) != null)
-				{
+				while ((line = reader.ReadLine()) != null) {
 					if (String.IsNullOrEmpty(line))
 						continue;
 					var parts = line.Split(';');
@@ -193,8 +184,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var parser = new HeaderBodyParser(reader, CommentSymbol.ToString());
 				var headerLine = parser.Header().FirstOrDefault();
 				if (headerLine == null)
@@ -203,13 +193,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				DateTime dt;
 				if (!DateTime.TryParse(header[1], out dt))
 					return false;
-				if (header.Length != 9 && header.Length != 18 && header.Length != 11 && header.Length != 10  && header.Length != 17 && header.Length != 6)
+				if (header.Length != 9 && header.Length != 18 && header.Length != 11 && header.Length != 10 && header.Length != 17 && header.Length != 6)
 					return false;
 				var bodyLine = parser.Body().FirstOrDefault();
 				if (bodyLine == null)
 					return false;
 				var body = bodyLine.Split(';');
-				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26  && body.Length != 21 && body.Length != 31 &&  body.Length != 20 && body.Length != 32 && body.Length != 25)
+				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26 && body.Length != 21 && body.Length != 31 && body.Length != 20 && body.Length != 32 && body.Length != 25)
 					return false;
 			}
 			return true;

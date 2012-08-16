@@ -11,7 +11,8 @@ namespace Inforoom.Downloader
 	public class PriceSource
 	{
 		public PriceSource()
-		{}
+		{
+		}
 
 		public PriceSource(DataRow row)
 		{
@@ -85,7 +86,6 @@ where pim.Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", PriceItemId),
 					new MySqlParameter("?LastSuccessfulCheck", LastSuccessfulCheck));
 			});
-
 		}
 	}
 }

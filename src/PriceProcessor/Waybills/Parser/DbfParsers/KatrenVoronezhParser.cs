@@ -6,12 +6,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class KatrenVoronezhParser : BaseDbfParser
 	{
-		 public override DbfParser GetParser()
+		public override DbfParser GetParser()
 		{
 			return new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "QueryNum")
 				.DocumentHeader(d => d.DocumentDate, "QueryDate")
-
 				.DocumentInvoice(i => i.InvoiceNumber, "DocNum")
 				.DocumentInvoice(i => i.InvoiceDate, "DocDate")
 				.DocumentInvoice(i => i.SellerName, "SellerName")
@@ -35,7 +34,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.AmountWithoutNDS, "STOTWONDS")
 				.DocumentInvoice(i => i.NDSAmount, "SUMNDS")
 				.DocumentInvoice(i => i.Amount, "SUMTOTAL")
-
 				.Line(l => l.Product, "GOODE")
 				.Line(l => l.Unit, "IZM")
 				.Line(l => l.Quantity, "QUANT")
@@ -64,17 +62,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public override void PostParsing(Document doc)
 		{
-			if(doc.Invoice != null)
-			{
+			if (doc.Invoice != null) {
 				var innkpp = doc.Invoice.SellerINN.Split('/');
-				if (innkpp.Length == 2)
-				{
+				if (innkpp.Length == 2) {
 					doc.Invoice.SellerINN = String.IsNullOrEmpty(innkpp[0]) ? null : innkpp[0];
 					doc.Invoice.SellerKPP = String.IsNullOrEmpty(innkpp[1]) ? null : innkpp[1];
 				}
 				innkpp = doc.Invoice.BuyerINN.Split('/');
-				if(innkpp.Length == 2)
-				{
+				if (innkpp.Length == 2) {
 					doc.Invoice.BuyerINN = String.IsNullOrEmpty(innkpp[0]) ? null : innkpp[0];
 					doc.Invoice.BuyerKPP = String.IsNullOrEmpty(innkpp[1]) ? null : innkpp[1];
 				}
@@ -84,14 +79,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("DocNum")
-				   && data.Columns.Contains("DocDate")
-				   && data.Columns.Contains("QueryNum")
-				   && data.Columns.Contains("QueryDate")
-				   && data.Columns.Contains("SellerName")
-				   && data.Columns.Contains("SAddress")
-				   && data.Columns.Contains("SINN")
-				   && data.Columns.Contains("GAddress")
-				   && data.Columns.Contains("GOODE");
+				&& data.Columns.Contains("DocDate")
+				&& data.Columns.Contains("QueryNum")
+				&& data.Columns.Contains("QueryDate")
+				&& data.Columns.Contains("SellerName")
+				&& data.Columns.Contains("SAddress")
+				&& data.Columns.Contains("SINN")
+				&& data.Columns.Contains("GAddress")
+				&& data.Columns.Contains("GOODE");
 		}
 	}
 }

@@ -60,6 +60,5 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[HasMany(ColumnKey = "MailId", Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<MailRecipient> MailRecipients { get; set; }
-
 	}
 }

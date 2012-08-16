@@ -28,8 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("NOM_SERT"))
 				certificatesColumn = "NOM_SERT";
 
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r["DOK"]);
 				if (!Convert.IsDBNull(r["DD"]))
 					document.DocumentDate = Convert.ToDateTime(r["DD"]);
@@ -47,7 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = Convert.IsDBNull(r[registryCostColumn]) ? null :
-						(decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
+						                                                                   (decimal?)Convert.ToDecimal(r[registryCostColumn], CultureInfo.InvariantCulture);
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
 					line.Certificates = Convert.IsDBNull(r[certificatesColumn]) ? null : r[certificatesColumn].ToString();
@@ -64,13 +63,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("DOK") &&
-				   data.Columns.Contains("DD") &&
-				   data.Columns.Contains("IDPOS") &&
-				   data.Columns.Contains("NAME_PRO") &&
-				   data.Columns.Contains("CENA") &&
-				   data.Columns.Contains("CENA_S_NDS") &&
-				   data.Columns.Contains("KOL") &&
-				   data.Columns.Contains("NDS");
+				data.Columns.Contains("DD") &&
+				data.Columns.Contains("IDPOS") &&
+				data.Columns.Contains("NAME_PRO") &&
+				data.Columns.Contains("CENA") &&
+				data.Columns.Contains("CENA_S_NDS") &&
+				data.Columns.Contains("KOL") &&
+				data.Columns.Contains("NDS");
 		}
 	}
 }

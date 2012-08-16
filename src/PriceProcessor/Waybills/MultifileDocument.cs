@@ -42,7 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static bool IsPartialFile(DocumentReceiveLog documentLog, string nameStartString)
 		{
 			return Path.GetFileNameWithoutExtension(documentLog.FileName).StartsWith(nameStartString) &&
-				Path.GetExtension(documentLog.FileName).Equals(".dbf", StringComparison.OrdinalIgnoreCase);			
+				Path.GetExtension(documentLog.FileName).Equals(".dbf", StringComparison.OrdinalIgnoreCase);
 		}
 
 		private static bool IsHeaderFile(DocumentReceiveLog file)
@@ -55,8 +55,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var headerFile = documentLog.FileName;
 			var template = Path.GetFileName(headerFile).Substring(1);
 			var directory = Path.GetDirectoryName(headerFile);
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				if (file.FileName.EndsWith(template) &&
 					!headerFile.Equals(file.FileName, StringComparison.OrdinalIgnoreCase) &&
 					Path.GetDirectoryName(file.FileName).Equals(directory))
@@ -76,8 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var tableBody = Dbf.Load(bodyFile.GetFileName());
 
 			var commonColumns = new List<string>();
-			foreach (DataColumn column in tableHeader.Columns)
-			{
+			foreach (DataColumn column in tableHeader.Columns) {
 				if (tableBody.Columns.Contains(column.ColumnName))
 					commonColumns.Add(column.ColumnName);
 				else
@@ -85,8 +83,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			var headerColumnName = String.Empty;
 			var bodyColumnName = String.Empty;
-			if (commonColumns.Count != 1)
-			{
+			if (commonColumns.Count != 1) {
 				headerColumnName = "DOCNUMBER";
 				if (!tableHeader.Columns.Contains(headerColumnName))
 					headerColumnName = "DOCNUM";
@@ -95,8 +92,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (!tableBody.Columns.Contains(bodyColumnName))
 					bodyColumnName = "DOCNUMBER";
 			}
-			else
-			{
+			else {
 				headerColumnName = commonColumns[0];
 				bodyColumnName = commonColumns[0];
 			}
@@ -106,15 +102,12 @@ namespace Inforoom.PriceProcessor.Waybills
 При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1 и нет колонок {2} или {3}.
 Файл-заголовок: {0}
 Файл-тело: {1}", headerFile.FileName, bodyFile.FileName, headerColumnName, bodyColumnName));
-			
-			foreach (DataRow headerRow in tableHeader.Rows)
-			{
-				foreach (DataRow bodyRow in tableBody.Rows)
-				{
+
+			foreach (DataRow headerRow in tableHeader.Rows) {
+				foreach (DataRow bodyRow in tableBody.Rows) {
 					if (!headerRow[headerColumnName].Equals(bodyRow[bodyColumnName]))
 						continue;
-					foreach (DataColumn column in tableHeader.Columns)
-					{
+					foreach (DataColumn column in tableHeader.Columns) {
 						if (commonColumns.Contains(column.ColumnName))
 							continue;
 						bodyRow[column.ColumnName] = headerRow[column.ColumnName];
@@ -122,7 +115,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 			}
 			tableBody.AcceptChanges();
-			
+
 			// Path.GetFileName(headerFilePath).Substring(1) потому что первая буква "h" нам не нужна
 			var mergedFileName = Path.Combine(Path.GetTempPath(), MergedPrefix + Path.GetFileName(headerFile.FileName).Substring(1));
 			if (File.Exists(mergedFileName))
@@ -135,26 +128,21 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			DocumentReceiveLog headerFile = null;
 			DocumentReceiveLog bodyFile = null;
-			try
-			{
+			try {
 				var resultList = new List<DocumentForParsing>();
-				for (var i = 0; i < documents.Count; i++)
-				{
+				for (var i = 0; i < documents.Count; i++) {
 					headerFile = null;
 					bodyFile = null;
 					var file = documents[i];
-					if (IsHeaderFile(file))
-					{
+					if (IsHeaderFile(file)) {
 						headerFile = file;
 						bodyFile = GetSecondFile(headerFile, documents);
 					}
-					if (IsBodyFile(file))
-					{
+					if (IsBodyFile(file)) {
 						bodyFile = file;
 						headerFile = GetSecondFile(bodyFile, documents);
 					}
-					if ((headerFile != null) && (bodyFile != null))
-					{
+					if ((headerFile != null) && (bodyFile != null)) {
 						var mergedFile = MergeFiles(headerFile, bodyFile);
 						resultList.Add(new DocumentForParsing(file, mergedFile));
 						documents.Remove(headerFile);
@@ -166,8 +154,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				return resultList;
 			}
-			catch(Exception e)
-			{
+			catch (Exception e) {
 				var log = LogManager.GetLogger(typeof(MultifileDocument));
 				log.Error("Ошибка при слиянии многофайловых накладных", e);
 				if (headerFile != null) WaybillService.SaveWaybill(headerFile.GetFileName());
@@ -179,7 +166,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		public static void DeleteMergedFiles(string fileName)
 		{
 			if (IsMergedDocument(fileName) && File.Exists(fileName))
-				File.Delete(fileName);			
+				File.Delete(fileName);
 		}
 
 		public static void DeleteMergedFiles(IEnumerable<string> filePaths)

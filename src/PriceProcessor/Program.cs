@@ -16,7 +16,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using log4net.Config;
 using log4net.Util;
-using Environment=NHibernate.Cfg.Environment;
+using Environment = NHibernate.Cfg.Environment;
 
 namespace Inforoom.PriceProcessor
 {
@@ -27,10 +27,9 @@ namespace Inforoom.PriceProcessor
 			SystemInfo.NullText = null;
 			XmlConfigurator.Configure();
 			var log = LogManager.GetLogger(typeof(Program));
-			try
-			{				
+			try {
 				With.DefaultConnectionStringName = Literals.GetConnectionName();
-				InitActiveRecord(new[] {typeof (Document).Assembly});
+				InitActiveRecord(new[] { typeof(Document).Assembly });
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG
 				InitDirs(new[] {
@@ -40,7 +39,7 @@ namespace Inforoom.PriceProcessor
 					Settings.Default.TempPath,
 					Settings.Default.HistoryPath
 				});
-				
+
 				var monitor = Monitor.GetInstance();
 				monitor.Start();
 				MessageBox.Show("Для остановки нажмите Ok...", "PriceProcessor");
@@ -48,15 +47,13 @@ namespace Inforoom.PriceProcessor
 				monitor = null;
 #else
 				ServiceBase[] ServicesToRun;
-				ServicesToRun = new ServiceBase[] 
-				{ 
-					new PriceProcessorService() 
+				ServicesToRun = new ServiceBase[] {
+					new PriceProcessorService()
 				};
 				ServiceBase.Run(ServicesToRun);
 #endif
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				log.Error("Ошибка запуска сервиса обработки прайс листов", e);
 			}
 		}
@@ -65,22 +62,21 @@ namespace Inforoom.PriceProcessor
 		{
 			var config = new InPlaceConfigurationSource();
 			config.PluralizeTableNames = true;
-			config.Add(typeof (ActiveRecordBase),
+			config.Add(typeof(ActiveRecordBase),
 				new Dictionary<string, string> {
-					{Environment.Dialect, "NHibernate.Dialect.MySQLDialect"},
-					{Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver"},
-					{Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider"},
-					{Environment.ConnectionStringName, Literals.GetConnectionName()},
-					{Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle"},
-					{Environment.Hbm2ddlKeyWords, "none"}
+					{ Environment.Dialect, "NHibernate.Dialect.MySQLDialect" },
+					{ Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver" },
+					{ Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider" },
+					{ Environment.ConnectionStringName, Literals.GetConnectionName() },
+					{ Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
+					{ Environment.Hbm2ddlKeyWords, "none" }
 				});
 			ActiveRecordStarter.Initialize(assemblies, config);
 		}
 
 		public static void InitDirs(IEnumerable<string> dirs)
 		{
-			foreach (var dir in dirs)
-			{
+			foreach (var dir in dirs) {
 				if (!Directory.Exists(dir))
 					Directory.CreateDirectory(dir);
 			}

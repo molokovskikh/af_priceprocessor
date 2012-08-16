@@ -5,16 +5,14 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class KazanFarmDbfParser: IDocumentParser
+	public class KazanFarmDbfParser : IDocumentParser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -47,20 +45,20 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return	data.Columns.Contains("NUM_NAKL") &&
-					data.Columns.Contains("DATA_NAKL") &&
-					data.Columns.Contains("KOD") &&
-					data.Columns.Contains("NAME") &&
-					data.Columns.Contains("PROIZV") &&
-					data.Columns.Contains("COUNTRY") &&
-					data.Columns.Contains("CENAFACT") &&
-					data.Columns.Contains("CENASNDS") &&
-					data.Columns.Contains("KOLVO") &&
-					data.Columns.Contains("CENAREG") &&
-					data.Columns.Contains("SERTIF") &&
-					data.Columns.Contains("SERII") &&
-					data.Columns.Contains("JNVLS") &&
-					data.Columns.Contains("SUMMANDS");
+			return data.Columns.Contains("NUM_NAKL") &&
+				data.Columns.Contains("DATA_NAKL") &&
+				data.Columns.Contains("KOD") &&
+				data.Columns.Contains("NAME") &&
+				data.Columns.Contains("PROIZV") &&
+				data.Columns.Contains("COUNTRY") &&
+				data.Columns.Contains("CENAFACT") &&
+				data.Columns.Contains("CENASNDS") &&
+				data.Columns.Contains("KOLVO") &&
+				data.Columns.Contains("CENAREG") &&
+				data.Columns.Contains("SERTIF") &&
+				data.Columns.Contains("SERII") &&
+				data.Columns.Contains("JNVLS") &&
+				data.Columns.Contains("SUMMANDS");
 		}
 	}
 }

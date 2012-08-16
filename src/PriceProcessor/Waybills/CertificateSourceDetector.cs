@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					source.CertificateSourceParser = source.GetCertificateSource();
 				}
 				catch (Exception exception) {
-					var _logger = LogManager.GetLogger(typeof (CertificateSourceDetector));
+					var _logger = LogManager.GetLogger(typeof(CertificateSourceDetector));
 					_logger.WarnFormat("Ошибка при создании экземпляра для разбора сертификатов {0}: {1}", source.SourceClassName, exception);
 				}
 				return source.CertificateSourceParser != null ? source : null;
@@ -28,13 +28,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			var source = DetectSource(document);
 
 			if (source != null) {
-
 				foreach (var documentLine in document.Lines) {
 					if (documentLine.ProductEntity != null) {
-						var certificate = 
+						var certificate =
 							Certificate.Queryable.FirstOrDefault(
-								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id 
-									&& c.SerialNumber == documentLine.CertificateSerialNumber 
+								c => c.CatalogProduct.Id == documentLine.ProductEntity.CatalogProduct.Id
+									&& c.SerialNumber == documentLine.CertificateSerialNumber
 									&& c.CertificateFiles.Any(f => f.CertificateSource.Id == source.Id));
 						if (certificate != null)
 							documentLine.Certificate = certificate;

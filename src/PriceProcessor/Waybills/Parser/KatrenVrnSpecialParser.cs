@@ -12,12 +12,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -25,7 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file, Encoding.GetEncoding(866), true, false);
-			new DbfParser()				
+			new DbfParser()
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "GOOD")
 				.Line(l => l.SerialNumber, "SERIAL")

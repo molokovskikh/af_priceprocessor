@@ -44,8 +44,7 @@ namespace Inforoom.Formalizer
 		public void CalculateJunk()
 		{
 			DateTime periodAsDateTime;
-			if (DateTime.TryParse(Core.Period, out periodAsDateTime))
-			{
+			if (DateTime.TryParse(Core.Period, out periodAsDateTime)) {
 				var isJunk = SystemTime.Now() >= periodAsDateTime
 					|| periodAsDateTime.Subtract(SystemTime.Now()).TotalDays < 180;
 				if (isJunk)

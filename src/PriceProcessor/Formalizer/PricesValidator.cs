@@ -4,6 +4,7 @@ using System.Data;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.PriceProcessor;
@@ -38,30 +39,25 @@ namespace Inforoom.Formalizer
 			//Здесь будем производить копирование файла
 			var copyErrorCount = 0;
 			var copySucces = false;
-			do
-			{
-				try
-				{
+			do {
+				try {
 					File.Copy(fileName, tempFileName, true);
 					copySucces = true;
 				}
-				catch(Exception e)
-				{
-					if (copyErrorCount < 10 )
-					{
+				catch (Exception e) {
+					if (copyErrorCount < 10) {
 						copyErrorCount++;
 						System.Threading.Thread.Sleep(500);
 					}
 					else
 						throw new FormalizeException(
-							String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e), 
-							Convert.ToInt64(dataRow[FormRules.colFirmCode]), 
+							String.Format(Settings.Default.FileCopyError, fileName, Path.GetDirectoryName(tempFileName), e),
+							Convert.ToInt64(dataRow[FormRules.colFirmCode]),
 							Convert.ToInt64(dataRow[FormRules.colPriceCode]),
 							(string)dataRow[FormRules.colFirmShortName],
 							(string)dataRow[FormRules.colSelfPriceName]);
 				}
-			}
-			while(!copySucces);
+			} while (!copySucces);
 
 			fileName = tempFileName;
 
@@ -92,12 +88,12 @@ namespace Inforoom.Formalizer
 					(string)dataRow[FormRules.colSelfPriceName]);
 
 			PriceFormalizationInfo priceInfo;
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				var price = Price.Find(Convert.ToUInt32(dataRow[FormRules.colPriceCode]));
 				NHibernateUtil.Initialize(price);
 				priceInfo = new PriceFormalizationInfo(dataRow, price);
 			}
-			return With.Connection(c => (IPriceFormalizer) Activator.CreateInstance(parserClass, new object[] {fileName, c, priceInfo}));
+			return With.Connection(c => (IPriceFormalizer)Activator.CreateInstance(parserClass, new object[] { fileName, c, priceInfo }));
 		}
 
 		public static DataTable LoadFormRules(uint priceItemId)

@@ -4,6 +4,7 @@ using System.Data;
 using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 
@@ -29,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public DateTime? FtpFileDate { get; set; }
 
-		[HasAndBelongsToMany(typeof (Supplier),
+		[HasAndBelongsToMany(typeof(Supplier),
 			Lazy = true,
 			ColumnKey = "CertificateSourceId",
 			Table = "SourceSuppliers",
@@ -41,18 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public ICertificateSource GetCertificateSource()
 		{
-			var sourceClassName = SourceClassName;
-			Type result = null;
-			var types = Assembly
-				.GetModules()[0]
-				.FindTypes(Module.FilterTypeNameIgnoreCase, sourceClassName);
-			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", sourceClassName));
-			if (types.Length == 1)
-				result = types[0];
-			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", sourceClassName));
-			return (ICertificateSource)Activator.CreateInstance(result);
+			return ReflectionHelper.GetDocumentReader<ICertificateSource>(SourceClassName, Assembly);
 		}
 	}
 
@@ -60,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	{
 		string FtpHost { get; }
 		string FtpDir { get; }
-		string FtpUser { get;  }
+		string FtpUser { get; }
 		string FtpPassword { get; }
 		string Filename { get; }
 		void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row);

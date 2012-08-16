@@ -14,5 +14,5 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual bool Hidden { get; set; }
-	}	
+	}
 }

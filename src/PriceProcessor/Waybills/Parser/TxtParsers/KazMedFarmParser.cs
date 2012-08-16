@@ -27,8 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
@@ -48,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				if (GetDecimal(body[6]) == null)
 					return false;
 				if (GetDateTime(body[9]) == null)
-					return false;				
+					return false;
 			}
 			return true;
 		}

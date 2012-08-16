@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 namespace Inforoom.PriceProcessor.Downloader
 {
 	[SerializableAttribute]
-	[XmlTypeAttribute(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	[XmlTypeAttribute(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class BladingItem
 	{
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
@@ -81,7 +81,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public double? positionsum { get; set; }
 
-		[XmlElement("bladingItemSeries", Form=XmlSchemaForm.Unqualified)]
+		[XmlElement("bladingItemSeries", Form = XmlSchemaForm.Unqualified)]
 		public BladingItemSeries[] bladingItemSeries { get; set; }
 	}
 
@@ -102,15 +102,15 @@ namespace Inforoom.PriceProcessor.Downloader
 		public int? leafNumber { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
-		public int? saveTypeId {get; set; }
+		public int? saveTypeId { get; set; }
 	}
 
 	[Serializable]
-	[XmlType(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	[XmlType(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class BladingItemSeries
 	{
-		[XmlElement(Form=XmlSchemaForm.Unqualified)]
-		public int? bitemId { get;set; }
+		[XmlElement(Form = XmlSchemaForm.Unqualified)]
+		public int? bitemId { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
 		public int? bitemSeriesId { get; set; }
@@ -174,48 +174,48 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	[Serializable]
-	[XmlType(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	[XmlType(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class BladingItemSeriesCertificate
 	{
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int? bitemSeriesId { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public DateTime? dateExpire { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public string declarantName { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int? docId { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int? docTypeId { get; set; }
 
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int? itemId { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public string regNo { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public string regOrg { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public string regSert { get; set; }
-		
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public System.DateTime? regd { get; set; }
 
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
 		public int? sertId { get; set; }
 	}
 
 	[SerializableAttribute]
-	[XmlTypeAttribute(Namespace="http://domain.ezakaz.protek.ru/xsd")]
+	[XmlTypeAttribute(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class BladingFolder
 	{
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
+		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public int? bladingId { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
@@ -247,7 +247,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	[XmlTypeAttribute(Namespace = "http://domain.ezakaz.protek.ru/xsd")]
 	public class Blading
 	{
-		[XmlElement(Form=XmlSchemaForm.Unqualified, IsNullable=true)]
+		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
 		public BladingFolder[] bladingFolder { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
@@ -414,8 +414,8 @@ namespace Inforoom.PriceProcessor.Downloader
 	}
 
 	[Serializable]
-	[XmlType(Namespace="http://xml.ezakaz.protek.ru/xsd")]
-	public class EZakazXML 
+	[XmlType(Namespace = "http://xml.ezakaz.protek.ru/xsd")]
+	public class EZakazXML
 	{
 		[XmlElement("blading", Form = XmlSchemaForm.Unqualified)]
 		public Blading[] blading { get; set; }
@@ -423,7 +423,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		[XmlElement("sertImage", Form = XmlSchemaForm.Unqualified)]
 		public SertImagesBase[] sertImage { get; set; }
 
-		[XmlElement("sertDocType", Form=XmlSchemaForm.Unqualified)]
+		[XmlElement("sertDocType", Form = XmlSchemaForm.Unqualified)]
 		public SertDocType[] sertDocType { get; set; }
 
 		[XmlElement(Form = XmlSchemaForm.Unqualified)]
@@ -451,16 +451,13 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getBladingHeaders", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getBladingHeadersRequest
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public int clientId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int clientId;
 
-		[MessageBodyMemberAttribute(Namespace = "http://service.ezakaz.protek.ru", Order = 1)]
-		[XmlElementAttribute(Form = XmlSchemaForm.Unqualified)]
-		public int instCode;
+		[MessageBodyMemberAttribute(Namespace = "http://service.ezakaz.protek.ru", Order = 1)] [XmlElementAttribute(Form = XmlSchemaForm.Unqualified)] public int instCode;
 
 		public getBladingHeadersRequest()
-		{}
+		{
+		}
 
 		public getBladingHeadersRequest(int clientId, int instCode)
 		{
@@ -473,24 +470,17 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getBladingBody", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getBladingBodyRequest
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
-		public string theUid;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public string theUid;
 
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 1)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public int clientId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 1)] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int clientId;
 
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 2)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public int instCode;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 2)] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
 
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 3)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified)]
-		public int bladingId;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 3)] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int bladingId;
 
 		public getBladingBodyRequest()
-		{}
+		{
+		}
 
 		public getBladingBodyRequest(string theUid, int clientId, int instCode, int bladingId)
 		{
@@ -505,9 +495,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getBladingHeadersResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getBladingHeadersResponse
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
-		public EZakazXML @return;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public EZakazXML @return;
 
 		public getBladingHeadersResponse()
 		{
@@ -523,9 +511,7 @@ namespace Inforoom.PriceProcessor.Downloader
 	[MessageContract(WrapperName = "getBladingBodyResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
 	public class getBladingBodyResponse
 	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)]
-		[XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)]
-		public EZakazXML @return;
+		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public EZakazXML @return;
 
 		public getBladingBodyResponse()
 		{
@@ -559,17 +545,17 @@ namespace Inforoom.PriceProcessor.Downloader
 		}
 	}
 
-	[MessageContractAttribute(WrapperName="closeBladingSessionResponse", WrapperNamespace="http://service.ezakaz.protek.ru", IsWrapped=true)]
-	public class closeBladingSessionResponse {
+	[MessageContractAttribute(WrapperName = "closeBladingSessionResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
+	public class closeBladingSessionResponse
+	{
+		[MessageBodyMemberAttribute(Namespace = "http://service.ezakaz.protek.ru", Order = 0)] [XmlElementAttribute(Form = XmlSchemaForm.Unqualified)] public bool @return;
 
-		[MessageBodyMemberAttribute(Namespace="http://service.ezakaz.protek.ru", Order=0)]
-		[XmlElementAttribute(Form=XmlSchemaForm.Unqualified)]
-		public bool @return;
-
-		public closeBladingSessionResponse() {
+		public closeBladingSessionResponse()
+		{
 		}
 
-		public closeBladingSessionResponse(bool @return) {
+		public closeBladingSessionResponse(bool @return)
+		{
 			this.@return = @return;
 		}
 	}

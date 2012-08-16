@@ -57,20 +57,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("F_PASS"))
 				passportFilenameColumn = "F_PASS";
 
-			document.Lines = data.Rows.Cast<DataRow>().Select(r =>
-			{
+			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r["DOCNO"]);
 				if (!Convert.IsDBNull(r["DOCDAT"]))
 					document.DocumentDate = Convert.ToDateTime(r["DOCDAT"]);
 				var line = document.NewLine();
-				line.Code = r["CODE"].ToString();				
+				line.Code = r["CODE"].ToString();
 				if (data.Columns.Contains("CLEANNAME"))
 					line.Product = r["CLEANNAME"].ToString();
-				else
-				{
-					if (data.Columns.Contains("TOVAR"))
-						line.Product = r["TOVAR"].ToString();
-				}
+				else if (data.Columns.Contains("TOVAR"))
+					line.Product = r["TOVAR"].ToString();
 				line.Producer = r["PROIZV"].ToString();
 				line.Country = r["STRANA"].ToString();
 				line.ProducerCostWithoutNDS = Convert.IsDBNull(r["ZAVOD"]) ? null : (decimal?)Convert.ToDecimal(r["ZAVOD"], CultureInfo.InvariantCulture);
@@ -79,8 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["GODEN"]) ? null : Convert.ToDateTime(r["GODEN"]).ToShortDateString();
 
-				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn]))
-				{
+				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn])) {
 					decimal value;
 					if (decimal.TryParse(r[registryCostColumn].ToString(), out value))
 						line.RegistryCost = value;
@@ -93,16 +88,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Nds = Convert.IsDBNull(r[ndsColumn]) ? null : (uint?)Convert.ToUInt32(r[ndsColumn], CultureInfo.InvariantCulture);
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
 					line.VitallyImportant = Convert.IsDBNull(r[vitallyImportantColumn]) ? null : (bool?)(Convert.ToUInt32(r[vitallyImportantColumn]) == 1);
-				if (!String.IsNullOrEmpty(AmountColumn))
-				{
+				if (!String.IsNullOrEmpty(AmountColumn)) {
 					line.Amount = ParseHelper.GetDecimal(r[AmountColumn].ToString());
 				}
-				if(!String.IsNullOrEmpty(NdsAmountColumn))
-				{
+				if (!String.IsNullOrEmpty(NdsAmountColumn)) {
 					line.NdsAmount = ParseHelper.GetDecimal(r[NdsAmountColumn].ToString());
 				}
-				if (!String.IsNullOrEmpty(SupplierPriceMarkupColumn))
-				{
+				if (!String.IsNullOrEmpty(SupplierPriceMarkupColumn)) {
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r[SupplierPriceMarkupColumn].ToString());
 				}
 
@@ -121,13 +113,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("DOCNO") &&
-				   data.Columns.Contains("TOVAR") &&
-				   data.Columns.Contains("CODE") &&
-				   data.Columns.Contains("PROIZV") &&
-				   data.Columns.Contains("TZENANDS") &&
-				   data.Columns.Contains("GODEN") &&
-				   data.Columns.Contains("KOL") &&
-				   data.Columns.Contains("DOCDAT");
+				data.Columns.Contains("TOVAR") &&
+				data.Columns.Contains("CODE") &&
+				data.Columns.Contains("PROIZV") &&
+				data.Columns.Contains("TZENANDS") &&
+				data.Columns.Contains("GODEN") &&
+				data.Columns.Contains("KOL") &&
+				data.Columns.Contains("DOCDAT");
 		}
 	}
 }

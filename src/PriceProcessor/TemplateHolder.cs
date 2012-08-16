@@ -8,8 +8,8 @@ namespace Inforoom.PriceProcessor
 	public class MailTemplate
 	{
 		public ResponseTemplate ResponseType { get; set; }
-		public string Subject  { get; set; }
-		public string Body  { get; set; }
+		public string Subject { get; set; }
+		public string Body { get; set; }
 
 		public MailTemplate(ResponseTemplate template, string subject, string body)
 		{
@@ -50,7 +50,8 @@ namespace Inforoom.PriceProcessor
 
 		public static DefaultValues Values
 		{
-			get { 
+			get
+			{
 				if (NeedUpdate())
 					UpdateValues();
 				return _values;
@@ -76,6 +77,5 @@ namespace Inforoom.PriceProcessor
 					throw new ArgumentOutOfRangeException("template");
 			}
 		}
-
 	}
 }

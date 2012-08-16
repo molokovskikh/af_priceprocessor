@@ -44,7 +44,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public List<CostDescription> CostDescriptions { get; set; }
 
-		private readonly ILog _logger = LogManager.GetLogger(typeof (PriceReader));
+		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceReader));
 
 		public PriceReader(DataRow priceInfo, IParser parser, string filename, PriceFormalizationInfo info)
 		{
@@ -60,7 +60,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var nameMask = priceInfo[FormRules.colNameMask] is DBNull ? String.Empty : (string)priceInfo[FormRules.colNameMask];
 
 			awaitPos = priceInfo[FormRules.colSelfAwaitPos].ToString();
-			junkPos  = priceInfo[FormRules.colSelfJunkPos].ToString();
+			junkPos = priceInfo[FormRules.colSelfJunkPos].ToString();
 			vitallyImportantMask = priceInfo[FormRules.colSelfVitallyImportantMask].ToString();
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
@@ -69,15 +69,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			//Производим попытку разобрать строку с "запрещенными выражениями"
 			var forbWords = priceInfo[FormRules.colForbWords] is DBNull ? String.Empty : (string)priceInfo[FormRules.colForbWords];
 			forbWords = forbWords.Trim();
-			if (String.Empty != forbWords)
-			{
-				forbWordsList = forbWords.Split(new[] {' '}).Where(w => !String.IsNullOrWhiteSpace(w)).ToArray();
+			if (String.Empty != forbWords) {
+				forbWordsList = forbWords.Split(new[] { ' ' }).Where(w => !String.IsNullOrWhiteSpace(w)).ToArray();
 				if (forbWordsList.Length == 0)
 					forbWordsList = null;
 			}
 
-			foreach(PriceFields pf in Enum.GetValues(typeof(PriceFields)))
-			{
+			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields))) {
 				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
 				SetFieldName(pf, priceInfo[tmpName] is DBNull ? String.Empty : (string)priceInfo[tmpName]);
 			}
@@ -125,7 +123,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !_priceData.Columns.Contains(GetFieldName(pf)))
 					sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
 
-			
+
 			foreach (var cost in CostDescriptions)
 				if (!String.IsNullOrEmpty(cost.FieldName) && !_priceData.Columns.Contains(cost.FieldName))
 					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.Name, cost.FieldName);
@@ -143,8 +141,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (null != toughMask)
 				toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
 
-			do
-			{
+			do {
 				var name = GetFieldValue(PriceFields.Name1);
 
 				if (String.IsNullOrEmpty(name))
@@ -162,8 +159,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
 				InsertToCore(position, costs);
 				yield return position;
-			}
-			while (Next());
+			} while (Next());
 		}
 
 		private void ValidateCosts()
@@ -172,14 +168,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				throw new WarningFormalizeException(PriceProcessor.Settings.Default.CostsNotExistsError, _priceInfo);
 
 			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
-			if (!_priceInfo.IsAssortmentPrice &&  _priceInfo.CostType == CostTypes.MultiColumn)
-			{
+			if (!_priceInfo.IsAssortmentPrice && _priceInfo.CostType == CostTypes.MultiColumn) {
 				var baseCosts = CostDescriptions.Where(c => c.IsBaseCost).ToArray();
 				if (baseCosts.Length == 0)
 					throw new WarningFormalizeException(PriceProcessor.Settings.Default.BaseCostNotExistsError, _priceInfo);
 
-				if (baseCosts.Length > 1)
-				{
+				if (baseCosts.Length > 1) {
 					throw new WarningFormalizeException(
 						String.Format(PriceProcessor.Settings.Default.DoubleBaseCostsError,
 							baseCosts[0].Id,
@@ -210,35 +204,30 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				Quantity = quantity is DBNull ? null : quantity.ToString(),
 				Note = GetFieldValue(PriceFields.Note),
 				Doc = (string)GetFieldValueObject(PriceFields.Doc),
-
 				Junk = position.Junk,
 				Await = (bool)GetFieldValueObject(PriceFields.Await),
 				VitallyImportant = (bool)GetFieldValueObject(PriceFields.VitallyImportant),
-
 				MinBoundCost = GetDecimalValue(PriceFields.MinBoundCost),
 				MaxBoundCost = GetDecimalValue(PriceFields.MaxBoundCost),
 				OrderCost = GetDecimalValue(PriceFields.OrderCost),
 				MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.MinOrderCount),
 				RequestRatio = GetFieldValueObject(PriceFields.RequestRatio) is DBNull ? 0 : Convert.ToUInt32(GetFieldValueObject(PriceFields.RequestRatio)),
 				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
-
 				Nds = GetFieldValueObject(PriceFields.Nds) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.Nds),
-
 				CodeOKP = GetFieldValue(PriceFields.CodeOKP),
 				EAN13 = GetFieldValue(PriceFields.EAN13),
 				Series = GetFieldValue(PriceFields.Series)
 			};
 
 			if (quantity is int)
-				core.QuantityAsInt = (int) quantity;
+				core.QuantityAsInt = (int)quantity;
 
 			var rawPeriodValue = GetFieldValueObject(PriceFields.Period);
 			string periodValue;
 			//если получилось преобразовать в дату, то сохраняем в формате даты
 			if (rawPeriodValue is DateTime)
 				periodValue = ((DateTime)rawPeriodValue).ToString("dd'.'MM'.'yyyy");
-			else
-			{
+			else {
 				//Если не получилось преобразовать, то смотрим на "сырое" значение поле, если оно не пусто, то пишем в базу
 				periodValue = GetFieldRawValue(PriceFields.Period);
 				if (String.IsNullOrEmpty(periodValue))
@@ -256,7 +245,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				return 0;
 			if (Cost.IsZeroOrLess((decimal)value))
 				return 0;
-			return (decimal) value;
+			return (decimal)value;
 		}
 
 		/// <summary>
@@ -266,10 +255,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public virtual bool Next()
 		{
 			_index++;
-			if (_index < _priceData.Rows.Count)
-			{
+			if (_index < _priceData.Rows.Count) {
 				if (null != toughMask)
-					toughMask.Analyze( GetFieldRawValue(PriceFields.Name1) );
+					toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
 				return true;
 			}
 			return false;
@@ -282,8 +270,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// <returns></returns>
 		public virtual string GetFieldRawValue(PriceFields field)
 		{
-			try
-			{
+			try {
 				//Если имя столбца для поля не определено, то возвращаем null
 				if (String.IsNullOrEmpty(GetFieldName(field)))
 					return null;
@@ -292,8 +279,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				value = CleanupCharsThatNotFitIn1251(value);
 				return value;
 			}
-			catch
-			{
+			catch {
 				return null;
 			}
 		}
@@ -319,11 +305,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			string res = null;
 
 			//Сначала пытаемся вытянуть данные из toughMask
-			if (null != toughMask)
-			{
+			if (null != toughMask) {
 				res = toughMask.GetFieldValue(field);
-				if (null != res)
-				{
+				if (null != res) {
 					//Удаляем опасные слова только из наименований
 					if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field))
 						res = RemoveForbWords(res);
@@ -333,35 +317,29 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			}
 
 			//Если у нас это не получилось, что пытаемся вытянуть данные из самого поля
-			if ((null == res) || ("" == res.Trim()))
-			{
+			if ((null == res) || ("" == res.Trim())) {
 				res = GetFieldRawValue(field);
-				if (null != res)
-				{
+				if (null != res) {
 					if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field))
 						res = RemoveForbWords(res);
 					res = UnSpace(res);
 				}
 			}
 
-			if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field) ||(PriceFields.FirmCr == field))
-			{
-				if (null != res && res.Length > 255)
-				{
+			if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field) || (PriceFields.FirmCr == field)) {
+				if (null != res && res.Length > 255) {
 					res = res.Remove(255, res.Length - 255);
 					res = res.Trim();
 				}
 			}
 
-			if (PriceFields.Name1 == field || PriceFields.OriginalName == field)
-			{
-				if (_priceData.Columns.IndexOf(GetFieldName(PriceFields.Name2) ) > -1)
+			if (PriceFields.Name1 == field || PriceFields.OriginalName == field) {
+				if (_priceData.Columns.IndexOf(GetFieldName(PriceFields.Name2)) > -1)
 					res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name2))));
-				if (_priceData.Columns.IndexOf(GetFieldName(PriceFields.Name3) ) > -1)
+				if (_priceData.Columns.IndexOf(GetFieldName(PriceFields.Name3)) > -1)
 					res = UnSpace(String.Format("{0} {1}", res, RemoveForbWords(GetFieldRawValue(PriceFields.Name3))));
 
-				if (null != res && res.Length > 255)
-				{
+				if (null != res && res.Length > 255) {
 					res = res.Remove(255, res.Length - 255);
 					res = res.Trim();
 				}
@@ -377,8 +355,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// </summary>
 		public virtual object GetFieldValueObject(PriceFields PF)
 		{
-			switch((int)PF)
-			{
+			switch ((int)PF) {
 				case (int)PriceFields.Await:
 					return GetBoolValue(PriceFields.Await, awaitPos);
 
@@ -429,21 +406,15 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// <returns></returns>
 		public virtual object ProcessCost(string CostValue)
 		{
-			if (!String.IsNullOrEmpty(CostValue))
-			{
-				try
-				{
+			if (!String.IsNullOrEmpty(CostValue)) {
+				try {
 					var nfi = CultureInfo.CurrentCulture.NumberFormat;
 					var res = String.Empty;
-					foreach (var c in CostValue)
-					{
+					foreach (var c in CostValue) {
 						if (Char.IsDigit(c))
 							res = String.Concat(res, c);
-						else
-						{
-							if ((!Char.IsWhiteSpace(c)) && (res != String.Empty) && (-1 == res.IndexOf(nfi.CurrencyDecimalSeparator)))
-								res = String.Concat(res, nfi.CurrencyDecimalSeparator);
-						}
+						else if ((!Char.IsWhiteSpace(c)) && (res != String.Empty) && (-1 == res.IndexOf(nfi.CurrencyDecimalSeparator)))
+							res = String.Concat(res, nfi.CurrencyDecimalSeparator);
 					}
 
 					//Если результирующая строка пуста, то возвращаем DBNull
@@ -454,8 +425,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 					value = Math.Round(value, 6);
 					return value;
 				}
-				catch
-				{
+				catch {
 					return DBNull.Value;
 				}
 			}
@@ -469,17 +439,14 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// <returns></returns>
 		public virtual object ProcessInt(string IntValue)
 		{
-			if (!String.IsNullOrEmpty(IntValue))
-			{
-				try
-				{
+			if (!String.IsNullOrEmpty(IntValue)) {
+				try {
 					var cost = ProcessCost(IntValue);
 					if (cost is decimal)
-						return Convert.ToInt32(decimal.Truncate((decimal) cost));
+						return Convert.ToInt32(decimal.Truncate((decimal)cost));
 					return cost;
 				}
-				catch
-				{
+				catch {
 					return DBNull.Value;
 				}
 			}
@@ -495,21 +462,17 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			DateTime res = DateTime.MaxValue;
 			string pv;
-			if (null != toughMask)
-			{
+			if (null != toughMask) {
 				pv = toughMask.GetFieldValue(PriceFields.Period);
-				if (!String.IsNullOrEmpty(pv))
-				{
-					res = toughDate.Analyze( pv );
+				if (!String.IsNullOrEmpty(pv)) {
+					res = toughDate.Analyze(pv);
 					if (!DateTime.MaxValue.Equals(res))
 						return res;
 				}
 			}
-			if (!String.IsNullOrEmpty(PeriodValue))
-			{
-				res = toughDate.Analyze( PeriodValue );
-				if (DateTime.MaxValue.Equals(res))
-				{
+			if (!String.IsNullOrEmpty(PeriodValue)) {
+				res = toughDate.Analyze(PeriodValue);
+				if (DateTime.MaxValue.Equals(res)) {
 					return DBNull.Value;
 				}
 				return res;
@@ -522,10 +485,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// </summary>
 		public string UnSpace(string Value)
 		{
-			if (null != Value)
-			{
-				Value = Value.Trim(); 
-				while(Value.IndexOf("  ") > -1)
+			if (null != Value) {
+				Value = Value.Trim();
+				while (Value.IndexOf("  ") > -1)
 					Value = Value.Replace("  ", " ");
 				return Value;
 			}
@@ -552,13 +514,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			bool value = false;
 
-			var trueValues = new[] { "истина", "true"};
+			var trueValues = new[] { "истина", "true" };
 			var falseValues = new[] { "ложь", "false" };
 
 			string[] selectedValues = null;
 
-			try
-			{
+			try {
 				foreach (string boolValue in trueValues)
 					if (boolValue.Equals(mask, StringComparison.OrdinalIgnoreCase))
 						selectedValues = trueValues;
@@ -573,23 +534,20 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				if (String.IsNullOrEmpty(fieldValue))
 					return value;
 
-				if (selectedValues != null)
-				{
+				if (selectedValues != null) {
 					Regex reRussian = new Regex(selectedValues[0], RegexOptions.IgnoreCase);
 					Match mRussian = reRussian.Match(fieldValue);
 					Regex reEnglish = new Regex(selectedValues[1], RegexOptions.IgnoreCase);
 					Match mEnglish = reEnglish.Match(fieldValue);
 					value = (mRussian.Success || mEnglish.Success);
 				}
-				else
-				{
+				else {
 					Regex re = new Regex(mask);
 					Match m = re.Match(fieldValue);
 					value = (m.Success);
 				}
 			}
-			catch
-			{
+			catch {
 			}
 
 			return value;
@@ -601,21 +559,19 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public Cost[] ProcessCosts(List<CostDescription> descriptions)
 		{
 			var costs = new List<Cost>();
-			for(var i = 0; i < descriptions.Count; i++)
-			{
+			for (var i = 0; i < descriptions.Count; i++) {
 				var description = descriptions[i];
-				
+
 				var costValue = _priceData.Rows[_index][description.FieldName];
 				var value = Cost.Parse(costValue);
 
 				if (value == 0)
 					description.ZeroCostCount++;
-				if (Cost.IsZeroOrLess(value))
-				{
+				if (Cost.IsZeroOrLess(value)) {
 					description.UndefinedCostCount++;
 					continue;
 				}
-				
+
 				costs.Add(new Cost(description, value));
 			}
 			return costs.ToArray();

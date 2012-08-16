@@ -26,16 +26,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
 				if (header.Length != 12)
 					return false;
-				if (!header[3].ToLower().Equals("поставка") || 
-					!header[6].ToLower().Equals("рубль") || 
+				if (!header[3].ToLower().Equals("поставка") ||
+					!header[6].ToLower().Equals("рубль") ||
 					!((header[10].ToLower().Equals("зао роста")) || (header[10].ToLower().Equals(""))))
 					return false;
 				var bodyCaption = reader.ReadLine();

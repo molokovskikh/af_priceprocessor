@@ -21,8 +21,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			string shortFileName;
 			int fileID;
 
-			foreach (var fileName in inputFiles)
-			{
+			foreach (var fileName in inputFiles) {
 				shortFileName = Path.Combine(extractDir, Path.GetFileNameWithoutExtension(fileName) + ".");
 				fileID = 0;
 
@@ -31,19 +30,17 @@ namespace Inforoom.Downloader.DocumentReaders
 				xml.Load(fileName);
 
 				//Рассматриваем элементы типа "Документ"
-				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Документ"))
-				{
+				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Документ")) {
 					//Формируем новое имя файла
 					var newFileName = shortFileName + fileID.ToString() + ".xml";
-					while (File.Exists(newFileName))
-					{
+					while (File.Exists(newFileName)) {
 						fileID++;
 						newFileName = shortFileName + fileID.ToString() + ".xml";
 					}
 					fileID++;
 
 					var newXml = new XmlDocument();
-					
+
 					//Создали документ с декларацией
 					var xmldecl = newXml.CreateXmlDeclaration("1.0", "WINDOWS-1251", "yes");
 					newXml.AppendChild(xmldecl);
@@ -51,8 +48,7 @@ namespace Inforoom.Downloader.DocumentReaders
 					//Создали элемент "КоммерческаяИнформация" с атрибутами
 					var root = newXml.CreateElement(xml.DocumentElement.Name);
 					newXml.AppendChild(root);
-					foreach (XmlAttribute a in xml.DocumentElement.Attributes)
-					{
+					foreach (XmlAttribute a in xml.DocumentElement.Attributes) {
 						var newAtt = newXml.CreateAttribute(a.Name);
 						newAtt.Value = a.Value;
 						root.Attributes.Append(newAtt);
@@ -73,21 +69,19 @@ namespace Inforoom.Downloader.DocumentReaders
 		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var list = new List<ulong>();
-			
+
 			string SQL = SqlGetClientAddressId(true, true) +
 				Environment.NewLine + GetFilterSQLFooter();
 
 			string FirmClientCode, DeliveryCode;
-			try
-			{
+			try {
 				var dsWaybill = new DataSet();
 				dsWaybill.ReadXml(currentFileName);
 				DataTable dtCounteragent = dsWaybill.Tables["Контрагент"];
 				FirmClientCode = dtCounteragent.Select("Роль = 'Плательщик'")[0]["Ид"].ToString();
 				DeliveryCode = dtCounteragent.Select("Роль = 'Получатель'")[0]["Ид"].ToString();
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
 			}
 
@@ -102,7 +96,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode + 
+				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode +
 					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
 
 			return list;

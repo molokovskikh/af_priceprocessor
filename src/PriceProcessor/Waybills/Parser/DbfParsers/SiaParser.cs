@@ -70,8 +70,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				if (data.Columns.Contains("SUMMA_NDS"))
 					line.NdsAmount = ParseHelper.GetDecimal(r["SUMMA_NDS"].ToString());
 
-				if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE"))
-				{
+				if (data.Columns.Contains("PRICE_NDS") && data.Columns.Contains("PRICE")) {
 					line.SupplierCost = ParseHelper.GetDecimal(r["PRICE_NDS"].ToString());
 					line.SupplierCostWithoutNDS = ParseHelper.GetDecimal(r["PRICE"].ToString());
 				}
@@ -85,26 +84,24 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r["NACENKA"].ToString());
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
-				
+
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = ParseHelper.GetDecimal(r[registryCostColumn].ToString());
 
 				if (!String.IsNullOrEmpty(certificatesColumn))
 					line.Certificates = ParseHelper.GetString(r[certificatesColumn].ToString());
 
-				if (!String.IsNullOrEmpty(certificatesDateColumn))
-				{
+				if (!String.IsNullOrEmpty(certificatesDateColumn)) {
 					if (Convert.IsDBNull(r[certificatesDateColumn]))
 						line.CertificatesDate = null;
-					else
-					{
+					else {
 						DateTime? dt = ParseHelper.GetDateTime(r[certificatesDateColumn].ToString());
 						line.CertificatesDate = (dt == null ? null : dt.Value.ToShortDateString());
 					}
 				}
 
 				line.SerialNumber = Convert.IsDBNull(r["SERIA"]) ? null : r["SERIA"].ToString();
-				if (!Convert.IsDBNull(r["PCT_NDS"])) 
+				if (!Convert.IsDBNull(r["PCT_NDS"]))
 					line.SetNds(Convert.ToDecimal(r["PCT_NDS"], CultureInfo.InvariantCulture));
 
 				if (!String.IsNullOrEmpty(vitallyImportantColumn))
@@ -119,11 +116,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("CODE_TOVAR") &&
-				   data.Columns.Contains("NAME_TOVAR") &&
-				   data.Columns.Contains("PROIZ") &&
-				   data.Columns.Contains("COUNTRY") &&
-				   data.Columns.Contains("PR_PROIZ") &&
-				   data.Columns.Contains("PCT_NDS");
+				data.Columns.Contains("NAME_TOVAR") &&
+				data.Columns.Contains("PROIZ") &&
+				data.Columns.Contains("COUNTRY") &&
+				data.Columns.Contains("PR_PROIZ") &&
+				data.Columns.Contains("PCT_NDS");
 		}
 	}
 }

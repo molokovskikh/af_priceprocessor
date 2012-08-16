@@ -12,12 +12,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	{
 		public static DataTable Load(string file)
 		{
-			try
-			{
+			try {
 				return Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				return Dbf.Load(file, Encoding.GetEncoding(866), true, false);
 			}
 		}
@@ -41,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.RegistryCost, "REG")
 				.Line(l => l.ProducerCostWithoutNDS, "ZAVOD")
 				.Line(l => l.SupplierPriceMarkup, "TORGNADB")
-				.Line(l => l.Producer, "PROIZV")								
+				.Line(l => l.Producer, "PROIZV")
 				.Line(l => l.SupplierCost, "TZENANDS")
 				.Line(l => l.Amount, "SUMMANDS")
 				.Line(l => l.Nds, "NDSSTAVK")
@@ -56,13 +54,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("DOCNO") &&
-				   data.Columns.Contains("TOVAR") &&
-				   data.Columns.Contains("CODE") &&
-				   data.Columns.Contains("PROIZV") &&
-				   data.Columns.Contains("TZENANDS") &&
-				   data.Columns.Contains("GODEN") &&
-				   data.Columns.Contains("KOL") &&
-				   data.Columns.Contains("DOCDAT");
+				data.Columns.Contains("TOVAR") &&
+				data.Columns.Contains("CODE") &&
+				data.Columns.Contains("PROIZV") &&
+				data.Columns.Contains("TZENANDS") &&
+				data.Columns.Contains("GODEN") &&
+				data.Columns.Contains("KOL") &&
+				data.Columns.Contains("DOCDAT");
 		}
 	}
 }

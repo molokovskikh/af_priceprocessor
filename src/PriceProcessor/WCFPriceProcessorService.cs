@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
@@ -20,7 +21,7 @@ namespace Inforoom.PriceProcessor
 {
 	public class WCFPriceProcessorService : IRemotePriceProcessor, IRemotePriceProcessorOneWay
 	{
-		private ILog log = LogManager.GetLogger(typeof (WCFPriceProcessorService));
+		private static ILog log = LogManager.GetLogger(typeof(WCFPriceProcessorService));
 
 		private const string MessagePriceInQueue = "Данный прайс-лист находится в очереди на формализацию";
 
@@ -32,7 +33,7 @@ namespace Inforoom.PriceProcessor
 		{
 			var downlogId = Convert.ToUInt64(paramDownlogId.Value);
 			var drFocused = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
+				@"
 SELECT
   logs.RowID as DRowID,
   logs.LogTime as DLogTime,
@@ -76,19 +77,17 @@ and logs.ResultCode in (2, 3)
 and fr.Id = pim.FormRuleId
 and pricefmts.id = fr.PriceFormatId
 and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
-			
+
 			var filename = GetFileFromArhive(downlogId);
 			var sourceArchiveFileName = filename;
 			var archFileName = drFocused["DArchFileName"].ToString();
 			var externalFileName = drFocused["DExtrFileName"].ToString();
-			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase))
-			{
+			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase)) {
 				// Если файл пришел по e-mail, то это должен быть файл *.eml, открываем его на чтение
 				filename = ExtractFileFromAttachment(filename, archFileName, externalFileName);
 			}
 			var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
-			if (ArchiveHelper.IsArchive(filename))
-			{
+			if (ArchiveHelper.IsArchive(filename)) {
 				if (File.Exists(tempDirectory))
 					File.Delete(tempDirectory);
 				if (Directory.Exists(tempDirectory))
@@ -96,8 +95,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 				Directory.CreateDirectory(tempDirectory);
 				ArchiveHelper.Extract(filename, externalFileName, tempDirectory, drFocused["ArchivePassword"].ToString());
 				filename = FileHelper.FindFromArhive(tempDirectory, externalFileName);
-				if (String.IsNullOrEmpty(filename))
-				{
+				if (String.IsNullOrEmpty(filename)) {
 					var errorMessage = String.Format(
 						"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
@@ -111,28 +109,26 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var destinationFile = Path.Combine(Settings.Default.InboundPath,
 				"d" + drFocused["DPriceItemId"] + "_" + downlogId + priceExtention);
 
-			if (File.Exists(destinationFile))
-			{
-				throw new FaultException<string>(MessagePriceInQueue, 
+			if (File.Exists(destinationFile)) {
+				throw new FaultException<string>(MessagePriceInQueue,
 					new FaultReason(MessagePriceInQueue));
 			}
 
 			File.Copy(filename, destinationFile);
 
-			var item = new PriceProcessItem(true, 
+			var item = new PriceProcessItem(true,
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
-				(drFocused["DCostCode"] is DBNull) ? null : 
-					(ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
+				(drFocused["DCostCode"] is DBNull) ? null :
+					                                          (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
 				Convert.ToUInt64(drFocused["DPriceItemId"].ToString()),
 				destinationFile,
-				(drFocused["ParentSynonym"] is DBNull) ? null : 
-					(ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
+				(drFocused["ParentSynonym"] is DBNull) ? null :
+					                                              (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
 
 			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
 			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
-			if (downlogId > 0)
-			{
+			if (downlogId > 0) {
 				destinationFile = Path.Combine(Settings.Default.HistoryPath,
 					downlogId + Path.GetExtension(sourceArchiveFileName));
 				File.Copy(sourceArchiveFileName, destinationFile);
@@ -143,18 +139,15 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 
 		private string ExtractFileFromAttachment(string filename, string archFileName, string externalFileName)
 		{
-			using (var fs = new FileStream(filename, FileMode.Open, 
-				FileAccess.Read, FileShare.Read))
-			{
+			using (var fs = new FileStream(filename, FileMode.Open,
+				FileAccess.Read, FileShare.Read)) {
 				var logger = LogManager.GetLogger(GetType());
-				try
-				{
+				try {
 					var message = Mime.Parse(fs);
 					message = UueHelper.ExtractFromUue(message, Path.GetTempPath());
 
 					var attachments = message.GetValidAttachements();
-					foreach (var entity in attachments)
-					{
+					foreach (var entity in attachments) {
 						var attachmentFilename = entity.GetFilename();
 
 						if (!FileHelper.CheckMask(attachmentFilename, archFileName) &&
@@ -165,8 +158,7 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 						return attachmentFilename;
 					}
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					logger.ErrorFormat(
 						"Возникла ошибка при попытке перепровести прайс. Не удалось обработать файл {0}. Файл должен быть письмом (*.eml)\n{1}",
 						filename, ex);
@@ -179,7 +171,6 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 		public void RetransPriceSmart(uint priceId)
 		{
 			With.Connection(c => {
-
 				var price = Price.Find(priceId);
 				if (price.ParentSynonym != null)
 					priceId = price.ParentSynonym.Value;
@@ -212,14 +203,11 @@ and pf.Id = fr.PriceFormatId", c);
 				adapter.SelectCommand.Parameters.AddWithValue("?priceId", priceId);
 				var data = new DataTable();
 				adapter.Fill(data);
-				foreach (var row in data.Rows.Cast<DataRow>())
-				{
-					try
-					{
+				foreach (var row in data.Rows.Cast<DataRow>()) {
+					try {
 						RetransPrice(row, Settings.Default.BasePath);
 					}
-					catch (Exception e)
-					{
+					catch (Exception e) {
 						log.Warn(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
 					}
 				}
@@ -235,7 +223,7 @@ and pf.Id = fr.PriceFormatId", c);
 		{
 			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
+				@"
 select pim.Id as PriceItemId, p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -261,7 +249,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 
 			if (!File.Exists(sourceFile))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
-				
+
 			File.Move(sourceFile, destinationFile);
 		}
 
@@ -281,14 +269,14 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var count = PriceItemList.list.Count;
 			var priceItemIdList = new string[count];
 			for (var index = 0; index < count; index++)
-				 priceItemIdList[index] = Convert.ToString(PriceItemList.list[index].PriceItemId);
+				priceItemIdList[index] = Convert.ToString(PriceItemList.list[index].PriceItemId);
 			return priceItemIdList;
 		}
 
 		public Stream BaseFile(uint priceItemId)
 		{
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
+				@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -300,10 +288,10 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
 
 			if (!File.Exists(baseFile) && !File.Exists(inboundFile))
-				throw new FaultException<string>(MessagePriceNotFound, 
+				throw new FaultException<string>(MessagePriceNotFound,
 					new FaultReason(MessagePriceNotFound));
 			if (!File.Exists(baseFile) && File.Exists(inboundFile))
-				throw new FaultException<string>(MessagePriceInQueue, 
+				throw new FaultException<string>(MessagePriceInQueue,
 					new FaultReason(MessagePriceInQueue));
 
 			return File.OpenRead(baseFile);
@@ -313,8 +301,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 		{
 			ulong downlogId = Convert.ToUInt64(downlog.Value);
 			var filename = GetFileFromArhive(downlogId);
-			return new HistoryFile
-			{
+			return new HistoryFile {
 				Filename = Path.GetFileName(filename),
 				FileStream = File.OpenRead(filename),
 			};
@@ -328,14 +315,14 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 					new FaultReason(MessagePriceNotFoundInArchive));
 			return files[0];
 		}
-		
+
 		public void PutFileToInbound(FilePriceInfo filePriceInfo)
 		{
 			var priceItemId = filePriceInfo.PriceItemId;
 			var file = filePriceInfo.Stream;
 
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
+				@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -371,7 +358,7 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			Stream file = filePriceInfo.Stream;
 
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-@"
+				@"
 select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
@@ -382,12 +369,10 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var newBaseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
 
 			if (File.Exists(newBaseFile))
-				try
-				{
+				try {
 					File.Delete(newBaseFile);
 				}
-				catch (Exception)
-				{
+				catch (Exception) {
 					string errorMessage = String.Format("Невозможно удалить из Base старый файл {0}!",
 						Path.GetFileName(newBaseFile));
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
@@ -401,18 +386,15 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 		{
 			var directoryPath = Path.GetFullPath(directoryName);
 			var files = Directory.GetFiles(directoryPath, fileNamePattern);
-			foreach (var fileName in files)
-			{
-				try
-				{
+			foreach (var fileName in files) {
+				try {
 					File.Delete(fileName);
 				}
-				catch (Exception)
-				{
+				catch (Exception) {
 					var errorMessage = String.Format(@"Невозможно удалить из {0} старый файл", directoryName);
 					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
 				}
-			}			
+			}
 		}
 
 		/// <summary>
@@ -429,18 +411,15 @@ INSERT INTO logs.downlogs (LogTime, Host, PriceItemId, Addition, ResultCode, Arc
 VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert_id()
 ", Environment.MachineName, priceItemId, addition, resultCode, archiveFileName, extractFileName);
 
-			using (var connectionLog = new MySqlConnection(Literals.ConnectionString()))
-			{
-				try
-				{
+			using (var connectionLog = new MySqlConnection(Literals.ConnectionString())) {
+				try {
 					connectionLog.Open();
 					var commandLog = new MySqlCommand(query, connectionLog);
 					var id = Convert.ToUInt64(commandLog.ExecuteScalar());
 					return id;
 				}
-				catch (Exception ex)
-				{
-					Mailer.SendFromServiceToService("Ошибка логирования при перепосылке прайс-листа", ex.ToString());
+				catch (Exception ex) {
+					log.Error("Ошибка логирования при перепосылке прайс-листа", ex);
 					return 0;
 				}
 			}
@@ -450,7 +429,6 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 		{
 			long taskId = 0;
 			try {
-
 				log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
 				PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
 				if (item == null) {
@@ -467,51 +445,50 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 					throw new FaultException<string>(er, new FaultReason(er));
 				}
 				// создаем задачу
-				IndexerHandler handler = (IndexerHandler) Monitor.GetInstance().GetHandler(typeof (IndexerHandler));
-				taskId = handler.AddTask(names, (uint) item.PriceCode);
+				IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+				taskId = handler.AddTask(names, (uint)item.PriceCode);
 			}
-			catch(Exception e) {
+			catch (Exception e) {
 				log.Warn("Ошибка в функции FindSynonyms:", e);
 				throw;
 			}
-			return new [] {"Success", taskId.ToString()}; // задача успешно создана           
+			return new[] { "Success", taskId.ToString() }; // задача успешно создана
 		}
 
 		public string[] FindSynonymsResult(string taskId)
 		{
 			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
 			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
-			if(task == null)
-				return new [] {"Error", String.Format("Задача {0} не найдена", taskId)};
-			if(task.State == TaskState.Error)
+			if (task == null)
+				return new[] { "Error", String.Format("Задача {0} не найдена", taskId) };
+			if (task.State == TaskState.Error)
 				return new[] { "Error", task.Error };
 			if (task.State == TaskState.Success)
-				return IndexerHandler.TransformToStringArray(task.Matches);   
+				return IndexerHandler.TransformToStringArray(task.Matches);
 			if (task.State == TaskState.Running)
-				return new [] { "Running", task.Rate.ToString() };
+				return new[] { "Running", task.Rate.ToString() };
 			if (task.State == TaskState.Canceled)
 				return new[] { "Canceled", task.Rate.ToString() };
-			return new[] {task.State.ToString()};
+			return new[] { task.State.ToString() };
 		}
 
 		public void StopFindSynonyms(string taskId)
 		{
 			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
 			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
-			if(task != null) task.Stop();
+			if (task != null) task.Stop();
 		}
 
 		public void AppendToIndex(string[] synonymsIds)
 		{
 			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
 			IList<int> ids = new List<int>();
-			foreach (var sid in synonymsIds)
-			{
+			foreach (var sid in synonymsIds) {
 				int val;
-				if(Int32.TryParse(sid, out val))                
-					ids.Add(val);                
+				if (Int32.TryParse(sid, out val))
+					ids.Add(val);
 			}
-			handler.AppendToIndex(ids);            
+			handler.AppendToIndex(ids);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -18,8 +19,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public virtual bool Enabled { get; set; }
 
-		[Property]
-		public virtual uint ClientId { get; set; }
+		[BelongsTo("ClientId")]
+		public virtual Client Client { get; set; }
 	}
 
 	[ActiveRecord("LegalEntities", Schema = "Billing", Lazy = true)]

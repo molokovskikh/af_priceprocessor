@@ -29,8 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
@@ -48,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				//Так как в столбце с датами могут попадаться символы ".." ,
 				//то проверка по этому столбцу не всегда проходит корректно, хотя парсер подходит.
 				//if (GetDateTime(body[16]) == null)
-					//return false;
+				//return false;
 			}
 			return true;
 		}

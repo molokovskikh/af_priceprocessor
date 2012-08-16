@@ -15,20 +15,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			ProducerCostWithoutNdsIndex = 5;
 			SupplierCostWithoutNdsIndex = 6;
 			SupplierCostIndex = 7;
-			NdsIndex = 8;			
-		    NdsAmountIndex = 9;
+			NdsIndex = 8;
+			NdsAmountIndex = 9;
 			SerialNumberIndex = 10;
 			PeriodIndex = 11;
 			CertificatesIndex = 13;
-		    CertificatesDateIndex = 15;
-		    RegistryCostIndex = 17;			
+			CertificatesDateIndex = 15;
+			RegistryCostIndex = 17;
 			VitallyImportantIndex = 20;
 		}
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;

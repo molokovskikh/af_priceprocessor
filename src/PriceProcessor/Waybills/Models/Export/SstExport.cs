@@ -206,7 +206,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			if (o is decimal?)
 				return NullableDecimalToString((decimal?)o);
 			if (o is DateTime?) {
-				var dateTime = ((DateTime?) o);
+				var dateTime = ((DateTime?)o);
 				return dateTime.HasValue ? dateTime.Value.ToShortDateString() : null;
 			}
 			return o;

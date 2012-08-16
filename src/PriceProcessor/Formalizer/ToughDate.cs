@@ -10,38 +10,33 @@ namespace Inforoom.Formalizer
 	public class ToughDate
 	{
 		private Regex re;
-		string[] EngMonth;
-		string[] RusMonth;
+		private string[] EngMonth;
+		private string[] RusMonth;
 
 		public ToughDate()
 		{
 			re = new Regex(Settings.Default.DateMask);
-			EngMonth = new String[] {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
-			RusMonth = new String[] {"ﬂÕ¬", "‘≈¬", "Ã¿–", "¿œ–", "Ã¿…", "»ﬁÕ", "»ﬁÀ", "¿¬√", "—≈Õ", "Œ “", "ÕŒﬂ", "ƒ≈ "};
+			EngMonth = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
+			RusMonth = new String[] { "ﬂÕ¬", "‘≈¬", "Ã¿–", "¿œ–", "Ã¿…", "»ﬁÕ", "»ﬁÀ", "¿¬√", "—≈Õ", "Œ “", "ÕŒﬂ", "ƒ≈ " };
 		}
 
 		public DateTime Analyze(string Input)
 		{
 			int year, month, day;
-			try
-			{
+			try {
 				Input = Input.Trim();
 				Match m = re.Match(Input);
-				if (String.Empty != m.Groups["Year"].Value)
-				{
+				if (String.Empty != m.Groups["Year"].Value) {
 					if (1 == m.Groups["Year"].Value.Length)
 						year = Convert.ToInt32("200" + m.Groups["Year"].Value);
+					else if (2 == m.Groups["Year"].Value.Length)
+						year = Convert.ToInt32("20" + m.Groups["Year"].Value);
+					else if (3 == m.Groups["Year"].Value.Length)
+						year = Convert.ToInt32("2" + m.Groups["Year"].Value);
 					else
-						if (2 == m.Groups["Year"].Value.Length)
-							year = Convert.ToInt32("20" + m.Groups["Year"].Value);
-						else
-							if (3 == m.Groups["Year"].Value.Length)
-								year = Convert.ToInt32("2" + m.Groups["Year"].Value);
-							else
-								year = Convert.ToInt32(m.Groups["Year"].Value);
+						year = Convert.ToInt32(m.Groups["Year"].Value);
 
-					if (String.Empty != m.Groups["Month"].Value)
-					{
+					if (String.Empty != m.Groups["Month"].Value) {
 						month = GetMonth(m.Groups["Month"].Value);
 						if (-1 == month)
 							month = Convert.ToInt32(m.Groups["Month"].Value);
@@ -55,28 +50,23 @@ namespace Inforoom.Formalizer
 					}
 					else
 						return DateTime.MaxValue;
-				  
 				}
 				else
 					return DateTime.MaxValue;
 			}
-			catch
-			{
+			catch {
 				return DateTime.MaxValue;
 			}
-
 		}
 
 		private int GetMonth(string month)
 		{
 			month = month.ToUpper();
-			for(int i = EngMonth.GetLowerBound(0); i<=EngMonth.GetUpperBound(0); i++)
-			{
+			for (int i = EngMonth.GetLowerBound(0); i <= EngMonth.GetUpperBound(0); i++) {
 				if (month.StartsWith(EngMonth[i]) || month.StartsWith(RusMonth[i]))
-					return i+1;
+					return i + 1;
 			}
 			return -1;
 		}
-
 	}
 }

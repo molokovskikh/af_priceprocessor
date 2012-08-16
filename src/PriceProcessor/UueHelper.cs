@@ -10,7 +10,6 @@ namespace Inforoom.PriceProcessor
 {
 	public static class UueHelper
 	{
-		
 		/// <summary>
 		/// Проверяет, является ли указанное mime сообщение
 		/// закодированным в UUE
@@ -37,8 +36,7 @@ namespace Inforoom.PriceProcessor
 			var extractDir = "ExtractDir";
 			//Двойная перекодировка сначала в koi8r -> UTF7 -> default(cp1251)
 			var uueFileName = tempPath + "MailTemp.uue";
-			using (var file = new FileStream(uueFileName, FileMode.Create))
-			{
+			using (var file = new FileStream(uueFileName, FileMode.Create)) {
 				var body = Encoding.GetEncoding("koi8-r").GetString(mime.MainEntity.Data);
 				var index = body.IndexOf("begin ");
 				body = body.Substring(index);
@@ -46,48 +44,41 @@ namespace Inforoom.PriceProcessor
 				file.Flush();
 				file.Close();
 			}
-			try
-			{
-				if (ArchiveHelper.TestArchive(uueFileName))
-				{
+			try {
+				if (ArchiveHelper.TestArchive(uueFileName)) {
 					// Если файл является архивом
-					try
-					{
+					try {
 						FileHelper.ExtractFromArhive(uueFileName, uueFileName + extractDir);
 						string[] fileList = Directory.GetFiles(uueFileName + extractDir);
-						if (fileList.Length > 0)
-						{
+						if (fileList.Length > 0) {
 							if (File.Exists(tempPath + Path.GetFileName(fileList[0])))
 								File.Delete(tempPath + Path.GetFileName(fileList[0]));
 							File.Move(fileList[0], tempPath + Path.GetFileName(fileList[0]));
 							return Path.GetFileName(fileList[0]);
 						}
 					}
-					catch (ArchiveHelper.ArchiveException)
-					{}
+					catch (ArchiveHelper.ArchiveException) {
+					}
 				}
 			}
-			finally
-			{
+			finally {
 				// Удаляем за собой созданную директорию
 				if (Directory.Exists(uueFileName + extractDir))
-					try
-					{
+					try {
 						Directory.Delete(uueFileName + extractDir, true);
 					}
-					catch { }
+					catch {
+					}
 			}
 			return String.Empty;
 		}
-		
+
 		public static Mime ExtractFromUue(Mime mimeMessage, string tempPath)
 		{
-			if ((mimeMessage.Attachments.Length == 0) && 
-				(IsUue(mimeMessage)))
-			{
+			if ((mimeMessage.Attachments.Length == 0) &&
+				(IsUue(mimeMessage))) {
 				string shortFileName = ExtractFileFromUue(mimeMessage, tempPath);
-				if (!String.IsNullOrEmpty(shortFileName))
-				{
+				if (!String.IsNullOrEmpty(shortFileName)) {
 					MimeEntity uueAttach = new MimeEntity();
 					uueAttach.ContentType = MediaType_enum.Application_octet_stream;
 					uueAttach.ContentDisposition = ContentDisposition_enum.Attachment;
@@ -95,8 +86,7 @@ namespace Inforoom.PriceProcessor
 					uueAttach.ContentDisposition_FileName = shortFileName;
 					uueAttach.ContentType_Name = shortFileName;
 					uueAttach.DataFromFile(tempPath + shortFileName);
-					if (mimeMessage.MainEntity.ContentType != MediaType_enum.Multipart_mixed)
-					{
+					if (mimeMessage.MainEntity.ContentType != MediaType_enum.Multipart_mixed) {
 						mimeMessage.MainEntity.Data = null;
 						mimeMessage.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
 					}

@@ -11,7 +11,7 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public string Name { get; set; }
-		
+
 		[Property]
 		public string FullName { get; set; }
 

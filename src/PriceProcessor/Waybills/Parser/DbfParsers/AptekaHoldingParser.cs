@@ -34,9 +34,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.Period = Convert.ToDateTime(r["BESTBEFORE"]).ToShortDateString();
 				line.Certificates = Convert.IsDBNull(r["ANALYSIS"]) ? null : r["ANALYSIS"].ToString();
 				line.SetNds(Convert.ToUInt32(r["NDS"], CultureInfo.InvariantCulture));
-				line.RegistryCost = Convert.IsDBNull(r["PRICEREG"]) ? null : (decimal?) Convert.ToDecimal(r["PRICEREG"]);
+				line.RegistryCost = Convert.IsDBNull(r["PRICEREG"]) ? null : (decimal?)Convert.ToDecimal(r["PRICEREG"]);
 				if (data.Columns.Contains("ISDEC"))
-					line.VitallyImportant = Convert.IsDBNull(r["ISDEC"]) ? null : (bool?) (Convert.ToUInt32(r["ISDEC"]) == 1);
+					line.VitallyImportant = Convert.IsDBNull(r["ISDEC"]) ? null : (bool?)(Convert.ToUInt32(r["ISDEC"]) == 1);
 				if (!Convert.IsDBNull(r["SERIES"]))
 					line.SerialNumber = r["SERIES"].ToString();
 				return line;

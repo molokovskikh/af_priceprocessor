@@ -15,14 +15,14 @@ namespace Inforoom.PriceProcessor.Models
 
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
-		
+
 		[BelongsTo("ClientId", Lazy = FetchWhen.OnInvoke)]
 		public virtual Client Client { get; set; }
 
 		[Property]
 		public virtual ulong WorkRegionMask { get; set; }
 
-		[HasAndBelongsToMany(typeof (Address),
+		[HasAndBelongsToMany(typeof(Address),
 			Lazy = true,
 			ColumnKey = "UserId",
 			Schema = "Customers",
@@ -33,5 +33,4 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual bool Enabled { get; set; }
 	}
-
 }

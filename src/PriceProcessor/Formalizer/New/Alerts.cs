@@ -7,7 +7,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class Alerts
 	{
-		private static ILog _logger = LogManager.GetLogger(typeof (Alerts));
+		private static ILog _logger = LogManager.GetLogger(typeof(Alerts));
 
 		public static void SendAlertToUserFail(StringBuilder stringBuilder, string subject, string body, PriceFormalizationInfo info)
 		{
@@ -15,12 +15,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				return;
 
 			string fullPriceName;
-			if (info.CostType == CostTypes.MultiColumn)
-			{
+			if (info.CostType == CostTypes.MultiColumn) {
 				fullPriceName = info.PriceName;
 			}
-			else
-			{
+			else {
 				fullPriceName = String.Format("[Колонка] {0}", info.CostName);
 			}
 			var fullSupplierName = String.Format("{0} - {1}", info.FirmShortName, info.Region);
@@ -56,7 +54,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			SendAlertToUserFail(
 				stringBuilder,
 				"PriceProcessor: В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами",
-					@"
+				@"
 Здравствуйте!
   В прайс-листе {0} поставщика {1} имеются позиции с незаполненными ценами.
   Список ценовых колонок:

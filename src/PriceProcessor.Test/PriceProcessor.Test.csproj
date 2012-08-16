@@ -25,6 +25,7 @@
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation />
+    <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -129,12 +130,13 @@
     <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
-    <Compile Include="Handlers\EMAILSourceHandlerTest.cs" />
+    <Compile Include="Handlers\EmailSourceHandlerFixture.cs" />
     <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
     <Compile Include="Handlers\HandlerFixture.cs" />
     <Compile Include="Handlers\IMAPHandlerFixture.cs" />
     <Compile Include="Handlers\IndexerHandlerFixture.cs" />
     <Compile Include="Handlers\ProtekWaybillHandlerFixture.cs" />
+    <Compile Include="Helpers\MimeExtentionsFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
     <Compile Include="Loader\UniversalFormalizerFixture.cs" />
@@ -160,8 +162,8 @@
     <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="ShareFileHelperTest.cs" />
     <Compile Include="SiaPriceFixture.cs" />
-    <Compile Include="StressTest.cs" />
     <Compile Include="TestHelpers\BaseHandlerFixture.cs" />
+    <Compile Include="TestHelpers\BaseWaybillHandlerFixture.cs" />
     <Compile Include="TestHelpers\DocumentFixture.cs" />
     <Compile Include="TestHelpers\ImapHelper.cs" />
     <Compile Include="TestHelpers\TestHelper.cs" />
@@ -171,8 +173,9 @@
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
-    <Compile Include="Waybills\DocSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
+    <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser2Fixture.cs" />
@@ -323,12 +326,12 @@
     <Compile Include="Waybills\Sources\SiaSourceFixture.cs" />
     <Compile Include="Waybills\SstExporterFixture.cs" />
     <Compile Include="Waybills\WaybillFormatDetectorFixture.cs" />
-    <Compile Include="Waybills\WaybillFtpSourceHandlerFixture.cs" />
-    <Compile Include="Waybills\WaybillLANSourceHandlerErrorsFixture.cs" />
-    <Compile Include="Waybills\WaybillLANSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillFtpSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillLanSourceHandlerErrorsFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillLanSourceHandlerFixture.cs" />
     <Compile Include="Waybills\WaybillOrderMatcherFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
-    <Compile Include="Waybills\WaybillSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillEmailSourceHandlerFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.MySql\Common.MySql\Common.MySql.csproj">

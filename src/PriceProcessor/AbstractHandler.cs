@@ -18,6 +18,7 @@ namespace Inforoom.PriceProcessor
 		/// Время "застоя" нитки
 		/// </summary>
 		protected int SleepTime;
+
 		/// <summary>
 		/// Время последнего "касания" обработчика
 		/// </summary>
@@ -29,7 +30,7 @@ namespace Inforoom.PriceProcessor
 		/// <summary>
 		/// кол-во милисекунд, которые выделяются на завершение нитки
 		/// </summary>
-		protected const int maxJoinTime = 5000; 
+		protected const int maxJoinTime = 5000;
 
 		protected readonly log4net.ILog _logger;
 
@@ -51,10 +52,7 @@ namespace Inforoom.PriceProcessor
 		//Работает ли?
 		public bool Worked
 		{
-			get
-			{
-				return DateTime.Now.Subtract(lastPing).TotalMinutes < Settings.Default.HandlerTimeout;
-			}
+			get { return DateTime.Now.Subtract(lastPing).TotalMinutes < Settings.Default.HandlerTimeout; }
 		}
 
 		protected void CreateDownHandlerPath()
@@ -69,8 +67,7 @@ namespace Inforoom.PriceProcessor
 		{
 			var cleanupDirs = Directory.GetDirectories(DownHandlerPath);
 			foreach (var dir in cleanupDirs)
-				try
-				{
+				try {
 					if (_logger.IsDebugEnabled)
 						_logger.DebugFormat("Попытка удалить директорию : {0}", dir);
 					if (Directory.Exists(dir))
@@ -78,27 +75,23 @@ namespace Inforoom.PriceProcessor
 					if (_logger.IsDebugEnabled)
 						_logger.DebugFormat("Директория удалена : {0}", dir);
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					_logger.ErrorFormat("Ошибка при удалении директории {0}:\r\n{1}", dir, ex);
 				}
 
 			var cleanupFiles = Directory.GetFiles(DownHandlerPath);
 			foreach (var cleanupFile in cleanupFiles)
-			try
-			{
-
-				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Попытка удалить файл : {0}", cleanupFile);
-				if (File.Exists(cleanupFile))
-					File.Delete(cleanupFile);
-				if (_logger.IsDebugEnabled)
-					_logger.DebugFormat("Файл удален : {0}", cleanupFile);
-			}
-			catch (Exception ex)
-			{
-				_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", cleanupFile, ex);
-			}
+				try {
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("Попытка удалить файл : {0}", cleanupFile);
+					if (File.Exists(cleanupFile))
+						File.Delete(cleanupFile);
+					if (_logger.IsDebugEnabled)
+						_logger.DebugFormat("Файл удален : {0}", cleanupFile);
+				}
+				catch (Exception ex) {
+					_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", cleanupFile, ex);
+				}
 		}
 
 		//Запуск обработчика
@@ -123,22 +116,18 @@ namespace Inforoom.PriceProcessor
 		public void RestartWork()
 		{
 			_logger.Info("Перезапуск обработчика");
-			try
-			{
+			try {
 				StopWork();
 				Thread.Sleep(1000);
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				_logger.Error("Ошибка при останове нитки обработчика", ex);
 			}
 			tWork = new Thread(ThreadWork);
-			try
-			{
+			try {
 				StartWork();
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				_logger.Error("Ошибка при запуске нитки обработчика", ex);
 			}
 			_logger.Info("Перезапустили обработчик");
@@ -147,16 +136,13 @@ namespace Inforoom.PriceProcessor
 		//Нитка, в которой осуществляется работа обработчика источника
 		protected void ThreadWork()
 		{
-			while (true)
-			{
-				try
-				{
+			while (true) {
+				try {
 					ProcessData();
 				}
-				catch (ThreadAbortException)
-				{ }
-				catch (Exception ex)
-				{
+				catch (ThreadAbortException) {
+				}
+				catch (Exception ex) {
 					LoggingToService(ex.ToString());
 				}
 				Ping();
@@ -174,14 +160,13 @@ namespace Inforoom.PriceProcessor
 
 		protected void LoggingToService(string addition)
 		{
-			_logger.ErrorFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
-			if (knowErrors.Contains(addition))
-				return;
-
-			knowErrors.Add(addition);
-			Mailer.SendFromServiceToService(
-				String.Format("Ошибка в обработчике {0}", GetType().Name),
-				addition);
+			if (knowErrors.Contains(addition)) {
+				_logger.WarnFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
+			}
+			else {
+				_logger.ErrorFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
+				knowErrors.Add(addition);
+			}
 		}
 	}
 }

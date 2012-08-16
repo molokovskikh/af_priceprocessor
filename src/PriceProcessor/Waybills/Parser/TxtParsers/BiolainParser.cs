@@ -18,7 +18,7 @@
 
 		public static bool CheckFileFormat(string file)
 		{
-			return CheckByHeaderPart(file, new [] {"ооо \"биолайн\""});
+			return CheckByHeaderPart(file, new[] { "ооо \"биолайн\"" });
 		}
 	}
 }

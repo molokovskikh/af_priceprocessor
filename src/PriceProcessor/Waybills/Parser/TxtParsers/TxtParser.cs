@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		private string[] CodeHeaders = { "Код" };
 		private string[] ProductHeaders = { "Наименование товара", "Наименование препарата" };
 		private string[] ProducerHeaders = { "Про-ль", "Предприятие изготовитель" };
-		private string[] CountryHeaders = {  "Страна" };
+		private string[] CountryHeaders = { "Страна" };
 		private string[] QuantityHeaders = { "Кол-во" };
 		private string[] SupplierCostHeaders = { "Цена с НДС" };
 		private string[] SupplierCostWithoutNdsHeaders = { "Цена без НДС" };
@@ -50,8 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		private int GetIndex(IEnumerable<string> headerNames)
 		{
-			foreach (var name in headerNames)
-			{
+			foreach (var name in headerNames) {
 				var index = _headers.IndexOf(name);
 				if (index >= 0)
 					return index;
@@ -134,10 +133,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public uint? Nds
 		{
-			get
-			{
-				return ParseHelper.GetUInt(GetValue(NdsHeaders).Replace("%", ""));
-			}
+			get { return ParseHelper.GetUInt(GetValue(NdsHeaders).Replace("%", "")); }
 		}
 
 		public string Period

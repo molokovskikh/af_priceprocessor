@@ -11,7 +11,8 @@ namespace Inforoom.PriceProcessor.Models
 		private bool marked;
 
 		public Reject()
-		{}
+		{
+		}
 
 		public Reject(FormalizationPosition position, DataRow row)
 		{

@@ -27,15 +27,12 @@ namespace Inforoom.PriceProcessor.Helpers
 
 		public void Dispose()
 		{
-			foreach (var file in _files)
-			{
-				try
-				{
+			foreach (var file in _files) {
+				try {
 					if (File.Exists(file))
 						File.Delete(file);
 				}
-				catch (Exception e)
-				{
+				catch (Exception e) {
 					_log.Error(String.Format("Ошибка при удалении файла '{0}'", file), e);
 				}
 			}

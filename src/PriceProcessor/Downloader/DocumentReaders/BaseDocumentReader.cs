@@ -11,7 +11,7 @@ namespace Inforoom.Downloader.DocumentReaders
 {
 	public abstract class BaseDocumentReader
 	{
-		protected string[] excludeExtentions;
+		protected string[] excludeExtentions = new string[0];
 
 		/// <summary>
 		/// Из двух файлов получает список клиентов, для которых надо транспортировать накладные.
@@ -41,8 +41,8 @@ namespace Inforoom.Downloader.DocumentReaders
 			return @"
 GROUP BY AddressId";
 		}
-		
-        protected string SqlGetClientAddressId(bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
+
+		protected string SqlGetClientAddressId(bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
 		{
 			var sqlSupplierClientId = String.Empty;
 			var sqlSupplierDeliveryId = String.Empty;
@@ -73,10 +73,7 @@ WHERE
 
 		public string[] ExcludeExtentions
 		{
-			get
-			{
-				return excludeExtentions;
-			}
+			get { return excludeExtentions; }
 		}
 
 		//Формируем файл для отдачи его клиенту в качестве документа
@@ -88,8 +85,7 @@ WHERE
 
 		public virtual void ImportDocument(DocumentReceiveLog log, string filename)
 		{
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				log.Save();
 				transaction.VoteCommit();
 			}

@@ -22,12 +22,10 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 				Environment.NewLine + GetFilterSQLFooter();
 
 			string supplierDeliveryId;
-			try
-			{
+			try {
 				supplierDeliveryId = Path.GetFileName(currentFileName).Split('_')[0];
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				throw new Exception("Не получилось сформировать код доставки из имени файла накладной.", ex);
 			}
 

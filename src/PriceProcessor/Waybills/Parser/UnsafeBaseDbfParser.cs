@@ -16,12 +16,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public Document Parse(string file, Document document)
 		{
 			DataTable data = null;
-			try
-			{
+			try {
 				data = Dbf.Load(file);
 			}
-			catch (DbfException)
-			{
+			catch (DbfException) {
 				data = Dbf.Load(file, Encoding, true, false);
 			}
 			var parser = GetParser();

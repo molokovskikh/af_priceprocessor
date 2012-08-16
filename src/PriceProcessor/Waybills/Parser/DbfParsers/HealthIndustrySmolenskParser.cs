@@ -9,7 +9,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NUMBER")
 				.DocumentHeader(d => d.DocumentDate, "DATE")
-
 				.Line(l => l.EAN13, "SCANCODE")
 				.Line(l => l.Code, "BASECODE")
 				.Line(l => l.Product, "LONGNAME")

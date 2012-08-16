@@ -248,8 +248,7 @@ FROM
   farm.SynonymFirmCr
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
 WHERE SynonymFirmCr.PriceCode={0}
-"
-					, 
+",
 					parentSynonym), _connection);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
@@ -299,16 +298,14 @@ select @LastSynonymFirmCrCode;");
 			daForb.InsertCommand.CommandTimeout = 0;
 			daForb.Fill(dsMyDB, "Forb");
 			dtForb = dsMyDB.Tables["Forb"];
-			dtForb.Constraints.Add("ForbName", new[] {dtForb.Columns["Forb"]}, false);
+			dtForb.Constraints.Add("ForbName", new[] { dtForb.Columns["Forb"] }, false);
 			_logger.Debug("загрузили Forb");
 
-			if (_priceInfo.IsUpdating)
-			{
+			if (_priceInfo.IsUpdating) {
 				var loadExistsWatch = Stopwatch.StartNew();
 				LoadCore();
 				_logger.Debug("Загрузили предложения");
-				if (_existsCores.Count > 0)
-				{
+				if (_existsCores.Count > 0) {
 					LoadCosts();
 					_logger.Debug("Загрузили цены");
 				}
@@ -329,8 +326,7 @@ select @LastSynonymFirmCrCode;");
 				existsCoreSQL = String.Format("SELECT Core0.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", _priceInfo.PriceCode, _priceInfo.CostCode);
 
 			var command = new MySqlCommand(existsCoreSQL, _connection);
-			using(var reader = command.ExecuteReader())
-			{
+			using (var reader = command.ExecuteReader()) {
 				while (reader.Read()) {
 					var existsCore = new ExistsCore {
 						Id = reader.GetUInt64("Id")
@@ -356,25 +352,20 @@ order by c.Id", _priceInfo.PriceCode);
 			else
 				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", _priceInfo.PriceCode, _priceInfo.CostCode);
 			var costsCommand = new MySqlCommand(existsCoreCostsSQL, _connection);
-			using(var reader = costsCommand.ExecuteReader())
-			{
+			using (var reader = costsCommand.ExecuteReader()) {
 				var index = 0;
 				var core = _existsCores[0];
 				var costs = new List<Cost>();
-				while (reader.Read())
-				{
+				while (reader.Read()) {
 					var coreId = reader.GetUInt64(0);
 					var costId = reader.GetUInt32(1);
 					var description = _reader.CostDescriptions.First(c => c.Id == costId);
-					if (coreId != core.Id)
-					{
+					if (coreId != core.Id) {
 						core.Costs = costs.ToArray();
 						costs = new List<Cost>();
 						core = null;
-						for(var i = index; i < _existsCores.Count; i++)
-						{
-							if (_existsCores[i].Id == coreId)
-							{
+						for (var i = index; i < _existsCores.Count; i++) {
+							if (_existsCores[i].Id == coreId) {
 								index = i;
 								core = _existsCores[i];
 								break;
@@ -441,16 +432,13 @@ order by c.Id", _priceInfo.PriceCode);
 
 		private IEnumerable<string> BuildSql()
 		{
-			foreach (var core in _newCores)
-			{
-				if (core.ExistsCore == null)
-				{
+			foreach (var core in _newCores) {
+				if (core.ExistsCore == null) {
 					yield return SqlBuilder.InsertCoreCommand(_priceInfo, core);
 					if (core.Costs != null && core.Costs.Length > 0)
 						yield return SqlBuilder.InsertCostsCommand(core);
 				}
-				else
-				{
+				else {
 					yield return SqlBuilder.UpdateCoreCommand(core);
 					yield return SqlBuilder.UpdateCostsCommand(core);
 				}
@@ -475,12 +463,12 @@ order by c.Id", _priceInfo.PriceCode);
 		public void FinalizePrice()
 		{
 			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
-			if (Downloaded){
+			if (Downloaded) {
 				_reader.SendWarning(_loggingStat);
 				SendWarning(_loggingStat);
 			}
 
-			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95) )
+			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95))
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
 
 			if (_loggingStat.formCount * 1.6 < _priceInfo.PrevRowCount)
@@ -488,14 +476,12 @@ order by c.Id", _priceInfo.PriceCode);
 
 			var done = false;
 			var tryCount = 0;
-			do
-			{
+			do {
 				var logMessage = new StringBuilder();
 
 				var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-				try
-				{
+				try {
 					InsertNewProducerSynonyms(transaction);
 					InsertNewCosts();
 #if BUTCHER
@@ -511,8 +497,7 @@ order by c.Id", _priceInfo.PriceCode);
 #else
 					var builder = new StringBuilder();
 					var command = new MySqlCommand(null, _connection);
-					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c)))
-					{
+					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
 						command.CommandText = builder.ToString();
 						builder.Clear();
 						command.ExecuteNonQuery();
@@ -524,8 +509,7 @@ order by c.Id", _priceInfo.PriceCode);
 					transaction.Commit();
 					done = true;
 				}
-				catch (MySqlException ex)
-				{
+				catch (MySqlException ex) {
 					transaction.Rollback();
 
 					if (!(tryCount <= Settings.Default.MaxRepeatTranCount && ExceptionHelper.IsDeadLockOrSimilarExceptionInChain(ex)))
@@ -538,8 +522,7 @@ order by c.Id", _priceInfo.PriceCode);
 
 					Thread.Sleep(10000 + tryCount * 1000);
 				}
-				catch (Exception)
-				{
+				catch (Exception) {
 					transaction.Rollback();
 					throw;
 				}
@@ -551,20 +534,18 @@ order by c.Id", _priceInfo.PriceCode);
 
 		private IEnumerable<int> PrepareData(Action<string, int> populateCommand)
 		{
-			var MaxPacketSize = 500*1024;
+			var MaxPacketSize = 500 * 1024;
 			var MaxCommandCount = 500;
 			var index = 0;
 			var populatedBytes = 0;
-			foreach (var command in BuildSql().Where(c => !String.IsNullOrEmpty(c)))
-			{
+			foreach (var command in BuildSql().Where(c => !String.IsNullOrEmpty(c))) {
 				if (_logger.IsDebugEnabled)
 					_logger.Debug(command);
 
 				if (command.Length > MaxPacketSize)
 					throw new Exception(String.Format("Длинна комманда {0} превыщает максимальный размер пакета {1}", command.Length, MaxPacketSize));
 
-				if (index > MaxCommandCount || populatedBytes + command.Length > MaxPacketSize)
-				{
+				if (index > MaxCommandCount || populatedBytes + command.Length > MaxPacketSize) {
 					if (_logger.IsDebugEnabled)
 						_logger.Debug("Запуск");
 					yield return populatedBytes;
@@ -597,8 +578,7 @@ order by c.Id", _priceInfo.PriceCode);
 			var dtBlockedPrice = new DataTable();
 			daBlockedPrice.Fill(dtBlockedPrice);
 
-			if (dtBlockedPrice.Rows.Count == 0)
-			{
+			if (dtBlockedPrice.Rows.Count == 0) {
 				cleanUpCommand.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
 				logMessage.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
 			}
@@ -613,13 +593,11 @@ order by c.Id", _priceInfo.PriceCode);
 			//Производим обновление PriceDate и LastFormalization в информации о формализации
 			//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
 			cleanUpCommand.Parameters.Clear();
-			if (Downloaded)
-			{
+			if (Downloaded) {
 				cleanUpCommand.CommandText = String.Format(
 					"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", _loggingStat.formCount, _loggingStat.unformCount, priceItemId);
 			}
-			else
-			{
+			else {
 				cleanUpCommand.CommandText = String.Format(
 					"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", _loggingStat.formCount, _loggingStat.unformCount, priceItemId);
 			}
@@ -644,73 +622,56 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 			int applyCount = 0;
 
 			daUnrecExp.SelectCommand.Transaction = finalizeTransaction;
-			try
-			{
-				foreach (DataRow drUnrecExp in dtUnrecExp.Rows)
-				{
+			try {
+				foreach (DataRow drUnrecExp in dtUnrecExp.Rows) {
 					var drsProducerSynonyms = dtSynonymFirmCr.Select("InternalProducerSynonymId is not null and OriginalSynonym = '" + drUnrecExp["FirmCr"].ToString().Replace("'", "''") + "'");
 
 					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
 						throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
-					else
-						if (drsProducerSynonyms.Length == 1)
-						{
-							drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
-							//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
-							//и если не сбрасывали ссылку на новый синоним
-							if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
-							{
-								drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
-								//Если синоним не автоматический, то будем выставлять CodeFirmCr
-								if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"]))
-								{
-									//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
-									if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"]))
-									{
-										if (!Convert.IsDBNull(drUnrecExp["PriorProductId"]))
-										{
-											//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
-											drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
-											drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
-											continue;
-										}
-										drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
-										drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
+					else if (drsProducerSynonyms.Length == 1) {
+						drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
+						//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
+						//и если не сбрасывали ссылку на новый синоним
+						if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"])) {
+							drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
+							//Если синоним не автоматический, то будем выставлять CodeFirmCr
+							if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"])) {
+								//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
+								if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"])) {
+									if (!Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
+										//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
+										drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
+										drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
+										continue;
 									}
-									else
-									{
-										if (Convert.IsDBNull(drUnrecExp["PriorProductId"]))
-										{
-											drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-											drUnrecExp["Already"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Already"]) | UnrecExpStatus.FirmForm);
-											drUnrecExp["Status"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Status"]) | UnrecExpStatus.FirmForm);
-										}
-										else
-										{
-											drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-											drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-											drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-											continue;
-										}
-
-									}
+									drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
+									drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
+								}
+								else if (Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
+									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
+									drUnrecExp["Already"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Already"]) | UnrecExpStatus.FirmForm);
+									drUnrecExp["Status"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Status"]) | UnrecExpStatus.FirmForm);
+								}
+								else {
+									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
+									drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
+									drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
+									continue;
 								}
 							}
 						}
-						else
-							if (drsProducerSynonyms.Length > 1)
-								throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
+					}
+					else if (drsProducerSynonyms.Length > 1)
+						throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
 
 					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
-					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm))
-					{
+					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm)) {
 						daUnrecExp.Update(new[] { drUnrecExp });
 						applyCount++;
 					}
 				}
 			}
-			finally
-			{
+			finally {
 				workTime = DateTime.UtcNow.Subtract(startTime);
 			}
 			return String.Format("{0};{1}", applyCount, workTime);
@@ -726,14 +687,12 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 			var createdProducerSynonyms = dtSynonymFirmCr.Select("InternalProducerSynonymId is not null");
 
-			foreach (var drNewProducerSynonym in createdProducerSynonyms)
-			{
+			foreach (var drNewProducerSynonym in createdProducerSynonyms) {
 				if (!Convert.IsDBNull(drNewProducerSynonym["SynonymFirmCrCode"]))
 					//Если код синонима производителя существует, то он был создан не PriceProcessor и 
 					//получен из базы при сохранении прайса
 					drNewProducerSynonym.AcceptChanges();
-				else
-				{
+				else {
 					daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
 					daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
 					drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
@@ -755,7 +714,6 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
 
 			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
-
 		}
 
 		/// <summary>
@@ -782,24 +740,21 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 		/// </summary>
 		public void Formalize()
 		{
-			using(NDC.Push(String.Format("{0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode)))
-			{
+			using (NDC.Push(String.Format("{0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode))) {
 				_logger.Debug("начало Formalize");
-				try
-				{
+				try {
 					_connection.Open();
 
-					using(Timer("Загрузка данных"))
+					using (Timer("Загрузка данных"))
 						Prepare();
 
-					using(Timer("Формализация"))
+					using (Timer("Формализация"))
 						InternalFormalize();
 
 					using (Timer("Применение изменений в базу"))
 						FinalizePrice();
 				}
-				finally
-				{
+				finally {
 					_connection.Close();
 				}
 				_logger.Debug("конец Formalize");
@@ -825,23 +780,19 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 
 		private void InternalFormalize()
 		{
-			foreach (var position in _reader.Read())
-			{
+			foreach (var position in _reader.Read()) {
 				position.CalculateJunk();
 
-				if (IsForbidden(position.PositionName))
-				{
+				if (IsForbidden(position.PositionName)) {
 					InsertIntoForb(position);
 					continue;
 				}
 
 				var core = position.Core;
-				if (!_priceInfo.IsAssortmentPrice)
-				{
+				if (!_priceInfo.IsAssortmentPrice) {
 					//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
 					//или если количество определенно и оно равно 0
-					if (core.Costs.Length == 0 || core.QuantityAsInt == 0)
-					{
+					if (core.Costs.Length == 0 || core.QuantityAsInt == 0) {
 						InsertToZero(position);
 						continue;
 					}
@@ -858,12 +809,11 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 				if (position.IsNotSet(UnrecExpStatus.FullForm))
 					InsertToUnrec(position);
 
-				if (position.IsSet(UnrecExpStatus.NameForm))
-				{
+				if (position.IsSet(UnrecExpStatus.NameForm)) {
 					core.ProductId = (uint)position.ProductId;
 					core.SynonymCode = (uint)position.SynonymCode;
 					if (position.CodeFirmCr != null)
-						core.CodeFirmCr = (uint) position.CodeFirmCr;
+						core.CodeFirmCr = (uint)position.CodeFirmCr;
 					if (position.SynonymFirmCrCode != null)
 						core.SynonymFirmCrCode = (uint)position.SynonymFirmCrCode;
 					if (_priceInfo.IsUpdating)
@@ -884,13 +834,11 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow[] dr = null;
-			if (_priceInfo.FormByCode)
-			{
+			if (_priceInfo.FormByCode) {
 				if (!String.IsNullOrEmpty(position.Code))
 					dr = dtSynonym.Select(String.Format("Code = '{0}'", position.Code.Replace("'", "''")));
 			}
-			else
-			{
+			else {
 				if (!String.IsNullOrEmpty(position.PositionName))
 					dr = dtSynonym.Select(String.Format("Synonym = '{0}'", position.PositionName.Replace("'", "''")));
 				if ((null == dr) || (0 == dr.Length))
@@ -898,8 +846,7 @@ and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
 						dr = dtSynonym.Select(String.Format("Synonym = '{0}'", position.OriginalName.Replace("'", "''")));
 			}
 
-			if ((null != dr) && (dr.Length > 0))
-			{
+			if ((null != dr) && (dr.Length > 0)) {
 				var row = dr[0];
 				position.ProductId = Convert.ToInt64(row["ProductId"]);
 				position.CatalogId = Convert.ToInt64(row["CatalogId"]);

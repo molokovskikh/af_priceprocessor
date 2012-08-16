@@ -449,7 +449,7 @@ namespace PriceProcessor.Test.Waybills
 			//foreach (var distinctCertificateFile in distinctCertificateFiles) {
 			//    var sourceFile = Path.Combine(
 			//        sourcePath, 
-			//        distinctCertificateFile.Supplier.Id.ToString().PadLeft(3, '0'),
+			//        distinctCertificateFile.supplier.Id.ToString().PadLeft(3, '0'),
 			//        "Certificats", 
 			//        distinctCertificateFile.OriginFilename);
 			//    var destinationFile = Path.Combine(destinationPath, distinctCertificateFile.Id + ".tif");

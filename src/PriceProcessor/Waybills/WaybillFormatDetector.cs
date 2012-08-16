@@ -20,30 +20,42 @@ namespace Inforoom.PriceProcessor.Waybills
 	{
 		// словарь для специальных парсеров
 		protected Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>> {
-			{6256, new List<Type>{typeof(Avesta_6256_SpecialParser)}}, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
-			{2747, new List<Type>{typeof(KazanFarmDbfParser)}}, //Накладная в формате dbf от Казань-Фарм.
-			{7999, new List<Type>{typeof(TrediFarmCheboksarySpecialParser)}}, // Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
-			{7957, new List<Type>{typeof(ZhdanovKazanSpecialParser)}}, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
-			{8063, new List<Type>{typeof(ZhdanovKazanSpecialParser),
-									typeof(BizonKazanSpecialParser)}}, // Накладная (dbf) от ООО "Бизон" (Казань)
-			{74, new List<Type>{typeof(ImperiaFarmaSpecialParser), // Накладная от Империа-Фарма (dbf)
-									typeof(ImperiaFarmaSpecialParser2)}}, // Накладная от Империа-Фарма (txt)
-			{1581, new List<Type>{typeof(ZdravServiceSpecialParser),  // Накладная от Здравсервис, содержащая поля для счета-фактуры
-									typeof(ZdravServiceSpecialParser2)}}, // Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
-			{11427, new List<Type>{typeof(PokrevskySpecialParser)}}, // Накладная от ИП Покревский
-			{7, new List<Type>{typeof(OriolaVoronezhSpecialParser)}}, // Накладная от Ориола (Воронеж)
-			{182, new List<Type>{typeof(LekRusChernozemieSpecialParser)}}, // Накладная от Лекрус Центральное Черноземье
+			{ 6256, new List<Type> { typeof(Avesta_6256_SpecialParser) } }, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
+			{ 2747, new List<Type> { typeof(KazanFarmDbfParser) } }, //Накладная в формате dbf от Казань-Фарм.
+			{ 7999, new List<Type> { typeof(TrediFarmCheboksarySpecialParser) } }, // Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
+			{ 7957, new List<Type> { typeof(ZhdanovKazanSpecialParser) } }, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
+			{
+				8063, new List<Type> {
+					typeof(ZhdanovKazanSpecialParser),
+					typeof(BizonKazanSpecialParser)
+				}
+			}, // Накладная (dbf) от ООО "Бизон" (Казань)
+			{
+				74, new List<Type> {
+					typeof(ImperiaFarmaSpecialParser), // Накладная от Империа-Фарма (dbf)
+					typeof(ImperiaFarmaSpecialParser2)
+				}
+			}, // Накладная от Империа-Фарма (txt)
+			{
+				1581, new List<Type> {
+					typeof(ZdravServiceSpecialParser), // Накладная от Здравсервис, содержащая поля для счета-фактуры
+					typeof(ZdravServiceSpecialParser2)
+				}
+			}, // Для поставщика Здравсервис (Тула) отдельный парсер (формат тот же, что и для PulsFKParser)
+			{ 11427, new List<Type> { typeof(PokrevskySpecialParser) } }, // Накладная от ИП Покревский
+			{ 7, new List<Type> { typeof(OriolaVoronezhSpecialParser) } }, // Накладная от Ориола (Воронеж)
+			{ 182, new List<Type> { typeof(LekRusChernozemieSpecialParser) } }, // Накладная от Лекрус Центральное Черноземье
 			//{4138, new List<Type>{typeof(KatrenVrnSpecialParser)}}, // Накладная от Катрен Воронеж, пока не используется
-			{338, new List<Type>{typeof(Moron_338_SpecialParser)}}, // Накладная от Морон (Челябинск)
-			{4001, new List<Type>{typeof(Moron_338_SpecialParser)}},
-			{7146, new List<Type>{typeof(Moron_338_SpecialParser)}},
-			{5802, new List<Type>{typeof(Moron_338_SpecialParser)}},
-			{21, new List<Type>{typeof(Moron_338_SpecialParser)}},
-			{4910, new List<Type>{typeof(FarmPartnerKalugaParser)}}, // Фармпартнер (Калуга)
-			{7949, new List<Type>{typeof(MarimedsnabSpecialParser)}}, // Маримедснаб (Йошкар-Ола)
-			{2754, new List<Type>{typeof(KatrenKazanSpecialParser)}}, // Катрен (Казань)
-			{2286, new List<Type>{typeof(GenesisMMskSpecialParser)}}, // Генезис-М (Москва)
-			{11349, new List<Type>{typeof(BiofarmCheboksarySpecialParcer)}}, // Биофарм (Чебоксары)
+			{ 338, new List<Type> { typeof(Moron_338_SpecialParser) } }, // Накладная от Морон (Челябинск)
+			{ 4001, new List<Type> { typeof(Moron_338_SpecialParser) } },
+			{ 7146, new List<Type> { typeof(Moron_338_SpecialParser) } },
+			{ 5802, new List<Type> { typeof(Moron_338_SpecialParser) } },
+			{ 21, new List<Type> { typeof(Moron_338_SpecialParser) } },
+			{ 4910, new List<Type> { typeof(FarmPartnerKalugaParser) } }, // Фармпартнер (Калуга)
+			{ 7949, new List<Type> { typeof(MarimedsnabSpecialParser) } }, // Маримедснаб (Йошкар-Ола)
+			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
+			{ 2286, new List<Type> { typeof(GenesisMMskSpecialParser) } }, // Генезис-М (Москва)
+			{ 11349, new List<Type> { typeof(BiofarmCheboksarySpecialParcer) } }, // Биофарм (Чебоксары)
 		};
 
 		public bool IsSpecialParser(IDocumentParser parser)
@@ -82,7 +94,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					check = (bool)checkMethod.Invoke(null, args);
 				}
 				else if ((extention == ".sst" || extention == ".txt") && paramClass.Contains("String")) {
-					args = new[] {file};
+					args = new[] { file };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
 				if (check) return parserType;
@@ -96,7 +108,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			Type type;
 
 			type = GetSpecialParser(file, documentLog);
-			
+
 			if (type == null) {
 				if (extention == ".dbf")
 					type = DetectDbfParser(file);
@@ -169,7 +181,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				.ToList();
 
 			types = types.OrderBy(t => t.Name).ToList();
-			
+
 			object[] args;
 			if (group == "Dbf") {
 				var data = Dbf.Load(file);
@@ -183,13 +195,13 @@ namespace Inforoom.PriceProcessor.Waybills
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
 					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-				
+
 				var result = (bool)detectFormat.Invoke(null, args);
 				if (result)
 					yield return type;
 			}
 		}
-			
+
 		public Document DetectAndParse(DocumentReceiveLog log, string file)
 		{
 			var parser = DetectParser(file, log);

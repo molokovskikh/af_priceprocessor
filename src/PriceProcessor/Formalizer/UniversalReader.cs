@@ -19,7 +19,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public bool IsYield;
 
 		public ParserState()
-		{}
+		{
+		}
 
 		public ParserState(string tag)
 		{
@@ -34,10 +35,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 
 		public virtual void Read(string tag, string value)
-		{}
+		{
+		}
 
 		public virtual void BeginConsume()
-		{}
+		{
+		}
 
 		public virtual object EndConsume()
 		{
@@ -59,7 +62,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override void BeginConsume()
 		{
-			_position = new FormalizationPosition{Core = new NewCore()};
+			_position = new FormalizationPosition { Core = new NewCore() };
 		}
 
 		public override object EndConsume()
@@ -247,16 +250,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		private void DescriptionOparation(Cost cost)
 		{
-				var description = cost.Description;
+			var description = cost.Description;
 
-				var value = cost.Value;
+			var value = cost.Value;
 
-				if (value == 0)
-					description.ZeroCostCount++;
-				if (Cost.IsZeroOrLess(value))
-				{
-					description.UndefinedCostCount++;
-				}
+			if (value == 0)
+				description.ZeroCostCount++;
+			if (Cost.IsZeroOrLess(value)) {
+				description.UndefinedCostCount++;
+			}
 		}
 
 		public override void Read(string tag, string value)
@@ -267,7 +269,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 				_cost.Description = _descriptions.FirstOrDefault(d => d.Name.Match(value));
 				if (_cost.Description == null) {
-					var costDescription = new CostDescription {Name = value};
+					var costDescription = new CostDescription { Name = value };
 					_cost.Description = costDescription;
 					_descriptions.Add(costDescription);
 				}
@@ -369,7 +371,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 			Customer customer = null;
 			string valueTag = null;
 			while (_reader.Read()) {
-
 				if (_reader.NodeType == XmlNodeType.Element) {
 					if (_state == State.None && IsTag("Price"))
 						yield break;
@@ -487,6 +488,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 
 		public void SendWarning(PriceLoggingStat stat)
-		{}
+		{
+		}
 	}
 }

@@ -6,29 +6,29 @@ namespace Inforoom.PriceProcessor
 	public class Literals
 	{
 #if DEBUG
-        public static bool IsIntegration()
-        {
-            return String.Equals(System.Environment.MachineName, "devsrv", StringComparison.OrdinalIgnoreCase)
-                && ConfigurationManager.ConnectionStrings["integration"] != null;
-        }
+		public static bool IsIntegration()
+		{
+			return String.Equals(System.Environment.MachineName, "devsrv", StringComparison.OrdinalIgnoreCase)
+				&& ConfigurationManager.ConnectionStrings["integration"] != null;
+		}
 #endif
 
 
-        public static string GetConnectionName()
-        {
+		public static string GetConnectionName()
+		{
 #if (DEBUG)
-            if (IsIntegration())
-                return "integration";
-            else
-                return "Local";
+			if (IsIntegration())
+				return "integration";
+			else
+				return "Local";
 #else
 			return "Main";
 #endif
-        }
+		}
 
-        public static string ConnectionString()
-        {
-            return ConfigurationManager.ConnectionStrings[GetConnectionName()].ConnectionString;
-        }
+		public static string ConnectionString()
+		{
+			return ConfigurationManager.ConnectionStrings[GetConnectionName()].ConnectionString;
+		}
 	}
 }

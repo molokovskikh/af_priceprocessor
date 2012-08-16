@@ -13,15 +13,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CountryIndex = 3;
 			QuantityIndex = 4;
 			SupplierCostIndex = 5;
-			ProducerCostWithoutNdsIndex = 6;				//По описанию тут цена производителя без НДС
+			ProducerCostWithoutNdsIndex = 6; //По описанию тут цена производителя без НДС
 			SupplierCostWithoutNdsIndex = 7;
 			NdsIndex = 9;
 		}
 
 		public static bool CheckFileFormat(string file)
 		{
-			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;

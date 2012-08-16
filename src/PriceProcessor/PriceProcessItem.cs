@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor
 		public DateTime? FileTime { get; set; }
 
 		//Дата создания элемента, чтобы знать: можно ли его брать в обработку или нет
-		public DateTime CreateTime { get; /* для теста private */set; }
+		public DateTime CreateTime { get; /* для теста private */ set; }
 
 		private ulong? ParentSynonym { get; set; }
 
@@ -58,7 +58,7 @@ namespace Inforoom.PriceProcessor
 
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
 				Literals.ConnectionString(),
-@"select
+				@"select
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   pc.PriceItemId,
@@ -88,39 +88,39 @@ group by pi.Id",
 
 		public static string GetFile(string[] files, FormatType format)
 		{
-			if(files.Length == 0) return null;
+			if (files.Length == 0) return null;
 			var filename = String.Empty;
 			switch (format) {
-				case FormatType.NativeDbf :
+				case FormatType.NativeDbf:
 					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf");
 					break;
-				case FormatType.NativeXls :
+				case FormatType.NativeXls:
 					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls");
 					break;
-				case FormatType.NativeDelimiter1251 :
+				case FormatType.NativeDelimiter1251:
 					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt");
 					break;
 				default:
 					filename = files[0];
 					break;
 			}
-			if(String.IsNullOrEmpty(filename)) filename = files[0];
+			if (String.IsNullOrEmpty(filename)) filename = files[0];
 			return filename;
 		}
 
 		public static PriceProcessItem GetProcessItem(uint priceItemId)
 		{
 			var dtRules = PricesValidator.LoadFormRules(priceItemId);
-			if(dtRules.Rows.Count == 0) return null;
+			if (dtRules.Rows.Count == 0) return null;
 			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
 			var files = Directory.GetFiles(Settings.Default.BasePath,
-											String.Format(@"{0}.*", priceItemId));
-			if(!files.Any())
+				String.Format(@"{0}.*", priceItemId));
+			if (!files.Any())
 				files = Directory.GetFiles(Settings.Default.InboundPath,
-											String.Format(@"{0}.*", priceItemId));
+					String.Format(@"{0}.*", priceItemId));
 
 			string filename = String.Empty;
-			if (files.Any()) 
+			if (files.Any())
 				filename = GetFile(files, fmt);
 			else return null;
 			if (String.IsNullOrEmpty(filename)) return null;
@@ -130,29 +130,25 @@ group by pi.Id",
 		public IList<string> GetAllNames()
 		{
 			IList<string> names;
-			var tempPath = Path.GetTempPath() + (int) DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
-							PriceItemId.ToString() + "\\";
+			var tempPath = Path.GetTempPath() + (int)DateTime.Now.TimeOfDay.TotalMilliseconds + "_" +
+				PriceItemId.ToString() + "\\";
 			var tempFileName = tempPath + PriceItemId + Path.GetExtension(FilePath);
-			 
+
 			if (Directory.Exists(tempPath))
 				global::Common.Tools.FileHelper.DeleteDir(tempPath);
 			Directory.CreateDirectory(tempPath);
-			try
-			{
-				try
-				{
-					var _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint) PriceItemId);
+			try {
+				try {
+					var _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint)PriceItemId);
 					_workPrice.Downloaded = Downloaded;
 					_workPrice.InputFileName = FilePath;
 					names = _workPrice.GetAllNames();
 				}
-				catch (WarningFormalizeException e)
-				{
+				catch (WarningFormalizeException e) {
 					return null;
 				}
 			}
-			finally
-			{
+			finally {
 				Directory.Delete(tempPath, true);
 			}
 
@@ -181,7 +177,7 @@ group by pi.Id",
 		public bool IsSynonymEqual(PriceProcessItem item)
 		{
 			if (ParentSynonym != null
-				&& item.ParentSynonym != null 
+				&& item.ParentSynonym != null
 				&& ParentSynonym == item.ParentSynonym)
 				return true;
 
@@ -189,7 +185,7 @@ group by pi.Id",
 				&& ParentSynonym == item.PriceCode)
 				return true;
 
-			if (item.ParentSynonym != null 
+			if (item.ParentSynonym != null
 				&& item.ParentSynonym == PriceCode)
 				return true;
 

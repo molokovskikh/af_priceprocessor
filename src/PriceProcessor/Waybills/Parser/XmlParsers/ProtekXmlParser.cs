@@ -14,8 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			var docDate = xdocument.XPathSelectElement("КоммерческаяИнформация/Документ/Дата").Value;
 			if (!String.IsNullOrEmpty(docDate))
 				document.DocumentDate = Convert.ToDateTime(docDate);
-			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар"))
-			{
+			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар")) {
 				var line = document.NewLine();
 				line.Product = element.XPathSelectElement("Наименование").Value;
 				line.Producer = element.XPathSelectElement("Изготовитель/ОфициальноеНаименование").Value;
@@ -28,7 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					line.SerialNumber = serialNumber.Split('^')[0];
 				line.Quantity = Convert.ToUInt32(element.XPathSelectElement("Количество").Value);
 				line.VitallyImportant = Convert.ToInt32(element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_VITAL_MED']/Значение").Value) == 1;
-				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));				
+				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));
 				document.Lines.Add(line);
 			}
 			return document;

@@ -9,7 +9,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	public class OrderItem : ActiveRecordLinqBase<OrderItem>
 	{
 		public OrderItem()
-		{}
+		{
+		}
 
 		public OrderItem(OrderHead order)
 		{

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class BaltimorKazanParser: BaseDbfParser
+	public class BaltimorKazanParser : BaseDbfParser
 	{
 		public override DbfParser GetParser()
 		{
@@ -24,27 +24,27 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.RegistryCost, "CGR")
 				.Line(l => l.Amount, "SUMASNDS")
-                .Line(l => l.EAN13, "STRKOD");
+				.Line(l => l.EAN13, "STRKOD");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NUMDOC")
-			       && data.Columns.Contains("DATADOC")
-			       && data.Columns.Contains("TOVCODE")
-			       && data.Columns.Contains("TOVNAME")
-			       && data.Columns.Contains("KOLVO")
-			       && data.Columns.Contains("STNDS")
-			       && data.Columns.Contains("CENAPROIZV")
-			       && data.Columns.Contains("SERIA")
-			       && data.Columns.Contains("SERT")
-			       && data.Columns.Contains("DATE_VAL")
-			       && data.Columns.Contains("FACTORY")
-			       && data.Columns.Contains("PRICE")
-			       && data.Columns.Contains("GNVLS")
-			       && data.Columns.Contains("CGR")
-			       && data.Columns.Contains("SUMASNDS")
-                   && data.Columns.Contains("STRKOD");
+				&& data.Columns.Contains("DATADOC")
+				&& data.Columns.Contains("TOVCODE")
+				&& data.Columns.Contains("TOVNAME")
+				&& data.Columns.Contains("KOLVO")
+				&& data.Columns.Contains("STNDS")
+				&& data.Columns.Contains("CENAPROIZV")
+				&& data.Columns.Contains("SERIA")
+				&& data.Columns.Contains("SERT")
+				&& data.Columns.Contains("DATE_VAL")
+				&& data.Columns.Contains("FACTORY")
+				&& data.Columns.Contains("PRICE")
+				&& data.Columns.Contains("GNVLS")
+				&& data.Columns.Contains("CGR")
+				&& data.Columns.Contains("SUMASNDS")
+				&& data.Columns.Contains("STRKOD");
 		}
 	}
 }

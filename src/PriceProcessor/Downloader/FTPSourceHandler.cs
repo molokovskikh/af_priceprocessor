@@ -8,7 +8,7 @@ using Inforoom.PriceProcessor;
 using log4net;
 using LumiSoft.Net.FTP.Client;
 using System.Threading;
-using FileHelper=Common.Tools.FileHelper;
+using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader.Ftp
 {
@@ -35,7 +35,8 @@ namespace Inforoom.Downloader.Ftp
 		public string ErrorMessage { get; set; }
 
 		public FailedFile()
-		{}
+		{
+		}
 
 		public FailedFile(string fileName, Exception e)
 		{
@@ -71,11 +72,9 @@ namespace Inforoom.Downloader.Ftp
 				ftpDirectory = @"/" + ftpDirectory;
 
 			var receivedFiles = new List<DownloadedFile>();
-			using (var ftpClient = new FTP_Client())
-			{
+			using (var ftpClient = new FTP_Client()) {
 				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory);
-				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows)
-				{
+				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows) {
 					if (Convert.ToBoolean(entry["IsDirectory"]))
 						continue;
 					var fileInDirectory = entry["Name"].ToString();
@@ -90,13 +89,11 @@ namespace Inforoom.Downloader.Ftp
 #endif
 
 					if (((fileWriteTime.CompareTo(lastDownloadTime) > 0) &&
-						 (DateTime.Now.Subtract(fileWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)) ||
-						((fileWriteTime.CompareTo(DateTime.Now) > 0) && (fileWriteTime.Subtract(lastDownloadTime).TotalMinutes > 0)))
-					{
+						(DateTime.Now.Subtract(fileWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval)) ||
+						((fileWriteTime.CompareTo(DateTime.Now) > 0) && (fileWriteTime.Subtract(lastDownloadTime).TotalMinutes > 0))) {
 						var downloadedFile = Path.Combine(downloadDirectory, fileInDirectory);
 
-						try
-						{
+						try {
 #if !DEBUG
 							ReceiveFile(ftpClient, fileInDirectory, downloadedFile);
 #else
@@ -109,14 +106,12 @@ namespace Inforoom.Downloader.Ftp
 							receivedFiles.Add(new DownloadedFile(downloadedFile, fileWriteTime));
 							FileHelper.ClearReadOnly(downloadedFile);
 						}
-						catch (Exception e)
-						{
+						catch (Exception e) {
 							FailedFiles.Add(new FailedFile(fileInDirectory, e));
 							_log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
 						}
 					}
-					else
-					{
+					else {
 						_log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
 					}
 				}
@@ -146,8 +141,7 @@ namespace Inforoom.Downloader.Ftp
 			table.Columns.Add("Date");
 			table.Columns.Add("IsDirectory");
 			var files = Directory.GetFiles(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), "*.*");
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				var row = table.NewRow();
 				row["Name"] = Path.GetFileName(file);
 				row["Date"] = DateTime.Now.AddDays(-1);
@@ -170,24 +164,19 @@ namespace Inforoom.Downloader.Ftp
 		{
 			var countAttempts = 3;
 
-			for (var i = 0; i < countAttempts; i++)
-			{
-				try
-				{
-					if (File.Exists(downloadedFileName))
-					{
+			for (var i = 0; i < countAttempts; i++) {
+				try {
+					if (File.Exists(downloadedFileName)) {
 						var log = log4net.LogManager.GetLogger(GetType());
 						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
 						File.Delete(downloadedFileName);
 					}
-					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew))
-					{
+					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew)) {
 						ftpClient.ReceiveFile(fileInDirectory, fileStream);
 						return;
 					}
 				}
-				catch (Exception)
-				{
+				catch (Exception) {
 					if (i >= countAttempts)
 						throw;
 				}
@@ -200,7 +189,7 @@ namespace Inforoom.Downloader.Ftp
 			if (ftpHost.StartsWith(@"ftp://", StringComparison.OrdinalIgnoreCase))
 				ftpHost = ftpHost.Substring(6);
 			if (ftpHost.EndsWith(@"/"))
-				ftpHost = ftpHost.Substring(0, ftpHost.Length-1);
+				ftpHost = ftpHost.Substring(0, ftpHost.Length - 1);
 
 			var pricePath = source.FtpDir;
 			if (!pricePath.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
@@ -210,8 +199,7 @@ namespace Inforoom.Downloader.Ftp
 			var downFileName = String.Empty;
 			var shortFileName = String.Empty;
 			var priceDateTime = source.PriceDateTime;
-			using (var ftpClient = new FTP_Client())
-			{
+			using (var ftpClient = new FTP_Client()) {
 				ftpClient.PassiveMode = true;
 				ftpClient.Connect(ftpHost, 21);
 				ftpClient.Authenticate(source.FtpLogin, source.FtpPassword);
@@ -219,25 +207,22 @@ namespace Inforoom.Downloader.Ftp
 
 				var dsEntries = ftpClient.GetList();
 
-				foreach (DataRow entry in dsEntries.Tables["DirInfo"].Rows)
-				{
+				foreach (DataRow entry in dsEntries.Tables["DirInfo"].Rows) {
 					if (Convert.ToBoolean(entry["IsDirectory"]))
 						continue;
 
 					shortFileName = entry["Name"].ToString();
 
 					var priceMaskIsMatched = PriceProcessor.FileHelper.CheckMask(shortFileName, source.PriceMask);
-					if (priceMaskIsMatched)
-					{
+					if (priceMaskIsMatched) {
 						var fileLastWriteTime = Convert.ToDateTime(entry["Date"]);
 #if DEBUG
 						priceDateTime = fileLastWriteTime;
 						ftpFileName = shortFileName;
 #endif
 						if (((fileLastWriteTime.CompareTo(priceDateTime) > 0)
-								&& (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
-								|| ((fileLastWriteTime.CompareTo(DateTime.Now) > 0) && (fileLastWriteTime.Subtract(priceDateTime).TotalMinutes > 0)))
-						{
+							&& (DateTime.Now.Subtract(fileLastWriteTime).TotalMinutes > Settings.Default.FileDownloadInterval))
+							|| ((fileLastWriteTime.CompareTo(DateTime.Now) > 0) && (fileLastWriteTime.Subtract(priceDateTime).TotalMinutes > 0))) {
 							priceDateTime = fileLastWriteTime;
 							ftpFileName = shortFileName;
 						}
@@ -274,18 +259,15 @@ namespace Inforoom.Downloader.Ftp
 
 		protected override void GetFileFromSource(PriceSource source)
 		{
-			try
-			{
+			try {
 				var downloader = new FtpDownloader();
 				var file = downloader.GetFileFromSource(source, DownHandlerPath);
-				if (file != null)
-				{
+				if (file != null) {
 					CurrFileName = file.FileName;
 					CurrPriceDate = file.FileDate;
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				throw new FtpSourceHandlerException(e);
 			}
 		}
@@ -303,7 +285,8 @@ namespace Inforoom.Downloader.Ftp
 		public static string ErrorMessageServiceNotAvaliable = "Сервис недоступен.";
 
 		public FtpSourceHandlerException()
-		{ }
+		{
+		}
 
 		public FtpSourceHandlerException(Exception innerException)
 			: base(null, innerException)

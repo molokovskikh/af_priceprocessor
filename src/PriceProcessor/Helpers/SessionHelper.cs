@@ -18,12 +18,10 @@ namespace Inforoom.PriceProcessor.Helpers
 		{
 			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
 			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
-			try
-			{
+			try {
 				sessionDelegate(session);
 			}
-			finally
-			{
+			finally {
 				sessionHolder.ReleaseSession(session);
 			}
 		}
@@ -32,14 +30,12 @@ namespace Inforoom.PriceProcessor.Helpers
 		{
 			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
 			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
-			try
-			{
+			try {
 				var result = sessionDelegate(session);
 				Evict(session, result);
 				return result;
 			}
-			finally
-			{
+			finally {
 				sessionHolder.ReleaseSession(session);
 			}
 		}
@@ -48,16 +44,13 @@ namespace Inforoom.PriceProcessor.Helpers
 		{
 			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
 			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
-			try
-			{
+			try {
 				T result = sessionDelegate(session);
 				return result;
 			}
-			finally
-			{
+			finally {
 				sessionHolder.ReleaseSession(session);
 			}
 		}
-
 	}
 }

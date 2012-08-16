@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -19,12 +19,12 @@ using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader
 {
-	public class WaybillLANSourceHandler : BaseSourceHandler
+	public class WaybillLanSourceHandler : BaseSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
 		protected InboundDocumentType _currentDocumentType;
 
-		public WaybillLANSourceHandler()
+		public WaybillLanSourceHandler()
 		{
 			SourceType = "WAYBILLLAN";
 			_documentTypes = new InboundDocumentType[] { new WaybillType(), new RejectType() };
@@ -54,42 +54,34 @@ and st.SourceID = 4";
 			// Заполняем таблицу с данными о поставщиках.
 			FillSourcesTable();
 
-			while (dtSources.Rows.Count > 0)
-			{
-				try
-				{
+			while (dtSources.Rows.Count > 0) {
+				try {
 					_currentDocumentType = null;
 					// Берем нулевую строку (с данными о поставщике)
 					drLanSource = dtSources.Rows[0];
 
-					var documentReader = GetDocumentReader(drLanSource[WaybillSourcesTable.colReaderClassName].ToString());
+					var clazz = drLanSource[WaybillSourcesTable.colReaderClassName].ToString();
+					var documentReader = ReflectionHelper.GetDocumentReader<BaseDocumentReader>(clazz);
 
-					foreach(var documentType in _documentTypes)
-						try
-						{
+					foreach (var documentType in _documentTypes)
+						try {
 							_currentDocumentType = documentType;
 
 							// Получаем список файлов из папки
 							var files = GetFileFromSource(documentReader);
 
-							foreach (var sourceFileName in files)
-							{
+							foreach (var sourceFileName in files) {
 								GetCurrentFile(sourceFileName);
 
-								if (!String.IsNullOrEmpty(CurrFileName))
-								{
+								if (!String.IsNullOrEmpty(CurrFileName)) {
 									var CorrectArchive = true;
 									//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-									if (ArchiveHelper.IsArchive(CurrFileName))
-									{
-										if (ArchiveHelper.TestArchive(CurrFileName))
-										{
-											try
-											{
+									if (ArchiveHelper.IsArchive(CurrFileName)) {
+										if (ArchiveHelper.TestArchive(CurrFileName)) {
+											try {
 												PriceProcessor.FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
 											}
-											catch (ArchiveHelper.ArchiveException)
-											{
+											catch (ArchiveHelper.ArchiveException) {
 												CorrectArchive = false;
 											}
 										}
@@ -97,10 +89,8 @@ and st.SourceID = 4";
 											CorrectArchive = false;
 									}
 
-									if (CorrectArchive)
-									{
-										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader))
-										{
+									if (CorrectArchive) {
+										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader)) {
 											using (var mm = new MailMessage(
 												Settings.Default.FarmSystemEmail,
 												Settings.Default.DocumentFailMail,
@@ -110,8 +100,7 @@ and st.SourceID = 4";
 													drLanSource[SourcesTableColumns.colShortName],
 													_currentDocumentType.GetType().Name,
 													DateTime.Now,
-													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs.")))
-											{
+													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."))) {
 												if (!String.IsNullOrEmpty(CurrFileName))
 													mm.Attachments.Add(new Attachment(CurrFileName));
 												var sc = new SmtpClient(Settings.Default.SMTPHost);
@@ -122,23 +111,18 @@ and st.SourceID = 4";
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
 									}
-									else
-									{
+									else {
 										var supplierId = Convert.ToUInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
-										WriteLog(documentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
-											String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+										DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), documentType.DocType, String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
 										//Распаковать файл не удалось, поэтому удаляем его из папки
 										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
 											File.Delete(sourceFileName);
 									}
 									Cleanup();
 								}
-
 							}
-
 						}
-						catch (Exception typeException)
-						{
+						catch (Exception typeException) {
 							//Обрабатываем ошибку в случае обработки одного из типов документов
 							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
@@ -150,22 +134,21 @@ and st.SourceID = 4";
 					drLanSource.Delete();
 					dtSources.AcceptChanges();
 				}
-				catch (Exception ex)
-				{
+				catch (Exception ex) {
 					var error = String.Format("Источник : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
-					try
-					{
+					try {
 						dtSources.Rows[0].Delete();
 					}
-					catch { }
+					catch {
+					}
 					error += Environment.NewLine + Environment.NewLine + ex;
 					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
 						LoggingToService(error);
-					try
-					{
+					try {
 						dtSources.AcceptChanges();
 					}
-					catch { }
+					catch {
+					}
 				}
 			}
 		}
@@ -173,8 +156,7 @@ and st.SourceID = 4";
 		protected string[] GetFileFromSource(BaseDocumentReader documentReader)
 		{
 			var pricePath = String.Empty;
-			try
-			{
+			try {
 				// Путь к папке, из которой нужно забирать накладную
 				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
 				pricePath = Path.Combine(Settings.Default.FTPOptBoxPath,
@@ -184,23 +166,19 @@ and st.SourceID = 4";
 				var ff = Directory.GetFiles(pricePath);
 				// Отсекаем файлы с некорректным расширением
 				var newFiles = new List<string>();
-				foreach (var newFileName in ff)
-				{
+				foreach (var newFileName in ff) {
 					if (Array.Exists(documentReader.ExcludeExtentions,
-						s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase)))
-					{
+						s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase))) {
 						// Если есть файл с некорректным разрешением, удаляем его
 						if (File.Exists(newFileName))
 							File.Delete(newFileName);
 					}
-					else
-						if (DateTime.Now.Subtract(File.GetLastWriteTime(newFileName)).TotalMinutes > Settings.Default.FileDownloadInterval)
-							newFiles.Add(newFileName);
+					else if (DateTime.Now.Subtract(File.GetLastWriteTime(newFileName)).TotalMinutes > Settings.Default.FileDownloadInterval)
+						newFiles.Add(newFileName);
 				}
 				return documentReader.UnionFiles(newFiles.ToArray());
 			}
-			catch (Exception exDir)
-			{
+			catch (Exception exDir) {
 				LoggingToService(String.Format("Не удалось получить список файлов для папки {0}: {1}",
 					pricePath, exDir));
 				return new string[] { };
@@ -211,16 +189,14 @@ and st.SourceID = 4";
 		{
 			CurrFileName = String.Empty;
 			var NewFile = DownHandlerPath + Path.GetFileName(sourceFile);
-			try
-			{
+			try {
 				if (File.Exists(NewFile))
 					File.Delete(NewFile);
 				FileHelper.ClearReadOnly(sourceFile);
 				File.Copy(sourceFile, NewFile);
 				CurrFileName = NewFile;
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				LoggingToService(String.Format("Не удалось скопировать файл {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
 			}
 		}
@@ -230,8 +206,7 @@ and st.SourceID = 4";
 			//Массив файлов
 			var files = new[] { inFile };
 			var dir = inFile + ExtrDirSuffix;
-			if (ArchiveHelper.IsArchive(inFile))
-			{
+			if (ArchiveHelper.IsArchive(inFile)) {
 				// Получаем файлы, распакованные из архива
 				files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories);
 			}
@@ -239,22 +214,18 @@ and st.SourceID = 4";
 			if (!Directory.Exists(dir))
 				Directory.CreateDirectory(dir);
 
-			try
-			{
+			try {
 				files = documentReader.DivideFiles(dir, files);
 			}
-			catch (Exception exDivide)
-			{
+			catch (Exception exDivide) {
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				WriteLog(_currentDocumentType.DocType, supplierId, null, Path.GetFileName(CurrFileName),
-					String.Format("Не удалось разделить файлы: {0}", exDivide));
+				DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), _currentDocumentType.DocType, String.Format("Не удалось разделить файлы: {0}", exDivide));
 				return false;
 			}
 
 			var processed = false;
 
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				if (MoveWaybill(inFile, file, drCurrent, documentReader))
 					processed = true;
 			}
@@ -263,78 +234,36 @@ and st.SourceID = 4";
 
 		protected bool MoveWaybill(string archFileName, string fileName, DataRow drCurrent, BaseDocumentReader documentReader)
 		{
-			using (var cleaner = new FileCleaner())
-			{
+			using (var cleaner = new FileCleaner()) {
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
-				try
-				{
+				try {
 					var addresses = With.Connection(c => documentReader.GetClientCodes(c, supplierId, archFileName, fileName));
 					var formatFile = documentReader.FormatOutputFile(fileName, drCurrent);
 
 					cleaner.Watch(fileName);
 					cleaner.Watch(formatFile);
 
-					foreach (var addressId in addresses)
-					{
-						var clientAddressId = (uint?) addressId;
-						var clientId = GetClientIdByAddress(ref clientAddressId);
-						if (clientId == null)
-						{
-							clientId = clientAddressId;
-							clientAddressId = null;
-						}
+					foreach (var addressId in addresses) {
+						var log = DocumentReceiveLog.LogNoCommit(supplierId,
+							(uint)addressId,
+							formatFile,
+							_currentDocumentType.DocType,
+							"Получен с нашего FTP");
 
-						DocumentReceiveLog log;
-						using(new SessionScope())
-							log = DocumentReceiveLog.LogNoCommit(supplierId,
-								clientId,
-								clientAddressId,
-								formatFile,
-								_currentDocumentType.DocType,
-								"Получен с нашего FTP");
-
-						_logger.InfoFormat("WaybillLANSourceHandler: обработка файла {0}", fileName);
+						_logger.InfoFormat("WaybillLanSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
-						WaybillService.ParserDocument(log);
+						WaybillService.ParseWaybill(log);
 					}
 				}
-				catch(Exception e)
-				{
+				catch (Exception e) {
 					var message = "Не удалось отформатировать документ.\nОшибка: " + e;
-					_logger.ErrorFormat("WaybillLANSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
-					DocumentReceiveLog.Log(supplierId, null, null, fileName, _currentDocumentType.DocType, message);
+					_logger.ErrorFormat("WaybillLanSourceHandler: {0}, archfilename {1}, fileName {2}, error {3}", message, archFileName, fileName, e);
+					DocumentReceiveLog.Log(supplierId, null, fileName, _currentDocumentType.DocType, message);
 					return false;
 				}
 			}
 
 			return true;
-		}
-
-		private void WriteLog(DocType documentType, uint supplierId, uint? addressId, string logFileName, string comment)
-		{
-			var clientId = GetClientIdByAddress(ref addressId);
-			if (clientId == null)
-			{
-				clientId = addressId;
-				addressId = null;
-			}
-
-			DocumentReceiveLog.Log(supplierId, clientId, addressId, logFileName, documentType, comment);
-		}
-
-		private static BaseDocumentReader GetDocumentReader(string readerClassName)
-		{
-			Type result = null;
-			var types = Assembly.GetExecutingAssembly()
-								.GetModules()[0]
-								.FindTypes(Module.FilterTypeNameIgnoreCase, readerClassName);
-			if (types.Length > 1)
-				throw new Exception(String.Format("Найдено более одного типа с именем {0}", readerClassName));
-			if (types.Length == 1)
-				result = types[0];
-			if (result == null)
-				throw new Exception(String.Format("Класс {0} не найден", readerClassName));
-			return (BaseDocumentReader)Activator.CreateInstance(result);
 		}
 	}
 }

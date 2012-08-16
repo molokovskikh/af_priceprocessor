@@ -18,13 +18,12 @@ namespace Inforoom.Downloader
 		public override void ProcessData()
 		{
 			//Сканируем через некоторое время
-			if (DateTime.Now.Subtract(lastScan).TotalHours <= Settings.Default.ClearScanInterval) 
+			if (DateTime.Now.Subtract(lastScan).TotalHours <= Settings.Default.ClearScanInterval)
 				return;
 
 			var archivedPrices = Directory.GetFiles(_downHistoryPath);
 
-			foreach (var priceFile in archivedPrices)
-			{
+			foreach (var priceFile in archivedPrices) {
 				var fileLastWrite = File.GetLastWriteTime(priceFile);
 
 				//Если разность в днях больше чем в настройки, то файл удяляем
@@ -34,6 +33,5 @@ namespace Inforoom.Downloader
 
 			lastScan = DateTime.Now;
 		}
-
 	}
 }
