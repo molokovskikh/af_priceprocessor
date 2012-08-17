@@ -12,7 +12,7 @@ namespace PriceProcessor.Test.Helpers
 		{
 			var mime = Mime.Parse(@"..\..\Data\MimeExtentionsFixture\Исходное письмо.eml");
 			var recipients = mime.GetRecipients();
-			Assert.That(recipients, Is.EquivalentTo(new [] {"5143@waybills.analit.net"}));
+			Assert.That(recipients, Is.EquivalentTo(new[] { "5143@waybills.analit.net" }));
 		}
 	}
 }

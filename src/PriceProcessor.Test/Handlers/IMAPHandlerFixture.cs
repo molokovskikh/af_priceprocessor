@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)));
 
 			var handler = new IMAPHandler(imapReader);
 
@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Handlers
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, Settings.Default.IMAPSourceFolder);
 			Assert.That(existsMessages.Count, Is.EqualTo(0), "Существуют письма в IMAP-папками с темами: {0}", existsMessages.Select(m => m.Envelope.Subject).Implode());
 		}
-		 
+
 		[Test(Description = "обрабатываем исключения при разборе письма")]
 		public void ProcessReaderException()
 		{
@@ -48,13 +48,13 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)));
 
 			var exception = new Exception("ошибка при разборе письма в reader'е");
 
 			imapReader.Stub(s => s.ProcessMime(null))
 				.IgnoreArguments()
-				.Do(new Action<Mime>(mime => {throw exception;}) );
+				.Do(new Action<Mime>(mime => { throw exception; }));
 			var handler = new IMAPHandler(imapReader);
 
 			handler.ProcessIMAPFolder();
@@ -70,10 +70,9 @@ namespace PriceProcessor.Test.Handlers
 
 		public class UIDInfoForTesting : UIDInfo
 		{
-			 public UIDInfoForTesting() : base(1)
-			 {
-			 	
-			 }
+			public UIDInfoForTesting() : base(1)
+			{
+			}
 		}
 
 		[Test(Description = "проверка срабатывания таймаута при обработке писем")]
@@ -89,7 +88,7 @@ namespace PriceProcessor.Test.Handlers
 
 			Assert.That(handler.UIDTimeout(info), Is.False);
 
-			createTime = createTime.AddMinutes(-(Settings.Default.UIDProcessTimeout+1));
+			createTime = createTime.AddMinutes(-(Settings.Default.UIDProcessTimeout + 1));
 
 			info.BackToRecord(BackToRecordOptions.PropertyBehavior);
 			SetupResult.For(info.CreateTime).Return(createTime);
@@ -107,13 +106,13 @@ namespace PriceProcessor.Test.Handlers
 			var imapReader = MockRepository.GenerateStub<IIMAPReader>();
 			imapReader.Stub(s => s.IMAPAuth(null))
 				.IgnoreArguments()
-				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)) );
+				.Do(new Action<IMAP_Client>(client => client.Authenticate(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass)));
 
 			var exception = new Exception("ошибка при разборе письма в reader'е");
 
 			imapReader.Stub(s => s.ProcessMime(null))
 				.IgnoreArguments()
-				.Do(new Action<Mime>(mime => {throw exception;}) );
+				.Do(new Action<Mime>(mime => { throw exception; }));
 
 			var handler = new IMAPHandler(imapReader);
 
@@ -147,7 +146,7 @@ namespace PriceProcessor.Test.Handlers
 			var realInfo = handler.ErrorInfos[0];
 			var info = MockRepository.GenerateMock<UIDInfoForTesting>();
 			info.Stub(i => i.UID).Return(realInfo.UID);
-			info.Stub(i => i.CreateTime).Return(DateTime.Now.AddMinutes(-(Settings.Default.UIDProcessTimeout+1)));
+			info.Stub(i => i.CreateTime).Return(DateTime.Now.AddMinutes(-(Settings.Default.UIDProcessTimeout + 1)));
 			handler.ErrorInfos.Clear();
 			handler.ErrorInfos.Add(info);
 
@@ -161,6 +160,5 @@ namespace PriceProcessor.Test.Handlers
 
 			Assert.That(handler.ErrorInfos.Count, Is.EqualTo(0));
 		}
-
 	}
 }

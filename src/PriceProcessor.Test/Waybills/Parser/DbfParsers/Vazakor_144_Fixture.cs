@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("0000000387"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.02.2012"));
-			
+
 			var invoice = document.Invoice;
 			Assert.That(invoice, Is.Not.Null);
 			Assert.That(invoice.BuyerName, Is.EqualTo("Акватик ООО"));

@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills
 				var certificateSources = CertificateSource.Queryable.Where(s => s.SourceClassName == typeof(RostaCertificateSource).Name).ToList();
 				certificateSources.ForEach(c => c.Delete());
 
-				_source = new CertificateSource{
+				_source = new CertificateSource {
 					SourceClassName = typeof(RostaCertificateSource).Name,
 					SearchInAssortmentPrice = true
 				};
@@ -73,7 +73,7 @@ namespace PriceProcessor.Test.Waybills
 				//Прайс-лист должен быть ассортиментным
 				price.PriceType = PriceType.Assortment;
 
-				price.AddProductSynonym(product.CatalogProduct.Name +  " Тестовый", product);
+				price.AddProductSynonym(product.CatalogProduct.Name + " Тестовый", product);
 				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
 				price.SaveAndFlush();
 
@@ -88,7 +88,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(catalogs.Count, Is.EqualTo(0), "Таблица не должна быть заполнена");
 
 			using (new SessionScope()) {
-				var catalogFile = new CertificateCatalogFile{
+				var catalogFile = new CertificateCatalogFile {
 					Source = _source,
 					FileDate = DateTime.Now,
 					LocalFileName = Path.GetFullPath(@"..\..\Data\RostaSertList.dbf")
@@ -119,7 +119,6 @@ namespace PriceProcessor.Test.Waybills
 		public void GetCatalogFile()
 		{
 			using (new SessionScope()) {
-
 				var handler = new TestCertificateCatalogHandler();
 				handler.TestCreateDownHandlerPath();
 
@@ -145,7 +144,6 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "проверка загрузки элементов из Core с помощью CreateSQLQuery")]
 		public void GetCoreWithQuery()
 		{
-
 			//Создаем запись в Core для прайс-листа
 			var product = TestProduct.FindFirst();
 			TestCore core;
@@ -155,7 +153,7 @@ namespace PriceProcessor.Test.Waybills
 				//Прайс-лист должен быть ассортиментным
 				price.PriceType = PriceType.Assortment;
 
-				price.AddProductSynonym(product.CatalogProduct.Name +  " Тестовый", product);
+				price.AddProductSynonym(product.CatalogProduct.Name + " Тестовый", product);
 				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
 				price.SaveAndFlush();
 
@@ -177,8 +175,7 @@ from
 	inner join catalogs.Products p on p.Id = core.ProductId
 where
 	ss.CertificateSourceId = :sourceId;
-"
-					)
+")
 					.AddEntity("core", typeof(Core))
 					.SetParameter("sourceId", _source.Id)
 					.List<Core>());
@@ -191,6 +188,5 @@ where
 			Assert.That(cores[0].Product, Is.Not.Null);
 			Assert.That(cores[0].Product.Id, Is.EqualTo(cores[0].ProductId.Value));
 		}
-
 	}
 }

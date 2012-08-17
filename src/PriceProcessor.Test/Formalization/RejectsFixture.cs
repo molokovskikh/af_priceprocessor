@@ -17,9 +17,9 @@ namespace PriceProcessor.Test.Formalization
 	[TestFixture]
 	public class RejectsFixture : IntegrationFixture
 	{
-		DataTable data;
-		TestPrice price;
-		TestPriceItem priceItem;
+		private DataTable data;
+		private TestPrice price;
+		private TestPriceItem priceItem;
 		private Price realPrice;
 
 		[SetUp]
@@ -84,7 +84,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Update_reject()
 		{
 			Formalize();
-			
+
 			var reject = session.Query<Reject>().First(r => r.Product == "Диклофенак р-р для в/м введ 25 мг/мл (ампулы) 3 мл №10");
 
 			data.Rows[0]["QUALNMR"] = "Подлинность.Спирт этиловый.";

@@ -91,8 +91,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test, Ignore]
 		public void Delete_broken_message()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				TestPriceSource.Queryable
 					.Where(s => s.EmailFrom == "naturpr@kursknet.ru" && s.EmailTo == "prices@kursk.analit.net")
 					.Each(s => s.Delete());
@@ -111,8 +110,7 @@ namespace PriceProcessor.Test.Handlers
 
 			handler.ProcessData();
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = PriceDownloadLog.Queryable.Where(l => l.LogTime > begin).ToList();
 
 				Assert.That(logs.Count, Is.EqualTo(1));
@@ -130,7 +128,7 @@ namespace PriceProcessor.Test.Handlers
 				25,
 				Environment.MachineName,
 				"service@analit.net",
-				new[] {"KvasovTest@analit.net"},
+				new[] { "KvasovTest@analit.net" },
 				File.OpenRead(email));
 		}
 	}

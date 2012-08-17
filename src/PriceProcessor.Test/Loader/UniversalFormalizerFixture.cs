@@ -129,7 +129,7 @@ namespace PriceProcessor.Test.Loader
 			var client = TestClient.Create();
 
 			TestIntersection intersection;
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
 				Assert.That(intersections.Count, Is.EqualTo(1));
 				intersection = intersections[0];
@@ -140,7 +140,7 @@ namespace PriceProcessor.Test.Loader
 
 			Formalize();
 
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				intersection = TestIntersection.Find(intersection.Id);
 				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"));
 				Assert.That(intersection.AvailableForClient, Is.True);

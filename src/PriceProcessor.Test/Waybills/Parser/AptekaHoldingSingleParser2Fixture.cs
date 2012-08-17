@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(1.22));
 		}
 
-		
+
 		[Test]
 		public void Parse_with_asterist_in_registry_cost()
 		{

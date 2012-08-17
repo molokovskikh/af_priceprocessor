@@ -13,7 +13,6 @@ namespace PriceProcessor.Test.Waybills.Sources
 	[TestFixture]
 	public class FarmKomplektCertificateSourceFixture
 	{
-		 
 		[Test(Description = "для строки из накладной определяем существование сертификатов")]
 		public void CertificateExists()
 		{
@@ -40,21 +39,21 @@ namespace PriceProcessor.Test.Waybills.Sources
 			var testSupplier = TestSupplier.Create();
 			var supplier = Supplier.Find(testSupplier.Id);
 
-			GetFiles(supplier, new []{"1.tif"}, "1.tif", "1.tif", ".tif");
-			
-			GetFiles(supplier, new []{"2.jpg"}, "2.jpg", "2.jpg", ".jpg");
-			
-			GetFiles(supplier, new []{@"d\2.jpg"}, @"d\2.jpg", @"d\2.jpg", ".jpg");
-			
-			GetFiles(supplier, new []{@"d\2"}, @"d\2", @"d\2", ".tif");
-			
-			GetFiles(supplier, new []{@"d\2."}, @"d\2.", @"d\2.", ".tif");
-			
-			GetFiles(supplier, new []{@"d\2.123"}, @"d\2.123", @"d\2.123", ".tif");
-			
-			GetFiles(supplier, new []{@"d\2.123", @"d\2."}, @"d\2.", @"d\2.", ".tif");
+			GetFiles(supplier, new[] { "1.tif" }, "1.tif", "1.tif", ".tif");
 
-			GetFiles(supplier, new []{@"d\2.123", @"d\3."}, @"d\2.", null, null);
+			GetFiles(supplier, new[] { "2.jpg" }, "2.jpg", "2.jpg", ".jpg");
+
+			GetFiles(supplier, new[] { @"d\2.jpg" }, @"d\2.jpg", @"d\2.jpg", ".jpg");
+
+			GetFiles(supplier, new[] { @"d\2" }, @"d\2", @"d\2", ".tif");
+
+			GetFiles(supplier, new[] { @"d\2." }, @"d\2.", @"d\2.", ".tif");
+
+			GetFiles(supplier, new[] { @"d\2.123" }, @"d\2.123", @"d\2.123", ".tif");
+
+			GetFiles(supplier, new[] { @"d\2.123", @"d\2." }, @"d\2.", @"d\2.", ".tif");
+
+			GetFiles(supplier, new[] { @"d\2.123", @"d\3." }, @"d\2.", null, null);
 		}
 
 		private void GetFiles(Supplier supplier, string[] existsFiles, string certFilename, string externalFileId, string extension)
@@ -73,13 +72,12 @@ namespace PriceProcessor.Test.Waybills.Sources
 				}
 
 				var task = new CertificateTask {
-					CertificateSource = new CertificateSource{ FtpSupplier = supplier},
-					DocumentLine = new DocumentLine{CertificateFilename = certFilename}
+					CertificateSource = new CertificateSource { FtpSupplier = supplier },
+					DocumentLine = new DocumentLine { CertificateFilename = certFilename }
 				};
 
 				var files = new List<CertificateFile>();
 				try {
-					
 					var source = new FarmKomplektCertificateSource();
 					source.GetFilesFromSource(task, files);
 
@@ -94,11 +92,10 @@ namespace PriceProcessor.Test.Waybills.Sources
 					}
 				}
 				finally {
-					foreach (var certificateFile in files) 
+					foreach (var certificateFile in files)
 						if (File.Exists(certificateFile.LocalFile))
 							File.Delete(certificateFile.LocalFile);
 				}
-
 			}
 			finally {
 				Directory.Delete(supplierCertificatesDir, true);

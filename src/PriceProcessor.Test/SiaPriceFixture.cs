@@ -35,8 +35,8 @@ where pricecode = 4649;");
 		{
 			Assert.That(dataRow["Code"], Is.EqualTo(code), "Неожидаемая позиция в прайс-листе по полю Code");
 			Assert.That(
-				dataRow["RequestRatio"], 
-				requestRatio.HasValue ? Is.EqualTo(requestRatio) : Is.EqualTo(DBNull.Value), 
+				dataRow["RequestRatio"],
+				requestRatio.HasValue ? Is.EqualTo(requestRatio) : Is.EqualTo(DBNull.Value),
 				"У позиции некорректно формализовано поле RequestRatio");
 		}
 	}

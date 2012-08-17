@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills
 		[SetUp]
 		public void Setup()
 		{
-			CertificateSource.Assembly = typeof (AptekaHoldingVoronezhCertificateSource).Assembly;
+			CertificateSource.Assembly = typeof(AptekaHoldingVoronezhCertificateSource).Assembly;
 
 			testSupplier = TestSupplier.Create();
 			supplier = Supplier.Find(testSupplier.Id);
@@ -45,40 +45,40 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var certificateSource = CreateRealSourceForSupplier(supplier);
 
-			var firstCatalog = new Catalog {Id = 1, Name = "catalog1"};
-			var secondCatalog = new Catalog {Id = 2, Name = "catalog2"};
-			var firstProduct = new Product {Id = 3, CatalogProduct = firstCatalog};
-			var secondProduct = new Product {Id = 4, CatalogProduct = firstCatalog};
-			var thirdProduct = new Product {Id = 5, CatalogProduct = secondCatalog};
+			var firstCatalog = new Catalog { Id = 1, Name = "catalog1" };
+			var secondCatalog = new Catalog { Id = 2, Name = "catalog2" };
+			var firstProduct = new Product { Id = 3, CatalogProduct = firstCatalog };
+			var secondProduct = new Product { Id = 4, CatalogProduct = firstCatalog };
+			var thirdProduct = new Product { Id = 5, CatalogProduct = secondCatalog };
 
 			var document = new Document {
 				FirmCode = supplier.Id
 			};
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = firstProduct,
 				SerialNumber = "крутая серия 1"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = firstProduct,
 				SerialNumber = "крутая серия 1",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = secondProduct,
 				SerialNumber = "крутая серия 1",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = secondProduct,
 				SerialNumber = "крутая серия 2",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = thirdProduct,
 				SerialNumber = string.Empty,
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = thirdProduct,
 				SerialNumber = "крутая серия 1",
 				CertificateFilename = "cerFilename"
@@ -104,9 +104,9 @@ namespace PriceProcessor.Test.Waybills
 		private CertificateSource CreateSourceForSupplier(Supplier supplier, string sourceClassName)
 		{
 			var source = new CertificateSource {
-				SourceClassName = sourceClassName 
+				SourceClassName = sourceClassName
 			};
-			
+
 			using (new TransactionScope()) {
 				var deletedSource = CertificateSource.Queryable.FirstOrDefault(s => s.SourceClassName == sourceClassName);
 				if (deletedSource != null)
@@ -149,9 +149,9 @@ namespace PriceProcessor.Test.Waybills
 			var nonExistCatalog = catalogs[1];
 			var serialNumber = "крутая серия 5";
 
-			var firstProduct = new Product {Id = 3, CatalogProduct = existsCatalog};
-			var secondProduct = new Product {Id = 4, CatalogProduct = nonExistCatalog};
-			var thirdProduct = new Product {Id = 5, CatalogProduct = existsCatalog};
+			var firstProduct = new Product { Id = 3, CatalogProduct = existsCatalog };
+			var secondProduct = new Product { Id = 4, CatalogProduct = nonExistCatalog };
+			var thirdProduct = new Product { Id = 5, CatalogProduct = existsCatalog };
 
 
 			using (new TransactionScope()) {
@@ -165,62 +165,59 @@ namespace PriceProcessor.Test.Waybills
 				existsCertificate.CatalogProduct = Catalog.Find(existsCatalog.Id);
 				existsCertificate.SerialNumber = serialNumber;
 				existsCertificate.NewFile(
-					new CertificateFile{
+					new CertificateFile {
 						OriginFilename = Path.GetRandomFileName(),
 						Extension = ".tif",
 						CertificateSource = certificateSource
-					}
-				);
+					});
 				existsCertificate.NewFile(
 					new CertificateFile {
 						OriginFilename = Path.GetRandomFileName(),
 						Extension = ".tif",
 						CertificateSource = certificateSource
-					}
-				);
+					});
 				existsCertificate.NewFile(
-					new CertificateFile{
+					new CertificateFile {
 						OriginFilename = Path.GetRandomFileName(),
 						Extension = ".tif",
 						CertificateSource = anotherSupplierSource
-					}
-				);
+					});
 				existsCertificate.Save();
 			}
 
-			var document = new Document{
+			var document = new Document {
 				FirmCode = supplier.Id
 			};
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = firstProduct,
 				SerialNumber = serialNumber
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = firstProduct,
 				SerialNumber = "крутая серия 1",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = secondProduct,
 				SerialNumber = serialNumber,
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = secondProduct,
 				SerialNumber = "крутая серия 2",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = thirdProduct,
 				SerialNumber = serialNumber,
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = thirdProduct,
 				SerialNumber = "крутая серия 1",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = thirdProduct,
 				SerialNumber = "крутая серия 2",
 				CertificateFilename = "cerFilename"
@@ -306,9 +303,8 @@ namespace PriceProcessor.Test.Waybills
 			using (new TransactionScope()) {
 				var certificates = Certificate.Queryable.Where(c => c.SerialNumber == DocumentLine.EmptySerialNumber).ToList();
 
-				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof (ActiveRecordBase));
-				try
-				{
+				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+				try {
 					certificates.ForEach(c => session.CreateSQLQuery(@"
 	update  
 		documents.DocumentBodies db
@@ -320,34 +316,27 @@ namespace PriceProcessor.Test.Waybills
 		")
 						.SetParameter("certificateId", c.Id)
 						.ExecuteUpdate());
-					;
 				}
-				finally
-				{
+				finally {
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 				}
 			}
-			
 		}
 
 		private void ProcessCertificatesWithLog(Action action)
 		{
-			try{
-
+			try {
 				var memoryAppender = new MemoryAppender();
 				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
 				BasicConfigurator.Configure(memoryAppender);
 
 				try {
-
 					action();
-
 				}
-				catch
-				{
+				catch {
 					var logEvents = memoryAppender.GetEvents();
 					Console.WriteLine(
-						"Ошибки при обработки задач сертификатов:\r\n{0}", 
+						"Ошибки при обработки задач сертификатов:\r\n{0}",
 						logEvents.Select(item => {
 							if (string.IsNullOrEmpty(item.GetExceptionString()))
 								return item.RenderedMessage;
@@ -361,8 +350,7 @@ namespace PriceProcessor.Test.Waybills
 				var errors = events.Where(item => item.Level >= Level.Warn);
 				Assert.That(errors.Count(), Is.EqualTo(0), "При обработки задач сертификатов возникли ошибки:\r\n{0}", errors.Select(item => item.RenderedMessage).Implode("\r\n"));
 			}
-			finally
-			{
+			finally {
 				LogManager.ResetConfiguration();
 			}
 		}
@@ -405,7 +393,7 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(task.Id, Is.GreaterThan(0));
 
-			ProcessCertificatesWithLog(() => { 
+			ProcessCertificatesWithLog(() => {
 				var handler = new TestCertificateSourceHandler();
 
 				handler.ProcessData();
@@ -432,7 +420,7 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(documentLine.Certificate.Id, Is.EqualTo(certificate.Id), "В позиции документа не установлена ссылка на сертификат");
 			}
 		}
-		
+
 		[Test(Description = "перемещение сертификатов на их законное место"), Ignore("это не тест")]
 		public void MigrateCertificates()
 		{
@@ -550,7 +538,7 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(task.Id, Is.GreaterThan(0));
 
-			ProcessCertificatesWithLog(() => { 
+			ProcessCertificatesWithLog(() => {
 				var handler = new TestCertificateSourceHandler();
 
 				handler.ProcessData();
@@ -720,8 +708,7 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(task.Id, Is.GreaterThan(0));
 
-			try{
-
+			try {
 				var memoryAppender = new MemoryAppender();
 				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
 				BasicConfigurator.Configure(memoryAppender);
@@ -776,7 +763,7 @@ namespace PriceProcessor.Test.Waybills
 					return c.CertificateSource;
 				};
 				using (new TransactionScope()) {
-					certificateSource.SourceClassName = typeof (TestSuccessSource).Name;
+					certificateSource.SourceClassName = typeof(TestSuccessSource).Name;
 					certificateSource.Save();
 				}
 				//Создаем новую задачу с теми же параметрами и обрабатываем задачу третий раз
@@ -798,8 +785,7 @@ namespace PriceProcessor.Test.Waybills
 				var deletedSuccessTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
 				Assert.That(deletedSuccessTask, Is.Null);
 			}
-			finally
-			{
+			finally {
 				LogManager.ResetConfiguration();
 			}
 		}
@@ -844,7 +830,7 @@ namespace PriceProcessor.Test.Waybills
 
 				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
 				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
-				files.ForEach(f => { 
+				files.ForEach(f => {
 					LocalFiles.Add(f.LocalFile);
 					if (!File.Exists(f.LocalFile))
 						File.WriteAllText(f.LocalFile, "this is test text");
@@ -866,9 +852,9 @@ namespace PriceProcessor.Test.Waybills
 				var name = GetType().Name;
 				return CertificateSourceCatalog.Queryable
 					.Where(
-						c => c.CertificateSource.SourceClassName == name
-							&& c.SerialNumber == serialNumber
-								&& c.CatalogProduct.Id == catalogId)
+					c => c.CertificateSource.SourceClassName == name
+						&& c.SerialNumber == serialNumber
+						&& c.CatalogProduct.Id == catalogId)
 					.ToList();
 			}
 		}
@@ -886,7 +872,7 @@ namespace PriceProcessor.Test.Waybills
 			catch (NotImplementedException) {
 			}
 
-		    Assert.That(source.LocalFiles.TrueForAll(f => !File.Exists(f)), "Не должно существовать локальных файлов");
+			Assert.That(source.LocalFiles.TrueForAll(f => !File.Exists(f)), "Не должно существовать локальных файлов");
 		}
 
 		[Test(Description = "проверка создания заданий для пустого серийного номера")]
@@ -894,38 +880,38 @@ namespace PriceProcessor.Test.Waybills
 		{
 			DeleteCertificatedWithEmptySerialNumber();
 
-			var catalogProduct = new Catalog {Id = 1, Name = "catalog1"};
+			var catalogProduct = new Catalog { Id = 1, Name = "catalog1" };
 
 			var testSupplier = TestSupplier.Create();
 			var docSupplier = Supplier.Find(testSupplier.Id);
 			var certificateSource = CreateRealSourceForSupplier(docSupplier);
 
-			var product = new Product {Id = 3, CatalogProduct = catalogProduct};
+			var product = new Product { Id = 3, CatalogProduct = catalogProduct };
 
 			var document = new Document {
 				FirmCode = docSupplier.Id
 			};
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = product,
 				SerialNumber = null,
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = product,
 				SerialNumber = "",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = product,
 				SerialNumber = "  ",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = product,
 				SerialNumber = "-",
 				CertificateFilename = "cerFilename"
 			});
-			document.NewLine(new DocumentLine{
+			document.NewLine(new DocumentLine {
 				ProductEntity = product,
 				SerialNumber = "  - ",
 				CertificateFilename = "cerFilename"
@@ -939,7 +925,7 @@ namespace PriceProcessor.Test.Waybills
 			var task = document.Tasks[0];
 			Assert.That(task.CatalogProduct.Id == catalogProduct.Id && task.SerialNumber == DocumentLine.EmptySerialNumber);
 		}
-	
+
 		[Test(Description = "создаем сертификат для пустой серии (SerialNumber)")]
 		public void CreateCertificateOnEmptySerialNumber()
 		{
@@ -979,7 +965,7 @@ namespace PriceProcessor.Test.Waybills
 
 			Assert.That(task.Id, Is.GreaterThan(0));
 
-			ProcessCertificatesWithLog(() => { 
+			ProcessCertificatesWithLog(() => {
 				var handler = new TestCertificateSourceHandler();
 
 				handler.ProcessData();
@@ -1015,7 +1001,7 @@ namespace PriceProcessor.Test.Waybills
 			var handler = new CertificateSourceHandler();
 			handler.ProcessData();
 
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				var docLine = ActiveRecordMediator<DocumentLine>.FindByPrimaryKey(task.DocumentLine.Id);
 				Assert.That(docLine.CertificateError, Is.StringContaining("System.NotImplementedException"));
 			}
@@ -1026,14 +1012,12 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var task = CreateTask();
 
-			TestCertifcateSource.GetFilesFromSourceAction = (t, files) => {
-				t.DocumentLine.CertificateError = "Тестовое сообщение";
-			};
+			TestCertifcateSource.GetFilesFromSourceAction = (t, files) => { t.DocumentLine.CertificateError = "Тестовое сообщение"; };
 
 			var handler = new CertificateSourceHandler();
 			handler.ProcessData();
 
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				var docLine = ActiveRecordMediator<DocumentLine>.FindByPrimaryKey(task.DocumentLine.Id);
 				Assert.That(docLine.CertificateError, Is.StringContaining("Тестовое сообщение"));
 			}
@@ -1043,7 +1027,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			TestCertifcateSource.GetFilesFromSourceAction = null;
 			TestCertifcateSource.CertificateExistsAction = null;
-			CertificateSource.Assembly = typeof (TestCertifcateSource).Assembly;
+			CertificateSource.Assembly = typeof(TestCertifcateSource).Assembly;
 
 			var source = CreateSourceForSupplier(supplier, "TestCertifcateSource");
 			var line = CreateBodyLine();

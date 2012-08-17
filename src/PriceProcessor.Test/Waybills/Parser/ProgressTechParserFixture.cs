@@ -9,7 +9,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var document =  WaybillParser.Parse("PT001870.DBF");
+			var document = WaybillParser.Parse("PT001870.DBF");
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("›œ“0001870"));
 			Assert.That(document.DocumentDate, Is.EqualTo(DateTime.Parse("13.05.2010")));

@@ -12,7 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var documentLog = new DocumentReceiveLog { Supplier = new Supplier{Id = 2754}, }; // код поставщика "Катрен" (Казань)
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 2754 }, }; // код поставщика "Катрен" (Казань)
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\218817.txt", documentLog) is KatrenKazanSpecialParser);
 
 			var doc = WaybillParser.Parse(@"218817.txt", documentLog);

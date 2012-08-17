@@ -22,18 +22,17 @@ namespace PriceProcessor.Test.Waybills
 		protected TestPrice price;
 		protected Supplier appSupplier;
 
-		OrderHead order1;
-		OrderHead order2;
-		DocumentReceiveLog log;
+		private OrderHead order1;
+		private OrderHead order2;
+		private DocumentReceiveLog log;
 
-		List<OrderHead> orders;
+		private List<OrderHead> orders;
 
 		[SetUp]
 		public void Setup()
 		{
 			orders = new List<OrderHead>();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				client = TestClient.Create();
 				var testAddress = client.Addresses[0];
 				address = Address.Find(testAddress.Id);
@@ -42,27 +41,33 @@ namespace PriceProcessor.Test.Waybills
 				appSupplier = Supplier.Find(supplier.Id);
 			}
 		}
-	
+
 		[Test]
 		public void ComparisonWithOrdersIfOrderIdInOrderHeadTest()
 		{
 			Document document;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				order1 = BuildOrder();
 				order1.Save();
-				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 }; item.Save();
-				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 }; item.Save();
-				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 }; item.Save();
-				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 }; item.Save();
+				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 };
+				item.Save();
+				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 };
+				item.Save();
+				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 };
+				item.Save();
+				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 };
+				item.Save();
 
 				order2 = BuildOrder();
 				order2.Save();
-				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 }; item.Save();
-				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 }; item.Save();
-				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 }; item.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 };
+				item.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 };
+				item.Save();
+				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 };
+				item.Save();
 
-				var log = new DocumentReceiveLog(appSupplier, address) { MessageUid = 123, DocumentSize = 100};
+				var log = new DocumentReceiveLog(appSupplier, address) { MessageUid = 123, DocumentSize = 100 };
 				document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
 
 				var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20 };
@@ -81,8 +86,7 @@ namespace PriceProcessor.Test.Waybills
 				document.Save();
 			}
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				order1 = OrderHead.Find(order1.Id);
 				order2 = OrderHead.Find(order2.Id);
 				orders.Add(order1);
@@ -93,42 +97,48 @@ namespace PriceProcessor.Test.Waybills
 			}
 
 			var line = document.Lines[0];
-			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new [] {order1.Items[0]}));
+			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new[] { order1.Items[0] }));
 
 			line = document.Lines[1];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[1]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order1.Items[1] }));
 
 			line = document.Lines[2];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[1]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order1.Items[1] }));
 
 			line = document.Lines[3];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[2], order2.Items[0], order2.Items[1]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order1.Items[2], order2.Items[0], order2.Items[1] }));
 
 			line = document.Lines[4];
 			Assert.That(line.OrderItems, Is.Empty);
 
 			line = document.Lines[5];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[2]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order2.Items[2] }));
 		}
 
 		[Test]
 		public void ComparisonWithOrdersTestIfOrderIdInDocumentLineTest()
 		{
 			Document document;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				order1 = BuildOrder();
 				order1.Save();
-				var item = new OrderItem {Code = "Code1", Order = order1, Quantity = 20}; item.Save();
-				item = new OrderItem {Code = "Code2", Order = order1, Quantity = 25}; item.Save();
-				item = new OrderItem {Code = "Code3", Order = order1, Quantity = 50}; item.Save();
-				item = new OrderItem {Code = "Code4", Order = order1, Quantity = 100}; item.Save();
+				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 };
+				item.Save();
+				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 };
+				item.Save();
+				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 };
+				item.Save();
+				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 };
+				item.Save();
 
 				order2 = BuildOrder();
 				order2.Save();
-				item = new OrderItem {Code = "Code3", Order = order2, Quantity = 15}; item.Save();
-				item = new OrderItem {Code = "Code3", Order = order2, Quantity = 10}; item.Save();
-				item = new OrderItem {Code = "Code5", Order = order2, Quantity = 15}; item.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 };
+				item.Save();
+				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 };
+				item.Save();
+				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 };
+				item.Save();
 
 				log = new DocumentReceiveLog { Supplier = appSupplier, ClientCode = client.Id, Address = address, MessageUid = 123, DocumentSize = 100 };
 				document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
@@ -151,8 +161,7 @@ namespace PriceProcessor.Test.Waybills
 				document.Save();
 			}
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				order1 = OrderHead.Find(order1.Id);
 				order2 = OrderHead.Find(order2.Id);
 				orders.Add(order1);
@@ -163,25 +172,25 @@ namespace PriceProcessor.Test.Waybills
 			}
 
 			var line = document.Lines[0];
-			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new [] {order1.Items[0]}));
+			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new[] { order1.Items[0] }));
 
 			line = document.Lines[1];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[1]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order1.Items[1] }));
 
 			line = document.Lines[2];
 			Assert.That(line.OrderItems, Is.Empty);
 
 			line = document.Lines[3];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order1.Items[2]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order1.Items[2] }));
 
 			line = document.Lines[4];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[0], order2.Items[1]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order2.Items[0], order2.Items[1] }));
 
 			line = document.Lines[5];
 			Assert.That(line.OrderItems, Is.Empty);
 
 			line = document.Lines[6];
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {order2.Items[2]}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { order2.Items[2] }));
 
 			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id)));
 
@@ -203,8 +212,7 @@ namespace PriceProcessor.Test.Waybills
 		private OrderHead BuildOrder()
 		{
 			OrderHead order1;
-			order1 = new OrderHead
-			{
+			order1 = new OrderHead {
 				ClientCode = client.Id,
 				Address = address,
 				Price = Price.Find(price.Id)
@@ -259,8 +267,8 @@ namespace PriceProcessor.Test.Waybills
 			order.Items.Add(orderItem2);
 
 			WaybillOrderMatcher.ComparisonWithOrders(document, order.Items);
-			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
-			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
+			Assert.That(line1.OrderItems, Is.EquivalentTo(new[] { orderItem1 }));
+			Assert.That(line2.OrderItems, Is.EquivalentTo(new[] { orderItem2 }));
 		}
 
 		[Test]
@@ -283,7 +291,7 @@ namespace PriceProcessor.Test.Waybills
 			order.Items.Add(orderItem);
 
 			WaybillOrderMatcher.ComparisonWithOrders(document, order.Items);
-			Assert.That(line.OrderItems, Is.EquivalentTo(new [] {orderItem}));
+			Assert.That(line.OrderItems, Is.EquivalentTo(new[] { orderItem }));
 		}
 
 		[Test]
@@ -319,9 +327,9 @@ namespace PriceProcessor.Test.Waybills
 				ProducerSynonym = new ProducerSynonym("Балканфарма - Троян АД")
 			};
 			order2.Items.Add(orderItem2);
-			WaybillOrderMatcher.ComparisonWithOrders(document, new [] { order1, order2 }.SelectMany(o => o.Items).ToList());
-			Assert.That(line1.OrderItems, Is.EquivalentTo(new [] {orderItem1}));
-			Assert.That(line2.OrderItems, Is.EquivalentTo(new [] {orderItem2}));
+			WaybillOrderMatcher.ComparisonWithOrders(document, new[] { order1, order2 }.SelectMany(o => o.Items).ToList());
+			Assert.That(line1.OrderItems, Is.EquivalentTo(new[] { orderItem1 }));
+			Assert.That(line2.OrderItems, Is.EquivalentTo(new[] { orderItem2 }));
 		}
 
 		private static DataTable GetMatches(Document document)
@@ -336,12 +344,21 @@ namespace PriceProcessor.Test.Waybills
 		public class ParserFake : IDocumentParser
 		{
 			private Document doc;
+
 			public ParserFake(Document doc)
 			{
 				this.doc = doc;
 			}
-			public Document Parse(string file, Document d) { return doc; }
-			public static bool CheckFileFormat(DataTable data) { return true; }
+
+			public Document Parse(string file, Document d)
+			{
+				return doc;
+			}
+
+			public static bool CheckFileFormat(DataTable data)
+			{
+				return true;
+			}
 		}
 
 		public class WaybillFormatDetectorFake : WaybillFormatDetector
@@ -362,9 +379,9 @@ namespace PriceProcessor.Test.Waybills
 		private static Document GetDocument()
 		{
 			var log = new DocumentReceiveLog {
-				Supplier = new Supplier {Name = "Тест"},
+				Supplier = new Supplier { Name = "Тест" },
 				ClientCode = 1,
-				Address = new Address {Id = 2, Name = "Тест", Client = new Client {Id = 1}},
+				Address = new Address { Id = 2, Name = "Тест", Client = new Client { Id = 1 } },
 				MessageUid = 123,
 				DocumentSize = 100
 			};

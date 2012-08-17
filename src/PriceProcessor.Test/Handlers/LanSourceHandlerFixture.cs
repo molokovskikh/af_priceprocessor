@@ -47,8 +47,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test, Ignore("Починить")]
 		public void After_price_download_last_download_date_should_be_updated()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				TestPriceSource.Queryable
 					.Where(s => s.SourceType == PriceSourceType.Lan)
 					.ToList()
@@ -63,8 +62,7 @@ namespace PriceProcessor.Test.Handlers
 			handler.ProcessData();
 
 			Assert.That(File.Exists(ftpFile), Is.False, "не удалили файл с ftp");
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var reloaded = TestPriceItem.Find(source.Id);
 				Assert.That(reloaded.LastDownload, Is.EqualTo(new DateTime(2009, 12, 11, 10, 36, 0)));
 				var logs = PriceDownloadLog.Queryable.Where(l => l.LogTime >= begin && l.PriceItemId == reloaded.Id).ToList();

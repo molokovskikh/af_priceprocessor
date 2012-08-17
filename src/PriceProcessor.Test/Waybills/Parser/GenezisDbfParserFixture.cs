@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.12.2011"));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("002794"));
-			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("56"));			
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("56"));
 		}
 
 		[Test]
@@ -62,7 +62,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SerialNumber, Is.Empty);
 			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ПК05.В27822"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(66.84));
-			Assert.That(line.SupplierCost, Is.EqualTo(66.84));			
+			Assert.That(line.SupplierCost, Is.EqualTo(66.84));
 
 			line = document.Lines[1];
 			Assert.That(line.Code, Is.EqualTo("1200000968"));
@@ -75,7 +75,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SerialNumber, Is.EqualTo("0913,"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ПК05.В27822"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(127.89));
-			Assert.That(line.SupplierCost, Is.EqualTo(127.89));			
+			Assert.That(line.SupplierCost, Is.EqualTo(127.89));
 
 			line = document.Lines[22];
 			Assert.That(line.Period, Is.Null);

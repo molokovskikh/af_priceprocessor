@@ -8,7 +8,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
 	public class TrediFarmCheboksarySpecialParserFixture
-	{		
+	{
 		[Test]
 		public void Parse()
 		{
@@ -21,21 +21,21 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("28.03.2011"));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("00010686"));
-			Assert.That(line.Product, Is.EqualTo("Калия йодид 100мкг табл №100"));			
+			Assert.That(line.Product, Is.EqualTo("Калия йодид 100мкг табл №100"));
 			Assert.That(line.Producer, Is.EqualTo("Оболенское-фармацевтическое предпр-е"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(44.0356));
 			Assert.That(line.RegistryCost, Is.EqualTo(44.0300));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(12.5000));
-			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(49.5400));			
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(49.5400));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierCost, Is.EqualTo(54.4900));
 			Assert.That(line.NdsAmount, Is.EqualTo(4.9500));
 			Assert.That(line.Amount, Is.EqualTo(54.4900));
 			Assert.That(line.SerialNumber, Is.EqualTo("180910"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ01.Д24225"));
-			Assert.That(line.Period, Is.EqualTo("01.10.2013"));									
+			Assert.That(line.Period, Is.EqualTo("01.10.2013"));
 		}
 
 		[Test]

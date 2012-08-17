@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
-using Monitor=Inforoom.PriceProcessor.Monitor;
+using Monitor = Inforoom.PriceProcessor.Monitor;
 
 namespace PriceProcessor.Test
 {
@@ -37,7 +37,7 @@ namespace PriceProcessor.Test
 		public void RestartService()
 		{
 #if DEBUG
-			RestartThread(DebugServiceThread);			
+			RestartThread(DebugServiceThread);
 #else
 			RestartThread(ReleaseServiceThread);
 #endif
@@ -50,14 +50,14 @@ namespace PriceProcessor.Test
 			Thread.Sleep(8000);
 			Assert.IsTrue(_serviceStopped, "Ошибка. Служба не завершила свою работу");
 			if (!_serviceStopped)
-				serviceThread.Abort();			
+				serviceThread.Abort();
 		}
 
 		private void DebugServiceThread()
 		{
 			_serviceStopped = false;
 			//var monitor = new Monitor();
-            var monitor = Monitor.GetInstance();
+			var monitor = Monitor.GetInstance();
 			monitor.Start();
 			Thread.Sleep(2000);
 			monitor.Stop();
@@ -70,14 +70,13 @@ namespace PriceProcessor.Test
 			StartService();
 			Thread.Sleep(2000);
 			StopService();
-			_serviceStopped = true;			
+			_serviceStopped = true;
 		}
 
 		private void InstallService()
 		{
 			var processInstaller = new ServiceProcessInstaller { Account = ServiceAccount.LocalSystem };
-			var installer = new ServiceInstaller
-			{
+			var installer = new ServiceInstaller {
 				DisplayName = DisplayTestServiceName,
 				Description = DisplayTestServiceName,
 				ServiceName = ServiceName,
@@ -98,8 +97,7 @@ namespace PriceProcessor.Test
 			if (service.Status == ServiceControllerStatus.Running)
 				service.Stop();
 
-			var installer = new ServiceInstaller
-			{
+			var installer = new ServiceInstaller {
 				ServiceName = ServiceName,
 				Context = new InstallContext(LogInstallPath, null)
 			};
@@ -122,6 +120,5 @@ namespace PriceProcessor.Test
 		{
 			return ServiceController.GetServices().Where(s => s.ServiceName == name).SingleOrDefault();
 		}
-
 	}
 }

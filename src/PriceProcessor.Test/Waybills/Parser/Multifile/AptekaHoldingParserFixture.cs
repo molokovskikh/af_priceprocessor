@@ -27,8 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		{
 			var files = WaybillParser.GetFilesForParsing(
 				@"..\..\Data\Waybills\multifile\h271433.dbf",
-				@"..\..\Data\Waybills\multifile\b271433.dbf"
-			);
+				@"..\..\Data\Waybills\multifile\b271433.dbf");
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
 
@@ -43,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(3));
 			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(266.10));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(292.71));
-			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(266.10));			
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(266.10));
 			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.05.2012"));
@@ -54,14 +53,13 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Check_file_format()
 		{
-			var files = WaybillParser.GetFilesForParsing (
+			var files = WaybillParser.GetFilesForParsing(
 				@"..\..\Data\Waybills\multifile\h271433.dbf",
-				@"..\..\Data\Waybills\multifile\b271433.dbf"
-			);
+				@"..\..\Data\Waybills\multifile\b271433.dbf");
 
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
-				
+
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416_char.DBF")));
 			Assert.IsFalse(AptekaHoldingParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\0000470553.dbf")));
@@ -74,10 +72,9 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Parse_with_znvls()
 		{
-			var files = WaybillParser.GetFilesForParsing (
+			var files = WaybillParser.GetFilesForParsing(
 				@"..\..\Data\Waybills\multifile\h150410_46902_.dbf",
-				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf"
-			);
+				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf");
 
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));

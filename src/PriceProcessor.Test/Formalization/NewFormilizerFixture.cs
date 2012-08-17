@@ -28,8 +28,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Setup()
 		{
 			file = "test.txt";
-			using(var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				price = TestSupplier.CreateTestSupplierWithPrice(p => {
 					var rules = p.Costs.Single().PriceItem.Format;
 					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
@@ -48,8 +47,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Do_not_insert_empty_or_zero_costs()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.NewPriceCost(priceItem, "F5");
 				price.NewPriceCost(priceItem, "F6");
 				var producer = TestProducer.Queryable.First();
@@ -60,29 +58,26 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;0;;73.88;");
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(1));
-				Assert.That(cores.Single().Costs.Select(c => c.Cost).ToList(), Is.EqualTo(new[] {73.88}));
+				Assert.That(cores.Single().Costs.Select(c => c.Cost).ToList(), Is.EqualTo(new[] { 73.88 }));
 			}
 		}
 
 		[Test]
 		public void Do_not_create_producer_synonym_if_most_price_unknown()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
 				price.Update();
 			}
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
-				Assert.That(cores.Select(c => c.ProductSynonym.Name).ToArray(), Is.EqualTo(new [] { "5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г" }));
+				Assert.That(cores.Select(c => c.ProductSynonym.Name).ToArray(), Is.EqualTo(new[] { "5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г" }));
 				Assert.That(cores.Single().ProducerSynonym, Is.Null);
 				var synonyms = TestProducerSynonym.Queryable.Where(s => s.Price == price).ToList();
 				Assert.That(synonyms, Is.Empty);
@@ -92,8 +87,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Build_new_producer_synonym_if_not_exists()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.AddProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
 				price.CreateAssortmentBoundSynonyms(
 					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
@@ -108,10 +102,9 @@ namespace PriceProcessor.Test.Formalization
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;
 911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;");
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var synonyms = TestProducerSynonym.Queryable.Where(s => s.Price == price).ToList();
-				Assert.That(synonyms.Select(s => s.Name).ToArray(), Is.EquivalentTo(new[] {"Санкт-Петербургская ф.ф.", "Твинс Тэк", "Валента Фармацевтика/Королев Ф"}));
+				Assert.That(synonyms.Select(s => s.Name).ToArray(), Is.EquivalentTo(new[] { "Санкт-Петербургская ф.ф.", "Твинс Тэк", "Валента Фармацевтика/Королев Ф" }));
 				var createdSynonym = synonyms.Single(s => s.Name == "Твинс Тэк");
 				Assert.That(createdSynonym.Producer, Is.Null);
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
@@ -125,8 +118,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var producer = TestProducer.Queryable.First();
 				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
@@ -136,8 +128,7 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			TestCore core;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				core = cores.Single();
 				Assert.That(core.Quantity, Is.EqualTo("24"));
@@ -147,8 +138,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize();
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				core.Refresh();
 				Assert.That(core.Quantity, Is.EqualTo("25"));
 			}
@@ -159,8 +149,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;71.88;");
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var producer = TestProducer.Queryable.First();
 				new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
 				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
@@ -170,8 +159,7 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			TestCore core;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				core = cores.Single();
 				Assert.That(core.Costs.Single().Cost, Is.EqualTo(71.88d));
@@ -181,8 +169,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize();
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				core.Refresh();
 				Assert.That(core.Costs.Single().Cost, Is.EqualTo(73.88d));
 			}
@@ -193,8 +180,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;71.88;71.56;;");
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.NewPriceCost(priceItem, "F5");
 				price.NewPriceCost(priceItem, "F6");
 				price.Update();
@@ -206,8 +192,7 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			TestCore core;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				core = cores.Single();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
@@ -221,8 +206,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize();
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				core.Refresh();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
 				Assert.That(core.Costs.ElementAt(0).Cost, Is.EqualTo(72.10f));
@@ -235,10 +219,9 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Create_forbidden_expressions()
 		{
-			using(new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
-				new TestForbidden {Name = "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", Price = price}.Save();
+				new TestForbidden { Name = "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ", Price = price }.Save();
 				price.Update();
 			}
 
@@ -246,8 +229,7 @@ namespace PriceProcessor.Test.Formalization
 911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;
 911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;30;44.71;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(1));
 				Assert.That(cores[0].ProductSynonym.Name, Is.EqualTo("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г"));
@@ -262,8 +244,7 @@ namespace PriceProcessor.Test.Formalization
 			TestProduct product1;
 			TestProduct product2;
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var producers = TestProducer.Queryable.Take(2).ToList();
 				producer1 = producers[0];
 				producer2 = producers[1];
@@ -301,8 +282,7 @@ namespace PriceProcessor.Test.Formalization
 5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;
 Теотард 200мг Капс.пролонг.дейст. Х40;Вектор;157;83.02;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(3));
 				var core1 = cores[1];
@@ -325,8 +305,7 @@ namespace PriceProcessor.Test.Formalization
 			TestProducerSynonym synonym1;
 			TestProducerSynonym synonym2;
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var producers = TestProducer.Queryable.Take(2).ToList();
 				producer1 = producers[0];
 				producer2 = producers[1];
@@ -362,8 +341,7 @@ namespace PriceProcessor.Test.Formalization
 5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;
 Теотард 200мг Капс.пролонг.дейст. Х40;Вектор;157;83.02;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(3));
 				var core1 = cores.Single(c => c.ProductSynonym.Name == "5-нок 50мг Таб. П/о Х50");
@@ -386,8 +364,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Create_exclude_if_synonym_without_producer_exist()
 		{
 			TestProduct product1;
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				new TestProducerSynonym("Вектор", null, price).Save();
 				product1 = TestProduct.Queryable.First();
 				new TestProductSynonym("5-нок 50мг Таб. П/о Х50", product1, price).Save();
@@ -395,8 +372,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(cores.Count, Is.EqualTo(1));
 				var core1 = cores[0];
@@ -408,15 +384,14 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(excludes.Count, Is.EqualTo(1));
 				var exclude = excludes[0];
 				Assert.That(exclude.ProducerSynonym, Is.EqualTo("Вектор"));
-				Assert.That(exclude.CatalogProduct.Id, Is.EqualTo(product1.CatalogProduct.Id)); 
+				Assert.That(exclude.CatalogProduct.Id, Is.EqualTo(product1.CatalogProduct.Id));
 			}
 		}
 
 		[Test, Ignore("Больше не создаем ассортимент автоматически, все вручную")]
 		public void Create_assortment_if_product_not_pharmacie()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
 				price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
 				price.Save();
@@ -424,20 +399,18 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				price.Refresh();
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				Assert.That(price.ProductSynonyms[0].Product.CatalogProduct.Producers,
-					Is.EquivalentTo(new [] {price.ProducerSynonyms[0].Producer }));
+					Is.EquivalentTo(new[] { price.ProducerSynonyms[0].Producer }));
 			}
 		}
 
 		[Test]
 		public void Prefer_producer_synonym_with_producer()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				price.AddProducerSynonym("Вектор", null);
 				price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
 				price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
@@ -446,8 +419,7 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				price = TestPrice.Find(price.Id);
 				Assert.That(price.Core[0].Producer, Is.Not.Null);
 			}
@@ -456,8 +428,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Mark_position_as_junk_if_period_expired()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var format = price.Costs.First().PriceItem.Format;
 				format.FPeriod = "F5";
 				format.Update();
@@ -469,8 +440,7 @@ namespace PriceProcessor.Test.Formalization
 			var bestUseFor = DateTime.Now.AddDays(60).ToShortDateString();
 			Formalize(String.Format(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;{0}", bestUseFor));
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				price = TestPrice.Find(price.Id);
 				var core = price.Core.First();
 				Assert.That(core.Period, Is.EqualTo(bestUseFor));

@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_With_Zero_SupplierCost()
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7455319.sst");
-			
+
 			Assert.That(doc.Lines.Count, Is.EqualTo(3));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("СМ-7455319/00"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("23.03.2011")));
@@ -52,7 +52,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.12.11"));
 			Assert.That(doc.Lines[0].Nds.Value, Is.EqualTo(10));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("201109"));
-			
+
 			Assert.That(doc.Lines[1].Product, Is.EqualTo("Эвкалипта настойка фл.25 мл"));
 			Assert.That(doc.Lines[1].Certificates, Is.EqualTo("151209^РОСС ФМ05.Д36360^01.12.14151209^74-2370989^18.01.10 ГУЗ ОЦСККЛ г. Челябинск"));
 			Assert.That(doc.Lines[1].Period, Is.EqualTo("01.12.14"));
@@ -147,7 +147,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var parser = new UkonParser();
 			var doc = new Document();
-			
+
 			//не парсится, так как в заголовке отсутствует строка "- В следующей строке перечислены:"
 			var resultDoc = parser.Parse(@"..\..\Data\Waybills\00019418.sst", doc);
 			Assert.That(resultDoc, Is.Null);
@@ -159,16 +159,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var parser = new UkonParser();
 			var doc = new Document();
 
-			try
-			{
+			try {
 				parser.Parse(@"..\..\Data\Waybills\without_header.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
 			}
-			 
 		}
 
 		[Test]
@@ -176,18 +173,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var parser = new UkonParser();
 			var doc = new Document();
-			
-			try
-			{
+
+			try {
 				parser.Parse(@"..\..\Data\Waybills\only_comments.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
 			}
-			  
-			
 		}
 
 		[Test]
@@ -195,13 +188,11 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var parser = new UkonParser();
 			var doc = new Document();
-			try
-			{
+			try {
 				parser.Parse(@"..\..\Data\Waybills\without_body.sst", doc);
 				Assert.Fail("Должны были выбросить исключение");
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Assert.That(e.Message, Text.Contains("Не найдено тело накладной"));
 			}
 		}
@@ -222,7 +213,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(16.82));
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(20.20));
 			Assert.That(doc.Lines[0].Nds, Is.EqualTo(10));
-			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("10/14/9024"));			
+			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("10/14/9024"));
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(20.10));
 
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
@@ -371,14 +362,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Read_broken_file()
 		{
-			try
-			{
+			try {
 				var doc = WaybillParser.Parse("122447_11215092-001.sst");
 			}
-			catch (Exception)
-			{}
+			catch (Exception) {
+			}
 		}
-		
+
 		[Test]
 		public void Parse_with_one_body_comment_line()
 		{

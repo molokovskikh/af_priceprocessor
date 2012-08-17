@@ -17,14 +17,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\Kat23445.dbf");
 
 			Assert.That(document.Lines.Count, Is.EqualTo(47));
-			
+
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("23445"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("14.02.2012")));
 
 			Assert.That(document.Invoice.AmountWithoutNDS10, Is.EqualTo(19328.4));
 			Assert.That(document.Invoice.AmountWithoutNDS18, Is.EqualTo(908.6));
 			Assert.That(document.Invoice.AmountWithoutNDS0, Is.EqualTo(0));
-			
+
 			Assert.That(document.Lines[0].Code, Is.EqualTo("4845409"));
 			Assert.That(document.Lines[0].EAN13, Is.EqualTo("4607027761356"));
 			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(13.24));

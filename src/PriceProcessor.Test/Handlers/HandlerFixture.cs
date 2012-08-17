@@ -41,7 +41,7 @@ namespace PriceProcessor.Test.Handlers
 			foreach (var file in Directory.GetFiles(dirName))
 				File.Delete(file);
 
-			foreach(var subDir in Directory.GetDirectories(dirName))
+			foreach (var subDir in Directory.GetDirectories(dirName))
 				Directory.Delete(subDir, true);
 		}
 

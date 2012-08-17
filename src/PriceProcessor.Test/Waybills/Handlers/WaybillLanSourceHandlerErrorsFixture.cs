@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			using (new SessionScope()) {
 				var count = DocumentReceiveLog.Queryable.Count();
-				if(count > 0)
+				if (count > 0)
 					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);
 			}
 			var supplier = TestSupplier.Create();
@@ -48,7 +48,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var handler = new FakeWaybillLANSourceHandler("FakeSIAMoscow_2788_Reader1", supplierId);
 			var res = handler.MoveWaybill("test", "test");
 
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				Assert.That(res, Is.False);
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));

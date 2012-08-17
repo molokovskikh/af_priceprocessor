@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("476209.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("476209"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("29.06.2010"));
-			
+
 			Assert.That(doc.Lines.Count, Is.EqualTo(26));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("58115"));

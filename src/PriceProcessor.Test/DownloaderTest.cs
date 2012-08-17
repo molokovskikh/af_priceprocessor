@@ -20,7 +20,7 @@ namespace PriceProcessor.Test
 
 		[Test]
 		public void EqualsTest()
-		{ 
+		{
 			object Exists;
 			object Current;
 			Exists = DBNull.Value;

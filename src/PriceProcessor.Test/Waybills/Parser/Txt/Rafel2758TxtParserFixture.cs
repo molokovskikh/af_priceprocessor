@@ -34,6 +34,5 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(5));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(true));
 		}
-
 	}
 }

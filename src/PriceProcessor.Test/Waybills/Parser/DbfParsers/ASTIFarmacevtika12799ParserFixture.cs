@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\61487.dbf");
 
 			Assert.That(document.Lines.Count, Is.EqualTo(36));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo(" 61487"));// Откуда пробел?
+			Assert.That(document.ProviderDocumentId, Is.EqualTo(" 61487")); // Откуда пробел?
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("02.05.2012"));
 
 			var invoice = document.Invoice;
@@ -48,14 +48,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-3.33));
 			Assert.That(line.RegistryCost, Is.EqualTo(283.27));
-
-
 		}
 
 		[Test]
 		public void Check_file_format()
 		{
-		Assert.IsTrue(ASTIFarmacevtika12799Parser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\61487.dbf")));
+			Assert.IsTrue(ASTIFarmacevtika12799Parser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\61487.dbf")));
 		}
 	}
 }

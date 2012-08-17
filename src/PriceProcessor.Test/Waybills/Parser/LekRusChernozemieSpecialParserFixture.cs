@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
-	class LekRusChernozemieSpecialParserFixture
+	internal class LekRusChernozemieSpecialParserFixture
 	{
 		[Test]
 		public void Parse()
@@ -56,7 +56,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Period, Is.EqualTo("01.03.2014"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ05.Д97380"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.Null);			
+			Assert.That(line.EAN13, Is.Null);
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(15.61));
 		}
 	}

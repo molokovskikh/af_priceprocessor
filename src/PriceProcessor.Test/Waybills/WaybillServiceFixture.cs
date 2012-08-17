@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills
 			var log = CreateTestLog(file);
 
 			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] {log.Id});
+			var ids = service.ParseWaybill(new[] { log.Id });
 			return ids;
 		}
 
@@ -36,8 +36,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var ids = ParseFile("1008fo.pd");
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
@@ -48,8 +47,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var ids = ParseFile("1008fo.pd");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 			}
@@ -61,9 +59,8 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var ids = ParseFile("00000049080.sst");
 
-			using (new SessionScope())
-			{
-				Assert.That(ids.Count(),Is.EqualTo(0));
+			using (new SessionScope()) {
+				Assert.That(ids.Count(), Is.EqualTo(0));
 			}
 		}
 
@@ -76,8 +73,7 @@ namespace PriceProcessor.Test.Waybills
 			TestProducer producer2;
 			TestProduct product;
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				log = CreateTestLog(file);
 
 				product = new TestProduct("тестовый товар");
@@ -86,7 +82,7 @@ namespace PriceProcessor.Test.Waybills
 				var productSynonym = new TestSynonym {
 					ProductId = product.Id,
 					Synonym = "Коринфар таб п/о 10мг № 50",
-					PriceCode = (int?) price.Id
+					PriceCode = (int?)price.Id
 				};
 
 				productSynonym.SaveAndFlush();
@@ -94,7 +90,7 @@ namespace PriceProcessor.Test.Waybills
 				productSynonym = new TestSynonym {
 					ProductId = null,
 					Synonym = "Коринфар таб п/о 10мг № 50",
-					PriceCode = (int?) price.Id
+					PriceCode = (int?)price.Id
 				};
 
 				producer1 = new TestProducer {
@@ -121,20 +117,18 @@ namespace PriceProcessor.Test.Waybills
 				};
 				producerSynonym.SaveAndFlush();
 
-				producerSynonym = new TestProducerSynonym
-				{
+				producerSynonym = new TestProducerSynonym {
 					Price = price,
 					Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ",
 					Producer = producer2
 				};
 				producerSynonym.SaveAndFlush();
 			}
-			
+
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(waybill.Lines[0].CatalogProduct != null);
@@ -148,8 +142,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var ids = ParseFile("14356_4.dbf");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybill = TestWaybill.Find(ids.Single());
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(waybill.Lines[0].CatalogProduct == null);
@@ -157,11 +150,10 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]		
+		[Test, Description("Парсинг накладной и проверка настройки IsConvertFormat для клиента. Настройка разрешает сохранение накладной в dbf формате.")]
 		public void Parse_and_Convert_to_Dbf()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
@@ -169,19 +161,17 @@ namespace PriceProcessor.Test.Waybills
 
 			ParseFile("14326_4.dbf");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id);
 				Assert.That(logs.Count(), Is.EqualTo(2));
 				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
 				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
 
 				// Проверяем наличие записей в documentheaders для исходных документов.
-				foreach (var documentLog in logs)
-				{
+				foreach (var documentLog in logs) {
 					var count = documentLog.IsFake
-									? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
-									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
+						? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
+						: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
@@ -200,8 +190,7 @@ namespace PriceProcessor.Test.Waybills
 			TestProducer producer;
 			TestProduct product;
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				log = CreateTestLog(file);
 
 				product = new TestProduct("тестовый товар");
@@ -209,13 +198,13 @@ namespace PriceProcessor.Test.Waybills
 				var productSynonym = new TestProductSynonym("Коринфар таб п/о 10мг № 50", product, price);
 				productSynonym.SaveAndFlush();
 
-				producer = new TestProducer{Name = "Тестовый производитель"};
+				producer = new TestProducer { Name = "Тестовый производитель" };
 				producer.SaveAndFlush();
 
-				var producerSynonym = new TestProducerSynonym{ Price = price, Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ", Producer = producer };
+				var producerSynonym = new TestProducerSynonym { Price = price, Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ", Producer = producer };
 				producerSynonym.SaveAndFlush();
 
-				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015"};
+				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
 
 				core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
@@ -229,8 +218,7 @@ namespace PriceProcessor.Test.Waybills
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var doc = Document.Find(ids.Single());
 				Assert.That(doc.Lines.Count, Is.EqualTo(1));
 				Assert.IsTrue(doc.Lines[0].ProductEntity != null);
@@ -240,7 +228,7 @@ namespace PriceProcessor.Test.Waybills
 				var resultDoc = DocumentReceiveLog.Queryable.Single(d => d.Address.Id == address.Id && !d.IsFake);
 				var files = Directory.GetFiles(waybillsPath, "*.dbf");
 				Assert.That(files.Count(), Is.EqualTo(2), files.Implode());
-	
+
 				var data = Dbf.Load(resultDoc.GetFileName(), Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("id_artis"));
 				Assert.That(data.Rows[0]["id_artis"], Is.EqualTo("111111"));
@@ -266,8 +254,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Parse_and_Convert_to_Dbf_if_sert_date()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = price.Id;
 				settings.SaveAndFlush();
@@ -275,19 +262,17 @@ namespace PriceProcessor.Test.Waybills
 
 			var ids = ParseFile("20101119_8055_250829.xml");
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id);
 				Assert.That(logs.Count(), Is.EqualTo(2));
 				Assert.That(logs.Where(l => l.IsFake).Count(), Is.EqualTo(1));
 				Assert.That(logs.Where(l => !l.IsFake).Count(), Is.EqualTo(1));
 
 				// Проверяем наличие записей в documentheaders для исходных документов.
-				foreach (var documentLog in logs)
-				{
+				foreach (var documentLog in logs) {
 					var count = documentLog.IsFake
-									? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
-									: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
+						? Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count()
+						: Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake).Count();
 					Assert.That(count, documentLog.IsFake ? Is.EqualTo(1) : Is.EqualTo(0));
 				}
 				var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
@@ -303,8 +288,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Document_invoice_test()
 		{
 			Document doc;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var settings = TestDrugstoreSettings.FindFirst();
 				var order = TestOrder.FindFirst();
 
@@ -327,8 +311,7 @@ namespace PriceProcessor.Test.Waybills
 				doc.Save();
 			}
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				Document doc2 = Document.Find(doc.Id);
 				Assert.That(doc2, Is.Not.Null);
 				Assert.That(doc2.Invoice, Is.Not.Null);
@@ -345,13 +328,12 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-	
+
 		[Test(Description = "Пытаемся разобрать накладную от СИА с возможностью конвертации накладной, в результирующем файле конвертируемой накладной должны быть корректно выставлены коды сопоставленных позиций")]
 		public void ConvertWaybillToDBFWithAssortmentCodes()
 		{
 			var doc = WaybillParser.Parse("9046752.DBF");
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = price.Id;
 				settings.Save();
@@ -408,24 +390,21 @@ namespace PriceProcessor.Test.Waybills
 
 			var service = new WaybillService(); // файл накладной в нужной директории отсутствует
 			var ids = service.ParseWaybill(new[] { log.Id });
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count(), Is.EqualTo(1));
 				Assert.That(ids.Length, Is.EqualTo(0));
 				// Проверяем наличие записей в documentheaders
 				Assert.That(Document.Queryable.Count(doc => doc.Log.Id == logs[0].Id), Is.EqualTo(0));
 			}
-			var thread = new Thread(() =>
-			{
+			var thread = new Thread(() => {
 				Thread.Sleep(3000);
-				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id, 
+				File.Copy(@"..\..\Data\Waybills\9229370.dbf", Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}", log.Id,
 					supplier.Name, Path.GetFileNameWithoutExtension(file), Path.GetExtension(file))));
 			});
 			thread.Start(); // подкладываем файл в процессе разбора накладной
-			ids = service.ParseWaybill(new[] {log.Id});
-			using (new SessionScope())
-			{
+			ids = service.ParseWaybill(new[] { log.Id });
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count(), Is.EqualTo(1));
 				Assert.That(ids.Length, Is.EqualTo(1));
@@ -437,13 +416,12 @@ namespace PriceProcessor.Test.Waybills
 		public void resolve_product_and_producer_for_farmacie()
 		{
 			Document doc;
-			TestProduct product1, product2, product3, product4, product5;			
+			TestProduct product1, product2, product3, product4, product5;
 			TestProducer producer1, producer2, producer3;
-			
-			using(new SessionScope())
-			{
+
+			using (new SessionScope()) {
 				var order = new TestOrder();
-	
+
 				product1 = new TestProduct("Активированный уголь (табл.)");
 				product1.CatalogProduct.Pharmacie = true;
 				product1.CreateAndFlush();
@@ -463,7 +441,7 @@ namespace PriceProcessor.Test.Waybills
 				product5 = new TestProduct("Стерильные салфетки");
 				product5.CatalogProduct.Pharmacie = false;
 				product5.CreateAndFlush();
-				
+
 				producer1 = new TestProducer("ВероФарм");
 				producer1.CreateAndFlush();
 				producer2 = new TestProducer("Пфайзер");
@@ -471,20 +449,20 @@ namespace PriceProcessor.Test.Waybills
 				producer3 = new TestProducer("Воронежская Фармацевтическая компания");
 				producer3.CreateAndFlush();
 
-				new TestSynonym() {Synonym = "Активированный уголь", ProductId = product1.Id, PriceCode = (int?)price.Id}.CreateAndFlush();			
-				new TestSynonym() {Synonym = "Виагра", ProductId = product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();				
-				new TestSynonym() {Synonym = "Крем для кожи", ProductId = product3.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonym() { Synonym = "Активированный уголь", ProductId = product1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonym() { Synonym = "Виагра", ProductId = product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+				new TestSynonym() { Synonym = "Крем для кожи", ProductId = product3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Тестовый", ProductId = null, PriceCode = (int?)price.Id, SupplierCode = "12345"}.CreateAndFlush();
-				new TestSynonym() { Synonym = "Тестовый2", ProductId = product5.Id, PriceCode = (int?)price.Id, SupplierCode = "12345"}.CreateAndFlush();
+				new TestSynonym() { Synonym = "Тестовый", ProductId = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+				new TestSynonym() { Synonym = "Тестовый2", ProductId = product5.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
 
-				new TestSynonymFirm() {Synonym = "ВероФарм", CodeFirmCr = (int?) producer1.Id, PriceCode = (int?) price.Id}.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "ВероФарм", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 				new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
 				new TestSynonymFirm() { Synonym = "ВоронежФарм", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Тестовый", CodeFirmCr = null, PriceCode = (int?)price.Id, SupplierCode = "12345"}.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Тестовый2", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id, SupplierCode = "12345"}.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Тестовый", CodeFirmCr = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+				new TestSynonymFirm() { Synonym = "Тестовый2", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
 
 				TestAssortment.CheckAndCreate(product1, producer1);
 				TestAssortment.CheckAndCreate(product2, producer2);

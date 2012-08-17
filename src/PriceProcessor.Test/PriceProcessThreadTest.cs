@@ -36,12 +36,13 @@ namespace PriceProcessor.Test
 			Assert.True(priceProcessThread.FormalizeOK, "Формализация закончилась с ошибкой");
 
 			using (new SessionScope()) {
-				var log =  Inforoom.PriceProcessor.Models.FormLog.Queryable
+				var log = Inforoom.PriceProcessor.Models.FormLog.Queryable
 					.Where(l => l.PriceItemId == priceItemId
 						&& l.Host.Equals(Environment.MachineName)
 						&& l.ResultId == (int?)FormResults.Error
-						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage)).ToList();
-				Assert.That(log.Count, Is.GreaterThan(0),"Информация о предупреждении отсутствует в БД");
+						&& l.Addition.Equals(priceProcessThread.CurrentErrorMessage))
+					.ToList();
+				Assert.That(log.Count, Is.GreaterThan(0), "Информация о предупреждении отсутствует в БД");
 			}
 			//Проверяем, что копирование файла прошло успешно
 			Assert.IsTrue(File.Exists(outPriceFileName));
@@ -66,8 +67,7 @@ namespace PriceProcessor.Test
 		{
 			var _priceProcessItem = new PriceProcessItem(false, 4596, null, 708, @"D:\Temp\Inbound0\708.dbf", null);
 			var _priceProcessThread = new PriceProcessThread(_priceProcessItem, String.Empty);
-			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive)
-			{
+			while ((_priceProcessThread.ThreadState != ThreadState.Running) && _priceProcessThread.ThreadIsAlive) {
 				Thread.Sleep(500);
 			}
 			_priceProcessThread.AbortThread();
@@ -77,8 +77,8 @@ namespace PriceProcessor.Test
 			Assert.That(!_priceProcessThread.IsAbortingLong, "Ошибка в расчете времени прерывания");
 		}
 
-		enum CorruptDBThreadState
-		{ 
+		private enum CorruptDBThreadState
+		{
 			Init,
 			CheckConnection,
 			FirstSelect,
@@ -86,7 +86,7 @@ namespace PriceProcessor.Test
 			Stopped
 		}
 
-		class CorruptDBThread
+		private class CorruptDBThread
 		{
 			private CorruptDBThreadState _state = CorruptDBThreadState.Init;
 			private Thread _thread;
@@ -103,7 +103,7 @@ namespace PriceProcessor.Test
 				get { return _thread; }
 			}
 
-			MySqlConnection GetConnection()
+			private MySqlConnection GetConnection()
 			{
 				return new MySqlConnection(Literals.ConnectionString());
 			}
@@ -124,17 +124,14 @@ namespace PriceProcessor.Test
 			{
 				if (myconn.State != ConnectionState.Open)
 					myconn.Open();
-				try
-				{
+				try {
 					DataSet dsNowTime = MySqlHelper.ExecuteDataset(myconn, "select now()");
-					if (!((dsNowTime.Tables.Count == 1) && (dsNowTime.Tables[0].Rows.Count == 1)))
-					{
+					if (!((dsNowTime.Tables.Count == 1) && (dsNowTime.Tables[0].Rows.Count == 1))) {
 						//Попытка получить время создания connection
 						DateTime? creationTime = null;
 						FieldInfo driverField = myconn.GetType().GetField("driver", BindingFlags.Instance | BindingFlags.NonPublic);
 						object driverInternal = driverField.GetValue(myconn);
-						if (driverInternal != null)
-						{
+						if (driverInternal != null) {
 							FieldInfo creationTimeField = driverInternal.GetType().GetField("creationTime", BindingFlags.Instance | BindingFlags.NonPublic);
 							creationTime = (DateTime?)creationTimeField.GetValue(driverInternal);
 						}
@@ -143,13 +140,11 @@ namespace PriceProcessor.Test
 						bool InnoDBByConnection = false;
 						string InnoDBStatus = String.Empty;
 						DataSet dsStatus = MySqlHelper.ExecuteDataset(myconn, "show engine innodb status");
-						if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1) && (dsStatus.Tables[0].Columns.Contains("Status")))
-						{
+						if ((dsStatus.Tables.Count == 1) && (dsStatus.Tables[0].Rows.Count == 1) && (dsStatus.Tables[0].Columns.Contains("Status"))) {
 							InnoDBStatus = dsStatus.Tables[0].Rows[0]["Status"].ToString();
 							InnoDBByConnection = true;
 						}
-						if (!InnoDBByConnection)
-						{
+						if (!InnoDBByConnection) {
 							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), "show engine innodb status");
 							if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
 								InnoDBStatus = drInnoDBStatus["Status"].ToString();
@@ -161,27 +156,24 @@ CreationTime             = {1}
 InnoDBStatusByConnection = {2}
 InnoDB Status            =
 {3}",
-											myconn.ServerThread,
-											creationTime,
-											InnoDBByConnection,
-											InnoDBStatus);
+							myconn.ServerThread,
+							creationTime,
+							InnoDBByConnection,
+							InnoDBStatus);
 
 						_logger.InfoFormat("При проверке соединения получили 0 записей : {0}", techInfo);
 
 						throw new Exception("При попытке выборки из select now() не получили записей. Перезапустите PriceProcessor.");
 					}
-
 				}
-				finally
-				{
+				finally {
 					myconn.Close();
 				}
 			}
 
 			private void ThreadMethod()
 			{
-				try
-				{
+				try {
 					MySqlConnection _connection = GetConnection();
 					_logger.Info("GetConnection()");
 
@@ -189,36 +181,30 @@ InnoDB Status            =
 					CheckConnection(_connection);
 
 					_connection.Open();
-					try
-					{
+					try {
 						MySqlTransaction _selectTransaction = _connection.BeginTransaction();
 						_state = CorruptDBThreadState.FirstSelect;
-						try
-						{
+						try {
 							DataSet dsColumns = MySqlHelper.ExecuteDataset(_connection, "select * from information_schema.`COLUMNS`");
 							Thread.Sleep(500);
 							DataSet dsColumnsPrivileges = MySqlHelper.ExecuteDataset(_connection, "select * from information_schema.COLUMN_PRIVILEGES");
 						}
-						finally
-						{
+						finally {
 							_selectTransaction.Commit();
 						}
 						_logger.Info("FirstSelect");
 					}
-					finally
-					{
+					finally {
 						_connection.Close();
 					}
 
 					Thread.Sleep(1000);
 
 					_connection.Open();
-					try
-					{
+					try {
 						MySqlTransaction _brokenTransaction = _connection.BeginTransaction();
 						_state = CorruptDBThreadState.InTransaction;
-						try
-						{
+						try {
 							DataSet dsColumns = MySqlHelper.ExecuteDataset(_connection, "select * from information_schema.`COLUMNS`");
 
 							Thread.Sleep(3000);
@@ -226,34 +212,28 @@ InnoDB Status            =
 							_logger.Fatal("Дошли до отката транзакции, чего быть не должно");
 							_brokenTransaction.Rollback();
 						}
-						catch (Exception onTransaction)
-						{
+						catch (Exception onTransaction) {
 							_logger.Error("Ошибка в транзакции", onTransaction);
 							if (_brokenTransaction != null)
-								try
-								{
+								try {
 									_logger.Info("Начало отката");
 									_brokenTransaction.Rollback();
 									_logger.Info("Откат завершен");
 								}
-								catch (Exception onRollback)
-								{
+								catch (Exception onRollback) {
 									_logger.Error("Ошибка при откате", onRollback);
 								}
 							throw;
 						}
 					}
-					finally
-					{
+					finally {
 						_connection.Close();
 					}
 				}
-				catch (Exception exception)
-				{
+				catch (Exception exception) {
 					_logger.Error("Ошибка в нитке", exception);
 				}
-				finally
-				{
+				finally {
 					_state = CorruptDBThreadState.Stopped;
 					_logger.Info("Stop");
 				}
@@ -264,11 +244,9 @@ InnoDB Status            =
 		public void CorruptConnectionTest()
 		{
 			BasicConfigurator.Configure(
-				new TraceAppender()
-					{
-						Layout = new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")
-					}
-			);
+				new TraceAppender() {
+					Layout = new log4net.Layout.PatternLayout("%date{ABSOLUTE} [%-5thread] %-5level %logger{1} %ndc - %message%newline")
+				});
 			ILog _logger = LogManager.GetLogger(typeof(PriceProcessThreadTest));
 
 			List<CorruptDBThread> _threads = new List<CorruptDBThread>();
@@ -278,34 +256,27 @@ InnoDB Status            =
 			_threads.Add(new CorruptDBThread());
 
 			int _stopCount = 0;
-			while (_stopCount < 5)
-			{
+			while (_stopCount < 5) {
 				Thread.Sleep(100);
 
-				for (int i = _threads.Count - 1; i >= 0; i--)
-				{ 
-					if (_threads[i].State == CorruptDBThreadState.Stopped)
-					{
+				for (int i = _threads.Count - 1; i >= 0; i--) {
+					if (_threads[i].State == CorruptDBThreadState.Stopped) {
 						string _deletedThreadName = _threads[i].Thread.Name;
 						_threads.RemoveAt(i);
 						_stopCount++;
 						_logger.InfoFormat("Удалили нитку {0}", _deletedThreadName);
 					}
-					else
-						if ((_threads[i].State == CorruptDBThreadState.InTransaction) &&
-							((_threads[i].Thread.ThreadState & ThreadState.AbortRequested) == 0))
-						{
-							_threads[i].Thread.Abort();
-							_logger.InfoFormat("Вызвали Abort() для нитки {0}", _threads[i].Thread.Name);
-						}
-						else
-							if ((_threads[i].State == CorruptDBThreadState.InTransaction) &&
-								((_threads[i].Thread.ThreadState & ThreadState.AbortRequested) > 0) &&
-								((_threads[i].Thread.ThreadState & ThreadState.WaitSleepJoin) > 0))
-							{
-								_threads[i].Thread.Interrupt();
-								_logger.InfoFormat("Вызвали Interrupt() для нитки {0}", _threads[i].Thread.Name);
-							}
+					else if ((_threads[i].State == CorruptDBThreadState.InTransaction) &&
+						((_threads[i].Thread.ThreadState & ThreadState.AbortRequested) == 0)) {
+						_threads[i].Thread.Abort();
+						_logger.InfoFormat("Вызвали Abort() для нитки {0}", _threads[i].Thread.Name);
+					}
+					else if ((_threads[i].State == CorruptDBThreadState.InTransaction) &&
+						((_threads[i].Thread.ThreadState & ThreadState.AbortRequested) > 0) &&
+						((_threads[i].Thread.ThreadState & ThreadState.WaitSleepJoin) > 0)) {
+						_threads[i].Thread.Interrupt();
+						_logger.InfoFormat("Вызвали Interrupt() для нитки {0}", _threads[i].Thread.Name);
+					}
 				}
 
 				while (_threads.Count < 2)
@@ -315,14 +286,11 @@ InnoDB Status            =
 			_logger.InfoFormat("Произвели останов {0} раз", _stopCount);
 
 			_stopCount = 0;
-			while (_stopCount < 5)
-			{
+			while (_stopCount < 5) {
 				Thread.Sleep(100);
 
-				for (int i = _threads.Count - 1; i >= 0; i--)
-				{
-					if (_threads[i].State == CorruptDBThreadState.Stopped)
-					{
+				for (int i = _threads.Count - 1; i >= 0; i--) {
+					if (_threads[i].State == CorruptDBThreadState.Stopped) {
 						string _deletedThreadName = _threads[i].Thread.Name;
 						_threads.RemoveAt(i);
 						_stopCount++;

@@ -19,12 +19,12 @@ namespace PriceProcessor.Test
 	[TestFixture(Description = "тесты для проверки обработки Deadlock'ов при финализации прайс-листов в базе")]
 	public class DeadlockFinalizationPriceFixture
 	{
-		string file = @"..\..\Data\688-deadlock.txt";
-		int priceItemId = 688;
-		DataTable rules = new DataTable();
-		long priceCode;
-		long costCode;
-		int etalonRowCount;
+		private string file = @"..\..\Data\688-deadlock.txt";
+		private int priceItemId = 688;
+		private DataTable rules = new DataTable();
+		private long priceCode;
+		private long costCode;
+		private int etalonRowCount;
 		private PriceFormalizationInfo info;
 
 		[SetUp]
@@ -33,13 +33,13 @@ namespace PriceProcessor.Test
 			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
 			var priceItemInfo = TestHelper.Fill(String.Format(
 				" select pc.PriceCode, pc.CostCode, pd.CostType " +
-				" from usersettings.pricescosts pc, usersettings.pricesdata pd " + 
-				" where (pc.PriceItemId = {0}) and (pd.PriceCode = pc.PriceCode)",
+					" from usersettings.pricescosts pc, usersettings.pricesdata pd " +
+					" where (pc.PriceItemId = {0}) and (pd.PriceCode = pc.PriceCode)",
 				priceItemId));
 			var costType = Convert.ToByte(priceItemInfo.Tables[0].Rows[0]["CostType"]);
 			costCode = Convert.ToInt64(priceItemInfo.Tables[0].Rows[0]["CostCode"]);
 			priceCode = Convert.ToInt64(priceItemInfo.Tables[0].Rows[0]["PriceCode"]);
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				var price = Price.Find(priceCode);
 				info = new PriceFormalizationInfo(rules.Rows[0], price);
 			}
@@ -55,9 +55,8 @@ from
 where
 	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
-and CoreCosts.PC_CostCode = {1}"
-				,
-				priceCode, 
+and CoreCosts.PC_CostCode = {1}",
+				priceCode,
 				costCode);
 			//Сбрасываем значение распознанных позиций
 			TestHelper.Execute("update usersettings.PriceItems set RowCount = 0 where Id = {0}", priceItemId);
@@ -78,7 +77,7 @@ and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode));
 			etalonRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(					
+				MySqlHelper.ExecuteScalar(
 					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
@@ -95,16 +94,15 @@ set
 where
 	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
-and CoreCosts.PC_CostCode = {1}"
-				, 
+and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode);
 		}
 
 		internal class DeadlockThread
 		{
-			long _priceCode;
-			long _costCode;
+			private long _priceCode;
+			private long _costCode;
 
 			public string ThreadException;
 			public Thread thread;
@@ -119,15 +117,12 @@ and CoreCosts.PC_CostCode = {1}"
 
 			private void ThreadMethod()
 			{
-				try
-				{
-					using (var connection = new MySqlConnection(Literals.ConnectionString()))
-					{
+				try {
+					using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 						connection.Open();
 
 						var transaction = connection.BeginTransaction(IsolationLevel.RepeatableRead);
-						try
-						{
+						try {
 							/*
 							 * Как заблокировать записи на изменения: http://dev.mysql.com/doc/refman/5.0/en/innodb-locking-reads.html
 							 * Под статьей комментарий:
@@ -145,8 +140,7 @@ where
 and Core0.PriceCode = ?PriceCode
 and CoreCosts.PC_CostCode = ?CostCode
 group by 1
-for update"
-								,
+for update",
 								connection,
 								transaction);
 							command.Parameters.AddWithValue("?PriceCode", _priceCode);
@@ -159,15 +153,13 @@ for update"
 
 							transaction.Commit();
 						}
-						catch
-						{
+						catch {
 							transaction.Rollback();
 							throw;
 						}
 					}
 				}
-				catch (Exception exception)
-				{
+				catch (Exception exception) {
 					ThreadException = exception.ToString();
 				}
 			}
@@ -178,16 +170,13 @@ for update"
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
-			
-			using (var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
-				
+
+			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 				var parser = new DelimiterNativeTextParser1251(file, connection, info);
 
 				//Добавляем выбранный прайс-лист в список прайс-листов, которые обновляются с помощью Update
 				foreach (var field in typeof(BasePriceParser).GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
-					if (field.Name == "priceCodesUseUpdate")
-					{
+					if (field.Name == "priceCodesUseUpdate") {
 						List<long> priceList = (List<long>)field.GetValue(parser);
 						if (!priceList.Contains(priceCode))
 							priceList.Add(priceCode);
@@ -205,7 +194,7 @@ for update"
 
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(					
+				MySqlHelper.ExecuteScalar(
 					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
@@ -225,7 +214,6 @@ and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode));
 			Assert.That(core.Tables[0].Rows.Count, Is.EqualTo(etalonRowCount), "Не совпадает кол-во позиций в Core и эталлонное значение RowCount в PriceItems.");
-
 		}
 
 		[Test(Description = "проверяем обработку deadlock'ов при использовании insert: полного удаления позиций, а потом вставка"), Ignore]
@@ -233,16 +221,13 @@ and CoreCosts.PC_CostCode = {1}",
 		{
 			var deadlockThread = new DeadlockThread(priceCode, costCode);
 			int parserLockCount;
-			
-			using (var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
 
+			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 				var parser = new DelimiterNativeTextParser1251(file, connection, info);
 
 				//Удаляем выбранный прайс-лист из списока прайс-листов, которые обновляются с помощью Update, если он там есть
 				foreach (var field in typeof(BasePriceParser).GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.NonPublic))
-					if (field.Name == "priceCodesUseUpdate")
-					{
+					if (field.Name == "priceCodesUseUpdate") {
 						List<long> priceList = (List<long>)field.GetValue(parser);
 						if (priceList.Contains(priceCode))
 							priceList.Remove(priceCode);
@@ -260,7 +245,7 @@ and CoreCosts.PC_CostCode = {1}",
 
 			//Проверяем совпадение значения формализованных позиций в PriceItems.RowCount
 			var currentRowCount = Convert.ToInt32(
-				MySqlHelper.ExecuteScalar(					
+				MySqlHelper.ExecuteScalar(
 					Literals.ConnectionString(),
 					"select RowCount from usersettings.PriceItems where Id = ?PriceItemId",
 					new MySqlParameter("?PriceItemId", priceItemId)));
@@ -280,9 +265,6 @@ and CoreCosts.PC_CostCode = {1}",
 				priceCode,
 				costCode));
 			Assert.That(core.Tables[0].Rows.Count, Is.EqualTo(etalonRowCount), "Не совпадает кол-во позиций в Core и эталлонное значение RowCount в PriceItems.");
-
 		}
-
-
 	}
 }

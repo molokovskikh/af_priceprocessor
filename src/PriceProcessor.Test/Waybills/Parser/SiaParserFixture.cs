@@ -8,13 +8,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class SiaParserFixture
 	{
-        [Test]
-        public void Parse_with_incorrect_reg_date()
-        {
-            var document = WaybillParser.Parse(@"..\..\Data\Waybills\8472653.dbf");
-            Assert.That(document.Lines[0].CertificatesDate, Is.Null);
-
-        }
+		[Test]
+		public void Parse_with_incorrect_reg_date()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\8472653.dbf");
+			Assert.That(document.Lines[0].CertificatesDate, Is.Null);
+		}
 
 		[Test]
 		public void Parse()
@@ -35,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.62));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(8));
-			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.24));			
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.24));
 		}
 
 		[Test]
@@ -77,7 +76,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[2].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("ЗАМЕНИТЕЛЬ САХАРА\"РИО ГОЛД\" N1200 ТАБЛ"));
-			
 		}
 
 		[Test]
@@ -181,7 +179,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.АЕ51.В13746"));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("1209"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("08/04/2010")));
-
 		}
 
 		[Test]
@@ -205,7 +202,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.АИ42.Д01672"));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("0910"));
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.11.2010")));
-			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(35.16));			
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(35.16));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(230.5));
 		}
 

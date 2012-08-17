@@ -23,8 +23,7 @@ namespace PriceProcessor.Test
 		private void ClearReadOnly(DirectoryInfo root)
 		{
 			FileSystemInfo[] _fileInfos = root.GetFileSystemInfos();
-			foreach (FileSystemInfo _deleted in _fileInfos)
-			{
+			foreach (FileSystemInfo _deleted in _fileInfos) {
 				if (_deleted is DirectoryInfo)
 					ClearReadOnly(_deleted as DirectoryInfo);
 				if ((_deleted.Attributes & FileAttributes.ReadOnly) > 0)
@@ -39,7 +38,7 @@ namespace PriceProcessor.Test
 			if (File.Exists(_rootTempPath))
 				File.Delete(_rootTempPath);
 			_rootTempPath = Path.GetDirectoryName(_rootTempPath) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(_rootTempPath);
-				
+
 			if (!Directory.Exists(_rootTempPath))
 				Directory.CreateDirectory(_rootTempPath);
 
@@ -68,16 +67,14 @@ namespace PriceProcessor.Test
 				Directory.CreateDirectory(_subReadOnlyTestedDirectory);
 			DirectoryInfo _directoryInfo = new DirectoryInfo(_subReadOnlyTestedDirectory);
 			Assert.That((_directoryInfo.Attributes & FileAttributes.ReadOnly) == 0, String.Format("Директория '{0}' уже имеет атрибут ReadOnly", _subReadOnlyTestedDirectory));
-			_directoryInfo.Attributes |= FileAttributes.ReadOnly;			
+			_directoryInfo.Attributes |= FileAttributes.ReadOnly;
 
-			try
-			{
+			try {
 				//Попытка удалить директорию не может быть успешной, т.к. есть файлы и директории с атрибутом ReadOnly
 				Directory.Delete(_testedDirectory, true);
 				Assert.Fail("Получилось удалить директорию с файлами и директориями с атрибутом ReadOnly");
 			}
-			catch (UnauthorizedAccessException)
-			{ 
+			catch (UnauthorizedAccessException) {
 			}
 
 			//Сбрасываем везде атрибуты ReadOnly

@@ -34,15 +34,15 @@ namespace PriceProcessor.Test.Waybills
 			var log = new DocumentReceiveLog(supplier, address);
 			var order = new OrderHead(address, price);
 
-			order.Items.Add(new OrderItem(order) {Code = "1"});
-			order.Items.Add(new OrderItem(order) {Code = "2"});
+			order.Items.Add(new OrderItem(order) { Code = "1" });
+			order.Items.Add(new OrderItem(order) { Code = "2" });
 
-			var document = new Document(log) {ProviderDocumentId = "i-1", DocumentDate = DateTime.Now};
+			var document = new Document(log) { ProviderDocumentId = "i-1", DocumentDate = DateTime.Now };
 			var line = document.NewLine();
 			line.Code = "1";
 			line.Quantity = 1;
 
-			var document1 = new Document(log) {ProviderDocumentId = "i-1", DocumentDate = document.DocumentDate};
+			var document1 = new Document(log) { ProviderDocumentId = "i-1", DocumentDate = document.DocumentDate };
 			var line1 = document1.NewLine();
 			line1.Code = "1";
 			line1.Quantity = 1;
@@ -51,14 +51,14 @@ namespace PriceProcessor.Test.Waybills
 			line.OrderId = order.Id;
 			line1.OrderId = order.Id;
 
-			document = WaybillFormatDetector.ProcessDocument(document, new List<OrderHead> {order});
+			document = WaybillFormatDetector.ProcessDocument(document, new List<OrderHead> { order });
 			Assert.That(document, Is.EqualTo(document));
 			Assert.That(line.OrderItems.Count, Is.EqualTo(1));
 			session.Save(log);
 			session.Save(document);
 			session.Flush();
 
-			document = WaybillFormatDetector.ProcessDocument(document1, new List<OrderHead> {order});
+			document = WaybillFormatDetector.ProcessDocument(document1, new List<OrderHead> { order });
 			Assert.That(document, Is.EqualTo(document1));
 			Assert.That(line1.OrderItems.Count, Is.EqualTo(0));
 		}

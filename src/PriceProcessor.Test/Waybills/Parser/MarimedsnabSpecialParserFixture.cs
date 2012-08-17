@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 	{
 		[Test]
 		public void Parse()
-		{			
+		{
 			Assert.IsTrue(MarimedsnabSpecialParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\NKL_nnnnnnnn.dbf")));
 
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7949 } }; // код поставщика Маримедснаб (Йошкар-Ола)
@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var document = WaybillParser.Parse(@"NKL_nnnnnnnn.dbf", documentLog);
 
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("91386433/1"));					
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("91386433/1"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("09.09.2009"));
 
 			var line = document.Lines[0];
@@ -33,14 +33,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Amount, Is.EqualTo(62.94));
 			Assert.That(line.Code, Is.EqualTo("14576"));
 			Assert.That(line.SerialNumber, Is.Null);
-			Assert.That(line.Certificates, Is.EqualTo("220609^POCC RU.AЯ61."));			
+			Assert.That(line.Certificates, Is.EqualTo("220609^POCC RU.AЯ61."));
 			Assert.That(line.CertificatesDate, Is.Null);
 			Assert.That(line.Period, Is.EqualTo("01.07.2011"));
 			Assert.That(line.OrderId, Is.EqualTo(5513373));
 			Assert.That(line.BillOfEntryNumber, Is.Null);
 			Assert.That(line.EAN13, Is.EqualTo("4605059001624"));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(0.00));
-			Assert.That(line.Country, Is.Null);			
+			Assert.That(line.Country, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
 		}

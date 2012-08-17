@@ -19,16 +19,17 @@ namespace PriceProcessor.Test
 	[Ignore]
 	public class BasePriceParserFixture
 	{
-		const int catalogId = 13468;
-		const int producerId = 1492;
-		const int priceItemId = 688;
-		const int priceCode = 5;
+		private const int catalogId = 13468;
+		private const int producerId = 1492;
+		private const int priceItemId = 688;
+		private const int priceCode = 5;
 
 		private void PrepareTables(int priceCode, int catalogId, int producerId)
 		{
 			TestHelper.Execute(@"
 delete from farm.Excludes
-where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId);
+where PriceCode = {0} and CatalogId = {1}",
+				priceCode, catalogId);
 			TestHelper.Execute(@"delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
 
 			TestHelper.Execute(@"
@@ -45,10 +46,10 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 				priceCode,
 				"Санкт-Петербургская ф.ф.",
 				producerId);
-			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);			
+			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);
 		}
 
-        [Test, Ignore]
+		[Test, Ignore]
 		public void Test_create_original_synonym_id()
 		{
 			//var notCheckedProducerId = 3;
@@ -63,40 +64,39 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			var excludes = TestHelper.Fill(String.Format("select OriginalSynonymId from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
 			// Проверяем, что запись в исключениях создалась для нужного синонима
-			var synonym = With.Connection(connection => MySqlHelper.ExecuteScalar(connection, 
-					"select Synonym from farm.Synonym where SynonymCode = " + excludes.Tables[0].Rows[0]["OriginalSynonymId"].ToString())).ToString();
+			var synonym = With.Connection(connection => MySqlHelper.ExecuteScalar(connection,
+				"select Synonym from farm.Synonym where SynonymCode = " + excludes.Tables[0].Rows[0]["OriginalSynonymId"].ToString())).ToString();
 			Assert.That(synonym, Is.EqualTo("5 дней ванна д/ног смягчающая №10 пак. 25г  "));
 		}
 
-        [Test, Ignore] 
+		[Test, Ignore]
 		public void FormalizeAssortmentPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-			
+
 			TestFormalizeWithoutAssortmentInserting(
-					@"..\..\Data\688-create-net-assortment.txt",
-					String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
-			
+				@"..\..\Data\688-create-net-assortment.txt",
+				String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
 		}
 
-        [Test, Ignore] 
+		[Test, Ignore]
 		public void FormalizeHelpPriceTest()
 		{
 			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
 			TestFormalizeWithoutAssortmentInserting(
-					@"..\..\Data\688-create-net-assortment.txt",
-					String.Format(@"..\..\Data\{0}-helpprice-rules.xml", priceItemId));
+				@"..\..\Data\688-create-net-assortment.txt",
+				String.Format(@"..\..\Data\{0}-helpprice-rules.xml", priceItemId));
 		}
 
 		private void TestFormalizeWithoutAssortmentInserting(string dataPath, string rulesPath)
-		{  // Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
+		{
+			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
 			var rules = new DataTable();
 			rules.ReadXml(rulesPath);
 
 			TestHelper.Execute("RENAME TABLE catalogs.Assortment TO catalogs.Assortment_Backup;");
 			TestHelper.Execute("CREATE TABLE catalogs.Assortment LIKE catalogs.Assortment_Backup;");
-			try
-			{
+			try {
 				// Каталожная запись не проверена, производитель проверен. Должны вставить в исключения
 				PrepareTables(priceCode, catalogId, producerId);
 
@@ -108,15 +108,13 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 
 				Assert.AreEqual(0, countAfter, "Добавили запись в Assortment, хотя и не должны были.");
 			}
-			finally
-			{
+			finally {
 				TestHelper.Execute("DROP TABLE catalogs.Assortment;");
 				TestHelper.Execute("RENAME TABLE catalogs.Assortment_Backup TO catalogs.Assortment;");
 			}
-			
 		}
 
-        [Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
+		[Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
 		public void FormalizeProducerCost()
 		{
 			var fileName = @"formalize-producer-cost";
@@ -130,7 +128,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			CheckProducerCostInCore(corePriceCode);
 		}
 
-        [Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
+		[Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
 		public void FormalizeProducerCost2()
 		{
 			var sqlFormRules = @"
@@ -210,7 +208,7 @@ where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
 			});
 		}
 
-        [Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
+		[Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
 		public void FormalizeNds()
 		{
 			var fileName = @"formalize-nds";
@@ -228,8 +226,7 @@ where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
 		{
 			// Считаем кол-во позиций в core0 для данного прайс-листа, где цена производителя существует и она не нулевая
 			// (она также должна быть меньше всех остальных цен)
-			With.Connection(connection =>
-			{
+			With.Connection(connection => {
 				var command = new MySqlCommand(@"
 select count(*) from farm.Core0 core
   join farm.CoreCosts cc on core.Id = cc.Core_id
@@ -240,7 +237,7 @@ where PriceCode = ?PriceCode and Nds is not null;", connection);
 			});
 		}
 
-        [Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из таблицы FormRules")]
+		[Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из таблицы FormRules")]
 		public void FormalizeNds2()
 		{
 			var sqlFormRules = @"
@@ -273,8 +270,7 @@ values(
 
 insert into usersettings.PricesCosts(PriceCode, PriceItemId, Enabled, AgencyEnabled, CostName, BaseCost) 
 values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
-			With.Connection(connection =>
-			{
+			With.Connection(connection => {
 				var command = new MySqlCommand(sqlFormRules, connection);
 				command.Parameters.AddWithValue("?PriceCode", GetPriceCode(priceItemId));
 				command.Parameters.AddWithValue("?PriceItemId", priceItemId);

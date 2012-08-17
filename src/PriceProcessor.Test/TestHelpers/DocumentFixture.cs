@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.TestHelpers
 		{
 			client = TestClient.Create();
 			testAddress = client.Addresses[0];
-			using(new SessionScope()) {
+			using (new SessionScope()) {
 				address = Address.Find(testAddress.Id);
 				settings = WaybillSettings.Find(client.Id);
 				price = TestSupplier.CreateTestSupplierWithPrice();

@@ -16,7 +16,7 @@ namespace PriceProcessor.Test
 			ls.Add(" aaa         bbbb ccc       ddd ");
 			ls.Add(String.Empty);
 			ls.Add(null);
-			  
+
 			ls = ls.Select(l => l.RemoveDoubleSpaces()).ToList();
 
 			Assert.That(ls[0], Is.EqualTo(" aaa bbbb ccc ddd "));

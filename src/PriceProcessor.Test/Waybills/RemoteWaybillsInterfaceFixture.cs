@@ -21,8 +21,8 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class RemoteWaybillsInterfaceFixture : DocumentFixture
 	{
-		IWaybillService service;
-		ServiceHost host;
+		private IWaybillService service;
+		private ServiceHost host;
 
 		[SetUp]
 		public void Setup()
@@ -50,8 +50,7 @@ namespace PriceProcessor.Test.Waybills
 				Id,
 				Path.GetFileName(FileName));
 			var fullName = Path.Combine(documentDir, file);
-			if (!File.Exists(fullName))
-			{
+			if (!File.Exists(fullName)) {
 				file = String.Format("{0}_{1}({2}){3}",
 					Id,
 					Supplier_ShortName,
@@ -74,10 +73,9 @@ namespace PriceProcessor.Test.Waybills
 			var file = "1008fo.pd";
 			var document = CreateTestLog(file);
 
-			service.ParseWaybill(new [] {document.Id});
+			service.ParseWaybill(new[] { document.Id });
 
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
 				Assert.That(waybills.Count, Is.EqualTo(1));
 				var waybill = waybills.Single();
@@ -91,8 +89,7 @@ namespace PriceProcessor.Test.Waybills
 			var file = "1008fo.pd";
 			var document = CreateTestLog(file);
 
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.AssortimentPriceId = price.Id;
 				settings.IsConvertFormat = true;
 				settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
@@ -101,13 +98,12 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(new[] { document.Id });
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
 				Assert.That(waybills.Count, Is.EqualTo(1));
 				var waybill = waybills.Single();
 				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-				
+
 				var logs = TestDocumentLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.Client.Id == client.Id).ToList();
 				var count = logs.Count;
 				Assert.That(count, Is.EqualTo(2));
@@ -140,8 +136,7 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(new[] { document.Id });
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
 				Assert.That(waybills.Count, Is.EqualTo(0));
 			}
@@ -155,10 +150,8 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 
-			using (new SessionScope())
-			{
-				foreach (var documentLog in documentLogs)
-				{
+			using (new SessionScope()) {
+				foreach (var documentLog in documentLogs) {
 					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
 					Assert.That(waybills.Count, Is.EqualTo(1));
 
@@ -173,8 +166,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var files = new[] { @"..\..\Data\Waybills\multifile\b271433.dbf", @"..\..\Data\Waybills\multifile\h271433.dbf" };
 			var documentLogs = CreateTestLogs(files);
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.AssortimentPriceId = price.Id;
 				settings.IsConvertFormat = true;
 				settings.SaveAndFlush();
@@ -182,10 +174,8 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 
-			using (new SessionScope())
-			{
-				foreach (var documentLog in documentLogs)
-				{
+			using (new SessionScope()) {
+				foreach (var documentLog in documentLogs) {
 					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
 					Assert.That(waybills.Count, Is.EqualTo(1));
 
@@ -200,12 +190,11 @@ namespace PriceProcessor.Test.Waybills
 				// Проверяем наличие записей в documentheaders
 
 				var count = 0;
-				foreach (var documentLog in logs)
-				{
+				foreach (var documentLog in logs) {
 					count += Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id).Count();
 				}
 				Assert.That(count, Is.EqualTo(1));
-				
+
 				// Проверяем наличие файлов в папках клиентов
 				var resultFiles = Directory.GetFiles(waybillsPath);
 				Assert.That(resultFiles.Count(), Is.GreaterThan(0));

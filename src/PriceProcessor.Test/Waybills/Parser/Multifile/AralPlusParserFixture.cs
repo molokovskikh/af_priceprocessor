@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("3088745"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(new DateTime(2010, 7, 24)));
 			var line = doc.Lines[0];
-			
+
 			Assert.That(line.Code, Is.EqualTo("12947"));
 			Assert.That(line.Product, Is.EqualTo("Метеоспазмил, капс.№20"));
 			Assert.That(line.Producer, Is.EqualTo("Майоли Спиндлер"));

@@ -12,7 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\nakladnaya_baltimor.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("00025830"));		
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("00025830"));
 			Assert.That(document.DocumentDate, !Is.Null);
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("04.04.2011"));
 
@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ03.Д96935"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("25.02.2011"));
 			Assert.That(line.Period, Is.EqualTo("01.08.2013"));
-			Assert.That(line.Producer, Is.EqualTo("Полисан НТФФ ООО"));			
+			Assert.That(line.Producer, Is.EqualTo("Полисан НТФФ ООО"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(213.40));
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
 			Assert.That(line.RegistryCost, Is.EqualTo(212.84));
@@ -36,8 +36,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 		[Test]
 		public void Check_file_format()
-		{					
-			Assert.IsTrue(BaltimorKazanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\nakladnaya_baltimor.dbf")));		
+		{
+			Assert.IsTrue(BaltimorKazanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\nakladnaya_baltimor.dbf")));
 		}
 	}
 }

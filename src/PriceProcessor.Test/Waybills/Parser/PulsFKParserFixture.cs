@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.04.2012"));
-			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФM08.Д84457"));			
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФM08.Д84457"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(102.00));
 			Assert.That(line.SupplierCost, Is.EqualTo(112.20));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(111.16));
@@ -66,7 +66,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_zdrav_service()
 		{
-			var doc = WaybillParser.Parse("1689520.DBF", new DocumentReceiveLog {Supplier = new Supplier {Id = 1581}});
+			var doc = WaybillParser.Parse("1689520.DBF", new DocumentReceiveLog { Supplier = new Supplier { Id = 1581 } });
 			var line = doc.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("Бумага туалетная Зева Плюс 2-х сл. Ромашка (144065) N4"));
 
@@ -92,7 +92,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Amount, Is.EqualTo(207.66));
 			Assert.That(line.NdsAmount, Is.EqualTo(18.88));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(14.00));
-			Assert.That(line.EAN13, Is.EqualTo("5997001393871"));            
+			Assert.That(line.EAN13, Is.EqualTo("5997001393871"));
 		}
 
 		[Test]

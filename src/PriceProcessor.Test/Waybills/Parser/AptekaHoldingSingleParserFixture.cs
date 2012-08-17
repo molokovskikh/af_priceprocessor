@@ -37,7 +37,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(2));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.41));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(101.01));
-
 		}
 
 		[Test]
@@ -97,7 +96,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
-		public  void Parse5()
+		public void Parse5()
 		{
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\7883837_Rosta_10213326_.dbf");
 
@@ -173,6 +172,5 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[1].PassportFilename, Is.EqualTo("pM9TM"));
 			Assert.IsNullOrEmpty(document.Lines[8].PassportFilename);
 		}
-
 	}
 }

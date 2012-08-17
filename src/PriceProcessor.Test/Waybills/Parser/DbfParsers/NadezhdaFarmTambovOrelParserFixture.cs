@@ -11,7 +11,7 @@ using Common.Tools;
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
 	[TestFixture]
-	class NadezhdaFarmTambovOrelParserFixture
+	internal class NadezhdaFarmTambovOrelParserFixture
 	{
 		[Test]
 		public void Parse()
@@ -34,10 +34,10 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Producer, Is.EqualTo("Твинс Тэк ЗАО"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АИ86.Д00320"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
-			Assert.That(line.SerialNumber, Is.EqualTo("0211"));			
+			Assert.That(line.SerialNumber, Is.EqualTo("0211"));
 			Assert.That(line.Period, Is.EqualTo("01.08.2012"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.RegistryCost, Is.EqualTo(0.0000));			
+			Assert.That(line.RegistryCost, Is.EqualTo(0.0000));
 		}
 
 		[Test]

@@ -14,10 +14,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			// код поставщика "Бизон" (Казань)
-			var documentLog = new DocumentReceiveLog { Supplier = new Supplier{Id = 8063}, };
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 8063 }, };
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\N000011720.txt", documentLog) is BizonKazanSpecialParser);
 
-			var doc = WaybillParser.Parse("N000011720.txt", documentLog);          
+			var doc = WaybillParser.Parse("N000011720.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(15));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-000011720"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("30.05.2011"));
@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(doc.Lines[0].Country, Is.Null);
 			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
-			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(127.5));                                           
+			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(127.5));
 			Assert.That(doc.Lines[0].Certificates, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
@@ -69,7 +69,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_without_period()
 		{
-			var documentLog = new DocumentReceiveLog { Supplier = new Supplier{Id = 8063}, };
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 8063 }, };
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\13755.txt", documentLog) is BizonKazanSpecialParser);
 			var doc = WaybillParser.Parse("13755.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(11));
@@ -88,7 +88,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[10].Period, Is.Null);
 
 			Assert.That(doc.Lines[10].Country, Is.Null);
-			Assert.That(doc.Lines[10].ProducerCostWithoutNDS, Is.Null);            
+			Assert.That(doc.Lines[10].ProducerCostWithoutNDS, Is.Null);
 			Assert.That(doc.Lines[10].Certificates, Is.Null);
 			Assert.That(doc.Lines[10].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[10].VitallyImportant, Is.Null);

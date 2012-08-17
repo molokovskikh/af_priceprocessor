@@ -8,7 +8,7 @@ using PriceProcessor.Test.TestHelpers;
 namespace PriceProcessor.Test
 {
 	[TestFixture]
-    [Ignore("Починить")]
+	[Ignore("Починить")]
 	public class UpdateCoreTimestampsFixture
 	{
 		private int priceItemId;
@@ -17,17 +17,18 @@ namespace PriceProcessor.Test
 		private DataSet coreData;
 		private DataTable core;
 		private object originalId;
-		
+
 		[SetUp]
 		public void Setup()
 		{
 			Settings.Default.SyncPriceCodes.Clear();
-			
+
 			priceItemId = 348;
-			pricecode =  Convert.ToUInt32(TestHelper.Fill(String.Format(@"
+			pricecode = Convert.ToUInt32(TestHelper.Fill(String.Format(@"
 select pricecode 
 from usersettings.pricescosts
-where priceitemid = {0}", priceItemId)).Tables[0].Rows[0][0]);
+where priceitemid = {0}",
+				priceItemId)).Tables[0].Rows[0][0]);
 
 			Settings.Default.SyncPriceCodes.Add(pricecode.ToString());
 
@@ -42,7 +43,6 @@ where priceitemid = {0}", priceItemId)).Tables[0].Rows[0][0]);
 			Assert.That(core.Rows[0]["QuantityUpdate"], Is.EqualTo(DateTime.MinValue));
 			Assert.That(core.Rows[0]["UpdateTime"], Is.EqualTo(DateTime.MinValue));
 			originalId = core.Rows[0]["Id"];
-
 		}
 
 		[Test, Ignore]
@@ -65,7 +65,7 @@ where priceitemid = {0}", priceItemId)).Tables[0].Rows[0][0]);
 		{
 			var begin = DateTime.Now;
 			TestHelper.Formalize<DelimiterNativeTextParser1251>(@"..\..\Data\UpdateCoreTimeStamp-update.txt", priceItemId);
-			
+
 
 			coreData = TestHelper.Fill(String.Format("select * from farm.Core0 where priceCode = {0}", pricecode));
 			core = coreData.Tables[0];

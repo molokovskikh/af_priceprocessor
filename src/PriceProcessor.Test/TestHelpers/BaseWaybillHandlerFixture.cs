@@ -24,8 +24,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void SetConvertFormat()
 		{
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				var settings = client.Settings;
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = supplier.Prices.First().Id;
@@ -55,20 +54,18 @@ namespace PriceProcessor.Test.TestHelpers
 			if (address == null)
 				address = client.Addresses[0];
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = TestDocumentLog.Queryable.Where(log =>
 					log.Client.Id == client.Id &&
-					log.Supplier.Id == supplier.Id &&
-					log.AddressId == address.Id);
+						log.Supplier.Id == supplier.Id &&
+						log.AddressId == address.Id);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
 		}
 
 		protected void CheckDocumentEntry(int waitingCountEntries)
 		{
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
 					doc.ClientCode == client.Id &&
 					doc.Address.Id == client.Addresses[0].Id);
@@ -86,8 +83,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void SetDeliveryCodes(uint? supplierDeliveryId)
 		{
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var id = supplier.Prices[0].Id;
 				var price = TestPrice.Find(id);
 				var intersection = price.Intersections.First(i => i.Client.Id == client.Id);
@@ -113,8 +109,7 @@ namespace PriceProcessor.Test.TestHelpers
 			if (String.IsNullOrEmpty(supplierDeliveryId))
 				supplierDeliveryId = addressId.ToString();
 
-			With.Connection(connection =>
-			{
+			With.Connection(connection => {
 				var command = new MySqlCommand(@"
 insert into Customers.AddressIntersection(AddressId, IntersectionId, SupplierDeliveryId)
 select a.Id, i.Id, ?supplierDeliveryId
@@ -155,10 +150,8 @@ and a.Id = ?AddressId
 			//запоминаем начальное состояние настройки
 			var isConvertFormat = settings.IsConvertFormat;
 			//и если оно не включено, то включим принудительно для теста
-			if (!isConvertFormat)
-			{
-				using (new TransactionScope())
-				{
+			if (!isConvertFormat) {
+				using (new TransactionScope()) {
 					settings.IsConvertFormat = true;
 					settings.AssortimentPriceId = supplier.Prices.First().Id;
 					settings.SaveAndFlush();

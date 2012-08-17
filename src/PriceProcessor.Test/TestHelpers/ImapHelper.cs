@@ -23,8 +23,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public static void StoreMessage(string mailbox, string password, string folder, byte[] messageBytes)
 		{
-			using (var imapClient = new IMAP_Client())
-			{
+			using (var imapClient = new IMAP_Client()) {
 				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
 				imapClient.Authenticate(mailbox, password);
 				imapClient.SelectFolder(Settings.Default.IMAPSourceFolder);
@@ -37,23 +36,21 @@ namespace PriceProcessor.Test.TestHelpers
 		/// </summary>
 		public static void ClearImapFolder(string mailbox, string password, string folder, string subject)
 		{
-			using (var imapClient = new IMAP_Client())
-			{
+			using (var imapClient = new IMAP_Client()) {
 				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
 				imapClient.Authenticate(mailbox, password);
 				imapClient.SelectFolder(folder);
 				var sequenceSet = new IMAP_SequenceSet();
 				sequenceSet.Parse("1:*", Int64.MaxValue);
-				var items = String.IsNullOrEmpty(subject) 
-					? imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false) 
+				var items = String.IsNullOrEmpty(subject)
+					? imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID, false, false)
 					: imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
-				
+
 				//производим фильтрацию, если параметр subject установлен
 				if (!String.IsNullOrEmpty(subject) && items != null && items.Length > 0)
 					items = items.Where(i => i.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase)).ToArray();
 
-				if ((items != null) && (items.Length > 0))
-				{
+				if ((items != null) && (items.Length > 0)) {
 					var sequenceMessages = new IMAP_SequenceSet();
 					sequenceMessages.Parse(String.Join(",", items.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
 					imapClient.DeleteMessages(sequenceMessages, true);
@@ -71,16 +68,14 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public static List<IMAP_FetchItem> CheckImapFolder(string mailbox, string password, string folder)
 		{
-			using (var imapClient = new IMAP_Client())
-			{
+			using (var imapClient = new IMAP_Client()) {
 				imapClient.Connect(Settings.Default.IMAPHost, Convert.ToInt32(Settings.Default.IMAPPort));
 				imapClient.Authenticate(mailbox, password);
 				imapClient.SelectFolder(folder);
 				var sequenceSet = new IMAP_SequenceSet();
 				sequenceSet.Parse("1:*", Int64.MaxValue);
 				var items = imapClient.FetchMessages(sequenceSet, IMAP_FetchItem_Flags.UID | IMAP_FetchItem_Flags.Envelope, false, false);
-				if ((items != null) && (items.Length > 0))
-				{
+				if ((items != null) && (items.Length > 0)) {
 					return items.ToList();
 				}
 			}
@@ -112,8 +107,7 @@ namespace PriceProcessor.Test.TestHelpers
 			responseMime.MainEntity.Subject = "[Debug message]";
 			responseMime.MainEntity.ContentType = MediaType_enum.Multipart_mixed;
 
-			foreach (var fileName in files)
-			{
+			foreach (var fileName in files) {
 				var testEntity = responseMime.MainEntity.ChildEntities.Add();
 				testEntity.ContentType = MediaType_enum.Text_plain;
 				testEntity.ContentTransferEncoding = ContentTransferEncoding_enum.QuotedPrintable;
@@ -125,10 +119,9 @@ namespace PriceProcessor.Test.TestHelpers
 				attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
 				attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
 
-				using (var fileStream = File.OpenRead(fileName))
-				{
+				using (var fileStream = File.OpenRead(fileName)) {
 					var fileBytes = new byte[fileStream.Length];
-					fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
+					fileStream.Read(fileBytes, 0, (int)(fileStream.Length));
 					attachEntity.Data = fileBytes;
 				}
 			}
@@ -166,18 +159,16 @@ namespace PriceProcessor.Test.TestHelpers
 			responseMime.MainEntity.To = toList;
 
 			if (files != null)
-				foreach (var fileName in files)
-				{
+				foreach (var fileName in files) {
 					var attachEntity = responseMime.MainEntity.ChildEntities.Add();
 					attachEntity.ContentType = MediaType_enum.Application_octet_stream;
 					attachEntity.ContentTransferEncoding = ContentTransferEncoding_enum.Base64;
 					attachEntity.ContentDisposition = ContentDisposition_enum.Attachment;
 					attachEntity.ContentDisposition_FileName = Path.GetFileName(fileName);
 
-					using (var fileStream = File.OpenRead(fileName))
-					{
+					using (var fileStream = File.OpenRead(fileName)) {
 						var fileBytes = new byte[fileStream.Length];
-						fileStream.Read(fileBytes, 0, (int) (fileStream.Length));
+						fileStream.Read(fileBytes, 0, (int)(fileStream.Length));
 						attachEntity.Data = fileBytes;
 					}
 				}
@@ -192,8 +183,8 @@ namespace PriceProcessor.Test.TestHelpers
 		/// <param name="to">Адрес, который будет помещен в поле TO</param>
 		/// <param name="from">Адрес, который будет помещен в поле FROM</param>
 		/// <param name="attachFilePath">Путь к файлу, который будет помещен во вложение к этому письму</param>
-		public static void StoreMessageWithAttachToImapFolder(string mailbox, string password, string folder, 
-		                                                      string to, string from, string attachFilePath)
+		public static void StoreMessageWithAttachToImapFolder(string mailbox, string password, string folder,
+			string to, string from, string attachFilePath)
 		{
 			var templateMessageText = @"To: {0}
 From: {1}
@@ -219,8 +210,7 @@ Content-Disposition: attachment;
 --------------060602000201050608050809--
 
 ";
-			using (var fileStream = File.OpenRead(attachFilePath))
-			{
+			using (var fileStream = File.OpenRead(attachFilePath)) {
 				var fileBytes = new byte[fileStream.Length];
 				fileStream.Read(fileBytes, 0, (int)(fileStream.Length));
 				var messageText = String.Format(templateMessageText, to, @from,

@@ -79,8 +79,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			byte[] bytes;
 			if (IsEmlFile)
 				bytes = File.ReadAllBytes(fileNames[0]);
-			else
-			{
+			else {
 				var message = ImapHelper.BuildMessageWithAttachments(
 					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
 					from, fileNames.ToArray());
@@ -97,10 +96,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test, Description("Проверка вставки даты документа после разбора накладной")]
 		public void Check_document_date()
 		{
-			SetUp(new List<string> {@"..\..\Data\Waybills\0000470553.dbf"});
+			SetUp(new List<string> { @"..\..\Data\Waybills\0000470553.dbf" });
 			Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
 					doc.ClientCode == client.Id &&
 					doc.Address.Id == client.Addresses[0].Id &&
@@ -156,8 +154,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			var headerFile = GetSavedFiles("*(h271433).dbf");
 			Assert.That(headerFile.Count(), Is.EqualTo(1));
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id
 					&& doc.ClientCode == client.Id
 					&& doc.Address.Id == client.Addresses[0].Id);
@@ -213,7 +210,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test, Description("Накладная в формате dbf и первая буква в имени h (как у заголовка двухфайловой накладной)")]
 		public void Parse_when_waybill_like_multifile_header()
 		{
-			var files = new List<string> {@"..\..\Data\Waybills\h1016416.DBF",};
+			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", };
 
 			SetUp(files);
 			Process();
@@ -295,7 +292,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				String.Format("{0}@waybills.analit.net", "1"),
 				from,
-				new[] {@"..\..\Data\Waybills\bi055540.DBF"});
+				new[] { @"..\..\Data\Waybills\bi055540.DBF" });
 			var bytes = message.ToByteData();
 
 			ImapHelper.StoreMessage(
@@ -362,8 +359,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			ImapHelper.ClearImapFolder();
 			var mime = PatchTo(@"..\..\Data\Unparse.eml",
 				String.Format("{0}@waybills.analit.net", address.Id),
-				String.Format("edata{0}@msk.katren.ru,vbskript@katren.ru", supplier.Id)
-			);
+				String.Format("edata{0}@msk.katren.ru,vbskript@katren.ru", supplier.Id));
 			ImapHelper.StoreMessage(mime.ToByteData());
 
 			Process();
@@ -400,8 +396,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var files = GetFileForAddress(DocType.Waybill);
 			Assert.That(files.Length, Is.EqualTo(1));
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = TestDocumentLog.Queryable.Where(d => d.Client.Id == client.Id).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				var log = logs.Single();

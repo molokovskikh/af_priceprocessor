@@ -52,7 +52,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)
 		{
-			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = supplierId}};			
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = supplierId } };
 			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is KazanFarmDbfParser);
 			return documentLog;
 		}

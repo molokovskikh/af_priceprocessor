@@ -12,7 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ФК000067781"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("23.01.2012"));
 			Assert.That(doc.OrderId, Is.EqualTo(25632871));
-			var line = doc.Lines[0];            
+			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("19614"));
 			Assert.That(line.Product, Is.EqualTo("Аквалор Софт 125мл спрей фл."));
 			Assert.That(line.Producer, Is.EqualTo("YS LAB Le Forum"));
@@ -32,4 +32,3 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		}
 	}
 }
-

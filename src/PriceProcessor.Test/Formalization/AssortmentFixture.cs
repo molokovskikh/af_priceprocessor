@@ -23,6 +23,7 @@ namespace PriceProcessor.Test
 		}
 
 		public List<CostDescription> CostDescriptions { get; set; }
+
 		public IEnumerable<Customer> Settings()
 		{
 			throw new NotImplementedException();
@@ -58,7 +59,7 @@ namespace PriceProcessor.Test
 			var priceInfo = new PriceFormalizationInfo(row, _price);
 			var priceParser = new BasePriceParser2(new FakeReader(), priceInfo);
 			priceParser.Prepare();
-			var resolver = (ProducerResolver)typeof (BasePriceParser2)
+			var resolver = (ProducerResolver)typeof(BasePriceParser2)
 				.GetField("_producerResolver", BindingFlags.NonPublic | BindingFlags.Instance)
 				.GetValue(priceParser);
 			//var resolver = priceParser.ProducerResolver;
@@ -79,7 +80,7 @@ namespace PriceProcessor.Test
 			newAssort["ProducerId"] = 111;
 			newAssort["Checked"] = true;
 			assortiment.Rows.Add(newAssort);
-			typeof (ProducerResolver)
+			typeof(ProducerResolver)
 				.GetField("_assortment", BindingFlags.NonPublic | BindingFlags.Instance)
 				.SetValue(resolver, assortiment);
 
@@ -105,20 +106,20 @@ namespace PriceProcessor.Test
 			//удаляем синоним наименования
 			TestHelper.Execute(
 				String.Format(
-					"delete from farm.Synonym where (PriceCode = {0}) and (Synonym = '{1}')", 
-					priceCode, 
+					"delete from farm.Synonym where (PriceCode = {0}) and (Synonym = '{1}')",
+					priceCode,
 					"ОСТРОВИДКИ ПЛЮС С ЛЮТЕИНОМ КАПС. 710МГ №50 (БАД) super  "));
 
 			//удаляем синоним производителя 'Фармстандарт (ICN) Лексредства г.Курск super'
 			TestHelper.Execute(
 				String.Format(
-					"delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
-					priceCode, 
+					"delete from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+					priceCode,
 					"Фармстандарт (ICN) Лексредства г.Курск super"));
 			var producerSynonyms = TestHelper.Fill(
 				String.Format(
-					"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
-					priceCode, 
+					"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+					priceCode,
 					"#"));
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(0), "имеются синонимы производителей для 'Фармстандарт (ICN) Лексредства г.Курск super'");
 
@@ -135,10 +136,10 @@ namespace PriceProcessor.Test
 					priceCode,
 					"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
 			producerSynonyms = TestHelper.Fill(
-							String.Format(
-								"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
-								priceCode,
-								"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
+				String.Format(
+					"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+					priceCode,
+					"Фармстандарт (ICN) Лексредства г.Курск super-puper"));
 			var automaticPuperId = Convert.ToInt64(producerSynonyms.Tables[0].Rows[0]["SynonymFirmCrCode"]);
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "нет синонима производителя для 'Фармстандарт (ICN) Лексредства г.Курск super-puper'");
 			TestHelper.Execute(
@@ -150,13 +151,13 @@ namespace PriceProcessor.Test
 			//удаляем исключения
 			TestHelper.Execute(
 				String.Format(
-					"delete from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", 
-					priceCode, 
+					"delete from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})",
+					priceCode,
 					excludeCatalogId));
 			var excludes = TestHelper.Fill(
 				String.Format(
-					"select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})", 
-					priceCode, 
+					"select * from farm.Excludes where (PriceCode = {0}) and (CatalogId = {1})",
+					priceCode,
 					excludeCatalogId));
 			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(0), "имеются неизвестные исключения");
 			TestHelper.Execute("update Catalogs.Assortment set checked = 1 where CatalogId = {0} ", excludeCatalogId);
@@ -176,8 +177,8 @@ namespace PriceProcessor.Test
 			Assert.That(core.Tables[0].Rows.Count, Is.EqualTo(18), "не совпадает кол-во предложений в Core");
 
 			producerSynonyms = TestHelper.Fill(String.Format(
-				"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')", 
-				priceCode, 
+				"select * from farm.SynonymFirmCr where (PriceCode = {0}) and (Synonym = '{1}')",
+				priceCode,
 				"Фармстандарт (ICN) Лексредства г.Курск super"));
 			Assert.That(producerSynonyms.Tables[0].Rows.Count, Is.EqualTo(1), "синоним производителя для 'Фармстандарт (ICN) Лексредства г.Курск super' не создан");
 
@@ -200,20 +201,22 @@ namespace PriceProcessor.Test
 
 			TestHelper.Execute(@"
 delete from farm.Excludes
-where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId, producerId);
-			TestHelper.Execute("delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
+where PriceCode = {0} and CatalogId = {1}",
+				priceCode, catalogId, producerId);
+			TestHelper.Execute("delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}",
+				catalogId, producerId);
 			TestHelper.Execute(@"
 delete from farm.Synonym where pricecode = {0} and synonym like '{1}';
 insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});
 insert into farm.UsedSynonymLogs(SynonymCode) Values(last_insert_id());",
-				priceCode, 
+				priceCode,
 				"5 дней ванна д/ног смягчающая №10 пак. 25г  ",
 				13468);
 			TestHelper.Execute(@"
 delete from farm.SynonymFirmCr where priceCode = {0} and synonym like '{1}';
 insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});
 insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id());",
-				priceCode, 
+				priceCode,
 				"Санкт-Петербургская ф.ф.",
 				producerId);
 
@@ -228,7 +231,8 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 		{
 			TestHelper.Execute(@"
 delete from farm.Excludes
-where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId);
+where PriceCode = {0} and CatalogId = {1}",
+				priceCode, catalogId);
 			TestHelper.Execute(@"delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
 
 			TestHelper.Execute(@"
@@ -283,7 +287,8 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			PrepareTablesCreateAssortmentOrExcludesEntry(priceCode, catalogId, producerId);
 			TestHelper.Execute(@"
 delete from catalogs.assortment where id = {1} or (CatalogId = {0} and ProducerId = {1});
-insert into catalogs.assortment values({1}, {0}, {1}, 1)", catalogId, notCheckedProducerId);
+insert into catalogs.assortment values({1}, {0}, {1}, 1)",
+				catalogId, notCheckedProducerId);
 			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
 /* новые записи в ассортименте не создаются
  * assortment = TestHelper.Fill(String.Format("select * from catalogs.assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId));

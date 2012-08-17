@@ -84,7 +84,7 @@ namespace PriceProcessor.Test.Waybills
 			if (source == null)
 				using (new TransactionScope()) {
 					source = new CertificateSource {
-						SourceClassName = Path.GetRandomFileName() 
+						SourceClassName = Path.GetRandomFileName()
 					};
 					source.Suppliers = new List<Supplier>();
 					source.Suppliers.Add(supplier);
@@ -130,8 +130,7 @@ namespace PriceProcessor.Test.Waybills
 			string serialNumber)
 		{
 			var certificate = new Certificate();
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				certificate.CatalogProduct = Catalog.Find(catalog.Id);
 				certificate.SerialNumber = serialNumber;
 				CreateFiles(certificateSource, certificate, 2);
@@ -178,8 +177,7 @@ namespace PriceProcessor.Test.Waybills
 
 		private static void CreateFiles(CertificateSource certificateSource, Certificate certificate, int count)
 		{
-			for(var i = 0; i < count; i++)
-			{
+			for (var i = 0; i < count; i++) {
 				certificate.NewFile(
 					new CertificateFile {
 						OriginFilename = Path.GetRandomFileName(),
@@ -233,7 +231,6 @@ namespace PriceProcessor.Test.Waybills
 			};
 
 			using (var transaction = new TransactionScope()) {
-
 				//Если в транзакции возникает ошибка DuplicateEntry, то транзакция откатывается
 				//поэтому перед сохранением надо проверять, что такое задание не существует
 				var existsTask = CertificateTask.Exists(
@@ -277,7 +274,6 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(certificate.CertificateFiles.ToList().TrueForAll(f => f.Id > 0));
 
 			using (var transaction = new TransactionScope()) {
-
 				var findedCertificate = Certificate.FindFirst(
 					DetachedCriteria.For<Certificate>()
 						.Add(Restrictions.Eq("CatalogProduct.Id", certificate.CatalogProduct.Id))
@@ -310,14 +306,14 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
 
 
-				findedCertificate = 
+				findedCertificate =
 					Certificate.Queryable.FirstOrDefault(
 						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == "мАМА мыла рАМУ");
 
 				Assert.That(findedCertificate, Is.Not.Null);
 				Assert.That(findedCertificate.Id, Is.EqualTo(certificate.Id));
 
-				findedCertificate = 
+				findedCertificate =
 					Certificate.Queryable.FirstOrDefault(
 						c => c.CatalogProduct.Id == certificate.CatalogProduct.Id && c.SerialNumber == "какая-то большая фигня");
 
@@ -336,8 +332,6 @@ namespace PriceProcessor.Test.Waybills
 
 				transaction.VoteRollBack();
 			}
-
 		}
 	}
 }
-	

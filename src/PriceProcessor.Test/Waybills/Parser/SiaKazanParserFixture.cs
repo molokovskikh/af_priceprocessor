@@ -63,7 +63,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_SiaInternational_Omsk()
 		{
-			var doc = WaybillParser.Parse("3907412_СИА Интернейшнл-Омск(Р-766755).DBF");	
+			var doc = WaybillParser.Parse("3907412_СИА Интернейшнл-Омск(Р-766755).DBF");
 			Assert.That(Document.GenerateProviderDocumentId().Contains(doc.ProviderDocumentId.Substring(0, doc.ProviderDocumentId.Length - 2)), Is.True);
 			Assert.That(doc.DocumentDate, Is.LessThanOrEqualTo(DateTime.Now));
 			var line = doc.Lines[0];

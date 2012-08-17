@@ -9,7 +9,6 @@ namespace PriceProcessor.Test.Waybills.Sources
 	[TestFixture]
 	public class AptekaHoldingVoronezhCertificateSourceFixture
 	{
-		 
 		[Test(Description = "для строки из накладной определяем существование сертификатов")]
 		public void CertificateExists()
 		{
@@ -29,6 +28,5 @@ namespace PriceProcessor.Test.Waybills.Sources
 
 			Assert.That(aptekaHoldingVoronezhCertificateSource.CertificateExists(line), Is.True);
 		}
-
 	}
 }

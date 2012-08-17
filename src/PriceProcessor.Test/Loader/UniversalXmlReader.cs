@@ -142,7 +142,7 @@ namespace PriceProcessor.Test.Loader
 </PriceAndSettings>";
 
 			Read(xml);
-			
+
 			Assert.That(positions.Count, Is.EqualTo(1));
 			Assert.That(settings.Count, Is.EqualTo(1));
 		}

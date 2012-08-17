@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Handlers
 
 		[SetUp]
 		public void SetUp()
-		{			
+		{
 			using (new SessionScope()) {
 				client1 = TestClient.Create();
 				client2 = TestClient.Create();
@@ -87,8 +87,8 @@ namespace PriceProcessor.Test.Handlers
 
 			blading = new Blading {
 				bladingId = 1,
-				@uint = (int?) order1.Id,
-				bladingItems = new [] {
+				@uint = (int?)order1.Id,
+				bladingItems = new[] {
 					new BladingItem {
 						itemId = 3345,
 						itemName = "Коринфар таб п/о 10мг № 50",
@@ -123,8 +123,7 @@ namespace PriceProcessor.Test.Handlers
 			}
 
 			fake.Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Documents();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				var document = documents[0];
@@ -150,8 +149,7 @@ namespace PriceProcessor.Test.Handlers
 			}
 
 			fake.Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Documents();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				var document = documents[0];
@@ -178,17 +176,16 @@ namespace PriceProcessor.Test.Handlers
 		{
 			blading.bladingItems[0].bladingItemSeries = new[] {
 				new BladingItemSeries {
-					bladingItemSeriesCertificates = new [] {
+					bladingItemSeriesCertificates = new[] {
 						new BladingItemSeriesCertificate {
 							docId = 5478
 						}
 					}
-				}, 
+				},
 			};
 
 			fake.Process();
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Documents();
 				Assert.That(documents[0].Lines[0].ProtekDocIds[0].DocId, Is.EqualTo(5478));
 			}
@@ -199,37 +196,34 @@ namespace PriceProcessor.Test.Handlers
 		{
 			Thread.Sleep(1000);
 			fake.bodyResponce.@return.blading[0].@uint = null;
-			fake.bodyResponce.@return.blading[0].bladingFolder = new[]{
-				new BladingFolder
-					{
-						bladingId = null, 
-						folderNum  = "", 
-						orderDate = null, 
-						orderId = null, 
-						orderNum = "", 
-						orderUdat = null, 
-						orderUdec = null, 
-						orderUint = (int?)order1.Id, 
-						orderUstr = ""
-					},
-				new BladingFolder
-					{
-						bladingId = null, 
-						folderNum  = "", 
-						orderDate = null, 
-						orderId = null, 
-						orderNum = "", 
-						orderUdat = null, 
-						orderUdec = null, 
-						orderUint = (int?)order2.Id, 
-						orderUstr = ""
-					}
+			fake.bodyResponce.@return.blading[0].bladingFolder = new[] {
+				new BladingFolder {
+					bladingId = null,
+					folderNum = "",
+					orderDate = null,
+					orderId = null,
+					orderNum = "",
+					orderUdat = null,
+					orderUdec = null,
+					orderUint = (int?)order1.Id,
+					orderUstr = ""
+				},
+				new BladingFolder {
+					bladingId = null,
+					folderNum = "",
+					orderDate = null,
+					orderId = null,
+					orderNum = "",
+					orderUdat = null,
+					orderUdec = null,
+					orderUint = (int?)order2.Id,
+					orderUstr = ""
+				}
 			};
 
 			DateTime begin = DateTime.Now;
 			fake.Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var documents = Documents();
 				Assert.That(documents.Count, Is.EqualTo(1));
 				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
@@ -248,11 +242,10 @@ namespace PriceProcessor.Test.Handlers
 
 			var listSynonym = new List<string> { line.Product };
 			var priceCodes = Price.Queryable
-									.Where(p => (p.Supplier.Id == document.FirmCode))
-									.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+				.Where(p => (p.Supplier.Id == document.FirmCode))
+				.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 
-			if (priceCodes.Count < 0)
-			{
+			if (priceCodes.Count < 0) {
 				Assert.True(document.Lines.Count(l => l.ProductEntity == null) == document.Lines.Count);
 				return;
 			}
@@ -262,12 +255,10 @@ namespace PriceProcessor.Test.Handlers
 			criteria.Add(Restrictions.In("PriceCode", priceCodes));
 
 			var synonym = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<TestSynonym>()).ToList();
-			if (synonym.Count > 0)
-			{
+			if (synonym.Count > 0) {
 				Assert.IsTrue(synonym.Select(s => s.ProductId).Contains(line.ProductEntity.Id));
 			}
-			else
-			{
+			else {
 				Assert.IsTrue(line.ProductEntity == null);
 			}
 		}
@@ -277,20 +268,18 @@ namespace PriceProcessor.Test.Handlers
 		{
 			client1.Settings.IsConvertFormat = true;
 			var settings = TestDrugstoreSettings.Queryable.SingleOrDefault(s => s.Id == order1.Client.Id);
-			
-			using (new TransactionScope())
-			{
+
+			using (new TransactionScope()) {
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
 			}
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address != null ? order1.Address.Id.ToString() : order1.Client.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			if(Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
+			if (Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);
 			fake.Process();
-			using (new TransactionScope())
-			{
+			using (new TransactionScope()) {
 				settings.IsConvertFormat = false;
 				settings.AssortimentPriceId = null;
 				settings.SaveAndFlush();

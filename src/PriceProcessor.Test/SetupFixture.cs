@@ -19,7 +19,7 @@ namespace PriceProcessor.Test
 			XmlConfigurator.Configure();
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			With.DefaultConnectionStringName = Literals.GetConnectionName();
-			Program.InitActiveRecord(new[] {typeof (TestClient).Assembly, typeof (Document).Assembly});
+			Program.InitActiveRecord(new[] { typeof(TestClient).Assembly, typeof(Document).Assembly });
 		}
 	}
 }

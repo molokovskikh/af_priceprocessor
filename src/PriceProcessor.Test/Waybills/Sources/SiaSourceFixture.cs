@@ -32,11 +32,10 @@ namespace PriceProcessor.Test.Waybills.Sources
 		public void Parse_files()
 		{
 			var files = SiaSource.ParseFiles(@"DOCS\2011\3\19\649995736_2.GIF\r\nDOCS\2011\9\22\663082976_1.GIF").ToList();
-			Assert.That(files, Is.EquivalentTo(new [] {@"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF"}));
+			Assert.That(files, Is.EquivalentTo(new[] { @"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF" }));
 
 			files = SiaSource.ParseFiles(@"<tr><td>DOCS\2011\3\19\649995736_2.GIF</td><td>DOCS\2011\9\22\663082976_1.GIF</td></tr>").ToList();
-			Assert.That(files, Is.EquivalentTo(new [] {@"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF"}));
-
+			Assert.That(files, Is.EquivalentTo(new[] { @"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF" }));
 		}
 	}
 }

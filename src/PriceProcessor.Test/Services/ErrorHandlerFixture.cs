@@ -39,12 +39,12 @@ namespace PriceProcessor.Test.Services
 		[SetUp]
 		public void Setup()
 		{
-			host = new ServiceHost(typeof (TestService));
+			host = new ServiceHost(typeof(TestService));
 
 			var binding = new NetTcpBinding();
 			binding.Security.Mode = SecurityMode.None;
 			var url = String.Format("net.tcp://{0}:901/Test", Dns.GetHostName());
-			host.AddServiceEndpoint(typeof (ITest),
+			host.AddServiceEndpoint(typeof(ITest),
 				binding,
 				url);
 
@@ -65,13 +65,11 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Handle_error()
 		{
-			try
-			{
+			try {
 				channel.Test();
 				Assert.Fail("не выбросили исключение");
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				Assert.That(e.Message, Is.EqualTo("Произошла ошибка. Попробуйте повторить операцию позднее."));
 			}
 		}
@@ -79,13 +77,11 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Do_not_handle_fault()
 		{
-			try
-			{
+			try {
 				channel.TestаFault();
 				Assert.Fail("не выбросили исключение");
 			}
-			catch (FaultException e)
-			{
+			catch (FaultException e) {
 				Assert.That(e.Message, Is.EqualTo("test"));
 			}
 		}

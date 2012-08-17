@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(false));
 			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
-						
+
 			Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(11.46));
 			Assert.That(doc.Lines[0].Amount, Is.EqualTo(126.06));
 

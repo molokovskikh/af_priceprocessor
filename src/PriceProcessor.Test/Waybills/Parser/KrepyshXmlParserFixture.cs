@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
-	class KrepyshXmlParserFixture
+	internal class KrepyshXmlParserFixture
 	{
 		[Test]
 		public void Parse()

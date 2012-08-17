@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
 	[TestFixture]
-	class BioFarmVolgaParserFixture
+	internal class BioFarmVolgaParserFixture
 	{
 		[Test]
 		public void Parse()

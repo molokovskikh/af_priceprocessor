@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
 	[TestFixture]
-	class ProfitmedMoscowParserFixture
+	internal class ProfitmedMoscowParserFixture
 	{
 		[Test]
 		public void Parse()

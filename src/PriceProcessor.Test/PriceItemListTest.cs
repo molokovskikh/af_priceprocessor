@@ -9,7 +9,6 @@ namespace PriceProcessor.Test
 	[TestFixture]
 	public class PriceItemListTest
 	{
-
 		[SetUp]
 		public void Init()
 		{
@@ -91,6 +90,5 @@ namespace PriceProcessor.Test
 			findAllDownloadedList = PriceItemList.GetDownloadedItemList();
 			Assert.AreEqual(true, findAllDownloadedList != PriceItemList.list, "Список загруженных прайс-листов равен списку всех прайс-листов");
 		}
-
 	}
 }

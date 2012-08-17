@@ -19,8 +19,7 @@ namespace PriceProcessor.Test.TestHelpers
 		public static void InitDirs(params string[] dirs)
 		{
 			dirs.Each(dir => {
-				if (Directory.Exists(dir))
-				{
+				if (Directory.Exists(dir)) {
 					Directory.GetFiles(dir).Each(File.Delete);
 					Directory.Delete(dir, true);
 				}
@@ -48,8 +47,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public static DataSet Fill(string commandText)
 		{
-			return With.Connection(c =>
-			{
+			return With.Connection(c => {
 				var adapter = new MySqlDataAdapter(commandText, c);
 				var data = new DataSet();
 				adapter.Fill(data);
@@ -67,7 +65,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var data = PricesValidator.LoadFormRules((uint)priceItemId);
 			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
 			var parserType = Type.GetType(typeName);
-			
+
 			Formalize(parserType, data, file, priceItemId);
 		}
 
@@ -78,7 +76,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public static void Formalize<T>(string file, int priceItemId) where T : BasePriceParser
 		{
-			Formalize(typeof (T), file, priceItemId);
+			Formalize(typeof(T), file, priceItemId);
 		}
 
 		public static void Formalize(Type formatType, string file, int priceItemId)
@@ -87,18 +85,16 @@ namespace PriceProcessor.Test.TestHelpers
 		}
 
 		public static void Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
-		{			
-			using (var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
-				var parser = (BasePriceParser) Activator.CreateInstance(formatType, file, connection, parseRules);
+		{
+			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
+				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
 			}
 		}
 
 		public static void FormalizeOld(Type formatType, DataTable parseRules, string file, int priceItemId)
-		{			
-			using (var connection = new MySqlConnection(Literals.ConnectionString()))
-			{
+		{
+			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
 				parser.Formalize();
 			}
@@ -109,16 +105,18 @@ namespace PriceProcessor.Test.TestHelpers
 			var row = Fill(String.Format(@"
 select pricecode, costcode
 from usersettings.pricescosts
-where priceitemid = {0}", priceItemId)).Tables[0].Rows[0];
+where priceitemid = {0}",
+				priceItemId)).Tables[0].Rows[0];
 
-			var pricecode =  row[0];
+			var pricecode = row[0];
 			var costcode = row[1];
 
 			var etalonCore0 = Fill(String.Format(@"
 select c.*, cc.Cost
 from core0_copy c
   join corecosts_copy cc on cc.Core_Id = c.Id
-where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables[0];
+where c.pricecode = {0} and cc.pc_costcode = {1};",
+				pricecode, costcode)).Tables[0];
 			Verify(priceItemId, etalonCore0);
 		}
 
@@ -127,9 +125,10 @@ where c.pricecode = {0} and cc.pc_costcode = {1};", pricecode, costcode)).Tables
 			var row = Fill(String.Format(@"
 select pricecode, costcode
 from usersettings.pricescosts
-where priceitemid = {0}", priceItemId)).Tables[0].Rows[0];
+where priceitemid = {0}",
+				priceItemId)).Tables[0].Rows[0];
 
-			var pricecode =  row[0];
+			var pricecode = row[0];
 			var costcode = row[1];
 
 			var resultCore0 = Fill(String.Format(@"
@@ -137,36 +136,32 @@ select c.*, cc.Cost, s.Synonym
 from core0 c
   join corecosts cc on cc.Core_Id = c.Id
   join farm.Synonym s on s.SynonymCode = c.SynonymCode
-where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (4413102, 4413103);", pricecode, costcode)).Tables[0];
+where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (4413102, 4413103);",
+				pricecode, costcode)).Tables[0];
 
 			Assert.That(resultCore0.Rows.Count, Is.GreaterThan(0), "ничего не формализовали");
 			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "количество позиций не совпадает");
-			for(var i = 0; i < etalonCore0.Rows.Count; i++)
-			{
+			for (var i = 0; i < etalonCore0.Rows.Count; i++) {
 				var etalonRow = etalonCore0.Rows[i];
 				var resultRow = resultCore0.Rows[i];
 
-				foreach (DataColumn column in etalonCore0.Columns)
-				{
+				foreach (DataColumn column in etalonCore0.Columns) {
 					var columnName = column.ColumnName.ToLower();
 					if (columnName == "id" || columnName == "Synonym")
 						continue;
 
-					if (FulVerification)
-					{
-						if (!resultRow[column.ColumnName].Equals(etalonRow[column.ColumnName])) 
+					if (FulVerification) {
+						if (!resultRow[column.ColumnName].Equals(etalonRow[column.ColumnName]))
 							Console.WriteLine("Значения не совпадают эталон {5} результат {6}. Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.",
 								column.ColumnName,
-								resultRow["Id"], 
-								etalonRow["Id"], 
-								i, 
+								resultRow["Id"],
+								etalonRow["Id"],
+								i,
 								resultRow["Synonym"],
 								etalonRow[columnName],
-								resultRow[columnName]
-							);
+								resultRow[columnName]);
 					}
-					else
-					{
+					else {
 						Assert.That(resultRow[column.ColumnName],
 							Is.EqualTo(etalonRow[column.ColumnName]),
 							"Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.", column.ColumnName,
@@ -179,20 +174,12 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 		public static void InsertOrUpdateTable(string queryInsert, string queryUpdate, params MySqlParameter[] parameters)
 		{
 			// Пробуем вставить строку в таблицу
-			try
-			{
-				With.Connection(connection =>
-				{
-					MySqlHelper.ExecuteNonQuery(connection, queryInsert, parameters);
-				});
+			try {
+				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryInsert, parameters); });
 			}
-			catch (Exception)
-			{
+			catch (Exception) {
 				// Если не получилось вставить строку, пробуем обновить ее
-				With.Connection(connection =>
-				{
-					MySqlHelper.ExecuteNonQuery(connection, queryUpdate, parameters);
-				});
+				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryUpdate, parameters); });
 			}
 		}
 

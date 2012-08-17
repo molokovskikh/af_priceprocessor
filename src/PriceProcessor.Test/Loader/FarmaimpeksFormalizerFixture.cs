@@ -23,8 +23,7 @@ namespace PriceProcessor.Test.Loader
 		public void Setup()
 		{
 			prices = new List<TestPrice>();
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var supplier = TestSupplier.Create();
 				var price = supplier.Prices[0];
 				var cost = price.Costs[0];
@@ -55,12 +54,11 @@ namespace PriceProcessor.Test.Loader
 		public void Load_xml_source()
 		{
 			Formalize("FarmaimpeksSmallPrice.xml");
-			using(new SessionScope())
-			foreach (var price in prices)
-			{
-				Assert.That(TestCore.Queryable.Count(c => c.Price == price), Is.GreaterThan(0), "нет предложений, прайс {0} {1}", price.PriceName, price.Id);
-				Assert.That(TestCost.Queryable.Count(c => c.PriceCost == price.Costs.Single()), Is.GreaterThan(0), "нет цен, прайс {0} {1}", price.PriceName, price.Id);
-			}
+			using (new SessionScope())
+				foreach (var price in prices) {
+					Assert.That(TestCore.Queryable.Count(c => c.Price == price), Is.GreaterThan(0), "нет предложений, прайс {0} {1}", price.PriceName, price.Id);
+					Assert.That(TestCost.Queryable.Count(c => c.PriceCost == price.Costs.Single()), Is.GreaterThan(0), "нет цен, прайс {0} {1}", price.PriceName, price.Id);
+				}
 		}
 
 		[Test]
@@ -69,8 +67,7 @@ namespace PriceProcessor.Test.Loader
 			var trustedClient = TestClient.Create();
 			var normalClient = TestClient.Create();
 			var price = prices[1];
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var trustedIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == trustedClient);
 				trustedIntersection.SupplierClientId = "3273";
 				trustedIntersection.PriceMarkup = -1;
@@ -78,8 +75,7 @@ namespace PriceProcessor.Test.Loader
 			}
 
 			Formalize("FarmaimpeksSmallPrice.xml");
-			using(new SessionScope())
-			{
+			using (new SessionScope()) {
 				var regularIntersection = TestIntersection.Queryable.Single(i => i.Price == price && i.Client == normalClient);
 				Assert.That(regularIntersection.AvailableForClient, Is.False);
 

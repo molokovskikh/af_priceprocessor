@@ -7,7 +7,7 @@ using Inforoom.Downloader;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using System.Collections;
-using MySqlHelper=MySql.Data.MySqlClient.MySqlHelper;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 using PriceSourceType = Test.Support.PriceSourceType;
 
 namespace PriceProcessor.Test.Handlers
@@ -51,16 +51,15 @@ namespace PriceProcessor.Test.Handlers
 			handler.FailedSources.Add(source.PriceItemId);
 			Assert.IsTrue(handler.IsReadyForDownload(source));
 		}
-		
+
 		[Test, Ignore]
 		public void TestAddFailedSourceToList()
 		{
 			handler.FailedSources.Clear();
 			handler.FillSourcesTable();
-			
+
 			var listSources = new ArrayList();
-			while (handler.dtSources.Rows.Count > 0)
-			{
+			while (handler.dtSources.Rows.Count > 0) {
 				var priceSource = new PriceSource(handler.dtSources.Rows[0]);
 				var likeRows = handler.GetLikeSources(priceSource);
 				foreach (var likeRow in likeRows)

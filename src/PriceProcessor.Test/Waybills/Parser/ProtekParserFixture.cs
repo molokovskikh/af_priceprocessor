@@ -48,7 +48,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("270210^РОСС RU.ФМ01.Д74804^01.02.2012 ФГУ \"ЦЭККМП\" Росздравнадзор270210^31.03.2010 74-2424660"));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("270210"));
 
-			Assert.That(document.Lines[0].Period, Is.Null);			
+			Assert.That(document.Lines[0].Period, Is.Null);
 		}
 	}
 }

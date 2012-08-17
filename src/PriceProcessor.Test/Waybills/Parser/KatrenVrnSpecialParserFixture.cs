@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
-	class KatrenVrnSpecialParserFixture
+	internal class KatrenVrnSpecialParserFixture
 	{
 		[Test, Ignore]
 		public void Parse()

@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.11.2013"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("РОСС RU.ФМ01.Д68638"));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(203.74));
-			
+
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(20.44));
 		}
@@ -60,7 +60,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("022.а2006/5582-06"));
 			Assert.That(doc.Lines[1].Certificates, Is.EqualTo("РОСС HU.ПК12.В06358"));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
-			
+
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
 			Assert.That(doc.Lines[3].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
@@ -120,7 +120,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[3].VitallyImportant, Is.False);
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(9.06));
 			Assert.That(doc.Lines[4].SupplierPriceMarkup, Is.EqualTo(1.44));
-
 		}
 
 		[Test]
@@ -150,7 +149,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 			Assert.That(doc.Lines[1].SupplierPriceMarkup, Is.EqualTo(6.92));
 		}
-
 
 
 		[Test]
@@ -211,7 +209,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 
-
 		[Test]
 		public void CheckFileFormat()
 		{
@@ -224,7 +221,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\82936.txt"));
 			Assert.IsTrue(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\3767013_Катрен(91136).txt"));
 			Assert.IsTrue(KatrenLipezkParser.CheckFileFormat(@"..\..\Data\Waybills\2569__1_.txt"));
-			
+
 			Assert.IsFalse(KatrenOrelTxtParser.CheckFileFormat(@"..\..\Data\Waybills\7286067_Катрен(49073).txt"));
 			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7286067_Катрен(49073).txt"));
 			Assert.IsTrue(KatrenVrnParser.CheckFileFormat(@"..\..\Data\Waybills\7286069_Катрен(51346).txt"));
@@ -432,9 +429,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Certificates, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
-            Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(15.05));
+			Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(15.05));
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.Null);
-
 		}
 
 		[Test]

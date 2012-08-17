@@ -10,7 +10,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 namespace PriceProcessor.Test
 {
 	[TestFixture(Description = "тесты для проверки функциональности обновления UsedSynonymLogs и UsedSynonymFirmCrLogs")]
-    [Ignore("Починить")]
+	[Ignore("Починить")]
 	public class UsedSynonymLogsFixture
 	{
 		private int priceItemId = 688;
@@ -31,8 +31,8 @@ namespace PriceProcessor.Test
 
 			//Подсчет позиций в Core
 			var cost = TestHelper.Fill(String.Format(
-	"select * from usersettings.pricescosts pc where pc.PriceItemId = {0}",
-	priceItemId));
+				"select * from usersettings.pricescosts pc where pc.PriceItemId = {0}",
+				priceItemId));
 			costCode = Convert.ToInt64(cost.Tables[0].Rows[0]["CostCode"]);
 			corePriceCode = Convert.ToInt64(cost.Tables[0].Rows[0]["PriceCode"]);
 			var core = TestHelper.Fill(String.Format(
@@ -41,12 +41,11 @@ namespace PriceProcessor.Test
 				costCode));
 			Assert.That(core.Tables[0].Rows.Count, Is.EqualTo(14), "не совпадает кол-во предложений в Core");
 
-			var updatedSynonymLogs = With.Connection<int>(connection =>
-			{
+			var updatedSynonymLogs = With.Connection<int>(connection => {
 				return Convert.ToInt32(
 					MySqlHelper.ExecuteScalar(
-					connection,
-					@"
+						connection,
+						@"
 select 
   count(*) 
 from 
@@ -59,19 +58,17 @@ and (cc.Core_id = c.Id)
 and (cc.PC_CostCode = ?costCode) 
 and (c.SynonymCode = usl.SynonymCode) 
 and (usl.LastUsed > ?updateDate)",
-					new MySqlParameter("?corePriceCode", corePriceCode),
-					new MySqlParameter("?costCode", costCode),
-					new MySqlParameter("?updateDate", updateDate))
-					);
+						new MySqlParameter("?corePriceCode", corePriceCode),
+						new MySqlParameter("?costCode", costCode),
+						new MySqlParameter("?updateDate", updateDate)));
 			});
 			Assert.That(updatedSynonymLogs, Is.EqualTo(waitingUpdatedSynonymLogs), "не совпадает кол-во обновленных синонимов наименований в UsedSynonymLogs");
 
-			var updatedSynonymFirmCrLogs = With.Connection<int>(connection =>
-			{
+			var updatedSynonymFirmCrLogs = With.Connection<int>(connection => {
 				return Convert.ToInt32(
 					MySqlHelper.ExecuteScalar(
-					connection,
-					@"
+						connection,
+						@"
 select 
   count(*) 
 from 
@@ -84,15 +81,14 @@ and (cc.Core_id = c.Id)
 and (cc.PC_CostCode = ?costCode) 
 and (c.SynonymFirmCrCode = usl.SynonymFirmCrCode) 
 and (usl.LastUsed > ?updateDate)",
-					new MySqlParameter("?corePriceCode", corePriceCode),
-					new MySqlParameter("?costCode", costCode),
-					new MySqlParameter("?updateDate", updateDate))
-					);
+						new MySqlParameter("?corePriceCode", corePriceCode),
+						new MySqlParameter("?costCode", costCode),
+						new MySqlParameter("?updateDate", updateDate)));
 			});
 			Assert.That(updatedSynonymFirmCrLogs, Is.EqualTo(waitingUpdatedSynonymFirmCrLogs), "не совпадает кол-во обновленных синонимов производителей в UsedSynonymFirmCrLogs");
 		}
 
-		[Test(Description =	"обработка прайс-листа с несуществующим производителем"), Ignore]
+		[Test(Description = "обработка прайс-листа с несуществующим производителем"), Ignore]
 		public void not_exists_producersynonym()
 		{
 			FormalizePrice("not_exists_producersynonym", 14, 12);

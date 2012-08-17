@@ -20,11 +20,11 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("М000012685"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("14.02.2012"));
-			
+
 			var invoice = document.Invoice;
 			Assert.That(invoice, Is.Not.Null);
 			Assert.That(invoice.BuyerName, Is.EqualTo("ЦРА №23 ОАО1 этаж"));
-			
+
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("6342"));
 			Assert.That(line.Product, Is.EqualTo("Альбадент (грейпфрут) освеж/полости рта 10 мл"));

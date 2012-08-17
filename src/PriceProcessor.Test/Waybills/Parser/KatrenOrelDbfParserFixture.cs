@@ -99,8 +99,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.Null);
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ИМ09.В02709"));
-			Assert.That(document.Lines[0].SerialNumber, Is.Null);						
-			Assert.That(document.Lines[0].VitallyImportant, Is.Null);			
+			Assert.That(document.Lines[0].SerialNumber, Is.Null);
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[19].Nds, Is.EqualTo(18));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(5.93));
@@ -130,8 +130,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Period, Is.Null);
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0.00));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС RU.ИМ09.В02709"));
-			Assert.That(document.Lines[0].SerialNumber, Is.Null);						
-			Assert.That(document.Lines[0].VitallyImportant, Is.Null);			
+			Assert.That(document.Lines[0].SerialNumber, Is.Null);
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[19].Nds, Is.EqualTo(18));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(5.93));

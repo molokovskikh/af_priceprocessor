@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
-	class ImperiaFarmaSpecialParserFixture
+	internal class ImperiaFarmaSpecialParserFixture
 	{
 		[Test]
 		public void Parse()
@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			var doc = WaybillParser.Parse("KZ000130.dbf", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(19));
-			
+
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("КЗ000130"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("24.05.2011"));
 

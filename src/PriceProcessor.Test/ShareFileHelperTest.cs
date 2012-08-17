@@ -29,36 +29,33 @@ namespace PriceProcessor.Test
 			var filename = Path.Combine(waybillsPath, "14356_4.dbf");
 			File.Copy(@"..\..\Data\Waybills\14356_4.dbf", filename);
 			bool exist = false;
-			try
-			{
+			try {
 				ShareFileHelper.WaitFile(filename);
 				exist = true;
 			}
-			catch{}
+			catch {
+			}
 			Assert.That(exist, Is.True);
 			File.Delete(filename);
-			try
-			{
+			try {
 				ShareFileHelper.WaitFile(filename);
 			}
-			catch(Exception e)
-			{
+			catch (Exception e) {
 				Assert.That(e is WaitFileException, Is.True);
 				Assert.That(e.Message, Is.EqualTo(String.Format("Файл {0} не появился в папке после 1000 мс ожидания.", filename)));
 			}
-			Thread thread = new Thread(() =>
-			{
-			    Thread.Sleep(2500);
+			Thread thread = new Thread(() => {
+				Thread.Sleep(2500);
 				File.Copy(@"..\..\Data\Waybills\14356_4.dbf", filename);
-			});			
-			try
-			{
-				exist = false;				
+			});
+			try {
+				exist = false;
 				thread.Start();
 				ShareFileHelper.WaitFile(filename, 5000);
 				exist = true;
 			}
-			catch{}
+			catch {
+			}
 			Assert.That(exist, Is.True);
 		}
 	}

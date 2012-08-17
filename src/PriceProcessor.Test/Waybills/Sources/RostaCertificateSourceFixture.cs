@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 				var certificateSources = CertificateSource.Queryable.Where(s => s.SourceClassName == typeof(RostaCertificateSource).Name).ToList();
 				certificateSources.ForEach(c => c.Delete());
 
-				_source = new CertificateSource{
+				_source = new CertificateSource {
 					SourceClassName = typeof(RostaCertificateSource).Name
 				};
 				_source.Suppliers = new List<Supplier>();
@@ -72,8 +72,8 @@ namespace PriceProcessor.Test.Waybills.Sources
 			var task = new CertificateTask();
 			task.CertificateSource = _source;
 			task.DocumentLine = new DocumentLine {
-			    Code = "000002",
-			    SerialNumber = "C392764"
+				Code = "000002",
+				SerialNumber = "C392764"
 			};
 
 			using (new TransactionScope(OnDispose.Commit)) {
@@ -103,7 +103,5 @@ namespace PriceProcessor.Test.Waybills.Sources
 			Assert.That(file.OriginFilename, Is.EqualTo(@"0052602p-0.gif"));
 			Assert.That(file.Extension, Is.EqualTo(".GIF").IgnoreCase);
 		}
-
-		
 	}
 }

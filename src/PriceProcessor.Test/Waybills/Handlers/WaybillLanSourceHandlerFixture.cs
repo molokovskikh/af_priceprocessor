@@ -46,6 +46,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			return null;
 		}
+
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
 		{
 			throw new Exception("Количество позиций в документе не соответствует значению в заголовке документа");
@@ -56,33 +57,35 @@ namespace PriceProcessor.Test.Waybills.Handlers
 	{
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			return new List<ulong>{ 0 };
+			return new List<ulong> { 0 };
 		}
+
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
 		{
 			return "test";
 		}
+
 		public override void ImportDocument(DocumentReceiveLog log, string filename)
 		{
 			throw new Exception("Дублирующийся документ");
 		}
-
 	}
 
 	public class FakeSIAMoscow_2788_Reader4 : SIAMoscow_2788_Reader
 	{
 		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
-			return new List<ulong>{ 0 };
+			return new List<ulong> { 0 };
 		}
+
 		public override string FormatOutputFile(string InputFile, DataRow drSource)
 		{
 			return "test";
 		}
+
 		public override void ImportDocument(DocumentReceiveLog log, string filename)
 		{
-			using (var transaction = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				log.Save();
 				transaction.VoteCommit();
 			}
@@ -94,8 +97,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		private readonly DataRow drLanSource;
 		private readonly BaseDocumentReader reader;
 
-		public  FakeWaybillLANSourceHandler()
-		{}
+		public FakeWaybillLANSourceHandler()
+		{
+		}
 
 		public FakeWaybillLANSourceHandler(string readerClassName, uint supplierId)
 		{
@@ -237,8 +241,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			using (new SessionScope()) {
 				var logs = TestDocumentLog.Queryable.Where(l =>
 					l.Client.Id == client.Id &&
-					l.Supplier.Id == supplier.Id &&
-					l.AddressId == client.Addresses[0].Id);
+						l.Supplier.Id == supplier.Id &&
+						l.AddressId == client.Addresses[0].Id);
 
 				Assert.That(logs.Count(), Is.EqualTo(2));
 				Assert.That(logs.Count(l => l.IsFake), Is.EqualTo(1));
@@ -290,8 +294,7 @@ and ai.AddressId = a.Id
 and ai.IntersectionId = i.Id
 and ai.SupplierDeliveryId = ?supplierDeliveryId
 and  i.SupplierClientId = ?supplierClientId
-"
-					,
+",
 					connection);
 
 				command.Parameters.AddWithValue("?supplierClientId", supplierClientId);

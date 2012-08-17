@@ -85,33 +85,30 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.45));
 		}
 
-        [Test]
-        public void Parse_Krepysh()
-        {
-            var doc = WaybillParser.Parse("20110609_305036_4794.dbf");
+		[Test]
+		public void Parse_Krepysh()
+		{
+			var doc = WaybillParser.Parse("20110609_305036_4794.dbf");
 
-            Assert.That(doc.Lines.Count, Is.EqualTo(1));
-            Assert.That(doc.ProviderDocumentId, Is.EqualTo("4794"));
-            Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("09.06.2011"));
-            var line = doc.Lines[0];
-            Assert.That(line.Code, Is.EqualTo("9522,00000"));
-            Assert.That(line.Product, Is.EqualTo("SUPER SENI Medium №2 подгузники д/взрослых (10шт"));
-            Assert.That(line.Producer, Is.EqualTo("ООО \"Белла\",г.Егорьевск, Россия"));
-            Assert.That(line.Country, Is.EqualTo("Россия"));
-            Assert.That(line.Quantity, Is.EqualTo(2));
+			Assert.That(doc.Lines.Count, Is.EqualTo(1));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("4794"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("09.06.2011"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("9522,00000"));
+			Assert.That(line.Product, Is.EqualTo("SUPER SENI Medium №2 подгузники д/взрослых (10шт"));
+			Assert.That(line.Producer, Is.EqualTo("ООО \"Белла\",г.Егорьевск, Россия"));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(179.99000));
-            Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(224.99000));
-            Assert.That(line.Nds, Is.EqualTo(10));
-            Assert.That(line.RegistryCost, Is.Null);
-            Assert.That(line.Period, Is.Null);
-            Assert.That(line.VitallyImportant, Is.Null);
-            Assert.That(line.SerialNumber, Is.EqualTo("РОСС PL.ИМ09.В0"));
-            Assert.That(line.Certificates, Is.Null);
-            Assert.That(line.NdsAmount, Is.EqualTo(45.00000));
-            Assert.That(line.Amount, Is.EqualTo(494.98000));
-
-        }
-
-
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(224.99000));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.Period, Is.Null);
+			Assert.That(line.VitallyImportant, Is.Null);
+			Assert.That(line.SerialNumber, Is.EqualTo("РОСС PL.ИМ09.В0"));
+			Assert.That(line.Certificates, Is.Null);
+			Assert.That(line.NdsAmount, Is.EqualTo(45.00000));
+			Assert.That(line.Amount, Is.EqualTo(494.98000));
+		}
 	}
 }

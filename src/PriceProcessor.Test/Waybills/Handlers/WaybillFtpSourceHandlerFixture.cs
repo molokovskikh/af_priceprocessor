@@ -41,12 +41,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			TestHelper.RecreateDirectories();
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
 					source.SourceType == WaybillSourceType.FtpSupplier);
-				foreach (var source in supplierFtpSources)
-				{
+				foreach (var source in supplierFtpSources) {
 					source.SourceType = WaybillSourceType.ForTesting;
 					source.Update();
 				}
@@ -76,12 +74,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[TearDown]
 		public void Stop()
 		{
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
 					source.SourceType == WaybillSourceType.ForTesting);
-				foreach (var source in supplierFtpSources)
-				{
+				foreach (var source in supplierFtpSources) {
 					source.SourceType = WaybillSourceType.FtpSupplier;
 					source.Update();
 				}
@@ -93,8 +89,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			handler.Process();
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var addressId = address.Id;
 				// Проверяем наличие записей в document_logs
 				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.Address.Id == addressId);
@@ -118,15 +113,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			handler.Process();
 			var countLogs = 0;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				countLogs = logs.Count();
 			}
 
 			handler.Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
@@ -140,15 +133,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			handler.Process();
 
 			int countLogs;
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				countLogs = logs.Count();
 			}
 
 			handler.Process();
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var logs2 = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id);
 				Assert.That(countLogs, Is.EqualTo(logs2.Count()));
 			}
@@ -161,8 +152,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			handler.Process();
 
-			using (new SessionScope())
-			{
+			using (new SessionScope()) {
 				var addressId = address.Id;
 				// Проверяем наличие записей в document_logs
 				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.Address.Id == addressId);
@@ -170,8 +160,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.That(logs.Count(), Is.EqualTo(2));
 
 				// Проверяем наличие записей в documentheaders для исходных документов.
-				foreach (var documentLog in logs)
-				{
+				foreach (var documentLog in logs) {
 					var count = documentLog.IsFake
 						? Document.Queryable.Count(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake)
 						: Document.Queryable.Count(doc => doc.Log.Id == documentLog.Id && doc.Log.IsFake);
@@ -200,8 +189,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
 		{
 			var supplier = TestSupplier.Create();
-			using (var scope = new TransactionScope())
-			{
+			using (var scope = new TransactionScope()) {
 				var source = supplier.WaybillSource;
 				source.SourceType = WaybillSourceType.FtpSupplier;
 				source.UserName = user;

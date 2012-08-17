@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Models
 				Suppliers = new List<Supplier>()
 			};
 			TemplateHolder.Values.AllowedMiniMailExtensions = "doc, git, xls";
-			context.Suppliers.Add(new Supplier {Payer = 921});
+			context.Suppliers.Add(new Supplier { Payer = 921 });
 			Assert.That(context.IsValidExtension(".html"), Is.True);
 		}
 	}

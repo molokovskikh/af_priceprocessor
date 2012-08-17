@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\41118.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(2));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("41118"));
-			
+
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("2772"));
 			Assert.That(line.Product, Is.EqualTo("Мин.вода \"Нарзан\"  природ.газ. ПЭТ 1,8 л*6"));

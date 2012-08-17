@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		public TestSupplier Supplier { get; set; }
 		public TestRegion Region { get; set; }
 		public IList<TestUser> Users { get; set; }
-		public Mime Mime { get; set;}
+		public Mime Mime { get; set; }
 	}
 
 	public class DocSourceHandlerForTesting : DocSourceHandler
@@ -37,6 +37,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		//Флаг отправки сообщения в тесте на дублирование
 		public bool MessageSended { get; set; }
 		private bool isTestingDoubleMessages;
+
 		public DocSourceHandlerForTesting(string mailbox, string password, bool testDoubleMessages = false)
 			: base(mailbox, password)
 		{
@@ -48,6 +49,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			CreateDirectoryPath();
 			ProcessMime(m);
 		}
+
 		//перегружаем метод отправки ошибки
 		protected override void SendUnrecLetter(Mime m, AddressList fromList, EMailSourceHandlerException e)
 		{
@@ -129,7 +131,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				subject,
 				body,
 				toList.ToArray(),
-				new []{from},
+				new[] { from },
 				fileNames != null ? fileNames.ToArray() : null);
 
 			info.Mime = message;
@@ -157,7 +159,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -174,7 +176,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.That(mailLog.Committed, Is.False);
 				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
-				Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id) ));
+				Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id)));
 				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
 				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
 				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
@@ -191,11 +193,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
-				new List<string> {@"..\..\Data\Waybills\moron.txt"});
+				new List<string> { @"..\..\Data\Waybills\moron.txt" });
 
 			Process();
 
@@ -255,7 +257,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.That(values.ExtensionAllow(".exe"), Is.False);
 		}
 
-		static string HashToString(byte[] data)
+		private static string HashToString(byte[] data)
 		{
 			// Create a new Stringbuilder to collect the bytes
 			// and create a string.
@@ -263,8 +265,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			// Loop through each byte of the hashed data
 			// and format each one as a hexadecimal string.
-			for (int i = 0; i < data.Length; i++)
-			{
+			for (int i = 0; i < data.Length; i++) {
 				sBuilder.Append(data[i].ToString("x2"));
 			}
 
@@ -272,9 +273,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			return sBuilder.ToString();
 		}
 
-		static string GetHash(SHA256Managed sha256Hash, string input)
+		private static string GetHash(SHA256Managed sha256Hash, string input)
 		{
-
 			// Convert the input string to a byte array and compute the hash.
 			byte[] data = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
 
@@ -282,7 +282,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		}
 
 		// Verify a hash against a string.
-		static bool VerifyHash(SHA256Managed sha256Hash, string input, string hash)
+		private static bool VerifyHash(SHA256Managed sha256Hash, string input, string hash)
 		{
 			// Hash the input.
 			var hashOfInput = GetHash(sha256Hash, input);
@@ -296,8 +296,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var source = "Hello World!";
 			var doubleSource = "Mama said goodbye!";
 
-			using (var sha256Hash = new SHA256Managed())
-			{
+			using (var sha256Hash = new SHA256Managed()) {
 				var hash = GetHash(sha256Hash, source);
 
 				Assert.IsTrue(VerifyHash(sha256Hash, source, hash));
@@ -323,8 +322,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				stream.AddBuffer(firstArray);
 				stream.AddBuffer(secondArray);
 
-				using (var sha256Hash = new SHA256Managed())
-				{
+				using (var sha256Hash = new SHA256Managed()) {
 					var hash = sha256Hash.ComputeHash(stream);
 
 					var hashString = HashToString(hash);
@@ -348,7 +346,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -373,7 +371,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		private void SendErrorToProvider(DocSourceHandlerForTesting handler, MiniMailException exception, Mime sourceLetter)
 		{
 			try {
-
 				var memoryAppender = new MemoryAppender();
 				memoryAppender.AddFilter(new LoggerMatchFilter { AcceptOnMatch = true, LoggerToMatch = "PriceProcessor", Next = new DenyAllFilter() });
 				BasicConfigurator.Configure(memoryAppender);
@@ -385,13 +382,12 @@ namespace PriceProcessor.Test.Waybills.Handlers
 					events.Length,
 					Is.EqualTo(0),
 					"Ошибки при обработки задач сертификатов:\r\n{0}",
-						events.Select(item => {
-							if (string.IsNullOrEmpty(item.GetExceptionString()))
-								return item.RenderedMessage;
-							else
-								return item.RenderedMessage + Environment.NewLine + item.GetExceptionString();
-						}).Implode("\r\n"));
-
+					events.Select(item => {
+						if (string.IsNullOrEmpty(item.GetExceptionString()))
+							return item.RenderedMessage;
+						else
+							return item.RenderedMessage + Environment.NewLine + item.GetExceptionString();
+					}).Implode("\r\n"));
 			}
 			finally {
 				LogManager.ResetConfiguration();
@@ -407,8 +403,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test NotFoundSupplier",
 				"body NotFoundSupplier",
-				new string[] {"testUser@docs.analit.net"},
-				new []{from},
+				new string[] { "testUser@docs.analit.net" },
+				new[] { from },
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -434,8 +430,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test NotFound",
 				"body NotFound",
-				new string[] {"testUser@docs.analit.net"},
-				new []{from},
+				new string[] { "testUser@docs.analit.net" },
+				new[] { from },
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -464,9 +460,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test AllowedExtensions",
 				"body AllowedExtensions",
-				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from},
-				new string[]{@"..\..\Data\Waybills\70983_906384.zip"});
+				new string[] { "{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id) },
+				new[] { from },
+				new string[] { @"..\..\Data\Waybills\70983_906384.zip" });
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 
@@ -495,9 +491,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test MaxAttachment",
 				"body MaxAttachment",
-				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from},
-				new string[]{@"..\..\Data\BigMiniMailAttachment.xls"});
+				new string[] { "{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id) },
+				new[] { from },
+				new string[] { @"..\..\Data\BigMiniMailAttachment.xls" });
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 
@@ -518,7 +514,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -561,7 +557,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var client = TestClient.Create();
 			var user = client.Users[0];
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				subject,
 				body,
@@ -590,7 +586,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var inforoomRegion = TestRegion.Find(TestRegion.Inforoom);
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				inforoomRegion,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -625,9 +621,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"test MaxSizeLetter",
 				"body MaxSizeLetter",
-				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from},
-				new string[]{@"..\..\Data\688.txt", @"..\..\Data\138.txt"});
+				new string[] { "{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id) },
+				new[] { from },
+				new string[] { @"..\..\Data\688.txt", @"..\..\Data\138.txt" });
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 
@@ -655,13 +651,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.IsNotEmpty(hash);
 
 			//установлено тело письма как текст
-			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[] { "test@test.te" }, new string[] { "test@test.te" }, null);
 			hash = mime.GetSHA256Hash();
 			Assert.IsNotEmpty(hash);
 
 			//установлено тело письма как html
-			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
-			var hmtlEntity = mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count-1];
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[] { "test@test.te" }, new string[] { "test@test.te" }, null);
+			var hmtlEntity = mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count - 1];
 			hmtlEntity.DataText = null;
 			hmtlEntity.ContentType = MediaType_enum.Text_html;
 			hmtlEntity.DataText = "test body html";
@@ -669,9 +665,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.IsNotEmpty(hash);
 
 			//установлено все как строки с пробелами
-			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[]{"test@test.te"}, new string[]{"test@test.te"}, null);
+			mime = ImapHelper.BuildMessageWithAttachments("", "test body", new string[] { "test@test.te" }, new string[] { "test@test.te" }, null);
 			mime.MainEntity.Subject = "    ";
-			mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count-1].DataText = "    ";
+			mime.MainEntity.ChildEntities[mime.MainEntity.ChildEntities.Count - 1].DataText = "    ";
 			hash = mime.GetSHA256Hash();
 			Assert.IsEmpty(hash);
 		}
@@ -689,8 +685,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var message = ImapHelper.BuildMessageWithAttachments(
 				"  ",
 				"   ",
-				new string[]{"{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id)},
-				new []{from},
+				new string[] { "{0}@docs.analit.net".Format(user.AvaliableAddresses[0].Id) },
+				new[] { from },
 				null);
 
 			var handler = new DocSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
@@ -735,7 +731,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -766,7 +762,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var user = client.Users[0];
 
 			SetUp(
-				new List<TestUser> {user},
+				new List<TestUser> { user },
 				null,
 				"Это письмо пользователю",
 				"Это текст письма пользователю",
@@ -795,6 +791,5 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.That(mailLog.Mail.Attachments[0].FileName, Is.EqualTo("K1795MZАХ1-1131222D120305.xls"));
 			}
 		}
-
 	}
 }

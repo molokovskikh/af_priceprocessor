@@ -21,9 +21,8 @@ namespace PriceProcessor.Test.Loader
 		public void Read_position()
 		{
 			var reader = new FarmaimpeksReader(@"..\..\Data\FarmaimpeksPrice.xml");
-			reader.CostDescriptions = new List<CostDescription> {new CostDescription()};
-			foreach (var price in reader.Prices())
-			{
+			reader.CostDescriptions = new List<CostDescription> { new CostDescription() };
+			foreach (var price in reader.Prices()) {
 				var positions = reader.Read().ToList();
 				Assert.That(positions.Count, Is.GreaterThan(0));
 

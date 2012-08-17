@@ -26,7 +26,6 @@ namespace PriceProcessor.Test
 			//разные ценовые колонки одного прайса
 			Assert.That(new PriceProcessItem(false, 1, 1, 1, "", null)
 				.IsSynonymEqual(new PriceProcessItem(false, 1, 2, 2, "", null)), Is.True);
-
 		}
 
 		[Test]

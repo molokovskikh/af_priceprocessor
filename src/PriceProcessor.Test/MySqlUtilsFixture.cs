@@ -19,16 +19,14 @@ namespace PriceProcessor.Test
 			int countRepeat = 5;
 			var i = 0;
 
-			try
-			{
+			try {
 				MySqlUtils.InTransaction(helper => {
 					i++;
 					throw GetMySqlException(1205, "");
 				});
 				Assert.Fail("Должны были выбросить исключение");
 			}
-			catch (MySqlException e)
-			{
+			catch (MySqlException e) {
 				Assert.That(e.Number, Is.EqualTo(1205), e.ToString());
 			}
 			Assert.That(i, Is.EqualTo(countRepeat));
@@ -37,11 +35,11 @@ namespace PriceProcessor.Test
 		public static MySqlException GetMySqlException(int errorCode, string message)
 		{
 			return (MySqlException)typeof(MySqlException)
-									.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
-													null,
-													new[] { typeof(string), typeof(int) },
-													null)
-									.Invoke(new object[] { message, errorCode });
+				.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic,
+				null,
+				new[] { typeof(string), typeof(int) },
+				null)
+				.Invoke(new object[] { message, errorCode });
 		}
 	}
 }

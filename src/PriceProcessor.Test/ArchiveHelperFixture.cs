@@ -15,12 +15,10 @@ namespace PriceProcessor.Test
 		[Test]
 		public void TestUseLocation()
 		{
-			try
-			{
+			try {
 				ArchiveHelper.IsArchive(Environment.CurrentDirectory + "\\Data\\552.dbf");
 			}
-			catch (Exception exception)
-			{
+			catch (Exception exception) {
 				Assert.Fail("получили неожидаемое исключение при активации ArchiveHelper: {0}", exception);
 			}
 		}

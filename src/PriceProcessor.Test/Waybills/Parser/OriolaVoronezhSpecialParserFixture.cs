@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var documentLog = new DocumentReceiveLog {Supplier = new Supplier {Id = 7}}; // код поставщика Ориола (Воронеж)
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7 } }; // код поставщика Ориола (Воронеж)
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\Reon_AX_Comp_Nzak.dbf", documentLog) is OriolaVoronezhSpecialParser);
 			var document = WaybillParser.Parse(@"Reon_AX_Comp_Nzak.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(29));

@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Services
 		private TestPriceItem priceItem;
 
 		private TestPrice rootPrice;
-		private	TestPrice childPrice;
+		private TestPrice childPrice;
 
 		[SetUp]
 		public void SetUp()
@@ -57,12 +57,10 @@ namespace PriceProcessor.Test.Services
 		public void TearDown()
 		{
 			var communicationObject = ((ICommunicationObject)priceProcessor);
-			if (communicationObject.State == CommunicationState.Faulted)
-			{
+			if (communicationObject.State == CommunicationState.Faulted) {
 				communicationObject.Abort();
 			}
-			else
-			{
+			else {
 				communicationObject.Close();
 			}
 			_serviceHost.Close();
@@ -70,13 +68,10 @@ namespace PriceProcessor.Test.Services
 
 		private void WcfCallResendPrice(uint downlogId)
 		{
-			WcfCall(r =>
-			{
-				var paramDownlogId = new WcfCallParameter
-				{
+			WcfCall(r => {
+				var paramDownlogId = new WcfCallParameter {
 					Value = downlogId,
-					LogInformation = new LogInformation
-					{
+					LogInformation = new LogInformation {
 						ComputerName = Environment.MachineName,
 						UserName = Environment.UserName
 					}
@@ -87,8 +82,7 @@ namespace PriceProcessor.Test.Services
 
 		private void CreatePrices()
 		{
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				rootPrice = supplier.Prices[0];
 				rootPrice.SetFormat(PriceFormatType.NativeDbf);
 				rootPrice.Save();
@@ -96,8 +90,7 @@ namespace PriceProcessor.Test.Services
 			}
 
 			var supplier2 = TestSupplier.Create();
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				childPrice = supplier2.Prices[0];
 				childPrice.SetFormat(PriceFormatType.NativeDbf);
 
@@ -127,8 +120,7 @@ namespace PriceProcessor.Test.Services
 			source.Save();
 
 			PriceDownloadLog downloadLog;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
 					ArchFileName = file,
@@ -142,8 +134,7 @@ namespace PriceProcessor.Test.Services
 				scope.VoteCommit();
 			}
 
-			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew))
-			{
+			using (var sw = new FileStream(Path.Combine(Settings.Default.HistoryPath, downloadLog.Id + ".eml"), FileMode.CreateNew)) {
 				var attachments = new List<string> { Path.Combine(DataDirectory, file) };
 				var message = ImapHelper.BuildMessageWithAttachments("KvasovTest@analit.net", "KvasovTest@analit.net", attachments.ToArray());
 				var bytes = message.ToByteData();
@@ -166,8 +157,7 @@ namespace PriceProcessor.Test.Services
 			source.Save();
 
 			PriceDownloadLog downloadLog;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
 					ArchFileName = file,
@@ -192,7 +182,7 @@ namespace PriceProcessor.Test.Services
 		{
 			var sourceFileName = "6905885.eml";
 			var archFileName = "сводныйпрайсч.rar"; //"prs.txt";
-			var externalFileName = "сводныйпрайсч.txt";// archFileName;
+			var externalFileName = "сводныйпрайсч.txt"; // archFileName;
 			var email = "test@test.test";
 			source.SourceType = PriceSourceType.Email;
 			source.EmailFrom = email;
@@ -202,8 +192,7 @@ namespace PriceProcessor.Test.Services
 			source.Save();
 
 			PriceDownloadLog downloadLog;
-			using (var scope = new TransactionScope(OnDispose.Rollback))
-			{
+			using (var scope = new TransactionScope(OnDispose.Rollback)) {
 				downloadLog = new PriceDownloadLog {
 					Addition = String.Empty,
 					ArchFileName = archFileName,
@@ -219,7 +208,7 @@ namespace PriceProcessor.Test.Services
 
 			var priceSrcPath = DataDirectory + Path.DirectorySeparatorChar + sourceFileName;
 			var priceDestPath = Settings.Default.HistoryPath + Path.DirectorySeparatorChar + downloadLog.Id +
-								Path.GetExtension(sourceFileName);
+				Path.GetExtension(sourceFileName);
 			File.Copy(priceSrcPath, priceDestPath, true);
 			WcfCallResendPrice(downloadLog.Id);
 
@@ -246,8 +235,7 @@ namespace PriceProcessor.Test.Services
 		public void Msmq_test_retrans_price()
 		{
 			ServiceHost _priceProcessorHost = null;
-			try
-			{
+			try {
 				CreatePrices();
 
 				var sbUrlService = new StringBuilder();

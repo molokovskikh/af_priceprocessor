@@ -19,12 +19,13 @@ namespace PriceProcessor.Test.Handlers
 		{
 			IdxDir = "Idx";
 		}
-		public TimeSpan Now 
-		{   
+
+		public TimeSpan Now
+		{
 			get { return now; }
 			set { now = value; }
 		}
-		
+
 		public TimeSpan WorkTime
 		{
 			get { return workTime; }
@@ -33,7 +34,7 @@ namespace PriceProcessor.Test.Handlers
 		public new string IdxDir
 		{
 			get { return base.IdxDir; }
-			set { base.IdxDir = value;  }
+			set { base.IdxDir = value; }
 		}
 
 		public void Process()
@@ -65,11 +66,11 @@ namespace PriceProcessor.Test.Handlers
 		[SetUp]
 		public void Setup()
 		{
-			_handler = new TestIndexerHandler();           
+			_handler = new TestIndexerHandler();
 		}
 
 		[Test]
-		public  void ExecHandlerTest()
+		public void ExecHandlerTest()
 		{
 			DateTime dt = new DateTime(_handler.WorkTime.Ticks).AddMinutes(-1);
 			_handler.Now = dt.TimeOfDay;
@@ -90,9 +91,9 @@ namespace PriceProcessor.Test.Handlers
 			dt = dt.AddSeconds(1);
 			_handler.Now = dt.TimeOfDay;
 			res = _handler.CanDoIndex();
-			Assert.That(res, Is.False);            
+			Assert.That(res, Is.False);
 		}
-	   
+
 		[Test]
 		public void DoMatchTest()
 		{
@@ -102,10 +103,10 @@ namespace PriceProcessor.Test.Handlers
 			Price price2 = Price.Queryable.Where(p => p.Id != price1.Id && p.Supplier.Id != price1.Supplier.Id).FirstOrDefault();
 			//TestProduct product = TestProduct.Queryable.FirstOrDefault();
 			Product product = Product.Queryable.FirstOrDefault();
-			
+
 			DateTime now = DateTime.Now;
 
-			IList<string > names = new List<string>();
+			IList<string> names = new List<string>();
 			names.Add(String.Format("Тестовое наименование 1 ({0})", now));
 			names.Add(String.Format("Тестовое наименование 2 ({0})", now));
 			names.Add(String.Format("Тестовое наименование 3 ({0})", now));
@@ -122,31 +123,30 @@ namespace PriceProcessor.Test.Handlers
 			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price2, Synonym = names[4] });
 			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[4] });
 
-			using (new TransactionScope())
-			{
-				foreach (var synonymProduct in synonyms)
-				{
+			using (new TransactionScope()) {
+				foreach (var synonymProduct in synonyms) {
 					synonymProduct.Save();
-				}                
+				}
 			}
 
 			if (Directory.Exists(_handler.IdxDir)) Directory.Delete(_handler.IdxDir, true);
-			
+
 			_handler.DoIndex(synonyms, false, true);
 
 			Assert.That(Directory.Exists(_handler.IdxDir), Is.True);
 			var files = Directory.GetFiles(_handler.IdxDir, "*.*");
 			Assert.That(files.Count(), Is.GreaterThan(0));
 			long size = 0;
-			foreach (var file in files)
-			{
+			foreach (var file in files) {
 				FileInfo f = new FileInfo(file);
 				size += f.Length;
 			}
 			Assert.That(size, Is.GreaterThan(0));
 			long taskId = _handler.AddTask(names, 0);
 			Assert.That(_handler.GetTask(taskId), Is.Not.Null);
-			while (_handler.GetTask(taskId).State == TaskState.Running) { Thread.Sleep(1000); }
+			while (_handler.GetTask(taskId).State == TaskState.Running) {
+				Thread.Sleep(1000);
+			}
 			var matches = _handler.GetTask(taskId).Matches;
 			var rate = _handler.GetTask(taskId).Rate;
 			var str_res = IndexerHandler.TransformToStringArray(matches);
@@ -173,14 +173,15 @@ namespace PriceProcessor.Test.Handlers
 			names.Add(String.Format("Тестовое наименование 6 ({0})", now));
 			synonyms.Clear();
 			synonyms.Add(new ProductSynonym() { Product = product, Junk = false, Price = price1, Synonym = names[5] });
-			using (new TransactionScope()){ synonyms[0].Save(); }
+			using (new TransactionScope()) {
+				synonyms[0].Save();
+			}
 			_handler.DoIndex(synonyms, true, false);
-			
+
 			taskId = _handler.AddTask(names, 0);
 			Thread.Sleep(1000);
-			Assert.That(_handler.GetTask(taskId), Is.Not.Null);           
-			for (int i = 0; i < 10; i++ )
-			{
+			Assert.That(_handler.GetTask(taskId), Is.Not.Null);
+			for (int i = 0; i < 10; i++) {
 				if (_handler.GetTask(taskId).State != TaskState.Running) break;
 				Thread.Sleep(10000);
 			}
@@ -203,22 +204,21 @@ namespace PriceProcessor.Test.Handlers
 			Assert.That(matches[names[4].Trim().ToUpper()].Summary()[1].FirmCode, Is.EqualTo(price1.Supplier.Id));
 			Assert.That(matches[names[5].Trim().ToUpper()].Summary()[0].FirmCode, Is.EqualTo(price1.Supplier.Id));
 		}
-		
+
 		[Test]
 		[Ignore("Для проверки времени сопоставления")]
 		public void DoMatchForBigPrice()
-		{            
+		{
 			_handler.DoIndex();
 
 			IList<string> names = new List<string>();
 
-			for (int i = 0; i < 2000; i++)
-			{
+			for (int i = 0; i < 2000; i++) {
 				names.Add(String.Format("Наименование {0}", i));
 			}
 
 			DateTime begin = DateTime.Now;
-			
+
 			var matches = new Dictionary<string, SynonymSummary>();
 
 			_handler.StartWork();
@@ -227,17 +227,16 @@ namespace PriceProcessor.Test.Handlers
 
 			Thread.Sleep(1000);
 
-			for (int i = 0; i < 10; i++)
-			{
+			for (int i = 0; i < 10; i++) {
 				if (_handler.GetTask(taskId).State != TaskState.Running) break;
 				Thread.Sleep(10000);
 			}
-			
+
 			DateTime end = DateTime.Now;
 
 			SynonymTask task = _handler.GetTask(taskId);
 
-			double diff = end.TimeOfDay.TotalSeconds - begin.TimeOfDay.TotalSeconds;            
+			double diff = end.TimeOfDay.TotalSeconds - begin.TimeOfDay.TotalSeconds;
 		}
 	}
 }

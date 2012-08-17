@@ -15,10 +15,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7957u } }; // код поставщика ИП Жданов, Казань
 			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\02000489.dbf", documentLog) is ZhdanovKazanSpecialParser);
-			
+
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\02000489.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(48));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("000489"));			
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("000489"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("24.03.2011"));
 
 			var line = document.Lines[0];

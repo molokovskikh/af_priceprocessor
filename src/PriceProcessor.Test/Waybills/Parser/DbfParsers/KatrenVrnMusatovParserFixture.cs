@@ -63,7 +63,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 		[Test]
 		public void Parse()
-		{			
+		{
 			var doc = WaybillParser.Parse("50232.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(14));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("02.03.2011"));
@@ -98,7 +98,5 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			Assert.IsTrue(KatrenVrnMusatovParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\50232.dbf")));
 		}
-
-		
 	}
 }

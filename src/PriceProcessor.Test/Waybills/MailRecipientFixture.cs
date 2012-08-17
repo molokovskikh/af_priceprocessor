@@ -9,7 +9,6 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class MailRecipientFixture
 	{
-		
 		[Test]
 		public void CheckOtherEmailDomen()
 		{
@@ -21,16 +20,16 @@ namespace PriceProcessor.Test.Waybills
 		public void CheckNonExistsAddress()
 		{
 			var address = TestAddress.Queryable.OrderByDescending(a => a.Id).First();
-			var recipient = MailRecipient.Parse((address.Id+10) + "@docs.analit.net");
+			var recipient = MailRecipient.Parse((address.Id + 10) + "@docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
-			Assert.That(recipient.Email, Is.EqualTo((address.Id+10) + "@docs.analit.net"));
+			Assert.That(recipient.Email, Is.EqualTo((address.Id + 10) + "@docs.analit.net"));
 			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
 		}
 
 		[Test]
 		public void CheckNonExistsRegion()
 		{
-			var recipient = MailRecipient.Parse( "mlfds@docs.analit.net");
+			var recipient = MailRecipient.Parse("mlfds@docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
 			Assert.That(recipient.Email, Is.EqualTo("mlfds@docs.analit.net"));
 			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
@@ -40,9 +39,9 @@ namespace PriceProcessor.Test.Waybills
 		public void CheckNonExistsClient()
 		{
 			var client = TestClient.Queryable.OrderByDescending(c => c.Id).First();
-			var recipient = MailRecipient.Parse((client.Id+10) + "@client.docs.analit.net");
+			var recipient = MailRecipient.Parse((client.Id + 10) + "@client.docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
-			Assert.That(recipient.Email, Is.EqualTo((client.Id+10) + "@client.docs.analit.net"));
+			Assert.That(recipient.Email, Is.EqualTo((client.Id + 10) + "@client.docs.analit.net"));
 			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.NotFound));
 		}
 
@@ -134,6 +133,5 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(recipient.Client.Id, Is.EqualTo(client.Id));
 			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Disabled));
 		}
-
 	}
 }
