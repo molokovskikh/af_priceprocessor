@@ -218,9 +218,11 @@ namespace Inforoom.Formalizer
 					File.SetLastAccessTimeUtc(outPriceFileName, ft);
 				}
 				catch (ThreadAbortException e) {
+					_logger.Warn(Settings.Default.ThreadAbortError, e);
 					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				}
 				catch (Exception e) {
+					_logger.Error("Ошибка при формализации прайс листа", e);
 					_log.ErrodLog(_workPrice, e);
 				}
 				finally {
