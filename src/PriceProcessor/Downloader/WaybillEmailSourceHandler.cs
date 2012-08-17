@@ -134,7 +134,8 @@ namespace Inforoom.Downloader
 			var queryGetClientCode = String.Format(@"
 SELECT Addr.Id
 FROM Customers.Addresses Addr
-WHERE Addr.Id = {0}", checkClientCode);
+WHERE Addr.Id = {0}",
+				checkClientCode);
 			return With.Connection(c => {
 				var clientCode = MySqlHelper.ExecuteScalar(c, queryGetClientCode);
 				return (clientCode != null);
@@ -310,7 +311,8 @@ WHERE a.Id = ?AddressId
 	AND i.AvailableForClient = 1
 	AND prices.enabled = 1
 	AND prices.AgencyEnabled = 1
-", supplier, address)) > 0);
+",
+				supplier, address)) > 0);
 		}
 
 		private DataRow SelectWaybillSourceForClient(DataRow[] sources, uint? addressId)
@@ -418,7 +420,8 @@ WHERE a.Id = ?AddressId
 					String.Format(@"
 SELECT w.FirmCode
 FROM documents.waybill_sources w
-WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1", address.EmailAddress)));
+WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1",
+						address.EmailAddress)));
 				if (firmCode != null)
 					return Convert.ToUInt32(firmCode);
 			}

@@ -40,10 +40,10 @@ namespace Inforoom.Downloader
 			request.Proxy = null;
 
 			using (var response = (HttpWebResponse)request.GetResponse())
-			using (var responseStream = response.GetResponseStream())
-			using (var fs = new FileStream(saveFileName, FileMode.Create)) {
-				responseStream.CopyTo(fs);
-			}
+				using (var responseStream = response.GetResponseStream())
+					using (var fs = new FileStream(saveFileName, FileMode.Create)) {
+						responseStream.CopyTo(fs);
+					}
 		}
 
 		protected override void GetFileFromSource(PriceSource source)

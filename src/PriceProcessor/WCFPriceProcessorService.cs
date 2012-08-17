@@ -76,7 +76,8 @@ and st.Id = s.SourceTypeId
 and logs.ResultCode in (2, 3)
 and fr.Id = pim.FormRuleId
 and pricefmts.id = fr.PriceFormatId
-and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
+and logs.Rowid = ?DownLogId",
+				new MySqlParameter("?DownLogId", downlogId));
 
 			var filename = GetFileFromArhive(downlogId);
 			var sourceArchiveFileName = filename;
@@ -119,11 +120,11 @@ and logs.Rowid = ?DownLogId", new MySqlParameter("?DownLogId", downlogId));
 			var item = new PriceProcessItem(true,
 				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
 				(drFocused["DCostCode"] is DBNull) ? null :
-					                                          (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
+					(ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
 				Convert.ToUInt64(drFocused["DPriceItemId"].ToString()),
 				destinationFile,
 				(drFocused["ParentSynonym"] is DBNull) ? null :
-					                                              (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
+					(ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
 			PriceItemList.AddItem(item);
 
 			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
@@ -228,7 +229,8 @@ select pim.Id as PriceItemId, p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+where pim.Id = ?PriceItemId",
+				new MySqlParameter("?PriceItemId", priceItemId));
 
 			RetransPrice(row, sourceDir);
 		}
@@ -281,7 +283,8 @@ select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+where pim.Id = ?PriceItemId",
+				new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
 			var baseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
@@ -327,7 +330,8 @@ select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+where pim.Id = ?PriceItemId",
+				new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
 			// Удаляем из Base файлы с таким же именем (расширения могут отличаться)
@@ -363,7 +367,8 @@ select p.FileExtention
 from  usersettings.PriceItems pim
   join farm.formrules f on f.Id = pim.FormRuleId
   join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
+where pim.Id = ?PriceItemId",
+				new MySqlParameter("?PriceItemId", priceItemId));
 			var extention = row["FileExtention"];
 
 			var newBaseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
@@ -409,7 +414,8 @@ where pim.Id = ?PriceItemId", new MySqlParameter("?PriceItemId", priceItemId));
 			var query = String.Format(@"
 INSERT INTO logs.downlogs (LogTime, Host, PriceItemId, Addition, ResultCode, ArchFileName, ExtrFileName)
 VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert_id()
-", Environment.MachineName, priceItemId, addition, resultCode, archiveFileName, extractFileName);
+",
+				Environment.MachineName, priceItemId, addition, resultCode, archiveFileName, extractFileName);
 
 			using (var connectionLog = new MySqlConnection(Literals.ConnectionString())) {
 				try {

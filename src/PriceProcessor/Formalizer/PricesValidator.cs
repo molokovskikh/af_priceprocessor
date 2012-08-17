@@ -138,7 +138,8 @@ and ((pd.CostType = 1) or (pc.BaseCost = 1))
 and s.Id = pd.FirmCode
 and FR.Id = pi.FormRuleId
 and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)
-and pricefmts.ID = PFR.PriceFormatId", priceItemId);
+and pricefmts.ID = PFR.PriceFormatId",
+				priceItemId);
 
 			var dtFormRules = new DataTable("FromRules");
 			With.Connection(c => {

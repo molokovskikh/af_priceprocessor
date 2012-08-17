@@ -88,7 +88,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 					command.CommandText = String.Format(@"
 update Customers.Intersection i
 set {0}
-where {1} and i.PriceId = ?priceId", setSql.Implode(), filterSql.Implode(" and "));
+where {1} and i.PriceId = ?priceId",
+						setSql.Implode(), filterSql.Implode(" and "));
 					command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
 					command.ExecuteNonQuery();
 				}

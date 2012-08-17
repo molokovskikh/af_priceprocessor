@@ -46,7 +46,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {2}
 
 С уважением,
-  PriceProcessor.", info);
+  PriceProcessor.",
+				info);
 		}
 
 		public static void ToManyZeroCostAlert(StringBuilder stringBuilder, PriceFormalizationInfo info)
@@ -61,7 +62,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {2}
 
 С уважением,
-  PriceProcessor.", info);
+  PriceProcessor.",
+				info);
 		}
 
 		public static void NotConfiguredAllert(StringBuilder sb, PriceFormalizationInfo info)
@@ -76,7 +78,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 {2}
 
 С уважением,
-PriceProcessor.", info);
+PriceProcessor.",
+				info);
 		}
 	}
 }

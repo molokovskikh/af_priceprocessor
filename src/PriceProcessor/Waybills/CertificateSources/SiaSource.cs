@@ -59,9 +59,9 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			var name = GetType().Name;
 			return CertificateSourceCatalog.Queryable
 				.Where(
-					c => c.CertificateSource.SourceClassName == name
-						&& c.SerialNumber == serialNumber
-						&& c.CatalogProduct.Id == catalogId)
+				c => c.CertificateSource.SourceClassName == name
+					&& c.SerialNumber == serialNumber
+					&& c.CatalogProduct.Id == catalogId)
 				.ToList();
 		}
 	}

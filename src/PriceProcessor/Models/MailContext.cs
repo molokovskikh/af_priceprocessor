@@ -142,7 +142,8 @@ from
   inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
   inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
 where
-  c.ContactText in (" + mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode() + ") group by s.Id",
+  c.ContactText in ("
+					+ mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode() + ") group by s.Id",
 					connection);
 				adapter.Fill(dtSuppliers);
 			}

@@ -74,7 +74,8 @@ WHERE
 	s.Disabled = 0
 	AND st.SourceID = {0}
 GROUP BY SupplierId
-", Convert.ToUInt32(WaybillSourceType.FtpSupplier));
+",
+				Convert.ToUInt32(WaybillSourceType.FtpSupplier));
 		}
 
 		public override void ProcessData()
@@ -140,7 +141,8 @@ GROUP BY SupplierId
 Код поставщика: {0}
 Хост: {1}
 Порт: {2}
-Директория: {3}", waybillSource.SupplierId, host, port, directory);
+Директория: {3}",
+					waybillSource.SupplierId, host, port, directory);
 
 				if (!FailedSources.Contains(waybillSource.SupplierId)) {
 					FailedSources.Add(waybillSource.SupplierId);

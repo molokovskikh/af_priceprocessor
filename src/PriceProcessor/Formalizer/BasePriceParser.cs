@@ -697,7 +697,8 @@ SELECT
 FROM farm.Synonym s
 	join catalogs.products p on p.Id = s.ProductId
 		join Catalogs.Catalog c on c.Id = p.CatalogId
-WHERE  s.PriceCode = {0}", parentSynonym), MyConn);
+WHERE  s.PriceCode = {0}",
+				parentSynonym), MyConn);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
@@ -725,7 +726,8 @@ FROM
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
 WHERE SynonymFirmCr.PriceCode={0}
 ",
-					parentSynonym), MyConn);
+					parentSynonym),
+				MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
 insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?OriginalSynonym);
@@ -821,7 +823,8 @@ WHERE
 and pricescosts.PriceCode = {0}
 and CoreCosts.Core_Id = Core0.id
 and CoreCosts.PC_CostCode = pricescosts.CostCode 
-order by Core0.Id", priceCode);
+order by Core0.Id",
+						priceCode);
 				else
 					existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", priceCode, costCode);
 				daExistsCoreCosts = new MySqlDataAdapter(existsCoreCostsSQL, MyConn);
@@ -966,11 +969,10 @@ order by Core0.Id", priceCode);
 
 				if (!Convert.IsDBNull(drCore["InternalProducerSynonymId"]))
 					drNewProducerSynonym = CheckPositionByProducerSynonym(drCore);
-				else
+				else if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"])
+					&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
 					//Если синоним не вновь созданный, то добавляем в список используемых синонимов производителей
-					if (!Convert.IsDBNull(drCore["SynonymFirmCrCode"])
-						&& !synonymFirmCrCodes.Contains(drCore["SynonymFirmCrCode"].ToString()))
-						synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
+					synonymFirmCrCodes.Add(drCore["SynonymFirmCrCode"].ToString());
 				if (drNewProducerSynonym != null)
 					drExistsCore = null;
 				else
@@ -1309,7 +1311,8 @@ from
 where
 	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
-and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
+and CoreCosts.PC_CostCode = {1};",
+								priceCode, costCode);
 							sbLog.AppendFormat("DelFromCoreAndCoreCosts={0}  ", StatCommand(mcClear));
 						}
 						else {
@@ -1409,7 +1412,8 @@ SET
   a.ForceReplication = 1
 where
 	p.PriceCode = {0}
-and a.FirmCode = p.FirmCode;", priceCode);
+and a.FirmCode = p.FirmCode;",
+						priceCode);
 
 					sbLog.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(mcClear));
 
@@ -1428,7 +1432,8 @@ from
 where
 	CoreCosts.Core_Id = Core0.Id
 and Core0.PriceCode = {0}
-and CoreCosts.PC_CostCode = {1};", priceCode, costCode);
+and CoreCosts.PC_CostCode = {1};",
+							priceCode, costCode);
 						existsCoreCount = Convert.ToInt32(mcClear.ExecuteScalar());
 					}
 					else {
@@ -1438,7 +1443,8 @@ select
 from
   farm.Core0
 where
-  Core0.PriceCode = {0};", priceCode);
+  Core0.PriceCode = {0};",
+							priceCode);
 						existsCoreCount = Convert.ToInt32(mcClear.ExecuteScalar());
 					}
 					if (existsCoreCount != formCount)

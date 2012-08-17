@@ -273,8 +273,8 @@ namespace Inforoom.PriceProcessor
 					if (task.StopDate != null || !task.ThreadIsAlive || ((task.ThreadState & ThreadState.Stopped) > 0))
 						taskList.RemoveAt(i);
 					else if ((DateTime.UtcNow.Subtract(task.StartDate).TotalMinutes > 90) &&
-							((task.ThreadState & ThreadState.AbortRequested) == 0)) {
-							task.AbortThread();
+						((task.ThreadState & ThreadState.AbortRequested) == 0)) {
+						task.AbortThread();
 					}
 					else if (task.IsAbortingLong) {
 						taskList.RemoveAt(i);

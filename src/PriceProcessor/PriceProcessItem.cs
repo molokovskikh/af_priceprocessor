@@ -202,7 +202,8 @@ group by pi.Id",
 			var command = new MySqlCommand(@"
 update usersettings.PriceItems 
 set LastDownload = ?FileTime
-where Id = ?Id", connection, transaction);
+where Id = ?Id",
+				connection, transaction);
 			command.Parameters.AddWithValue("?Id", PriceItemId);
 			command.Parameters.AddWithValue("?FileTime", FileTime);
 			command.ExecuteNonQuery();

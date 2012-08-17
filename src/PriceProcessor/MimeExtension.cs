@@ -62,8 +62,8 @@ namespace LumiSoft.Net.Mime
 				Microsoft.Exchange.Data.TextConverters.TextExtractionMode.ExtractText);
 			var sb = new StringBuilder();
 			using (var sr = new System.IO.StringReader(html))
-			using (var sw = new System.IO.StringWriter(sb))
-				converter.Convert(sr, sw);
+				using (var sw = new System.IO.StringWriter(sb))
+					converter.Convert(sr, sw);
 			return sb.ToString();
 		}
 	}

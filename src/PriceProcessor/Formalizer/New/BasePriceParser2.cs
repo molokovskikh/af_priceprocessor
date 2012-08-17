@@ -221,7 +221,8 @@ SELECT
 FROM farm.Synonym s
 	join catalogs.products p on p.Id = s.ProductId
 		join Catalogs.Catalog c on c.Id = p.CatalogId
-WHERE  s.PriceCode = {0}", parentSynonym), _connection);
+WHERE  s.PriceCode = {0}",
+				parentSynonym), _connection);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
 			_logger.Debug("загрузили Synonym");
@@ -249,7 +250,8 @@ FROM
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
 WHERE SynonymFirmCr.PriceCode={0}
 ",
-					parentSynonym), _connection);
+					parentSynonym),
+				_connection);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
 insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?OriginalSynonym);
@@ -348,7 +350,8 @@ select cc.*
 from farm.Core0 c
 	join farm.CoreCosts cc on cc.Core_Id = c.id
 where c.PriceCode = {0} 
-order by c.Id", _priceInfo.PriceCode);
+order by c.Id",
+					_priceInfo.PriceCode);
 			else
 				existsCoreCostsSQL = String.Format("SELECT CoreCosts.* FROM farm.Core0, farm.CoreCosts WHERE Core0.PriceCode={0} and CoreCosts.Core_Id = Core0.id and CoreCosts.PC_CostCode = {1} order by Core0.Id", _priceInfo.PriceCode, _priceInfo.CostCode);
 			var costsCommand = new MySqlCommand(existsCoreCostsSQL, _connection);
@@ -607,7 +610,8 @@ SET
   a.ForceReplication = 1
 where
 	p.PriceCode = {0}
-and a.FirmCode = p.FirmCode;", _priceInfo.PriceCode);
+and a.FirmCode = p.FirmCode;",
+				_priceInfo.PriceCode);
 
 			logMessage.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(cleanUpCommand));
 

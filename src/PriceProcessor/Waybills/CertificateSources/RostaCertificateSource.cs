@@ -14,10 +14,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			var catalogs = CertificateSourceCatalog.Queryable
 				.Where(
-					c =>
-						c.CertificateSource.Id == task.CertificateSource.Id
-							&& c.SerialNumber == task.DocumentLine.SerialNumber
-							&& c.CatalogProduct.Id == task.DocumentLine.ProductEntity.CatalogProduct.Id)
+				c =>
+					c.CertificateSource.Id == task.CertificateSource.Id
+						&& c.SerialNumber == task.DocumentLine.SerialNumber
+						&& c.CatalogProduct.Id == task.DocumentLine.ProductEntity.CatalogProduct.Id)
 				.ToList();
 
 			if (catalogs.Count == 0) {

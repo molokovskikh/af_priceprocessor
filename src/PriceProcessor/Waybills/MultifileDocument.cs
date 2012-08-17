@@ -101,7 +101,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				throw new Exception(String.Format(@"
 При объединении двух DBF файлов возникла ошибка. Количество общих колонок отличается от 1 и нет колонок {2} или {3}.
 Файл-заголовок: {0}
-Файл-тело: {1}", headerFile.FileName, bodyFile.FileName, headerColumnName, bodyColumnName));
+Файл-тело: {1}",
+					headerFile.FileName, bodyFile.FileName, headerColumnName, bodyColumnName));
 
 			foreach (DataRow headerRow in tableHeader.Rows) {
 				foreach (DataRow bodyRow in tableBody.Rows) {

@@ -322,42 +322,40 @@ namespace Inforoom.PriceProcessor.Formalizer
 						DeleteProcessThread(p);
 						pt.RemoveAt(i);
 					}
-					else
+					else if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && ((p.ThreadState & ThreadState.AbortRequested) == 0)) {
 						//Остановка нитки по сроку, если она работает дольше, чем можно
-						if ((DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes > Settings.Default.MaxLiveTime) && ((p.ThreadState & ThreadState.AbortRequested) == 0)) {
-							_logger.InfoFormat(System.Globalization.CultureInfo.CurrentCulture,
-								"Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}",
-								p.TID,
-								p.ThreadIsAlive,
-								p.ThreadState,
-								p.FormalizeEnd,
-								p.StartDate.ToLocalTime(),
-								p.ProcessState);
-							p.AbortThread();
-							_logger.InfoFormat("Останов нитки успешно вызван {0}", p.TID);
-						}
-						else
-							//Принудительно завершаем прерванную нитку, т.к. время останова превысило допустимый интервал ожидания
-							if (p.IsAbortingLong) {
-								_logger.InfoFormat("Принудительно завершаем прерванную нитку {0}.", p.TID);
-								DeleteProcessThread(p);
-								pt.RemoveAt(i);
-							}
-							else if (((p.ThreadState & ThreadState.AbortRequested) > 0) && ((p.ThreadState & ThreadState.WaitSleepJoin) > 0)) {
-								_logger.InfoFormat("Вызвали прерывание для нитки {0}.", p.TID);
-								p.InterruptThread();
-							}
-							else {
-								statisticMessage += String.Format(
-									"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ",
-									Path.GetFileName(p.ProcessItem.FilePath),
-									p.TID,
-									p.ThreadIsAlive,
-									p.StartDate.ToLocalTime(),
-									p.ThreadState,
-									p.FormalizeEnd,
-									p.ProcessState);
-							}
+						_logger.InfoFormat(System.Globalization.CultureInfo.CurrentCulture,
+							"Останавливаем нитку по сроку {0}: IsAlive = {1}   ThreadState = {2}  FormalizeEnd = {3}  StartDate = {4}  ProcessState = {5}",
+							p.TID,
+							p.ThreadIsAlive,
+							p.ThreadState,
+							p.FormalizeEnd,
+							p.StartDate.ToLocalTime(),
+							p.ProcessState);
+						p.AbortThread();
+						_logger.InfoFormat("Останов нитки успешно вызван {0}", p.TID);
+					}
+					else if (p.IsAbortingLong) {
+						//Принудительно завершаем прерванную нитку, т.к. время останова превысило допустимый интервал ожидания
+						_logger.InfoFormat("Принудительно завершаем прерванную нитку {0}.", p.TID);
+						DeleteProcessThread(p);
+						pt.RemoveAt(i);
+					}
+					else if (((p.ThreadState & ThreadState.AbortRequested) > 0) && ((p.ThreadState & ThreadState.WaitSleepJoin) > 0)) {
+						_logger.InfoFormat("Вызвали прерывание для нитки {0}.", p.TID);
+						p.InterruptThread();
+					}
+					else {
+						statisticMessage += String.Format(
+							"{0} ID={1} IsAlive={2} StartDate={3} ThreadState={4} FormalizeEnd={5} ProcessState={6}, ",
+							Path.GetFileName(p.ProcessItem.FilePath),
+							p.TID,
+							p.ThreadIsAlive,
+							p.StartDate.ToLocalTime(),
+							p.ThreadState,
+							p.FormalizeEnd,
+							p.ProcessState);
+					}
 				}
 
 				if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
