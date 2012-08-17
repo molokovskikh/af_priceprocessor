@@ -85,15 +85,18 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 		[Test]
 		public void Double_synonim_test()
 		{
-			var file = @"..\..\Data\590.dbf";
-			var table = PricesValidator.LoadFormRules(590u);
-			var row = table.Rows[0];
-			var _price = Price.Find(Convert.ToUInt32(3487u));
-			var info = new PriceFormalizationInfo(row, _price);
 			With.Connection(c => {
-				c.Close();
-				var parser = new NativeDbfPriceParser(file, c, info);
-				parser.Formalize();
+				var command = new MySqlCommand("delete FROM farm.SynonymFirmCr where Synonym = 'Merckle GmbH для Ratiopha';", c);
+				command.ExecuteNonQuery();
+			});
+			var file = @"..\..\Data\590.dbf";
+			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()), 590u);
+			formalizer.Formalize();
+				With.Connection(c => {
+				var command = new MySqlCommand(
+@"SELECT count(*) FROM farm.SynonymFirmCr S
+where Synonym = 'Merckle GmbH для Ratiopha';", c);
+				Assert.That(Convert.ToInt32(command.ExecuteScalar()), Is.EqualTo(2));
 			});
 		}
 

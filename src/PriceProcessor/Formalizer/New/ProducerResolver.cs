@@ -176,7 +176,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var assortiment = GetAssortimentOne(position);
 			if (assortiment != null) {
 				synonym["CodeFirmCr"] = assortiment["ProducerId"];
-				synonym["IsAutomatic"] = 1;
+				synonym["IsAutomatic"] = 0;
 			}
 			else {
 				synonym["CodeFirmCr"] = DBNull.Value;

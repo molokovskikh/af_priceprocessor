@@ -728,13 +728,14 @@ WHERE SynonymFirmCr.PriceCode={0}
 					parentSynonym), MyConn);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
 			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
-insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, null, ?OriginalSynonym);
+insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, ?CodeFirmCr, ?OriginalSynonym);
 set @LastSynonymFirmCrCode = last_insert_id();
 insert farm.UsedSynonymFirmCrLogs (SynonymFirmCrCode) values (@LastSynonymFirmCrCode);
 insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);
 select @LastSynonymFirmCrCode;");
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?PriceCode", MySqlDbType.Int64);
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?OriginalSynonym", MySqlDbType.String);
+			daSynonymFirmCr.InsertCommand.Parameters.Add("?CodeFirmCr", MySqlDbType.Int64);
 			daSynonymFirmCr.InsertCommand.Connection = MyConn;
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 			dtSynonymFirmCr.Columns.Add("OriginalSynonym", typeof(string));
@@ -1542,7 +1543,7 @@ where
 							}
 						}
 					}
-					else if (drsProducerSynonyms.Length > 1)
+					else if (SynonymsNoValid(drsProducerSynonyms))
 						throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
 
 					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
@@ -1556,6 +1557,11 @@ where
 				workTime = DateTime.UtcNow.Subtract(startTime);
 			}
 			return String.Format("{0};{1}", applyCount, workTime);
+		}
+
+		private bool SynonymsNoValid(DataRow[] synonyms)
+		{
+			return synonyms.GroupBy(s => s["CodeFirmCr"]).Any(s => s.Count() > 1);
 		}
 
 		private void InsertNewProducerSynonyms(MySqlTransaction finalizeTransaction)
@@ -1578,6 +1584,7 @@ where
 				else {
 					daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
 					daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
+					daSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = drNewProducerSynonym["CodeFirmCr"];
 					drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
 				}
 			}
