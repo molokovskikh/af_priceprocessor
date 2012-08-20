@@ -187,6 +187,7 @@ namespace Inforoom.Formalizer
 						_workPrice.Formalize();
 
 						FormalizeOK = true;
+						_log.FormSecs = (long)DateTime.UtcNow.Subtract(StartDate).TotalSeconds;
 						_log.SuccesLog(_workPrice);
 					}
 					catch (Exception e) {
