@@ -63,7 +63,6 @@ namespace Inforoom.Formalizer
 
 		public void ErrodLog(IPriceFormalizer p, Exception ex)
 		{
-			_logger.Error("Ошибка при формализации прайс листа", ex);
 			string messageBody = "", messageSubject = "";
 			if (ex is FormalizeException)
 				CurrentErrorMessage = ex.Message;

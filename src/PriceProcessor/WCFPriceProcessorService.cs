@@ -83,59 +83,65 @@ and logs.Rowid = ?DownLogId",
 			var sourceArchiveFileName = filename;
 			var archFileName = drFocused["DArchFileName"].ToString();
 			var externalFileName = drFocused["DExtrFileName"].ToString();
-			if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase)) {
-				// Если файл пришел по e-mail, то это должен быть файл *.eml, открываем его на чтение
-				filename = ExtractFileFromAttachment(filename, archFileName, externalFileName);
-			}
-			var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
-			if (ArchiveHelper.IsArchive(filename)) {
-				if (File.Exists(tempDirectory))
-					File.Delete(tempDirectory);
-				if (Directory.Exists(tempDirectory))
-					Directory.Delete(tempDirectory, true);
-				Directory.CreateDirectory(tempDirectory);
-				ArchiveHelper.Extract(filename, externalFileName, tempDirectory, drFocused["ArchivePassword"].ToString());
-				filename = FileHelper.FindFromArhive(tempDirectory, externalFileName);
-				if (String.IsNullOrEmpty(filename)) {
-					var errorMessage = String.Format(
-						"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
-					throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
+			var extractedFile = string.Empty;
+			try {
+				if (drFocused["DSourceType"].ToString().Equals("EMAIL", StringComparison.OrdinalIgnoreCase)) {
+					// Если файл пришел по e-mail, то это должен быть файл *.eml, открываем его на чтение
+					filename = ExtractFileFromAttachment(filename, archFileName, externalFileName);
+					extractedFile = filename;
 				}
+				var tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(archFileName));
+				if (ArchiveHelper.IsArchive(filename)) {
+					if (File.Exists(tempDirectory))
+						File.Delete(tempDirectory);
+					if (Directory.Exists(tempDirectory))
+						Directory.Delete(tempDirectory, true);
+					Directory.CreateDirectory(tempDirectory);
+					ArchiveHelper.Extract(filename, externalFileName, tempDirectory, drFocused["ArchivePassword"].ToString());
+					filename = FileHelper.FindFromArhive(tempDirectory, externalFileName);
+					if (String.IsNullOrEmpty(filename)) {
+						var errorMessage = String.Format(
+							"Невозможно найти файл {0} в распакованном архиве!", externalFileName);
+						throw new FaultException<string>(errorMessage, new FaultReason(errorMessage));
+					}
+				}
+
+				if (String.IsNullOrEmpty(filename))
+					return;
+
+				var priceExtention = drFocused["DFileExtention"].ToString();
+				var destinationFile = Path.Combine(Settings.Default.InboundPath,
+					"d" + drFocused["DPriceItemId"] + "_" + downlogId + priceExtention);
+
+				if (File.Exists(destinationFile)) {
+					throw new FaultException<string>(MessagePriceInQueue,
+						new FaultReason(MessagePriceInQueue));
+				}
+
+				File.Copy(filename, destinationFile);
+
+				var item = new PriceProcessItem(true,
+					Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
+					(drFocused["DCostCode"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
+					Convert.ToUInt64(drFocused["DPriceItemId"].ToString()),
+					destinationFile,
+					(drFocused["ParentSynonym"] is DBNull) ? null : (ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
+				PriceItemList.AddItem(item);
+
+				var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
+				downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
+				if (downlogId > 0) {
+					destinationFile = Path.Combine(Settings.Default.HistoryPath,
+						downlogId + Path.GetExtension(sourceArchiveFileName));
+					File.Copy(sourceArchiveFileName, destinationFile);
+				}
+				if (Directory.Exists(tempDirectory))
+					FileHelper.Safe(() => Directory.Delete(tempDirectory, true));
 			}
-
-			if (String.IsNullOrEmpty(filename))
-				return;
-
-			var priceExtention = drFocused["DFileExtention"].ToString();
-			var destinationFile = Path.Combine(Settings.Default.InboundPath,
-				"d" + drFocused["DPriceItemId"] + "_" + downlogId + priceExtention);
-
-			if (File.Exists(destinationFile)) {
-				throw new FaultException<string>(MessagePriceInQueue,
-					new FaultReason(MessagePriceInQueue));
+			finally {
+				if (File.Exists(extractedFile))
+					File.Delete(extractedFile);
 			}
-
-			File.Copy(filename, destinationFile);
-
-			var item = new PriceProcessItem(true,
-				Convert.ToUInt64(drFocused["DPriceCode"].ToString()),
-				(drFocused["DCostCode"] is DBNull) ? null :
-					(ulong?)Convert.ToUInt64(drFocused["DCostCode"].ToString()),
-				Convert.ToUInt64(drFocused["DPriceItemId"].ToString()),
-				destinationFile,
-				(drFocused["ParentSynonym"] is DBNull) ? null :
-					(ulong?)Convert.ToUInt64(drFocused["ParentSynonym"].ToString()));
-			PriceItemList.AddItem(item);
-
-			var priceItemId = Convert.ToUInt64(drFocused["DPriceItemId"]);
-			downlogId = LogResendPriceAsDownload(priceItemId, archFileName, externalFileName, paramDownlogId.LogInformation);
-			if (downlogId > 0) {
-				destinationFile = Path.Combine(Settings.Default.HistoryPath,
-					downlogId + Path.GetExtension(sourceArchiveFileName));
-				File.Copy(sourceArchiveFileName, destinationFile);
-			}
-			if (Directory.Exists(tempDirectory))
-				FileHelper.Safe(() => Directory.Delete(tempDirectory, true));
 		}
 
 		private string ExtractFileFromAttachment(string filename, string archFileName, string externalFileName)

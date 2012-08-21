@@ -4,7 +4,10 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Common.MySql;
+using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Threading;
@@ -77,6 +80,24 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			TestFormalizeWithoutAssortmentInserting(
 				@"..\..\Data\688-create-net-assortment.txt",
 				String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
+		}
+
+		[Test]
+		public void Double_synonim_test()
+		{
+			With.Connection(c => {
+				var command = new MySqlCommand("delete FROM farm.SynonymFirmCr where Synonym = 'Merckle GmbH для Ratiopha';", c);
+				command.ExecuteNonQuery();
+			});
+			var file = @"..\..\Data\590.dbf";
+			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()), 590u);
+			formalizer.Formalize();
+			With.Connection(c => {
+			var command = new MySqlCommand(
+@"SELECT count(*) FROM farm.SynonymFirmCr S
+where Synonym = 'Merckle GmbH для Ratiopha';", c);
+			Assert.That(Convert.ToInt32(command.ExecuteScalar()), Is.EqualTo(2));
+			});
 		}
 
 		[Test, Ignore]

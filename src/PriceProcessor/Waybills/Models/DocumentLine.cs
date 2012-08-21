@@ -263,7 +263,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[HasAndBelongsToMany(Schema = "documents",
 			Table = "waybillorders",
 			ColumnKey = "DocumentLineId",
-			ColumnRef = "OrderLineId")]
+			ColumnRef = "OrderLineId",
+			Lazy = true)]
 		public IList<OrderItem> OrderItems { get; set; }
 
 		public AssortimentPriceInfo AssortimentPriceInfo { get; set; }

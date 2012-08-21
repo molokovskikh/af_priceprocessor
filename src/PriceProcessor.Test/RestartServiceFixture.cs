@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using Inforoom.PriceProcessor;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Monitor = Inforoom.PriceProcessor.Monitor;
 
 namespace PriceProcessor.Test

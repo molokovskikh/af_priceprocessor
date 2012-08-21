@@ -126,12 +126,12 @@ namespace Inforoom.Downloader.Ftp
 		{
 			DataSet dataSetEntries = null;
 #if !DEBUG
-				ftpClient.PassiveMode = true;
-				ftpClient.Connect(ftpHost, ftpPort);
-				ftpClient.Authenticate(username, password);
-				ftpClient.SetCurrentDir(ftpDirectory);
+			ftpClient.PassiveMode = true;
+			ftpClient.Connect(ftpHost, ftpPort);
+			ftpClient.Authenticate(username, password);
+			ftpClient.SetCurrentDir(ftpDirectory);
 
-				dataSetEntries = ftpClient.GetList();
+			dataSetEntries = ftpClient.GetList();
 #else
 			if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
 				ftpDirectory = ftpDirectory.Substring(1);
