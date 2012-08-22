@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var dir = Path.Combine(FtpDir, Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath));
 				using (var ftpClient = new FTP_Client()) {
 					ftpClient.PassiveMode = true;
-					ftpClient.Connect(FtpHost, 21);
+					ftpClient.Connect(FtpHost, 99);
 					ftpClient.Authenticate(FtpUser, FtpPassword);
 					ftpClient.SetCurrentDir(dir);
 					var ftpFiles = ftpClient.GetList();
@@ -67,12 +67,12 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public string FtpUser
 		{
-			get { return "anonymous"; }
+			get { return "FTP_ANALIT"; }
 		}
 
 		public string FtpPassword
 		{
-			get { return ""; }
+			get { return "36AzQA63"; }
 		}
 
 		public string Filename
