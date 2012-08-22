@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
-				var tasks = CertificateTask.FindAll();
+				var tasks = CertificateTask.Queryable.Take(100).ToArray();
 
 				if (tasks != null && tasks.Length > 0)
 					foreach (var certificateTask in tasks) {
