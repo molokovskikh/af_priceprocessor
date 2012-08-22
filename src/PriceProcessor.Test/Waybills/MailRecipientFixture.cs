@@ -1,13 +1,15 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills.Models;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Test.Support;
 
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
-	public class MailRecipientFixture
+	public class MailRecipientFixture : IntegrationFixture
 	{
 		[Test]
 		public void CheckOtherEmailDomen()
@@ -132,6 +134,48 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(recipient.Client, Is.Not.Null);
 			Assert.That(recipient.Client.Id, Is.EqualTo(client.Id));
 			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Disabled));
+		}
+
+		[Test(Description = "При отправке писем должны учитываться маски регионов пользователя и клиента")]
+		public void CheckRegionMask()
+		{
+			var regions = TestRegion.FindAll().ToList();
+			var vrnRegion = regions.Find(r => r.ShortAliase == "vrn");
+			var orelRegion = regions.Find(r => r.ShortAliase == "orel");
+
+			var client = TestClient.CreateNaked(vrnRegion.Id, vrnRegion.Id);
+			var user = client.Users[0];
+			Assert.That(user.WorkRegionMask, Is.EqualTo(vrnRegion.Id), "У пользователя должен быть доступен только регион {0}", vrnRegion.Name);
+			//к пользователю добаляем еще один регион в маску
+			user.WorkRegionMask = user.WorkRegionMask | orelRegion.Id;
+
+			var foundCause = String.Format("Пользователь {0} должен быть найден, т.к. маска клиента содержит регион {1} ({2})", user.Id, vrnRegion.Name, vrnRegion.Id);
+			var notFoundCause = String.Format("Пользователь {0} не должен быть найден, т.к. маска клиента не должна содержать регион {1} ({2})", user.Id, orelRegion.Name, orelRegion.Id);
+
+			CheckRegionMaskByRecipient(orelRegion.ShortAliase + "@docs.analit.net", RecipientType.Region, orelRegion, user, Is.Null, notFoundCause);
+
+			CheckRegionMaskByRecipient(vrnRegion.ShortAliase + "@docs.analit.net", RecipientType.Region, vrnRegion, user, Is.Not.Null, foundCause);
+
+			var address = client.Addresses[0];
+			CheckRegionMaskByRecipient(address.Id + "@docs.analit.net", RecipientType.Address, vrnRegion, user, Is.Not.Null, foundCause);
+
+			CheckRegionMaskByRecipient(address.Id + "@docs.analit.net", RecipientType.Address, orelRegion, user, Is.Null, notFoundCause);
+
+			CheckRegionMaskByRecipient(client.Id + "@client.docs.analit.net", RecipientType.Client, vrnRegion, user, Is.Not.Null, foundCause);
+
+			CheckRegionMaskByRecipient(client.Id + "@client.docs.analit.net", RecipientType.Client, orelRegion, user, Is.Null, notFoundCause);
+		}
+
+		private void CheckRegionMaskByRecipient(string address, RecipientType recipientType, TestRegion region, TestUser user, NullConstraint constraint, string causeMessage)
+		{
+			var recipient = MailRecipient.Parse(address);
+			Assert.That(recipient, Is.Not.Null);
+			Assert.That(recipient.Type, Is.EqualTo(recipientType));
+			Assert.That(recipient.Status, Is.EqualTo(RecipientStatus.Verified));
+
+			var recipientUsers = recipient.GetUsers(region.Id);
+			var findedUser = recipientUsers.FirstOrDefault(u => u.Id == user.Id);
+			Assert.That(findedUser, constraint, causeMessage);
 		}
 	}
 }

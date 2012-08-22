@@ -129,13 +129,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			var result = new List<User>();
 
 			if (Type == RecipientType.Region && ((Region.Id & regionMask) > 0))
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && (u.WorkRegionMask & Region.Id) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && (u.WorkRegionMask & u.Client.MaskRegion & Region.Id) > 0).ToList();
 
 			if (Type == RecipientType.Client)
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.Client.Id == Client.Id && (u.WorkRegionMask & regionMask) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.Client.Id == Client.Id && (u.WorkRegionMask & u.Client.MaskRegion & regionMask) > 0).ToList();
 
 			if (Type == RecipientType.Address)
-				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.AvaliableAddresses.Any(a => a.Id == Address.Id) && (u.WorkRegionMask & regionMask) > 0).ToList();
+				result = User.Queryable.Where(u => u.Enabled && u.Client.Enabled && u.AvaliableAddresses.Any(a => a.Id == Address.Id) && (u.WorkRegionMask & u.Client.MaskRegion & regionMask) > 0).ToList();
 
 			return result;
 		}
