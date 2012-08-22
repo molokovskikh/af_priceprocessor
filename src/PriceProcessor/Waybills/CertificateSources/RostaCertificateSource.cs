@@ -36,11 +36,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
 
 				var downloadFiles = downloader.GetFilesFromSource(
-					Settings.Default.RostaCertificateFtp,
-					21,
+					FtpHost,
+					FtpPort,
 					dirName,
-					Settings.Default.RostaCertificateFtpUserName,
-					Settings.Default.RostaCertificateFtpPassword,
+					FtpUser,
+					FtpPassword,
 					fileName,
 					DateTime.MinValue,
 					tempDowloadDir);
@@ -80,6 +80,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		public string FtpHost
 		{
 			get { return Settings.Default.RostaCertificateFtp; }
+		}
+
+		public int FtpPort
+		{
+			get { return 21; }
 		}
 
 		public string FtpDir

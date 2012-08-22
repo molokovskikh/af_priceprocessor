@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var dir = Path.Combine(FtpDir, Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath));
 				using (var ftpClient = new FTP_Client()) {
 					ftpClient.PassiveMode = true;
-					ftpClient.Connect(FtpHost, 99);
+					ftpClient.Connect(FtpHost, FtpPort);
 					ftpClient.Authenticate(FtpUser, FtpPassword);
 					ftpClient.SetCurrentDir(dir);
 					var ftpFiles = ftpClient.GetList();
@@ -58,6 +58,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		public string FtpHost
 		{
 			get { return "orel.katren.ru"; }
+		}
+
+		public int FtpPort
+		{
+			get { return 99; }
 		}
 
 		public string FtpDir

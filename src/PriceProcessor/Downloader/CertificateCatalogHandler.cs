@@ -158,7 +158,7 @@ where
 
 			var downloadFiles = downloader.GetFilesFromSource(
 				ftpSource.FtpHost,
-				21,
+				ftpSource.FtpPort,
 				ftpSource.FtpDir,
 				ftpSource.FtpUser,
 				ftpSource.FtpPassword,

@@ -49,6 +49,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	public interface IRemoteFtpSource
 	{
 		string FtpHost { get; }
+		int FtpPort { get; }
 		string FtpDir { get; }
 		string FtpUser { get; }
 		string FtpPassword { get; }
