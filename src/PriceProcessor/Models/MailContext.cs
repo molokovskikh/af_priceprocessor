@@ -43,9 +43,7 @@ namespace Inforoom.PriceProcessor.Models
 
 		public void ParseRecipients(Mime mime)
 		{
-			ParseRecipientAddresses(mime.MainEntity.To);
-			ParseRecipientAddresses(mime.MainEntity.Cc);
-			ParseRecipientAddresses(mime.MainEntity.Bcc);
+			ParseRecipientAddresses(mime.GetRecipients());
 
 			if (Recipients.Count > 0) {
 				foreach (var recipient in Recipients) {
@@ -70,14 +68,11 @@ namespace Inforoom.PriceProcessor.Models
 			}
 		}
 
-		private void ParseRecipientAddresses(AddressList addressList)
+		private void ParseRecipientAddresses(string[] emails)
 		{
-			if (addressList == null)
-				return;
 			// ѕробегаемс€ по всем адресам TO и ищем адрес вида
 			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
-			foreach (var mailbox in addressList.Mailboxes) {
-				var mail = MimeEntityExtentions.GetCorrectEmailAddress(mailbox.EmailAddress);
+			foreach (var mail in emails) {
 				var recipient = MailRecipient.Parse(mail);
 				if (recipient != null)
 					AddRecipient(recipient);

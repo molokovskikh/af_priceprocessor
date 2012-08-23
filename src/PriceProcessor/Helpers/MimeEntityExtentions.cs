@@ -97,12 +97,11 @@ namespace Inforoom.PriceProcessor.Helpers
 
 		public static string[] GetRecipients(this Mime mime)
 		{
-			var mailboxes = new List<MailboxAddress>();
 			var mainEntity = mime.MainEntity;
-			if (mainEntity.Cc != null && mainEntity.Cc.Mailboxes != null)
-				mailboxes.AddRange(mainEntity.Cc.Mailboxes);
-			if (mainEntity.To != null && mainEntity.To.Mailboxes != null)
-				mailboxes.AddRange(mainEntity.To.Mailboxes);
+			var mailboxes = new[] { mainEntity.To, mainEntity.Cc, mainEntity.Bcc }
+				.Where(l => l != null && l.Mailboxes != null)
+				.SelectMany(l => l.Mailboxes)
+				.ToList();
 
 			var realTo = mainEntity.Header.Get("X-Real-To:");
 			if (realTo != null) {
