@@ -111,7 +111,7 @@ namespace Inforoom.Downloader
 					}
 					error += Environment.NewLine + Environment.NewLine + ex;
 					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-						LoggingToService(error);
+						Log(error);
 				}
 				finally {
 					FileHelper.Safe(() => dtSources.AcceptChanges());

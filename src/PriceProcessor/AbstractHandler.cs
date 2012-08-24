@@ -140,10 +140,8 @@ namespace Inforoom.PriceProcessor
 				try {
 					ProcessData();
 				}
-				catch (ThreadAbortException) {
-				}
 				catch (Exception ex) {
-					LoggingToService(ex.ToString());
+					Log(ex);
 				}
 				Ping();
 				Sleeping();
@@ -158,14 +156,14 @@ namespace Inforoom.PriceProcessor
 		//Метод для обработки данных для каждого источника - свой
 		public abstract void ProcessData();
 
-		protected void LoggingToService(string addition)
+		protected void Log(Exception e)
 		{
-			if (knowErrors.Contains(addition)) {
-				_logger.WarnFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
+			if (knowErrors.Contains(e.ToString()) || e is ThreadAbortException) {
+				_logger.Warn(String.Format("Ошибка в обработчике {0}", GetType().Name), e);
 			}
 			else {
-				_logger.ErrorFormat("Ошибка в обработчике {0}, {1}", GetType().Name, addition);
-				knowErrors.Add(addition);
+				_logger.Error(String.Format("Ошибка в обработчике {0}", GetType().Name), e);
+				knowErrors.Add(e.ToString());
 			}
 		}
 	}

@@ -127,7 +127,7 @@ and st.SourceID = 4";
 							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
 							Error += Environment.NewLine + Environment.NewLine + typeException;
 							if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
-								LoggingToService(Error);
+								Log(Error);
 						}
 
 
@@ -143,7 +143,7 @@ and st.SourceID = 4";
 					}
 					error += Environment.NewLine + Environment.NewLine + ex;
 					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-						LoggingToService(error);
+						Log(error);
 					try {
 						dtSources.AcceptChanges();
 					}
@@ -179,7 +179,7 @@ and st.SourceID = 4";
 				return documentReader.UnionFiles(newFiles.ToArray());
 			}
 			catch (Exception exDir) {
-				LoggingToService(String.Format("Не удалось получить список файлов для папки {0}: {1}",
+				Log(String.Format("Не удалось получить список файлов для папки {0}: {1}",
 					pricePath, exDir));
 				return new string[] { };
 			}
@@ -197,7 +197,7 @@ and st.SourceID = 4";
 				CurrFileName = NewFile;
 			}
 			catch (Exception ex) {
-				LoggingToService(String.Format("Не удалось скопировать файл {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+				Log(String.Format("Не удалось скопировать файл {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
 			}
 		}
 

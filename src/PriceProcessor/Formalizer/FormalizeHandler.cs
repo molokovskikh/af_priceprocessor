@@ -170,7 +170,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 			}
 			else {
-				LoggingToService(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(priceFile)));
+				Log(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(priceFile)));
 				try {
 					global::Common.Tools.FileHelper.FileDelete(priceFile);
 				}
