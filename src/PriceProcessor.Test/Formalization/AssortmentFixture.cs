@@ -46,7 +46,7 @@ namespace PriceProcessor.Test
 			producerSynonyms.Columns.Add("Synonym", typeof(string));
 			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
 			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
-			producerSynonyms.Columns.Add("CodeFirmCr");
+			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
 			producerSynonyms.Columns.Add("InternalProducerSynonymId");
 			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 
@@ -73,8 +73,21 @@ namespace PriceProcessor.Test
 			resolver.ResolveProducer(position);
 
 			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["CodeFirmCr"] = 111);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 0);
+			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
+			Assert.IsFalse(Convert.ToBoolean(position.Core.CreatedProducerSynonym["IsAutomatic"]));
+
+			//assortiment.Rows.Remove(newAssort);
+			newAssort["ProducerId"] = 333;
+			newAssort = assortiment.NewRow();
+			newAssort["CatalogId"] = 777;
+			newAssort["ProducerId"] = 222;
+			newAssort["Checked"] = true;
+			assortiment.Rows.Add(newAssort);
+			resolver.ResolveProducer(position);
+
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
+			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 1);
 		}
 
 		[Test, Ignore]
