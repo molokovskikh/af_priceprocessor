@@ -208,8 +208,7 @@ values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 		private ulong GetPriceCode(uint priceItemId)
 		{
 			// Получаем код прайса по priceItemId
-			var cost = TestHelper.Fill(String.Format(@"
-select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));
+			var cost = TestHelper.Fill(String.Format(@"select * from usersettings.pricescosts pc where pc.PriceItemId = {0}", priceItemId));
 			var corePriceCode = Convert.ToUInt64(cost.Tables[0].Rows[0]["PriceCode"]);
 			return corePriceCode;
 		}

@@ -41,28 +41,16 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_assortiment()
 		{
-			TestPriceItem priceItem;
-			var supplier = TestSupplier.Create();
-			using (new SessionScope()) {
-				var price = supplier.Prices[0];
-				priceItem = price.Costs[0].PriceItem;
-				var format = priceItem.Format;
-				format.PriceFormat = PriceFormatType.UniversalXml;
-				format.Save();
+			var producerSynonyms = new DataTable();
+			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
+			producerSynonyms.Columns.Add("Synonym", typeof(string));
+			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
+			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
+			producerSynonyms.Columns.Add("CodeFirmCr");
+			producerSynonyms.Columns.Add("InternalProducerSynonymId");
+			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 
-				price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м", "Вухан Лифарма Кемикалз Ко");
-				price.Save();
-			}
-			var row = PricesValidator.LoadFormRules(priceItem.Id).Rows[0];
-			var _price = Price.Find(Convert.ToUInt32(row[FormRules.colPriceCode]));
-			NHibernateUtil.Initialize(_price);
-			var priceInfo = new PriceFormalizationInfo(row, _price);
-			var priceParser = new BasePriceParser2(new FakeReader(), priceInfo);
-			priceParser.Prepare();
-			var resolver = (ProducerResolver)typeof(BasePriceParser2)
-				.GetField("_producerResolver", BindingFlags.NonPublic | BindingFlags.Instance)
-				.GetValue(priceParser);
-			//var resolver = priceParser.ProducerResolver;
+			var resolver = new ProducerResolver(null, new FormalizeStats(), null, producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
@@ -80,9 +68,7 @@ namespace PriceProcessor.Test
 			newAssort["ProducerId"] = 111;
 			newAssort["Checked"] = true;
 			assortiment.Rows.Add(newAssort);
-			typeof(ProducerResolver)
-				.GetField("_assortment", BindingFlags.NonPublic | BindingFlags.Instance)
-				.SetValue(resolver, assortiment);
+			resolver.Assortment = assortiment;
 
 			resolver.ResolveProducer(position);
 
