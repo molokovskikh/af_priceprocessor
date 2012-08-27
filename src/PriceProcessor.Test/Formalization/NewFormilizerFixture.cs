@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Catalog;
@@ -446,6 +448,63 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(core.Period, Is.EqualTo(bestUseFor));
 				Assert.That(core.Junk, Is.True);
 			}
+		}
+
+		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
+		{
+			var deleter = connection.CreateCommand();
+			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
+			deleter.ExecuteNonQuery();
+			parser.Prepare();
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
+			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
+		}
+
+		private void FillDaSynonymFirmCr(FakeParser parser, MySqlConnection connection, bool automatic)
+		{
+			var deleter = connection.CreateCommand();
+			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
+			deleter.ExecuteNonQuery();
+			parser.Prepare();
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = null;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
+			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
+		}
+
+		private void FakeParserSynonymTest(bool Automatic, int AutomaticProducerSynonyms, Type FakeType)
+		{
+			With.Connection(c => {
+				var table = PricesValidator.LoadFormRules(priceItem.Id);
+				var row = table.Rows[0];
+				var info = new PriceFormalizationInfo(row, null);
+				if (FakeType == typeof(FakeParser)) {
+					var parser = new FakeParser(null, c, info);
+					FillDaSynonymFirmCr(parser, c, Automatic);
+				}
+				else {
+					var parser = new FakeParser2(new FakeReader(), info);
+					if (parser.Connection.State != ConnectionState.Open)
+						parser.Connection.Open();
+					FillDaSynonymFirmCr2(parser, c, Automatic);
+					parser.Connection.Close();
+				}
+				var counter = c.CreateCommand();
+				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
+				Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(AutomaticProducerSynonyms));
+			});
+		}
+
+		[Test]
+		public void daSynonymFirmCrTest_NoAutomatic()
+		{
+			FakeParserSynonymTest(false, 0, typeof(FakeParser));
+			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
 		}
 
 		private void Price(string contents)
