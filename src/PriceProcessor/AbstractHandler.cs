@@ -156,7 +156,7 @@ namespace Inforoom.PriceProcessor
 		//Метод для обработки данных для каждого источника - свой
 		public abstract void ProcessData();
 
-		protected void Log(Exception e)
+		protected void Log(Exception e, string message = null)
 		{
 			if (knowErrors.Contains(e.ToString()) || e is ThreadAbortException) {
 				_logger.Warn(String.Format("Ошибка в обработчике {0}", GetType().Name), e);

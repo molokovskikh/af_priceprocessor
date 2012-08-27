@@ -109,9 +109,7 @@ namespace Inforoom.Downloader
 						error = String.Format("Источник : {0}", currentSource[SourcesTableColumns.colPriceCode]);
 						FileHelper.Safe(currentSource.Delete);
 					}
-					error += Environment.NewLine + Environment.NewLine + ex;
-					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-						Log(error);
+					Log(ex, error);
 				}
 				finally {
 					FileHelper.Safe(() => dtSources.AcceptChanges());

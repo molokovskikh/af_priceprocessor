@@ -122,12 +122,10 @@ and st.SourceID = 4";
 								}
 							}
 						}
-						catch (Exception typeException) {
+						catch (Exception e) {
 							//Обрабатываем ошибку в случае обработки одного из типов документов
-							var Error = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
-							Error += Environment.NewLine + Environment.NewLine + typeException;
-							if (!typeException.ToString().Contains("Поток находился в процессе прерывания"))
-								Log(Error);
+							var message = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
+							Log(e, message);
 						}
 
 
@@ -136,14 +134,12 @@ and st.SourceID = 4";
 				}
 				catch (Exception ex) {
 					var error = String.Format("Источник : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
+					Log(ex, error);
 					try {
 						dtSources.Rows[0].Delete();
 					}
 					catch {
 					}
-					error += Environment.NewLine + Environment.NewLine + ex;
-					if (!ex.ToString().Contains("Поток находился в процессе прерывания"))
-						Log(error);
 					try {
 						dtSources.AcceptChanges();
 					}
@@ -178,9 +174,9 @@ and st.SourceID = 4";
 				}
 				return documentReader.UnionFiles(newFiles.ToArray());
 			}
-			catch (Exception exDir) {
-				Log(String.Format("Не удалось получить список файлов для папки {0}: {1}",
-					pricePath, exDir));
+			catch (Exception e) {
+				Log(e,
+					String.Format("Не удалось получить список файлов для папки {0}", pricePath));
 				return new string[] { };
 			}
 		}
@@ -188,16 +184,16 @@ and st.SourceID = 4";
 		private void GetCurrentFile(string sourceFile)
 		{
 			CurrFileName = String.Empty;
-			var NewFile = DownHandlerPath + Path.GetFileName(sourceFile);
+			var destination = DownHandlerPath + Path.GetFileName(sourceFile);
 			try {
-				if (File.Exists(NewFile))
-					File.Delete(NewFile);
+				if (File.Exists(destination))
+					File.Delete(destination);
 				FileHelper.ClearReadOnly(sourceFile);
-				File.Copy(sourceFile, NewFile);
-				CurrFileName = NewFile;
+				File.Copy(sourceFile, destination);
+				CurrFileName = destination;
 			}
 			catch (Exception ex) {
-				Log(String.Format("Не удалось скопировать файл {0}({1}) : {2}", sourceFile, System.Runtime.InteropServices.Marshal.GetLastWin32Error(), ex));
+				Log(ex, String.Format("Не удалось скопировать файл {0} в {1}", sourceFile, destination));
 			}
 		}
 
