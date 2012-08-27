@@ -416,6 +416,7 @@
     <Compile Include="Waybills\Parser\TxtParsers\RostaOmskParser.cs" />
     <Compile Include="Waybills\Parser\UkonParser.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParser2.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PulsFK3996Parser.cs" />
     <Compile Include="Waybills\WaybillFormatDetector.cs" />
     <Compile Include="Waybills\WaybillHelper.cs" />
     <Compile Include="Waybills\WaybillOrderMatcher.cs" />
