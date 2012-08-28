@@ -30,6 +30,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public DateTime? FtpFileDate { get; set; }
 
+		[Property]
+		public int Priority { get; set; }
+
 		[HasAndBelongsToMany(typeof(Supplier),
 			Lazy = true,
 			ColumnKey = "CertificateSourceId",
