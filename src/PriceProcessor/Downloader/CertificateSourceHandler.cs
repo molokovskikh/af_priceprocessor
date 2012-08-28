@@ -47,20 +47,19 @@ namespace Inforoom.PriceProcessor.Downloader
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
-				var tasks = CertificateTask.Queryable.Take(100).ToArray();
+				var tasks = CertificateTask.Queryable.OrderBy(t => t.CertificateSource.Priority).Take(100).ToArray();
 
-				if (tasks != null && tasks.Length > 0)
-					foreach (var certificateTask in tasks) {
-						try {
-							Ping(); // чтобы монитор не перезапустил рабочий поток во время обработки задач сертификатов
-							ProcessTask(certificateTask);
-							ClearError(certificateTask);
-						}
-						catch (Exception exception) {
-							Ping(); // чтобы монитор не перезапустил рабочий поток во время обработки задач сертификатов
-							OnTaskError(certificateTask, exception);
-						}
+				foreach (var certificateTask in tasks) {
+					try {
+						Ping(); // чтобы монитор не перезапустил рабочий поток во время обработки задач сертификатов
+						ProcessTask(certificateTask);
+						ClearError(certificateTask);
 					}
+					catch (Exception exception) {
+						Ping(); // чтобы монитор не перезапустил рабочий поток во время обработки задач сертификатов
+						OnTaskError(certificateTask, exception);
+					}
+				}
 			}
 		}
 
