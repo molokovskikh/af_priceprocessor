@@ -116,6 +116,40 @@ namespace PriceProcessor.Test.Formalization
 		}
 
 		[Test]
+		public void Complex_double_firmalize_no_automatic_synonim()
+		{
+			With.Connection(c => {
+				var deleter = c.CreateCommand();
+				deleter.CommandText = "delete from AutomaticProducerSynonyms";
+				deleter.ExecuteNonQuery();
+			});
+
+			using (new SessionScope()) {
+				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+				product.Save();
+				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+				producer.Save();
+				TestAssortment.CheckAndCreate(product, producer);
+			}
+
+			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
+
+			Formalize();
+			Formalize();
+
+			using (new SessionScope()) {
+				var synonyms = TestProducerSynonym.Queryable.Where(s => s.Price == price).ToList();
+				With.Connection(c => {
+					var counter = c.CreateCommand();
+					counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
+					var count = counter.ExecuteScalar();
+					Assert.That(count, Is.EqualTo(0));
+				});
+			}
+		}
+
+		[Test]
 		public void Update_quantity_if_changed()
 		{
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
