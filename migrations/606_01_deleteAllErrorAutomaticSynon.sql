@@ -10,10 +10,8 @@ SELECT
 aps.*
 FROM
 farm.SynonymFirmCr s
-join catalogs.assortment a on a.ProducerId = s.CodeFirmCr
 join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = s.SynonymFirmCrCode
-group by s.SynonymFirmCrCode
-having count(a.ProducerId) = 1;
+where s.CodeFirmCr is not null;
 
 
 delete from farm.AutomaticProducerSynonyms
