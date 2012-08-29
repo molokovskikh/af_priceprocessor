@@ -97,10 +97,9 @@ GROUP BY SupplierId
 
 						foreach (var log in logs)
 							WaybillService.ParseWaybill(log);
-
-						// Удаление временных файлов
-						Cleanup();
 					}
+					// Удаление временных файлов
+					Cleanup();
 				}
 			}
 		}
@@ -180,7 +179,7 @@ GROUP BY SupplierId
 
 				foreach (var addressId in addressIds) {
 					// Если накладная - это архив, разархивируем логируем каждый файл и копируем в папку клиенту
-					var waybillFiles = new string[0];
+					var waybillFiles = new[] { waybill.FileName };
 					if (ArchiveHelper.IsArchive(waybill.FileName)) {
 						if (!ArchiveHelper.TestArchive(waybill.FileName)) {
 							_log.DebugFormat("Некорректный архив {0}", waybill.FileName);

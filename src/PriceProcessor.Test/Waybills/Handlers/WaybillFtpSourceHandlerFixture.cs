@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		private string ftpWaybillDirectory;
 		private string user;
 		private string password;
-		private uint newClientDeliveryCode;
+		private uint supplierDeliveryId;
 		private string ftpRejectDirectory;
 
 		private WaybillFtpSourceHandlerForTesting handler;
@@ -58,7 +58,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			ftpRejectDirectory = "Rejects";
 			user = "test";
 			password = "test";
-			newClientDeliveryCode = 1234u;
+			supplierDeliveryId = 1234u;
 
 			client = TestClient.Create();
 			client.Settings.ParseWaybills = true;
@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 
-			CopyWaybillFiles(newClientDeliveryCode, ftpWaybillDirectory);
+			CopyWaybillFiles();
 		}
 
 		[TearDown]
@@ -87,24 +87,24 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test]
 		public void Process_waybills()
 		{
+			CreateFakeFile("70983_906384.txt");
+
 			handler.Process();
 
 			using (new SessionScope()) {
 				var addressId = address.Id;
 				// Проверяем наличие записей в document_logs
-				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.Address.Id == addressId);
-				Assert.That(logs.Count(), Is.EqualTo(1));
+				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.Address.Id == addressId).ToArray();
+				Assert.That(logs.Count(), Is.EqualTo(2));
 
 				// Проверяем наличие записей в documentheaders
-				foreach (var documentLog in logs)
-					Assert.That(Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id).Count(), Is.EqualTo(1));
+				var log = logs.First(l => Path.GetExtension(l.FileName).ToLower() == ".dbf");
+				Assert.That(Document.Queryable.Count(d => d.Log.Id == log.Id), Is.EqualTo(1));
 
 				// Проверяем наличие файлов в папках клиентов
-				//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
-				var clientDir = Path.Combine(Settings.Default.DocumentPath, addressId.ToString());
-				Assert.IsTrue(Directory.Exists(clientDir));
-				var files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
-				Assert.That(files.Count(), Is.GreaterThan(0));
+				Assert.IsTrue(Directory.Exists(ClientDir));
+				var files = Directory.GetFiles(ClientDir);
+				Assert.That(files.Count(), Is.EqualTo(2));
 			}
 		}
 
@@ -169,21 +169,25 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				}
 
 				// Проверяем наличие файлов в папках клиентов
-				//var clientDir = Path.Combine(Settings.Default.FTPOptBoxPath, clientCode.ToString());
-				var clientDir = Path.Combine(Settings.Default.DocumentPath, addressId.ToString());
+				var clientDir = ClientDir;
 				Assert.IsTrue(Directory.Exists(clientDir));
 
-				var files = Directory.GetFiles(Path.Combine(clientDir, "Waybills"));
+				var files = Directory.GetFiles(clientDir);
 				Assert.That(files.Count(), Is.GreaterThan(0));
 
 				//проверка на существование файла dbf в новом формате.
-				var files_dbf = Directory.GetFiles(Path.Combine(clientDir, "Waybills"), "*.dbf");
-				Assert.That(files_dbf.Count(), Is.EqualTo(1));
-				var data = Dbf.Load(files_dbf[0], Encoding.GetEncoding(866));
+				var dbfs = Directory.GetFiles(clientDir, "*.dbf");
+				Assert.That(dbfs.Count(), Is.EqualTo(1));
+				var data = Dbf.Load(dbfs[0], Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));
 				Assert.IsTrue(data.Columns.Contains("ttn"));
 				Assert.IsTrue(data.Columns.Contains("przv_post"));
 			}
+		}
+
+		private string ClientDir
+		{
+			get { return Path.Combine(Settings.Default.DocumentPath, address.Id.ToString(), "Waybills"); }
 		}
 
 		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
@@ -203,15 +207,23 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			}
 		}
 
-		private void CopyWaybillFiles(uint newClientDeliveryCode, string ftpWaybillDirectory)
+		private void CopyWaybillFiles()
 		{
-			SetDeliveryCodes(newClientDeliveryCode);
+			SetDeliveryCodes(supplierDeliveryId);
 			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);
 			if (!Directory.Exists(waybillsDir))
 				Directory.CreateDirectory(waybillsDir);
 
-			var waybillForNewClient = @"..\..\Data\Waybills\70983_906384.ZIP";
-			File.Copy(waybillForNewClient, Path.Combine(waybillsDir, String.Format("{0}_{1}", newClientDeliveryCode, Path.GetFileName(waybillForNewClient))));
+			var source = @"..\..\Data\Waybills\70983_906384.ZIP";
+			var destination = Path.Combine(waybillsDir, String.Format("{0}_{1}", supplierDeliveryId, Path.GetFileName(source)));
+			File.Copy(source, destination);
+		}
+
+		private void CreateFakeFile(string name)
+		{
+			var waybillsDir = Path.Combine(Settings.Default.FTPOptBoxPath, ftpWaybillDirectory);
+			var destination = Path.Combine(waybillsDir, String.Format("{0}_{1}", supplierDeliveryId, name));
+			File.WriteAllText(destination, "");
 		}
 	}
 }
