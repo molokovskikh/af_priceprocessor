@@ -20,7 +20,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.SerialNumber, "SERIES")
 				.Line(l => l.Certificates, "CERTNUM")
-				.Line(l => l.Period, "WARESVALID");
+				.Line(l => l.Period, "WARESVALID")
+
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.CertificateAuthority, "CERTORG")
+				.Line(l => l.CertificatesDate, "CERTDATE")
+				.DocumentInvoice(i => i.BuyerName, "BUYERNAME")
+				.DocumentInvoice(i => i.BuyerId, "BUYERCODE")
+				.DocumentInvoice(i => i.SellerName, "SUPNAME")
+				.DocumentInvoice(i => i.RecipientAddress, "CARGERNAME", "COMMENT");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
