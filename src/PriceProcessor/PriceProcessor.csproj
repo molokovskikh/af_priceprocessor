@@ -171,7 +171,6 @@
     <Compile Include="Models\MailContext.cs" />
     <Compile Include="Models\Price.cs" />
     <Compile Include="Models\PriceCost.cs" />
-    <Compile Include="Helpers\FileCleaner.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="Models\Reject.cs" />

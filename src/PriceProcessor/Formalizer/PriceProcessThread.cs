@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
