@@ -303,6 +303,7 @@ namespace Inforoom.PriceProcessor.Downloader
 							}
 							_logger.InfoFormat("Разобрана накладная {0} для заказа {1}", body.baseId, body.@uint);
 						}
+						Ping();
 					}
 				}
 				finally {
