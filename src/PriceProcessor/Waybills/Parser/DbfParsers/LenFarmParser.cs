@@ -50,7 +50,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("NM") &&
 				data.Columns.Contains("SERTIF") &&
 				!data.Columns.Contains("PRICE_PROI") &&
-				data.Columns.Contains("KLI");
+				data.Columns.Contains("KLI") &&
+				data.Columns.Contains("REG_NOM");
 		}
 	}
 }
