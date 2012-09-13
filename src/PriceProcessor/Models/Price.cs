@@ -25,6 +25,9 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual bool IsRejectCancellations { get; set; }
 
+		[Property]
+		public virtual bool IsUpdate { get; set; }
+
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }
 

@@ -319,9 +319,6 @@ namespace Inforoom.Formalizer
 		//код ценовой колонки, может быть не установлен
 		public long? costCode;
 
-		//список прайс-листов, на которых будет использоваться update
-		private List<long> priceCodesUseUpdate;
-
 		//список первичных полей, которые будут участвовать в сопоставлении позиций в прайсах
 		private List<string> primaryFields;
 
@@ -385,13 +382,6 @@ namespace Inforoom.Formalizer
 			_info = priceInfo;
 			_logger = LogManager.GetLogger(GetType());
 			_logger.DebugFormat("Создали класс для обработки файла {0}", priceFileName);
-			//TODO: Все необходимые проверки вынести в конструкторы, чтобы не пытаться открыть прайс-файл
-
-			//TODO: переделать конструктор, чтобы он не зависел от базы данных, т.е. передавать ему все, что нужно для чтения файла, чтобы парсер был самодостаточным
-
-			priceCodesUseUpdate = new List<long>();
-			foreach (string syncPriceCode in Settings.Default.SyncPriceCodes)
-				priceCodesUseUpdate.Add(Convert.ToInt64(syncPriceCode));
 
 			primaryFields = new List<string>();
 			compareFields = new List<string>();
@@ -796,7 +786,7 @@ select @LastSynonymFirmCrCode;");
 			dtCoreCosts = dsMyDB.Tables["CoreCosts"];
 			_logger.Debug("загрузили CoreCosts");
 
-			if (priceCodesUseUpdate.Contains(priceCode)) {
+			if (_info.IsUpdating) {
 				Stopwatch LoadExistsWatch = Stopwatch.StartNew();
 
 				string existsCoreSQL;
@@ -1286,7 +1276,7 @@ where
 
 				string updateUsedSynonymLogs;
 
-				if (priceCodesUseUpdate.Contains(priceCode)) {
+				if (_info.IsUpdating) {
 					Stopwatch GetSQLWatch = Stopwatch.StartNew();
 					insertCoreAndCoreCostsCommandList = GetSQLToUpdateCoreAndCoreCosts(out updateUsedSynonymLogs);
 					GetSQLWatch.Stop();
@@ -1304,7 +1294,7 @@ where
 					mcClear.Parameters.Clear();
 
 					//Производим данные действия, если не надо делать update и очищаем прайс-листы, или если не формализовали прайс-лист и надо его очистить
-					if (!priceCodesUseUpdate.Contains(priceCode) || (dtCore.Rows.Count == 0)) {
+					if (!_info.IsUpdating || dtCore.Rows.Count == 0) {
 						if ((costType == CostTypes.MiltiFile) && (priceType != Settings.Default.ASSORT_FLG)) {
 							mcClear.CommandText = String.Format(@"
 delete
@@ -1362,7 +1352,7 @@ and CoreCosts.PC_CostCode = {1};",
 
 						TimeSpan tsInsertCoreAndCoreCosts = DateTime.UtcNow.Subtract(tmInsertCoreAndCoreCosts);
 
-						if (priceCodesUseUpdate.Contains(priceCode))
+						if (_info.IsUpdating)
 							sbLog.AppendFormat("UpdateToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
 						else
 							sbLog.AppendFormat("InsertToCoreAndCoreCosts={0};{1}  ", applyPositionCount, tsInsertCoreAndCoreCosts);
@@ -1371,7 +1361,7 @@ and CoreCosts.PC_CostCode = {1};",
 						mcClear.Parameters.Clear();
 						sbLog.AppendFormat("UpdateSynonymLogs={0}  ", mcClear.ExecuteNonQuery());
 					}
-					else if (priceCodesUseUpdate.Contains(priceCode))
+					else if (_info.IsUpdating)
 						sbLog.Append("UpdateToCoreAndCoreCosts=0  ");
 					else
 						sbLog.Append("InsertToCoreAndCoreCosts=0  ");
@@ -1478,7 +1468,7 @@ where
 						tryCount++;
 						_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, MyError.Number, MyError.Message);
 						//Производим откат в счетчиках и в Core, CoreCosts, чтобы при перезапуске транзакции было с чем синхронизировать
-						if (priceCodesUseUpdate.Contains(priceCode)) {
+						if (_info.IsUpdating) {
 							_stats.ResetCountersForUpdate();
 							dtExistsCore.RejectChanges();
 							dtExistsCoreCosts.RejectChanges();
