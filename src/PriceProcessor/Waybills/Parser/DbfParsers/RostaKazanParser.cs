@@ -23,7 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCost, "PRICWNDS")
 				.Line(l => l.SupplierPriceMarkup, "NAC")
 				.Line(l => l.NdsAmount, "SUMMANDS")
-				.Line(l => l.Amount, "SUMWONDS")
+				.Line(l => l.Amount, "SUMMA")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.Period, "SROKGODN")
 				.Line(l => l.Certificates, "SERTIF")

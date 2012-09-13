@@ -12,6 +12,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("140952_21"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("04.09.2012"));
 			Assert.That(doc.Invoice.BuyerName, Is.EqualTo("[15] №2, г. Н. Челны, 42/21, р-н ж-д"));
+
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("680012450"));
 			Assert.That(line.Product, Is.EqualTo("911 Окопник гель-бальзам д/сустав 100мл"));
@@ -26,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierCost, Is.EqualTo(46.76));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(13.19));
 			Assert.That(line.NdsAmount, Is.EqualTo(7.13));
-			Assert.That(line.Amount, Is.EqualTo(39.63));
+			Assert.That(line.Amount, Is.EqualTo(46.76));
 			Assert.That(line.SerialNumber, Is.EqualTo("072012"));
 			Assert.That(line.Period, Is.EqualTo("01.01.2014"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU АГ50 Д00015"));
