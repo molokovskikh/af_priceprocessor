@@ -188,6 +188,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulsFK3996ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\RostaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\StatuSParserFixture.cs" />
