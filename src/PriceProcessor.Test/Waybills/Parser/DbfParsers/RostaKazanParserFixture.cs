@@ -33,6 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU АГ50 Д00015"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ОС \" ЕВРОСТРОЙ\""));
 			Assert.That(line.CertificatesDate, Is.EqualTo("17.11.2011"));
+			Assert.That(line.BillOfEntryNumber, Is.Null);
 		}
 	}
 }
