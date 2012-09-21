@@ -331,6 +331,7 @@
     <Compile Include="Waybills\Parser\TxtParsers\Rafel2758TxtParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\SiaVoronezhParser.cs" />
+    <Compile Include="Waybills\Parser\XlsParsers\AVIA_Kos7895XlsParser.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParser.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KazanFarmDbfParser.cs" />
