@@ -83,7 +83,7 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 				String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
 		}
 
-		[Test, Ignore("Не работает на пустой базе")]
+		[Test]
 		public void Double_synonim_test()
 		{
 			With.Connection(c => {
