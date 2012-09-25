@@ -1,96 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Reflection;
-using Castle.ActiveRecord;
-using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor.Models;
-using NHibernate;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
-using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test
 {
-	public class FakeReader : IReader
-	{
-		public IEnumerable<FormalizationPosition> Read()
-		{
-			throw new NotImplementedException();
-		}
-
-		public List<CostDescription> CostDescriptions { get; set; }
-
-		public IEnumerable<Customer> Settings()
-		{
-			throw new NotImplementedException();
-		}
-
-		public void SendWarning(PriceLoggingStat stat)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
 	[TestFixture(Description = "тесты для проверки функциональности ассортимента")]
 	public class AssortmentFixture
 	{
-		[Test]
-		public void Create_synonym_whith_producer_if_this_position_in_assortiment()
-		{
-			TestPriceItem priceItem;
-			var supplier = TestSupplier.Create();
-			using (new SessionScope()) {
-				var price = supplier.Prices[0];
-				priceItem = price.Costs[0].PriceItem;
-				var format = priceItem.Format;
-				format.PriceFormat = PriceFormatType.UniversalXml;
-				format.Save();
-
-				price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м", "Вухан Лифарма Кемикалз Ко");
-				price.Save();
-			}
-			var row = PricesValidator.LoadFormRules(priceItem.Id).Rows[0];
-			var _price = Price.Find(Convert.ToUInt32(row[FormRules.colPriceCode]));
-			NHibernateUtil.Initialize(_price);
-			var priceInfo = new PriceFormalizationInfo(row, _price);
-			var priceParser = new BasePriceParser2(new FakeReader(), priceInfo);
-			priceParser.Prepare();
-			var resolver = (ProducerResolver)typeof(BasePriceParser2)
-				.GetField("_producerResolver", BindingFlags.NonPublic | BindingFlags.Instance)
-				.GetValue(priceParser);
-			//var resolver = priceParser.ProducerResolver;
-			var position = new FormalizationPosition {
-				Pharmacie = true,
-				FirmCr = "TestFirm",
-				CatalogId = 777,
-				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
-			};
-			var assortiment = new DataTable();
-			assortiment.Columns.Add("Id", typeof(uint));
-			assortiment.Columns.Add("CatalogId", typeof(uint));
-			assortiment.Columns.Add("ProducerId", typeof(uint));
-			assortiment.Columns.Add("Checked", typeof(bool));
-			var newAssort = assortiment.NewRow();
-			newAssort["CatalogId"] = 777;
-			newAssort["ProducerId"] = 111;
-			newAssort["Checked"] = true;
-			assortiment.Rows.Add(newAssort);
-			typeof(ProducerResolver)
-				.GetField("_assortment", BindingFlags.NonPublic | BindingFlags.Instance)
-				.SetValue(resolver, assortiment);
-
-			resolver.ResolveProducer(position);
-
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["CodeFirmCr"] = 111);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 0);
-		}
-
 		[Test, Ignore]
 		public void Formalize_test_price()
 		{

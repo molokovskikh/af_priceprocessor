@@ -125,14 +125,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
 		}
 
-		private DataRow GetAssortimentOne(FormalizationPosition position)
-		{
-			var assortiments = _assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
-			if (assortiments.Length == 1)
-				return assortiments[0];
-			return null;
-		}
-
 		private void CheckExclude(FormalizationPosition position)
 		{
 			if (position.IsAutomaticProducerSynonym)
@@ -173,16 +165,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataRow CreateProducerSynonym(FormalizationPosition position)
 		{
 			var synonym = _producerSynonyms.NewRow();
-			var assortiment = GetAssortimentOne(position);
-			if (assortiment != null) {
-				synonym["CodeFirmCr"] = assortiment["ProducerId"];
-				synonym["IsAutomatic"] = 0;
-			}
-			else {
-				synonym["CodeFirmCr"] = DBNull.Value;
-				synonym["IsAutomatic"] = 1;
-			}
+			synonym["CodeFirmCr"] = DBNull.Value;
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
+			synonym["IsAutomatic"] = 1;
 			synonym["Synonym"] = position.FirmCr;
 			synonym["OriginalSynonym"] = position.FirmCr;
 			_producerSynonyms.Rows.Add(synonym);
