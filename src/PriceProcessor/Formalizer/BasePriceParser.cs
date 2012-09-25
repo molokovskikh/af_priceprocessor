@@ -723,7 +723,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, ?CodeFirmCr, ?OriginalSynonym);
 set @LastSynonymFirmCrCode = last_insert_id();
 insert farm.UsedSynonymFirmCrLogs (SynonymFirmCrCode) values (@LastSynonymFirmCrCode);
-SET @insertCommand = if(?IsAutomatic, 'insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);', 'select @LastSynonymFirmCrCode;');
+SET @insertCommand = if(?IsAutomatic, 'insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);', 'select 0');
 PREPARE insertExCom FROM @insertCommand;
 EXECUTE insertExCom;
 select @LastSynonymFirmCrCode;");
