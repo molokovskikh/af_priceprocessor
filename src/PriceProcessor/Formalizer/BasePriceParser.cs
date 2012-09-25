@@ -723,14 +723,11 @@ WHERE SynonymFirmCr.PriceCode={0}
 insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, ?CodeFirmCr, ?OriginalSynonym);
 set @LastSynonymFirmCrCode = last_insert_id();
 insert farm.UsedSynonymFirmCrLogs (SynonymFirmCrCode) values (@LastSynonymFirmCrCode);
-SET @insertCommand = if(?IsAutomatic, 'insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);', 'select 0');
-PREPARE insertExCom FROM @insertCommand;
-EXECUTE insertExCom;
+insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);
 select @LastSynonymFirmCrCode;");
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?PriceCode", MySqlDbType.Int64);
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?OriginalSynonym", MySqlDbType.String);
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?CodeFirmCr", MySqlDbType.Int64);
-			daSynonymFirmCr.InsertCommand.Parameters.Add("?IsAutomatic", MySqlDbType.Bit);
 			daSynonymFirmCr.InsertCommand.Connection = MyConn;
 			dtSynonymFirmCr = dsMyDB.Tables["SynonymFirmCr"];
 			dtSynonymFirmCr.Columns.Add("OriginalSynonym", typeof(string));
@@ -1584,7 +1581,6 @@ where
 					daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
 					daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
 					daSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = drNewProducerSynonym["CodeFirmCr"];
-					daSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = drNewProducerSynonym["IsAutomatic"];
 					drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
 				}
 			}
