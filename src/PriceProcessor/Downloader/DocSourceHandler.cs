@@ -129,6 +129,9 @@ namespace Inforoom.Downloader
 				else if (e is EmailDoubleMessageException)
 					//обрабатываем случай сообщений-дубликатов - логирование как Warning
 					_logger.WarnFormat("Произошла отправка дубликата письма: {0}", e);
+				else if (e is FromParseException)
+					//обрабатываем случай с проблемой разбора списка отправителя - логирование как Warning
+					_logger.Warn("Не разобран список отправителей письма", e);
 				else
 					//отправляем письмо в tech для разбора
 					SendUnrecLetter(m, from, e);

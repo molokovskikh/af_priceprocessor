@@ -317,4 +317,14 @@ namespace Inforoom.Downloader
 		{
 		}
 	}
+
+	/// <summary>
+	/// ¬озникает при обработке мини-почты, когда LumiSoft не смог распарсить список отправителей
+	/// </summary>
+	public class FromParseException : EMailSourceHandlerException
+	{
+		public FromParseException(string message) : base(message)
+		{
+		}
+	}
 }

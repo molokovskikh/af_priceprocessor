@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -70,8 +70,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		private void ParseRecipientAddresses(string[] emails)
 		{
-			// ����������� �� ���� ������� TO � ���� ����� ����
-			// <\d+@docs.analit.net> ��� <\d+@docs.analit.net>
+			// Пробегаемся по всем адресам TO и ищем адрес вида
+			// <\d+@docs.analit.net> или <\d+@docs.analit.net>
 			foreach (var mail in emails) {
 				var recipient = MailRecipient.Parse(mail);
 				if (recipient != null)
@@ -116,6 +116,8 @@ namespace Inforoom.PriceProcessor.Models
 			SHA256MailHash = mime.GetSHA256Hash();
 			Subject = mime.MainEntity.Subject;
 			SupplierEmails = fromSupplierList.Mailboxes.Select(mailbox => mailbox.EmailAddress).Implode();
+			if (fromSupplierList.Mailboxes.Length == 0)
+				throw new FromParseException(String.Format("Не смогли разобрать список отправителей письма для сопоставления с поставщиками:\r\n{0}", mime.MainEntity.HeaderString));
 			Suppliers = GetSuppliersFromList(fromSupplierList.Mailboxes);
 
 			Body = mime.BodyText;
