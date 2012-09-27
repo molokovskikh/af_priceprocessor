@@ -346,6 +346,7 @@
     <Compile Include="Waybills\WaybillOrderMatcherFixture.cs" />
     <Compile Include="Waybills\WaybillServiceFixture.cs" />
     <Compile Include="Waybills\Handlers\WaybillEmailSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\WaybillServiceIntegrationFixture.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.MySql\Common.MySql\Common.MySql.csproj">
