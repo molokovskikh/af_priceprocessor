@@ -45,6 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("GDATE")
 				&& data.Columns.Contains("PRICE2")
+				&& data.Columns.Contains("NUMZ")
 				&& !data.Columns.Contains("SUMITEM");
 		}
 	}
