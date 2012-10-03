@@ -34,6 +34,7 @@ namespace PriceProcessor.Test.Waybills
 			WaybillService.ParseWaybill(log);
 			var savedDoc = session.Query<RejectWaybillLog>().Where(t => t.ClientCode == client.Id && t.Supplier == log.Supplier);
 			Assert.That(savedDoc.Count(), Is.GreaterThan(0));
+			Assert.That(savedDoc.First().RejectReason, Is.EqualTo(RejectReasonType.AddressDisable));
 		}
 	}
 }
