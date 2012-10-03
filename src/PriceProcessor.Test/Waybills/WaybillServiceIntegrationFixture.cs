@@ -19,8 +19,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var log = new DocumentReceiveLog();
 			var client = TestClient.CreateNaked();
-			//client.Addresses[0].Enabled = false;
-			client.Status = ClientStatus.Off;
+			client.Addresses[0].Enabled = false;
 			Save(client);
 			var supplier = TestSupplier.Create();
 
