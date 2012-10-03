@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
@@ -7,6 +8,15 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Models
 {
+	public enum RejectReasonType
+	{
+		[Description("Нет причины")] NoReason = 0,
+		[Description("Адрес отключен")] AddressDisable = 1,
+		[Description("Клиент отключен")] ClientDisable = 2,
+		[Description("Адрес не доступен поставщику")] AddressNoAvailable = 3,
+		[Description("Пользователь не обновлялся более месяца")] UserNotUpdate = 4
+	}
+
 	[ActiveRecord(Schema = "Logs", Lazy = true)]
 	public class RejectWaybillLog
 	{
@@ -23,6 +33,7 @@ namespace Inforoom.PriceProcessor.Models
 			FileName = documentLog.FileName;
 			Addition = documentLog.Comment;
 			DocumentSize = documentLog.DocumentSize;
+			RejectReason = documentLog.RejectReason;
 		}
 
 		[PrimaryKey("RowId")]
@@ -48,5 +59,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual long? DocumentSize { get; set; }
+
+		[Property]
+		public virtual RejectReasonType RejectReason { get; set; }
 	}
 }

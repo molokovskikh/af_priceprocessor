@@ -1,0 +1,1 @@
+ALTER TABLE `logs`.`rejectwaybilllogs` ADD COLUMN `RejectReason` INTEGER UNSIGNED AFTER `AddressId`;
