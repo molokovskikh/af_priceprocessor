@@ -34,7 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Amount, "P_AMNT")
 				.Line(l => l.CertificateAuthority, "SERT_AUTH")
 				.Line(l => l.VitallyImportant, "VT")
-				.Line(l => l.EAN13, "BAR_CODE")
+				.Line(l => l.EAN13, "BAR_CODE", "EAN13")
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Product, "NAME_POST")
 				.Line(l => l.Code, "SP_PRD_ID");
