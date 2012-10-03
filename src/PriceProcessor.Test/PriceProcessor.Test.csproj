@@ -183,6 +183,7 @@
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingVolgogradParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149ParserFixture.cs" />
