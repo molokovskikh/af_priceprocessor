@@ -23,7 +23,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "DATAREGSE")
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.SerialNumber, "SERII")
-				.Line(l => l.NdsAmount, "SUMMANDS");
+				.Line(l => l.NdsAmount, "SUMMANDS")
+
+				.Line(l => l.EAN13, "SHTRIHKOD")
+				.Line(l => l.Amount, "SUMMA")
+				.Line(l => l.BillOfEntryNumber, "N_DECLAR")
+				.DocumentInvoice(i => i.BuyerName, "APTEKA")
+				.DocumentInvoice(i => i.RecipientAddress, "ADDRESS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
