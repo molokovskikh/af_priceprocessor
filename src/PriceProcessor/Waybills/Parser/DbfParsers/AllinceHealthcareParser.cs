@@ -34,6 +34,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SER_NOM")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.VitallyImportant, "VID")
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.Amount, "SUM_SNDS")
+				.Line(l => l.NdsAmount, "SUM_NDS")
+				.Line(l => l.CertificatesDate, "SER_DATE")
 				.ToDocument(document, data);
 			return document;
 		}
