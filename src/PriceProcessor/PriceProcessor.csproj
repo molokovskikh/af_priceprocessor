@@ -310,6 +310,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\PustolyakovAA7759Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaOmskParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Roton2946Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SferaLipetsk12323Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2.cs" />

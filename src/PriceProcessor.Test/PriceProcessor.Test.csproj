@@ -194,6 +194,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\RafelKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RostaOmskParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Roton2946ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalKazanParserFixture.cs" />

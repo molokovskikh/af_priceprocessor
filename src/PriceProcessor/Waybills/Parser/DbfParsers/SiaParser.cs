@@ -120,7 +120,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("PROIZ") &&
 				data.Columns.Contains("COUNTRY") &&
 				data.Columns.Contains("PR_PROIZ") &&
-				data.Columns.Contains("PCT_NDS");
+				data.Columns.Contains("PCT_NDS") &&
+				!data.Columns.Contains("EAN13");
 		}
 	}
 }
