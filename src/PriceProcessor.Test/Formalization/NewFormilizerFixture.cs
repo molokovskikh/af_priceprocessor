@@ -126,6 +126,8 @@ namespace PriceProcessor.Test.Formalization
 
 			using (new SessionScope()) {
 				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+				product.CatalogProduct.Pharmacie = true;
+				product.CatalogProduct.Monobrend = true;
 				product.Save();
 				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 				producer.Save();
@@ -179,7 +181,8 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			using (new SessionScope()) {
-				core.Refresh();
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				core = cores.Single();
 				Assert.That(core.Quantity, Is.EqualTo("25"));
 			}
 		}
@@ -237,9 +240,9 @@ namespace PriceProcessor.Test.Formalization
 				core = cores.Single();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
 				Assert.That(core.Costs.ElementAt(0).Cost, Is.EqualTo(71.88f));
-				Assert.That(core.Costs.ElementAt(0).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(0).Id));
+				Assert.That(core.Costs.ElementAt(0).Id.CostId, Is.EqualTo(price.Costs.ElementAt(0).Id));
 				Assert.That(core.Costs.ElementAt(1).Cost, Is.EqualTo(71.56f));
-				Assert.That(core.Costs.ElementAt(1).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(1).Id));
+				Assert.That(core.Costs.ElementAt(1).Id.CostId, Is.EqualTo(price.Costs.ElementAt(1).Id));
 			}
 
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;72.10;;73.66;");
@@ -247,12 +250,13 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			using (new SessionScope()) {
-				core.Refresh();
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				core = cores.Single();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
 				Assert.That(core.Costs.ElementAt(0).Cost, Is.EqualTo(72.10f));
-				Assert.That(core.Costs.ElementAt(0).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(0).Id));
+				Assert.That(core.Costs.ElementAt(0).Id.CostId, Is.EqualTo(price.Costs.ElementAt(0).Id));
 				Assert.That(core.Costs.ElementAt(1).Cost, Is.EqualTo(73.66f));
-				Assert.That(core.Costs.ElementAt(1).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(2).Id));
+				Assert.That(core.Costs.ElementAt(1).Id.CostId, Is.EqualTo(price.Costs.ElementAt(2).Id));
 			}
 		}
 

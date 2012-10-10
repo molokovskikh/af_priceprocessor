@@ -39,7 +39,7 @@ namespace PriceProcessor.Test
 	public class AssortmentFixture
 	{
 		[Test]
-		public void Create_synonym_whith_producer_if_this_position_in_assortiment()
+		public void Create_synonym_whith_producer_if_this_position_not_in_monobrend()
 		{
 			var producerSynonyms = new DataTable();
 			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
@@ -64,30 +64,69 @@ namespace PriceProcessor.Test
 			assortiment.Columns.Add("ProducerId", typeof(uint));
 			assortiment.Columns.Add("Checked", typeof(bool));
 			var newAssort = assortiment.NewRow();
+			newAssort["Id"] = 77;
+			newAssort["CatalogId"] = 777;
+			newAssort["ProducerId"] = 111;
+			newAssort["Checked"] = true;
+			assortiment.Rows.Add(newAssort);
+			resolver.Assortment = assortiment;
+			var monobrendAssortiment = new DataTable();
+			monobrendAssortiment.Columns.Add("Id", typeof(uint));
+			monobrendAssortiment.Columns.Add("CatalogId", typeof(uint));
+			resolver.MonobrendAssortment = monobrendAssortiment;
+			resolver.ResolveProducer(position);
+
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
+			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 1);
+		}
+		[Test]
+		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
+		{
+			var producerSynonyms = new DataTable();
+			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
+			producerSynonyms.Columns.Add("Synonym", typeof(string));
+			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
+			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
+			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
+			producerSynonyms.Columns.Add("InternalProducerSynonymId");
+			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
+
+			var resolver = new ProducerResolver(null, new FormalizeStats(), null, producerSynonyms);
+			var position = new FormalizationPosition {
+				Pharmacie = true,
+				FirmCr = "TestFirm",
+				CatalogId = 777,
+				Status = UnrecExpStatus.NameForm,
+				Core = new NewCore()
+			};
+			var assortiment = new DataTable();
+			assortiment.Columns.Add("Id", typeof(uint));
+			assortiment.Columns.Add("CatalogId", typeof(uint));
+			assortiment.Columns.Add("ProducerId", typeof(uint));
+			assortiment.Columns.Add("Checked", typeof(bool));
+			var newAssort = assortiment.NewRow();
+			newAssort["Id"] = 77;
 			newAssort["CatalogId"] = 777;
 			newAssort["ProducerId"] = 111;
 			newAssort["Checked"] = true;
 			assortiment.Rows.Add(newAssort);
 			resolver.Assortment = assortiment;
 
+			var monobrendAssortiment = new DataTable();
+			monobrendAssortiment.Columns.Add("Id", typeof(uint));
+			monobrendAssortiment.Columns.Add("CatalogId", typeof(uint));
+			var newMbAssort = monobrendAssortiment.NewRow();
+			newMbAssort["Id"] = 77;
+			newMbAssort["CatalogId"] = 777;
+			monobrendAssortiment.Rows.Add(newMbAssort);
+			resolver.MonobrendAssortment = monobrendAssortiment;
+
 			resolver.ResolveProducer(position);
 
 			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
 			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
 			Assert.IsFalse(Convert.ToBoolean(position.Core.CreatedProducerSynonym["IsAutomatic"]));
-
-			//assortiment.Rows.Remove(newAssort);
-			newAssort["ProducerId"] = 333;
-			newAssort = assortiment.NewRow();
-			newAssort["CatalogId"] = 777;
-			newAssort["ProducerId"] = 222;
-			newAssort["Checked"] = true;
-			assortiment.Rows.Add(newAssort);
-			resolver.ResolveProducer(position);
-
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 1);
 		}
 
 		[Test, Ignore]

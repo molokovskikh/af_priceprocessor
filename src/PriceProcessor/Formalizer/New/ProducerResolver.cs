@@ -15,6 +15,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private FormalizeStats _stats;
 
 		public DataTable Assortment;
+		public DataTable MonobrendAssortment;
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
 
@@ -127,9 +128,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
 		{
-			var assortiments = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
-			if (assortiments.Length == 1)
-				return assortiments[0];
+			var assortmentIds = MonobrendAssortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+			if (assortmentIds.Length != 0) {
+				var assortiments = Assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+				if (assortiments.Length == 1)
+					return assortiments[0];
+			}
 			return null;
 		}
 
@@ -201,6 +205,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			_logger.Debug("загрузили Assortment");
 			Assortment.PrimaryKey = new[] { Assortment.Columns["CatalogId"], Assortment.Columns["ProducerId"] };
 			_logger.Debug("построили индекс по Assortment");
+
+			var daMonobrendAssortment = new MySqlDataAdapter(@"SELECT a.Id, a.CatalogId FROM catalogs.Assortment a join catalogs.catalog c on a.CatalogId = c.Id
+where c.Monobrend = 1 and a.Checked = 1", connection);
+			MonobrendAssortment = new DataTable();
+			daMonobrendAssortment.Fill(MonobrendAssortment);
+			_logger.Debug("загрузили монобрендовый Assortment");
 		}
 	}
 }

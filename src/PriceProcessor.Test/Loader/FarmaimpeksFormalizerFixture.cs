@@ -57,7 +57,7 @@ namespace PriceProcessor.Test.Loader
 			using (new SessionScope())
 				foreach (var price in prices) {
 					Assert.That(TestCore.Queryable.Count(c => c.Price == price), Is.GreaterThan(0), "нет предложений, прайс {0} {1}", price.PriceName, price.Id);
-					Assert.That(TestCost.Queryable.Count(c => c.PriceCost == price.Costs.Single()), Is.GreaterThan(0), "нет цен, прайс {0} {1}", price.PriceName, price.Id);
+					Assert.That(TestCost.Queryable.Count(c => c.Id.CostId == price.Costs.Single().Id), Is.GreaterThan(0), "нет цен, прайс {0} {1}", price.PriceName, price.Id);
 				}
 		}
 
