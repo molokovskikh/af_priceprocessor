@@ -364,5 +364,34 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(337.46));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(362.50));
 		}
+
+		[Test]
+		public void Parse_Sia_Ekaterinburg()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\n216864.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(8));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("00216864"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.10.2012 17:52:03")));
+
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("19636"));
+			Assert.That(line.Product, Is.EqualTo("Ацикловир табл. 200 мг х20"));
+			Assert.That(line.Producer, Is.EqualTo("Белмедпрепараты"));
+			Assert.That(line.Country, Is.EqualTo("Беларусь"));
+			Assert.That(line.Quantity, Is.EqualTo(10));
+			Assert.That(line.Amount, Is.EqualTo(115.5));
+			Assert.That(line.RegistryCost, Is.EqualTo(27.4));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(9.9));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(10.5));
+			Assert.That(line.NdsAmount, Is.EqualTo(10.5));
+			Assert.That(line.SerialNumber, Is.EqualTo("650712"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС BY.ФМ05.Д05769"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("08.08.2012"));
+			Assert.That(line.CertificateSerialNumber, Is.EqualTo("650712"));
+			Assert.That(line.Period, Is.EqualTo("01.08.2014"));
+			Assert.That(line.VitallyImportant, Is.True);
+			Assert.That(line.Nds.Value, Is.EqualTo(10));
+			Assert.That(line.BillOfEntryNumber, Is.EqualTo(""));
+		}
 	}
 }

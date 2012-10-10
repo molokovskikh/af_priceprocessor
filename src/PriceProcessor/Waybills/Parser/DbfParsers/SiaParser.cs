@@ -35,6 +35,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				vitallyImportantColumn = "VITAL";
 			else if (data.Columns.Contains("GVLS"))
 				vitallyImportantColumn = "GVLS";
+			else if (data.Columns.Contains("GNVLS"))
+				vitallyImportantColumn = "GNVLS";
 
 			if (data.Columns.Contains("REESTR"))
 				registryCostColumn = "REESTR";
@@ -84,6 +86,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.SupplierPriceMarkup = ParseHelper.GetDecimal(r["NACENKA"].ToString());
 				line.Quantity = Convert.ToUInt32(r["VOLUME"]);
 				line.Period = Convert.IsDBNull(r["SROK"]) ? null : Convert.ToDateTime(r["SROK"]).ToShortDateString();
+
+				if (data.Columns.Contains("GTD"))
+					line.BillOfEntryNumber = r["GTD"].ToString();
 
 				if (!String.IsNullOrEmpty(registryCostColumn))
 					line.RegistryCost = ParseHelper.GetDecimal(r[registryCostColumn].ToString());
