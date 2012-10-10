@@ -115,7 +115,7 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
-		[Test]
+		[Test, Description("Проверяем, что при формализации прайса мы не создаем автоматический синоним, созданный по ассортименту")]
 		public void Complex_double_firmalize_no_automatic_synonim()
 		{
 			With.Connection(c => {
