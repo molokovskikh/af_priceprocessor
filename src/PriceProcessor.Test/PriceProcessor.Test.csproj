@@ -133,6 +133,7 @@
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="Formalization\BuingMatrixProcessorFixture.cs" />
+    <Compile Include="Formalization\FakeParsers.cs" />
     <Compile Include="Formalization\NewFormilizerFixture.cs" />
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
