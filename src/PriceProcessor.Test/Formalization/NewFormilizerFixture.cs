@@ -125,21 +125,25 @@ namespace PriceProcessor.Test.Formalization
 			});
 
 			using (new SessionScope()) {
-				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
 				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
 				product.Save();
 				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 				producer.Save();
+				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+				price.CreateAssortmentBoundSynonyms(
+					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+					"Санкт-Петербургская ф.ф.");
+				price.Save();
 				TestAssortment.CheckAndCreate(product, producer);
 			}
 
-			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
+			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
+5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
 			Formalize();
 			Formalize();
 
 			using (new SessionScope()) {
-				var synonyms = TestProducerSynonym.Queryable.Where(s => s.Price == price).ToList();
 				With.Connection(c => {
 					var counter = c.CreateCommand();
 					counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
