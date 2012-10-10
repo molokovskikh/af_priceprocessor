@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private PriceFormalizationInfo _priceInfo;
 		private FormalizeStats _stats;
 
-		private DataTable _assortment;
+		public DataTable Assortment;
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
 
@@ -67,17 +67,17 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private void CheckAndCreateAssortment(FormalizationPosition position)
 		{
-			if (_assortment.Rows
+			if (Assortment.Rows
 				.Cast<DataRow>()
 				.Any(r => Convert.ToUInt32(r["CatalogId"]) == Convert.ToUInt32(position.CatalogId.Value)
 					&& Convert.ToUInt32(r["ProducerId"]) == Convert.ToUInt32(position.CodeFirmCr.Value)))
 				return;
 
-			var assortment = _assortment.NewRow();
+			var assortment = Assortment.NewRow();
 			assortment["CatalogId"] = position.CatalogId;
 			assortment["ProducerId"] = position.CodeFirmCr;
 			assortment["Checked"] = false;
-			_assortment.Rows.Add(assortment);
+			Assortment.Rows.Add(assortment);
 		}
 
 
@@ -87,7 +87,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var excludesBuilder = new MySqlCommandBuilder(da);
 			da.InsertCommand = excludesBuilder.GetInsertCommand();
 			da.InsertCommand.CommandTimeout = 0;
-			da.Update(_assortment);
+			da.Update(Assortment);
 		}
 
 		public DataRow Resolve(FormalizationPosition position)
@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
 		{
 			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			var assortment = _assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
+			var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 			foreach (var productSynonym in synonyms) {
 				if (productSynonym["CodeFirmCr"] is DBNull)
 					continue;
@@ -127,7 +127,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
 		{
-			var assortiments = _assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
+			var assortiments = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 			if (assortiments.Length == 1)
 				return assortiments[0];
 			return null;
@@ -196,10 +196,10 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var excludesBuilder = new MySqlCommandBuilder(daAssortment);
 			daAssortment.InsertCommand = excludesBuilder.GetInsertCommand();
 			daAssortment.InsertCommand.CommandTimeout = 0;
-			_assortment = new DataTable();
-			daAssortment.Fill(_assortment);
+			Assortment = new DataTable();
+			daAssortment.Fill(Assortment);
 			_logger.Debug("загрузили Assortment");
-			_assortment.PrimaryKey = new[] { _assortment.Columns["CatalogId"], _assortment.Columns["ProducerId"] };
+			Assortment.PrimaryKey = new[] { Assortment.Columns["CatalogId"], Assortment.Columns["ProducerId"] };
 			_logger.Debug("построили индекс по Assortment");
 		}
 	}
