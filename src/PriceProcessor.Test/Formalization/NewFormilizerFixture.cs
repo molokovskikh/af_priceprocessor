@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
+using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Catalog;
@@ -113,6 +115,46 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
+		[Test, Description("Проверяем, что при формализации прайса мы не создаем автоматический синоним, созданный по ассортименту")]
+		public void Complex_double_firmalize_no_automatic_synonim()
+		{
+			With.Connection(c => {
+				var deleter = c.CreateCommand();
+				deleter.CommandText = "delete from AutomaticProducerSynonyms";
+				deleter.ExecuteNonQuery();
+			});
+
+			using (new SessionScope()) {
+				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+				product.CatalogProduct.Pharmacie = true;
+				product.CatalogProduct.Monobrend = true;
+				product.Save();
+				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+				producer.Save();
+				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+				price.CreateAssortmentBoundSynonyms(
+					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+					"Санкт-Петербургская ф.ф.");
+				price.Save();
+				TestAssortment.CheckAndCreate(product, producer);
+			}
+
+			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
+5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
+
+			Formalize();
+			Formalize();
+
+			using (new SessionScope()) {
+				With.Connection(c => {
+					var counter = c.CreateCommand();
+					counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
+					var count = counter.ExecuteScalar();
+					Assert.That(count, Is.EqualTo(0));
+				});
+			}
+		}
+
 		[Test]
 		public void Update_quantity_if_changed()
 		{
@@ -139,7 +181,8 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			using (new SessionScope()) {
-				core.Refresh();
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				core = cores.Single();
 				Assert.That(core.Quantity, Is.EqualTo("25"));
 			}
 		}
@@ -197,9 +240,9 @@ namespace PriceProcessor.Test.Formalization
 				core = cores.Single();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
 				Assert.That(core.Costs.ElementAt(0).Cost, Is.EqualTo(71.88f));
-				Assert.That(core.Costs.ElementAt(0).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(0).Id));
+				Assert.That(core.Costs.ElementAt(0).Id.CostId, Is.EqualTo(price.Costs.ElementAt(0).Id));
 				Assert.That(core.Costs.ElementAt(1).Cost, Is.EqualTo(71.56f));
-				Assert.That(core.Costs.ElementAt(1).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(1).Id));
+				Assert.That(core.Costs.ElementAt(1).Id.CostId, Is.EqualTo(price.Costs.ElementAt(1).Id));
 			}
 
 			Price(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;25;72.10;;73.66;");
@@ -207,12 +250,13 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 
 			using (new SessionScope()) {
-				core.Refresh();
+				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
+				core = cores.Single();
 				Assert.That(core.Costs.Count, Is.EqualTo(2));
 				Assert.That(core.Costs.ElementAt(0).Cost, Is.EqualTo(72.10f));
-				Assert.That(core.Costs.ElementAt(0).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(0).Id));
+				Assert.That(core.Costs.ElementAt(0).Id.CostId, Is.EqualTo(price.Costs.ElementAt(0).Id));
 				Assert.That(core.Costs.ElementAt(1).Cost, Is.EqualTo(73.66f));
-				Assert.That(core.Costs.ElementAt(1).PriceCost.Id, Is.EqualTo(price.Costs.ElementAt(2).Id));
+				Assert.That(core.Costs.ElementAt(1).Id.CostId, Is.EqualTo(price.Costs.ElementAt(2).Id));
 			}
 		}
 
@@ -446,6 +490,63 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(core.Period, Is.EqualTo(bestUseFor));
 				Assert.That(core.Junk, Is.True);
 			}
+		}
+
+		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
+		{
+			var deleter = connection.CreateCommand();
+			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
+			deleter.ExecuteNonQuery();
+			parser.Prepare();
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
+			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
+		}
+
+		private void FillDaSynonymFirmCr(FakeParser parser, MySqlConnection connection, bool automatic)
+		{
+			var deleter = connection.CreateCommand();
+			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
+			deleter.ExecuteNonQuery();
+			parser.Prepare();
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = null;
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
+			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
+		}
+
+		private void FakeParserSynonymTest(bool Automatic, int AutomaticProducerSynonyms, Type FakeType)
+		{
+			With.Connection(c => {
+				var table = PricesValidator.LoadFormRules(priceItem.Id);
+				var row = table.Rows[0];
+				var info = new PriceFormalizationInfo(row, null);
+				if (FakeType == typeof(FakeParser)) {
+					var parser = new FakeParser(null, c, info);
+					FillDaSynonymFirmCr(parser, c, Automatic);
+				}
+				else {
+					var parser = new FakeParser2(new FakeReader(), info);
+					if (parser.Connection.State != ConnectionState.Open)
+						parser.Connection.Open();
+					FillDaSynonymFirmCr2(parser, c, Automatic);
+					parser.Connection.Close();
+				}
+				var counter = c.CreateCommand();
+				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
+				Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(AutomaticProducerSynonyms));
+			});
+		}
+
+		[Test]
+		public void daSynonymFirmCrTest_NoAutomatic()
+		{
+			FakeParserSynonymTest(false, 0, typeof(FakeParser));
+			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
 		}
 
 		private void Price(string contents)

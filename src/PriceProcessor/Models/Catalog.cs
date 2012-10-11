@@ -17,5 +17,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public bool Hidden { get; set; }
+
+		[Property]
+		public bool Monobrend { get; set; }
 	}
 }
