@@ -366,7 +366,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
-		public void Parse_Sia_Ekaterinburg()
+		public void Parse_Pulse_Ekaterinburg()
 		{
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\n216864.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(8));
@@ -387,10 +387,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SerialNumber, Is.EqualTo("650712"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС BY.ФМ05.Д05769"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("08.08.2012"));
-			Assert.That(line.CertificateSerialNumber, Is.EqualTo("650712"));
 			Assert.That(line.Period, Is.EqualTo("01.08.2014"));
 			Assert.That(line.VitallyImportant, Is.True);
-			Assert.That(line.Nds.Value, Is.EqualTo(10));
+			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo(""));
 		}
 	}
