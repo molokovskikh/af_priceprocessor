@@ -121,6 +121,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
 			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
+			int result;
 			try {
 				var query = session.CreateSQLQuery("delete from farm.unrecexp");
 				query.UniqueResult();
@@ -137,16 +138,16 @@ namespace PriceProcessor.Test.Formalization
 				var newPrice = session.Load<TestPrice>(price.Id);
 				newPrice.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
 				session.Save(newPrice);
-				TestAssortment.CheckAndCreate(product, producer);
 				session.Flush();
 				Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
 				Formalize();
 				query = session.CreateSQLQuery("select count(*) from farm.unrecexp");
-				Assert.That(Convert.ToInt32(query.UniqueResult()) == 0);
+				result = Convert.ToInt32(query.UniqueResult());
 			}
 			finally {
 				sessionHolder.ReleaseSession(session);
 			}
+			Assert.That(result == 0);
 		}
 
 		[Test, Description("Проверяем, что при формализации прайса мы не создаем автоматический синоним, созданный по ассортименту")]
