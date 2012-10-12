@@ -133,10 +133,15 @@ namespace PriceProcessor.Test.Formalization
 				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
 				product.CatalogProduct.Pharmacie = true;
 				session.Save(product);
+				session.Flush();
 				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 				session.Save(producer);
-				var newPrice = session.Load<TestPrice>(price.Id);
-				newPrice.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+				var newPrice = session.Load<Price>(price.Id);
+				newPrice.ProductSynonyms.Add(new ProductSynonym {
+					Price = newPrice,
+					Product = session.Load<Product>(product.Id),
+					Synonym = "9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ"
+				});
 				session.Save(newPrice);
 				session.Flush();
 				Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
