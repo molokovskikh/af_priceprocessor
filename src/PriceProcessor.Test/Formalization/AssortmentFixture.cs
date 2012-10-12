@@ -38,6 +38,67 @@ namespace PriceProcessor.Test
 	[TestFixture(Description = "тесты для проверки функциональности ассортимента")]
 	public class AssortmentFixture
 	{
+		private DataTable _producerSynonyms;
+		private DataTable _assortiment;
+		private DataTable _forbiddenProducers;
+		private DataTable _monobrendAssortiment;
+		[SetUp]
+		public void SetUp()
+		{
+			_producerSynonyms = new DataTable();
+			_producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
+			_producerSynonyms.Columns.Add("Synonym", typeof(string));
+			_producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
+			_producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
+			_producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
+			_producerSynonyms.Columns.Add("InternalProducerSynonymId");
+			_producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
+
+			_assortiment = new DataTable();
+			_assortiment.Columns.Add("Id", typeof(uint));
+			_assortiment.Columns.Add("CatalogId", typeof(uint));
+			_assortiment.Columns.Add("ProducerId", typeof(uint));
+			_assortiment.Columns.Add("Checked", typeof(bool));
+
+			_monobrendAssortiment = new DataTable();
+			_monobrendAssortiment.Columns.Add("Id", typeof(uint));
+			_monobrendAssortiment.Columns.Add("CatalogId", typeof(uint));
+
+			_forbiddenProducers = new DataTable();
+			_forbiddenProducers.Columns.Add("Name", typeof(string));
+		}
+		[Test]
+		public void ProducerInForbiddenListTest()
+		{
+			var newAssort = _assortiment.NewRow();
+			newAssort["Id"] = 77;
+			newAssort["CatalogId"] = 777;
+			newAssort["ProducerId"] = 111;
+			newAssort["Checked"] = true;
+			_assortiment.Rows.Add(newAssort);
+
+			var position = new FormalizationPosition {
+				Pharmacie = true,
+				FirmCr = "TestFirm",
+				CatalogId = 777,
+				Status = UnrecExpStatus.NameForm,
+				Core = new NewCore()
+			};
+
+			var row = _forbiddenProducers.NewRow();
+			row["Name"] = "TestFirm";
+			_forbiddenProducers.Rows.Add(row);
+			var resolver = new ProducerResolver(null, new FormalizeStats(), null, _producerSynonyms);
+			resolver.ForbiddenProdusers = _forbiddenProducers;
+			resolver.Assortment = _assortiment;
+			resolver.MonobrendAssortment = _monobrendAssortiment;
+			resolver.ResolveProducer(position);
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
+			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 0);
+			Assert.IsNotNull(position.NotCreateUnrecExp = true);
+		}
+
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_not_in_monobrend()
 		{

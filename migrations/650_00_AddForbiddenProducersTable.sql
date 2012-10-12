@@ -1,0 +1,6 @@
+CREATE TABLE `farm`.`ForbiddenProducers` (
+  `Id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(255) NOT NULL DEFAULT '',
+  PRIMARY KEY(`Id`)
+)
+ENGINE = InnoDB;

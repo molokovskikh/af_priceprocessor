@@ -816,7 +816,7 @@ and a.FirmCode = p.FirmCode;",
 				else
 					_loggingStat.formCount++;
 
-				if (position.IsNotSet(UnrecExpStatus.FullForm))
+				if (position.IsNotSet(UnrecExpStatus.FullForm) && !position.NotCreateUnrecExp)
 					InsertToUnrec(position);
 
 				if (position.IsSet(UnrecExpStatus.NameForm)) {

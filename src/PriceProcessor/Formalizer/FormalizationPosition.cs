@@ -26,6 +26,8 @@ namespace Inforoom.Formalizer
 		public bool IsAutomaticProducerSynonym { get; set; }
 		public long? InternalProducerSynonymId { get; set; }
 
+		public bool NotCreateUnrecExp { get; set; }
+
 		public void AddStatus(UnrecExpStatus status)
 		{
 			Status |= status;

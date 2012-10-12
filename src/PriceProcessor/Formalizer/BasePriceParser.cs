@@ -1753,7 +1753,7 @@ where
 				else
 					unformCount++;
 
-				if (position.IsNotSet(UnrecExpStatus.FullForm))
+				if (position.IsNotSet(UnrecExpStatus.FullForm) && !position.NotCreateUnrecExp)
 					InsertToUnrec(position);
 				PostProcessPosition(position);
 			} while (Next());

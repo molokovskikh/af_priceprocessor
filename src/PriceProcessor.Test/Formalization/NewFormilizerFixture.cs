@@ -9,6 +9,7 @@ using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using Test.Support;
@@ -112,6 +113,39 @@ namespace PriceProcessor.Test.Formalization
 				var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
 				var core = cores.Single(c => c.ProductSynonym.Name == "911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
 				Assert.That(core.ProducerSynonym, Is.EqualTo(createdSynonym), "создали синоним но не назначили его позиции в core");
+			}
+		}
+
+		[Test]
+		public void FormalizePositionWithForbiddenProducer()
+		{
+			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
+			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
+			try {
+				var query = session.CreateSQLQuery("delete from farm.unrecexp");
+				query.UniqueResult();
+				var forbiddenProducer = new ForbiddenProducerNames {
+					Name = "Валента Фармацевтика/Королев Ф"
+				};
+				session.Save(forbiddenProducer);
+
+				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+				product.CatalogProduct.Pharmacie = true;
+				session.Save(product);
+				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+				session.Save(producer);
+				var newPrice = session.Load<TestPrice>(price.Id);
+				newPrice.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+				session.Save(newPrice);
+				TestAssortment.CheckAndCreate(product, producer);
+				session.Flush();
+				Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
+				Formalize();
+				query = session.CreateSQLQuery("select count(*) from farm.unrecexp");
+				Assert.That(Convert.ToInt32(query.UniqueResult()) == 0);
+			}
+			finally {
+				sessionHolder.ReleaseSession(session);
 			}
 		}
 

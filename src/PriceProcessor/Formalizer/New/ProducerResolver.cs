@@ -16,6 +16,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public DataTable Assortment;
 		public DataTable MonobrendAssortment;
+		public DataTable ForbiddenProdusers;
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
 
@@ -27,6 +28,18 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			_producerSynonyms = producerSynonyms;
 		}
 
+		/// <summary>
+		/// Проверяем, что производитель не занесен в таблицу запрещенных
+		/// </summary>
+		/// <returns></returns>
+		private bool CheckForbiddenProducerName(FormalizationPosition position)
+		{
+			if(ForbiddenProdusers == null)
+				return false;
+			var name = ForbiddenProdusers.Select(String.Format("Name = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+			return name.Length > 0;
+		}
+
 		public void ResolveProducer(FormalizationPosition position)
 		{
 			if (!position.IsSet(UnrecExpStatus.NameForm))
@@ -36,7 +49,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				position.AddStatus(UnrecExpStatus.FirmForm);
 				return;
 			}
-
+			position.NotCreateUnrecExp = CheckForbiddenProducerName(position);
 			var synonym = Resolve(position);
 			if (synonym == null)
 				synonym = CreateProducerSynonym(position);
@@ -54,7 +67,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 					position.Core.CreatedProducerSynonym = synonym;
 			}
 
-			if (!position.IsAutomaticProducerSynonym)
+			if (!position.IsAutomaticProducerSynonym && !position.NotCreateUnrecExp)
 				position.AddStatus(UnrecExpStatus.FirmForm);
 
 /*
@@ -62,7 +75,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				CheckAndCreateAssortment(position);
 */
 
-			if (position.CodeFirmCr == null)
+			if (position.CodeFirmCr == null && !position.NotCreateUnrecExp)
 				CheckExclude(position);
 		}
 
@@ -184,7 +197,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			}
 			else {
 				synonym["CodeFirmCr"] = DBNull.Value;
-				synonym["IsAutomatic"] = 1;
+				if(position.NotCreateUnrecExp) {
+					synonym["IsAutomatic"] = 0;
+				}
+				else {
+					synonym["IsAutomatic"] = 1;
+				}
 			}
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
 			synonym["Synonym"] = position.FirmCr;
@@ -211,6 +229,11 @@ where c.Monobrend = 1 and a.Checked = 1", connection);
 			MonobrendAssortment = new DataTable();
 			daMonobrendAssortment.Fill(MonobrendAssortment);
 			_logger.Debug("загрузили монобрендовый Assortment");
+
+			var daForbiddenProducers = new MySqlDataAdapter(@"Select LOWER(a.Name) as Name from farm.ForbiddenProducers a", connection);
+			ForbiddenProdusers = new DataTable();
+			daForbiddenProducers.Fill(ForbiddenProdusers);
+			_logger.Debug("загрузили запрещенные имена производителей");
 		}
 	}
 }
