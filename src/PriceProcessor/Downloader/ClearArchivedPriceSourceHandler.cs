@@ -6,7 +6,7 @@ namespace Inforoom.Downloader
 {
 	public class ClearArchivedPriceSourceHandler : AbstractHandler
 	{
-		//Время последнего сканирования каталога
+		//Р’СЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ СЃРєР°РЅРёСЂРѕРІР°РЅРёСЏ РєР°С‚Р°Р»РѕРіР°
 		private DateTime lastScan;
 		private readonly string _downHistoryPath = Settings.Default.HistoryPath;
 
@@ -17,7 +17,7 @@ namespace Inforoom.Downloader
 
 		public override void ProcessData()
 		{
-			//Сканируем через некоторое время
+			//РЎРєР°РЅРёСЂСѓРµРј С‡РµСЂРµР· РЅРµРєРѕС‚РѕСЂРѕРµ РІСЂРµРјСЏ
 			if (DateTime.Now.Subtract(lastScan).TotalHours <= Settings.Default.ClearScanInterval)
 				return;
 
@@ -26,7 +26,7 @@ namespace Inforoom.Downloader
 			foreach (var priceFile in archivedPrices) {
 				var fileLastWrite = File.GetLastWriteTime(priceFile);
 
-				//Если разность в днях больше чем в настройки, то файл удяляем
+				//Р•СЃР»Рё СЂР°Р·РЅРѕСЃС‚СЊ РІ РґРЅСЏС… Р±РѕР»СЊС€Рµ С‡РµРј РІ РЅР°СЃС‚СЂРѕР№РєРё, С‚Рѕ С„Р°Р№Р» СѓРґСЏР»СЏРµРј
 				if (DateTime.Now.Subtract(fileLastWrite).TotalDays > Settings.Default.DepthOfStorageArchivePrices)
 					File.Delete(priceFile);
 			}

@@ -53,7 +53,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(supplierId));
-				Assert.That(logs[0].Comment.Contains("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа."), Is.True);
+				Assert.That(logs[0].Comment.Contains("РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ SupplierClientId(FirmClientCode) Рё SupplierDeliveryId(FirmClientCode2) РёР· РґРѕРєСѓРјРµРЅС‚Р°."), Is.True);
 			}
 		}
 
@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(supplierId));
-				Assert.That(logs[0].Comment.Contains("Количество позиций в документе не соответствует значению в заголовке документа"), Is.True);
+				Assert.That(logs[0].Comment.Contains("РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№ РІ РґРѕРєСѓРјРµРЅС‚Рµ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р·РЅР°С‡РµРЅРёСЋ РІ Р·Р°РіРѕР»РѕРІРєРµ РґРѕРєСѓРјРµРЅС‚Р°"), Is.True);
 			}
 		}
 
@@ -83,7 +83,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(supplierId));
-				Assert.That(logs[0].Comment.Contains("Дублирующийся документ"), Is.True);
+				Assert.That(logs[0].Comment.Contains("Р”СѓР±Р»РёСЂСѓСЋС‰РёР№СЃСЏ РґРѕРєСѓРјРµРЅС‚"), Is.True);
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Id > maxLogId).ToList();
 				Assert.That(logs.Count, Is.EqualTo(1));
 				Assert.That(logs[0].Supplier.Id, Is.EqualTo(supplierId));
-				Assert.That(logs[0].Comment, Is.EqualTo("Получен с нашего FTP"));
+				Assert.That(logs[0].Comment, Is.EqualTo("РџРѕР»СѓС‡РµРЅ СЃ РЅР°С€РµРіРѕ FTP"));
 			}
 		}
 	}

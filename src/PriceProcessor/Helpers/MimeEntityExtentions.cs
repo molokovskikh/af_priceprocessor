@@ -46,29 +46,29 @@ namespace Inforoom.PriceProcessor.Helpers
 
 		public static AddressList GetAddressList(Mime m)
 		{
-			// Заполняем список адресов From
+			// Р—Р°РїРѕР»РЅСЏРµРј СЃРїРёСЃРѕРє Р°РґСЂРµСЃРѕРІ From
 			var from = new AddressList();
 			bool senderFound = false;
 
-			// адрес из поля Sender, может быть не установлен
+			// Р°РґСЂРµСЃ РёР· РїРѕР»СЏ Sender, РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 			string senderAddress = null;
-			// Если поле установлено и адрес не пустой
+			// Р•СЃР»Рё РїРѕР»Рµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ Рё Р°РґСЂРµСЃ РЅРµ РїСѓСЃС‚РѕР№
 			if ((m.MainEntity.Sender != null) &&
 				!String.IsNullOrEmpty(m.MainEntity.Sender.EmailAddress)) {
-				// получаем корректный адрес
+				// РїРѕР»СѓС‡Р°РµРј РєРѕСЂСЂРµРєС‚РЅС‹Р№ Р°РґСЂРµСЃ
 				senderAddress = GetCorrectEmailAddress(m.MainEntity.Sender.EmailAddress);
-				// Если адрес получился некорректным, то сбрасываем значение поля
+				// Р•СЃР»Рё Р°РґСЂРµСЃ РїРѕР»СѓС‡РёР»СЃСЏ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹Рј, С‚Рѕ СЃР±СЂР°СЃС‹РІР°РµРј Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ
 				if (!IsMailAddress(senderAddress))
 					senderAddress = null;
 			}
-			// Иногда список адресов оказывается пуст - СПАМ
+			// РРЅРѕРіРґР° СЃРїРёСЃРѕРє Р°РґСЂРµСЃРѕРІ РѕРєР°Р·С‹РІР°РµС‚СЃСЏ РїСѓСЃС‚ - РЎРџРђРњ
 			if (m.MainEntity.From != null) {
 				foreach (var a in m.MainEntity.From.Mailboxes) {
-					//Проверяем, что адрес что-то содержит
+					//РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ Р°РґСЂРµСЃ С‡С‚Рѕ-С‚Рѕ СЃРѕРґРµСЂР¶РёС‚
 					if (!String.IsNullOrEmpty(a.EmailAddress)) {
-						// получам корректный адрес
+						// РїРѕР»СѓС‡Р°Рј РєРѕСЂСЂРµРєС‚РЅС‹Р№ Р°РґСЂРµСЃ
 						var correctAddress = GetCorrectEmailAddress(a.EmailAddress);
-						// Если после всех проверок адрес является EMail-адресом, то добавляем в список
+						// Р•СЃР»Рё РїРѕСЃР»Рµ РІСЃРµС… РїСЂРѕРІРµСЂРѕРє Р°РґСЂРµСЃ СЏРІР»СЏРµС‚СЃСЏ EMail-Р°РґСЂРµСЃРѕРј, С‚Рѕ РґРѕР±Р°РІР»СЏРµРј РІ СЃРїРёСЃРѕРє
 						if (IsMailAddress(correctAddress)) {
 							@from.Add(new MailboxAddress(correctAddress));
 							if (!String.IsNullOrEmpty(senderAddress) &&
@@ -82,8 +82,8 @@ namespace Inforoom.PriceProcessor.Helpers
 			if (!String.IsNullOrEmpty(senderAddress) && !senderFound)
 				@from.Add(new MailboxAddress(senderAddress));
 
-			// Иногда список адресов оказывается пуст - СПАМ,
-			// в этом случае создаем пустую коллекцию, чтобы все было в порядке
+			// РРЅРѕРіРґР° СЃРїРёСЃРѕРє Р°РґСЂРµСЃРѕРІ РѕРєР°Р·С‹РІР°РµС‚СЃСЏ РїСѓСЃС‚ - РЎРџРђРњ,
+			// РІ СЌС‚РѕРј СЃР»СѓС‡Р°Рµ СЃРѕР·РґР°РµРј РїСѓСЃС‚СѓСЋ РєРѕР»Р»РµРєС†РёСЋ, С‡С‚РѕР±С‹ РІСЃРµ Р±С‹Р»Рѕ РІ РїРѕСЂСЏРґРєРµ
 			if (m.MainEntity.To == null)
 				m.MainEntity.To = new AddressList();
 

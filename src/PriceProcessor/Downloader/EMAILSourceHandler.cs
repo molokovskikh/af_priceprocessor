@@ -32,7 +32,7 @@ namespace Inforoom.Downloader
 
 		public void ProcessBrokenMessage(IMAP_FetchItem item, IMAP_FetchItem[] OneItem, Exception ex)
 		{
-			_logger.Error("Ошибка при обработке письма", ex);
+			_logger.Error("РћС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ РїРёСЃСЊРјР°", ex);
 			MemoryStream ms = null;
 			if (OneItem != null && OneItem.Length > 0 && OneItem[0].MessageData != null)
 				ms = new MemoryStream(OneItem[0].MessageData);
@@ -59,8 +59,8 @@ namespace Inforoom.Downloader
 				ProcessAttachs(m, from);
 			}
 			catch (EMailSourceHandlerException e) {
-				// Формируем список приложений, чтобы использовать
-				// его при отчете о нераспознанном письме
+				// Р¤РѕСЂРјРёСЂСѓРµРј СЃРїРёСЃРѕРє РїСЂРёР»РѕР¶РµРЅРёР№, С‡С‚РѕР±С‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ
+				// РµРіРѕ РїСЂРё РѕС‚С‡РµС‚Рµ Рѕ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅРѕРј РїРёСЃСЊРјРµ
 				ErrorOnMessageProcessing(m, from, e);
 			}
 		}
@@ -86,17 +86,17 @@ namespace Inforoom.Downloader
 #endif
 				FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
 					m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, exception.Message);
-				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("Письмо не распознано.Причина : {0}; Тема :{1}; От : {2}",
+				DownloadLogEntity.Log((ulong)PriceSourceType.EMail, String.Format("РџРёСЃСЊРјРѕ РЅРµ СЂР°СЃРїРѕР·РЅР°РЅРѕ.РџСЂРёС‡РёРЅР° : {0}; РўРµРјР° :{1}; РћС‚ : {2}",
 					exception.Message, m.MainEntity.Subject, from.ToAddressListString()));
 			}
 			catch (Exception exMatch) {
-				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
+				_logger.Error("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅРѕРµ РїРёСЃСЊРјРѕ", exMatch);
 			}
 		}
 
 		protected virtual void ProcessAttachs(Mime m, AddressList fromList)
 		{
-			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+			//РћРґРёРЅ РёР· Р°С‚С‚Р°С‡РјРµРЅС‚РѕРІ РїРёСЃСЊРјР° СЃРѕРІРїР°Р» СЃ РёСЃС‚РѕС‡РЅРёРєРѕРј, РёРЅР°С‡Рµ - РїРёСЃСЊРјРѕ РЅРµ СЂР°СЃРїРѕР·РЅР°РЅРѕ
 			var matched = false;
 
 			var attachmentFileName = string.Empty;
@@ -109,26 +109,26 @@ namespace Inforoom.Downloader
 			}
 
 			if (!matched)
-				throw new EMailSourceHandlerException("Не найден источник.");
+				throw new EMailSourceHandlerException("РќРµ РЅР°Р№РґРµРЅ РёСЃС‚РѕС‡РЅРёРє.");
 		}
 
 		/// <summary>
-		/// Проверяет, что письмо содержит вложения
+		/// РџСЂРѕРІРµСЂСЏРµС‚, С‡С‚Рѕ РїРёСЃСЊРјРѕ СЃРѕРґРµСЂР¶РёС‚ РІР»РѕР¶РµРЅРёСЏ
 		/// </summary>
 		public virtual void CheckMime(Mime m)
 		{
 			if (m.Attachments.Length == 0)
-				throw new EMailSourceHandlerException("Письмо не содержит вложений.");
+				throw new EMailSourceHandlerException("РџРёСЃСЊРјРѕ РЅРµ СЃРѕРґРµСЂР¶РёС‚ РІР»РѕР¶РµРЅРёР№.");
 		}
 
 		/// <summary>
-		/// Происходит разбор собственно вложения и сверка его с источниками
+		/// РџСЂРѕРёСЃС…РѕРґРёС‚ СЂР°Р·Р±РѕСЂ СЃРѕР±СЃС‚РІРµРЅРЅРѕ РІР»РѕР¶РµРЅРёСЏ Рё СЃРІРµСЂРєР° РµРіРѕ СЃ РёСЃС‚РѕС‡РЅРёРєР°РјРё
 		/// </summary>
 		private void UnPack(Mime m, ref bool Matched, AddressList FromList, string ShortFileName)
 		{
-			//Раньше не проверялся весь список From, теперь это делается. Туда же добавляется и Sender
+			//Р Р°РЅСЊС€Рµ РЅРµ РїСЂРѕРІРµСЂСЏР»СЃСЏ РІРµСЃСЊ СЃРїРёСЃРѕРє From, С‚РµРїРµСЂСЊ СЌС‚Рѕ РґРµР»Р°РµС‚СЃСЏ. РўСѓРґР° Р¶Рµ РґРѕР±Р°РІР»СЏРµС‚СЃСЏ Рё Sender
 			foreach (var mbFrom in FromList.Mailboxes) {
-				//Раньше не проверялся весь список TO, теперь это делается
+				//Р Р°РЅСЊС€Рµ РЅРµ РїСЂРѕРІРµСЂСЏР»СЃСЏ РІРµСЃСЊ СЃРїРёСЃРѕРє TO, С‚РµРїРµСЂСЊ СЌС‚Рѕ РґРµР»Р°РµС‚СЃСЏ
 				foreach (var mba in m.MainEntity.To.Mailboxes) {
 					var drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
 						SourcesTableColumns.colEMailTo, MimeEntityExtentions.GetCorrectEmailAddress(mba.EmailAddress),
@@ -141,7 +141,7 @@ namespace Inforoom.Downloader
 							if (priceMaskIsMatched) {
 								SetCurrentPriceCode(drS);
 
-								// Пробуем разархивировать
+								// РџСЂРѕР±СѓРµРј СЂР°Р·Р°СЂС…РёРІРёСЂРѕРІР°С‚СЊ
 								var correctArchive = CheckFile(drS["ArchivePassword"].ToString());
 
 								if (correctArchive) {
@@ -151,14 +151,14 @@ namespace Inforoom.Downloader
 										LogDownloadedPrice((ulong)PriceSourceType.EMail, Path.GetFileName(CurrFileName), extrFile);
 									}
 									else {
-										LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось обработать файл '" +
+										LogDownloaderFail((ulong)PriceSourceType.EMail, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р» '" +
 											Path.GetFileName(CurrFileName) + "'",
 											Path.GetFileName(CurrFileName));
 									}
 								}
 								else {
-									LogDownloaderFail((ulong)PriceSourceType.EMail, "Не удалось распаковать файл '" +
-										Path.GetFileName(CurrFileName) + "'. Файл поврежден",
+									LogDownloaderFail((ulong)PriceSourceType.EMail, "РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃРїР°РєРѕРІР°С‚СЊ С„Р°Р№Р» '" +
+										Path.GetFileName(CurrFileName) + "'. Р¤Р°Р№Р» РїРѕРІСЂРµР¶РґРµРЅ",
 										Path.GetFileName(CurrFileName));
 								}
 								drS.Delete();
@@ -193,7 +193,7 @@ namespace Inforoom.Downloader
 			var fileName = CurrFileName;
 			var tempExtractDir = CurrFileName + ExtrDirSuffix;
 
-			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+			//РЇРІР»СЏРµС‚СЃСЏ Р»Рё СЃРєР°С‡Р°РЅРЅС‹Р№ С„Р°Р№Р» РєРѕСЂСЂРµРєС‚РЅС‹Рј, РµСЃР»Рё РЅРµС‚, С‚Рѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РЅРµ Р±СѓРґРµРј
 			if (ArchiveHelper.IsArchive(fileName)) {
 				if (ArchiveHelper.TestArchive(fileName, archivePassword)) {
 					try {
@@ -266,14 +266,14 @@ namespace Inforoom.Downloader
 					Send(responseMime);
 				}
 				else
-					_logger.ErrorFormat("Для исключения '{0}' не установлен шаблон", e.GetType());
+					_logger.ErrorFormat("Р”Р»СЏ РёСЃРєР»СЋС‡РµРЅРёСЏ '{0}' РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ С€Р°Р±Р»РѕРЅ", e.GetType());
 			}
 			catch (Exception exception) {
-				_logger.WarnFormat("Ошибка при отправке письма поставщику: {0}", exception);
+				_logger.WarnFormat("РћС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ РїРёСЃСЊРјР° РїРѕСЃС‚Р°РІС‰РёРєСѓ: {0}", exception);
 			}
 		}
 
-		//для того что бы перекрыть в тестах
+		//РґР»СЏ С‚РѕРіРѕ С‡С‚Рѕ Р±С‹ РїРµСЂРµРєСЂС‹С‚СЊ РІ С‚РµСЃС‚Р°С…
 		protected virtual void Send(Mime mime)
 		{
 			SmtpClientEx.QuickSendSmartHost(Settings.Default.SMTPHost, 25, String.Empty, mime);
@@ -310,7 +310,7 @@ namespace Inforoom.Downloader
 		}
 	}
 
-	//Класс исключений для ситуации возникновения "Письмо было отброшено как дубликат."
+	//РљР»Р°СЃСЃ РёСЃРєР»СЋС‡РµРЅРёР№ РґР»СЏ СЃРёС‚СѓР°С†РёРё РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ "РџРёСЃСЊРјРѕ Р±С‹Р»Рѕ РѕС‚Р±СЂРѕС€РµРЅРѕ РєР°Рє РґСѓР±Р»РёРєР°С‚."
 	public class EmailDoubleMessageException : EMailSourceHandlerException
 	{
 		public EmailDoubleMessageException(string message) : base(message)
@@ -319,7 +319,7 @@ namespace Inforoom.Downloader
 	}
 
 	/// <summary>
-	/// Возникает при обработке мини-почты, когда LumiSoft не смог распарсить список отправителей
+	/// Р’РѕР·РЅРёРєР°РµС‚ РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ РјРёРЅРё-РїРѕС‡С‚С‹, РєРѕРіРґР° LumiSoft РЅРµ СЃРјРѕРі СЂР°СЃРїР°СЂСЃРёС‚СЊ СЃРїРёСЃРѕРє РѕС‚РїСЂР°РІРёС‚РµР»РµР№
 	/// </summary>
 	public class FromParseException : EMailSourceHandlerException
 	{

@@ -11,15 +11,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var document = WaybillParser.Parse("PT001870.DBF");
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("›œ“0001870"));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("–≠–ü–¢0001870"));
 			Assert.That(document.DocumentDate, Is.EqualTo(DateTime.Parse("13.05.2010")));
 			var line = document.Lines[0];
-			Assert.That(line.Code, Is.EqualTo("›0001549"));
-			Assert.That(line.Product, Is.EqualTo("¿ÒÍÓÛÚËÌ Ú‡·Î π50"));
-			Assert.That(line.Producer, Is.EqualTo("¬ËÙËÚÂı"));
+			Assert.That(line.Code, Is.EqualTo("–≠0001549"));
+			Assert.That(line.Product, Is.EqualTo("–ê—Å–∫–æ—Ä—É—Ç–∏–Ω —Ç–∞–±–ª ‚Ññ50"));
+			Assert.That(line.Producer, Is.EqualTo("–í–∏—Ñ–∏—Ç–µ—Ö"));
 			Assert.That(line.Country, Is.EqualTo("         1"));
 			Assert.That(line.SerialNumber, Is.EqualTo("011209"));
-			Assert.That(line.Certificates, Is.EqualTo("–Œ—— RU.‘Ã08.ƒ66127"));
+			Assert.That(line.Certificates, Is.EqualTo("–†–û–°–° RU.–§–ú08.–î66127"));
 			Assert.That(line.Period, Is.EqualTo("01.01.2013"));
 			Assert.That(line.Quantity, Is.EqualTo(10));
 			Assert.That(line.SupplierCost, Is.EqualTo(27.4));

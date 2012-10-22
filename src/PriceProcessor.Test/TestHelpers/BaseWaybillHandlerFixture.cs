@@ -147,9 +147,9 @@ and a.Id = ?AddressId
 		protected void SetConvertDocumentSettings()
 		{
 			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
-			//запоминаем начальное состояние настройки
+			//Р·Р°РїРѕРјРёРЅР°РµРј РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РЅР°СЃС‚СЂРѕР№РєРё
 			var isConvertFormat = settings.IsConvertFormat;
-			//и если оно не включено, то включим принудительно для теста
+			//Рё РµСЃР»Рё РѕРЅРѕ РЅРµ РІРєР»СЋС‡РµРЅРѕ, С‚Рѕ РІРєР»СЋС‡РёРј РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РґР»СЏ С‚РµСЃС‚Р°
 			if (!isConvertFormat) {
 				using (new TransactionScope()) {
 					settings.IsConvertFormat = true;
@@ -162,7 +162,7 @@ and a.Id = ?AddressId
 		protected void CopyFilesFromDataDirectory(string[] fileNames)
 		{
 			var dataDirectory = Path.GetFullPath(Settings.Default.TestDataDirectory);
-			// Копируем файлы в папку поставщика
+			// РљРѕРїРёСЂСѓРµРј С„Р°Р№Р»С‹ РІ РїР°РїРєСѓ РїРѕСЃС‚Р°РІС‰РёРєР°
 			foreach (var fileName in fileNames)
 				File.Copy(Path.Combine(dataDirectory, fileName), Path.Combine(waybillDir, fileName));
 		}

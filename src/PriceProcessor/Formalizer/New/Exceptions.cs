@@ -58,11 +58,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	public class RollbackFormalizeException : WarningFormalizeException
 	{
 		public readonly int FormCount = -1;
-		//Кол-во "нулей"
+		//РљРѕР»-РІРѕ "РЅСѓР»РµР№"
 		public readonly int ZeroCount = -1;
-		//Кол-во нераспознанных событий
+		//РљРѕР»-РІРѕ РЅРµСЂР°СЃРїРѕР·РЅР°РЅРЅС‹С… СЃРѕР±С‹С‚РёР№
 		public readonly int UnformCount = -1;
-		//Кол-во "запрещенных" позиций
+		//РљРѕР»-РІРѕ "Р·Р°РїСЂРµС‰РµРЅРЅС‹С…" РїРѕР·РёС†РёР№
 		public readonly int ForbCount = -1;
 
 		public RollbackFormalizeException(string message) : base(message)

@@ -17,7 +17,7 @@ namespace Inforoom.Formalizer
 		{
 			re = new Regex(Settings.Default.DateMask);
 			EngMonth = new String[] { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
-			RusMonth = new String[] { "ﬂÕ¬", "‘≈¬", "Ã¿–", "¿œ–", "Ã¿…", "»ﬁÕ", "»ﬁÀ", "¿¬√", "—≈Õ", "Œ “", "ÕŒﬂ", "ƒ≈ " };
+			RusMonth = new String[] { "–Ø–ù–í", "–§–ï–í", "–ú–ê–†", "–ê–ü–†", "–ú–ê–ô", "–ò–Æ–ù", "–ò–Æ–õ", "–ê–í–ì", "–°–ï–ù", "–û–ö–¢", "–ù–û–Ø", "–î–ï–ö" };
 		}
 
 		public DateTime Analyze(string Input)

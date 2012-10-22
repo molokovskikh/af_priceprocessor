@@ -29,7 +29,7 @@ namespace Inforoom.Formalizer
 				// Set the validation settings.
 				XmlReaderSettings settings = new XmlReaderSettings();
 				settings.ValidationType = System.Xml.ValidationType.None;
-				//Если установим CallBack, то будем получать все ошибки в нем. Если не установим, то получем первую и завершим разбор
+				//Р•СЃР»Рё СѓСЃС‚Р°РЅРѕРІРёРј CallBack, С‚Рѕ Р±СѓРґРµРј РїРѕР»СѓС‡Р°С‚СЊ РІСЃРµ РѕС€РёР±РєРё РІ РЅРµРј. Р•СЃР»Рё РЅРµ СѓСЃС‚Р°РЅРѕРІРёРј, С‚Рѕ РїРѕР»СѓС‡РµРј РїРµСЂРІСѓСЋ Рё Р·Р°РІРµСЂС€РёРј СЂР°Р·Р±РѕСЂ
 				//settings.ValidationEventHandler += new ValidationEventHandler(test79ValidationCallBack);
 				//settings.Schemas.Add(XmlSchema.Read(new StreamReader("CommerceML.xsd", Encoding.Default), test79SchemaValidationCallBack));
 				settings.Schemas.Add(XmlSchema.Read(new StringReader(PriceProcessorResource.CommerceML), null));
@@ -44,11 +44,11 @@ namespace Inforoom.Formalizer
 					i++;
 				}
 
-				//Создаем класс для выполнения XSLT-преобразований
+				//РЎРѕР·РґР°РµРј РєР»Р°СЃСЃ РґР»СЏ РІС‹РїРѕР»РЅРµРЅРёСЏ XSLT-РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёР№
 				XslCompiledTransform xslt = new XslCompiledTransform();
 				xslt.Load(XmlReader.Create(new StringReader(PriceProcessorResource.PriceProtek)));
 
-				//Производим преобразование
+				//РџСЂРѕРёР·РІРѕРґРёРј РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ
 				newXMLFile = Path.GetDirectoryName(priceFileName) + Path.DirectorySeparatorChar + "PriceProtek.xml";
 				if (File.Exists(newXMLFile)) {
 					File.Delete(newXMLFile);
@@ -63,7 +63,7 @@ namespace Inforoom.Formalizer
 				dtPrice = ds.Tables["Position"];
 			}
 			catch (System.Xml.Schema.XmlSchemaException xex) {
-				throw new Exception(String.Format("Не получилось прочитать XML-файл, строка {0}, позиция {1}, ошибка : {2}", xex.LineNumber, xex.LinePosition, xex.Message), xex);
+				throw new Exception(String.Format("РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ XML-С„Р°Р№Р», СЃС‚СЂРѕРєР° {0}, РїРѕР·РёС†РёСЏ {1}, РѕС€РёР±РєР° : {2}", xex.LineNumber, xex.LinePosition, xex.Message), xex);
 			}
 
 			CurrPos = 0;

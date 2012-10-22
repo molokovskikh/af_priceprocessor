@@ -126,7 +126,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 						{ "scale", 2 },
 					}
 				},
-				//дополнительные поля
+				//РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РїРѕР»СЏ
 				new DataColumn("sp_markup", typeof(decimal)),
 				new DataColumn("p_nds_amnt", typeof(decimal)),
 				new DataColumn("p_amnt", typeof(decimal)),

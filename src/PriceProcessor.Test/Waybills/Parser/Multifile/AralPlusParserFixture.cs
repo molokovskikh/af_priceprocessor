@@ -21,16 +21,16 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 			var line = doc.Lines[0];
 
 			Assert.That(line.Code, Is.EqualTo("12947"));
-			Assert.That(line.Product, Is.EqualTo("Метеоспазмил, капс.№20"));
-			Assert.That(line.Producer, Is.EqualTo("Майоли Спиндлер"));
-			Assert.That(line.Country, Is.EqualTo("Франция"));
+			Assert.That(line.Product, Is.EqualTo("РњРµС‚РµРѕСЃРїР°Р·РјРёР», РєР°РїСЃ.в„–20"));
+			Assert.That(line.Producer, Is.EqualTo("РњР°Р№РѕР»Рё РЎРїРёРЅРґР»РµСЂ"));
+			Assert.That(line.Country, Is.EqualTo("Р¤СЂР°РЅС†РёСЏ"));
 			Assert.That(line.Quantity, Is.EqualTo(5));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(179.272));
 			Assert.That(line.SupplierCost, Is.EqualTo(197.2));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SerialNumber, Is.EqualTo("vn4415"));
 			Assert.That(line.Period, Is.EqualTo("01.12.2012"));
-			Assert.That(line.Certificates, Is.EqualTo("РОСС.FR.ФМ08.Д98850"));
+			Assert.That(line.Certificates, Is.EqualTo("Р РћРЎРЎ.FR.Р¤Рњ08.Р”98850"));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(179.27));
 

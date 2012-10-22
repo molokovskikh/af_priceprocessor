@@ -15,12 +15,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 	}
 
 	/// <summary>
-	/// Осуществляет сохранение накладной в SST формате.
+	/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ СЃРѕС…СЂР°РЅРµРЅРёРµ РЅР°РєР»Р°РґРЅРѕР№ РІ SST С„РѕСЂРјР°С‚Рµ.
 	/// </summary>
 	public class Exporter
 	{
 		/// <summary>
-		/// Сохраняет данные в файл.
+		/// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р».
 		/// </summary>
 		public static void Save(Document document, WaybillFormat type)
 		{
@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				extention = ".sst";
 
 			var log = document.Log;
-			//если нет файла значит документ из сервиса протека
+			//РµСЃР»Рё РЅРµС‚ С„Р°Р№Р»Р° Р·РЅР°С‡РёС‚ РґРѕРєСѓРјРµРЅС‚ РёР· СЃРµСЂРІРёСЃР° РїСЂРѕС‚РµРєР°
 			if (String.IsNullOrEmpty(document.Log.FileName)) {
 				log.IsFake = false;
 

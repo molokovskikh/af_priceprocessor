@@ -25,13 +25,13 @@ namespace Inforoom.Downloader.DocumentReaders
 				shortFileName = Path.Combine(extractDir, Path.GetFileNameWithoutExtension(fileName) + ".");
 				fileID = 0;
 
-				//Прочитали исходный XML c документами
+				//РџСЂРѕС‡РёС‚Р°Р»Рё РёСЃС…РѕРґРЅС‹Р№ XML c РґРѕРєСѓРјРµРЅС‚Р°РјРё
 				var xml = new XmlDocument();
 				xml.Load(fileName);
 
-				//Рассматриваем элементы типа "Документ"
-				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Документ")) {
-					//Формируем новое имя файла
+				//Р Р°СЃСЃРјР°С‚СЂРёРІР°РµРј СЌР»РµРјРµРЅС‚С‹ С‚РёРїР° "Р”РѕРєСѓРјРµРЅС‚"
+				foreach (XmlElement docs in xml.DocumentElement.GetElementsByTagName("Р”РѕРєСѓРјРµРЅС‚")) {
+					//Р¤РѕСЂРјРёСЂСѓРµРј РЅРѕРІРѕРµ РёРјСЏ С„Р°Р№Р»Р°
 					var newFileName = shortFileName + fileID.ToString() + ".xml";
 					while (File.Exists(newFileName)) {
 						fileID++;
@@ -41,11 +41,11 @@ namespace Inforoom.Downloader.DocumentReaders
 
 					var newXml = new XmlDocument();
 
-					//Создали документ с декларацией
+					//РЎРѕР·РґР°Р»Рё РґРѕРєСѓРјРµРЅС‚ СЃ РґРµРєР»Р°СЂР°С†РёРµР№
 					var xmldecl = newXml.CreateXmlDeclaration("1.0", "WINDOWS-1251", "yes");
 					newXml.AppendChild(xmldecl);
 
-					//Создали элемент "КоммерческаяИнформация" с атрибутами
+					//РЎРѕР·РґР°Р»Рё СЌР»РµРјРµРЅС‚ "РљРѕРјРјРµСЂС‡РµСЃРєР°СЏРРЅС„РѕСЂРјР°С†РёСЏ" СЃ Р°С‚СЂРёР±СѓС‚Р°РјРё
 					var root = newXml.CreateElement(xml.DocumentElement.Name);
 					newXml.AppendChild(root);
 					foreach (XmlAttribute a in xml.DocumentElement.Attributes) {
@@ -54,13 +54,13 @@ namespace Inforoom.Downloader.DocumentReaders
 						root.Attributes.Append(newAtt);
 					}
 
-					//Перенесли все содержимое элемента "Документ" из исходного документа в новый
+					//РџРµСЂРµРЅРµСЃР»Рё РІСЃРµ СЃРѕРґРµСЂР¶РёРјРѕРµ СЌР»РµРјРµРЅС‚Р° "Р”РѕРєСѓРјРµРЅС‚" РёР· РёСЃС…РѕРґРЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р° РІ РЅРѕРІС‹Р№
 					root.InnerXml = docs.OuterXml;
 
 					newXml.Save(newFileName);
 					outFiles.Add(newFileName);
 				}
-				//Разделили файла не несколько файлов и удалили исходный файл
+				//Р Р°Р·РґРµР»РёР»Рё С„Р°Р№Р»Р° РЅРµ РЅРµСЃРєРѕР»СЊРєРѕ С„Р°Р№Р»РѕРІ Рё СѓРґР°Р»РёР»Рё РёСЃС…РѕРґРЅС‹Р№ С„Р°Р№Р»
 				File.Delete(fileName);
 			}
 			return outFiles.ToArray();
@@ -77,12 +77,12 @@ namespace Inforoom.Downloader.DocumentReaders
 			try {
 				var dsWaybill = new DataSet();
 				dsWaybill.ReadXml(currentFileName);
-				DataTable dtCounteragent = dsWaybill.Tables["Контрагент"];
-				FirmClientCode = dtCounteragent.Select("Роль = 'Плательщик'")[0]["Ид"].ToString();
-				DeliveryCode = dtCounteragent.Select("Роль = 'Получатель'")[0]["Ид"].ToString();
+				DataTable dtCounteragent = dsWaybill.Tables["РљРѕРЅС‚СЂР°РіРµРЅС‚"];
+				FirmClientCode = dtCounteragent.Select("Р РѕР»СЊ = 'РџР»Р°С‚РµР»СЊС‰РёРє'")[0]["РРґ"].ToString();
+				DeliveryCode = dtCounteragent.Select("Р РѕР»СЊ = 'РџРѕР»СѓС‡Р°С‚РµР»СЊ'")[0]["РРґ"].ToString();
 			}
 			catch (Exception ex) {
-				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
+				throw new Exception("РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ SupplierClientId(FirmClientCode) Рё SupplierDeliveryId(FirmClientCode2) РёР· РґРѕРєСѓРјРµРЅС‚Р°.", ex);
 			}
 
 			DataSet ds = MySqlHelper.ExecuteDataset(
@@ -96,8 +96,8 @@ namespace Inforoom.Downloader.DocumentReaders
 				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode +
-					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
+				throw new Exception("РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РєР»РёРµРЅС‚РѕРІ СЃ SupplierClientId(FirmClientCode) = " + FirmClientCode +
+					" Рё SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
 
 			return list;
 		}

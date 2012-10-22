@@ -14,7 +14,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
 {
-	//Класс содержит название полей из таблицы Sources
+	//РљР»Р°СЃСЃ СЃРѕРґРµСЂР¶РёС‚ РЅР°Р·РІР°РЅРёРµ РїРѕР»РµР№ РёР· С‚Р°Р±Р»РёС†С‹ Sources
 	public sealed class SourcesTableColumns
 	{
 		public static string colFirmCode = "FirmCode";
@@ -49,14 +49,14 @@ namespace Inforoom.Downloader
 		public static string colExtrMask = "ExtrMask";
 	}
 
-	//Класс для хранения последней ошибки по каждому прайс-листу
-	//Позволяет не логировать ошибки по два раза
+	//РљР»Р°СЃСЃ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РїРѕСЃР»РµРґРЅРµР№ РѕС€РёР±РєРё РїРѕ РєР°Р¶РґРѕРјСѓ РїСЂР°Р№СЃ-Р»РёСЃС‚Сѓ
+	//РџРѕР·РІРѕР»СЏРµС‚ РЅРµ Р»РѕРіРёСЂРѕРІР°С‚СЊ РѕС€РёР±РєРё РїРѕ РґРІР° СЂР°Р·Р°
 	public static class ErrorPriceLogging
 	{
 		public static Dictionary<ulong, string> ErrorMessages = new Dictionary<ulong, string>();
 	}
 
-	//Перечисление с указанием кода результата обработки источника
+	//РџРµСЂРµС‡РёСЃР»РµРЅРёРµ СЃ СѓРєР°Р·Р°РЅРёРµРј РєРѕРґР° СЂРµР·СѓР»СЊС‚Р°С‚Р° РѕР±СЂР°Р±РѕС‚РєРё РёСЃС‚РѕС‡РЅРёРєР°
 	public enum DownPriceResultCode
 	{
 		SuccessDownload = 2,
@@ -67,12 +67,12 @@ namespace Inforoom.Downloader
 	public abstract class BaseSourceHandler : AbstractHandler
 	{
 		/// <summary>
-		/// Таблица с источниками
+		/// РўР°Р±Р»РёС†Р° СЃ РёСЃС‚РѕС‡РЅРёРєР°РјРё
 		/// </summary>
 		public DataTable dtSources = new DataTable();
 
 		/// <summary>
-		/// Код текущего обрабатываемого прайса
+		/// РљРѕРґ С‚РµРєСѓС‰РµРіРѕ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ РїСЂР°Р№СЃР°
 		/// </summary>
 		protected ulong CurrPriceCode;
 
@@ -81,22 +81,22 @@ namespace Inforoom.Downloader
 		protected ulong? CurrParentSynonym;
 
 		/// <summary>
-		/// текущая обрабатываема строка в таблице
+		/// С‚РµРєСѓС‰Р°СЏ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјР° СЃС‚СЂРѕРєР° РІ С‚Р°Р±Р»РёС†Рµ
 		/// </summary>
 		protected DataRow drCurrent;
 
 		/// <summary>
-		/// текущий скачанный файл (положен в директорию TempPath + 'Down' + SourceType)
+		/// С‚РµРєСѓС‰РёР№ СЃРєР°С‡Р°РЅРЅС‹Р№ С„Р°Р№Р» (РїРѕР»РѕР¶РµРЅ РІ РґРёСЂРµРєС‚РѕСЂРёСЋ TempPath + 'Down' + SourceType)
 		/// </summary>
 		protected string CurrFileName;
 
 		/// <summary>
-		/// директория для сохранения файлов для истории 
+		/// РґРёСЂРµРєС‚РѕСЂРёСЏ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ С„Р°Р№Р»РѕРІ РґР»СЏ РёСЃС‚РѕСЂРёРё
 		/// </summary>
 		protected string DownHistoryPath;
 
 		/// <summary>
-		/// текущая дата файла
+		/// С‚РµРєСѓС‰Р°СЏ РґР°С‚Р° С„Р°Р№Р»Р°
 		/// </summary>
 		protected DateTime CurrPriceDate;
 
@@ -109,7 +109,7 @@ namespace Inforoom.Downloader
 			_log = LogManager.GetLogger(GetType());
 		}
 
-		//Запуск обработчика
+		//Р—Р°РїСѓСЃРє РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 		public override void StartWork()
 		{
 			CreateDirectoryPath();
@@ -122,10 +122,10 @@ namespace Inforoom.Downloader
 			base.StopWork();
 
 			if (!tWork.Join(maxJoinTime))
-				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
+				_logger.ErrorFormat("Р Р°Р±РѕС‡Р°СЏ РЅРёС‚РєР° РЅРµ РѕСЃС‚Р°РЅРѕРІРёР»Р°СЃСЊ Р·Р° {0} РјРёР»Р»РёСЃРµРєСѓРЅРґ.", maxJoinTime);
 		}
 
-		//Типа источника
+		//РўРёРїР° РёСЃС‚РѕС‡РЅРёРєР°
 		protected string SourceType { get; set; }
 
 		protected virtual string GetSQLSources()
@@ -148,9 +148,9 @@ SELECT
   pi.PriceDate,
   pf.Format,
   pf.FileExtention,
-  st.SourceTypeId, 
-  st.PricePath,  
-  st.EMailTo, st.EMailFrom, 
+  st.SourceTypeId,
+  st.PricePath,
+  st.EMailTo, st.EMailFrom,
   st.FTPDir, st.FTPLogin, st.FTPPassword, st.FTPPassiveMode,
   st.ArchivePassword,
   st.HTTPLogin, st.HTTPPassword,
@@ -158,7 +158,7 @@ SELECT
   pi.LastDownload,
   st.RequestInterval,
   st.LastSuccessfulCheck
-FROM   
+FROM
   farm.sourcetypes,
   farm.Sources as st,
   usersettings.PriceItems pi,
@@ -209,8 +209,8 @@ and pd.AgencyEnabled= 1",
 			using (var mm = new MailMessage(
 				Settings.Default.FarmSystemEmail,
 				Settings.Default.SMTPErrorList,
-				String.Format("Письмо с UID {0} не было обработано", UID),
-				String.Format("UID : {0}\nОшибка : {1}", UID, ErrorMessage))) {
+				String.Format("РџРёСЃСЊРјРѕ СЃ UID {0} РЅРµ Р±С‹Р»Рѕ РѕР±СЂР°Р±РѕС‚Р°РЅРѕ", UID),
+				String.Format("UID : {0}\nРћС€РёР±РєР° : {1}", UID, ErrorMessage))) {
 				if (ms != null)
 					mm.Attachments.Add(new Attachment(ms, "Unparse.eml"));
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
@@ -231,14 +231,14 @@ and pd.AgencyEnabled= 1",
 				Settings.Default.FarmSystemEmail,
 				GetFailMail(),
 				String.Format("{0} ( {1} )", FromAddress, SourceType),
-				String.Format("Тема : {0}\nОт : {1}\nКому : {2}\nДата письма : {3}\nПричина : {4}\n\nСписок приложений :\n{5}",
+				String.Format("РўРµРјР° : {0}\nРћС‚ : {1}\nРљРѕРјСѓ : {2}\nР”Р°С‚Р° РїРёСЃСЊРјР° : {3}\nРџСЂРёС‡РёРЅР° : {4}\n\nРЎРїРёСЃРѕРє РїСЂРёР»РѕР¶РµРЅРёР№ :\n{5}",
 					Subject,
 					FromAddress,
 					ToAddress,
 					LetterDate,
 					cause,
 					AttachNames))) {
-				mm.Attachments.Add(new Attachment(ms, "Исходное письмо.eml"));
+				mm.Attachments.Add(new Attachment(ms, "РСЃС…РѕРґРЅРѕРµ РїРёСЃСЊРјРѕ.eml"));
 				var sc = new SmtpClient(Settings.Default.SMTPHost);
 				sc.Send(mm);
 			}
@@ -268,7 +268,7 @@ and pd.AgencyEnabled= 1",
 			}
 			if (String.IsNullOrEmpty(ExtrFile)) {
 				DownloadLogEntity.Log(sourceTypeId, CurrPriceItemId, String.Format(
-					"Не удалось найти файл в архиве. Маска файла в архиве : '{0}'",
+					"РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё С„Р°Р№Р» РІ Р°СЂС…РёРІРµ. РњР°СЃРєР° С„Р°Р№Р»Р° РІ Р°СЂС…РёРІРµ : '{0}'",
 					drCurrent[SourcesTableColumns.colExtrMask]));
 				return false;
 			}

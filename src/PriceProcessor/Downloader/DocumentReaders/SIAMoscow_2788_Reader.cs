@@ -94,14 +94,14 @@ namespace Inforoom.Downloader.DocumentReaders
 						doubleName = "h_" + doubleName + ".dbf";
 					else
 						doubleName = "b_" + doubleName + ".dbf";
-					//Попытка найти пару к файлу
+					//РџРѕРїС‹С‚РєР° РЅР°Р№С‚Рё РїР°СЂСѓ Рє С„Р°Р№Р»Сѓ
 					var originalDoubleName = inputList.Find(s => s.Equals(Path.GetDirectoryName(inputList[0]) + Path.DirectorySeparatorChar + doubleName, StringComparison.OrdinalIgnoreCase));
 
-					//Если нашли, то архивируем оба файла, если не нашли и файл создан давно, то архивируем один файл
+					//Р•СЃР»Рё РЅР°С€Р»Рё, С‚Рѕ Р°СЂС…РёРІРёСЂСѓРµРј РѕР±Р° С„Р°Р№Р»Р°, РµСЃР»Рё РЅРµ РЅР°С€Р»Рё Рё С„Р°Р№Р» СЃРѕР·РґР°РЅ РґР°РІРЅРѕ, С‚Рѕ Р°СЂС…РёРІРёСЂСѓРµРј РѕРґРёРЅ С„Р°Р№Р»
 					if (originalDoubleName != default(string)) {
 						FileHelper.ClearReadOnly(inputList[0]);
 						FileHelper.ClearReadOnly(originalDoubleName);
-						//todo: filecopy здесь происходит копирование полученных файлов во временную папку для дальнейшего разбора ситуации, из-за предположения, что есть проблема с пропажей документов
+						//todo: filecopy Р·РґРµСЃСЊ РїСЂРѕРёСЃС…РѕРґРёС‚ РєРѕРїРёСЂРѕРІР°РЅРёРµ РїРѕР»СѓС‡РµРЅРЅС‹С… С„Р°Р№Р»РѕРІ РІРѕ РІСЂРµРјРµРЅРЅСѓСЋ РїР°РїРєСѓ РґР»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ СЂР°Р·Р±РѕСЂР° СЃРёС‚СѓР°С†РёРё, РёР·-Р·Р° РїСЂРµРґРїРѕР»РѕР¶РµРЅРёСЏ, С‡С‚Рѕ РµСЃС‚СЊ РїСЂРѕР±Р»РµРјР° СЃ РїСЂРѕРїР°Р¶РµР№ РґРѕРєСѓРјРµРЅС‚РѕРІ
 						var archiveFileName = ArhiveFiles(new[] { inputList[0], originalDoubleName });
 						outputList.Add(archiveFileName);
 						File.Delete(inputList[0]);
@@ -109,7 +109,7 @@ namespace Inforoom.Downloader.DocumentReaders
 						inputList.Remove(originalDoubleName);
 					}
 					else if (DateTime.Now.Subtract(File.GetLastWriteTime(inputList[0])).TotalMinutes > 6 * Settings.Default.FileDownloadInterval) {
-						//Ждали пару к файлу, но так и не дождались
+						//Р–РґР°Р»Рё РїР°СЂСѓ Рє С„Р°Р№Р»Сѓ, РЅРѕ С‚Р°Рє Рё РЅРµ РґРѕР¶РґР°Р»РёСЃСЊ
 						outputList.Add(ArhiveFiles(new[] { inputList[0] }));
 						File.Delete(inputList[0]);
 					}
@@ -117,7 +117,7 @@ namespace Inforoom.Downloader.DocumentReaders
 					inputList.RemoveAt(0);
 				}
 				else {
-					//Если это не документы накладных, то просто добавляем их в результирующий список
+					//Р•СЃР»Рё СЌС‚Рѕ РЅРµ РґРѕРєСѓРјРµРЅС‚С‹ РЅР°РєР»Р°РґРЅС‹С…, С‚Рѕ РїСЂРѕСЃС‚Рѕ РґРѕР±Р°РІР»СЏРµРј РёС… РІ СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёР№ СЃРїРёСЃРѕРє
 					outputList.Add(inputList[0]);
 					inputList.RemoveAt(0);
 				}
@@ -129,7 +129,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var outputList = new List<string>();
 			if (InputFiles.Length != 2)
-				throw new Exception("Некорректный список документов : " + String.Join(", ", InputFiles));
+				throw new Exception("РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЃРїРёСЃРѕРє РґРѕРєСѓРјРµРЅС‚РѕРІ : " + String.Join(", ", InputFiles));
 			string headerFile = String.Empty, bodyFile = String.Empty;
 			foreach (string s in InputFiles) {
 				if (Path.GetFileName(s).StartsWith("h_", StringComparison.OrdinalIgnoreCase))
@@ -138,9 +138,9 @@ namespace Inforoom.Downloader.DocumentReaders
 					bodyFile = s;
 			}
 			if (String.IsNullOrEmpty(headerFile))
-				throw new Exception("Не найден файл заголовка документа : " + String.Join(", ", InputFiles));
+				throw new Exception("РќРµ РЅР°Р№РґРµРЅ С„Р°Р№Р» Р·Р°РіРѕР»РѕРІРєР° РґРѕРєСѓРјРµРЅС‚Р° : " + String.Join(", ", InputFiles));
 			if (String.IsNullOrEmpty(bodyFile))
-				throw new Exception("Не найден файл содержимого документа : " + String.Join(", ", InputFiles));
+				throw new Exception("РќРµ РЅР°Р№РґРµРЅ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р° : " + String.Join(", ", InputFiles));
 
 			var FirmClientCode = Path.GetFileNameWithoutExtension(headerFile).Substring(2);
 
@@ -150,14 +150,14 @@ namespace Inforoom.Downloader.DocumentReaders
 				dtHeader.TableName = "Header";
 			}
 			catch (Exception exDBF) {
-				throw new Exception("Невозможно открыть файл заголовка документа.", exDBF);
+				throw new Exception("РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» Р·Р°РіРѕР»РѕРІРєР° РґРѕРєСѓРјРµРЅС‚Р°.", exDBF);
 			}
 			try {
 				dtBody = Dbf.Load(bodyFile);
 				dtBody.TableName = "Body";
 			}
 			catch (Exception exDBF) {
-				throw new Exception("Невозможно открыть файл содержимого документа.", exDBF);
+				throw new Exception("РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёРјРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р°.", exDBF);
 			}
 
 			var dsSource = new DataSet();
@@ -201,7 +201,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				DeliveryCode = parts[1];
 			}
 			catch (Exception ex) {
-				throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.", ex);
+				throw new Exception("РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ SupplierClientId(FirmClientCode) Рё SupplierDeliveryId(FirmClientCode2) РёР· РґРѕРєСѓРјРµРЅС‚Р°.", ex);
 			}
 
 			var ds = MySqlHelper.ExecuteDataset(
@@ -215,13 +215,13 @@ namespace Inforoom.Downloader.DocumentReaders
 				list.Add(Convert.ToUInt64(drApteka["AddressId"]));
 
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + FirmClientCode +
-					" и SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
+				throw new Exception("РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РєР»РёРµРЅС‚РѕРІ СЃ SupplierClientId(FirmClientCode) = " + FirmClientCode +
+					" Рё SupplierDeliveryId(FirmClientCode2) = " + DeliveryCode + ".");
 
 			return list;
 		}
 
-		//заархивировать файлы
+		//Р·Р°Р°СЂС…РёРІРёСЂРѕРІР°С‚СЊ С„Р°Р№Р»С‹
 		private static string ArhiveFiles(string[] InputFiles)
 		{
 			var zipFileName = Path.GetDirectoryName(InputFiles[0]) + Path.DirectorySeparatorChar + Path.GetFileNameWithoutExtension(InputFiles[0]).Substring(2) + "_" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".zip";
@@ -254,7 +254,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			var dsDocument = new DataSet();
 			dsDocument.ReadXml(InputFile);
 			if (Convert.ToInt32(dsDocument.Tables["Header"].Rows[0][HeaderTable.colBrecQ]) != dsDocument.Tables["Body"].Rows.Count)
-				throw new Exception("Количество позиций в документе не соответствует значению в заголовке документа с " + HeaderTable.colMsgNum + " = " + dsDocument.Tables["Header"].Rows[0][HeaderTable.colMsgNum].ToString());
+				throw new Exception("РљРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№ РІ РґРѕРєСѓРјРµРЅС‚Рµ РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ Р·РЅР°С‡РµРЅРёСЋ РІ Р·Р°РіРѕР»РѕРІРєРµ РґРѕРєСѓРјРµРЅС‚Р° СЃ " + HeaderTable.colMsgNum + " = " + dsDocument.Tables["Header"].Rows[0][HeaderTable.colMsgNum].ToString());
 
 			var dtResult = GetResultTable();
 
@@ -263,7 +263,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				var drResult = dtResult.NewRow();
 				drResult[ResultTable.colDocumentID] = Convert.ToString(drHeader[HeaderTable.colInvNum]);
 				drResult[ResultTable.colDocumentDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
-				//Эти два поля не заполняются, т.к. СИА Москва не может их заполнить в реальном времени
+				//Р­С‚Рё РґРІР° РїРѕР»СЏ РЅРµ Р·Р°РїРѕР»РЅСЏСЋС‚СЃСЏ, С‚.Рє. РЎРРђ РњРѕСЃРєРІР° РЅРµ РјРѕР¶РµС‚ РёС… Р·Р°РїРѕР»РЅРёС‚СЊ РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
 				//drResult[ResultTable.colBillingNumber] = drHeader[HeaderTable.colInvNum];
 				//drResult[ResultTable.colBillingDate] = Convert.ToDateTime(drHeader[HeaderTable.colInvDt]);
 				drResult[ResultTable.colFirmName] = drSource[WaybillSourcesTable.colShortName];
@@ -342,7 +342,7 @@ namespace Inforoom.Downloader.DocumentReaders
 					&& d.DocumentType == log.DocumentType);
 				if (doc != null)
 					throw new Exception(String.Format(
-						"Дублирующийся документ с аттрибутами: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
+						"Р”СѓР±Р»РёСЂСѓСЋС‰РёР№СЃСЏ РґРѕРєСѓРјРµРЅС‚ СЃ Р°С‚С‚СЂРёР±СѓС‚Р°РјРё: FirmCode = {0}, ClientCode = {1}, DocumentType = {2}, ProviderDocumentId = {3}",
 						log.Supplier.Id,
 						log.ClientCode,
 						log.DocumentType,

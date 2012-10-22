@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			DateTime dt1 = DateTime.Now;
-			var doc = WaybillParser.Parse("Р-1873247.DBF");
+			var doc = WaybillParser.Parse("Р -1873247.DBF");
 			DateTime dt2 = DateTime.Now;
 			var providerDocId = Document.GenerateProviderDocumentId();
 			providerDocId = providerDocId.Remove(providerDocId.Length - 1);
@@ -19,18 +19,18 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsFalse(doc.ProviderDocumentId.StartsWith(providerDocId));
 			Assert.That(doc.DocumentDate, Is.GreaterThanOrEqualTo(dt1));
 			Assert.That(doc.DocumentDate, Is.LessThanOrEqualTo(dt2));
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-1873247"));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р -1873247"));
 
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("2592"));
-			Assert.That(line.Product, Is.EqualTo("Аллергодил 140мкг/доза Спрей назал. дозир. 10мл Фл. Б М"));
+			Assert.That(line.Product, Is.EqualTo("РђР»Р»РµСЂРіРѕРґРёР» 140РјРєРі/РґРѕР·Р° РЎРїСЂРµР№ РЅР°Р·Р°Р». РґРѕР·РёСЂ. 10РјР» Р¤Р». Р‘ Рњ"));
 			Assert.That(line.Producer, Is.EqualTo("MEDA Pharma GmbH & Co. KG"));
-			Assert.That(line.Country, Is.EqualTo("Германия"));
+			Assert.That(line.Country, Is.EqualTo("Р“РµСЂРјР°РЅРёСЏ"));
 			Assert.That(line.SerialNumber, Is.EqualTo("8M075A"));
 			Assert.That(line.Period, Is.EqualTo("31.10.2011"));
 			Assert.That(line.SupplierCost, Is.EqualTo(183.37));
 			Assert.That(line.Quantity, Is.EqualTo(1));
-			Assert.That(line.Certificates, Is.EqualTo("РОСС DE.ФМ08.Д51369"));
+			Assert.That(line.Certificates, Is.EqualTo("Р РћРЎРЎ DE.Р¤Рњ08.Р”51369"));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-14.91));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));

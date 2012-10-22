@@ -239,7 +239,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				return GetDecimalValue((decimal)value);
 			if (value is string)
 				return GetStringValue((string)value);
-			throw new Exception(String.Format("Не знаю как преобразовать {0}", value));
+			throw new Exception(String.Format("РќРµ Р·РЅР°СЋ РєР°Рє РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ {0}", value));
 		}
 
 		public static string GetBoolValue(bool value)

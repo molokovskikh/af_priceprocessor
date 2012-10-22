@@ -3,7 +3,7 @@ using Inforoom.PriceProcessor.Waybills;
 
 namespace Inforoom.Downloader.Documents
 {
-	//Класс содержит название полей из таблицы Document.Waybill_Sources
+	//РљР»Р°СЃСЃ СЃРѕРґРµСЂР¶РёС‚ РЅР°Р·РІР°РЅРёРµ РїРѕР»РµР№ РёР· С‚Р°Р±Р»РёС†С‹ Document.Waybill_Sources
 	public sealed class WaybillSourcesTable
 	{
 		public static string colFirmCode = "FirmCode";
@@ -12,7 +12,7 @@ namespace Inforoom.Downloader.Documents
 		public static string colReaderClassName = "ReaderClassName";
 	}
 
-	//Абстрактный класс, описывающий тип документа
+	//РђР±СЃС‚СЂР°РєС‚РЅС‹Р№ РєР»Р°СЃСЃ, РѕРїРёСЃС‹РІР°СЋС‰РёР№ С‚РёРї РґРѕРєСѓРјРµРЅС‚Р°
 	public abstract class InboundDocumentType
 	{
 		public DocType DocType { get; protected set; }

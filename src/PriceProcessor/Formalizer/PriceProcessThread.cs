@@ -59,7 +59,7 @@ namespace Inforoom.Formalizer
 	public class PriceProcessThread
 	{
 		private readonly Thread _thread;
-		//время прерывания рабочей нитки 
+		//РІСЂРµРјСЏ РїСЂРµСЂС‹РІР°РЅРёСЏ СЂР°Р±РѕС‡РµР№ РЅРёС‚РєРё
 		private DateTime? _abortingTime;
 
 		private readonly PriceProcessLogger _log;
@@ -83,13 +83,13 @@ namespace Inforoom.Formalizer
 		public bool FormalizeOK { get; private set; }
 
 		/// <summary>
-		/// Говорит о том, что формализация закончена. Корректно в том случае, если нитку не прибили сразу после запуска,
-		/// иначе надо смотреть на ThreadState
+		/// Р“РѕРІРѕСЂРёС‚ Рѕ С‚РѕРј, С‡С‚Рѕ С„РѕСЂРјР°Р»РёР·Р°С†РёСЏ Р·Р°РєРѕРЅС‡РµРЅР°. РљРѕСЂСЂРµРєС‚РЅРѕ РІ С‚РѕРј СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РЅРёС‚РєСѓ РЅРµ РїСЂРёР±РёР»Рё СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ Р·Р°РїСѓСЃРєР°,
+		/// РёРЅР°С‡Рµ РЅР°РґРѕ СЃРјРѕС‚СЂРµС‚СЊ РЅР° ThreadState
 		/// </summary>
 		public bool FormalizeEnd { get; private set; }
 
 		/// <summary>
-		/// время начала формализации
+		/// РІСЂРµРјСЏ РЅР°С‡Р°Р»Р° С„РѕСЂРјР°Р»РёР·Р°С†РёРё
 		/// </summary>
 		public DateTime StartDate { get; private set; }
 
@@ -115,7 +115,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// останавливаем рабочую нитку и выставляем время останова, чтобы обрубить по таймауту
+		/// РѕСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЂР°Р±РѕС‡СѓСЋ РЅРёС‚РєСѓ Рё РІС‹СЃС‚Р°РІР»СЏРµРј РІСЂРµРјСЏ РѕСЃС‚Р°РЅРѕРІР°, С‡С‚РѕР±С‹ РѕР±СЂСѓР±РёС‚СЊ РїРѕ С‚Р°Р№РјР°СѓС‚Сѓ
 		/// </summary>
 		public void AbortThread()
 		{
@@ -126,7 +126,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// вызываем метод Interrupt у нитки, если она находится в состоянии AbortRequested и WaitSleepJoin
+		/// РІС‹Р·С‹РІР°РµРј РјРµС‚РѕРґ Interrupt Сѓ РЅРёС‚РєРё, РµСЃР»Рё РѕРЅР° РЅР°С…РѕРґРёС‚СЃСЏ РІ СЃРѕСЃС‚РѕСЏРЅРёРё AbortRequested Рё WaitSleepJoin
 		/// </summary>
 		public void InterruptThread()
 		{
@@ -144,14 +144,14 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Ссылка на обрабатываемый элемент
+		/// РЎСЃС‹Р»РєР° РЅР° РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјС‹Р№ СЌР»РµРјРµРЅС‚
 		/// </summary>
 		public PriceProcessItem ProcessItem { get; private set; }
 
 		public PriceProcessState ProcessState { get; private set; }
 
 		/// <summary>
-		/// Процедура формализации
+		/// РџСЂРѕС†РµРґСѓСЂР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё
 		/// </summary>
 		public void ThreadWork()
 		{
@@ -159,19 +159,19 @@ namespace Inforoom.Formalizer
 			var allWorkTimeString = String.Empty;
 			using (var cleaner = new FileCleaner())
 				try {
-					//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
+					//РёРјСЏ С„Р°Р№Р»Р° РґР»СЏ РєРѕРїРёСЂРѕРІР°РЅРёСЏ РІ РґРёСЂРµРєС‚РѕСЂРёСЋ Base РІС‹РіР»СЏРґРёС‚ РєР°Рє: <PriceItemID> + <РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРµ СЂР°СЃС€РёСЂРµРЅРёРµ С„Р°Р№Р»Р°>
 					var outPriceFileName = Path.Combine(Settings.Default.BasePath,
 						ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath));
-					//Используем идентификатор нитки в качестве названия временной папки
+					//РСЃРїРѕР»СЊР·СѓРµРј РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РЅРёС‚РєРё РІ РєР°С‡РµСЃС‚РІРµ РЅР°Р·РІР°РЅРёСЏ РІСЂРµРјРµРЅРЅРѕР№ РїР°РїРєРё
 					var tempPath = Path.GetTempPath() + TID + "\\";
-					//изменяем имя файла, что оно было без недопустимых символов ('_')
+					//РёР·РјРµРЅСЏРµРј РёРјСЏ С„Р°Р№Р»Р°, С‡С‚Рѕ РѕРЅРѕ Р±С‹Р»Рѕ Р±РµР· РЅРµРґРѕРїСѓСЃС‚РёРјС‹С… СЃРёРјРІРѕР»РѕРІ ('_')
 					var tempFileName = tempPath + ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath);
 					cleaner.Watch(tempFileName);
-					_logger.DebugFormat("Запущена нитка на обработку файла : {0}", ProcessItem.FilePath);
+					_logger.DebugFormat("Р—Р°РїСѓС‰РµРЅР° РЅРёС‚РєР° РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ С„Р°Р№Р»Р° : {0}", ProcessItem.FilePath);
 
 					ProcessState = PriceProcessState.CreateTempDirectory;
 
-					//Создаем директорию для временного файла и копируем туда файл
+					//РЎРѕР·РґР°РµРј РґРёСЂРµРєС‚РѕСЂРёСЋ РґР»СЏ РІСЂРµРјРµРЅРЅРѕРіРѕ С„Р°Р№Р»Р° Рё РєРѕРїРёСЂСѓРµРј С‚СѓРґР° С„Р°Р№Р»
 					if (Directory.Exists(tempPath))
 						FileHelper.DeleteDir(tempPath);
 
@@ -209,7 +209,7 @@ namespace Inforoom.Formalizer
 					}
 
 					ProcessState = PriceProcessState.FinalCopy;
-					//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
+					//Р•СЃР»Рё С„Р°Р№Р» РЅРµ СЃРєРѕРїРёСЂСѓРµС‚СЃСЏ, С‚Рѕ РёР· Inbound РѕРЅ РЅРµ СѓРґР°Р»РёС‚СЊСЃСЏ Рё Р±СѓРґРµС‚ РїРѕРїС‹С‚РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё РµС‰Рµ СЂР°Р·
 					if (File.Exists(tempFileName))
 						File.Copy(tempFileName, outPriceFileName, true);
 					else
@@ -224,12 +224,12 @@ namespace Inforoom.Formalizer
 					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				}
 				catch (Exception e) {
-					_logger.Error("Ошибка при формализации прайс листа", e);
+					_logger.Error("РћС€РёР±РєР° РїСЂРё С„РѕСЂРјР°Р»РёР·Р°С†РёРё РїСЂР°Р№СЃ Р»РёСЃС‚Р°", e);
 					_log.ErrodLog(_workPrice, e);
 				}
 				finally {
 					ProcessState = PriceProcessState.FinalizeThread;
-					_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
+					_logger.InfoFormat("РќРёС‚РєР° Р·Р°РІРµСЂС€РёР»Р° СЂР°Р±РѕС‚Сѓ СЃ РїСЂР°Р№СЃРѕРј {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
 					FormalizeEnd = true;
 				}
 		}

@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Services
 			void Test();
 
 			[OperationContract]
-			void TestаFault();
+			void TestР°Fault();
 		}
 
 		public class TestService : ITest
@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Services
 				throw new Exception();
 			}
 
-			public void TestаFault()
+			public void TestР°Fault()
 			{
 				throw new FaultException<string>("test", new FaultReason("test"));
 			}
@@ -67,10 +67,10 @@ namespace PriceProcessor.Test.Services
 		{
 			try {
 				channel.Test();
-				Assert.Fail("не выбросили исключение");
+				Assert.Fail("РЅРµ РІС‹Р±СЂРѕСЃРёР»Рё РёСЃРєР»СЋС‡РµРЅРёРµ");
 			}
 			catch (Exception e) {
-				Assert.That(e.Message, Is.EqualTo("Произошла ошибка. Попробуйте повторить операцию позднее."));
+				Assert.That(e.Message, Is.EqualTo("РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°. РџРѕРїСЂРѕР±СѓР№С‚Рµ РїРѕРІС‚РѕСЂРёС‚СЊ РѕРїРµСЂР°С†РёСЋ РїРѕР·РґРЅРµРµ."));
 			}
 		}
 
@@ -78,8 +78,8 @@ namespace PriceProcessor.Test.Services
 		public void Do_not_handle_fault()
 		{
 			try {
-				channel.TestаFault();
-				Assert.Fail("не выбросили исключение");
+				channel.TestР°Fault();
+				Assert.Fail("РЅРµ РІС‹Р±СЂРѕСЃРёР»Рё РёСЃРєР»СЋС‡РµРЅРёРµ");
 			}
 			catch (FaultException e) {
 				Assert.That(e.Message, Is.EqualTo("test"));
