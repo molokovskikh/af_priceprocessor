@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Helpers;
@@ -49,12 +51,11 @@ namespace Inforoom.PriceProcessor
 
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
 		{
-			uint priceItemId;
+			uint priceItemId = ParseId(filename);
 			var isDownloaded = IsDownloadedPrice(filename);
-			if (isDownloaded)
-				priceItemId = Convert.ToUInt32(Path.GetFileName(filename).Substring(1, Path.GetFileName(filename).IndexOf("_") - 1));
-			else
-				priceItemId = Convert.ToUInt32(Path.GetFileNameWithoutExtension(filename));
+
+			if (priceItemId == 0)
+				return null;
 
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
 				Literals.ConnectionString(),
@@ -84,6 +85,25 @@ group by pi.Id",
 				item.FileTime = lastDownload;
 
 			return item;
+		}
+
+		public static uint ParseId(string filename)
+		{
+			var name = Path.GetFileNameWithoutExtension(filename);
+
+			if (String.IsNullOrEmpty(name))
+				return 0;
+
+			var matches = new[] {
+				Regex.Match(name, @"^(\d+)$"),
+				Regex.Match(name, @"^d(\d+)_")
+			};
+
+			var match = matches.FirstOrDefault(m => m.Success);
+			if (match != null) {
+				return SafeConvert.ToUInt32(match.Groups[1].Value);
+			}
+			return 0;
 		}
 
 		public static string GetFile(string[] files, FormatType format)
