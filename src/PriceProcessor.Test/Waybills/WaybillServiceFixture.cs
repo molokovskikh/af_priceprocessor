@@ -382,7 +382,6 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
 		public void check_parse_waybill_if_file_is_not_local()
 		{
-			QueryCatcher.Catch();
 			var file = "9229370.dbf";
 			var log = new TestDocumentLog(supplier, testAddress, file);
 			using (new TransactionScope())
@@ -408,7 +407,7 @@ namespace PriceProcessor.Test.Waybills
 				var logs = DocumentReceiveLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.ClientCode == client.Id).ToList();
 				Assert.That(logs.Count(), Is.EqualTo(1));
 				Assert.That(ids.Length, Is.EqualTo(1));
-				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1));
+				Assert.That(Document.Queryable.Where(doc => doc.Log.Id == logs[0].Id).Count(), Is.EqualTo(1), "не нашли документа для {0}", logs[0].Id);
 			}
 		}
 
