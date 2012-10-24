@@ -90,8 +90,8 @@ namespace Inforoom.Downloader
 
 	public class HttpSourceHandlerException : PathSourceHandlerException
 	{
-		public static string ErrorMessageForbidden = "Доступ запрещен. Используются недействительные учетные данные.";
-		public static string ErrorMessageUnauthorized = "Недостаточно прав, для получения запрошеного документа.";
+		public static string ErrorMessageForbidden = "Р”РѕСЃС‚СѓРї Р·Р°РїСЂРµС‰РµРЅ. РСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РЅРµРґРµР№СЃС‚РІРёС‚РµР»СЊРЅС‹Рµ СѓС‡РµС‚РЅС‹Рµ РґР°РЅРЅС‹Рµ.";
+		public static string ErrorMessageUnauthorized = "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ, РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ Р·Р°РїСЂРѕС€РµРЅРѕРіРѕ РґРѕРєСѓРјРµРЅС‚Р°.";
 
 		public HttpSourceHandlerException()
 		{

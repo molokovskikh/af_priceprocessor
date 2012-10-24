@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			document.DocumentDate = Convert.ToDateTime(data.Rows[0]["SROK_GOD"]);
 			data.Rows.Remove(data.Rows[0]);
 			data.Rows.Cast<DataRow>().Each(r => {
-				if (r["VID"].ToString() == "ÆÂËÑ")
+				if (r["VID"].ToString() == "Ð–Ð’Ð›Ð¡")
 					r["VID"] = "True";
 				else
 					r["VID"] = "False";

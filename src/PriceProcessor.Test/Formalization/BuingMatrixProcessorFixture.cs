@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace PriceProcessor.Test.Formalization
 {
-	[TestFixture, Ignore("Чинить")]
+	[TestFixture, Ignore("Р§РёРЅРёС‚СЊ")]
 	public class BuingMatrixProcessorFixture
 	{
 		[Test]

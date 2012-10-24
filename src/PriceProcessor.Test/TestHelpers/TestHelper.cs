@@ -139,8 +139,8 @@ from core0 c
 where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (4413102, 4413103);",
 				pricecode, costcode)).Tables[0];
 
-			Assert.That(resultCore0.Rows.Count, Is.GreaterThan(0), "ничего не формализовали");
-			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "количество позиций не совпадает");
+			Assert.That(resultCore0.Rows.Count, Is.GreaterThan(0), "РЅРёС‡РµРіРѕ РЅРµ С„РѕСЂРјР°Р»РёР·РѕРІР°Р»Рё");
+			Assert.That(resultCore0.Rows.Count, Is.EqualTo(etalonCore0.Rows.Count), "РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР·РёС†РёР№ РЅРµ СЃРѕРІРїР°РґР°РµС‚");
 			for (var i = 0; i < etalonCore0.Rows.Count; i++) {
 				var etalonRow = etalonCore0.Rows[i];
 				var resultRow = resultCore0.Rows[i];
@@ -152,7 +152,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 
 					if (FulVerification) {
 						if (!resultRow[column.ColumnName].Equals(etalonRow[column.ColumnName]))
-							Console.WriteLine("Значения не совпадают эталон {5} результат {6}. Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.",
+							Console.WriteLine("Р—РЅР°С‡РµРЅРёСЏ РЅРµ СЃРѕРІРїР°РґР°СЋС‚ СЌС‚Р°Р»РѕРЅ {5} СЂРµР·СѓР»СЊС‚Р°С‚ {6}. РќР°РёРјРµРЅРѕРІР°РЅРёРµ {4} СЃС‚СЂРѕРєР° {3} РєРѕР»РѕРЅРєР° {0}. РЎС‚СЂРѕРєР° СЂРµР·СѓР»СЊС‚Р°С‚Р° {1}. РЎС‚СЂРѕРєР° СЌС‚Р°Р»РѕРЅР° {2}.",
 								column.ColumnName,
 								resultRow["Id"],
 								etalonRow["Id"],
@@ -164,7 +164,7 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 					else {
 						Assert.That(resultRow[column.ColumnName],
 							Is.EqualTo(etalonRow[column.ColumnName]),
-							"Наименование {4} строка {3} колонка {0}. Строка результата {1}. Строка эталона {2}.", column.ColumnName,
+							"РќР°РёРјРµРЅРѕРІР°РЅРёРµ {4} СЃС‚СЂРѕРєР° {3} РєРѕР»РѕРЅРєР° {0}. РЎС‚СЂРѕРєР° СЂРµР·СѓР»СЊС‚Р°С‚Р° {1}. РЎС‚СЂРѕРєР° СЌС‚Р°Р»РѕРЅР° {2}.", column.ColumnName,
 							resultRow["Id"], etalonRow["Id"], i, resultRow["Synonym"]);
 					}
 				}
@@ -173,12 +173,12 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 
 		public static void InsertOrUpdateTable(string queryInsert, string queryUpdate, params MySqlParameter[] parameters)
 		{
-			// Пробуем вставить строку в таблицу
+			// РџСЂРѕР±СѓРµРј РІСЃС‚Р°РІРёС‚СЊ СЃС‚СЂРѕРєСѓ РІ С‚Р°Р±Р»РёС†Сѓ
 			try {
 				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryInsert, parameters); });
 			}
 			catch (Exception) {
-				// Если не получилось вставить строку, пробуем обновить ее
+				// Р•СЃР»Рё РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РІСЃС‚Р°РІРёС‚СЊ СЃС‚СЂРѕРєСѓ, РїСЂРѕР±СѓРµРј РѕР±РЅРѕРІРёС‚СЊ РµРµ
 				With.Connection(connection => { MySqlHelper.ExecuteNonQuery(connection, queryUpdate, parameters); });
 			}
 		}

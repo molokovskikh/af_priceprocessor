@@ -21,7 +21,7 @@ using Inforoom.Downloader;
 namespace Inforoom.PriceProcessor
 {
 	/// <summary>
-	/// Класс для отслеживание работа обработчиков источников.
+	/// РљР»Р°СЃСЃ РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёРµ СЂР°Р±РѕС‚Р° РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РёСЃС‚РѕС‡РЅРёРєРѕРІ.
 	/// </summary>
 	public class Monitor
 	{
@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor
 			return null;
 		}
 
-		//запускаем монитор с обработчиками
+		//Р·Р°РїСѓСЃРєР°РµРј РјРѕРЅРёС‚РѕСЂ СЃ РѕР±СЂР°Р±РѕС‚С‡РёРєР°РјРё
 		public void Start()
 		{
 			try {
@@ -84,16 +84,16 @@ namespace Inforoom.PriceProcessor
 				foreach (var handler in _handlers)
 					try {
 						handler.StartWork();
-						_logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
+						_logger.InfoFormat("Р—Р°РїСѓС‰РµРЅ РѕР±СЂР°Р±РѕС‚С‡РёРє {0}.", handler.GetType().Name);
 					}
 					catch (Exception exHan) {
-						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
+						_logger.ErrorFormat("РћС€РёР±РєР° РїСЂРё СЃС‚Р°СЂС‚Рµ РѕР±СЂР°Р±РѕС‚С‡РёРєР° {0}:\r\n{1}", handler.GetType().Name, exHan);
 					}
 				_monitor.Start();
-				_logger.Info("PriceProcessor запущен.");
+				_logger.Info("PriceProcessor Р·Р°РїСѓС‰РµРЅ.");
 			}
 			catch (Exception ex) {
-				_logger.Fatal("Ошибка при старте монитора", ex);
+				_logger.Fatal("РћС€РёР±РєР° РїСЂРё СЃС‚Р°СЂС‚Рµ РјРѕРЅРёС‚РѕСЂР°", ex);
 			}
 		}
 
@@ -120,7 +120,7 @@ namespace Inforoom.PriceProcessor
 			_waybillServiceHost.Open();
 		}
 
-		//Остановливаем монитор
+		//РћСЃС‚Р°РЅРѕРІР»РёРІР°РµРј РјРѕРЅРёС‚РѕСЂ
 		public void Stop()
 		{
 			try {
@@ -129,20 +129,20 @@ namespace Inforoom.PriceProcessor
 				_monitor.Abort();
 				foreach (var handler in _handlers)
 					try {
-						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
+						_logger.InfoFormat("РџРѕРїС‹С‚РєР° РѕСЃС‚Р°РЅРѕРІР° РѕР±СЂР°Р±РѕС‚С‡РёРєР° {0}.", handler.GetType().Name);
 						handler.StopWork();
-						_logger.InfoFormat("Обработчик {0} остановлен.", handler.GetType().Name);
+						_logger.InfoFormat("РћР±СЂР°Р±РѕС‚С‡РёРє {0} РѕСЃС‚Р°РЅРѕРІР»РµРЅ.", handler.GetType().Name);
 					}
 					catch (Exception exHan) {
-						_logger.ErrorFormat("Ошибка при останове обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
+						_logger.ErrorFormat("РћС€РёР±РєР° РїСЂРё РѕСЃС‚Р°РЅРѕРІРµ РѕР±СЂР°Р±РѕС‚С‡РёРєР° {0}:\r\n{1}", handler.GetType().Name, exHan);
 					}
 				PriceProcessorWcfHelper.StopService(_priceProcessorHost);
 				PriceProcessorWcfHelper.StopService(_waybillServiceHost);
 			}
 			catch (Exception ex) {
-				_logger.Fatal("Ошибка при останове монитора", ex);
+				_logger.Fatal("РћС€РёР±РєР° РїСЂРё РѕСЃС‚Р°РЅРѕРІРµ РјРѕРЅРёС‚РѕСЂР°", ex);
 			}
-			_logger.Info("PriceProcessor остановлен.");
+			_logger.Info("PriceProcessor РѕСЃС‚Р°РЅРѕРІР»РµРЅ.");
 		}
 
 		private void MonitorWork()
@@ -157,7 +157,7 @@ namespace Inforoom.PriceProcessor
 					Thread.Sleep(500);
 				}
 				catch (Exception e) {
-					_logger.Error("Ошибка в нитке", e);
+					_logger.Error("РћС€РёР±РєР° РІ РЅРёС‚РєРµ", e);
 				}
 			}
 		}

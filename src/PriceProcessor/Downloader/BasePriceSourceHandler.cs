@@ -8,7 +8,7 @@ using FileHelper = Common.Tools.FileHelper;
 namespace Inforoom.Downloader
 {
 	/// <summary>
-	/// Добавляет медоты для работы с PriceProcessItem
+	/// Р”РѕР±Р°РІР»СЏРµС‚ РјРµРґРѕС‚С‹ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ PriceProcessItem
 	/// </summary>
 	public abstract class BasePriceSourceHandler : BaseSourceHandler
 	{
@@ -27,7 +27,7 @@ namespace Inforoom.Downloader
 			});
 
 			using (NDC.Push(CurrPriceItemId.ToString()))
-				_logger.InfoFormat("Price {0} - {1} скачан/распакован",
+				_logger.InfoFormat("Price {0} - {1} СЃРєР°С‡Р°РЅ/СЂР°СЃРїР°РєРѕРІР°РЅ",
 					drCurrent[SourcesTableColumns.colShortName],
 					drCurrent[SourcesTableColumns.colPriceName]);
 		}
@@ -36,7 +36,7 @@ namespace Inforoom.Downloader
 		{
 			var downloadLogId = DownloadLogEntity.Log(sourceTypeId, CurrPriceItemId, message, DownPriceResultCode.ErrorProcess, archFileName, null);
 			if (downloadLogId == 0)
-				throw new Exception(String.Format("При логировании прайс-листа {0} получили 0 значение в ID;", CurrPriceItemId));
+				throw new Exception(String.Format("РџСЂРё Р»РѕРіРёСЂРѕРІР°РЅРёРё РїСЂР°Р№СЃ-Р»РёСЃС‚Р° {0} РїРѕР»СѓС‡РёР»Рё 0 Р·РЅР°С‡РµРЅРёРµ РІ ID;", CurrPriceItemId));
 
 			CopyToHistory(downloadLogId);
 		}

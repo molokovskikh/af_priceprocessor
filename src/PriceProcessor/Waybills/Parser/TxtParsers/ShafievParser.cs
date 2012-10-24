@@ -23,7 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			return CheckByHeaderPart(file, new[] { "Индивидуальный Предприниматель Шафиев Наиль Энверо", "ООО \"МОРОН\"", "ООО \"Ориола\"" }, "-");
+			return CheckByHeaderPart(file, new[] { "РРЅРґРёРІРёРґСѓР°Р»СЊРЅС‹Р№ РџСЂРµРґРїСЂРёРЅРёРјР°С‚РµР»СЊ РЁР°С„РёРµРІ РќР°РёР»СЊ Р­РЅРІРµСЂРѕ", "РћРћРћ \"РњРћР РћРќ\"", "РћРћРћ \"РћСЂРёРѕР»Р°\"" }, "-");
 		}
 	}
 }

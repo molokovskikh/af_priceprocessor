@@ -8,15 +8,15 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			var doc = WaybillParser.Parse("œ_889.dbf");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Ô  889"));
+			var doc = WaybillParser.Parse("–ü_889.dbf");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("–ø  889"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.09.2010"));
 			var line = doc.Lines[0];
-			Assert.That(line.Product, Is.EqualTo("“‡·.¡¿ƒ\"¬»Õ»¡»— —\"-120¯Ú."));
+			Assert.That(line.Product, Is.EqualTo("–¢–∞–±.–ë–ê–î\"–í–ò–ù–ò–ë–ò–° –°\"-120—à—Ç."));
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.Certificates, Is.EqualTo(null));
-			Assert.That(line.Country, Is.EqualTo("–ÓÒÒËˇ"));
-			Assert.That(line.Producer, Is.EqualTo("ŒŒŒ ¿Õ“"));
+			Assert.That(line.Country, Is.EqualTo("–†–æ—Å—Å–∏—è"));
+			Assert.That(line.Producer, Is.EqualTo("–û–û–û –ê–ù–¢"));
 			Assert.That(line.Period, Is.EqualTo(null));
 			Assert.That(line.SerialNumber, Is.EqualTo(null));
 			Assert.That(line.SupplierCost, Is.EqualTo(145));
@@ -27,21 +27,21 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		public void KazmedServiceParse()
 		{
 			var doc = WaybillParser.Parse("001150.dbf");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo(" Ã00001150"));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("–ö–ú00001150"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("27.06.2011"));
 			Assert.That(doc.Lines.Count, Is.EqualTo(10));
 			var line = doc.Lines[0];
-			Assert.That(line.Code, Is.EqualTo("ﬂﬂ«12107"));
-			Assert.That(line.Product, Is.EqualTo("¡ËÌÚ ÌÂÒÚÂËÎ¸Ì˚È ËÌ‰Ë‚Ë‰Û‡Î¸Ìˇ ÛÔ‡ÍÓ‚Í‡ 5ı10  ¿ıÚ"));
-			Assert.That(line.Unit, Is.EqualTo("¯Ú"));
+			Assert.That(line.Code, Is.EqualTo("–Ø–Ø–ó12107"));
+			Assert.That(line.Product, Is.EqualTo("–ë–∏–Ω—Ç –Ω–µ—Å—Ç–µ—Ä–∏–ª—å–Ω—ã–π –∏–Ω–¥–∏–≤–∏–¥—É–∞–ª—å–Ω—è —É–ø–∞–∫–æ–≤–∫–∞ 5—Ö10  –ê—Ö—Ç"));
+			Assert.That(line.Unit, Is.EqualTo("—à—Ç"));
 			Assert.That(line.Quantity, Is.EqualTo(30));
 			Assert.That(line.SupplierCost, Is.EqualTo(5.20));
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.NdsAmount, Is.EqualTo(0.4727));
 			Assert.That(line.Amount, Is.EqualTo(156.0000));
-			Assert.That(line.Certificates, Is.EqualTo("–Œ—— RU.¿ﬂ56.¬43157"));
-			Assert.That(line.Country, Is.EqualTo("–ÓÒÒËˇ"));
-			Assert.That(line.Producer, Is.EqualTo("ŒŒŒ œ ‘\"¿ıÚ‡Ï‡\""));
+			Assert.That(line.Certificates, Is.EqualTo("–†–û–°–° RU.–ê–Ø56.–í43157"));
+			Assert.That(line.Country, Is.EqualTo("–†–æ—Å—Å–∏—è"));
+			Assert.That(line.Producer, Is.EqualTo("–û–û–û –ü–ö–§\"–ê—Ö—Ç–∞–º–∞—Ä\""));
 			Assert.That(line.Period, Is.EqualTo(null));
 			Assert.That(line.SerialNumber, Is.EqualTo(null));
 		}

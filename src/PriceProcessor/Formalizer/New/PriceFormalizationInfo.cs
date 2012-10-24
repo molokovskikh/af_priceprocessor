@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public string FirmShortName { get; set; }
 		public string Region { get; set; }
 		public long FirmCode { get; set; }
-		//код ценовой колонки, может быть не установлен
+		//РєРѕРґ С†РµРЅРѕРІРѕР№ РєРѕР»РѕРЅРєРё, РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ
 		public long? CostCode { get; set; }
 		public string CostName { get; set; }
 

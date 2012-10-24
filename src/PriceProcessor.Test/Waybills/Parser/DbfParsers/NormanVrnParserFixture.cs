@@ -14,9 +14,9 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines.Count, Is.EqualTo(8));
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("101565"));
-			Assert.That(line.Product, Is.EqualTo("ƒÓÚ‡‚ÂËÌ „/ıÎ ‡ÏÔ. 2%-2ÏÎ π10"));
-			Assert.That(line.Producer, Is.EqualTo("›ÎÎ‡‡ (–Œ——»ﬂ)"));
-			Assert.That(line.Country, Is.EqualTo("–ÓÒÒËˇ"));
+			Assert.That(line.Product, Is.EqualTo("–î—Ä–æ—Ç–∞–≤–µ—Ä–∏–Ω –≥/—Ö–ª –∞–º–ø. 2%-2–º–ª ‚Ññ10"));
+			Assert.That(line.Producer, Is.EqualTo("–≠–ª–ª–∞—Ä–∞ (–†–û–°–°–ò–Ø)"));
+			Assert.That(line.Country, Is.EqualTo("–†–æ—Å—Å–∏—è"));
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(15.95));
@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Period, Is.EqualTo("01.06.2012"));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(40));
-			Assert.That(line.Certificates, Is.EqualTo("–Œ—— RU ‘Ã08 ƒ31270"));
+			Assert.That(line.Certificates, Is.EqualTo("–†–û–°–° RU –§–ú08 –î31270"));
 		}
 	}
 }

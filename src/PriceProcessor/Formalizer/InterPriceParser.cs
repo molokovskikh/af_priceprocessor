@@ -25,17 +25,17 @@ namespace Inforoom.Formalizer
 
 		public override void Open()
 		{
-			//Проверку и отправку уведомлений производим только для загруженных прайс-листов
+			//РџСЂРѕРІРµСЂРєСѓ Рё РѕС‚РїСЂР°РІРєСѓ СѓРІРµРґРѕРјР»РµРЅРёР№ РїСЂРѕРёР·РІРѕРґРёРј С‚РѕР»СЊРєРѕ РґР»СЏ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РїСЂР°Р№СЃ-Р»РёСЃС‚РѕРІ
 			if (downloaded) {
 				var sb = new StringBuilder();
 
 				foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 					if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !dtPrice.Columns.Contains(GetFieldName(pf)))
-						sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
+						sb.AppendFormat("\"{0}\" РЅР°СЃС‚СЂРѕРµРЅРѕ РЅР° {1}\n", GetDescription(pf), GetFieldName(pf));
 
 				foreach (CoreCost cost in currentCoreCosts)
 					if (!String.IsNullOrEmpty(cost.fieldName) && !dtPrice.Columns.Contains(cost.fieldName))
-						sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.costName, cost.fieldName);
+						sb.AppendFormat("С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° \"{0}\" РЅР°СЃС‚СЂРѕРµРЅР° РЅР° {1}\n", cost.costName, cost.fieldName);
 
 				if (sb.Length > 0)
 					Alerts.NotConfiguredAllert(sb, _info);
@@ -46,7 +46,7 @@ namespace Inforoom.Formalizer
 		{
 			string res;
 
-			//Специальным образом обрабатываем наименование товара, если имя содержится в нескольких полях
+			//РЎРїРµС†РёР°Р»СЊРЅС‹Рј РѕР±СЂР°Р·РѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј РЅР°РёРјРµРЅРѕРІР°РЅРёРµ С‚РѕРІР°СЂР°, РµСЃР»Рё РёРјСЏ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РІ РЅРµСЃРєРѕР»СЊРєРёС… РїРѕР»СЏС…
 			if ((PriceFields.Name1 == field) || (PriceFields.OriginalName == field)) {
 				res = base.GetFieldValue(field);
 				try {

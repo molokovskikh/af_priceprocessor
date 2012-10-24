@@ -11,13 +11,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var document = WaybillParser.Parse("n6422353.dbf");
 			Assert.That(document.DocumentDate, Is.EqualTo(DateTime.Parse("19.05.2010")));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("—Ã-6422353/00"));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("–°–ú-6422353/00"));
 			var line = document.Lines[0];
 			Assert.That(document.Lines.Count, Is.EqualTo(19));
 			Assert.That(line.Code, Is.EqualTo("54"));
-			Assert.That(line.Product, Is.EqualTo("¿ÍÚÓ‚Â„ËÌ Ï‡Á¸ 5% 20„ ¿‚ÒÚËˇ"));
+			Assert.That(line.Product, Is.EqualTo("–ê–∫—Ç–æ–≤–µ–≥–∏–Ω –º–∞–∑—å 5% 20–≥ –ê–≤—Å—Ç—Ä–∏—è"));
 			Assert.That(line.Producer, Is.EqualTo("Nycomed Austria GmbH"));
-			Assert.That(line.Country, Is.EqualTo("¿‚ÒÚËˇ"));
+			Assert.That(line.Country, Is.EqualTo("–ê–≤—Å—Ç—Ä–∏—è"));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.Period, Is.EqualTo("01.11.2014"));
@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0.81));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
-			Assert.That(line.Certificates, Is.EqualTo("–Œ——.AT.‘Ã08.ƒ72155"));
+			Assert.That(line.Certificates, Is.EqualTo("–†–û–°–°.AT.–§–ú08.–î72155"));
 			Assert.That(line.SerialNumber, Is.EqualTo("930917"));
 		}
 	}

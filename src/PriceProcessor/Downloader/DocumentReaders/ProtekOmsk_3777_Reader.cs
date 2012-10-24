@@ -22,7 +22,7 @@ namespace Inforoom.Downloader.DocumentReaders
 				firmClientCode = Path.GetFileName(currentFileName).Split('_')[0];
 			}
 			catch (Exception ex) {
-				throw new Exception("Не получилось сформировать SupplierDeliveryId(FirmClientCode2) из имени накладной.", ex);
+				throw new Exception("РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ SupplierDeliveryId(FirmClientCode2) РёР· РёРјРµРЅРё РЅР°РєР»Р°РґРЅРѕР№.", ex);
 			}
 
 			var ds = MySqlHelper.ExecuteDataset(
@@ -33,7 +33,7 @@ namespace Inforoom.Downloader.DocumentReaders
 
 			list = ds.Tables[0].Rows.Cast<DataRow>().Select(r => Convert.ToUInt64(r["AddressId"])).ToList();
 			if (list.Count == 0)
-				throw new Exception("Не удалось найти клиентов с SupplierClientId(FirmClientCode) = " + firmClientCode + ".");
+				throw new Exception("РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РєР»РёРµРЅС‚РѕРІ СЃ SupplierClientId(FirmClientCode) = " + firmClientCode + ".");
 
 			return list;
 		}

@@ -36,12 +36,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public IEnumerable<FarmaimpeksPrice> Prices()
 		{
 			while (ReadFromReader()) {
-				while (_reader.Name == "Прайс" && _reader.NodeType == XmlNodeType.Element && _readed) {
+				while (_reader.Name == "РџСЂР°Р№СЃ" && _reader.NodeType == XmlNodeType.Element && _readed) {
 					_inPrice = true;
 					_readed = false;
 					yield return new FarmaimpeksPrice {
 						Id = _reader.GetAttribute("ID"),
-						Name = _reader.GetAttribute("Наименование")
+						Name = _reader.GetAttribute("РќР°РёРјРµРЅРѕРІР°РЅРёРµ")
 					};
 				}
 			}
@@ -50,13 +50,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public IEnumerable<Customer> Settings()
 		{
 			do {
-				if (_reader.Name == "Получатель" && _reader.NodeType == XmlNodeType.Element) {
+				if (_reader.Name == "РџРѕР»СѓС‡Р°С‚РµР»СЊ" && _reader.NodeType == XmlNodeType.Element) {
 					yield return new Customer {
-						SupplierClientId = _reader.GetAttribute("ПолучательID"),
-						PriceMarkup = Convert.ToDecimal(_reader.GetAttribute("Наценка"))
+						SupplierClientId = _reader.GetAttribute("РџРѕР»СѓС‡Р°С‚РµР»СЊID"),
+						PriceMarkup = Convert.ToDecimal(_reader.GetAttribute("РќР°С†РµРЅРєР°"))
 					};
 				}
-				else if (_reader.Name != "Получатель" && _reader.NodeType == XmlNodeType.Element) {
+				else if (_reader.Name != "РџРѕР»СѓС‡Р°С‚РµР»СЊ" && _reader.NodeType == XmlNodeType.Element) {
 					yield break;
 				}
 			} while (ReadFromReader());
@@ -66,29 +66,29 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var cost = CostDescriptions.First();
 			while (ReadFromReader()) {
-				if (_inPrice && _reader.Name == "Позиция" && _reader.NodeType == XmlNodeType.Element) {
+				if (_inPrice && _reader.Name == "РџРѕР·РёС†РёСЏ" && _reader.NodeType == XmlNodeType.Element) {
 					yield return new FormalizationPosition {
-						PositionName = _reader.GetAttribute("Наименование"),
-						FirmCr = _reader.GetAttribute("Производитель"),
+						PositionName = _reader.GetAttribute("РќР°РёРјРµРЅРѕРІР°РЅРёРµ"),
+						FirmCr = _reader.GetAttribute("РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊ"),
 						Core = new NewCore {
-							Code = _reader.GetAttribute("КодТовара"),
-							CodeCr = _reader.GetAttribute("КодПроизводителя"),
-							MaxBoundCost = GetNullable<decimal>("МаксЦена"),
-							Quantity = _reader.GetAttribute("Количество"),
-							Volume = _reader.GetAttribute("Упаковка"),
-							Period = _reader.GetAttribute("СрокГодности"),
-							RegistryCost = GetNullable<decimal>("ЦенаГР"),
-							RequestRatio = GetNullable<uint>("Кратность"),
-							OrderCost = GetNullable<decimal>("МинСумма"),
-							MinOrderCount = GetNullable<uint>("МинКоличество"),
-							Await = _reader.GetAttribute("Ожидаем") == "да",
-							Junk = _reader.GetAttribute("Уцененно") == "да",
-							VitallyImportant = _reader.GetAttribute("ЖВЛС") == "да",
-							Costs = new[] { new Cost(cost, GetNullable<decimal>("Цена")), },
+							Code = _reader.GetAttribute("РљРѕРґРўРѕРІР°СЂР°"),
+							CodeCr = _reader.GetAttribute("РљРѕРґРџСЂРѕРёР·РІРѕРґРёС‚РµР»СЏ"),
+							MaxBoundCost = GetNullable<decimal>("РњР°РєСЃР¦РµРЅР°"),
+							Quantity = _reader.GetAttribute("РљРѕР»РёС‡РµСЃС‚РІРѕ"),
+							Volume = _reader.GetAttribute("РЈРїР°РєРѕРІРєР°"),
+							Period = _reader.GetAttribute("РЎСЂРѕРєР“РѕРґРЅРѕСЃС‚Рё"),
+							RegistryCost = GetNullable<decimal>("Р¦РµРЅР°Р“Р "),
+							RequestRatio = GetNullable<uint>("РљСЂР°С‚РЅРѕСЃС‚СЊ"),
+							OrderCost = GetNullable<decimal>("РњРёРЅРЎСѓРјРјР°"),
+							MinOrderCount = GetNullable<uint>("РњРёРЅРљРѕР»РёС‡РµСЃС‚РІРѕ"),
+							Await = _reader.GetAttribute("РћР¶РёРґР°РµРј") == "РґР°",
+							Junk = _reader.GetAttribute("РЈС†РµРЅРµРЅРЅРѕ") == "РґР°",
+							VitallyImportant = _reader.GetAttribute("Р–Р’Р›РЎ") == "РґР°",
+							Costs = new[] { new Cost(cost, GetNullable<decimal>("Р¦РµРЅР°")), },
 						}
 					};
 				}
-				else if (_reader.Name != "Позиция" && _reader.NodeType == XmlNodeType.Element) {
+				else if (_reader.Name != "РџРѕР·РёС†РёСЏ" && _reader.NodeType == XmlNodeType.Element) {
 					_inPrice = false;
 					yield break;
 				}

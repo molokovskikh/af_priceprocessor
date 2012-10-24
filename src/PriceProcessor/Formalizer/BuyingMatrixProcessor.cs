@@ -23,7 +23,7 @@ group by c0.ProductId, c0.CodeFirmCr;
 				command.Parameters.AddWithValue("?PriceId", priceId);
 				command.ExecuteNonQuery();
 			});
-			_logger.InfoFormat("Матрица закупок по прайс листу №{0} обновлена", priceId);
+			_logger.InfoFormat("РњР°С‚СЂРёС†Р° Р·Р°РєСѓРїРѕРє РїРѕ РїСЂР°Р№СЃ Р»РёСЃС‚Сѓ в„–{0} РѕР±РЅРѕРІР»РµРЅР°", priceId);
 		}
 	}
 }

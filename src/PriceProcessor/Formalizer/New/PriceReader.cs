@@ -48,7 +48,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public PriceReader(DataRow priceInfo, IParser parser, string filename, PriceFormalizationInfo info)
 		{
-			_logger.DebugFormat("Создали класс для обработки файла {0}", filename);
+			_logger.DebugFormat("РЎРѕР·РґР°Р»Рё РєР»Р°СЃСЃ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё С„Р°Р№Р»Р° {0}", filename);
 
 			_filename = filename;
 			_parser = parser;
@@ -66,7 +66,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (String.Empty != nameMask)
 				toughMask = new ToughMask(nameMask, info);
 
-			//Производим попытку разобрать строку с "запрещенными выражениями"
+			//РџСЂРѕРёР·РІРѕРґРёРј РїРѕРїС‹С‚РєСѓ СЂР°Р·РѕР±СЂР°С‚СЊ СЃС‚СЂРѕРєСѓ СЃ "Р·Р°РїСЂРµС‰РµРЅРЅС‹РјРё РІС‹СЂР°Р¶РµРЅРёСЏРјРё"
 			var forbWords = priceInfo[FormRules.colForbWords] is DBNull ? String.Empty : (string)priceInfo[FormRules.colForbWords];
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords) {
@@ -104,7 +104,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Установить название поля, которое будет считано из набора данных
+		/// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р·РІР°РЅРёРµ РїРѕР»СЏ, РєРѕС‚РѕСЂРѕРµ Р±СѓРґРµС‚ СЃС‡РёС‚Р°РЅРѕ РёР· РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С…
 		/// </summary>
 		public void SetFieldName(PriceFields PF, string Value)
 		{
@@ -121,17 +121,17 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			var sb = new StringBuilder();
 			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields)))
 				if ((pf != PriceFields.OriginalName) && !String.IsNullOrEmpty(GetFieldName(pf)) && !_priceData.Columns.Contains(GetFieldName(pf)))
-					sb.AppendFormat("\"{0}\" настроено на {1}\n", GetDescription(pf), GetFieldName(pf));
+					sb.AppendFormat("\"{0}\" РЅР°СЃС‚СЂРѕРµРЅРѕ РЅР° {1}\n", GetDescription(pf), GetFieldName(pf));
 
 
 			foreach (var cost in CostDescriptions)
 				if (!String.IsNullOrEmpty(cost.FieldName) && !_priceData.Columns.Contains(cost.FieldName))
-					sb.AppendFormat("ценовая колонка \"{0}\" настроена на {1}\n", cost.Name, cost.FieldName);
+					sb.AppendFormat("С†РµРЅРѕРІР°СЏ РєРѕР»РѕРЅРєР° \"{0}\" РЅР°СЃС‚СЂРѕРµРЅР° РЅР° {1}\n", cost.Name, cost.FieldName);
 
 			Alerts.NotConfiguredAllert(sb, _priceInfo);
 
 			if (_priceData.Rows.Count == 0)
-				throw new FormalizeException("В полученом прайс листе не удалось найти ни одной позиции", _priceInfo);
+				throw new FormalizeException("Р’ РїРѕР»СѓС‡РµРЅРѕРј РїСЂР°Р№СЃ Р»РёСЃС‚Рµ РЅРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РЅРё РѕРґРЅРѕР№ РїРѕР·РёС†РёРё", _priceInfo);
 		}
 
 		public IEnumerable<FormalizationPosition> Read()
@@ -156,7 +156,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 					FirmCr = GetFieldValue(PriceFields.FirmCr)
 				};
 
-				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
+				//РџРѕР»СѓС‡Р°РµС‚СЃСЏ, С‡С‚Рѕ РµСЃР»Рё С„РѕСЂРјР°Р»РёР·РѕРІР°Р»Рё РїРѕ РЅР°РёРјРµРЅРѕРІР°РЅРёСЋ, С‚Рѕ СЌС‚Рѕ РїРѕР·РёС†РёСЏ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅР° РєР»РёРµРЅС‚Сѓ
 				InsertToCore(position, costs);
 				yield return position;
 			} while (Next());
@@ -167,7 +167,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (CostDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)
 				throw new WarningFormalizeException(PriceProcessor.Settings.Default.CostsNotExistsError, _priceInfo);
 
-			//Если прайс является не ассортиментным прайсом-родителем с мультиколоночными ценами, то его надо проверить на базовую цену
+			//Р•СЃР»Рё РїСЂР°Р№СЃ СЏРІР»СЏРµС‚СЃСЏ РЅРµ Р°СЃСЃРѕСЂС‚РёРјРµРЅС‚РЅС‹Рј РїСЂР°Р№СЃРѕРј-СЂРѕРґРёС‚РµР»РµРј СЃ РјСѓР»СЊС‚РёРєРѕР»РѕРЅРѕС‡РЅС‹РјРё С†РµРЅР°РјРё, С‚Рѕ РµРіРѕ РЅР°РґРѕ РїСЂРѕРІРµСЂРёС‚СЊ РЅР° Р±Р°Р·РѕРІСѓСЋ С†РµРЅСѓ
 			if (!_priceInfo.IsAssortmentPrice && _priceInfo.CostType == CostTypes.MultiColumn) {
 				var baseCosts = CostDescriptions.Where(c => c.IsBaseCost).ToArray();
 				if (baseCosts.Length == 0)
@@ -188,7 +188,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Производится вставка данных в таблицу Core
+		/// РџСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІСЃС‚Р°РІРєР° РґР°РЅРЅС‹С… РІ С‚Р°Р±Р»РёС†Сѓ Core
 		/// </summary>
 		public void InsertToCore(FormalizationPosition position, Cost[] costs)
 		{
@@ -224,11 +224,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 			var rawPeriodValue = GetFieldValueObject(PriceFields.Period);
 			string periodValue;
-			//если получилось преобразовать в дату, то сохраняем в формате даты
+			//РµСЃР»Рё РїРѕР»СѓС‡РёР»РѕСЃСЊ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ РІ РґР°С‚Сѓ, С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј РІ С„РѕСЂРјР°С‚Рµ РґР°С‚С‹
 			if (rawPeriodValue is DateTime)
 				periodValue = ((DateTime)rawPeriodValue).ToString("dd'.'MM'.'yyyy");
 			else {
-				//Если не получилось преобразовать, то смотрим на "сырое" значение поле, если оно не пусто, то пишем в базу
+				//Р•СЃР»Рё РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ, С‚Рѕ СЃРјРѕС‚СЂРёРј РЅР° "СЃС‹СЂРѕРµ" Р·РЅР°С‡РµРЅРёРµ РїРѕР»Рµ, РµСЃР»Рё РѕРЅРѕ РЅРµ РїСѓСЃС‚Рѕ, С‚Рѕ РїРёС€РµРј РІ Р±Р°Р·Сѓ
 				periodValue = GetFieldRawValue(PriceFields.Period);
 				if (String.IsNullOrEmpty(periodValue))
 					periodValue = null;
@@ -249,9 +249,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Перейти на следующую позици набора данных
+		/// РџРµСЂРµР№С‚Рё РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ РїРѕР·РёС†Рё РЅР°Р±РѕСЂР° РґР°РЅРЅС‹С…
 		/// </summary>
-		/// <returns>Удачно ли выполнен переход?</returns>
+		/// <returns>РЈРґР°С‡РЅРѕ Р»Рё РІС‹РїРѕР»РЅРµРЅ РїРµСЂРµС…РѕРґ?</returns>
 		public virtual bool Next()
 		{
 			_index++;
@@ -264,14 +264,14 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Получить сырое значение текущего поля
+		/// РџРѕР»СѓС‡РёС‚СЊ СЃС‹СЂРѕРµ Р·РЅР°С‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЏ
 		/// </summary>
 		/// <param name="field"></param>
 		/// <returns></returns>
 		public virtual string GetFieldRawValue(PriceFields field)
 		{
 			try {
-				//Если имя столбца для поля не определено, то возвращаем null
+				//Р•СЃР»Рё РёРјСЏ СЃС‚РѕР»Р±С†Р° РґР»СЏ РїРѕР»СЏ РЅРµ РѕРїСЂРµРґРµР»РµРЅРѕ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј null
 				if (String.IsNullOrEmpty(GetFieldName(field)))
 					return null;
 
@@ -285,9 +285,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// строки в базе данных хранятся в 1251, если мы засунем в базу символ которого нет в 1251 
-		/// то назад мы получим не этот же символ а что то "близкое" по этому строки нужно очищать от 
-		/// таких символов
+		/// СЃС‚СЂРѕРєРё РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… С…СЂР°РЅСЏС‚СЃСЏ РІ 1251, РµСЃР»Рё РјС‹ Р·Р°СЃСѓРЅРµРј РІ Р±Р°Р·Сѓ СЃРёРјРІРѕР» РєРѕС‚РѕСЂРѕРіРѕ РЅРµС‚ РІ 1251
+		/// С‚Рѕ РЅР°Р·Р°Рґ РјС‹ РїРѕР»СѓС‡РёРј РЅРµ СЌС‚РѕС‚ Р¶Рµ СЃРёРјРІРѕР» Р° С‡С‚Рѕ С‚Рѕ "Р±Р»РёР·РєРѕРµ" РїРѕ СЌС‚РѕРјСѓ СЃС‚СЂРѕРєРё РЅСѓР¶РЅРѕ РѕС‡РёС‰Р°С‚СЊ РѕС‚
+		/// С‚Р°РєРёС… СЃРёРјРІРѕР»РѕРІ
 		/// </summary>
 		public string CleanupCharsThatNotFitIn1251(string value)
 		{
@@ -298,17 +298,17 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Получить значение поля в обработанном виде
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ РІ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕРј РІРёРґРµ
 		/// </summary>
 		public virtual string GetFieldValue(PriceFields field)
 		{
 			string res = null;
 
-			//Сначала пытаемся вытянуть данные из toughMask
+			//РЎРЅР°С‡Р°Р»Р° РїС‹С‚Р°РµРјСЃСЏ РІС‹С‚СЏРЅСѓС‚СЊ РґР°РЅРЅС‹Рµ РёР· toughMask
 			if (null != toughMask) {
 				res = toughMask.GetFieldValue(field);
 				if (null != res) {
-					//Удаляем опасные слова только из наименований
+					//РЈРґР°Р»СЏРµРј РѕРїР°СЃРЅС‹Рµ СЃР»РѕРІР° С‚РѕР»СЊРєРѕ РёР· РЅР°РёРјРµРЅРѕРІР°РЅРёР№
 					if ((PriceFields.Name1 == field) || (PriceFields.Name2 == field) || (PriceFields.Name2 == field) || (PriceFields.OriginalName == field))
 						res = RemoveForbWords(res);
 					if ((PriceFields.Note != field) && (PriceFields.Doc != field))
@@ -316,7 +316,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				}
 			}
 
-			//Если у нас это не получилось, что пытаемся вытянуть данные из самого поля
+			//Р•СЃР»Рё Сѓ РЅР°СЃ СЌС‚Рѕ РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ, С‡С‚Рѕ РїС‹С‚Р°РµРјСЃСЏ РІС‹С‚СЏРЅСѓС‚СЊ РґР°РЅРЅС‹Рµ РёР· СЃР°РјРѕРіРѕ РїРѕР»СЏ
 			if ((null == res) || ("" == res.Trim())) {
 				res = GetFieldRawValue(field);
 				if (null != res) {
@@ -351,7 +351,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Получить значение поля как объект
+		/// РџРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ РєР°Рє РѕР±СЉРµРєС‚
 		/// </summary>
 		public virtual object GetFieldValueObject(PriceFields PF)
 		{
@@ -400,7 +400,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Обработать значение цены
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ С†РµРЅС‹
 		/// </summary>
 		/// <param name="CostValue"></param>
 		/// <returns></returns>
@@ -417,7 +417,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 							res = String.Concat(res, nfi.CurrencyDecimalSeparator);
 					}
 
-					//Если результирующая строка пуста, то возвращаем DBNull
+					//Р•СЃР»Рё СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰Р°СЏ СЃС‚СЂРѕРєР° РїСѓСЃС‚Р°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј DBNull
 					if (String.IsNullOrEmpty(res))
 						return DBNull.Value;
 
@@ -433,7 +433,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Обработать значение IntValue и получить результать как целое число
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ IntValue Рё РїРѕР»СѓС‡РёС‚СЊ СЂРµР·СѓР»СЊС‚Р°С‚СЊ РєР°Рє С†РµР»РѕРµ С‡РёСЃР»Рѕ
 		/// </summary>
 		/// <param name="IntValue"></param>
 		/// <returns></returns>
@@ -454,7 +454,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Обработать значение срока годности
+		/// РћР±СЂР°Р±РѕС‚Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ СЃСЂРѕРєР° РіРѕРґРЅРѕСЃС‚Рё
 		/// </summary>
 		/// <param name="PeriodValue"></param>
 		/// <returns></returns>
@@ -481,7 +481,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Убрать лишние пробелы в имени
+		/// РЈР±СЂР°С‚СЊ Р»РёС€РЅРёРµ РїСЂРѕР±РµР»С‹ РІ РёРјРµРЅРё
 		/// </summary>
 		public string UnSpace(string Value)
 		{
@@ -495,7 +495,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Удалить запрещенные слова
+		/// РЈРґР°Р»РёС‚СЊ Р·Р°РїСЂРµС‰РµРЅРЅС‹Рµ СЃР»РѕРІР°
 		/// </summary>
 		public string RemoveForbWords(string value)
 		{
@@ -514,8 +514,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			bool value = false;
 
-			var trueValues = new[] { "истина", "true" };
-			var falseValues = new[] { "ложь", "false" };
+			var trueValues = new[] { "РёСЃС‚РёРЅР°", "true" };
+			var falseValues = new[] { "Р»РѕР¶СЊ", "false" };
 
 			string[] selectedValues = null;
 
@@ -530,7 +530,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 				string fieldValue = GetFieldValue(priceField);
 
-				//Если в столбце значение пусто, то возвращаем значение по умолчанию
+				//Р•СЃР»Рё РІ СЃС‚РѕР»Р±С†Рµ Р·РЅР°С‡РµРЅРёРµ РїСѓСЃС‚Рѕ, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј Р·РЅР°С‡РµРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 				if (String.IsNullOrEmpty(fieldValue))
 					return value;
 
@@ -554,7 +554,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		/// <summary>
-		/// Обрабатывает цены и возврашает кол-во не нулевых цен
+		/// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ С†РµРЅС‹ Рё РІРѕР·РІСЂР°С€Р°РµС‚ РєРѕР»-РІРѕ РЅРµ РЅСѓР»РµРІС‹С… С†РµРЅ
 		/// </summary>
 		public Cost[] ProcessCosts(List<CostDescription> descriptions)
 		{

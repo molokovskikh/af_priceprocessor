@@ -34,8 +34,8 @@ namespace PriceProcessor.Test.Loader
 				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
-				price.CreateAssortmentBoundSynonyms("Аспирин-С №10 таб.шип.", "Bayer AG, Франция");
-				price.CreateAssortmentBoundSynonyms("Абактал 400мг №10 таб.п/о", "Lek, Словения");
+				price.CreateAssortmentBoundSynonyms("РђСЃРїРёСЂРёРЅ-РЎ в„–10 С‚Р°Р±.С€РёРї.", "Bayer AG, Р¤СЂР°РЅС†РёСЏ");
+				price.CreateAssortmentBoundSynonyms("РђР±Р°РєС‚Р°Р» 400РјРі в„–10 С‚Р°Р±.Рї/Рѕ", "Lek, РЎР»РѕРІРµРЅРёСЏ");
 
 				price = new TestPrice(supplier) {
 					CostType = CostType.MultiColumn,
@@ -56,8 +56,8 @@ namespace PriceProcessor.Test.Loader
 			Formalize("FarmaimpeksSmallPrice.xml");
 			using (new SessionScope())
 				foreach (var price in prices) {
-					Assert.That(TestCore.Queryable.Count(c => c.Price == price), Is.GreaterThan(0), "нет предложений, прайс {0} {1}", price.PriceName, price.Id);
-					Assert.That(TestCost.Queryable.Count(c => c.Id.CostId == price.Costs.Single().Id), Is.GreaterThan(0), "нет цен, прайс {0} {1}", price.PriceName, price.Id);
+					Assert.That(TestCore.Queryable.Count(c => c.Price == price), Is.GreaterThan(0), "РЅРµС‚ РїСЂРµРґР»РѕР¶РµРЅРёР№, РїСЂР°Р№СЃ {0} {1}", price.PriceName, price.Id);
+					Assert.That(TestCost.Queryable.Count(c => c.Id.CostId == price.Costs.Single().Id), Is.GreaterThan(0), "РЅРµС‚ С†РµРЅ, РїСЂР°Р№СЃ {0} {1}", price.PriceName, price.Id);
 				}
 		}
 
@@ -89,7 +89,7 @@ namespace PriceProcessor.Test.Loader
 		{
 			Formalize("FarmaimpeksSmallPrice.xml");
 			var price = TestPrice.Find(prices[1].Id);
-			Assert.That(price.PriceName, Is.EqualTo("Прайс Опт ДП"));
+			Assert.That(price.PriceName, Is.EqualTo("РџСЂР°Р№СЃ РћРїС‚ Р”Рџ"));
 		}
 
 		[Test]

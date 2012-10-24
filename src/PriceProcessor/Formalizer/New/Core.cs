@@ -53,7 +53,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 					result = String.Concat(result, format.CurrencyDecimalSeparator);
 			}
 
-			//Если результирующая строка пуста, то возвращаем DBNull
+			//Р•СЃР»Рё СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰Р°СЏ СЃС‚СЂРѕРєР° РїСѓСЃС‚Р°, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј DBNull
 			if (String.IsNullOrEmpty(result))
 				return 0;
 
@@ -120,8 +120,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public NewCore NewCore;
 	}
 
-	//Не использую nullable что бы экономить память
-	//для числовых полей 0 обозначает null
+	//РќРµ РёСЃРїРѕР»СЊР·СѓСЋ nullable С‡С‚Рѕ Р±С‹ СЌРєРѕРЅРѕРјРёС‚СЊ РїР°РјСЏС‚СЊ
+	//РґР»СЏ С‡РёСЃР»РѕРІС‹С… РїРѕР»РµР№ 0 РѕР±РѕР·РЅР°С‡Р°РµС‚ null
 	public abstract class Core
 	{
 		public uint ProductId;
@@ -152,7 +152,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public uint MinOrderCount;
 
 		/// <summary>
-		/// Код EAN-13 (штрих-код)
+		/// РљРѕРґ EAN-13 (С€С‚СЂРёС…-РєРѕРґ)
 		/// </summary>
 		public string EAN13;
 

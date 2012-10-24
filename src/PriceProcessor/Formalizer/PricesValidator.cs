@@ -24,7 +24,7 @@ namespace Inforoom.Formalizer
 		}
 
 		/// <summary>
-		/// Производит проверку прайса на существования правил и создает соответствующий тип парсера
+		/// РџСЂРѕРёР·РІРѕРґРёС‚ РїСЂРѕРІРµСЂРєСѓ РїСЂР°Р№СЃР° РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёСЏ РїСЂР°РІРёР» Рё СЃРѕР·РґР°РµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ С‚РёРї РїР°СЂСЃРµСЂР°
 		/// </summary>
 		public static IPriceFormalizer Validate(string fileName, string tempFileName, uint priceItemId)
 		{
@@ -36,7 +36,7 @@ namespace Inforoom.Formalizer
 			var dataRow = dtFormRules.Rows[0];
 			var currentParserClassName = dataRow[FormRules.colParserClassName].ToString();
 
-			//Здесь будем производить копирование файла
+			//Р—РґРµСЃСЊ Р±СѓРґРµРј РїСЂРѕРёР·РІРѕРґРёС‚СЊ РєРѕРїРёСЂРѕРІР°РЅРёРµ С„Р°Р№Р»Р°
 			var copyErrorCount = 0;
 			var copySucces = false;
 			do {
@@ -69,7 +69,7 @@ namespace Inforoom.Formalizer
 					(string)dataRow[FormRules.colFirmShortName],
 					(string)dataRow[FormRules.colSelfPriceName]);
 
-			//Проверяем типы ценовых колонок прайса: установлена ли она или нет, известный ли тип ценовых колонок
+			//РџСЂРѕРІРµСЂСЏРµРј С‚РёРїС‹ С†РµРЅРѕРІС‹С… РєРѕР»РѕРЅРѕРє РїСЂР°Р№СЃР°: СѓСЃС‚Р°РЅРѕРІР»РµРЅР° Р»Рё РѕРЅР° РёР»Рё РЅРµС‚, РёР·РІРµСЃС‚РЅС‹Р№ Р»Рё С‚РёРї С†РµРЅРѕРІС‹С… РєРѕР»РѕРЅРѕРє
 			if (dataRow.IsNull(FormRules.colCostType) || !Enum.IsDefined(typeof(CostTypes), Convert.ToInt32(dataRow[FormRules.colCostType])))
 				throw new WarningFormalizeException(
 					String.Format(Settings.Default.UnknowCostTypeError, dataRow[FormRules.colCostType]),

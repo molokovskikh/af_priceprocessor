@@ -35,5 +35,22 @@ namespace PriceProcessor.Test
 			var processing = new List<PriceProcessThread> { new PriceProcessThread(item, "") };
 			Assert.That(item.IsReadyForProcessing(processing), Is.False);
 		}
+
+		[Test]
+		public void Ignore_non_price_files()
+		{
+			var item = PriceProcessItem.TryToLoadPriceProcessItem("Thumbs.db");
+			Assert.That(item, Is.Null);
+		}
+
+		[Test]
+		public void Parse_price_item_id()
+		{
+			var id = PriceProcessItem.ParseId(".db");
+			Assert.That(id, Is.EqualTo(0));
+			id = PriceProcessItem.ParseId("1.db");
+			Assert.That(id, Is.EqualTo(1));
+			Assert.That(PriceProcessItem.ParseId("d1287_9972279.txt"), Is.EqualTo(1287));
+		}
 	}
 }

@@ -27,7 +27,7 @@ namespace Inforoom.Downloader
 				var pricePath = Path.Combine(Settings.Default.FTPOptBoxPath, source.FirmCode.ToString().PadLeft(3, '0'));
 				var files = Directory.GetFiles(pricePath, source.PriceMask);
 
-				//Сортированный список файлов из директории, подходящих по маске, файл со старшей датой будет первым
+				//РЎРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РёР· РґРёСЂРµРєС‚РѕСЂРёРё, РїРѕРґС…РѕРґСЏС‰РёС… РїРѕ РјР°СЃРєРµ, С„Р°Р№Р» СЃРѕ СЃС‚Р°СЂС€РµР№ РґР°С‚РѕР№ Р±СѓРґРµС‚ РїРµСЂРІС‹Рј
 				var sortedFileList = new SortedList<DateTime, string>();
 
 				foreach (var file in files) {
@@ -39,7 +39,7 @@ namespace Inforoom.Downloader
 				}
 				if (_logger.IsDebugEnabled)
 					_logger.DebugFormat("SortedList count items {0}", sortedFileList.Count);
-				//Если в списке есть файлы, то берем первый и скачиваем
+				//Р•СЃР»Рё РІ СЃРїРёСЃРєРµ РµСЃС‚СЊ С„Р°Р№Р»С‹, С‚Рѕ Р±РµСЂРµРј РїРµСЂРІС‹Р№ Рё СЃРєР°С‡РёРІР°РµРј
 				if (sortedFileList.Count == 0)
 					return;
 
@@ -65,17 +65,17 @@ namespace Inforoom.Downloader
 					var errorCode = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
 					var errorAlreadyWas = ErrorPriceLogging.ErrorMessages.ContainsKey(source.PriceItemId) &&
 						ErrorPriceLogging.ErrorMessages.ContainsValue(e.ToString());
-					// Проверяем, если это ошибка совместного доступа  к файлу, и эта ошибка уже происходила для этого файла
+					// РџСЂРѕРІРµСЂСЏРµРј, РµСЃР»Рё СЌС‚Рѕ РѕС€РёР±РєР° СЃРѕРІРјРµСЃС‚РЅРѕРіРѕ РґРѕСЃС‚СѓРїР°  Рє С„Р°Р№Р»Сѓ, Рё СЌС‚Р° РѕС€РёР±РєР° СѓР¶Рµ РїСЂРѕРёСЃС…РѕРґРёР»Р° РґР»СЏ СЌС‚РѕРіРѕ С„Р°Р№Р»Р°
 					if ((errorCode == 32) && errorAlreadyWas) {
 						throw;
 					}
 					else if ((errorCode == 32) && !errorAlreadyWas) {
-						// Если для данного файла ошибка еще не происходила, добавляем ее в словарь
+						// Р•СЃР»Рё РґР»СЏ РґР°РЅРЅРѕРіРѕ С„Р°Р№Р»Р° РѕС€РёР±РєР° РµС‰Рµ РЅРµ РїСЂРѕРёСЃС…РѕРґРёР»Р°, РґРѕР±Р°РІР»СЏРµРј РµРµ РІ СЃР»РѕРІР°СЂСЊ
 						ErrorPriceLogging.ErrorMessages.Add(CurrPriceItemId, e.ToString());
 					}
 				}
-				// Если дошли сюда, значит файл успешно забран и можно удалить 
-				// сообщения об ошибках для этого файла
+				// Р•СЃР»Рё РґРѕС€Р»Рё СЃСЋРґР°, Р·РЅР°С‡РёС‚ С„Р°Р№Р» СѓСЃРїРµС€РЅРѕ Р·Р°Р±СЂР°РЅ Рё РјРѕР¶РЅРѕ СѓРґР°Р»РёС‚СЊ
+				// СЃРѕРѕР±С‰РµРЅРёСЏ РѕР± РѕС€РёР±РєР°С… РґР»СЏ СЌС‚РѕРіРѕ С„Р°Р№Р»Р°
 				if (ErrorPriceLogging.ErrorMessages.ContainsKey(CurrPriceItemId))
 					ErrorPriceLogging.ErrorMessages.Remove(CurrPriceItemId);
 			}
@@ -90,7 +90,7 @@ namespace Inforoom.Downloader
 				File.Delete(_downloadedFile);
 			}
 			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при удалении файла {0}", _downloadedFile), e);
+				_log.Error(String.Format("РћС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё С„Р°Р№Р»Р° {0}", _downloadedFile), e);
 			}
 		}
 

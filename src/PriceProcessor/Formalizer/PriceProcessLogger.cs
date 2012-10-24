@@ -27,11 +27,11 @@ namespace Inforoom.Formalizer
 		public void SuccesLog(IPriceFormalizer p)
 		{
 			string messageBody = "", messageSubject = "";
-			//Формирование заголовков письма и 
+			//Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РіРѕР»РѕРІРєРѕРІ РїРёСЃСЊРјР° Рё
 			if (null == p)
-				SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, -1, -1, null);
+				SuccesGetBody("РџСЂР°Р№СЃ СѓРїРµС€РЅРѕ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅ", ref messageSubject, ref messageBody, -1, -1, null);
 			else
-				SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName));
+				SuccesGetBody("РџСЂР°Р№СЃ СѓРїРµС€РЅРѕ С„РѕСЂРјР°Р»РёР·РѕРІР°РЅ", ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName));
 
 			string downloadId = null;
 			var fileName = Path.GetFileNameWithoutExtension(p.InputFileName);
@@ -70,17 +70,17 @@ namespace Inforoom.Formalizer
 				CurrentErrorMessage = ex.ToString();
 			var addition = CurrentErrorMessage;
 
-			//Если предыдущее сообщение не отличается от текущего, то не логируем его
+			//Р•СЃР»Рё РїСЂРµРґС‹РґСѓС‰РµРµ СЃРѕРѕР±С‰РµРЅРёРµ РЅРµ РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ С‚РµРєСѓС‰РµРіРѕ, С‚Рѕ РЅРµ Р»РѕРіРёСЂСѓРµРј РµРіРѕ
 			if (_prevErrorMessage == CurrentErrorMessage)
 				return;
 
-			//Формирование заголовков письма и 
+			//Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РіРѕР»РѕРІРєРѕРІ РїРёСЃСЊРјР° Рё
 			if (null != p)
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName));
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, p.priceCode, p.firmCode, String.Format("{0} ({1})", p.firmShortName, p.priceName));
 			else if (ex is FormalizeException)
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, ((FormalizeException)ex).priceCode, ((FormalizeException)ex).clientCode, ((FormalizeException)ex).FullName);
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, ((FormalizeException)ex).priceCode, ((FormalizeException)ex).clientCode, ((FormalizeException)ex).FullName);
 			else
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, Convert.ToInt64(_processItem.PriceCode), -1, null);
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, Convert.ToInt64(_processItem.PriceCode), -1, null);
 
 			LogToDb(command => {
 				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
@@ -105,17 +105,17 @@ namespace Inforoom.Formalizer
 			var addition = CurrentErrorMessage;
 			_logger.InfoFormat("Error Addition : {0}", addition);
 
-			//Если предыдущее сообщение не отличается от текущего, то не логируем его
+			//Р•СЃР»Рё РїСЂРµРґС‹РґСѓС‰РµРµ СЃРѕРѕР±С‰РµРЅРёРµ РЅРµ РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ С‚РµРєСѓС‰РµРіРѕ, С‚Рѕ РЅРµ Р»РѕРіРёСЂСѓРµРј РµРіРѕ
 			if (_prevErrorMessage == CurrentErrorMessage)
 				return;
 
-			//Формирование заголовков письма и 
+			//Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РіРѕР»РѕРІРєРѕРІ РїРёСЃСЊРјР° Рё
 			if (null != priceInfo)
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, priceInfo.PriceCode, priceInfo.FirmCode, String.Format("{0} ({1})", priceInfo.FirmShortName, priceInfo.PriceName));
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, priceInfo.PriceCode, priceInfo.FirmCode, String.Format("{0} ({1})", priceInfo.FirmShortName, priceInfo.PriceName));
 			else if (ex is FormalizeException)
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, ((FormalizeException)ex).priceCode, ((FormalizeException)ex).clientCode, ((FormalizeException)ex).FullName);
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, ((FormalizeException)ex).priceCode, ((FormalizeException)ex).clientCode, ((FormalizeException)ex).FullName);
 			else
-				GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, Convert.ToInt64(_processItem.PriceCode), -1, null);
+				GetBody("РћС€РёР±РєР° С„РѕСЂРјР°Р»РёР·Р°С†РёРё", ref addition, ref messageSubject, ref messageBody, Convert.ToInt64(_processItem.PriceCode), -1, null);
 
 			LogToDb(command => {
 				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
@@ -139,18 +139,18 @@ namespace Inforoom.Formalizer
 			if (_prevErrorMessage == CurrentErrorMessage)
 				return;
 
-			//Формирование заголовков письма и 
-			GetBody("Предупреждение", ref addition, ref messageSubject, ref messageBody, e.priceCode, e.clientCode, e.FullName);
+			//Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ Р·Р°РіРѕР»РѕРІРєРѕРІ РїРёСЃСЊРјР° Рё
+			GetBody("РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", ref addition, ref messageSubject, ref messageBody, e.priceCode, e.clientCode, e.FullName);
 
 			if (e is RollbackFormalizeException) {
 				var re = (RollbackFormalizeException)e;
 				messageBody = String.Format(
 					@"{0}
 
-Формализованно : {1}
-Неформализованно : {2}
-Нулевых : {3}
-Запрещенных : {4}",
+Р¤РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕ : {1}
+РќРµС„РѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕ : {2}
+РќСѓР»РµРІС‹С… : {3}
+Р—Р°РїСЂРµС‰РµРЅРЅС‹С… : {4}",
 					messageBody,
 					re.FormCount,
 					re.UnformCount,
@@ -196,18 +196,18 @@ namespace Inforoom.Formalizer
 			if (-1 == priceCode) {
 				mSubj = mSubjPref;
 				mBody = String.Format(
-					@"Файл         : {0}
-Дата события : {1}",
+					@"Р¤Р°Р№Р»         : {0}
+Р”Р°С‚Р° СЃРѕР±С‹С‚РёСЏ : {1}",
 					Path.GetFileName(_processItem.FilePath),
 					DateTime.Now);
 			}
 			else {
 				mSubj = String.Format("{0} {1}", mSubjPref, priceCode);
 				mBody = String.Format(
-					@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}",
+					@"РљРѕРґ С„РёСЂРјС‹       : {0}
+РљРѕРґ РїСЂР°Р№СЃР°      : {1}
+РќР°Р·РІР°РЅРёРµ РїСЂР°Р№СЃР° : {2}
+Р”Р°С‚Р° СЃРѕР±С‹С‚РёСЏ    : {3}",
 					clientCode,
 					priceCode,
 					priceName,
@@ -220,9 +220,9 @@ namespace Inforoom.Formalizer
 			if (-1 == priceCode) {
 				subj = mSubjPref;
 				body = String.Format(
-					@"Файл         : {0}
-Дата события : {1}
-Ошибка       : {2}",
+					@"Р¤Р°Р№Р»         : {0}
+Р”Р°С‚Р° СЃРѕР±С‹С‚РёСЏ : {1}
+РћС€РёР±РєР°       : {2}",
 					Path.GetFileName(_processItem.FilePath),
 					DateTime.Now,
 					add);
@@ -231,11 +231,11 @@ namespace Inforoom.Formalizer
 			else {
 				subj = String.Format("{0} {1}", mSubjPref, priceCode);
 				body = String.Format(
-					@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}
-Ошибка          : {4}",
+					@"РљРѕРґ С„РёСЂРјС‹       : {0}
+РљРѕРґ РїСЂР°Р№СЃР°      : {1}
+РќР°Р·РІР°РЅРёРµ РїСЂР°Р№СЃР° : {2}
+Р”Р°С‚Р° СЃРѕР±С‹С‚РёСЏ    : {3}
+РћС€РёР±РєР°          : {4}",
 					clientCode,
 					priceCode,
 					priceName,
@@ -254,7 +254,7 @@ namespace Inforoom.Formalizer
 				}
 			}
 			catch (Exception e) {
-				_logger.Error("Ошибка логирования в базу", e);
+				_logger.Error("РћС€РёР±РєР° Р»РѕРіРёСЂРѕРІР°РЅРёСЏ РІ Р±Р°Р·Сѓ", e);
 			}
 		}
 	}

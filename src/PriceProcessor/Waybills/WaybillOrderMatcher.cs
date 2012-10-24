@@ -14,7 +14,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillOrderMatcher));
 
 		/// <summary>
-		/// Не обрабатывает исключения, используй SafeComparisonWithOrders
+		/// РќРµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РёСЃРєР»СЋС‡РµРЅРёСЏ, РёСЃРїРѕР»СЊР·СѓР№ SafeComparisonWithOrders
 		/// </summary>
 		public static void ComparisonWithOrders(Document document, IList<OrderItem> orderItems)
 		{
@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				ComparisonWithOrders(document, orderItems);
 			}
 			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при сопоставлении заказов накладной {0}", document.Id), e);
+				_log.Error(String.Format("РћС€РёР±РєР° РїСЂРё СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРёРё Р·Р°РєР°Р·РѕРІ РЅР°РєР»Р°РґРЅРѕР№ {0}", document.Id), e);
 			}
 		}
 	}

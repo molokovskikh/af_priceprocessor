@@ -51,19 +51,19 @@ namespace Inforoom.Downloader.Ftp
 		private static ILog _log = LogManager.GetLogger(typeof(FtpDownloader));
 
 		/// <summary>
-		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
-		/// Если при получении какого-то файла произошла ошибка, то пытается получить этот файл еще 2 раза, если не удалось,
-		/// тогда имя этого файла добавляется в список FailedFiles.
+		/// Р—Р°Р±РёСЂР°РµС‚ С„Р°Р№Р»С‹ РёР· С„С‚Рї РґРёСЂРµРєС‚РѕСЂРёРё, СЃРѕС…СЂР°РЅСЏРµС‚ РёС… Р»РѕРєР°Р»СЊРЅРѕ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє Р»РѕРєР°Р»СЊРЅС‹С… РїСѓС‚РµР№ РґР»СЏ СЌС‚РёС… С„Р°Р№Р»РѕРІ.
+		/// Р•СЃР»Рё РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РєР°РєРѕРіРѕ-С‚Рѕ С„Р°Р№Р»Р° РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°, С‚Рѕ РїС‹С‚Р°РµС‚СЃСЏ РїРѕР»СѓС‡РёС‚СЊ СЌС‚РѕС‚ С„Р°Р№Р» РµС‰Рµ 2 СЂР°Р·Р°, РµСЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ,
+		/// С‚РѕРіРґР° РёРјСЏ СЌС‚РѕРіРѕ С„Р°Р№Р»Р° РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РІ СЃРїРёСЃРѕРє FailedFiles.
 		/// </summary>
-		/// <param name="ftpHost">Имя хоста</param>
-		/// <param name="ftpPort">Номер порта</param>
-		/// <param name="ftpDirectory">Директория</param>
-		/// <param name="username">Логин</param>
-		/// <param name="password">Пароль</param>
-		/// <param name="fileMask">Маска имени файла (на соответствие маске проверяется каждый файл)</param>
-		/// <param name="lastDownloadTime">Время, когда была последняя загрузка</param>
-		/// <param name="downloadDirectory">Директория, куда будут сохранены загруженные файлы</param>
-		/// <returns>Список файлов, сохраненных локально</returns>
+		/// <param name="ftpHost">РРјСЏ С…РѕСЃС‚Р°</param>
+		/// <param name="ftpPort">РќРѕРјРµСЂ РїРѕСЂС‚Р°</param>
+		/// <param name="ftpDirectory">Р”РёСЂРµРєС‚РѕСЂРёСЏ</param>
+		/// <param name="username">Р›РѕРіРёРЅ</param>
+		/// <param name="password">РџР°СЂРѕР»СЊ</param>
+		/// <param name="fileMask">РњР°СЃРєР° РёРјРµРЅРё С„Р°Р№Р»Р° (РЅР° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РјР°СЃРєРµ РїСЂРѕРІРµСЂСЏРµС‚СЃСЏ РєР°Р¶РґС‹Р№ С„Р°Р№Р»)</param>
+		/// <param name="lastDownloadTime">Р’СЂРµРјСЏ, РєРѕРіРґР° Р±С‹Р»Р° РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РіСЂСѓР·РєР°</param>
+		/// <param name="downloadDirectory">Р”РёСЂРµРєС‚РѕСЂРёСЏ, РєСѓРґР° Р±СѓРґСѓС‚ СЃРѕС…СЂР°РЅРµРЅС‹ Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ С„Р°Р№Р»С‹</param>
+		/// <returns>РЎРїРёСЃРѕРє С„Р°Р№Р»РѕРІ, СЃРѕС…СЂР°РЅРµРЅРЅС‹С… Р»РѕРєР°Р»СЊРЅРѕ</returns>
 		public IList<DownloadedFile> GetFilesFromSource(string ftpHost, int ftpPort, string ftpDirectory, string username,
 			string password, string fileMask, DateTime lastDownloadTime, string downloadDirectory)
 		{
@@ -79,7 +79,7 @@ namespace Inforoom.Downloader.Ftp
 						continue;
 					var fileInDirectory = entry["Name"].ToString();
 
-					// Если файл не подходит по маске, берем следующий
+					// Р•СЃР»Рё С„Р°Р№Р» РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕ РјР°СЃРєРµ, Р±РµСЂРµРј СЃР»РµРґСѓСЋС‰РёР№
 					if (!PriceProcessor.FileHelper.CheckMask(fileInDirectory, fileMask))
 						continue;
 
@@ -97,7 +97,7 @@ namespace Inforoom.Downloader.Ftp
 #if !DEBUG
 							ReceiveFile(ftpClient, fileInDirectory, downloadedFile);
 #else
-							// Для тестов
+							// Р”Р»СЏ С‚РµСЃС‚РѕРІ
 							if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
 								ftpDirectory = ftpDirectory.Substring(1);
 							var path = Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory);
@@ -108,11 +108,11 @@ namespace Inforoom.Downloader.Ftp
 						}
 						catch (Exception e) {
 							FailedFiles.Add(new FailedFile(fileInDirectory, e));
-							_log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
+							_log.Debug("РћС€РёР±РєР° РїСЂРё РїРѕРїС‹С‚РєРµ Р·Р°РіСЂСѓР·РёС‚СЊ С„Р°Р№Р» СЃ FTP РїРѕСЃС‚Р°РІС‰РёРєР°", e);
 						}
 					}
 					else {
-						_log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
+						_log.DebugFormat("Р¤Р°Р№Р» {0} СѓР¶Рµ Р·Р°Р±СЂР°РЅ Рё РґР°С‚Р° С„Р°Р№Р»Р° РµС‰Рµ РЅРµ РѕР±РЅРѕРІР»РµРЅР°. РќРµ Р·Р°Р±РёСЂР°РµРј.", fileInDirectory);
 					}
 				}
 #if !DEBUG
@@ -155,11 +155,11 @@ namespace Inforoom.Downloader.Ftp
 		}
 
 		/// <summary>
-		/// Пытается загрузить файл. После 3х неудачных попыток последнее исключение отдается наверх
+		/// РџС‹С‚Р°РµС‚СЃСЏ Р·Р°РіСЂСѓР·РёС‚СЊ С„Р°Р№Р». РџРѕСЃР»Рµ 3С… РЅРµСѓРґР°С‡РЅС‹С… РїРѕРїС‹С‚РѕРє РїРѕСЃР»РµРґРЅРµРµ РёСЃРєР»СЋС‡РµРЅРёРµ РѕС‚РґР°РµС‚СЃСЏ РЅР°РІРµСЂС…
 		/// </summary>
-		/// <param name="ftpClient">Объект FTP клиента</param>
-		/// <param name="fileInDirectory">Имя файла в текущей FTP директории</param>
-		/// <param name="downloadedFileName">Путь к файлу, куда он должен быть загружен</param>
+		/// <param name="ftpClient">РћР±СЉРµРєС‚ FTP РєР»РёРµРЅС‚Р°</param>
+		/// <param name="fileInDirectory">РРјСЏ С„Р°Р№Р»Р° РІ С‚РµРєСѓС‰РµР№ FTP РґРёСЂРµРєС‚РѕСЂРёРё</param>
+		/// <param name="downloadedFileName">РџСѓС‚СЊ Рє С„Р°Р№Р»Сѓ, РєСѓРґР° РѕРЅ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ Р·Р°РіСЂСѓР¶РµРЅ</param>
 		private void ReceiveFile(FTP_Client ftpClient, string fileInDirectory, string downloadedFileName)
 		{
 			var countAttempts = 3;
@@ -168,7 +168,7 @@ namespace Inforoom.Downloader.Ftp
 				try {
 					if (File.Exists(downloadedFileName)) {
 						var log = log4net.LogManager.GetLogger(GetType());
-						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
+						log.DebugFormat("Р—Р°РіСЂСѓР·РєР° С„Р°Р№Р»Р°. Р¤Р°Р№Р» {0} СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚. РЈРґР°Р»СЏРµРј", downloadedFileName);
 						File.Delete(downloadedFileName);
 					}
 					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew)) {
@@ -281,8 +281,8 @@ namespace Inforoom.Downloader.Ftp
 
 	public class FtpSourceHandlerException : PathSourceHandlerException
 	{
-		public static string ErrorMessageInvalidLoginOrPassword = "Неправильный логин/пароль.";
-		public static string ErrorMessageServiceNotAvaliable = "Сервис недоступен.";
+		public static string ErrorMessageInvalidLoginOrPassword = "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ Р»РѕРіРёРЅ/РїР°СЂРѕР»СЊ.";
+		public static string ErrorMessageServiceNotAvaliable = "РЎРµСЂРІРёСЃ РЅРµРґРѕСЃС‚СѓРїРµРЅ.";
 
 		public FtpSourceHandlerException()
 		{
@@ -315,7 +315,7 @@ namespace Inforoom.Downloader.Ftp
 							message += ErrorMessageServiceNotAvaliable;
 							break;
 						}
-					default:				
+					default:
 						{
 							message += NetworkErrorMessage;
 							break;
