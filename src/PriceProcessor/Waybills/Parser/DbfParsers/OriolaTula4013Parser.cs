@@ -1,9 +1,12 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	//не указывают кодировку по этому приходится задавать явно
-	public class PulsFKParser : BaseDbfParser
+	public class OriolaTula4013Parser : BaseDbfParser
 	{
 		public override DbfParser GetParser()
 		{
@@ -14,6 +17,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
 				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMPAY")
 				.DocumentInvoice(i => i.RecipientAddress, "PODRCD")
+				.DocumentInvoice(i => i.AmountWithoutNDS18, "SUM20")
+				.DocumentInvoice(i => i.AmountWithoutNDS10, "SUM10")
+				.DocumentInvoice(i => i.AmountWithoutNDS0, "SUM0")
+				.DocumentInvoice(i => i.RecipientId, "PODRCD")
+				.DocumentInvoice(i => i.Amount, "SUMPAY")
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
@@ -21,16 +29,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
 				.Line(l => l.SupplierCost, "PRICE2")
 				.Line(l => l.Quantity, "QNT")
-				.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICE1N")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Amount, "SUMS0")
 				.Line(l => l.NdsAmount, "SUMSNDS")
 				.Line(l => l.Period, "GDATE")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.RegistryCost, "REGPRC")
+				.Line(l => l.RegistryDate, "DATEPRC")
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.SerialNumber, "SER")
-				.Line(l => l.SupplierPriceMarkup, "PROCNDB")
+				.Line(l => l.SupplierPriceMarkup, "PRCOPT")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.CertificateAuthority, "SERTORG")
 				.Line(l => l.CertificatesDate, "SERTGIVE")
@@ -43,10 +52,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("NDOC")
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
-				&& data.Columns.Contains("GDATE")
+				&& data.Columns.Contains("NAMEAPT")
 				&& data.Columns.Contains("PRICE2")
 				&& data.Columns.Contains("NUMZ")
-				&& !data.Columns.Contains("NAMEAPT")
+				&& data.Columns.Contains("PRCOPT")
 				&& !data.Columns.Contains("SUMITEM");
 		}
 	}
