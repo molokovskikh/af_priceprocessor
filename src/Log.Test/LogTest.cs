@@ -19,17 +19,15 @@ namespace Log.Test
 	[TestFixture]
 	public class LogTest
 	{
-		[Test(Description="проверка того, как будет отформатировано исключение с помощью Fatal и FatalFormat, и будет ли добалено innerException в вывод")]
+		[Test(Description = "проверка того, как будет отформатировано исключение с помощью Fatal и FatalFormat, и будет ли добалено innerException в вывод")]
 		public void innerExceptionLog()
 		{
 			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net.config"));
 			ILog _log = LogManager.GetLogger(typeof(LogTest));
-			try
-			{
+			try {
 				testEx();
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				_log.Fatal("Error", ex);
 				_log.FatalFormat("Format Error = {0}", ex);
 			}
@@ -37,13 +35,11 @@ namespace Log.Test
 
 		public void testEx()
 		{
-			try
-			{
+			try {
 				int i = int.Parse("dsds");
 				Console.WriteLine("i = {0}", i);
 			}
-			catch (Exception ex)
-			{
+			catch (Exception ex) {
 				throw new Exception("Ошибка в testEx", ex);
 			}
 		}
@@ -67,9 +63,8 @@ namespace Log.Test
 			XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "log4net_SMTPAppederWithFilterTest.config"));
 			ILog _log = LogManager.GetLogger(typeof(LogTest));
 			_log.Info("это тест");
-			using (log4net.NDC.Push("smtp"))
-			{
-				_log.Error("это ошибка 1" );
+			using (log4net.NDC.Push("smtp")) {
+				_log.Error("это ошибка 1");
 				_log.Fatal("это ошибка фатальная ошибка 1");
 				//LoggingEvent le = new LoggingEvent(typeof(LogTest), _log.Logger.Repository, _log.Logger.Name, Level.Fatal, "это ошибка фатальная ошибка 1", null);
 				//le.Properties["SMTP"] = "true";
@@ -77,16 +72,13 @@ namespace Log.Test
 			}
 			_log.Error("это ошибка 2");
 			_log.Fatal("это ошибка фатальная ошибка 2");
-			try
-			{
+			try {
 				int i = int.Parse("dsds");
 				Console.WriteLine("i = {0}", i);
 			}
-			catch(Exception exception)
-			{
+			catch (Exception exception) {
 				_log.ErrorFormat("Ошибка при разборе строки {0}\r\n{1}", "dsds", exception);
 			}
 		}
-
 	}
 }

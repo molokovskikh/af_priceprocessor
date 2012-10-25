@@ -18,7 +18,8 @@ namespace RemotePriceProcessor
 		}
 
 		public void AfterReceiveReply(ref Message reply, object correlationState)
-		{}
+		{
+		}
 	}
 
 	public class MessageInspectorRegistrator : IEndpointBehavior
@@ -31,14 +32,17 @@ namespace RemotePriceProcessor
 		}
 
 		public void Validate(ServiceEndpoint endpoint)
-		{}
+		{
+		}
 
 		public void AddBindingParameters(ServiceEndpoint endpoint,
 			BindingParameterCollection bindingParameters)
-		{}
+		{
+		}
 
 		public void ApplyDispatchBehavior(ServiceEndpoint endpoint, EndpointDispatcher endpointDispatcher)
-		{}
+		{
+		}
 
 		public void ApplyClientBehavior(ServiceEndpoint endpoint, ClientRuntime clientRuntime)
 		{
@@ -51,16 +55,20 @@ namespace RemotePriceProcessor
 	public class PriceProcessorException : ApplicationException
 	{
 		public PriceProcessorException()
-		{}
+		{
+		}
 
 		public PriceProcessorException(string message) : base(message)
-		{}
+		{
+		}
 
 		public PriceProcessorException(string message, Exception innerException) : base(message, innerException)
-		{}
+		{
+		}
 
 		protected PriceProcessorException(SerializationInfo info, StreamingContext context) : base(info, context)
-		{}
+		{
+		}
 	}
 
 	[MessageContract]
@@ -88,6 +96,7 @@ namespace RemotePriceProcessor
 	{
 		[MessageHeader]
 		public string Filename { get; set; }
+
 		[MessageBodyMember]
 		public Stream FileStream { get; set; }
 	}
@@ -95,19 +104,15 @@ namespace RemotePriceProcessor
 	[MessageContract]
 	public class FilePriceInfo : IDisposable
 	{
-		[MessageHeader]
-		public uint PriceItemId;
+		[MessageHeader] public uint PriceItemId;
 
-		[MessageHeader]
-		public LogInformation LogInformation;
+		[MessageHeader] public LogInformation LogInformation;
 
-		[MessageBodyMember]
-		public Stream Stream;
+		[MessageBodyMember] public Stream Stream;
 
 		public void Dispose()
 		{
-			if (Stream != null)
-			{
+			if (Stream != null) {
 				Stream.Close();
 			}
 		}
