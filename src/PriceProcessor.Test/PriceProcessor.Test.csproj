@@ -265,6 +265,7 @@
     <Compile Include="Waybills\Parser\Txt\FarmPartnerKalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Impakt12743ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\KatrenOrelParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\KazMedFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Rafel2758TxtParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
