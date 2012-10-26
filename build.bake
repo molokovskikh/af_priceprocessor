@@ -47,7 +47,6 @@ task @Build, [@BuildService]
 
 task @deploy, [@ServiceDeployPipeline]
 
-task @BeforeTest, [@RunMySql, @PrepareLocal, @InstallPackages]
 
 def IsDocument(mime as Mime):
 	for box in mime.MainEntity.To.Mailboxes:
