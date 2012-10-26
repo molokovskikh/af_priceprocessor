@@ -390,9 +390,8 @@ namespace PriceProcessor.Test.Formalization
 			TestProducerSynonym synonym2;
 
 			using (new TransactionScope()) {
-				var producers = TestProducer.Queryable.Take(2).ToList();
-				producer1 = producers[0];
-				producer2 = producers[1];
+				producer1 = new TestProducer("Тестовый производитель1");
+				producer2 = new TestProducer("Тестовый производитель2");
 				synonym1 = new TestProducerSynonym("Вектор", producer1, price);
 				synonym1.Save();
 				synonym2 = new TestProducerSynonym("Вектор", producer2, price);
