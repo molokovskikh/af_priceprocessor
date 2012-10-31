@@ -134,7 +134,6 @@
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
     <Compile Include="Handlers\EmailSourceHandlerFixture.cs" />
-    <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
     <Compile Include="Handlers\HandlerFixture.cs" />
     <Compile Include="Handlers\IMAPHandlerFixture.cs" />
     <Compile Include="Handlers\IndexerHandlerFixture.cs" />
