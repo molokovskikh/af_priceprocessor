@@ -1455,7 +1455,7 @@ where
 					finalizeTransaction.Commit();
 					res = true;
 				}
-				catch (MySqlException MyError) {
+				catch (MySqlException e) {
 					if (finalizeTransaction != null)
 						try {
 							finalizeTransaction.Rollback();
@@ -1464,9 +1464,15 @@ where
 							_logger.Error("Error on rollback", ex);
 						}
 
-					if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number))) {
+					var repeateErrorCodes = new[] {
+						1586, //Message: Duplicate entry '%s' for key '%s'
+						1213,
+						1205,
+						1422
+					};
+					if ((tryCount <= Settings.Default.MaxRepeatTranCount) && repeateErrorCodes.Contains(e.ErrorCode)) {
 						tryCount++;
-						_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, MyError.Number, MyError.Message);
+						_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, e.Number, e.Message);
 						//Производим откат в счетчиках и в Core, CoreCosts, чтобы при перезапуске транзакции было с чем синхронизировать
 						if (_info.IsUpdating) {
 							_stats.ResetCountersForUpdate();
