@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			CurrPos = 0;
 			//все прайс листы нужно парсить проверяя данные на соответсвие типам
 			//кроме одного, т.к. в прайсе полный бред но бодать поставщика смысла нет
-			var strict = true;
+			var strict = _info.Price.IsStrict;
 			if (priceCode == 2355)
 				strict = false;
 			dtPrice = Dbf.Load(priceFileName, Encoding.GetEncoding(866), false, strict);

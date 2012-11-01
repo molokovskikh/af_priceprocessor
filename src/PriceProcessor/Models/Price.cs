@@ -28,6 +28,9 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual bool IsUpdate { get; set; }
 
+		[Property]
+		public virtual bool IsStrict { get; set; }
+
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }
 
