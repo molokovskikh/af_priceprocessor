@@ -135,6 +135,7 @@ namespace PriceProcessor.Test.Formalization
 					Name = "Валента Фармацевтика/Королев Ф"
 				};
 				session.Save(forbiddenProducer);
+				session.Flush();
 				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 				session.Save(producer);
 				var newPrice = session.Load<Price>(price.Id);
