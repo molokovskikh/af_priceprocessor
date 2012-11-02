@@ -10,7 +10,7 @@ namespace Inforoom.PriceProcessor.Models
 	public class ForbiddenProducerNames
 	{
 		[PrimaryKey]
-		public virtual ulong Id { get; set; }
+		public virtual uint Id { get; set; }
 
 		[Property]
 		public virtual string Name { get; set; }

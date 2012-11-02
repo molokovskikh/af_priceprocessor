@@ -116,42 +116,6 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
-		[Test]
-		public void FormalizePositionWithForbiddenProducer()
-		{
-			TestProduct product;
-			using (new SessionScope()) {
-				product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
-				product.CatalogProduct.Pharmacie = true;
-				product.Save();
-			}
-			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
-			int result;
-			using(var session = sessionHolder.CreateSession(typeof(ActiveRecordBase))) {
-				var query = session.CreateSQLQuery("delete from farm.unrecexp");
-				query.UniqueResult();
-				var forbiddenProducer = new ForbiddenProducerNames {
-					Name = "Валента Фармацевтика/Королев Ф"
-				};
-				session.Save(forbiddenProducer);
-				session.Flush();
-				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
-				session.Save(producer);
-				var newPrice = session.Load<Price>(price.Id);
-				var synonym = new ProductSynonym {
-					Price = newPrice,
-					Product = session.Load<Product>(product.Id),
-					Synonym = "9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ"
-				};
-				session.Save(synonym);
-				Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
-				Formalize();
-				query = session.CreateSQLQuery("select count(*) from farm.unrecexp");
-				result = Convert.ToInt32(query.UniqueResult());
-			}
-			Assert.That(result == 0);
-		}
-
 		[Test, Description("Проверяем, что при формализации прайса мы не создаем автоматический синоним, созданный по ассортименту")]
 		public void Complex_double_firmalize_no_automatic_synonim()
 		{
