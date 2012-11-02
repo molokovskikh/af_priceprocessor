@@ -135,6 +135,7 @@
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
     <Compile Include="Handlers\EmailSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
     <Compile Include="Handlers\HandlerFixture.cs" />
     <Compile Include="Handlers\IMAPHandlerFixture.cs" />
     <Compile Include="Handlers\IndexerHandlerFixture.cs" />
@@ -186,6 +187,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Organika13449ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaTula4013ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser2Fixture.cs" />

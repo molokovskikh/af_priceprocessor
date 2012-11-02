@@ -190,7 +190,31 @@ group by pi.Id",
 			if (isProcessing)
 				return false;
 
-			return true;
+			//Не формализуется ли прайс-лист с такими же синонимами?
+			return !processList.Select(t => t.ProcessItem).Where(i => i != this).Any(IsSynonymEqual);
+		}
+
+		public bool IsSynonymEqual(PriceProcessItem item)
+		{
+			if (ParentSynonym != null
+				&& item.ParentSynonym != null
+				&& ParentSynonym == item.ParentSynonym)
+				return true;
+
+			if (ParentSynonym != null
+				&& ParentSynonym == item.PriceCode)
+				return true;
+
+			if (item.ParentSynonym != null
+				&& item.ParentSynonym == PriceCode)
+				return true;
+
+			if (item.ParentSynonym == null &&
+				ParentSynonym == null &&
+				item.PriceCode == PriceCode)
+				return true;
+
+			return false;
 		}
 
 		public void CopyToInbound(string extrFileName, MySqlConnection connection, MySqlTransaction transaction)
