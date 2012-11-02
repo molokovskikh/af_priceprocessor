@@ -126,9 +126,8 @@ namespace PriceProcessor.Test.Formalization
 				product.Save();
 			}
 			var sessionHolder = ActiveRecordMediator.GetSessionFactoryHolder();
-			var session = sessionHolder.CreateSession(typeof(ActiveRecordBase));
 			int result;
-			try {
+			using(var session = sessionHolder.CreateSession(typeof(ActiveRecordBase))) {
 				var query = session.CreateSQLQuery("delete from farm.unrecexp");
 				query.UniqueResult();
 				var forbiddenProducer = new ForbiddenProducerNames {
@@ -149,9 +148,6 @@ namespace PriceProcessor.Test.Formalization
 				Formalize();
 				query = session.CreateSQLQuery("select count(*) from farm.unrecexp");
 				result = Convert.ToInt32(query.UniqueResult());
-			}
-			finally {
-				sessionHolder.ReleaseSession(session);
 			}
 			Assert.That(result == 0);
 		}
