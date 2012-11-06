@@ -1286,10 +1286,11 @@ where
 					insertCoreAndCoreCostsCommandList = GetSQLToInsertCoreAndCoreCosts(out updateUsedSynonymLogs);
 
 				try {
-					MySqlCommand mcClear = new MySqlCommand();
-					mcClear.Connection = MyConn;
-					mcClear.Transaction = finalizeTransaction;
-					mcClear.CommandTimeout = 0;
+					var mcClear = new MySqlCommand {
+						Connection = MyConn,
+						Transaction = finalizeTransaction,
+						CommandTimeout = (int)TimeSpan.FromMinutes(Settings.Default.HandlerTimeout * 0.8).TotalSeconds
+					};
 
 					mcClear.Parameters.Clear();
 
