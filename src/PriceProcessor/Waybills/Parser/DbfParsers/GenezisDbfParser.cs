@@ -60,6 +60,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				table.Columns.Contains("QNTY") &&
 				table.Columns.Contains("EXP_DATE") &&
 				table.Columns.Contains("PRICE") &&
+				table.Columns.Contains("PRICE_RR") &&
 				table.Columns.Contains("PRICE_TAX");
 		}
 	}

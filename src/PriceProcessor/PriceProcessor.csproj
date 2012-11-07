@@ -293,6 +293,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Organika13449Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\OriolaStavropol13525Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaTula4013Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDParser.cs" />
