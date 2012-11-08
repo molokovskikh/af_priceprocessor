@@ -352,6 +352,7 @@
     <Compile Include="Waybills\Sources\KatrensourceFixture.cs" />
     <Compile Include="Waybills\Sources\ProtekSourceFixture.cs" />
     <Compile Include="Waybills\Sources\RostaCertificateSourceFixture.cs" />
+    <Compile Include="Waybills\Sources\RostaCertificateSourceIntegrationFixture.cs" />
     <Compile Include="Waybills\Sources\SiaSourceFixture.cs" />
     <Compile Include="Waybills\SstExporterFixture.cs" />
     <Compile Include="Waybills\WaybillFormatDetectorFixture.cs" />

@@ -129,6 +129,21 @@ namespace Inforoom.PriceProcessor.Downloader
 										exception);
 								}
 						}
+						var directoryName = Path.GetDirectoryName(files.Last(f => !String.IsNullOrEmpty(f.LocalFile)).LocalFile);
+						try {
+							if (!String.IsNullOrEmpty(directoryName)
+								&& Directory.Exists(directoryName)
+								&& Directory.GetDirectories(directoryName).Length == 0
+								&& Directory.GetFiles(directoryName).Length == 0)
+								Directory.Delete(directoryName);
+						}
+						catch (Exception exception) {
+							_logger.WarnFormat(
+								"Для задачи сертификата {0} возникла ошибка при удалении локальной директории {1}: {2}",
+								certificateTask,
+								directoryName,
+								exception);
+						}
 					}
 				else {
 					_logger.WarnFormat("Для задачи сертификата {0} не были получены файлы", certificateTask);

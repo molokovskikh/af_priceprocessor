@@ -10,6 +10,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public class RostaCertificateSource : FtpCertifcateSource, IRemoteFtpSource
 	{
+		/// <summary>
+		/// Для тестов
+		/// </summary>
+		public string TMPDownloadDir { get; set; }
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var catalogs = CertificateSourceCatalog.Queryable
@@ -26,33 +30,41 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			}
 
 			var tempDowloadDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+			TMPDownloadDir = tempDowloadDir;
 			if (!Directory.Exists(tempDowloadDir))
 				Directory.CreateDirectory(tempDowloadDir);
 
 			var downloader = new FtpDownloader();
+			try {
+				foreach (var certificateSourceCatalog in catalogs) {
+					var dirName = ExtractFtpDir(certificateSourceCatalog.OriginFilePath);
+					var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
 
-			foreach (var certificateSourceCatalog in catalogs) {
-				var dirName = ExtractFtpDir(certificateSourceCatalog.OriginFilePath);
-				var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
-
-				var downloadFiles = downloader.GetFilesFromSource(
-					FtpHost,
-					FtpPort,
-					dirName,
-					FtpUser,
-					FtpPassword,
-					fileName,
-					DateTime.MinValue,
-					tempDowloadDir);
-
-				if (downloadFiles.Count > 0)
-					files.Add(new CertificateFile(
-						downloadFiles[0].FileName,
-						certificateSourceCatalog.OriginFilePath,
+					var downloadFiles = downloader.GetFilesFromSource(
+						FtpHost,
+						FtpPort,
+						dirName,
+						FtpUser,
+						FtpPassword,
 						fileName,
-						task.CertificateSource));
-			}
+						DateTime.MinValue,
+						tempDowloadDir);
 
+					if (downloadFiles.Count > 0)
+						files.Add(new CertificateFile(
+							downloadFiles[0].FileName,
+							certificateSourceCatalog.OriginFilePath,
+							fileName,
+							task.CertificateSource));
+				}
+			}
+			finally {
+				if (!String.IsNullOrEmpty(tempDowloadDir)
+					&& Directory.Exists(tempDowloadDir)
+					&& Directory.GetDirectories(tempDowloadDir).Length == 0
+					&& Directory.GetFiles(tempDowloadDir).Length == 0)
+					Directory.Delete(tempDowloadDir);
+			}
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
 		}
