@@ -95,8 +95,8 @@ namespace PriceProcessor.Test
 			resolver.ResolveProducer(position);
 			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
 			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 0);
-			Assert.IsNotNull(position.NotCreateUnrecExp = true);
+			Assert.IsFalse((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
+			Assert.IsTrue(position.NotCreateUnrecExp);
 		}
 
 		[Test]
@@ -139,7 +139,7 @@ namespace PriceProcessor.Test
 
 			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
 			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym["IsAutomatic"] = 1);
+			Assert.IsTrue((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
 		}
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
