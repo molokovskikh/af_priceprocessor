@@ -276,6 +276,7 @@
     <Compile Include="Waybills\Parser\Txt\RostaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\SiaVoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xls\AVIA_Kos7895ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Xls\VselennajaZdorovyaParserFixture.cs" />
     <Compile Include="Waybills\Parser\ZdravServiceSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\ImperiaFarmaSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVrnMusatovParserFixture.cs" />
