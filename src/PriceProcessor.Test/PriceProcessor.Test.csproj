@@ -191,6 +191,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\Organika13449ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaStavropol13525ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaTula4013ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PandaUfaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVolgogradParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulsFK3996ParserFixture.cs" />
