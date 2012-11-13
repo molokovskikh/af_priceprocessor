@@ -32,9 +32,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 				var line = document.NewLine();
 				line.Product = row.GetCell(1).StringValue;
 				line.Producer = row.GetCell(2).StringValue;
-				line.SupplierCost = Convert.ToDecimal(row.GetCell(3).StringValue);
-				line.Quantity = Convert.ToUInt32(row.GetCell(4).Value);
-				line.Amount = Convert.ToDecimal(row.GetCell(5).StringValue);
+				line.SupplierCostWithoutNDS = Convert.ToDecimal(row.GetCell(3).StringValue);
+				line.SupplierCost = Convert.ToDecimal(row.GetCell(4).StringValue);
+				line.Quantity = Convert.ToUInt32(row.GetCell(5).Value);
+				line.Amount = Convert.ToDecimal(row.GetCell(6).StringValue);
+				line.Country = row.GetCell(7).StringValue;
+				line.BillOfEntryNumber = row.GetCell(9).StringValue;
 			}
 			return document;
 		}
@@ -47,9 +50,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 			return (sheet.Cells[7, 0].StringValue.ToLower().Equals("№ п/п")) &&
 				(sheet.Cells[7, 1].StringValue.ToLower().Equals("наименование продукции")) &&
 				(sheet.Cells[7, 2].StringValue.ToLower().Equals("производитель")) &&
-				(sheet.Cells[7, 3].StringValue.ToLower().Equals("цена")) &&
-				(sheet.Cells[7, 4].StringValue.ToLower().Equals("количество")) &&
-				(sheet.Cells[7, 5].StringValue.ToLower().Equals("сумма"));
+				(sheet.Cells[7, 3].StringValue.ToLower().Equals("цена без ндс")) &&
+				(sheet.Cells[7, 4].StringValue.ToLower().Equals("цена с ндс")) &&
+				(sheet.Cells[7, 6].StringValue.ToLower().Equals("сумма"));
 		}
 	}
 }
