@@ -27,6 +27,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			string protocolFilemameColumn = null;
 			string passportFilenameColumn = null;
 
+			string billOfEntryNumberColumn = null;
+
 
 			var data = Dbf.Load(file, Encoding);
 			if (data.Columns.Contains("PV"))
@@ -57,6 +59,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("F_PASS"))
 				passportFilenameColumn = "F_PASS";
 
+			if(data.Columns.Contains("GTD"))
+				billOfEntryNumberColumn = "GTD";
+
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r["DOCNO"]);
 				if (!Convert.IsDBNull(r["DOCDAT"]))
@@ -74,7 +79,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SupplierCost = ParseHelper.GetDecimal(r["TZENANDS"].ToString());
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
 				line.Period = Convert.IsDBNull(r["GODEN"]) ? null : Convert.ToDateTime(r["GODEN"]).ToShortDateString();
-				line.BillOfEntryNumber = r["GTD"].ToString();
+
+				if(!String.IsNullOrEmpty(billOfEntryNumberColumn))
+					line.BillOfEntryNumber = r["GTD"].ToString();
 
 				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn])) {
 					decimal value;
