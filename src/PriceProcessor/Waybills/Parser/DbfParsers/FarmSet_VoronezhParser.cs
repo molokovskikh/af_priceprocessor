@@ -31,6 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "PV")
 				.Line(l => l.EAN13, "SHTRIH")
 				.Line(l => l.CertificateFilename, "SERTFILE")
+				.Line(l => l.BillOfEntryNumber, "GTD")
 				.ToDocument(document, data);
 			return document;
 		}
