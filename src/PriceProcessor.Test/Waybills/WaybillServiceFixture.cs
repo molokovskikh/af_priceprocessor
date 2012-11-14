@@ -516,9 +516,8 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(doc.Lines[3].ProductEntity, Is.Not.Null);
 			Assert.That(doc.Lines[3].ProductEntity.Id, Is.EqualTo(product4.Id));
 			Assert.That(doc.Lines[3].ProducerId, Is.EqualTo(producer3.Id));
-			Assert.That(doc.Lines[4].ProductEntity, Is.Not.Null);
-			Assert.That(doc.Lines[4].ProductEntity.Id, Is.EqualTo(product5.Id));
-			Assert.That(doc.Lines[4].ProducerId, Is.EqualTo(producer3.Id));
+			Assert.That(doc.Lines[4].ProductEntity, Is.Null);
+			Assert.That(doc.Lines[4].ProducerId, Is.Null);
 		}
 	}
 }

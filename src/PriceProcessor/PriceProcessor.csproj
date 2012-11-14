@@ -216,6 +216,7 @@
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Mailer.cs" />
+    <Compile Include="Models\SupplierCode.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Monitor.cs" />
     <Compile Include="MySqlUtils.cs" />
