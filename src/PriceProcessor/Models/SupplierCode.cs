@@ -15,9 +15,6 @@ namespace Inforoom.PriceProcessor.Models
 		[BelongsTo("PriceId")]
 		public Price Price { get; set; }
 
-		[BelongsTo("AssortmentId")]
-		public Assortment Assortment { get; set; }
-
 		[BelongsTo("ProductId")]
 		public Product Product { get; set; }
 

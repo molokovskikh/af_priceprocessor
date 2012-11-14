@@ -92,7 +92,6 @@ namespace PriceProcessor.Test.Waybills
 			TestAssortment.CheckAndCreate(product2, producer2);
 
 			var supplierCode2 = new SupplierCode {
-				Assortment = session.Query<Assortment>().FirstOrDefault(a => a.ProducerId == producer2.Id && a.Catalog.Id == product2.CatalogProduct.Id),
 				Code = "45678",
 				Price = session.Load<Price>(price.Id),
 				ProducerId = (int)producer2.Id,
