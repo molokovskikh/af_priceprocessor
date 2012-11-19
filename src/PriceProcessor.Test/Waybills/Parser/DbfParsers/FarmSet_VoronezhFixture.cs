@@ -11,7 +11,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("Му067781.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ФК000067781"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("23.01.2012"));
-			Assert.That(doc.OrderId, Is.EqualTo(25632871));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("19614"));
 			Assert.That(line.Product, Is.EqualTo("Аквалор Софт 125мл спрей фл."));
@@ -29,6 +28,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.VitallyImportant, !Is.True);
 			Assert.That(line.EAN13, Is.EqualTo("3582910130031"));
 			Assert.That(line.CertificateFilename, Is.EqualTo(@"КОСМЕТИКА\АКВАЛОР_СОФТ_11N_60В_125МЛ.TIF"));
+			Assert.That(line.OrderId, Is.EqualTo(25632871));
 		}
 	}
 }
