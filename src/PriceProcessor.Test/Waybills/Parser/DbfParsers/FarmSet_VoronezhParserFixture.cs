@@ -15,7 +15,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("Та534098.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ФК001534098"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("13.11.2012")));
-			Assert.That(doc.OrderId, Is.EqualTo(35302648));
 			var line = doc.Lines[2];
 			Assert.That(line.Code, Is.EqualTo("114"));
 			Assert.That(line.Product, Is.EqualTo("Бронхолитин 125мл сироп"));
@@ -34,6 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.EAN13, Is.EqualTo("3800010650175"));
 			Assert.That(line.CertificateFilename, Is.EqualTo(@"Б\БРОНХОЛИТИН_4010512.TIF"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10210190/030712/0011654"));
+			Assert.That(line.OrderId, Is.EqualTo(35302648));
 		}
 	}
 }
