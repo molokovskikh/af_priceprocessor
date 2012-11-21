@@ -122,6 +122,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string Country { get; set; }
 
 		/// <summary>
+		/// Код страны
+		/// </summary>
+		[Property]
+		public string CountryCode { get; set; }
+
+		/// <summary>
 		/// Цена производителя без НДС
 		/// </summary>
 		[Property("ProducerCost")]

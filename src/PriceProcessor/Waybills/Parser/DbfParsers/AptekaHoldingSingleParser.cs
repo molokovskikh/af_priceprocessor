@@ -28,6 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			string passportFilenameColumn = null;
 
 			string billOfEntryNumberColumn = null;
+			string countryCode = null;
 
 
 			var data = Dbf.Load(file, Encoding);
@@ -62,6 +63,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if(data.Columns.Contains("GTD"))
 				billOfEntryNumberColumn = "GTD";
 
+			if(data.Columns.Contains("PRIZN"))
+				countryCode = "PRIZN";
+
 			document.Lines = data.Rows.Cast<DataRow>().Select(r => {
 				document.ProviderDocumentId = Convert.ToString(r["DOCNO"]);
 				if (!Convert.IsDBNull(r["DOCDAT"]))
@@ -81,7 +85,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.Period = Convert.IsDBNull(r["GODEN"]) ? null : Convert.ToDateTime(r["GODEN"]).ToShortDateString();
 
 				if(!String.IsNullOrEmpty(billOfEntryNumberColumn))
-					line.BillOfEntryNumber = r["GTD"].ToString();
+					line.BillOfEntryNumber = r[billOfEntryNumberColumn].ToString();
+
+				if(!String.IsNullOrEmpty(countryCode))
+					line.CountryCode = r[countryCode].ToString();
 
 				if (!String.IsNullOrEmpty(registryCostColumn) && !Convert.IsDBNull(r[registryCostColumn])) {
 					decimal value;

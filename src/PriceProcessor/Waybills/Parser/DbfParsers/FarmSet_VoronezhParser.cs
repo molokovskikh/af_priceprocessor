@@ -32,6 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificateFilename, "SERTFILE")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.OrderId, "DOC_ID")
+				.Line(l => l.CountryCode, "KODSTRANA")
 				.ToDocument(document, data);
 			return document;
 		}

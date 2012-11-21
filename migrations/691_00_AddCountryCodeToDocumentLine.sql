@@ -1,0 +1,1 @@
+﻿ALTER TABLE `documents`.`documentbodies` ADD COLUMN `CountryCode` VARCHAR(30) AFTER `RegistryDate`;

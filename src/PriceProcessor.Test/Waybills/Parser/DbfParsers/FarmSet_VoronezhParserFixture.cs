@@ -34,6 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificateFilename, Is.EqualTo(@"Б\БРОНХОЛИТИН_4010512.TIF"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10210190/030712/0011654"));
 			Assert.That(line.OrderId, Is.EqualTo(35302648));
+			Assert.That(line.CountryCode, Is.EqualTo("100"));
 		}
 	}
 }

@@ -35,6 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130032/200812/0005326/1"));
 			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.CountryCode, Is.EqualTo("276"));
 		}
 	}
 }
