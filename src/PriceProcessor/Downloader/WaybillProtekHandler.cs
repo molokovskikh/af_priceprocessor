@@ -241,8 +241,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			var endpoint = new EndpointAddress(uri);
 			var binding = new BasicHttpBinding {
-				SendTimeout = TimeSpan.FromMinutes(10),
-				ReceiveTimeout = TimeSpan.FromMinutes(10),
+				SendTimeout = TimeSpan.FromMinutes(20),
+				ReceiveTimeout = TimeSpan.FromMinutes(20),
 				MaxBufferPoolSize = 30 * 1024 * 1024,
 				MaxBufferSize = 10 * 1024 * 1024,
 				MaxReceivedMessageSize = 10 * 1024 * 1024
