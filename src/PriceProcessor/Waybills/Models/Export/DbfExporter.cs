@@ -170,6 +170,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("com_fee", typeof(decimal)),
 			});
 
+			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
+			foreach (var column in fixColumns) {
+				column.ExtendedProperties.Add("presision", 12);
+				column.ExtendedProperties.Add("scale", 2);
+			}
+
 			foreach (var line in document.Lines) {
 				var row = table.NewRow();
 				row.SetField("postid_af", document.FirmCode);
