@@ -8,13 +8,22 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class SiaAstrahanParser : IDocumentParser
+	public class SiaAstrahan12423Parser : IDocumentParser
 	{
 		protected Encoding Encoding = Encoding.GetEncoding(866);
 
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file, Encoding);
+
+			foreach (DataRow dataRow in data.Rows) {
+				if (dataRow["GNVLS"].ToString() == "ЖНВЛС") {
+					dataRow["GNVLS"] = 1;
+				}
+				else {
+					dataRow["GNVLS"] = 0;
+				}
+			}
 
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "DCODE")
@@ -39,7 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.Nds, "NDS_PR")
-				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV")
+				.Line(l => l.VitallyImportant, "GNVLS")
 				.ToDocument(document, data);
 
 			return document;
@@ -52,7 +61,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("PRICE_BASE") &&
 				data.Columns.Contains("PRO_NNDS") &&
 				data.Columns.Contains("SUM_OPL") &&
-				!data.Columns.Contains("GNVLS");
+				data.Columns.Contains("GNVLS");
 		}
 	}
 }
