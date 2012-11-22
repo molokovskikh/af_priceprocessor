@@ -149,6 +149,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					// получаем Id прайсов, из которых мы будем брать синонимы.
 					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
 						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+					// прайсы для сопоставления по кодам
+					var priceForCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
+						.Select(p => p.Id).Distinct().ToList();
 					if (priceCodes.Count <= 0)
 						return this;
 
@@ -177,7 +180,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
 
 						// получаем данные по кодам из базы
-						var dbSupplierCodes = GetSupplierCodesFromDb(сodes, priceCodes);
+						var dbSupplierCodes = GetSupplierCodesFromDb(сodes, priceForCodes);
 
 						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						foreach (var line in Lines) {
