@@ -43,13 +43,13 @@ namespace PriceProcessor.Test.Waybills
 
 			TestAssortment.CheckAndCreate(product, producer);
 
-			var supplierCode2 = new SupplierCode {
+			var supplierCode = new SupplierCode {
 				Code = "45678",
-				Price = session.Load<Price>(price.Id),
+				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer.Id,
 				Product = session.Load<Product>(product.Id)
 			};
-			session.Save(supplierCode2);
+			session.Save(supplierCode);
 			var log = new DocumentReceiveLog() {
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ClientCode = client.Id,
@@ -157,21 +157,21 @@ namespace PriceProcessor.Test.Waybills
 
 			var supplierCode2 = new SupplierCode {
 				Code = "45678",
-				Price = session.Load<Price>(price.Id),
+				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer2.Id,
 				Product = session.Load<Product>(product2.Id)
 			};
 			session.Save(supplierCode2);
 			var supplierCode4 = new SupplierCode {
 				Code = "789",
-				Price = session.Load<Price>(price.Id),
+				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer2.Id,
 				Product = session.Load<Product>(product4.Id)
 			};
 			session.Save(supplierCode4);
 			var supplierCode5 = new SupplierCode {
 				Code = "12345",
-				Price = session.Load<Price>(price.Id),
+				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer3.Id,
 				Product = session.Load<Product>(product5.Id)
 			};

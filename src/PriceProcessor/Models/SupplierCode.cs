@@ -12,8 +12,8 @@ namespace Inforoom.PriceProcessor.Models
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
 
-		[BelongsTo("PriceId")]
-		public Price Price { get; set; }
+		[BelongsTo("SupplierId")]
+		public Supplier Supplier { get; set; }
 
 		[BelongsTo("ProductId")]
 		public Product Product { get; set; }

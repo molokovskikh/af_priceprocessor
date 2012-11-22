@@ -91,11 +91,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return (batchSize + index) <= Lines.Count ? batchSize : Lines.Count - index;
 		}
 
-		protected List<SupplierCode> GetSupplierCodesFromDb(List<string> codes, List<uint> priceCodes)
+		protected List<SupplierCode> GetSupplierCodesFromDb(List<string> codes, uint supplierId)
 		{
 			var criteriaSynonym = DetachedCriteria.For<SupplierCode>();
 			criteriaSynonym.Add(Restrictions.In("Code", codes));
-			criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
+			criteriaSynonym.Add(Restrictions.Eq("Supplier.Id", supplierId));
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<SupplierCode>()).ToList();
 		}
 
@@ -149,9 +149,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					// получаем Id прайсов, из которых мы будем брать синонимы.
 					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
 						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-					// прайсы для сопоставления по кодам
-					var priceForCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
-						.Select(p => p.Id).Distinct().ToList();
 					if (priceCodes.Count <= 0)
 						return this;
 
@@ -180,7 +177,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
 
 						// получаем данные по кодам из базы
-						var dbSupplierCodes = GetSupplierCodesFromDb(сodes, priceForCodes);
+						var dbSupplierCodes = GetSupplierCodesFromDb(сodes, FirmCode);
 
 						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						foreach (var line in Lines) {
