@@ -3,43 +3,42 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using Common.Tools;
-using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class AptekaHoldingSPBParser : IDocumentParser
+	public class MedkomMP228Parser : BaseDbfParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
-
-		public Document Parse(string file, Document document)
+		public override DbfParser GetParser()
 		{
-			var data = Dbf.Load(file, Encoding);
-
-			new DbfParser()
+			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "NDOC")
 				.DocumentHeader(h => h.DocumentDate, "DATEDOC")
+				.DocumentInvoice(i => i.RecipientId, "PODRCD")
 				.DocumentInvoice(i => i.Amount, "SUMPAY")
-				.Line(l => l.Code, "CODEPST")
+				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
+				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
-				.Line(l => l.Country, "CNTR")
-				.Line(l => l.ProducerCost, "PRICEMAN")
-				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
-				.Line(l => l.Amount, "SUMS0")
-				.Line(l => l.NdsAmount, "SUMSNDS")
 				.Line(l => l.Quantity, "QNT")
-				.Line(l => l.Period, "GDATE")
+				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
+				.Line(l => l.Nds, "NDS")
+				.Line(l => l.Code, "CODEPST")
+				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.CertificatesDate, "SERTDATE")
-				.Line(l => l.EAN13, "EAN13")
+				.Line(l => l.CertificateAuthority, "SERTORG")
+				.Line(l => l.Period, "GDATE")
+				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD")
-				.Line(l => l.SerialNumber, "SER")
+				.Line(l => l.EAN13, "EAN13")
+				.Line(l => l.ProducerCostWithoutNDS, "PRICEMAN")
+				.Line(l => l.Country, "CNTR")
 				.Line(l => l.VitallyImportant, "GNVLS")
-				.Line(l => l.Nds, "NDS")
-				.ToDocument(document, data);
-
-			return document;
+				.Line(l => l.RegistryCost, "REGPRC")
+				.Line(l => l.RegistryDate, "DATEPRC")
+				.Line(l => l.Amount, "SUMS0")
+				.Line(l => l.NdsAmount, "SUMNDS")
+				.Line(l => l.CountryCode, "CNTR_COD");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
@@ -50,8 +49,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("GDATE") &&
 				data.Columns.Contains("SERTIF") &&
 				data.Columns.Contains("QNTPACK") &&
-				data.Columns.Contains("REGPRC") &&
-				!data.Columns.Contains("CNTR_COD");
+				data.Columns.Contains("CNTR_COD");
 		}
 	}
 }
