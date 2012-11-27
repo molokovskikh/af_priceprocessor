@@ -19,8 +19,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			var invoice = document.Invoice;
 			Assert.That(invoice.RecipientAddress, Is.EqualTo("N13 г.Астрахань, ул.Чалабяна/Ногина/Свердлова, д.19/7/98, Лит.Б"));
-			Assert.That(invoice.InvoiceNumber, Is.Null);
-			Assert.That(invoice.InvoiceDate, Is.Null);
+			Assert.That(invoice.InvoiceNumber, Is.EqualTo("АХ1-1090425/0"));
+			Assert.That(invoice.InvoiceDate, Is.EqualTo(new DateTime(2012, 9, 25)));
 			Assert.That(invoice.SellerAddress, Is.Null);
 			Assert.That(invoice.SellerINN, Is.Null);
 			Assert.That(invoice.SellerKPP, Is.Null);
