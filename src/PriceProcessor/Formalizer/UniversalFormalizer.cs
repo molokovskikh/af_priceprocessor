@@ -31,10 +31,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 				var settings = reader.Settings().ToList();
 
 				FormalizePrice(reader);
-				With.Connection(c => {
-					var command = new MySqlCommand("", c);
-					UpdateIntersection(command, settings, reader.CostDescriptions);
-				});
+
+				if (Downloaded) {
+					With.Connection(c => {
+						var command = new MySqlCommand("", c);
+						UpdateIntersection(command, settings, reader.CostDescriptions);
+					});
+				}
 			}
 		}
 
