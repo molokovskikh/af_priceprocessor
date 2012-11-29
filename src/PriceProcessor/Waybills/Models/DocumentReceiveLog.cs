@@ -51,6 +51,29 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		private string _localFile;
 
+		/// <summary>
+		/// Для тестов
+		/// </summary>
+		public string LocalFileName
+		{
+			get
+			{
+#if DEBUG
+				return _localFile;
+#else
+			return String.Empty;
+#endif
+			}
+			set
+			{
+#if DEBUG
+				_localFile = value;
+#else
+			_localFile = _localFile;
+#endif
+			}
+		}
+
 		public DocumentReceiveLog()
 		{
 		}
@@ -203,12 +226,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			var destinationFileName = GetRemoteFileNameExt();
 
 			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
-			if (GetFileName() != destinationFileName)
+			if (GetFileName() != destinationFileName && File.Exists(_localFile))
 				File.Copy(_localFile, destinationFileName, true);
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
-			File.SetLastAccessTime(destinationFileName, DateTime.Now);
+			if(File.Exists(destinationFileName))
+				File.SetLastAccessTime(destinationFileName, DateTime.Now);
 
 			if (_logger.IsDebugEnabled)
 				WaybillService.SaveWaybill(_localFile);

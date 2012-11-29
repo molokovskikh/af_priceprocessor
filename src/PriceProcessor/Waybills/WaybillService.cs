@@ -105,8 +105,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					l.SaveAndFlush();
 					var settings = WaybillSettings.Find(l.ClientCode.Value);
 
-					if (!(l.DocumentType == DocType.Waybill && settings.IsConvertFormat))
-						l.CopyDocumentToClientDirectory();
+					l.CopyDocumentToClientDirectory();
 					return l;
 				}
 				catch (EMailSourceHandlerException e) {
