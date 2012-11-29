@@ -176,7 +176,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.That(files.Count(), Is.GreaterThan(0));
 
 				//проверка на существование файла dbf в новом формате.
-				var dbfs = Directory.GetFiles(clientDir, "*.dbf");
+				var dbfs = Directory.GetFiles(clientDir, logs.FirstOrDefault(log => !log.IsFake).Id + "*.dbf");
+
 				Assert.That(dbfs.Count(), Is.EqualTo(1));
 				var data = Dbf.Load(dbfs[0], Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));

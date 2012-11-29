@@ -236,7 +236,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			CheckClientDirectory(1, DocType.Waybill);
+			CheckClientDirectory(2, DocType.Waybill);
 
 			using (new SessionScope()) {
 				var logs = TestDocumentLog.Queryable.Where(l =>
@@ -249,7 +249,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.That(logs.Count(l => !l.IsFake), Is.EqualTo(1));
 
 				var log = logs.SingleOrDefault(l => !l.IsFake);
-				var file_dbf = GetFileForAddress(DocType.Waybill).Single(f => f.IndexOf(Path.GetFileNameWithoutExtension(log.FileName)) > -1);
+				var file_dbf = GetFileForAddress(DocType.Waybill).Single(f => f.IndexOf(log.Id.ToString()) > -1);
 
 				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
 				Assert.IsTrue(data.Columns.Contains("postid_af"));
