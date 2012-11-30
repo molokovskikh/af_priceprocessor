@@ -61,7 +61,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 #if DEBUG
 				return _localFile;
 #else
-			return String.Empty;
+				return String.Empty;
 #endif
 			}
 			set
@@ -69,7 +69,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 #if DEBUG
 				_localFile = value;
 #else
-			_localFile = _localFile;
+				_localFile = _localFile;
 #endif
 			}
 		}
