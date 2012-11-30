@@ -170,6 +170,7 @@
     <Compile Include="Models\PriceCost.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />
     <Compile Include="Helpers\ShareFileHelper.cs" />
+    <Compile Include="Models\PriceItem.cs" />
     <Compile Include="Models\Reject.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
