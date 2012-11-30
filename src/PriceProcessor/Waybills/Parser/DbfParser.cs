@@ -111,6 +111,26 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
+		/// <summary>
+		/// Выбирает данные из столбца, в котором значения не null
+		/// </summary>
+		public DbfParser DocumentInvoiceIfNull(Expression<Func<Invoice, object>> ex, params string[] names)
+		{
+			var propertyInfo = GetInfo(ex);
+			_invoiceActions.Add((line, dataRow) => {
+				foreach (var name in names) {
+					if (!dataRow.Table.Columns.Contains(name))
+						continue;
+					var value = dataRow[name];
+					if(value == DBNull.Value)
+						continue;
+					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+					break;
+				}
+			});
+			return this;
+		}
+
 		public DbfParser DocumentInvoice(Expression<Func<Invoice, object>> ex, params string[] names)
 		{
 			var propertyInfo = GetInfo(ex);
