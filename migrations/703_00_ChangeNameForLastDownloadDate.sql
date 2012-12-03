@@ -1,0 +1,1 @@
+﻿ALTER TABLE `usersettings`.`priceitems` CHANGE COLUMN `LastDownloadDate` `LocalLastDownload` DATETIME;

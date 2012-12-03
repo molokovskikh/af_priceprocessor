@@ -79,7 +79,7 @@ logs.downlogs where PriceItemId = {0}",
 				.UniqueResult<DateTime>();
 			var item = session.Load<PriceItem>(price.Costs[0].PriceItem.Id);
 			Assert.That(item.LastDownload, Is.LessThanOrEqualTo(now));
-			Assert.That(item.LastDownloadDate, Is.GreaterThanOrEqualTo(now));
+			Assert.That(item.LocalLastDownload, Is.GreaterThanOrEqualTo(now));
 			Assert.That(downlog, Is.GreaterThan(now));
 		}
 	}
