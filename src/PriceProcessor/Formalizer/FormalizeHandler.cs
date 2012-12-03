@@ -266,13 +266,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if (DateTime.Now.Subtract(lastStatisticReport).TotalSeconds > statisticPeriodPerSecs)
 					_logger.InfoFormat("PriceItemList.Count = {0}", PriceItemList.list.Count);
 
-				//Первым проходом запускаем только загруженные прайс-листы
-				ProcessItemList(PriceItemList.GetDownloadedItemList());
-
-				//Если все загруженные прайс-листы в работе и кол-во рабочих ниток меньше максимального кол-ва, то добавляем еще перепроведенные прайс-листы
-				//Поставил <= потому, что могут быть загруженные прайс-листы, которые уже удалили из PriceItemList, но их рабочие нитки еще не остановлены и не удалены
-				if ((PriceItemList.GetDownloadedCount() <= GetDownloadedProcessCount()) && (pt.Count < Settings.Default.MaxWorkThread))
-					ProcessItemList(PriceItemList.list);
+				ProcessItemList(PriceItemList.GetPrioritizedList());
 			}
 		}
 

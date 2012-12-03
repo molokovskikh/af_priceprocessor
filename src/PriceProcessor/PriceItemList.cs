@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Inforoom.PriceProcessor
 {
@@ -48,14 +49,9 @@ namespace Inforoom.PriceProcessor
 			return list.FindAll(item => (item.PriceItemId == PriceItemId));
 		}
 
-		public static List<PriceProcessItem> GetDownloadedItemList()
+		public static List<PriceProcessItem> GetPrioritizedList()
 		{
-			return list.FindAll(item => (item.Downloaded));
-		}
-
-		public static int GetDownloadedCount()
-		{
-			return GetDownloadedItemList().Count;
+			return list.OrderByDescending(o => o.Downloaded).ThenBy(o => o.CreateTime).ToList();
 		}
 	}
 }
