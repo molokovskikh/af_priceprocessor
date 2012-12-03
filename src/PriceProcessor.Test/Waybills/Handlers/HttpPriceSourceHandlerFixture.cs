@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Inforoom.Downloader;
+using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using Test.Support;
@@ -62,6 +63,9 @@ namespace PriceProcessor.Test.Handlers
 			Reopen();
 			var file = File.Create("test1.dbf");
 			file.Close();
+			if(!Directory.Exists(Settings.Default.InboundPath))
+				Directory.CreateDirectory(Settings.Default.InboundPath);
+			File.SetLastAccessTime("test1.dbf", DateTime.Now);
 			Thread.Sleep(1000);
 			var handler = new FakeHandler();
 			handler.FillSourcesTable();
