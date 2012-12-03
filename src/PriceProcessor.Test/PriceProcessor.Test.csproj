@@ -180,6 +180,7 @@
     <Compile Include="Formalization\UsedSynonymLogsFixture.cs" />
     <Compile Include="Waybills\CertificateModelsFixture.cs" />
     <Compile Include="Waybills\DbfExporterFixture.cs" />
+    <Compile Include="Waybills\Handlers\HttpPriceSourceHandlerFixture.cs" />
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
