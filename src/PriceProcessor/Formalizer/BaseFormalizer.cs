@@ -86,9 +86,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 				if (setSql.Count > 0) {
 					command.CommandText = String.Format(@"
+drop temporary table if exists for_update;
+create temporary table for_update engine=memory
+select ClientId
+from Customers.Intersection i
+where {1} and i.PriceId = ?priceId;
+
 update Customers.Intersection i
+join for_update u on u.ClientId = i.ClientId
 set {0}
-where {1} and i.PriceId = ?priceId",
+where i.PriceId = ?priceId;
+
+drop temporary table if exists for_update;",
 						setSql.Implode(), filterSql.Implode(" and "));
 					command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
 					command.ExecuteNonQuery();

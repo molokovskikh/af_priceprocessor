@@ -242,7 +242,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				var logs = TestDocumentLog.Queryable.Where(l =>
 					l.Client.Id == client.Id &&
 						l.Supplier.Id == supplier.Id &&
-						l.AddressId == client.Addresses[0].Id);
+						l.Address == client.Addresses[0]);
 
 				Assert.That(logs.Count(), Is.EqualTo(2));
 				Assert.That(logs.Count(l => l.IsFake), Is.EqualTo(1));

@@ -359,6 +359,63 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(filter.Events.Count, Is.EqualTo(2));
 		}
 
+		[Test]
+		public void Sync_cost_settings_for_client()
+		{
+			xml = @"<PriceAndSettings>
+	<Settings>
+		<Group>
+			<ClientId>122221</ClientId>
+			<PayerId>21</PayerId>
+			<CostId>PRICE6</CostId>
+			<Markup>10</Markup>
+			<Available>1</Available>
+		</Group>
+	</Settings>
+	<Price>
+		<Item>
+			<Code>109054</Code>
+			<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+			<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+			<Volume>400</Volume>
+			<Quantity>296</Quantity>
+			<Period>01.01.2013</Period>
+			<VitallyImportant>0</VitallyImportant>
+			<NDS>10</NDS>
+			<RequestRatio>20</RequestRatio>
+			<Cost>
+				<Id>PRICE6</Id>
+				<Value>10.10</Value>
+				<MinOrderCount>20</MinOrderCount>
+			</Cost>
+		</Item>
+	</Price>
+</PriceAndSettings>";
+
+			TestClient client;
+			using (new SessionScope()) {
+				client = TestClient.CreateNaked();
+				client.CreateLegalEntity();
+				client.MaintainIntersection();
+
+				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
+				Assert.That(intersections.Count, Is.EqualTo(2));
+				var intersection = intersections[0];
+				intersection.SupplierClientId = "122221";
+				intersection.SupplierPaymentId = "21";
+			}
+
+			Formalize();
+
+			using (new SessionScope()) {
+				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
+				var intersection = intersections[0];
+				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
+				intersection = intersections[1];
+				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
+			}
+		}
+
 		private void Formalize()
 		{
 			file = Path.GetTempFileName();
@@ -367,32 +424,6 @@ namespace PriceProcessor.Test.Loader
 				priceItem.Id);
 			formalizer.Downloaded = true;
 			formalizer.Formalize();
-		}
-
-		[Test]
-		public void DublicateCostsTest()
-		{
-			xml =
-				@"<Price>
-<Item>
-<Code>185</Code>
-<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
-<Producer>>Вухан Лифарма Кемикалз Ко</Producer>
-<Unit>шт.</Unit>
-<Volume>42,112</Volume>
-<Quantity>8</Quantity>
-<Period>15.05.2012</Period>
-<Junk>0</Junk>
-<VitallyImportant>0</VitallyImportant><NDS>10</NDS><RegistryCost>0</RegistryCost><ProducerCost>0</ProducerCost><RequestRatio>0</RequestRatio>
-<Cost><Id>P10094549</Id><Value>34.55</Value><MinOrderCount>3</MinOrderCount></Cost>
-<Cost><Id>P10094549</Id><Value>32.59</Value><MinOrderCount>6</MinOrderCount></Cost>
-<Cost><Id>P10094674</Id><Value>35.08</Value><MinOrderCount>3</MinOrderCount></Cost>
-</Item>
-</Price>";
-
-			var reader = new UniversalReader(new StringStream(xml));
-			var positions = reader.Read().ToList();
-			Assert.That(positions[0].Core.Costs.Length, Is.EqualTo(2));
 		}
 	}
 }

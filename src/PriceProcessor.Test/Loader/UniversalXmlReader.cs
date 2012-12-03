@@ -147,6 +147,31 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(settings.Count, Is.EqualTo(1));
 		}
 
+		[Test]
+		public void DublicateCostsTest()
+		{
+			var xml = @"
+<Price>
+<Item>
+<Code>185</Code>
+<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+<Producer>>Вухан Лифарма Кемикалз Ко</Producer>
+<Unit>шт.</Unit>
+<Volume>42,112</Volume>
+<Quantity>8</Quantity>
+<Period>15.05.2012</Period>
+<Junk>0</Junk>
+<VitallyImportant>0</VitallyImportant><NDS>10</NDS><RegistryCost>0</RegistryCost><ProducerCost>0</ProducerCost><RequestRatio>0</RequestRatio>
+<Cost><Id>P10094549</Id><Value>34.55</Value><MinOrderCount>3</MinOrderCount></Cost>
+<Cost><Id>P10094549</Id><Value>32.59</Value><MinOrderCount>6</MinOrderCount></Cost>
+<Cost><Id>P10094674</Id><Value>35.08</Value><MinOrderCount>3</MinOrderCount></Cost>
+</Item>
+</Price>";
+
+			Read(xml);
+			Assert.That(positions[0].Core.Costs.Length, Is.EqualTo(2));
+		}
+
 		private static void Read(string xml)
 		{
 			var reader = new UniversalReader(new StringStream(xml));

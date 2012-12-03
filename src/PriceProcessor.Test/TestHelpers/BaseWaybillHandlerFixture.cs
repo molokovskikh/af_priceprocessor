@@ -58,7 +58,7 @@ namespace PriceProcessor.Test.TestHelpers
 				var logs = TestDocumentLog.Queryable.Where(log =>
 					log.Client.Id == client.Id &&
 						log.Supplier.Id == supplier.Id &&
-						log.AddressId == address.Id);
+						log.Address == address);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 			}
 		}

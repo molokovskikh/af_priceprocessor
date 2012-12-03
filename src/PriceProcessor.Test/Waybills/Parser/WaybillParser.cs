@@ -84,7 +84,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 					log.SaveAndFlush();
 				}
 				resultList.Add(log.Id);
-				var clientDir = Path.Combine(Settings.Default.DocumentPath, log.AddressId.ToString().PadLeft(3, '0'));
+				var clientDir = Path.Combine(Settings.Default.DocumentPath, log.Address.Id.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");
 				var name = String.Format("{0}_{1}({2}){3}",
 					log.Id,
