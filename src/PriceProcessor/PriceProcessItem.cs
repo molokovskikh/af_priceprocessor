@@ -35,7 +35,7 @@ namespace Inforoom.PriceProcessor
 		public DateTime CreateTime { get; /* для теста private */ set; }
 
 		// Время последней загрузки прайса
-		public DateTime LastDownloadDate { get; set; }
+		public DateTime LocalLastDownload { get; set; }
 
 		private ulong? ParentSynonym { get; set; }
 
@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor
 			ParentSynonym = parentSynonym;
 			if (downloaded)
 				FileTime = DateTime.Now;
-			LastDownloadDate = DateTime.Now;
+			LocalLastDownload = DateTime.Now;
 		}
 
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
@@ -225,12 +225,12 @@ group by pi.Id",
 		{
 			var command = new MySqlCommand(@"
 update usersettings.PriceItems 
-set LastDownload = ?FileTime, LastDownloadDate=?LastDownloadDate
+set LastDownload = ?FileTime, LocalLastDownload=?LocalLastDownload
 where Id = ?Id",
 				connection, transaction);
 			command.Parameters.AddWithValue("?Id", PriceItemId);
 			command.Parameters.AddWithValue("?FileTime", FileTime);
-			command.Parameters.AddWithValue("?LastDownloadDate", LastDownloadDate);
+			command.Parameters.AddWithValue("?LocalLastDownload", LocalLastDownload);
 			command.ExecuteNonQuery();
 
 			if (File.Exists(FilePath))

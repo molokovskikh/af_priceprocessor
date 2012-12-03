@@ -19,6 +19,6 @@ namespace Inforoom.PriceProcessor.Models
 		public virtual DateTime LastDownload { get; set; }
 
 		[Property]
-		public virtual DateTime LastDownloadDate { get; set; }
+		public virtual DateTime LocalLastDownload { get; set; }
 	}
 }
