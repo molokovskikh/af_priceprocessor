@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Handlers
 	}
 
 	[TestFixture]
-	public class BasePriceSourceHandlerFixture : IntegrationFixture
+	public class HttpPriceSourceHandlerFixture : IntegrationFixture
 	{
 		[Test]
 		public void PriceLogTimeTest()
