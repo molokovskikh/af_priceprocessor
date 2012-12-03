@@ -88,12 +88,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 					command.CommandText = String.Format(@"
 drop temporary table if exists for_update;
 create temporary table for_update engine=memory
-select ClientId
+select ClientId, RegionId
 from Customers.Intersection i
 where {1} and i.PriceId = ?priceId;
 
 update Customers.Intersection i
-join for_update u on u.ClientId = i.ClientId
+join for_update u on u.ClientId = i.ClientId and u.RegionId = i.RegionId
 set {0}
 where i.PriceId = ?priceId;
 
