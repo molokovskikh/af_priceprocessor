@@ -232,9 +232,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public void CalculateValues()
 		{
 			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
-			if (Invoice == null)
+			if (Invoice == null && HaveDataToInvoce())
 				Invoice = new Invoice { Document = this };
-			Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
+			if (Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
+		}
+
+		public bool HaveDataToInvoce()
+		{
+			var result = Lines.All(l => l.Amount.HasValue) && Lines.All(l => l.NdsAmount.HasValue);
+			return result;
 		}
 
 		public DocumentLine NewLine()
