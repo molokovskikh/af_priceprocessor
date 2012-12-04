@@ -10,8 +10,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.DocumentHeader(d => d.ProviderDocumentId, "NDOC")
-				.DocumentInvoiceIfNull(i => i.InvoiceNumber, "BILLNUM", "NDOC")
-				.DocumentInvoiceIfNull(i => i.InvoiceDate, "BILLDT", "DATEDOC")
+				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
+				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
 				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMPAY")
 				.DocumentInvoice(i => i.RecipientAddress, "PODRCD")
 				.Line(l => l.Code, "CODEPST")
@@ -40,14 +40,24 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			return data.Columns.Contains("NDOC")
+			if(data.Columns.Contains("NDOC")
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("GDATE")
 				&& data.Columns.Contains("PRICE2")
 				&& data.Columns.Contains("NUMZ")
 				&& !data.Columns.Contains("NAMEAPT")
-				&& !data.Columns.Contains("SUMITEM");
+				&& !data.Columns.Contains("SUMITEM")) {
+				if(data.Columns.Contains("SELLERID")) {
+					foreach (DataRow row in data.Rows) {
+						if (row["SELLERID"].ToString() != "1111")
+							return true;
+					}
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
 	}
 }
