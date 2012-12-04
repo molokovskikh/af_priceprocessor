@@ -264,8 +264,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				NDSAmount18 = Math.Round(Document.Lines.Where(l => l.Nds.HasValue && l.Nds.Value == 18 && l.NdsAmount.HasValue)
 					.Sum(l => l.NdsAmount).Value, 2);
 			}
-			if (!NDSAmount.HasValue)
-				NDSAmount = NDSAmount10 + NDSAmount18;
+			if (!NDSAmount.HasValue) {
+				if (NDSAmount10.HasValue && NDSAmount18.HasValue) {
+					NDSAmount = NDSAmount10 + NDSAmount18;
+				}
+				else
+					if (Document != null && Document.Lines.All(l => l.NdsAmount.HasValue)) {
+					NDSAmount = Document.Lines.Sum(l => l.NdsAmount);
+					}
+			}
 
 			if (!Amount10.HasValue)
 				Amount10 = NDSAmount10 + AmountWithoutNDS10;
@@ -273,8 +280,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (!Amount18.HasValue)
 				Amount18 = NDSAmount18 + AmountWithoutNDS18;
 
-			if (!Amount.HasValue)
-				Amount = NDSAmount + AmountWithoutNDS;
+			if (!Amount.HasValue) {
+				if (NDSAmount.HasValue && AmountWithoutNDS.HasValue)
+					Amount = NDSAmount + AmountWithoutNDS;
+				else
+					if (Document != null && Document.Lines.All(l => l.Amount.HasValue)) {
+					Amount = Document.Lines.Sum(l => l.Amount);
+					}
+			}
 		}
 	}
 }

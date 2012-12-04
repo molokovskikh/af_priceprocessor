@@ -1,7 +1,14 @@
 ﻿using System;
+using System.Data;
+using System.IO;
 using Common.Tools;
+using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using NHibernate.Linq;
 using NUnit.Framework;
+using Test.Support;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
@@ -171,6 +178,30 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].PassportFilename, Is.EqualTo("pMAJO"));
 			Assert.That(document.Lines[1].PassportFilename, Is.EqualTo("pM9TM"));
 			Assert.IsNullOrEmpty(document.Lines[8].PassportFilename);
+		}
+
+		[Test]
+		public void Universal_format_test()
+		{
+			var document = WaybillParser.Parse("3960_00000030842 (3).dbf");
+			var fileName = Path.Combine(@"..\..\Data\Waybills\", "universalDbf.dbf");
+			try {
+				var log = new DocumentReceiveLog { Supplier = new Supplier() };
+				document.Log = log;
+				document.Address = new Address();
+				DbfExporter.SaveUniversalDbf(document, fileName);
+				var table = Dbf.Load(fileName);
+				var amnt = table.Rows[0]["AMNT"];
+				Assert.AreEqual(amnt.ToString(), "5182,45");
+				var amntNds = table.Rows[0]["amnt_n_all"];
+				Assert.AreEqual(amntNds.ToString(), "507,25");
+			}
+			catch (Exception ex) {
+				throw ex;
+			}
+			finally {
+				File.Delete(fileName);
+			}
 		}
 	}
 }
