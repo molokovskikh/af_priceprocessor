@@ -146,12 +146,12 @@ and a.Id = ?AddressId
 
 		protected void SetConvertDocumentSettings()
 		{
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
-			//запоминаем начальное состояние настройки
-			var isConvertFormat = settings.IsConvertFormat;
-			//и если оно не включено, то включим принудительно для теста
-			if (!isConvertFormat) {
-				using (new TransactionScope()) {
+			using (new TransactionScope()) {
+				var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+				//запоминаем начальное состояние настройки
+				var isConvertFormat = settings.IsConvertFormat;
+				//и если оно не включено, то включим принудительно для теста
+				if (!isConvertFormat) {
 					settings.IsConvertFormat = true;
 					settings.AssortimentPriceId = supplier.Prices.First().Id;
 					settings.SaveAndFlush();

@@ -267,9 +267,10 @@ namespace PriceProcessor.Test.Handlers
 		public void Test_Parse_and_Convert_to_Dbf()
 		{
 			client1.Settings.IsConvertFormat = true;
-			var settings = TestDrugstoreSettings.Queryable.SingleOrDefault(s => s.Id == order1.Client.Id);
+			TestDrugstoreSettings settings;
 
 			using (new TransactionScope()) {
+				settings = TestDrugstoreSettings.Queryable.SingleOrDefault(s => s.Id == order1.Client.Id);
 				settings.IsConvertFormat = true;
 				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 				settings.SaveAndFlush();
