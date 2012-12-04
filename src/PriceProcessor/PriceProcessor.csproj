@@ -293,6 +293,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BioFarmVolgaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BioMaster2394Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedkomMP228Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Rosta11288Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahan12423Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParser.cs" />
