@@ -199,8 +199,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				source.SourceType = WaybillSourceType.FtpSupplier;
 				source.UserName = user;
 				source.Password = password;
-				source.WaybillUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpWaybillDirectory);
-				source.RejectUrl = PathHelper.CombineFtpUrl(ftpHost, ftpPort.ToString(), ftpRejectDirectory);
+				var waybillUri = new UriBuilder("ftp", ftpHost, ftpPort, ftpWaybillDirectory);
+				var rejectUri = new UriBuilder("ftp", ftpHost, ftpPort, ftpRejectDirectory);
+				source.WaybillUrl = waybillUri.Uri.AbsoluteUri;
+				source.RejectUrl = rejectUri.Uri.AbsoluteUri;
 				supplier.Save();
 
 				scope.VoteCommit();

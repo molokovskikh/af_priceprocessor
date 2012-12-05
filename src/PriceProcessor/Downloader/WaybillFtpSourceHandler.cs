@@ -123,9 +123,10 @@ GROUP BY SupplierId
 				if (String.IsNullOrEmpty(url))
 					return downloadedWaybills;
 
-				host = PathHelper.GetFtpHost(url);
-				port = PathHelper.GetFtpPort(url);
-				directory = PathHelper.GetFtpDirectory(url);
+				var uri = new Uri(url);
+				host = uri.Host;
+				port = uri.Port;
+				directory = uri.PathAndQuery;
 
 				downloadedWaybills = downloader.GetFilesFromSource(host, port, directory, waybillSource.UserName,
 					waybillSource.Password, "*.*", waybillSource.LastDownloadTime, DownHandlerPath);
