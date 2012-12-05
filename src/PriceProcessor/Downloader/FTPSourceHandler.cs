@@ -67,7 +67,8 @@ namespace Inforoom.Downloader.Ftp
 		public IList<DownloadedFile> GetFilesFromSource(string ftpHost, int ftpPort, string ftpDirectory, string username,
 			string password, string fileMask, DateTime lastDownloadTime, string downloadDirectory)
 		{
-			ftpHost = PathHelper.GetFtpHost(ftpHost);
+			var uri = new UriBuilder(ftpHost);
+			ftpHost = uri.Host;
 			if (!ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
 				ftpDirectory = @"/" + ftpDirectory;
 
