@@ -29,6 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 			string billOfEntryNumberColumn = null;
 			string countryCode = null;
+			string ean13Collumn = null;
 
 
 			var data = Dbf.Load(file, Encoding);
@@ -40,6 +41,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 			if (data.Columns.Contains("SERTIF"))
 				certificatesColumn = "SERTIF";
+
+			if (data.Columns.Contains("EAN13"))
+				ean13Collumn = "EAN13";
 
 			if (data.Columns.Contains("NDSstavk"))
 				ndsColumn = "NDSstavk";
@@ -119,6 +123,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					line.ProtocolFilemame = r[protocolFilemameColumn].ToString();
 				if (!String.IsNullOrEmpty(passportFilenameColumn))
 					line.PassportFilename = r[passportFilenameColumn].ToString();
+				if (!string.IsNullOrEmpty(ean13Collumn))
+					line.EAN13 = r[ean13Collumn].ToString();
 
 				return line;
 			}).ToList();
