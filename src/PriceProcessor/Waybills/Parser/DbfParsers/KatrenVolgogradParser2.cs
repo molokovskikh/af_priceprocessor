@@ -15,6 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
 				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
+				.DocumentInvoice(i => i.NDSAmount, "SUMSNDS")
 				.DocumentInvoice(i => i.RecipientAddress, "PUNKT")
 				.DocumentInvoice(i => i.RecipientId, "PODRCD")
 				.Line(l => l.Code, "CODEPST")
