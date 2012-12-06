@@ -15,10 +15,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
 				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
-				.DocumentInvoice(i => i.Amount, "SUMS0")
-				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMS1")
-				.DocumentInvoice(i => i.NDSAmount, "SUMSNDS")
 				.DocumentInvoice(i => i.RecipientAddress, "PUNKT")
+				.DocumentInvoice(i => i.RecipientId, "PODRCD")
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
@@ -26,6 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "QNT")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE1N")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
+				.Line(l => l.SupplierCost, "PRICENDS")
 				.Line(l => l.SupplierPriceMarkup, "PRCOPT")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Amount, "SUMPAY")
@@ -38,7 +37,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.CertificateAuthority, "SERTORG")
 				.Line(l => l.CertificatesDate, "SERTDATE")
-				.Line(l => l.OrderId, "NUMZ");
+				.Line(l => l.OrderId, "NUMZ")
+				.Line(l => l.RegistryCost, "REGPRC")
+				.Line(l => l.RegistryDate, "DATEPRC");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
