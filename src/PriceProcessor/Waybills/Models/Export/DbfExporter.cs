@@ -163,6 +163,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("amnt_e_18", typeof(decimal)),
 				new DataColumn("amnt_n_18", typeof(decimal)),
 				new DataColumn("amnt_n_all", typeof(decimal)),
+				new DataColumn("amnt_e_all", typeof(decimal)),
 				new DataColumn("amnt", typeof(decimal)),
 				new DataColumn("i_del_d", typeof(int)),
 				new DataColumn("i_del_bd", typeof(int)),
@@ -215,7 +216,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("nds", line.Nds);
 				row.SetField("p_nds_amnt", line.NdsAmount);
 
-				row.SetField("unit", line.Period);
+				row.SetField("unit", line.Unit);
 				row.SetField("vt", line.VitallyImportant);
 				row.SetField("excise_tx", line.ExciseTax);
 				row.SetField("bll_ntr_id", line.BillOfEntryNumber);
@@ -251,6 +252,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.SetField("amnt_n_18", invoice.NDSAmount18);
 					row.SetField("amnt_w_18", invoice.Amount18);
 					row.SetField("amnt_n_all", invoice.NDSAmount);
+					row.SetField("amnt_e_all", invoice.AmountWithoutNDS);
 					row.SetField("amnt", invoice.Amount);
 
 					row.SetField("i_del_d", invoice.DelayOfPaymentInDays);
