@@ -24,10 +24,9 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			Assert.That(document.Invoice.InvoiceNumber, Is.EqualTo("118509"));
 			Assert.That(document.Invoice.InvoiceDate, Is.EqualTo(Convert.ToDateTime("31.07.2012")));
-			Assert.That(document.Invoice.Amount, Is.EqualTo(464.20));
-			Assert.That(document.Invoice.AmountWithoutNDS, Is.EqualTo(422));
-			Assert.That(document.Invoice.NDSAmount, Is.EqualTo(42.20));
+			Assert.That(document.Invoice.RecipientId, Is.EqualTo(9731300));
 			Assert.That(document.Invoice.RecipientAddress, Is.EqualTo("414038, Астраханская обл., г. Астрахань, Трусовский район, ул. Хибинская, 4"));
+			Assert.That(document.Invoice.NDSAmount, Is.EqualTo(42.20));
 
 			Assert.That(document.Lines[0].Code, Is.EqualTo("4128915"));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("ГЛИЦИН 0,1 N50 ТАБЛ ПОДЪЯЗЫЧ"));
@@ -36,6 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(20));
 			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(19.04));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(21.10));
+			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(23.21));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(10.82));
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(464.20));
@@ -49,6 +49,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].CertificateAuthority, Is.EqualTo("ФГБУ \"ЦЭККМП\"Росздравнадзора"));
 			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo(null));
 			Assert.That(document.Lines[0].OrderId, Is.EqualTo(null));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(19.04));
+			Assert.That(document.Lines[0].RegistryDate, Is.EqualTo(DateTime.Parse("10.03.2010")));
 		}
 	}
 }
