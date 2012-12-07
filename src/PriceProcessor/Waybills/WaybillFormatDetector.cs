@@ -124,7 +124,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					type = DetectTxtParser(file);
 			}
 			if (type == null) {
-				log4net.LogManager.GetLogger(typeof(WaybillService)).InfoFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
+				log4net.LogManager.GetLogger("InfoLog").InfoFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
 #if !DEBUG
 				return null;
 #else

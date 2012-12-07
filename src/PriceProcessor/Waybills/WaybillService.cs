@@ -25,6 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills
 	public class WaybillService : IWaybillService
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
+		private static readonly ILog _infoLog = LogManager.GetLogger("InfoLog");
 
 		public List<EMailSourceHandlerException> Exceptions = new List<EMailSourceHandlerException>();
 
@@ -109,7 +110,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					return l;
 				}
 				catch (EMailSourceHandlerException e) {
-					_log.Info(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
+					_infoLog.Info(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
 					Exceptions.Add(e);
 					var rejectLog = new RejectWaybillLog(l);
 					SessionHelper.WithSession(s => {
