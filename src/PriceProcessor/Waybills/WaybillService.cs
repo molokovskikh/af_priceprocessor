@@ -109,7 +109,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					return l;
 				}
 				catch (EMailSourceHandlerException e) {
-					_log.Warn(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
+					_log.Info(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
 					Exceptions.Add(e);
 					var rejectLog = new RejectWaybillLog(l);
 					SessionHelper.WithSession(s => {
