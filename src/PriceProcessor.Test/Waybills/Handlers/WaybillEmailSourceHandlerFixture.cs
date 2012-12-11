@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
@@ -244,6 +246,36 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			CheckClientDirectory(2, DocType.Waybill);
 			CheckDocumentLogEntry(2);
 			CheckDocumentEntry(2);
+		}
+
+		[Test]
+		public void Parse_if_one_waydill_exclude()
+		{
+			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
+			SetUp(files);
+
+			With.Connection(c => {
+				var helper = new MySqlHelper(c);
+				helper.Command(string.Format("insert into usersettings.WaybillExcludeFile (Mask, Supplier) value ('h1016', {0});", supplier.Id)).Execute();
+			});
+
+			Process();
+
+			CheckClientDirectory(1, DocType.Waybill);
+			CheckDocumentLogEntry(1);
+			CheckDocumentEntry(1);
+
+			With.Connection(c => {
+				var helper = new MySqlHelper(c);
+				var ds = ((CommandHelper)helper.Command("select * from usersettings.waybilldirtyfile")).Fill();
+				Assert.AreEqual(ds.Tables[0].Rows.Count, 1);
+				foreach (DataRow row in ds.Tables[0].Rows) {
+					Assert.AreEqual(row["Supplier"].ToString(), supplier.Id.ToString());
+					Assert.AreEqual(row["Mask"].ToString(), "h1016");
+					Assert.That(row["File"].ToString(), Is.StringContaining("h1016416.DBF"));
+				}
+				helper.Command("delete from usersettings.WaybillExcludeFile; delete from usersettings.waybilldirtyfile;").Execute();
+			});
 		}
 
 		[Test]
