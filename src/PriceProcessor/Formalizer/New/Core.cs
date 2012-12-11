@@ -159,6 +159,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public string CodeOKP;
 		public string Series;
 
+		/// <summary>
+		/// будь бдителен может быть null
+		/// </summary>
 		public Cost[] Costs;
 	}
 }
