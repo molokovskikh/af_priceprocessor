@@ -517,7 +517,7 @@ order by c.Id",
 					done = true;
 				}
 				catch (MySqlException ex) {
-					transaction.Rollback();
+					With.SafeRollback(transaction);
 
 					if (!(tryCount <= Settings.Default.MaxRepeatTranCount && ExceptionHelper.IsDeadLockOrSimilarExceptionInChain(ex)))
 						throw;
@@ -530,7 +530,7 @@ order by c.Id",
 					Thread.Sleep(10000 + tryCount * 1000);
 				}
 				catch (Exception) {
-					transaction.Rollback();
+					With.SafeRollback(transaction);
 					throw;
 				}
 			} while (!done);

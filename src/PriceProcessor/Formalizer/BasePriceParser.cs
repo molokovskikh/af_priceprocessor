@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Common.MySql;
 using Common.Tools;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.Data;
 using System.Text;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.Helpers;
 using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using log4net;
 using System.Configuration;
+using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
 
 namespace Inforoom.Formalizer
 {
@@ -1457,13 +1458,7 @@ where
 					res = true;
 				}
 				catch (MySqlException MyError) {
-					if (finalizeTransaction != null)
-						try {
-							finalizeTransaction.Rollback();
-						}
-						catch (Exception ex) {
-							_logger.Error("Error on rollback", ex);
-						}
+					With.SafeRollback(finalizeTransaction);
 
 					if ((tryCount <= Settings.Default.MaxRepeatTranCount) && ((1213 == MyError.Number) || (1205 == MyError.Number) || (1422 == MyError.Number))) {
 						tryCount++;
@@ -1480,13 +1475,7 @@ where
 						throw;
 				}
 				catch (Exception) {
-					if (finalizeTransaction != null)
-						try {
-							finalizeTransaction.Rollback();
-						}
-						catch (Exception ex) {
-							_logger.Error("Error on rollback (Exception)", ex);
-						}
+					With.SafeRollback(finalizeTransaction);
 					throw;
 				}
 			} while (!res);
