@@ -336,9 +336,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			this.supplier = supplier;
 
 			Process();
-
-			var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
-			Assert.That(docs.Count, Is.EqualTo(0));
+			using (new SessionScope()) {
+				var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
+				Assert.That(docs.Count, Is.EqualTo(0));
+			}
 		}
 
 		[Test]

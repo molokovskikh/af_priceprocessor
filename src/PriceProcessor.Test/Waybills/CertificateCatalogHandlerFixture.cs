@@ -67,6 +67,7 @@ namespace PriceProcessor.Test.Waybills
 			//Берем первый попавшийся продукт
 			var product = TestProduct.FindFirst();
 			TestCore core;
+			IList<CertificateSourceCatalog> catalogs;
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				var price = TestPrice.Find(_supplier.Prices[0].Id);
 
@@ -81,10 +82,10 @@ namespace PriceProcessor.Test.Waybills
 				core.SaveAndFlush();
 
 				transaction.VoteCommit();
+				catalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
 			}
 
 			Assert.That(_source.FtpFileDate, Is.Null, "Дата файла с ftp не должна быть заполнена");
-			var catalogs = CertificateSourceCatalog.Queryable.Where(c => c.CertificateSource == _source).ToList();
 			Assert.That(catalogs.Count, Is.EqualTo(0), "Таблица не должна быть заполнена");
 
 			using (new SessionScope()) {
