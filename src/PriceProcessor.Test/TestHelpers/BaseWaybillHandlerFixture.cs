@@ -14,7 +14,7 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.TestHelpers
 {
-	public class BaseWaybillHandlerFixture
+	public class BaseWaybillHandlerFixture : IntegrationFixture
 	{
 		protected TestAddress address;
 		protected TestClient client;

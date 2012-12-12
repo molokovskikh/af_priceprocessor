@@ -59,7 +59,7 @@ namespace PriceProcessor.Test.Handlers
 	}
 
 	[TestFixture]
-	public class IndexerHandlerFixture
+	public class IndexerHandlerFixture : IntegrationFixture
 	{
 		private TestIndexerHandler _handler;
 

@@ -265,7 +265,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var logs = CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
 
-			Assert.IsTrue(logs.Any(l => l.Comment == "Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика"));
+			Assert.IsTrue(logs.Any(l => l.Addition == "Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика"));
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);
