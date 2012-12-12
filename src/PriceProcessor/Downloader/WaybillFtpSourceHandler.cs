@@ -123,7 +123,8 @@ GROUP BY SupplierId
 				if (String.IsNullOrEmpty(url))
 					return downloadedWaybills;
 
-				var uri = new Uri(url);
+				var builder = new UriBuilder(url);
+				var uri = builder.Uri;
 				host = uri.Host;
 				port = uri.Port;
 				directory = uri.PathAndQuery;
