@@ -15,7 +15,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
-	public class WaybillOrderMatcherFixture
+	public class WaybillOrderMatcherFixture : IntegrationFixture
 	{
 		protected TestClient client;
 		protected Address address;
@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills
 		private List<OrderHead> orders;
 
 		[SetUp]
-		public void Setup()
+		public void SetUp()
 		{
 			orders = new List<OrderHead>();
 			using (new SessionScope()) {

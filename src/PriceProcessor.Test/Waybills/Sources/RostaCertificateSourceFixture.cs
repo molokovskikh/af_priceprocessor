@@ -12,7 +12,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Waybills.Sources
 {
 	[TestFixture]
-	public class RostaCertificateSourceFixture
+	public class RostaCertificateSourceFixture : IntegrationFixture
 	{
 		private CertificateSource _source;
 

@@ -16,7 +16,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Waybills
 {
 	[TestFixture]
-	public class CertificateModelsFixture
+	public class CertificateModelsFixture : IntegrationFixture
 	{
 		private TestSupplier testSupplier;
 		private TestUser testUser;
