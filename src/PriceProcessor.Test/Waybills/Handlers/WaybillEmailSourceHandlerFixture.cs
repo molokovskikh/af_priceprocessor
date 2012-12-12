@@ -261,9 +261,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			CheckClientDirectory(1, DocType.Waybill);
-			CheckDocumentLogEntry(1);
+			CheckClientDirectory(2, DocType.Waybill);
+			var logs = CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
+
+			Assert.IsTrue(logs.Any(l => l.Comment == "Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика"));
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);

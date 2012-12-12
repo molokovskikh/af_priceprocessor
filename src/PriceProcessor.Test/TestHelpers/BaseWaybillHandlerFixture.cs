@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
@@ -49,7 +50,7 @@ namespace PriceProcessor.Test.TestHelpers
 			Assert.That(savedFiles.Count(), Is.EqualTo(waitingFilesCount));
 		}
 
-		protected void CheckDocumentLogEntry(int waitingCountEntries, TestAddress address = null)
+		protected IList<TestDocumentLog> CheckDocumentLogEntry(int waitingCountEntries, TestAddress address = null)
 		{
 			if (address == null)
 				address = client.Addresses[0];
@@ -60,6 +61,8 @@ namespace PriceProcessor.Test.TestHelpers
 						log.Supplier.Id == supplier.Id &&
 						log.Address == address);
 				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
+
+				return logs.ToList();
 			}
 		}
 

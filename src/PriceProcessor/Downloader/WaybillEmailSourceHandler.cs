@@ -442,42 +442,11 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1",
 			return logs;
 		}
 
-		protected string WaybillExcludeFile(string file, uint supplierId)
-		{
-			var supplier = new MySqlParameter("?SupplierId", MySqlDbType.UInt32) { Value = supplierId };
-			var mask = new MySqlParameter("?Mask", MySqlDbType.String) { Value = file };
-
-			return With.Connection(c => Convert.ToString(MySqlHelper.ExecuteScalar(c, @"
-select w.Mask from usersettings.WaybillExcludeFile w
-where w.Supplier =  ?SupplierId
-and ?Mask like concat('%', w.`Mask`, '%')
-limit 1;",
-				supplier, mask)));
-		}
-
-		protected void WaybillDirtyFile(string fileName, string maskName, uint supplierId)
-		{
-			var supplier = new MySqlParameter("?SupplierId", MySqlDbType.UInt32) { Value = supplierId };
-			var file = new MySqlParameter("?File", MySqlDbType.String) { Value = fileName };
-			var mask = new MySqlParameter("?Mask", MySqlDbType.String) { Value = maskName };
-
-			With.Connection(c => MySqlHelper.ExecuteNonQuery(c, @"
-insert into usersettings.waybilldirtyfile (supplier, `date`, `file`, Mask) value (?SupplierId, now(), ?file, ?Mask)
-", supplier, file, mask));
-		}
-
 		protected DocumentReceiveLog GetLog(string file, DataRow source)
 		{
 			_logger.InfoFormat("WaybillEmailSourceHandler: обработка файла {0}", file);
 			var addressId = _addressId;
 			var supplierId = Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]);
-
-			var mask = WaybillExcludeFile(file, supplierId);
-			if (!string.IsNullOrEmpty(mask)) {
-				_logger.InfoFormat("WaybillEmailSourceHandler: файл {0} исключен из обработки, он находится в списке исключений по маске {1} поставщика {2}", file, mask, supplierId);
-				WaybillDirtyFile(file, mask, supplierId);
-				return null;
-			}
 
 			return DocumentReceiveLog.LogNoCommit(
 				supplierId,

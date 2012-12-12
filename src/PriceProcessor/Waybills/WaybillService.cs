@@ -122,12 +122,30 @@ namespace Inforoom.PriceProcessor.Waybills
 			}).Where(l => l != null).ToList();
 		}
 
+		private static bool WaybillExcludeFile(DocumentReceiveLog log)
+		{
+			return SessionHelper.WithSession(s => {
+				var supplier = s.Get<Supplier>(log.Supplier.Id);
+				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
+					if (log.FileName.Contains(waybillExcludeFile.Mask)) {
+						log.Comment = string.Format("Файл накладной не принят к обработке по причине запрета маски {0} у поставщика", waybillExcludeFile.Mask);
+						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
+						return true;
+					}
+				}
+				return false;
+			});
+		}
+
 		private static Document Process(bool shouldCheckClientSettings,
 			DocumentReceiveLog log,
 			string fileName)
 		{
 			var settings = WaybillSettings.Find(log.ClientCode.Value);
 			if (log.DocumentType == DocType.Reject)
+				return null;
+
+			if (WaybillExcludeFile(log))
 				return null;
 
 			if (shouldCheckClientSettings
