@@ -200,7 +200,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			var command = new StringBuilder();
 			foreach (var cost in core.Costs) {
-				var existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
+				Cost existsCost = null;
+				if (core.ExistsCore.Costs != null)
+					existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
 				if (existsCost == null) {
 					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ({0}, {1}, {2}, {3}, {4}, {5});",
 						core.ExistsCore.Id,
@@ -220,11 +222,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 						ToSql(cost.MinOrderCount));
 				}
 			}
-			var costsToDelete = core.ExistsCore.Costs
-				.Where(c => !core.Costs.Any(nc => nc.Description.Id == c.Description.Id))
-				.Select(c => c.Description.Id.ToString()).ToArray();
-			if (costsToDelete.Length > 0)
-				command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", core.ExistsCore.Id, String.Join(", ", costsToDelete));
+			if (core.ExistsCore.Costs != null) {
+				var costsToDelete = core.ExistsCore.Costs
+					.Where(c => !core.Costs.Any(nc => nc.Description.Id == c.Description.Id))
+					.Select(c => c.Description.Id.ToString()).ToArray();
+				if (costsToDelete.Length > 0)
+					command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", core.ExistsCore.Id, String.Join(", ", costsToDelete));
+			}
 
 			return command.ToString();
 		}

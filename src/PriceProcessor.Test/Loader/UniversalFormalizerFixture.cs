@@ -416,6 +416,47 @@ namespace PriceProcessor.Test.Loader
 			}
 		}
 
+		[Test]
+		public void Assortment_price()
+		{
+			price.PriceType = PriceType.Assortment;
+			price.Save();
+
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+	</Item>
+	<Item>
+		<Code>109055</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+	</Item>
+</Price>";
+
+			Formalize();
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Quantity>10</Quantity>
+	</Item>
+	<Item>
+		<Code>109055</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+	</Item>
+</Price>";
+			Formalize();
+
+			using (new SessionScope()) {
+				price = TestPrice.Find(price.Id);
+				Assert.That(price.Core.Count, Is.EqualTo(2));
+			}
+		}
+
 		private void Formalize()
 		{
 			file = Path.GetTempFileName();
