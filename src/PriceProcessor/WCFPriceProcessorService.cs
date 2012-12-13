@@ -214,6 +214,9 @@ and pf.Id = fr.PriceFormatId", c);
 					try {
 						RetransPrice(row, Settings.Default.BasePath);
 					}
+					catch (FaultException e) {
+						log.Info(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
+					}
 					catch (Exception e) {
 						log.Warn(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
 					}
