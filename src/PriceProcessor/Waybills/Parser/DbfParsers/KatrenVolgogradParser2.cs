@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.AmountWithoutNDS10, "TotlSUM10")
 				.DocumentInvoice(i => i.AmountWithoutNDS18, "TotlSUM18")
 				.DocumentInvoice(i => i.AmountWithoutNDS0, "TotalSUM0")
-				.Line(l => l.Code, "CODEPST")
+				.Line(l => l.Code, "GVId")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
 				.Line(l => l.Country, "CNTRMADE")
