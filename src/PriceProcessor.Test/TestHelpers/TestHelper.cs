@@ -47,12 +47,15 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public static DataSet Fill(string commandText)
 		{
-			return With.Connection(c => {
-				var adapter = new MySqlDataAdapter(commandText, c);
-				var data = new DataSet();
-				adapter.Fill(data);
-				return data;
-			});
+			return With.Connection(c => Fill(commandText, c));
+		}
+
+		public static DataSet Fill(string commandText, MySqlConnection connection)
+		{
+			var adapter = new MySqlDataAdapter(commandText, connection);
+			var data = new DataSet();
+			adapter.Fill(data);
+			return data;
 		}
 
 		public static void Formalize<T>(string file) where T : BasePriceParser

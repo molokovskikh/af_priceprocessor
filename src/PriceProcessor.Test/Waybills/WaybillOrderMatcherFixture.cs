@@ -7,6 +7,7 @@ using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
@@ -199,8 +200,10 @@ namespace PriceProcessor.Test.Waybills
 			document.SaveAndFlush();
 
 			var table = GetMatches(document);
-			Assert.That(table.Rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
-			Assert.That(table.Rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
+			var rows = table.Rows;
+			Assert.That(rows.Count, Is.GreaterThan(0), "для документа {0} не нашли сопоставленную позицию", document.Id);
+			Assert.That(rows[0]["DocumentLineId"], Is.EqualTo(document.Lines[0].Id));
+			Assert.That(rows[0]["OrderLineId"], Is.EqualTo(order1.Items[0].Id));
 		}
 
 		private void Match(Document document)
@@ -332,11 +335,10 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(line2.OrderItems, Is.EquivalentTo(new[] { orderItem2 }));
 		}
 
-		private static DataTable GetMatches(Document document)
+		private DataTable GetMatches(Document document)
 		{
-			var ds =
-				TestHelper.Fill(String.Format("select * from documents.waybillorders where DocumentLineId in ({0});",
-					document.Lines.Implode(l => l.Id)));
+			var sql = String.Format("select * from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id));
+			var ds = TestHelper.Fill(sql, (MySqlConnection)session.Connection);
 			var table = ds.Tables[0];
 			return table;
 		}
