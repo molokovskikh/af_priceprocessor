@@ -278,7 +278,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);
-				helper.Command(string.Format("insert into usersettings.WaybillExcludeFile (Mask, Supplier) value ('h1016', {0});", supplier.Id)).Execute();
+				helper.Command(string.Format("insert into usersettings.WaybillExcludeFile (Mask, Supplier) value ('*40.DBF', {0});", supplier.Id)).Execute();
 			});
 
 			Process();
@@ -287,7 +287,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var logs = CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
 
-			Assert.IsTrue(logs.Any(l => l.Addition.Contains("Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика")));
+			Assert.IsTrue(logs.Any(l => l.Addition.Contains("Файл накладной не принят к обработке по причине запрета маски *40.DBF у поставщика")));
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);
@@ -295,8 +295,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				Assert.AreEqual(ds.Tables[0].Rows.Count, 1);
 				foreach (DataRow row in ds.Tables[0].Rows) {
 					Assert.AreEqual(row["Supplier"].ToString(), supplier.Id.ToString());
-					Assert.AreEqual(row["Mask"].ToString(), "h1016");
-					Assert.That(row["File"].ToString(), Is.StringContaining("h1016416.DBF"));
+					Assert.AreEqual(row["Mask"].ToString(), "*40.DBF");
+					Assert.That(row["File"].ToString(), Is.StringContaining("bi055540.DBF"));
 				}
 				helper.Command("delete from usersettings.WaybillExcludeFile; delete from usersettings.waybilldirtyfile;").Execute();
 			});

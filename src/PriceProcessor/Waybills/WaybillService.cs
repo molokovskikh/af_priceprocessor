@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
+using System.Text.RegularExpressions;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader;
@@ -122,12 +123,20 @@ namespace Inforoom.PriceProcessor.Waybills
 			}).Where(l => l != null).ToList();
 		}
 
+		public static bool FitsMask(string fileName, string fileMask)
+		{
+			if (fileMask.LastIndexOf('*') != fileMask.Length)
+				fileMask += "$";
+			var mask = new Regex(fileMask.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."));
+			return mask.IsMatch(fileName);
+		}
+
 		private static bool WaybillExcludeFile(DocumentReceiveLog log)
 		{
 			return SessionHelper.WithSession(s => {
 				var supplier = s.Get<Supplier>(log.Supplier.Id);
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
-					if (log.FileName.Contains(waybillExcludeFile.Mask)) {
+					if (FitsMask(log.FileName, waybillExcludeFile.Mask)) {
 						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
 						log.Comment += string.Format("Файл накладной не принят к обработке по причине запрета маски {0} у поставщика", waybillExcludeFile.Mask);
 						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
