@@ -128,13 +128,24 @@ namespace Inforoom.PriceProcessor.Waybills
 				var supplier = s.Get<Supplier>(log.Supplier.Id);
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
 					if (log.FileName.Contains(waybillExcludeFile.Mask)) {
-						log.Comment = string.Format("Файл накладной не принят к обработке по причине запрета маски {0} у поставщика", waybillExcludeFile.Mask);
+						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
+						log.Comment += string.Format("Файл накладной не принят к обработке по причине запрета маски {0} у поставщика", waybillExcludeFile.Mask);
 						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
 						return true;
 					}
 				}
 				return false;
 			});
+		}
+
+		private static bool ZeroFile(DocumentReceiveLog log)
+		{
+			if (log.DocumentSize == 0) {
+				log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
+				log.Comment += "Файл накладной не принят к обработке так как имеет нулевой размер";
+				return true;
+			}
+			return false;
 		}
 
 		private static Document Process(bool shouldCheckClientSettings,
@@ -146,6 +157,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 
 			if (WaybillExcludeFile(log))
+				return null;
+
+			if (ZeroFile(log))
 				return null;
 
 			if (shouldCheckClientSettings

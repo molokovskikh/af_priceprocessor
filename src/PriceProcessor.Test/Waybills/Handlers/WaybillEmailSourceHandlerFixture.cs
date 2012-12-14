@@ -249,6 +249,30 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		}
 
 		[Test]
+		public void Zero_file_test()
+		{
+			var fileName = Guid.NewGuid().ToString().Replace("-", string.Empty);
+			var filePath = Path.Combine(@"..\..\Data\Waybills\", fileName + ".DBF");
+			try {
+				var stream = File.OpenWrite(filePath);
+				stream.Close();
+				Assert.AreEqual(new FileInfo(filePath).Length, 0);
+
+				SetUp(new List<string> { filePath });
+				Process();
+
+				CheckClientDirectory(1, DocType.Waybill);
+				var logs = CheckDocumentLogEntry(1);
+				CheckDocumentEntry(0);
+
+				Assert.IsTrue(logs.Any(l => l.Addition.Contains("Файл накладной не принят к обработке так как имеет нулевой размер")));
+			}
+			finally {
+				File.Delete(filePath);
+			}
+		}
+
+		[Test]
 		public void Parse_if_one_waydill_exclude()
 		{
 			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
@@ -265,7 +289,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var logs = CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
 
-			Assert.IsTrue(logs.Any(l => l.Addition == "Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика"));
+			Assert.IsTrue(logs.Any(l => l.Addition.Contains("Файл накладной не принят к обработке по причине запрета маски h1016 у поставщика")));
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);
