@@ -141,8 +141,6 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static bool ZeroFile(DocumentReceiveLog log)
 		{
 			if (log.DocumentSize == 0) {
-				log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
-				log.Comment += "Файл накладной не принят к обработке так как имеет нулевой размер";
 				return true;
 			}
 			return false;

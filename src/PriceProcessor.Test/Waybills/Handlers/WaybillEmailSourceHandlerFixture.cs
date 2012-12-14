@@ -264,8 +264,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				CheckClientDirectory(1, DocType.Waybill);
 				var logs = CheckDocumentLogEntry(1);
 				CheckDocumentEntry(0);
-
-				Assert.IsTrue(logs.Any(l => l.Addition.Contains("Файл накладной не принят к обработке так как имеет нулевой размер")));
 			}
 			finally {
 				File.Delete(filePath);
