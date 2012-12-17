@@ -199,29 +199,30 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		public static string UpdateCostsCommand(NewCore core)
 		{
 			var command = new StringBuilder();
-			foreach (var cost in core.Costs) {
-				Cost existsCost = null;
-				if (core.ExistsCore.Costs != null)
-					existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
-				if (existsCost == null) {
-					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ({0}, {1}, {2}, {3}, {4}, {5});",
-						core.ExistsCore.Id,
-						cost.Description.Id,
-						ToSql(cost.Value),
-						ToSql(cost.RequestRatio),
-						ToSql(cost.MinOrderSum),
-						ToSql(cost.MinOrderCount));
+			if(core.Costs != null)
+				foreach (var cost in core.Costs) {
+					Cost existsCost = null;
+					if (core.ExistsCore.Costs != null)
+						existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
+					if (existsCost == null) {
+						command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost, RequestRatio, MinOrderSum, MinOrderCount) values ({0}, {1}, {2}, {3}, {4}, {5});",
+							core.ExistsCore.Id,
+							cost.Description.Id,
+							ToSql(cost.Value),
+							ToSql(cost.RequestRatio),
+							ToSql(cost.MinOrderSum),
+							ToSql(cost.MinOrderCount));
+					}
+					else if (cost.Value != existsCost.Value) {
+						command.AppendFormat("update farm.CoreCosts set Cost = {2}, RequestRatio = {3}, MinOrderSum = {4}, MinOrderCount = {5} where Core_Id = {0} and PC_CostCode = {1};",
+							core.ExistsCore.Id,
+							cost.Description.Id,
+							ToSql(cost.Value),
+							ToSql(cost.RequestRatio),
+							ToSql(cost.MinOrderSum),
+							ToSql(cost.MinOrderCount));
+					}
 				}
-				else if (cost.Value != existsCost.Value) {
-					command.AppendFormat("update farm.CoreCosts set Cost = {2}, RequestRatio = {3}, MinOrderSum = {4}, MinOrderCount = {5} where Core_Id = {0} and PC_CostCode = {1};",
-						core.ExistsCore.Id,
-						cost.Description.Id,
-						ToSql(cost.Value),
-						ToSql(cost.RequestRatio),
-						ToSql(cost.MinOrderSum),
-						ToSql(cost.MinOrderCount));
-				}
-			}
 			if (core.ExistsCore.Costs != null) {
 				var costsToDelete = core.ExistsCore.Costs
 					.Where(c => !core.Costs.Any(nc => nc.Description.Id == c.Description.Id))

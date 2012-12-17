@@ -145,6 +145,8 @@
     <Compile Include="Helpers\MimeExtentionsFixture.cs" />
     <Compile Include="Loader\ExcelLoaderFixture.cs" />
     <Compile Include="Loader\FarmaimpeksFormalizerFixture.cs" />
+    <Compile Include="Loader\FarmaimpeksOKPFormalizerFixture.cs" />
+    <Compile Include="Loader\FarmaimpeksOKPReaderFixture.cs" />
     <Compile Include="Loader\UniversalFormalizerFixture.cs" />
     <Compile Include="Loader\UniversalXmlReader.cs" />
     <Compile Include="Loader\FarmaimpeksReaderFixture.cs" />

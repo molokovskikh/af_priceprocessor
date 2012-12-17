@@ -1,0 +1,1 @@
+﻿INSERT INTO farm.pricefmts (Format, Comment, FileExtention, ParserClassName) VALUES('Формат для ОКП Фармаимпекса', 'Формат для ОКП Фармаимпекса', '.xml', 'FarmaimpeksOKPFormalizer');
