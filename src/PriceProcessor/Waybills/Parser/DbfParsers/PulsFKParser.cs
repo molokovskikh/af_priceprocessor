@@ -7,13 +7,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 	{
 		public override DbfParser GetParser()
 		{
-			return new DbfParser()
+			var parcer = new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.DocumentHeader(d => d.ProviderDocumentId, "NDOC")
 				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
 				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
 				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMPAY")
 				.DocumentInvoice(i => i.RecipientAddress, "PODRCD")
+
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
@@ -21,7 +22,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
 				.Line(l => l.SupplierCost, "PRICE2")
 				.Line(l => l.Quantity, "QNT")
-				.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Amount, "SUMS0")
 				.Line(l => l.NdsAmount, "SUMSNDS")
@@ -33,9 +33,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierPriceMarkup, "PROCNDB")
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.CertificateAuthority, "SERTORG")
-				.Line(l => l.CertificatesDate, "SERTGIVE")
+				.Line(l => l.CertificatesDate, "SERTGIVE", "SERTDATE")
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
+
+			if (!Data.Columns.Contains("PRICE1N")) {
+				parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
+			}
+			else {
+				parcer = parcer.Line(l => l.ProducerCost, "PRICE1")
+					.Line(l => l.ProducerCostWithoutNDS, "PRICE1N");
+			}
+
+			return parcer;
 		}
 
 		public static bool CheckFileFormat(DataTable data)

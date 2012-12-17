@@ -8,17 +8,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	public abstract class BaseDbfParser : IDocumentParser
 	{
 		public Encoding Encdoing;
+		protected DataTable Data;
 
 		public virtual Document Parse(string file, Document document)
 		{
-			DataTable data;
 			if (Encdoing == null)
-				data = Dbf.Load(file);
+				Data = Dbf.Load(file);
 			else
-				data = Dbf.Load(file, Encdoing);
+				Data = Dbf.Load(file, Encdoing);
 
 			var parser = GetParser();
-			parser.ToDocument(document, data);
+			parser.ToDocument(document, Data);
 			PostParsing(document);
 			return document;
 		}

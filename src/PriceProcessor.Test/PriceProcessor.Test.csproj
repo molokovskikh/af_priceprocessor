@@ -213,6 +213,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SIAInternationalOmskParserFixture2.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\StatuSParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\UgFarm13769ParserFixture.cs" />
     <Compile Include="Waybills\Parser\NadezhdaFarmOrelFixture.cs" />
     <Compile Include="Waybills\Parser\BiofarmCheboksarySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingSPBParserFixture.cs" />
