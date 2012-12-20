@@ -23,6 +23,18 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			}
 		}
 
+		public Searcher(IEnumerable<ExistsCore> cores, FieldInfo[] fields)
+		{
+			_indexFields = fields;
+			foreach (var core in cores) {
+				var key = GetKey(core);
+				if (_searchHash.ContainsKey(key))
+					((List<Core>)_searchHash[key]).Add(core);
+				else
+					_searchHash.Add(key, new List<Core> { core });
+			}
+		}
+
 		private FieldInfo[] GetIndexFields()
 		{
 			var indexFields = new[] {

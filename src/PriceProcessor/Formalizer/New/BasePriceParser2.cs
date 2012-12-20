@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using Common.MySql;
@@ -90,7 +91,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private ProducerResolver _producerResolver;
 
-		public BasePriceParser2(IReader reader, PriceFormalizationInfo priceInfo)
+		private bool _saveInCore = false;
+
+		public BasePriceParser2(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{
 			_logger = LogManager.GetLogger(GetType());
 			_reader = reader;
@@ -114,6 +117,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			daPricesCost.Fill(dtPricesCost);
 			_reader.CostDescriptions = dtPricesCost.Rows.Cast<DataRow>().Select(r => new CostDescription(r)).ToList();
 			_logger.DebugFormat("Загрузили цены {0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode);
+			_saveInCore = saveInCore;
 		}
 
 		/// <summary>
@@ -315,7 +319,10 @@ select @LastSynonymFirmCrCode;");
 					LoadCosts();
 					_logger.Debug("Загрузили цены");
 				}
-				_searcher = new Searcher(_existsCores);
+				if(_saveInCore)
+					_searcher = new Searcher(_existsCores, new[] { typeof(Core).GetField("CodeOKP") });
+				else
+					_searcher = new Searcher(_existsCores);
 				loadExistsWatch.Stop();
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса, {0}с", loadExistsWatch.Elapsed.TotalSeconds);
 			}
@@ -820,8 +827,10 @@ and a.FirmCode = p.FirmCode;",
 					InsertToUnrec(position);
 
 				if (position.IsSet(UnrecExpStatus.NameForm)) {
-					core.ProductId = (uint)position.ProductId;
-					core.SynonymCode = (uint)position.SynonymCode;
+					if(position.ProductId != null)
+						core.ProductId = (uint)position.ProductId;
+					if(position.SynonymCode != null)
+						core.SynonymCode = (uint)position.SynonymCode;
 					if (position.CodeFirmCr != null)
 						core.CodeFirmCr = (uint)position.CodeFirmCr;
 					if (position.SynonymFirmCrCode != null)
@@ -836,6 +845,8 @@ and a.FirmCode = p.FirmCode;",
 		//Содержится ли название в таблице запрещенных слов
 		public bool IsForbidden(string PosName)
 		{
+			if(PosName == null)
+				return false;
 			DataRow[] dr = dtForbidden.Select(String.Format("Forbidden = '{0}'", PosName.Replace("'", "''")));
 			return dr.Length > 0;
 		}

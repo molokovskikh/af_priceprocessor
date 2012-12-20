@@ -154,6 +154,8 @@
     <Compile Include="Formalizer\BaseFormalizer.cs" />
     <Compile Include="Formalizer\BuyingMatrixProcessor.cs" />
     <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
+    <Compile Include="Formalizer\FarmaimpeksOKPFormalizer.cs" />
+    <Compile Include="Formalizer\FarmaimpeksOKPReader.cs" />
     <Compile Include="Formalizer\New\Alerts.cs" />
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
