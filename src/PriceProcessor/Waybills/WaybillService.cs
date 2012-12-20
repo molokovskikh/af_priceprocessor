@@ -138,7 +138,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
 					if (FitsMask(log.FileName, waybillExcludeFile.Mask)) {
 						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
-						log.Comment += string.Format("Файл накладной не принят к обработке по причине запрета маски {0} у поставщика", waybillExcludeFile.Mask);
+						log.Comment += string.Format("Разбор накладной не произведен по причине несоответствия маски файла ({0}) для Поставщика", waybillExcludeFile.Mask);
 						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
 						return true;
 					}
