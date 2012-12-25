@@ -81,6 +81,23 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(data.Rows[0]["sert"].ToString().Length, Is.EqualTo(150));
 		}
 
+		[Test]
+		public void ExportWithTTMFFieldsDocument()
+		{
+			document.SetInvoice();
+			document.Invoice.Cipher = "шифр";
+			document.Invoice.StoreName = "склад";
+			document.Lines[0].TradeCost = 1;
+			document.Lines[0].SaleCost = 2;
+			document.Lines[0].RetailCost = 3;
+			var data = ExportFile();
+			Assert.That(data.Rows[0]["shifr"], Is.EqualTo("шифр"));
+			Assert.That(data.Rows[0]["storename"], Is.EqualTo("склад"));
+			Assert.That(data.Rows[0]["opt_cena"], Is.EqualTo(1));
+			Assert.That(data.Rows[0]["otp_cena"], Is.EqualTo(2));
+			Assert.That(data.Rows[0]["rcena"], Is.EqualTo(3));
+		}
+
 		private DataTable ExportFile()
 		{
 			var file = "Export_universal_dbf.dbf";

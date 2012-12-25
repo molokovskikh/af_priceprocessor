@@ -199,6 +199,18 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return Convert.ToInt32(Math.Round(val, 2) * 100);
 		}
 
+		/// <summary>
+		/// Шифр
+		/// </summary>
+		[Property]
+		public string Cipher { get; set; }
+
+		/// <summary>
+		/// Склад
+		/// </summary>
+		[Property]
+		public string StoreName { get; set; }
+
 		public void CalculateValues()
 		{
 			if (!AmountWithoutNDS0.HasValue && AmountWithoutNDS.HasValue && AmountWithoutNDS10.HasValue && AmountWithoutNDS18.HasValue) {

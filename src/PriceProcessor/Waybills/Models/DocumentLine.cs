@@ -261,6 +261,24 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string CertificateError { get; set; }
 
+		/// <summary>
+		/// Оптовая цена
+		/// </summary>
+		[Property]
+		public decimal? TradeCost { get; set; }
+
+		/// <summary>
+		/// Отпускная цена
+		/// </summary>
+		[Property]
+		public decimal? SaleCost { get; set; }
+
+		/// <summary>
+		/// Розничная цена
+		/// </summary>
+		[Property]
+		public decimal? RetailCost { get; set; }
+
 		//список идентификаторов документов которые отдает протек
 		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
 		[HasMany(Cascade = ManyRelationCascadeEnum.All)]

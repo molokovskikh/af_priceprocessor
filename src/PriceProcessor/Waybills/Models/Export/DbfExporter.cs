@@ -169,6 +169,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("i_del_bd", typeof(int)),
 				new DataColumn("com_fee_id", typeof(string)) { MaxLength = 255 },
 				new DataColumn("com_fee", typeof(decimal)),
+				new DataColumn("shifr", typeof(string)) { MaxLength = 255 },
+				new DataColumn("opt_cena", typeof(decimal)),
+				new DataColumn("otp_cena", typeof(decimal)),
+				new DataColumn("rcena", typeof(decimal)),
+				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
@@ -221,6 +226,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("excise_tx", line.ExciseTax);
 				row.SetField("bll_ntr_id", line.BillOfEntryNumber);
 
+				row.SetField("opt_cena", line.TradeCost);
+				row.SetField("otp_cena", line.SaleCost);
+				row.SetField("rcena", line.RetailCost);
+
 				var invoice = document.Invoice;
 				if (invoice != null) {
 					row.SetField("i_num", invoice.InvoiceNumber);
@@ -260,6 +269,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 					row.SetField("com_fee_id", invoice.CommissionFeeContractId);
 					row.SetField("com_fee", invoice.CommissionFee);
+
+					row.SetField("shifr", invoice.Cipher);
+					row.SetField("storename", invoice.StoreName);
 				}
 
 				var columns = table.Columns.Cast<DataColumn>().Where(c => c.MaxLength != -1);
