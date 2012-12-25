@@ -229,6 +229,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("opt_cena", line.TradeCost);
 				row.SetField("otp_cena", line.SaleCost);
 				row.SetField("rcena", line.RetailCost);
+				row.SetField("shifr", line.Cipher);
 
 				var invoice = document.Invoice;
 				if (invoice != null) {
@@ -270,7 +271,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.SetField("com_fee_id", invoice.CommissionFeeContractId);
 					row.SetField("com_fee", invoice.CommissionFee);
 
-					row.SetField("shifr", invoice.Cipher);
 					row.SetField("storename", invoice.StoreName);
 				}
 

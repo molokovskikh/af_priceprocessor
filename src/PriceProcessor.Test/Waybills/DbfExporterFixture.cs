@@ -85,11 +85,11 @@ namespace PriceProcessor.Test.Waybills
 		public void ExportWithTTMFFieldsDocument()
 		{
 			document.SetInvoice();
-			document.Invoice.Cipher = "шифр";
 			document.Invoice.StoreName = "склад";
 			document.Lines[0].TradeCost = 1;
 			document.Lines[0].SaleCost = 2;
 			document.Lines[0].RetailCost = 3;
+			document.Lines[0].Cipher = "шифр";
 			var data = ExportFile();
 			Assert.That(data.Rows[0]["shifr"], Is.EqualTo("шифр"));
 			Assert.That(data.Rows[0]["storename"], Is.EqualTo("склад"));

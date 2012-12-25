@@ -200,12 +200,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		}
 
 		/// <summary>
-		/// Шифр
-		/// </summary>
-		[Property]
-		public string Cipher { get; set; }
-
-		/// <summary>
 		/// Склад
 		/// </summary>
 		[Property]

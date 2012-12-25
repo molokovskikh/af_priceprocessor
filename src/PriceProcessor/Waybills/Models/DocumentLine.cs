@@ -279,6 +279,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public decimal? RetailCost { get; set; }
 
+		/// <summary>
+		/// Шифр
+		/// </summary>
+		[Property]
+		public string Cipher { get; set; }
+
 		//список идентификаторов документов которые отдает протек
 		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
 		[HasMany(Cascade = ManyRelationCascadeEnum.All)]
