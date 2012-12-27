@@ -276,6 +276,7 @@
     <Compile Include="Waybills\Parser\PokrevskySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedSpbParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParserFixture.cs" />
+    <Compile Include="Waybills\Parser\RafelConvertToUniversalDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\TTMF_8049_ParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\AptekaHoldingKazanParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\Txt\CSMedicaKazanParserFixture.cs" />

@@ -200,13 +200,24 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("name_post", line.Product);
 				row.SetField("przv_post", line.Producer);
 				row.SetField("seria", line.SerialNumber);
-				row.SetField("sgodn", line.Period);
+
+				DateTime period;
+				DateTime? nullPeriod = null;
+				if(DateTime.TryParse(line.Period, out period)) {
+					nullPeriod = period;
+				}
+				row.SetField("sgodn", nullPeriod);
+
 				row.SetField("prd_in_mn", line.ExpireInMonths);
 				row.SetField("man_date", line.DateOfManufacture);
 
 				row.SetField("sert", line.Certificates);
 				row.SetField("sert_auth", line.CertificateAuthority);
-				row.SetField("sert_date", line.CertificatesDate);
+				nullPeriod = null;
+				if(DateTime.TryParse(line.CertificatesDate, out period)) {
+					nullPeriod = period;
+				}
+				row.SetField("sert_date", nullPeriod);
 
 				row.SetField("prcena_bnds", line.ProducerCostWithoutNDS);
 				row.SetField("gr_cena", line.RegistryCost);
