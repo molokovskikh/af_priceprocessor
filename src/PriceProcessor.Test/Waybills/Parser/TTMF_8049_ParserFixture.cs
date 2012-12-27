@@ -21,6 +21,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Invoice.BuyerId, Is.EqualTo(60));
 			Assert.That(doc.Invoice.StoreName, Is.EqualTo("МедОтдел2"));
 
+			Assert.That(doc.Lines.Count, Is.EqualTo(6));
+
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("Сибазон табл 5мг №20"));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Органика РОССИЯ"));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("10212"));
