@@ -33,6 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("190912"));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(193.32));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(193.32));
 		}
 	}
 }
