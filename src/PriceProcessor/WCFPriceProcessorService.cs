@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Helpers;
@@ -273,6 +274,50 @@ where pim.Id = ?PriceItemId",
 		public string[] ErrorFiles()
 		{
 			return Directory.GetFiles(Settings.Default.ErrorFilesPath);
+		}
+
+		public WcfPriceProcessItem[] GetPriceItemList()
+		{
+#if DEBUG
+			PriceItemList.AddItem(new PriceProcessItem(false, 1, null, 1, "jjj.123", null));
+			Thread.Sleep(1000);
+			PriceItemList.AddItem(new PriceProcessItem(false, 5, null, 1, "jjj.AAA", null));
+			Thread.Sleep(1000);
+			PriceItemList.AddItem(new PriceProcessItem(true, 2, null, 1, "jjj.345", null));
+			Thread.Sleep(1000);
+			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null));
+#endif
+
+			return PriceItemList.list.Select(i => new WcfPriceProcessItem(i.PriceCode, i.Downloaded, i.FilePath, i.PriceItemId, i.FileTime, i.CreateTime.ToLocalTime(), i.GetHashCode())).ToArray();
+		}
+
+		public bool TopInInboundList(int hashCode)
+		{
+			lock (PriceItemList.list) {
+				var currentItem = PriceItemList.list.FirstOrDefault(i => i.GetHashCode() == hashCode);
+				if (currentItem == null)
+					return false;
+				var minTime = PriceItemList.list.Where(i => i.Downloaded == currentItem.Downloaded).Min(i => i.CreateTime);
+				currentItem.CreateTime = minTime.AddSeconds(-5);
+				return true;
+			}
+		}
+
+		public bool DeleteItemInInboundList(int hashCode)
+		{
+			lock (PriceItemList.list) {
+				var currentItem = PriceItemList.list.FirstOrDefault(i => i.GetHashCode() == hashCode);
+				if (currentItem == null)
+					return false;
+				try {
+					File.Delete(currentItem.FilePath);
+					PriceItemList.list.Remove(currentItem);
+				}
+				catch (Exception) {
+					return false;
+				}
+				return true;
+			}
 		}
 
 		public string[] InboundPriceItemIds()

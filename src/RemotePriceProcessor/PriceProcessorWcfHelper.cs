@@ -304,6 +304,41 @@ namespace RemotePriceProcessor
 			return priceItemIds;
 		}
 
+
+		public WcfPriceProcessItem[] GetPriceItemList()
+		{
+			return UniversavWcfCall(() => _clientProxy.GetPriceItemList());
+		}
+
+		public bool TopInInboundList(int hashCode)
+		{
+			return UniversavWcfCall(() => _clientProxy.TopInInboundList(hashCode));
+		}
+
+		public bool DeleteItemInInboundList(int hashCode)
+		{
+			return UniversavWcfCall(() => _clientProxy.DeleteItemInInboundList(hashCode));
+		}
+
+		public T UniversavWcfCall<T>(Func<T> action)
+		{
+			LastErrorMessage = String.Empty;
+			var result = default(T);
+			try {
+				_clientProxy = _channelFactory.CreateChannel();
+				result = action();
+				((ICommunicationObject)_clientProxy).Close();
+			}
+			catch (FaultException faultException) {
+				LastErrorMessage = faultException.Reason.ToString();
+				return default(T);
+			}
+			finally {
+				AbortClientProxy();
+			}
+			return result;
+		}
+
 		public Stream BaseFile(uint priceItemId)
 		{
 			LastErrorMessage = String.Empty;

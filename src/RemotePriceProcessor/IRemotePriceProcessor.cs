@@ -101,6 +101,46 @@ namespace RemotePriceProcessor
 		public Stream FileStream { get; set; }
 	}
 
+	[DataContract]
+	public class WcfPriceProcessItem
+	{
+		public WcfPriceProcessItem()
+		{
+		}
+
+		public WcfPriceProcessItem(ulong priceCode, bool downloaded, string filePath, ulong priceItemId, DateTime? fileTime, DateTime createTime, int hashCode)
+		{
+			PriceCode = priceCode;
+			Downloaded = downloaded;
+			FilePath = filePath;
+			PriceItemId = priceItemId;
+			FileTime = fileTime;
+			CreateTime = createTime;
+			HashCode = hashCode;
+		}
+
+		[DataMember]
+		public ulong PriceCode { get; set; }
+
+		[DataMember]
+		public bool Downloaded { get; set; }
+
+		[DataMember]
+		public string FilePath { get; set; }
+
+		[DataMember]
+		public ulong PriceItemId { get; set; }
+
+		[DataMember]
+		public DateTime? FileTime { get; set; }
+
+		[DataMember]
+		public DateTime CreateTime { get; set; }
+
+		[DataMember]
+		public int HashCode { get; set; }
+	}
+
 	[MessageContract]
 	public class FilePriceInfo : IDisposable
 	{
@@ -156,6 +196,15 @@ namespace RemotePriceProcessor
 
 		[OperationContract]
 		string[] InboundFiles();
+
+		[OperationContract]
+		WcfPriceProcessItem[] GetPriceItemList();
+
+		[OperationContract]
+		bool TopInInboundList(int hashCode);
+
+		[OperationContract]
+		bool DeleteItemInInboundList(int hashCode);
 
 		[OperationContract]
 		string[] InboundPriceItemIds();
