@@ -1486,71 +1486,7 @@ where
 
 		private string UnrecExpUpdate(MySqlTransaction finalizeTransaction)
 		{
-			DateTime startTime = DateTime.UtcNow;
-			TimeSpan workTime;
-			int applyCount = 0;
-
-			daUnrecExp.SelectCommand.Transaction = finalizeTransaction;
-			try {
-				foreach (DataRow drUnrecExp in dtUnrecExp.Rows) {
-					var drsProducerSynonyms = dtNewSynonymFirmCr.Select("OriginalSynonym = '" + drUnrecExp["FirmCr"].ToString().Replace("'", "''") + "'");
-
-					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
-						throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
-					else if (drsProducerSynonyms.Length == 1) {
-						drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
-						//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
-						//и если не сбрасывали ссылку на новый синоним
-						if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"])) {
-							drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
-							//Если синоним не автоматический, то будем выставлять CodeFirmCr
-							if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"])) {
-								//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
-								if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"])) {
-									if (!Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
-										//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
-										drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
-										drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
-										continue;
-									}
-									else {
-										drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
-										drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
-									}
-								}
-								else if (Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
-									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-									drUnrecExp["Already"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Already"]) | UnrecExpStatus.FirmForm);
-									drUnrecExp["Status"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Status"]) | UnrecExpStatus.FirmForm);
-								}
-								else {
-									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-									drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-									drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-									continue;
-								}
-							}
-						}
-					}
-					else if (SynonymsNoValid(drsProducerSynonyms))
-						throw new Exception(String.Format("Получили новых синонимов больше 1: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
-
-					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
-					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm)) {
-						daUnrecExp.Update(new DataRow[] { drUnrecExp });
-						applyCount++;
-					}
-				}
-			}
-			finally {
-				workTime = DateTime.UtcNow.Subtract(startTime);
-			}
-			return String.Format("{0};{1}", applyCount, workTime);
-		}
-
-		private bool SynonymsNoValid(DataRow[] synonyms)
-		{
-			return synonyms.GroupBy(s => s["CodeFirmCr"]).Any(s => s.Count() > 1);
+			return BasePriceParser2.UnrecExpUpdate(finalizeTransaction, dtUnrecExp, dtNewSynonymFirmCr, daUnrecExp);
 		}
 
 		private void InsertNewProducerSynonyms(MySqlTransaction finalizeTransaction)

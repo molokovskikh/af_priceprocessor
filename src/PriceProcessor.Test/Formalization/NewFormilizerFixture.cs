@@ -5,12 +5,14 @@ using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
 using Common.MySql;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
+using NHibernate.Linq;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Catalog;
@@ -19,7 +21,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Formalization
 {
 	[TestFixture]
-	public class NewFormilizerFixture
+	public class NewFormilizerFixture : IntegrationFixture
 	{
 		private BasePriceParser2 formalizer;
 		private string file;
@@ -125,20 +127,19 @@ namespace PriceProcessor.Test.Formalization
 				deleter.ExecuteNonQuery();
 			});
 
-			using (new SessionScope()) {
-				var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
-				product.CatalogProduct.Pharmacie = true;
-				product.CatalogProduct.Monobrend = true;
-				product.Save();
-				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
-				producer.Save();
-				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
-				price.CreateAssortmentBoundSynonyms(
-					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
-					"Санкт-Петербургская ф.ф.");
-				price.Save();
-				TestAssortment.CheckAndCreate(product, producer);
-			}
+			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+			product.CatalogProduct.Pharmacie = true;
+			product.CatalogProduct.Monobrend = true;
+			session.Save(product);
+			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+			session.Save(producer);
+			price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+			price.CreateAssortmentBoundSynonyms(
+				"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+				"Санкт-Петербургская ф.ф.");
+			session.Save(price);
+			TestAssortment.CheckAndCreate(product, producer);
+			Close();
 
 			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
@@ -492,6 +493,55 @@ namespace PriceProcessor.Test.Formalization
 			}
 		}
 
+		[Test]
+		public void Create_synonym_with_same_name()
+		{
+			//что бы получить статистику и обойти проверку на вставку синонимов производителя
+			price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
+			price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
+
+			var producer1 = session.Query<TestProducer>().First();
+			var producer2 = session.Query<TestProducer>().Skip(1).First();
+			var product1 = new TestProduct("Финалгон мазь 20г");
+			product1.CatalogProduct.Pharmacie = true;
+			product1.CatalogProduct.Monobrend = true;
+			session.Save(product1);
+			session.Save(new TestAssortment(product1, producer1));
+
+			var product2 = new TestProduct("Актовегин таб 200мг №10");
+			product2.CatalogProduct.Pharmacie = true;
+			session.Save(product2);
+			session.Save(new TestAssortment(product2, producer2));
+
+			price.AddProductSynonym("Финалгон мазь 20г", product1);
+			price.AddProductSynonym("Актовегин таб 200мг №10", product2);
+			session.Save(price);
+			session.Flush();
+			session.Transaction.Commit();
+
+			Formalize(@"Финалгон мазь 20г;Глобофарм фармацойтише Продуктьонс унд Х;40;192.67;
+Актовегин таб 200мг №10;Глобофарм фармацойтише Продуктьонс унд Х;40;521.79;
+5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
+
+			session.Refresh(price);
+			var synonyms = price.ProducerSynonyms.Where(s => s.Name == "Глобофарм фармацойтише Продуктьонс унд Х")
+				.ToArray();
+			Assert.That(synonyms.Length, Is.EqualTo(2), "price id = {0}", price.Id);
+			Assert.That(synonyms.Count(s => s.Producer == null), Is.EqualTo(1), synonyms.Implode());
+			Assert.That(synonyms.Count(s => s.Producer != null && s.Producer.Id == producer1.Id),
+				Is.EqualTo(1),
+				synonyms.Implode());
+		}
+
+		[Test]
+		public void daSynonymFirmCrTest_NoAutomatic()
+		{
+			FakeParserSynonymTest(false, 0, typeof(FakeParser));
+			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser));
+			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
 		{
 			var deleter = connection.CreateCommand();
@@ -538,15 +588,6 @@ namespace PriceProcessor.Test.Formalization
 				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
 				Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(AutomaticProducerSynonyms));
 			});
-		}
-
-		[Test]
-		public void daSynonymFirmCrTest_NoAutomatic()
-		{
-			FakeParserSynonymTest(false, 0, typeof(FakeParser));
-			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
 		}
 
 		private void Price(string contents)
