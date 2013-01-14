@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
@@ -69,6 +71,35 @@ namespace PriceProcessor.Test.Handlers
 			Assert.That(handler.Threads.Count, Is.EqualTo(2));
 			Assert.That(handler.Threads[0].ProcessItem.PriceCode, Is.EqualTo(1));
 			Assert.That(handler.Threads[1].ProcessItem.PriceCode, Is.EqualTo(3));
+		}
+
+		[Test]
+		public void Top_In_Inbound_List_Test()
+		{
+			var dtn = DateTime.Now;
+			var checkedItem = new PriceProcessItem(false, 5, null, 1, "jjj.AAA", null) { CreateTime = dtn.AddMinutes(50) };
+			PriceItemList.AddItem(new PriceProcessItem(false, 1, null, 1, "jjj.123", null) { CreateTime = dtn.AddMinutes(10) });
+			PriceItemList.AddItem(checkedItem);
+			PriceItemList.AddItem(new PriceProcessItem(true, 2, null, 1, "jjj.345", null) { CreateTime = dtn.AddMinutes(100) });
+			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null) { CreateTime = dtn.AddMinutes(100) });
+			Assert.AreEqual(checkedItem.CreateTime, dtn.AddMinutes(50));
+			var wcf = new WCFPriceProcessorService();
+			wcf.TopInInboundList(checkedItem.GetHashCode());
+			Assert.AreEqual(checkedItem.CreateTime, dtn.AddMinutes(10).AddSeconds(-5));
+		}
+
+		[Test]
+		public void Delete_ItemIn_Inbound_List_Test()
+		{
+			var checkedItem = new PriceProcessItem(false, 5, null, 1, "jjj.AAA", null);
+			PriceItemList.AddItem(new PriceProcessItem(false, 1, null, 1, "jjj.123", null));
+			PriceItemList.AddItem(checkedItem);
+			PriceItemList.AddItem(new PriceProcessItem(true, 2, null, 1, "jjj.345", null));
+			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null));
+			Assert.IsTrue(PriceItemList.list.Any(l => l.FilePath == "jjj.AAA"));
+			var wcf = new WCFPriceProcessorService();
+			wcf.DeleteItemInInboundList(checkedItem.GetHashCode());
+			Assert.IsFalse(PriceItemList.list.Any(l => l.FilePath == "jjj.AAA"));
 		}
 	}
 }
