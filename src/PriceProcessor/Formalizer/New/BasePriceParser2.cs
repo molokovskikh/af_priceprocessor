@@ -643,7 +643,8 @@ and a.FirmCode = p.FirmCode;",
 
 			adapter.SelectCommand.Transaction = finalizeTransaction;
 			try {
-				foreach (DataRow drUnrecExp in unrecExpressions.Rows) {
+				var rows = unrecExpressions.AsEnumerable().Where(r => !Convert.IsDBNull(r["InternalProducerSynonymId"]));
+				foreach (DataRow drUnrecExp in rows) {
 					var drsProducerSynonyms = producerSynonyms.Select(String.Format("InternalProducerSynonymId = {0}", drUnrecExp["InternalProducerSynonymId"]));
 
 					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
