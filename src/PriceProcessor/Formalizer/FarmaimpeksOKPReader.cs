@@ -56,7 +56,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void SendWarning(PriceLoggingStat stat)
 		{
-			throw new NotImplementedException();
 		}
 
 		public void Dispose()

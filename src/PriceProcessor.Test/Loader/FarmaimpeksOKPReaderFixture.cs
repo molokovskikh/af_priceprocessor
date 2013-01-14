@@ -18,5 +18,17 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(positions.Count, Is.EqualTo(4));
 			Assert.That(positions[0].Core.CodeOKP, Is.EqualTo("931201"));
 		}
+
+		[Test]
+		public void NotSendNotImplementedException()
+		{
+			var reader = new FarmaimpeksOKPReader(@"..\..\Data\FarmimpeksOKP.xml");
+			try {
+				reader.SendWarning(null);
+			}
+			catch(NotImplementedException) {
+				Assert.Fail("NotImplementedException выбрасывать не должны");
+			}
+		}
 	}
 }
