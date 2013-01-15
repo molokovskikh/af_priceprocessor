@@ -643,43 +643,44 @@ and a.FirmCode = p.FirmCode;",
 
 			adapter.SelectCommand.Transaction = finalizeTransaction;
 			try {
-				var rows = unrecExpressions.AsEnumerable().Where(r => !Convert.IsDBNull(r["InternalProducerSynonymId"]));
-				foreach (DataRow drUnrecExp in rows) {
-					var drsProducerSynonyms = producerSynonyms.Select(String.Format("InternalProducerSynonymId = {0}", drUnrecExp["InternalProducerSynonymId"]));
+				foreach (var drUnrecExp in unrecExpressions.AsEnumerable()) {
+					if (!Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"])) {
+						var drsProducerSynonyms = producerSynonyms.Select(String.Format("InternalProducerSynonymId = {0}", drUnrecExp["InternalProducerSynonymId"]));
 
-					if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
-						throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
-					if (drsProducerSynonyms.Length > 1)
-						throw new Exception(String.Format("Получили новых синонимов больше 1: {0} {1}", drUnrecExp["FirmCr"], drUnrecExp));
+						if ((drsProducerSynonyms.Length == 0) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"]))
+							throw new Exception(String.Format("Не нашли новых синонимов хотя ссылка существует: {0}  {1}", drUnrecExp["FirmCr"], drUnrecExp));
+						if (drsProducerSynonyms.Length > 1)
+							throw new Exception(String.Format("Получили новых синонимов больше 1: {0} {1}", drUnrecExp["FirmCr"], drUnrecExp));
 
-					drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
-					//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
-					//и если не сбрасывали ссылку на новый синоним
-					if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"])) {
-						drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
-						//Если синоним не автоматический, то будем выставлять CodeFirmCr
-						if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"])) {
-							//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
-							if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"])) {
-								if (!Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
-									//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
-									drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
-									drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
+						drUnrecExp["ProducerSynonymId"] = drsProducerSynonyms[0]["SynonymFirmCrCode"];
+						//Если найденный синоним новый и был обновлен при сохранении прайс-листа в базу
+						//и если не сбрасывали ссылку на новый синоним
+						if ((drsProducerSynonyms[0].RowState == DataRowState.Unchanged) && !Convert.IsDBNull(drUnrecExp["InternalProducerSynonymId"])) {
+							drUnrecExp["InternalProducerSynonymId"] = DBNull.Value;
+							//Если синоним не автоматический, то будем выставлять CodeFirmCr
+							if (!Convert.ToBoolean(drsProducerSynonyms[0]["IsAutomatic"])) {
+								//Если CodeFirmCr не установлен, то синоним производителя сопоставлен с "производитель не известен"
+								if (Convert.IsDBNull(drsProducerSynonyms[0]["CodeFirmCr"])) {
+									if (!Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
+										//Если сопоставлено по наименованию, то она полностью сопоставлена и удаляем из нераспознанных
+										drUnrecExp["Already"] = (byte)UnrecExpStatus.FullForm;
+										drUnrecExp["Status"] = (byte)UnrecExpStatus.FullForm;
+										continue;
+									}
+									drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
+									drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
+								}
+								else if (Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
+									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
+									drUnrecExp["Already"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Already"]) | UnrecExpStatus.FirmForm);
+									drUnrecExp["Status"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Status"]) | UnrecExpStatus.FirmForm);
+								}
+								else {
+									drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
+									drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
+									drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
 									continue;
 								}
-								drUnrecExp["Already"] = (byte)UnrecExpStatus.FirmForm;
-								drUnrecExp["Status"] = (byte)UnrecExpStatus.FirmForm;
-							}
-							else if (Convert.IsDBNull(drUnrecExp["PriorProductId"])) {
-								drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-								drUnrecExp["Already"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Already"]) | UnrecExpStatus.FirmForm);
-								drUnrecExp["Status"] = (byte)((UnrecExpStatus)((byte)drUnrecExp["Status"]) | UnrecExpStatus.FirmForm);
-							}
-							else {
-								drUnrecExp["PriorProducerId"] = drsProducerSynonyms[0]["CodeFirmCr"];
-								drUnrecExp["Already"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-								drUnrecExp["Status"] = (byte)(UnrecExpStatus.NameForm | UnrecExpStatus.FirmForm);
-								continue;
 							}
 						}
 					}

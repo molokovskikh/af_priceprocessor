@@ -87,6 +87,11 @@ namespace Inforoom.Formalizer
 					(string)dataRow[FormRules.colFirmShortName],
 					(string)dataRow[FormRules.colSelfPriceName]);
 
+			return CreateFormalizer(fileName, dataRow, parserClass);
+		}
+
+		public static IPriceFormalizer CreateFormalizer(string fileName, DataRow dataRow, Type parserClass)
+		{
 			PriceFormalizationInfo priceInfo;
 			using (new SessionScope()) {
 				var price = Price.Find(Convert.ToUInt32(dataRow[FormRules.colPriceCode]));

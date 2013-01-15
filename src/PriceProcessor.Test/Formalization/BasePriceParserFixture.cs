@@ -53,36 +53,6 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);
 		}
 
-		[Test, Ignore]
-		public void Test_create_original_synonym_id()
-		{
-			//var notCheckedProducerId = 3;
-			var file = @"..\..\Data\688-create-net-assortment.txt";
-			var rules = new DataTable();
-			rules.ReadXml(String.Format(@"..\..\Data\{0}-assortment-rules.xml", priceItemId));
-
-			// Каталожная запись не проверена, производитель проверен. Должны вставить в исключения
-			PrepareTables(priceCode, catalogId, producerId);
-			TestHelper.Execute(@"update catalogs.producers set Checked = 1 where Id = {0}", producerId);
-			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			var excludes = TestHelper.Fill(String.Format("select OriginalSynonymId from farm.Excludes where PriceCode = {0} and CatalogId = {1}", priceCode, catalogId));
-			Assert.That(excludes.Tables[0].Rows.Count, Is.EqualTo(1));
-			// Проверяем, что запись в исключениях создалась для нужного синонима
-			var synonym = With.Connection(connection => MySqlHelper.ExecuteScalar(connection,
-				"select Synonym from farm.Synonym where SynonymCode = " + excludes.Tables[0].Rows[0]["OriginalSynonymId"].ToString())).ToString();
-			Assert.That(synonym, Is.EqualTo("5 дней ванна д/ног смягчающая №10 пак. 25г  "));
-		}
-
-		[Test, Ignore]
-		public void FormalizeAssortmentPriceTest()
-		{
-			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-
-			TestFormalizeWithoutAssortmentInserting(
-				@"..\..\Data\688-create-net-assortment.txt",
-				String.Format(@"..\..\Data\{0}-assortmentprice-rules.xml", priceItemId));
-		}
-
 		[Test, Ignore("Не работает на пустой базе")]
 		public void Double_synonim_test()
 		{
@@ -99,55 +69,6 @@ insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id(
 where Synonym = 'Merckle GmbH для Ratiopha';", c);
 			Assert.That(Convert.ToInt32(command.ExecuteScalar()), Is.EqualTo(2));
 			});
-		}
-
-		[Test, Ignore]
-		public void FormalizeHelpPriceTest()
-		{
-			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-			TestFormalizeWithoutAssortmentInserting(
-				@"..\..\Data\688-create-net-assortment.txt",
-				String.Format(@"..\..\Data\{0}-helpprice-rules.xml", priceItemId));
-		}
-
-		private void TestFormalizeWithoutAssortmentInserting(string dataPath, string rulesPath)
-		{
-			// Внимание!!! Переименовывается таблица catalogs.Assortment. Блок finally должен отрабатывать
-			var rules = new DataTable();
-			rules.ReadXml(rulesPath);
-
-			TestHelper.Execute("RENAME TABLE catalogs.Assortment TO catalogs.Assortment_Backup;");
-			TestHelper.Execute("CREATE TABLE catalogs.Assortment LIKE catalogs.Assortment_Backup;");
-			try {
-				// Каталожная запись не проверена, производитель проверен. Должны вставить в исключения
-				PrepareTables(priceCode, catalogId, producerId);
-
-				var countBefore = Convert.ToInt32(With.Connection(conn => MySqlHelper.ExecuteScalar(conn, "select count(*) from catalogs.Assortment")));
-				Assert.AreEqual(0, countBefore, "Не подготовили таблицу Assortment.");
-				TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, dataPath, priceItemId);
-
-				var countAfter = Convert.ToInt32(With.Connection(conn => MySqlHelper.ExecuteScalar(conn, "select count(*) from catalogs.Assortment")));
-
-				Assert.AreEqual(0, countAfter, "Добавили запись в Assortment, хотя и не должны были.");
-			}
-			finally {
-				TestHelper.Execute("DROP TABLE catalogs.Assortment;");
-				TestHelper.Execute("RENAME TABLE catalogs.Assortment_Backup TO catalogs.Assortment;");
-			}
-		}
-
-		[Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из файла")]
-		public void FormalizeProducerCost()
-		{
-			var fileName = @"formalize-producer-cost";
-			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
-			var rules = new DataTable();
-			rules.ReadXml(String.Format(@"..\..\Data\{0}-producer-cost-rules.xml", priceItemId));
-
-			//Формализация прайс-листа
-			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			var corePriceCode = GetPriceCode(priceItemId);
-			CheckProducerCostInCore(corePriceCode);
 		}
 
 		[Test, Ignore, Description("Тест для проверки вставки значений в поле ProducerCost. Правила формализации берутся из таблицы FormRules")]
@@ -227,20 +148,6 @@ where PriceCode = ?PriceCode and ProducerCost is not null;", connection);
 				var countCorePositions = Convert.ToUInt32(command.ExecuteScalar());
 				Assert.That(countCorePositions, Is.EqualTo(14));
 			});
-		}
-
-		[Test, Ignore, Description("Тест для проверки вставки значений в поле Nds. Правила формализации берутся из файла")]
-		public void FormalizeNds()
-		{
-			var fileName = @"formalize-nds";
-			var file = String.Format(@"..\..\Data\{0}-{1}.txt", priceItemId, fileName);
-			var rules = new DataTable();
-			rules.ReadXml(String.Format(@"..\..\Data\{0}-nds-rules.xml", priceItemId));
-
-			//Формализация прайс-листа
-			TestHelper.FormalizeOld(typeof(DelimiterNativeTextParser1251), rules, file, priceItemId);
-			var corePriceCode = GetPriceCode(priceItemId);
-			CheckNdsInCore(corePriceCode);
 		}
 
 		private void CheckNdsInCore(ulong corePriceCode)

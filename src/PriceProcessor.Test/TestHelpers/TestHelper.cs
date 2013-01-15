@@ -5,6 +5,7 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using FileHelper = Common.Tools.FileHelper;
@@ -63,13 +64,13 @@ namespace PriceProcessor.Test.TestHelpers
 			Formalize<T>(file, Convert.ToInt32(Path.GetFileNameWithoutExtension(file)));
 		}
 
-		public static void Formalize(string file, int priceItemId)
+		public static IPriceFormalizer Formalize(string file, int priceItemId)
 		{
 			var data = PricesValidator.LoadFormRules((uint)priceItemId);
 			var typeName = String.Format("Inforoom.PriceProcessor.Formalizer.{0}, PriceProcessor", data.Rows[0]["ParserClassName"]);
 			var parserType = Type.GetType(typeName);
 
-			Formalize(parserType, data, file, priceItemId);
+			return Formalize(parserType, data, file, priceItemId);
 		}
 
 		public static void Formalize(Type formatType, string file)
@@ -87,20 +88,11 @@ namespace PriceProcessor.Test.TestHelpers
 			Formalize(formatType, PricesValidator.LoadFormRules((uint)priceItemId), file, priceItemId);
 		}
 
-		public static void Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
+		public static IPriceFormalizer Formalize(Type formatType, DataTable parseRules, string file, int priceItemId)
 		{
-			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
-				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
-				parser.Formalize();
-			}
-		}
-
-		public static void FormalizeOld(Type formatType, DataTable parseRules, string file, int priceItemId)
-		{
-			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
-				var parser = (BasePriceParser)Activator.CreateInstance(formatType, file, connection, parseRules);
-				parser.Formalize();
-			}
+			var parser = PricesValidator.CreateFormalizer(file, parseRules.Rows[0], formatType);
+			parser.Formalize();
+			return parser;
 		}
 
 		public static void Verify(string priceItemId)

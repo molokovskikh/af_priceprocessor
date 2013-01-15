@@ -521,7 +521,8 @@ namespace PriceProcessor.Test.Formalization
 
 			Formalize(@"Финалгон мазь 20г;Глобофарм фармацойтише Продуктьонс унд Х;40;192.67;
 Актовегин таб 200мг №10;Глобофарм фармацойтише Продуктьонс унд Х;40;521.79;
-5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
+5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;
+Теотард 200мг Капс.пролонг.дейст. Х40;Вектор;157;83.02;");
 
 			session.Refresh(price);
 			var synonyms = price.ProducerSynonyms.Where(s => s.Name == "Глобофарм фармацойтише Продуктьонс унд Х")
@@ -531,6 +532,9 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(synonyms.Count(s => s.Producer != null && s.Producer.Id == producer1.Id),
 				Is.EqualTo(1),
 				synonyms.Implode());
+
+			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
+			Assert.That(unrecExceptions.Count, Is.EqualTo(2));
 		}
 
 		[Test]
