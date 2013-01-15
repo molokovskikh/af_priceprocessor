@@ -1,1 +1,1 @@
-ALTER TABLE `documents`.`mailrecipients` ADD COLUMN `Mail` VARCHAR(255) AFTER `AddressId`;
+ALTER TABLE `documents`.`mailrecipients` ADD COLUMN `Email` VARCHAR(255) AFTER `AddressId`;
