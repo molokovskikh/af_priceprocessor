@@ -29,6 +29,11 @@ Global(
 	Profile: @catalog
 )
 
+#если мы запускаем тесты на сервере не надо загружать проект что бы
+#не блокировать библиотеки
+unless Configuration.IsDefined(@notInteractive):
+	Engine.Execute("LoadProject")
+
 task @ParseWaybills:
 	binding = NetTcpBinding()
 	binding.Security.Mode = SecurityMode.None
@@ -45,7 +50,6 @@ task @default, [@Build]
 task @Build, [@BuildService]
 
 task @deploy, [@ServiceDeployPipeline]
-
 
 def IsDocument(mime as Mime):
 	for box in mime.MainEntity.To.Mailboxes:

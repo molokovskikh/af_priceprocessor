@@ -1,0 +1,25 @@
+import RemotePriceProcessor
+import System.IO
+import System.ServiceModel
+
+desc """
+переотправляет прайс-листы из файла переданного в качестве параметра
+параметры
+File - имя файла где каждая строчка PriceId прайса который нужно перепослать
+"""
+task @ResendPrices:
+	lines = File.ReadAllLines(Configuration.File)
+	for l in lines:
+		id as uint
+		unless uint.TryParse(l, id):
+			continue
+		try:
+			binding = NetTcpBinding()
+			binding.Security.Mode = SecurityMode.None
+			binding.TransferMode = TransferMode.Streamed
+			factory = ChannelFactory[of IRemotePriceProcessor](binding, "net.tcp://fms:900/RemotePriceProcessorService")
+			channel = factory.CreateChannel()
+
+			channel.RetransPriceSmart(id)
+		except e as FaultException:
+			print e
