@@ -156,7 +156,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		/// </summary>
 		public string EAN13;
 
-		public string CodeOKP;
+		public uint CodeOKP;
 		public string Series;
 
 		/// <summary>
