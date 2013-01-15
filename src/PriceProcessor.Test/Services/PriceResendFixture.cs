@@ -219,6 +219,36 @@ namespace PriceProcessor.Test.Services
 		}
 
 		[Test]
+		public void ResendErrorPriceTest()
+		{
+			File.WriteAllBytes(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf"), new byte[0]);
+			WcfCall(p => p.RetransErrorPrice(new WcfCallParameter {
+				LogInformation = new LogInformation {
+					ComputerName = "test",
+					UserName = "test"
+				},
+				Value = priceItem.Id
+			}));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
+			Assert.That(!File.Exists(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf")));
+		}
+
+		[Test]
+		public void ResendPriceTest()
+		{
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf"), new byte[0]);
+			WcfCall(p => p.RetransPrice(new WcfCallParameter {
+				LogInformation = new LogInformation {
+					ComputerName = "test",
+					UserName = "test"
+				},
+				Value = priceItem.Id
+			}));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf")));
+		}
+
+		[Test]
 		public void Smart_resend_should_resend_price_and_all_related_prices()
 		{
 			CreatePrices();
@@ -230,6 +260,9 @@ namespace PriceProcessor.Test.Services
 
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
+
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
 		}
 
 		[Test]
