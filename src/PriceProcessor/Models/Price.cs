@@ -4,6 +4,13 @@ using Castle.ActiveRecord.Framework;
 
 namespace Inforoom.PriceProcessor.Models
 {
+	[ActiveRecord(Schema = "Farm")]
+	public class Matrix
+	{
+		[PrimaryKey]
+		public virtual uint Id { get; set; }
+	}
+
 	[ActiveRecord("PricesData", Schema = "Usersettings", DynamicUpdate = true)]
 	public class Price : ActiveRecordLinqBase<Price>
 	{
@@ -30,6 +37,12 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual bool IsStrict { get; set; }
+
+		[BelongsTo]
+		public virtual Matrix Matrix { get; set; }
+
+		[BelongsTo]
+		public virtual Price CodeOkpFilterPrice { get; set; }
 
 		[HasMany(ColumnKey = "PriceCode", Inverse = true)]
 		public virtual IList<PriceCost> Costs { get; set; }
