@@ -207,7 +207,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 
 			if (tag.Match("CodeOKP")) {
-				core.CodeOKP = value;
+				core.CodeOKP = SafeConvert.ToUInt32(value);
 				return;
 			}
 
