@@ -23,12 +23,7 @@ namespace PriceProcessor.Test.Loader
 		public void NotSendNotImplementedException()
 		{
 			var reader = new FarmaimpeksOKPReader(@"..\..\Data\FarmimpeksOKP.xml");
-			try {
-				reader.SendWarning(null);
-			}
-			catch(NotImplementedException) {
-				Assert.Fail("NotImplementedException выбрасывать не должны");
-			}
+			Assert.DoesNotThrow(() => reader.SendWarning(null));
 		}
 	}
 }
