@@ -550,7 +550,7 @@ namespace Inforoom.Formalizer
 				drCore["Nds"] = Convert.ToUInt32(nds);
 
 			drCore["EAN13"] = GetFieldValue(PriceFields.EAN13);
-			drCore["CodeOKP"] = GetFieldValue(PriceFields.CodeOKP);
+			drCore["CodeOKP"] = GetFieldValueObject(PriceFields.CodeOKP);
 			drCore["Series"] = GetFieldValue(PriceFields.Series);
 
 			object dt = GetFieldValueObject(PriceFields.Period);
@@ -1843,7 +1843,6 @@ where
 				case (int)PriceFields.Unit:
 				case (int)PriceFields.Volume:
 				case (int)PriceFields.EAN13:
-				case (int)PriceFields.CodeOKP:
 				case (int)PriceFields.Series:
 				case (int)PriceFields.OriginalName:
 					return GetFieldValue(PF);
@@ -1855,6 +1854,8 @@ where
 				case (int)PriceFields.ProducerCost:
 					return ProcessCost(GetFieldRawValue(PF));
 
+				case (int)PriceFields.CodeOKP:
+					return ProcessInt(GetFieldRawValue(PF), true);
 				case (int)PriceFields.Quantity:
 				case (int)PriceFields.MinOrderCount:
 				case (int)PriceFields.Nds:
@@ -1904,15 +1905,19 @@ where
 		/// <summary>
 		/// Обработать значение IntValue и получить результать как целое число
 		/// </summary>
-		/// <param name="IntValue"></param>
+		/// <param name="intValue"></param>
 		/// <returns></returns>
-		public virtual object ProcessInt(string IntValue)
+		public virtual object ProcessInt(string intValue, bool zeroOrLessAsNull = false)
 		{
-			if (!String.IsNullOrEmpty(IntValue)) {
+			if (!String.IsNullOrEmpty(intValue)) {
 				try {
-					var cost = ProcessCost(IntValue);
-					if (cost is decimal)
-						return Convert.ToInt32(decimal.Truncate((decimal)cost));
+					var cost = ProcessCost(intValue);
+					if (cost is decimal) {
+						var value = Convert.ToInt32(decimal.Truncate((decimal)cost));
+						if (zeroOrLessAsNull && value <= 0)
+							return DBNull.Value;
+						return value;
+					}
 					return cost;
 				}
 				catch {
