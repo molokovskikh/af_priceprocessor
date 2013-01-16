@@ -256,6 +256,9 @@ where pim.Id = ?PriceItemId",
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
+			if(InboundPriceItemIds().Contains(priceItemId.ToString()))
+				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
+
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 

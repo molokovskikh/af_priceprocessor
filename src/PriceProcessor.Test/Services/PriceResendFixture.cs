@@ -219,7 +219,7 @@ namespace PriceProcessor.Test.Services
 		}
 
 		[Test]
-		public void ResendErrorPriceTest()
+		public void RetransErrorPriceTest()
 		{
 			File.WriteAllBytes(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf"), new byte[0]);
 			WcfCall(p => p.RetransErrorPrice(new WcfCallParameter {
@@ -234,7 +234,7 @@ namespace PriceProcessor.Test.Services
 		}
 
 		[Test]
-		public void ResendPriceTest()
+		public void RetransPriceTest()
 		{
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf"), new byte[0]);
 			WcfCall(p => p.RetransPrice(new WcfCallParameter {
@@ -246,6 +246,32 @@ namespace PriceProcessor.Test.Services
 			}));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf")));
+		}
+
+		[Test]
+		public void NotRetransIfExistsItem()
+		{
+			var path = Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf");
+			PriceItemList.AddItem(new PriceProcessItem(false,
+				supplier.Prices[0].Id,
+				supplier.Prices[0].Costs[0].Id,
+				priceItem.Id,
+				path,
+				null));
+			File.WriteAllBytes(path, new byte[0]);
+			try {
+				WcfCall(p => p.RetransPrice(new WcfCallParameter {
+					LogInformation = new LogInformation {
+						ComputerName = "test",
+						UserName = "test"
+					},
+					Value = priceItem.Id
+				}));
+				Assert.Fail("Должны были выбросить исключение");
+			}
+			catch(FaultException ex) {
+				Assert.That(ex.Message, Is.EqualTo("Данный прайс-лист находится в очереди на формализацию"));
+			}
 		}
 
 		[Test]
