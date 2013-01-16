@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Certificates = element.XPathSelectElement("SERT") == null ? null : element.XPathSelectElement("SERT").Value;
 				line.CertificatesDate = element.XPathSelectElement("SERT_DATE") == null ? null : element.XPathSelectElement("SERT_DATE").Value;
 				line.ProducerCostWithoutNDS = element.XPathSelectElement("PRCENA_BNDS") == null ? null : (decimal?)element.Get("PRCENA_BNDS");
-				line.Nds = element.XPathSelectElement("NDS") == null ? null : (uint?)SafeConvert.ToDecimal(element.XPathSelectElement("NDS").Value);
+				line.Nds = element.XPathSelectElement("NDS") == null ? null : (uint?)SafeConvert.ToDecimalInvariant(element.XPathSelectElement("NDS").Value);
 				line.Cipher = element.XPathSelectElement("SHIFR") == null ? null : element.XPathSelectElement("SHIFR").Value;
 				line.TradeCost = element.XPathSelectElement("OPT_PRICE") == null ? null : (decimal?)element.Get("OPT_PRICE");
 				line.SaleCost = element.XPathSelectElement("OTP_CENA") == null ? null : (decimal?)element.Get("OTP_CENA");

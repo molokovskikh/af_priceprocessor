@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				if (!hasOpt || String.IsNullOrEmpty(position.XPathSelectElement("НаценОпт").Value))
 					line.SupplierPriceMarkup = null;
 				else
-					line.SupplierPriceMarkup = SafeConvert.ToDecimal(position.XPathSelectElement("НаценОпт").Value);
+					line.SupplierPriceMarkup = SafeConvert.ToDecimalInvariant(position.XPathSelectElement("НаценОпт").Value);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
 
@@ -56,7 +56,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 					string nds = position.XPathSelectElement("СтавкаНДС").Value;
 					nds = nds.Replace('%', ' ');
 					nds = nds.Trim();
-					line.Nds = (uint?)SafeConvert.ToDecimal(nds);
+					line.Nds = (uint?)SafeConvert.ToDecimalInvariant(nds);
 				}
 				else {
 					line.Nds = null;

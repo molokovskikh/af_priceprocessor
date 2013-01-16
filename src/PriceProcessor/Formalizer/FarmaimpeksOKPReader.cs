@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
 
@@ -33,11 +34,14 @@ namespace Inforoom.PriceProcessor.Formalizer
 			while(_reader.Read()) {
 				if(_reader.Name == "" && _reader.NodeType == XmlNodeType.Text && read) {
 					read = false;
+					var codeOkp = SafeConvert.ToUInt32(_reader.Value);
+					if (codeOkp == 0)
+						continue;
 					yield return new FormalizationPosition {
 						NotCreateUnrecExp = true,
 						Status = UnrecExpStatus.NameForm,
 						Core = new NewCore {
-							CodeOKP = _reader.Value
+							CodeOKP = codeOkp
 						}
 					};
 				}
