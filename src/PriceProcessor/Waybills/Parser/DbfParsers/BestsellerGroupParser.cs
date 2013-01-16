@@ -40,6 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("DOCNO")
 				&& data.Columns.Contains("DOCDAT")
 				&& data.Columns.Contains("QUANT")
+				&& !data.Columns.Contains("orderID")
 				&& data.Columns.Contains("PRICEWONDS");
 		}
 	}

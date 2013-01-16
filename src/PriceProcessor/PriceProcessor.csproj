@@ -297,6 +297,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BioMaster2394Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Medif_11357_Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedkomMP228Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PulsBrianskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Rosta11288Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahan12423Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParser.cs" />
