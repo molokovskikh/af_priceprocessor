@@ -37,7 +37,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
 
-			if (!Data.Columns.Contains("PRICE1N")) {
+			if (!Data.Columns.Contains("PRICE1N") && !Data.Columns.Contains("PODRCD")) {
 				parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
 			}
 			else {
@@ -57,6 +57,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("PRICE2")
 				&& data.Columns.Contains("NUMZ")
 				&& !data.Columns.Contains("NAMEAPT")
+				&& !data.Columns.Contains("PODRCD")
 				&& !data.Columns.Contains("SUMITEM")) {
 				if(data.Columns.Contains("SELLERID")) {
 					foreach (DataRow row in data.Rows) {
