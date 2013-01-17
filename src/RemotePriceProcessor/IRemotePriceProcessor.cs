@@ -139,6 +139,9 @@ namespace RemotePriceProcessor
 
 		[DataMember]
 		public int HashCode { get; set; }
+
+		[DataMember]
+		public bool FormalizedNow { get; set; }
 	}
 
 	[MessageContract]

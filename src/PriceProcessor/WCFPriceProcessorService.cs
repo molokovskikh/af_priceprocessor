@@ -294,7 +294,12 @@ where pim.Id = ?PriceItemId",
 			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null));
 #endif
 
-			return PriceItemList.list.Select(i => new WcfPriceProcessItem(i.PriceCode, i.Downloaded, i.FilePath, i.PriceItemId, i.FileTime, i.CreateTime.ToLocalTime(), i.GetHashCode())).ToArray();
+			var items = PriceItemList.list.Select(i => new WcfPriceProcessItem(i.PriceCode, i.Downloaded, i.FilePath, i.PriceItemId, i.FileTime, i.CreateTime.ToLocalTime(), i.GetHashCode())).ToArray();
+			var handler = (FormalizeHandler)Monitor.GetInstance().GetHandler(typeof(FormalizeHandler));
+			foreach (var wcfPriceProcessItem in items) {
+				wcfPriceProcessItem.FormalizedNow = handler.FindByPriceItemId(wcfPriceProcessItem.PriceItemId);
+			}
+			return items;
 		}
 
 		public bool TopInInboundList(int hashCode)
