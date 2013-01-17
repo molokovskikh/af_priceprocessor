@@ -243,6 +243,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			//Протек 1.3 РТП, Тверская область
 			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
 				29924, 1049535, 13779),
+
+			//Протек-28, Удмуртская республика
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				261545, 1124944, 7114),
 		};
 
 		public virtual void WithService(string uri, Action<ProtekService> action)
