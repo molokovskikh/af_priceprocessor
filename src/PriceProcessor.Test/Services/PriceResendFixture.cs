@@ -219,6 +219,62 @@ namespace PriceProcessor.Test.Services
 		}
 
 		[Test]
+		public void RetransErrorPriceTest()
+		{
+			File.WriteAllBytes(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf"), new byte[0]);
+			WcfCall(p => p.RetransErrorPrice(new WcfCallParameter {
+				LogInformation = new LogInformation {
+					ComputerName = "test",
+					UserName = "test"
+				},
+				Value = priceItem.Id
+			}));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
+			Assert.That(!File.Exists(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf")));
+		}
+
+		[Test]
+		public void RetransPriceTest()
+		{
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf"), new byte[0]);
+			WcfCall(p => p.RetransPrice(new WcfCallParameter {
+				LogInformation = new LogInformation {
+					ComputerName = "test",
+					UserName = "test"
+				},
+				Value = priceItem.Id
+			}));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf")));
+		}
+
+		[Test]
+		public void NotRetransIfExistsItem()
+		{
+			var path = Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf");
+			PriceItemList.AddItem(new PriceProcessItem(false,
+				supplier.Prices[0].Id,
+				supplier.Prices[0].Costs[0].Id,
+				priceItem.Id,
+				path,
+				null));
+			File.WriteAllBytes(path, new byte[0]);
+			try {
+				WcfCall(p => p.RetransPrice(new WcfCallParameter {
+					LogInformation = new LogInformation {
+						ComputerName = "test",
+						UserName = "test"
+					},
+					Value = priceItem.Id
+				}));
+				Assert.Fail("Должны были выбросить исключение");
+			}
+			catch(FaultException ex) {
+				Assert.That(ex.Message, Is.EqualTo("Данный прайс-лист находится в очереди на формализацию"));
+			}
+		}
+
+		[Test]
 		public void Smart_resend_should_resend_price_and_all_related_prices()
 		{
 			CreatePrices();
@@ -230,6 +286,9 @@ namespace PriceProcessor.Test.Services
 
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
+
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
 		}
 
 		[Test]
