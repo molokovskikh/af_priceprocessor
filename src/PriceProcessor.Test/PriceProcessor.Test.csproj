@@ -129,7 +129,7 @@
     <Compile Include="Formalization\BasePriceParserFixture.cs" />
     <Compile Include="DeadlockFinalizationPriceFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
-    <Compile Include="Formalization\BuingMatrixProcessorFixture.cs" />
+    <Compile Include="Formalization\BuyingMatrixProcessorFixture.cs" />
     <Compile Include="Formalization\FakeParsers.cs" />
     <Compile Include="Formalization\IntegrationFormalizerFixture.cs" />
     <Compile Include="Formalization\NativeDbfPriceParcerFixture.cs" />
@@ -172,6 +172,7 @@
     <Compile Include="RestartServiceFixture.cs" />
     <Compile Include="ShareFileHelperTest.cs" />
     <Compile Include="SiaPriceFixture.cs" />
+    <Compile Include="TestHelpers\BaseFormalizationFixture.cs" />
     <Compile Include="TestHelpers\BaseHandlerFixture.cs" />
     <Compile Include="TestHelpers\BaseWaybillHandlerFixture.cs" />
     <Compile Include="TestHelpers\DocumentFixture.cs" />

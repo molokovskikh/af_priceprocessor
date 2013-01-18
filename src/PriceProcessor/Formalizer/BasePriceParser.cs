@@ -355,7 +355,6 @@ namespace Inforoom.Formalizer
 		protected int priceType;
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
-		protected bool buyingMatrix;
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI;
@@ -409,7 +408,6 @@ namespace Inforoom.Formalizer
 
 			parentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
 			costType = (CostTypes)Convert.ToInt32(row[FormRules.colCostType]);
-			buyingMatrix = Convert.ToBoolean(row["BuyingMatrix"]);
 
 			nameMask = row[FormRules.colNameMask] is DBNull ? String.Empty : (string)row[FormRules.colNameMask];
 
@@ -418,10 +416,7 @@ namespace Inforoom.Formalizer
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords) {
 				forbWordsList = forbWords.Split(new[] { ' ' });
-				int len = 0;
-				foreach (string s in forbWordsList)
-					if (String.Empty != s)
-						len++;
+				int len = forbWordsList.Count(s => String.Empty != s);
 				if (len > 0) {
 					var newForbWordList = new string[len];
 					var i = 0;
@@ -1605,9 +1600,8 @@ where
 					MyConn.Close();
 				}
 
-				if (buyingMatrix) {
-					new BuyingMatrixProcessor().UpdateBuyingMatrix((uint)priceCode);
-				}
+				new BuyingMatrixProcessor().UpdateBuyingMatrix(_info.Price);
+
 				if (_info.Price.IsRejects || _info.Price.IsRejectCancellations)
 					_rejectUpdater.Save(_info.Price.IsRejectCancellations);
 			}

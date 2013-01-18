@@ -780,6 +780,8 @@ and a.FirmCode = p.FirmCode;",
 				finally {
 					_connection.Close();
 				}
+
+				new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
 				_logger.Debug("конец Formalize");
 			}
 		}
