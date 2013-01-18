@@ -18,7 +18,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\260254.dbf");
 			Assert.That(document.Lines.Count, Is.EqualTo(1));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("Рн-ЙО00000260254"));
-			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("31.08.2011"));
+			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("06.09.2011"));
 
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("М13845"));
@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Period, Is.EqualTo("01.03.2013"));
 			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
 			Assert.That(line.BillOfEntryNumber, Is.Null);
-			Assert.That(line.VitallyImportant, Is.Null);
+			Assert.That(line.VitallyImportant, Is.False);
 		}
 	}
 }

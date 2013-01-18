@@ -26,7 +26,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 				.Line(l => l.Producer, "ZAVOD")
 				.Line(l => l.Period, "GODENDO")
 				.Line(l => l.Country, "STRANA")
-				.Line(l => l.BillOfEntryNumber, "GTD");
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.VitallyImportant, "ZNVLS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

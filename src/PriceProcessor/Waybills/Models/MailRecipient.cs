@@ -45,6 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[BelongsTo("AddressId")]
 		public Address Address { get; set; }
 
+		[Property]
 		public string Email { get; set; }
 
 		public RecipientStatus Status { get; set; }

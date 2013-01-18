@@ -130,6 +130,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 			return pt.Find(thread => (thread.ProcessItem == item));
 		}
 
+		public bool FindByPriceItemId(ulong priceItemId)
+		{
+			return pt.Where(t => t.ProcessItem != null).Any(t => t.ProcessItem.PriceItemId == priceItemId);
+		}
+
 		private int GetDownloadedProcessCount()
 		{
 			var DownloadedProcessList = pt.FindAll(thread => (thread.ProcessItem.Downloaded));

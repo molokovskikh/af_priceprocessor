@@ -47,7 +47,8 @@ namespace PriceProcessor.Test.Waybills
 				Code = "45678",
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer.Id,
-				Product = session.Load<Product>(product.Id)
+				Product = session.Load<Product>(product.Id),
+				CodeCr = "1"
 			};
 			session.Save(supplierCode);
 			var log = new DocumentReceiveLog() {
@@ -159,21 +160,24 @@ namespace PriceProcessor.Test.Waybills
 				Code = "45678",
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer2.Id,
-				Product = session.Load<Product>(product2.Id)
+				Product = session.Load<Product>(product2.Id),
+				CodeCr = "1"
 			};
 			session.Save(supplierCode2);
 			var supplierCode4 = new SupplierCode {
 				Code = "789",
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer2.Id,
-				Product = session.Load<Product>(product4.Id)
+				Product = session.Load<Product>(product4.Id),
+				CodeCr = "1"
 			};
 			session.Save(supplierCode4);
 			var supplierCode5 = new SupplierCode {
 				Code = "12345",
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer3.Id,
-				Product = session.Load<Product>(product5.Id)
+				Product = session.Load<Product>(product5.Id),
+				CodeCr = "1"
 			};
 			session.Save(supplierCode5);
 
