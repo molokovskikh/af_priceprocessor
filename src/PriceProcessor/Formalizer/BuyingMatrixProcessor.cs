@@ -17,20 +17,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			var query = new Query();
 			query
-				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId")
-				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr")
+				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP")
+				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr, c0.CodeOKP")
 				.From("farm.Core0 c0")
 				.Where("c0.pricecode = ?priceId")
-				.GroupBy("c0.ProductId, c0.CodeFirmCr");
+				.GroupBy("c0.ProductId, c0.CodeFirmCr, c0.CodeOKP");
 			if (price.CodeOkpFilterPrice != null) {
-				query.InsertIntoParts.Add("CodeOKP");
-				query.Select("c0.CodeOKP");
 				query.Join("join Farm.Core0 co on co.CodeOKP = c0.CodeOKP");
-				query.Where("co.CodeOKP is not null",
-					"c0.CodeOKP is not null",
-					"c0.CodeFirmCr is not null",
+				query.Where("c0.CodeFirmCr is not null",
 					"co.PriceCode = ?okpPriceId");
-				query.GroupBy("c0.CodeOKP");
 			}
 
 			With.Connection(c => {

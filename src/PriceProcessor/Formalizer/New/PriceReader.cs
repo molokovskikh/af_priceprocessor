@@ -241,7 +241,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private uint GetUintOrDefault(PriceFields field)
 		{
 			var value = ProcessInt(GetFieldRawValue(field));
-			return value is DBNull ? 0 : (uint)value;
+			return value is DBNull ? 0 : (uint)((int)value);
 		}
 
 		public decimal GetDecimalValue(PriceFields field)
