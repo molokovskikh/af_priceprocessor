@@ -251,7 +251,7 @@ WHERE
 					attachments,
 					subject,
 					body);
-
+				_logger.Warn(String.Format("Не удалось разобрать письмо с адреса {0}", from.ToAddressListString()), e);
 				DocumentReceiveLog.Log(GetFirmCodeByFromList(@from), _addressId, null, _currentDocumentType.DocType, comment, IMAPHandler.CurrentUID);
 			}
 			catch (Exception exMatch) {
@@ -343,6 +343,14 @@ WHERE a.Id = ?AddressId
 			 * сохраняются относительно него.
 			 * Если он не найден, то ничего не делаем.
 			 */
+			if(fromList == null)
+				_logger.Info("WaybillEmailSourceHandler: Адрес отправителя пуст");
+			if(fromList.Count == 0)
+				_logger.Info("WaybillEmailSourceHandler: Адреса в коллекции не обнаружены");
+			if(fromList.Mailboxes.Length == 0) {
+				_logger.Info("WaybillEmailSourceHandler: Список адресов mailboxes пустой");
+			}
+
 			foreach (var mbFrom in fromList.Mailboxes) {
 				var sources = dtSources.Select(String.Format("({0} like '*{1}*')",
 					WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress));
@@ -354,16 +362,23 @@ WHERE a.Id = ?AddressId
 
 				if (sources.Length > 1) {
 					source = SelectWaybillSourceForClient(sources, _addressId);
-					if (source == null)
+					if (source == null) {
+						_logger.Info(String.Format("WaybillEmailSourceHandler: На адрес \"{0}\"" +
+							"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", mbFrom.EmailAddress));
 						throw new Exception(String.Format(
 							"На адрес \"{0}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", mbFrom.EmailAddress));
+					}
 				}
-				else if (sources.Length == 0)
+				else if (sources.Length == 0) {
+					_logger.Info(String.Format("WaybillEmailSourceHandler: Не найдено записи в источниках, соответствующей адресу {0}", mbFrom.EmailAddress));
 					continue;
+				}
 				else
 					source = sources.Single();
 
 				var attachments = mime.GetValidAttachements();
+				if(!attachments.Any())
+					_logger.Info(String.Format("WaybillEmailSourceHandler: Отсутствуют вложения в письме от адреса {0}", mbFrom.EmailAddress));
 				//двойная очистка FileCleaner и Cleanup нужно оставить только одно
 				//думаю Cleaner подходит лучше
 				using (var cleaner = new FileCleaner()) {
