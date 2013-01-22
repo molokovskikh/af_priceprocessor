@@ -13,14 +13,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
 				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
 				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMPAY")
-				//.DocumentInvoice(i => i.RecipientAddress, "PODRCD")
 
 				.DocumentInvoice(i => i.NDSAmount10, "SUMNDS10")
 				.DocumentInvoice(i => i.NDSAmount18, "SUMNDS20")
 				.DocumentInvoice(i => i.AmountWithoutNDS10, "SUM10")
 				.DocumentInvoice(i => i.AmountWithoutNDS18, "SUM20")
 				.DocumentInvoice(i => i.AmountWithoutNDS0, "SUM0")
-				//.DocumentInvoice(i => i.RecipientId, "PODRCD")
 
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
@@ -43,7 +41,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "SERTGIVE", "SERTDATE")
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
-			/* && !Data.Columns.Contains("PODRCD")*/
+
 			if (!Data.Columns.Contains("PRICE1N") && !Data.Columns.Contains("PRICEMAN")) {
 				parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
 			}
