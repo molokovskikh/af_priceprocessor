@@ -213,7 +213,7 @@ and pf.Id = fr.PriceFormatId", c);
 				adapter.Fill(data);
 				foreach (var row in data.Rows.Cast<DataRow>()) {
 					try {
-						RetransPrice(row, Settings.Default.BasePath);
+						RetransPrice(row, Settings.Default.BasePath, true);
 					}
 					catch (FaultException e) {
 						log.Info(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
@@ -227,10 +227,10 @@ and pf.Id = fr.PriceFormatId", c);
 
 		public void RetransPrice(WcfCallParameter priceItemId)
 		{
-			RetransPrice(priceItemId, Settings.Default.BasePath);
+			RetransPrice(priceItemId, Settings.Default.BasePath, true);
 		}
 
-		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir)
+		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir, bool notDelete)
 		{
 			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
 			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
@@ -242,10 +242,10 @@ from  usersettings.PriceItems pim
 where pim.Id = ?PriceItemId",
 				new MySqlParameter("?PriceItemId", priceItemId));
 
-			RetransPrice(row, sourceDir);
+			RetransPrice(row, sourceDir, notDelete);
 		}
 
-		private void RetransPrice(DataRow row, string sourceDir)
+		private void RetransPrice(DataRow row, string sourceDir, bool notDelete)
 		{
 			var priceItemId = Convert.ToUInt64(row["PriceItemId"]);
 			var extention = row["FileExtention"];
@@ -256,19 +256,25 @@ where pim.Id = ?PriceItemId",
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
+			if(InboundPriceItemIds().Contains(priceItemId.ToString()))
+				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
+
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 
 			if (!File.Exists(sourceFile))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 
-			File.Move(sourceFile, destinationFile);
+			if(notDelete)
+				File.Copy(sourceFile, destinationFile);
+			else
+				File.Move(sourceFile, destinationFile);
 		}
 
 
 		public void RetransErrorPrice(WcfCallParameter priceItemId)
 		{
-			RetransPrice(priceItemId, Settings.Default.ErrorFilesPath);
+			RetransPrice(priceItemId, Settings.Default.ErrorFilesPath, false);
 		}
 
 		public string[] ErrorFiles()
@@ -288,7 +294,12 @@ where pim.Id = ?PriceItemId",
 			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null));
 #endif
 
-			return PriceItemList.list.Select(i => new WcfPriceProcessItem(i.PriceCode, i.Downloaded, i.FilePath, i.PriceItemId, i.FileTime, i.CreateTime.ToLocalTime(), i.GetHashCode())).ToArray();
+			var items = PriceItemList.list.Select(i => new WcfPriceProcessItem(i.PriceCode, i.Downloaded, i.FilePath, i.PriceItemId, i.FileTime, i.CreateTime.ToLocalTime(), i.GetHashCode())).ToArray();
+			var handler = (FormalizeHandler)Monitor.GetInstance().GetHandler(typeof(FormalizeHandler));
+			foreach (var wcfPriceProcessItem in items) {
+				wcfPriceProcessItem.FormalizedNow = handler.FindByPriceItemId(wcfPriceProcessItem.PriceItemId);
+			}
+			return items;
 		}
 
 		public bool TopInInboundList(int hashCode)

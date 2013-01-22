@@ -1,57 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
 using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Threading;
 using System.IO;
 using Inforoom.PriceProcessor;
 using PriceProcessor.Test.TestHelpers;
-using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
-namespace PriceProcessor.Test
+namespace PriceProcessor.Test.Formalization
 {
-	[TestFixture]
-	[Ignore]
+	[TestFixture, Ignore]
 	public class BasePriceParserFixture
 	{
-		private const int catalogId = 13468;
-		private const int producerId = 1492;
 		private const int priceItemId = 688;
-		private const int priceCode = 5;
-
-		private void PrepareTables(int priceCode, int catalogId, int producerId)
-		{
-			TestHelper.Execute(@"
-delete from farm.Excludes
-where PriceCode = {0} and CatalogId = {1}",
-				priceCode, catalogId);
-			TestHelper.Execute(@"delete from Catalogs.Assortment where CatalogId = {0} and ProducerId = {1}", catalogId, producerId);
-
-			TestHelper.Execute(@"
-delete from farm.Synonym where pricecode = {0} and synonym like '{1}';
-insert into farm.Synonym(PriceCode, Synonym, ProductId) Values({0}, '{1}', {2});
-insert into farm.UsedSynonymLogs(SynonymCode) Values(last_insert_id());",
-				priceCode,
-				"5 дней ванна д/ног смягчающая №10 пак. 25г  ",
-				catalogId);
-			TestHelper.Execute(@"
-delete from farm.SynonymFirmCr where priceCode = {0} and synonym like '{1}';
-insert into farm.SynonymFirmCr(PriceCode, Synonym, CodeFirmCr) Values({0}, '{1}', {2});
-insert into farm.UsedSynonymFirmCrLogs(SynonymFirmCrCode) Values(last_insert_id());",
-				priceCode,
-				"Санкт-Петербургская ф.ф.",
-				producerId);
-			TestHelper.Execute("update catalogs.assortment set Checked = 0 where CatalogId = {0}", catalogId);
-		}
 
 		[Test, Ignore("Не работает на пустой базе")]
 		public void Double_synonim_test()

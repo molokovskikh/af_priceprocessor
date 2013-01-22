@@ -162,7 +162,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			bool isFake = false)
 		{
 			using (new SessionScope()) {
-				fileName = CleanupFilename(fileName);
+				if(!String.IsNullOrEmpty(fileName))
+					fileName = CleanupFilename(fileName);
 				var localFile = fileName;
 				fileName = Path.GetFileName(fileName);
 

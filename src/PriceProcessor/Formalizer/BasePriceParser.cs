@@ -355,7 +355,6 @@ namespace Inforoom.Formalizer
 		protected int priceType;
 		//Тип ценовых колонок прайса-родителя: 0 - мультиколоночный, 1 - многофайловый
 		protected CostTypes costType;
-		protected bool buyingMatrix;
 
 		//Надо ли конвертировать полученную строку в ANSI
 		protected bool convertedToANSI;
@@ -409,7 +408,6 @@ namespace Inforoom.Formalizer
 
 			parentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
 			costType = (CostTypes)Convert.ToInt32(row[FormRules.colCostType]);
-			buyingMatrix = Convert.ToBoolean(row["BuyingMatrix"]);
 
 			nameMask = row[FormRules.colNameMask] is DBNull ? String.Empty : (string)row[FormRules.colNameMask];
 
@@ -418,10 +416,7 @@ namespace Inforoom.Formalizer
 			forbWords = forbWords.Trim();
 			if (String.Empty != forbWords) {
 				forbWordsList = forbWords.Split(new[] { ' ' });
-				int len = 0;
-				foreach (string s in forbWordsList)
-					if (String.Empty != s)
-						len++;
+				int len = forbWordsList.Count(s => String.Empty != s);
 				if (len > 0) {
 					var newForbWordList = new string[len];
 					var i = 0;
@@ -550,7 +545,7 @@ namespace Inforoom.Formalizer
 				drCore["Nds"] = Convert.ToUInt32(nds);
 
 			drCore["EAN13"] = GetFieldValue(PriceFields.EAN13);
-			drCore["CodeOKP"] = GetFieldValue(PriceFields.CodeOKP);
+			drCore["CodeOKP"] = GetFieldValueObject(PriceFields.CodeOKP);
 			drCore["Series"] = GetFieldValue(PriceFields.Series);
 
 			object dt = GetFieldValueObject(PriceFields.Period);
@@ -1605,9 +1600,8 @@ where
 					MyConn.Close();
 				}
 
-				if (buyingMatrix) {
-					new BuyingMatrixProcessor().UpdateBuyingMatrix((uint)priceCode);
-				}
+				new BuyingMatrixProcessor().UpdateBuyingMatrix(_info.Price);
+
 				if (_info.Price.IsRejects || _info.Price.IsRejectCancellations)
 					_rejectUpdater.Save(_info.Price.IsRejectCancellations);
 			}
@@ -1843,7 +1837,6 @@ where
 				case (int)PriceFields.Unit:
 				case (int)PriceFields.Volume:
 				case (int)PriceFields.EAN13:
-				case (int)PriceFields.CodeOKP:
 				case (int)PriceFields.Series:
 				case (int)PriceFields.OriginalName:
 					return GetFieldValue(PF);
@@ -1855,6 +1848,8 @@ where
 				case (int)PriceFields.ProducerCost:
 					return ProcessCost(GetFieldRawValue(PF));
 
+				case (int)PriceFields.CodeOKP:
+					return ProcessInt(GetFieldRawValue(PF), true);
 				case (int)PriceFields.Quantity:
 				case (int)PriceFields.MinOrderCount:
 				case (int)PriceFields.Nds:
@@ -1904,15 +1899,19 @@ where
 		/// <summary>
 		/// Обработать значение IntValue и получить результать как целое число
 		/// </summary>
-		/// <param name="IntValue"></param>
+		/// <param name="intValue"></param>
 		/// <returns></returns>
-		public virtual object ProcessInt(string IntValue)
+		public virtual object ProcessInt(string intValue, bool zeroOrLessAsNull = false)
 		{
-			if (!String.IsNullOrEmpty(IntValue)) {
+			if (!String.IsNullOrEmpty(intValue)) {
 				try {
-					var cost = ProcessCost(IntValue);
-					if (cost is decimal)
-						return Convert.ToInt32(decimal.Truncate((decimal)cost));
+					var cost = ProcessCost(intValue);
+					if (cost is decimal) {
+						var value = Convert.ToInt32(decimal.Truncate((decimal)cost));
+						if (zeroOrLessAsNull && value <= 0)
+							return DBNull.Value;
+						return value;
+					}
 					return cost;
 				}
 				catch {

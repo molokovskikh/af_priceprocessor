@@ -210,11 +210,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				MinBoundCost = GetDecimalValue(PriceFields.MinBoundCost),
 				MaxBoundCost = GetDecimalValue(PriceFields.MaxBoundCost),
 				OrderCost = GetDecimalValue(PriceFields.OrderCost),
-				MinOrderCount = GetFieldValueObject(PriceFields.MinOrderCount) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.MinOrderCount),
-				RequestRatio = GetFieldValueObject(PriceFields.RequestRatio) is DBNull ? 0 : Convert.ToUInt32(GetFieldValueObject(PriceFields.RequestRatio)),
+				MinOrderCount = GetUintOrDefault(PriceFields.MinOrderCount),
+				RequestRatio = GetUintOrDefault(PriceFields.RequestRatio),
 				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
-				Nds = GetFieldValueObject(PriceFields.Nds) is DBNull ? 0 : (uint)GetFieldValueObject(PriceFields.Nds),
-				CodeOKP = GetFieldValue(PriceFields.CodeOKP),
+				Nds = GetUintOrDefault(PriceFields.Nds),
+				CodeOKP = GetUintOrDefault(PriceFields.CodeOKP),
 				EAN13 = GetFieldValue(PriceFields.EAN13),
 				Series = GetFieldValue(PriceFields.Series)
 			};
@@ -236,6 +236,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			core.Period = periodValue;
 			core.Costs = costs;
 			position.Core = core;
+		}
+
+		private uint GetUintOrDefault(PriceFields field)
+		{
+			var value = ProcessInt(GetFieldRawValue(field));
+			return value is DBNull ? 0 : (uint)((int)value);
 		}
 
 		public decimal GetDecimalValue(PriceFields field)
@@ -357,13 +363,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			switch ((int)PF) {
 				case (int)PriceFields.Await:
-					return GetBoolValue(PriceFields.Await, awaitPos);
+					return GetBoolValue(PF, awaitPos);
 
 				case (int)PriceFields.Junk:
-					return GetBoolValue(PriceFields.VitallyImportant, junkPos);
+					return GetBoolValue(PF, junkPos);
 
 				case (int)PriceFields.VitallyImportant:
-					return GetBoolValue(PriceFields.VitallyImportant, vitallyImportantMask);
+					return GetBoolValue(PF, vitallyImportantMask);
 
 				case (int)PriceFields.RequestRatio:
 					return ProcessInt(GetFieldRawValue(PF));

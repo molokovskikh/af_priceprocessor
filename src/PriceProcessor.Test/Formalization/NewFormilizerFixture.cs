@@ -14,36 +14,20 @@ using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using NHibernate.Linq;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Catalog;
-using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Formalization
 {
 	[TestFixture]
-	public class NewFormilizerFixture : IntegrationFixture
+	public class NewFormilizerFixture : BaseFormalizationFixture
 	{
-		private BasePriceParser2 formalizer;
-		private string file;
-
-		private TestPrice price;
-		private TestPriceItem priceItem;
-
 		[SetUp]
 		public void Setup()
 		{
-			file = "test.txt";
 			using (var scope = new TransactionScope(OnDispose.Rollback)) {
-				price = TestSupplier.CreateTestSupplierWithPrice(p => {
-					var rules = p.Costs.Single().PriceItem.Format;
-					rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
-					rules.Delimiter = ";";
-					rules.FName1 = "F1";
-					rules.FFirmCr = "F2";
-					rules.FQuantity = "F3";
-					p.Costs.Single().FormRule.FieldName = "F4";
-				});
-				priceItem = price.Costs.First().PriceItem;
+				CreatePrice();
 				scope.VoteCommit();
 			}
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
@@ -592,27 +576,6 @@ namespace PriceProcessor.Test.Formalization
 				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
 				Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(AutomaticProducerSynonyms));
 			});
-		}
-
-		private void Price(string contents)
-		{
-			File.WriteAllText(file, contents, Encoding.GetEncoding(1251));
-		}
-
-		private void Formalize(string content)
-		{
-			Price(content);
-			Formalize();
-		}
-
-		private void Formalize()
-		{
-			var table = PricesValidator.LoadFormRules(priceItem.Id);
-			var row = table.Rows[0];
-			var info = new PriceFormalizationInfo(row, null);
-			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
-			formalizer = new BasePriceParser2(reader, info);
-			formalizer.Formalize();
 		}
 	}
 }
