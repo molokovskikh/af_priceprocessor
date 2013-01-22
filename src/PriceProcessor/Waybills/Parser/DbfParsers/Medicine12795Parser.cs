@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class Medicine12795Parser : PulsFKParser
+	/*public class Medicine12795Parser : PulsFKParser
 	{
 		public override DbfParser GetParser()
 		{
@@ -32,5 +32,5 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("NUMZ")
 				&& data.Columns.Contains("PODRCD");
 		}
-	}
+	}*/
 }

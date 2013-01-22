@@ -51,7 +51,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("SERTIF") &&
 				data.Columns.Contains("QNTPACK") &&
 				data.Columns.Contains("REGPRC") &&
-				!data.Columns.Contains("CNTR_COD");
+				!data.Columns.Contains("CNTR_COD") &&
+				!data.Columns.Contains("SUM0");
 		}
 	}
 }
