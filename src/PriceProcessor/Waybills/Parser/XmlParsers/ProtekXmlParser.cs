@@ -19,7 +19,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Product = element.XPathSelectElement("Наименование").Value;
 				line.Producer = element.XPathSelectElement("Изготовитель/ОфициальноеНаименование").Value;
 				line.Code = element.XPathSelectElement("Ид").Value;
-				line.Country = element.XPathSelectElement("Страна").Value;
+				var country_element = element.XPathSelectElement("Страна");
+				if (country_element != null)
+					line.Country = country_element.Value;
 				line.SupplierCost = element.Get("ЦенаЗаЕдиницу");
 				line.ProducerCostWithoutNDS = element.Get("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_PRDPRCWONDS']/Значение");
 				var serialNumber = element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_SERIA']/Значение").Value;
