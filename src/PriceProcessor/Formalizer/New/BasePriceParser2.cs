@@ -556,9 +556,6 @@ order by c.Id",
 				if (_logger.IsDebugEnabled)
 					_logger.Debug(command);
 
-				if (command.Length > MaxPacketSize)
-					throw new Exception(String.Format("Длинна комманда {0} превыщает максимальный размер пакета {1}", command.Length, MaxPacketSize));
-
 				if (index > MaxCommandCount || populatedBytes + command.Length > MaxPacketSize) {
 					if (_logger.IsDebugEnabled)
 						_logger.Debug("Запуск");
