@@ -70,30 +70,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			if (!position.IsAutomaticProducerSynonym && !position.NotCreateUnrecExp)
 				position.AddStatus(UnrecExpStatus.FirmForm);
 
-/*
-			if (position.CodeFirmCr != null && !position.Pharmacie.Value)
-				CheckAndCreateAssortment(position);
-*/
-
 			if (position.CodeFirmCr == null && !position.NotCreateUnrecExp)
 				CheckExclude(position);
 		}
-
-		private void CheckAndCreateAssortment(FormalizationPosition position)
-		{
-			if (Assortment.Rows
-				.Cast<DataRow>()
-				.Any(r => Convert.ToUInt32(r["CatalogId"]) == Convert.ToUInt32(position.CatalogId.Value)
-					&& Convert.ToUInt32(r["ProducerId"]) == Convert.ToUInt32(position.CodeFirmCr.Value)))
-				return;
-
-			var assortment = Assortment.NewRow();
-			assortment["CatalogId"] = position.CatalogId;
-			assortment["ProducerId"] = position.CodeFirmCr;
-			assortment["Checked"] = false;
-			Assortment.Rows.Add(assortment);
-		}
-
 
 		public void Update(MySqlConnection connection)
 		{
@@ -161,30 +140,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				dr = _excludes.Select(String.Format("CatalogId = {0} and ProducerSynonym = '{1}'",
 					position.CatalogId,
 					position.FirmCr.Replace("'", "''")));
-/*
-			//Если мы ничего не нашли, то добавляем в исключение
-			if (dr.Length == 0 && _priceInfo.PricePurpose == PricePurpose.Normal)
-				CreateExclude(position);
- */
+
 			//если подходящего исключения нет, то значит позиция должна быть
-			//обработана оператором или это не фармацевтика для которой нашелся 
+			//обработана оператором или это не фармацевтика для которой нашелся
 			//только синоним без производителя
 			if (dr.Length == 0)
 				position.Status &= ~UnrecExpStatus.FirmForm;
-		}
-
-		private void CreateExclude(FormalizationPosition position)
-		{
-			try {
-				var drExclude = _excludes.NewRow();
-				drExclude["PriceCode"] = _priceInfo.ParentSynonym;
-				drExclude["CatalogId"] = position.CatalogId.Value;
-				drExclude["ProducerSynonym"] = position.FirmCr;
-				drExclude["OriginalSynonymId"] = position.SynonymCode;
-				_excludes.Rows.Add(drExclude);
-			}
-			catch (ConstraintException) {
-			}
 		}
 
 		private DataRow CreateProducerSynonym(FormalizationPosition position)
