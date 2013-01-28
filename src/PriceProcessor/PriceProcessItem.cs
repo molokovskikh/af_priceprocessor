@@ -63,7 +63,7 @@ namespace Inforoom.PriceProcessor
 
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
 				Literals.ConnectionString(),
-				@"select
+				@"select distinct
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,
   pc.PriceItemId,
@@ -72,7 +72,7 @@ namespace Inforoom.PriceProcessor
 from (usersettings.pricescosts pc, usersettings.pricesdata pd)
 	join usersettings.priceitems pi on pc.PriceItemId = pi.Id
 where pc.PriceItemId = ?PriceItemId
-	  and ((pd.CostType = 1) or (pc.BaseCost = 1))
+	  and ((pd.CostType = 1) or (exists(select * from userSettings.pricesregionaldata prd where prd.PriceCode = pd.PriceCode and prd.BaseCost=pc.CostCode)))
 	  and pd.PriceCode = pc.PriceCode
 group by pi.Id",
 				new MySqlParameter("?PriceItemId", priceItemId));

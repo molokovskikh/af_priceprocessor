@@ -501,7 +501,6 @@ namespace PriceProcessor.Test.Formalization
 			price.AddProductSynonym("Актовегин таб 200мг №10", product2);
 			session.Save(price);
 			session.Flush();
-			session.Transaction.Commit();
 
 			Formalize(@"Финалгон мазь 20г;Глобофарм фармацойтише Продуктьонс унд Х;40;192.67;
 Актовегин таб 200мг №10;Глобофарм фармацойтише Продуктьонс унд Х;40;521.79;

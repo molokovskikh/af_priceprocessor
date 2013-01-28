@@ -104,7 +104,7 @@ namespace Inforoom.Formalizer
 		public static DataTable LoadFormRules(uint priceItemId)
 		{
 			var query = String.Format(@"
-select
+select distinct
   pi.Id as PriceItemId,
   pi.RowCount,
   pd.PriceCode,
@@ -139,7 +139,7 @@ where
 	pi.Id = {0}
 and pc.PriceItemId = pi.Id
 and pd.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and ((pd.CostType = 1) or (exists(select * from userSettings.pricesregionaldata prd where prd.PriceCode = pd.PriceCode and prd.BaseCost=pc.CostCode)))
 and s.Id = pd.FirmCode
 and FR.Id = pi.FormRuleId
 and PFR.Id= if(FR.ParentFormRules, FR.ParentFormRules, FR.Id)

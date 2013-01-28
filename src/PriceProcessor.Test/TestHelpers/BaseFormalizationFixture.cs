@@ -35,7 +35,15 @@ namespace PriceProcessor.Test.TestHelpers
 				rules.FQuantity = "F3";
 				p.Costs.Single().FormRule.FieldName = "F4";
 			});
+			var regionalData = new TestPriceRegionalData {
+				BaseCost = price.Costs.Single(),
+				Region = session.Load<TestRegion>((ulong)1),
+				Price = price
+			};
+			session.Save(regionalData);
+			price.RegionalData.Add(regionalData);
 			priceItem = price.Costs.First().PriceItem;
+			Flush();
 		}
 
 		protected void FormalizeDefaultData()

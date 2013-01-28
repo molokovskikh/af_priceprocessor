@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Loader
 
 			var cores = session.Query<TestCore>().Where(c => c.Price.Id == _price.Id).ToList();
 			Assert.That(cores.Count, Is.EqualTo(4));
-			Assert.That(cores.Any(c => c.CodeOKP.Contains("931201")));
+			Assert.That(cores.Any(c => c.CodeOKP == 931201));
 		}
 	}
 }

@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Formalization
 				"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
 				"Валента Фармацевтика/Королев Ф");
 			var core = new TestCore(okpPrice.ProductSynonyms[0], okpPrice.ProducerSynonyms[0]) {
-				CodeOKP = "1"
+				CodeOKP = 1
 			};
 			session.Save(okpPrice);
 			session.Save(core);

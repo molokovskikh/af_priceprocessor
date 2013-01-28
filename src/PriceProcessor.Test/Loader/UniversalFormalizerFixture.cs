@@ -178,7 +178,7 @@ namespace PriceProcessor.Test.Loader
 				Assert.That(price.Core.Count, Is.GreaterThan(0));
 				firstCoreCount = price.Core.Count;
 				var core = price.Core[0];
-				core.CodeOKP = null;
+				core.CodeOKP = 0;
 				core.Save();
 			}
 

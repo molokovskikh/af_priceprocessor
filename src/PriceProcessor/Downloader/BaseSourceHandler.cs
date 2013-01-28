@@ -136,7 +136,7 @@ namespace Inforoom.Downloader
 		public static string GetSourcesCommand(string type)
 		{
 			return String.Format(@"
-SELECT
+SELECT distinct
   pi.Id as PriceItemId,
   s.Id as FirmCode,
   s.Name as ShortName,
@@ -175,7 +175,7 @@ and (length(st.PriceMask) > 0)
 and pi.SourceId = st.ID
 and pc.PriceItemId = pi.ID
 and PD.PriceCode = pc.PriceCode
-and ((pd.CostType = 1) or (pc.BaseCost = 1))
+and ((pd.CostType = 1) or (exists(select * from userSettings.pricesregionaldata prd where prd.PriceCode = pd.PriceCode and prd.BaseCost=pc.CostCode)))
 and s.Id = PD.FirmCode
 and r.RegionCode = s.HomeRegion
 and fr.Id = pi.FormRuleId

@@ -35,7 +35,7 @@ namespace Inforoom.PriceProcessor
 			var downlogId = Convert.ToUInt64(paramDownlogId.Value);
 			var drFocused = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
 				@"
-SELECT
+SELECT distinct
   logs.RowID as DRowID,
   logs.LogTime as DLogTime,
   logs.Addition as DAddition,
@@ -69,7 +69,7 @@ WHERE
 	pim.Id = logs.PriceItemId
 and pc.PriceItemId = pim.Id
 and pc.PriceCode = pd.PriceCode
-and ((pd.CostType = 1) OR (pc.BaseCost = 1))
+and ((pd.CostType = 1) OR (exists(select * from userSettings.pricesregionaldata prd where prd.PriceCode = pd.PriceCode and prd.BaseCost=pc.CostCode)))
 and sp.Id = pd.firmcode
 and r.regioncode = sp.HomeRegion
 and s.Id = pim.SourceId
@@ -184,7 +184,7 @@ and logs.Rowid = ?DownLogId",
 					priceId = price.ParentSynonym.Value;
 
 				var adapter = new MySqlDataAdapter(@"
-select
+select distinct
   pc.PriceItemId,
   pf.FileExtention
 from
@@ -200,7 +200,7 @@ and pd.AgencyEnabled = 1
 and s.Id = pd.FirmCode
 and s.Disabled = 0
 and pc.PriceCode = pd.PriceCode
-and (pd.CostType = 1 or pc.BaseCost = 1)
+and (pd.CostType = 1 or exists(select * from userSettings.pricesregionaldata prd where prd.PriceCode = pd.PriceCode and prd.BaseCost=pc.CostCode))
 and pim.Id = pc.PriceItemId
 and exists(
   select * from Farm.UnrecExp ue
