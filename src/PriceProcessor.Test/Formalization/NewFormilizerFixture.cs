@@ -112,17 +112,19 @@ namespace PriceProcessor.Test.Formalization
 			});
 
 			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
-			product.CatalogProduct.Pharmacie = true;
-			product.CatalogProduct.Monobrend = true;
-			session.Save(product);
-			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
-			session.Save(producer);
-			price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
-			price.CreateAssortmentBoundSynonyms(
-				"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
-				"Санкт-Петербургская ф.ф.");
-			session.Save(price);
-			TestAssortment.CheckAndCreate(product, producer);
+			using (new TransactionScope()) {
+				product.CatalogProduct.Pharmacie = true;
+				product.CatalogProduct.Monobrend = true;
+				session.Save(product);
+				var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+				session.Save(producer);
+				price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ", product);
+				price.CreateAssortmentBoundSynonyms(
+					"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+					"Санкт-Петербургская ф.ф.");
+				session.Save(price);
+				TestAssortment.CheckAndCreate(product, producer);
+			}
 			Close();
 
 			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -487,20 +489,22 @@ namespace PriceProcessor.Test.Formalization
 			var producer1 = session.Query<TestProducer>().First();
 			var producer2 = session.Query<TestProducer>().Skip(1).First();
 			var product1 = new TestProduct("Финалгон мазь 20г");
-			product1.CatalogProduct.Pharmacie = true;
-			product1.CatalogProduct.Monobrend = true;
-			session.Save(product1);
-			session.Save(new TestAssortment(product1, producer1));
+			using (new TransactionScope()) {
+				product1.CatalogProduct.Pharmacie = true;
+				product1.CatalogProduct.Monobrend = true;
+				session.Save(product1);
+				session.Save(new TestAssortment(product1, producer1));
 
-			var product2 = new TestProduct("Актовегин таб 200мг №10");
-			product2.CatalogProduct.Pharmacie = true;
-			session.Save(product2);
-			session.Save(new TestAssortment(product2, producer2));
+				var product2 = new TestProduct("Актовегин таб 200мг №10");
+				product2.CatalogProduct.Pharmacie = true;
+				session.Save(product2);
+				session.Save(new TestAssortment(product2, producer2));
 
-			price.AddProductSynonym("Финалгон мазь 20г", product1);
-			price.AddProductSynonym("Актовегин таб 200мг №10", product2);
-			session.Save(price);
-			session.Flush();
+				price.AddProductSynonym("Финалгон мазь 20г", product1);
+				price.AddProductSynonym("Актовегин таб 200мг №10", product2);
+				session.Save(price);
+				session.Flush();
+			}
 
 			Formalize(@"Финалгон мазь 20г;Глобофарм фармацойтише Продуктьонс унд Х;40;192.67;
 Актовегин таб 200мг №10;Глобофарм фармацойтише Продуктьонс унд Х;40;521.79;
