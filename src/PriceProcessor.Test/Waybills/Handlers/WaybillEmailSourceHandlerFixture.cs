@@ -76,7 +76,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			var from = String.Format("{0}@test.test", client.Id);
 			PrepareSupplier(supplier, from);
-			PrepareClient(client);
 
 			byte[] bytes;
 			if (IsEmlFile)
@@ -439,7 +438,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			supplier.WaybillSource.EMailFrom = email;
 			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
 			supplier.Save();
-			client.Settings.ParseWaybills = true;
 			client.Save();
 
 			ImapHelper.ClearImapFolder();

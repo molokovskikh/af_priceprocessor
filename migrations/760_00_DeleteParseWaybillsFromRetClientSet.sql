@@ -1,0 +1,1 @@
+﻿ALTER TABLE `usersettings`.`retclientsset` DROP COLUMN `ParseWaybills`;

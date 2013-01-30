@@ -33,17 +33,6 @@ namespace PriceProcessor.Test.TestHelpers
 			}
 		}
 
-		protected static void PrepareClient(TestClient client)
-		{
-			With.Connection(c => {
-				var command = new MySqlCommand(
-					"UPDATE usersettings.RetClientsSet SET ParseWaybills = 1 WHERE ClientCode = ?ClientCode",
-					c);
-				command.Parameters.AddWithValue("?ClientCode", client.Id);
-				command.ExecuteNonQuery();
-			});
-		}
-
 		protected void CheckClientDirectory(int waitingFilesCount, DocType documentsType, TestAddress address = null)
 		{
 			var savedFiles = GetFileForAddress(documentsType, address);

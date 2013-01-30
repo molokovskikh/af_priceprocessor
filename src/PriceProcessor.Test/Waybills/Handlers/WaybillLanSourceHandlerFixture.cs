@@ -138,7 +138,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		public void PrepareLanSource(string readerClassName = "ProtekOmsk_3777_Reader")
 		{
-			client.Settings.ParseWaybills = true;
 			client.Save();
 			supplier.WaybillSource.SourceType = WaybillSourceType.FtpInforoom;
 			supplier.WaybillSource.ReaderClassName = readerClassName;

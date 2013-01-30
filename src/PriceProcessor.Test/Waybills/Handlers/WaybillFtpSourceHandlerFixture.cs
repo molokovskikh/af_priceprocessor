@@ -61,7 +61,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			supplierDeliveryId = 1234u;
 
 			client = TestClient.Create();
-			client.Settings.ParseWaybills = true;
 			client.Save();
 
 			address = client.Addresses[0];

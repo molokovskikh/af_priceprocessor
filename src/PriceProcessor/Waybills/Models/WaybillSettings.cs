@@ -18,9 +18,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public uint? AssortimentPriceId { get; set; }
 
 		[Property]
-		public bool ParseWaybills { get; set; }
-
-		[Property]
 		public bool OnlyParseWaybills { get; set; }
 
 		[Property]
@@ -31,7 +28,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public bool ShouldParseWaybill()
 		{
-			return ParseWaybills || OnlyParseWaybills;
+			return true;
 		}
 	}
 }
