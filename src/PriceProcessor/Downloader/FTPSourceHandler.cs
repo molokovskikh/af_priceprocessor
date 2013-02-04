@@ -49,7 +49,10 @@ namespace Inforoom.Downloader.Ftp
 	{
 		public IList<FailedFile> FailedFiles = new List<FailedFile>();
 		private static ILog _log = LogManager.GetLogger(typeof(FtpDownloader));
-
+		/// <summary>
+		/// Для проверки пассивного режима в тестах
+		/// </summary>
+		public bool TestFtpPassiveMode { get; set; }
 		/// <summary>
 		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
 		/// Если при получении какого-то файла произошла ошибка, то пытается получить этот файл еще 2 раза, если не удалось,
@@ -63,9 +66,10 @@ namespace Inforoom.Downloader.Ftp
 		/// <param name="fileMask">Маска имени файла (на соответствие маске проверяется каждый файл)</param>
 		/// <param name="lastDownloadTime">Время, когда была последняя загрузка</param>
 		/// <param name="downloadDirectory">Директория, куда будут сохранены загруженные файлы</param>
+		/// <param name="ftpPassiveMode">Пассивный режим для ftp-клиента</para>
 		/// <returns>Список файлов, сохраненных локально</returns>
 		public IList<DownloadedFile> GetFilesFromSource(string ftpHost, int ftpPort, string ftpDirectory, string username,
-			string password, string fileMask, DateTime lastDownloadTime, string downloadDirectory)
+			string password, string fileMask, DateTime lastDownloadTime, string downloadDirectory, bool ftpPassiveMode = true)
 		{
 			var uri = new UriBuilder(ftpHost);
 			ftpHost = uri.Host;
@@ -74,7 +78,7 @@ namespace Inforoom.Downloader.Ftp
 
 			var receivedFiles = new List<DownloadedFile>();
 			using (var ftpClient = new FTP_Client()) {
-				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory);
+				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory, ftpPassiveMode);
 				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows) {
 					if (Convert.ToBoolean(entry["IsDirectory"]))
 						continue;
@@ -123,11 +127,12 @@ namespace Inforoom.Downloader.Ftp
 			return receivedFiles;
 		}
 
-		private DataSet GetFtpFilesAndDirectories(FTP_Client ftpClient, string ftpHost, int ftpPort, string username, string password, string ftpDirectory)
+		private DataSet GetFtpFilesAndDirectories(FTP_Client ftpClient, string ftpHost, int ftpPort, string username, string password, string ftpDirectory, bool ftpPassiveMode = true)
 		{
 			DataSet dataSetEntries = null;
+			ftpClient.PassiveMode = ftpPassiveMode;
+			TestFtpPassiveMode = ftpClient.PassiveMode;
 #if !DEBUG
-			ftpClient.PassiveMode = true;
 			ftpClient.Connect(ftpHost, ftpPort);
 			ftpClient.Authenticate(username, password);
 			ftpClient.SetCurrentDir(ftpDirectory);

@@ -1,0 +1,1 @@
+﻿ALTER TABLE `documents`.`waybill_sources` ADD COLUMN `FtpActiveMode` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `DownloadInterval`;

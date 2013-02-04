@@ -186,6 +186,7 @@
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\Handlers\HttpPriceSourceHandlerFixture.cs" />
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillFtpSourceHandlerIntegrationFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllianceHealthCareParserFixture.cs" />

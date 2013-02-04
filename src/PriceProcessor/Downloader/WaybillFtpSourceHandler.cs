@@ -28,6 +28,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		public string Password { get; set; }
 		public uint DownloadInterval { get; set; }
 		public DateTime LastDownloadTime { get; set; }
+		public bool FtpActiveMode { get; set; }
 
 		public WaybillSource(DataRow row)
 		{
@@ -40,12 +41,18 @@ namespace Inforoom.PriceProcessor.Downloader
 			Password = row["Password"].ToString();
 			DownloadInterval = Convert.IsDBNull(row["DownloadInterval"]) ? 0 : Convert.ToUInt32(row["DownloadInterval"]);
 			LastDownloadTime = Convert.IsDBNull(row["LastDownloadTime"]) ? DateTime.MinValue : Convert.ToDateTime(row["LastDownloadTime"]);
+			FtpActiveMode = Convert.IsDBNull(row["FtpActiveMode"]) ? true : Convert.ToBoolean(row["FtpActiveMode"]);
 		}
 	}
 
 	public class WaybillFtpSourceHandler : FTPSourceHandler
 	{
 		private readonly InboundDocumentType[] _documentTypes;
+
+		/// <summary>
+		/// Для проверки пассивного режима в тестах
+		/// </summary>
+		public bool TestFtpPassiveMode { get; set; }
 
 		public WaybillFtpSourceHandler()
 		{
@@ -64,7 +71,8 @@ SELECT
 	st.UserName,
 	st.Password,
 	st.DownloadInterval,
-	max(dl.LogTime) as LastDownloadTime
+	max(dl.LogTime) as LastDownloadTime,
+	st.FtpActiveMode
 FROM
 	Documents.Waybill_Sources AS st
 	JOIN Customers.Suppliers as s ON s.Id = st.FirmCode
@@ -130,12 +138,15 @@ GROUP BY SupplierId
 				directory = uri.PathAndQuery;
 
 				downloadedWaybills = downloader.GetFilesFromSource(host, port, directory, waybillSource.UserName,
-					waybillSource.Password, "*.*", waybillSource.LastDownloadTime, DownHandlerPath);
+					waybillSource.Password, "*.*", waybillSource.LastDownloadTime, DownHandlerPath, !waybillSource.FtpActiveMode);
 
 				if (FailedSources.Contains(waybillSource.SupplierId)) {
 					FailedSources.Remove(waybillSource.SupplierId);
 					_log.ErrorFormat("После возникновения ошибок загрузка накладных прошла успешно. Код поставщика: {0}", waybillSource.SupplierId);
 				}
+#if DEBUG
+				TestFtpPassiveMode = downloader.TestFtpPassiveMode;
+#endif
 			}
 			catch (Exception e) {
 				var errorMessage = String.Format(@"Ошибка при попытке забрать документы с FTP поставщика
