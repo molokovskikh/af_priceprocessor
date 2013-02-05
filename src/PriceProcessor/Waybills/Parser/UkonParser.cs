@@ -124,7 +124,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				docLine.SerialNumber = parts[13];
 				docLine.RegistryCost = String.IsNullOrEmpty(parts[18]) ? null : ToDecimal(parts[18]);
 				docLine.SupplierCost = ToDecimal(parts[5]);
-				docLine.SetSupplierCostWithoutNds(ToDecimal(parts[7]).Value);
+				var supplierCos = ToDecimal(parts[7]);
+				if (supplierCos != null)
+					docLine.SetSupplierCostWithoutNds(supplierCos.Value);
 				docLine.SupplierPriceMarkup = String.IsNullOrEmpty(parts[9]) ? null : ToDecimal(parts[9]);
 				docLine.Period = parts[15];
 				docLine.ProducerCostWithoutNDS = ToDecimal(parts[6]);

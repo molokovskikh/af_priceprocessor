@@ -154,6 +154,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_if_supplier_cost_null()
+		{
+			var parser = new UkonParser();
+			var doc = new Document();
+
+			var resultDoc = parser.Parse(@"..\..\Data\Waybills\593053.sst", doc);
+		}
+
+		[Test]
 		public void Parse_without_header()
 		{
 			var parser = new UkonParser();
