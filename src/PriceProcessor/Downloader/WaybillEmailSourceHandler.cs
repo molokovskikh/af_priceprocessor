@@ -370,7 +370,16 @@ WHERE a.Id = ?AddressId
 					}
 				}
 				else if (sources.Length == 0) {
-					_logger.Info(String.Format("WaybillEmailSourceHandler: Не найдено записи в источниках, соответствующей адресу {0}", mbFrom.EmailAddress));
+					var addition = dtSources.Rows == null ? "В строках источников находится null" : String.Format("Количество записей в источниках - {0}", dtSources.Rows.Count);
+					_logger.Info(String.Format("WaybillEmailSourceHandler: Не найдено записи в источниках, соответствующей адресу {0}. {1}", mbFrom.EmailAddress, addition));
+					if(dtSources.Rows != null && dtSources.Rows.Count > 0) {
+						var count1 = dtSources.Select(String.Format("({0} like '*{1}*')",
+							WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress)).Length;
+						var count2 = dtSources.Select(String.Format("({0} like '%{1}%')",
+							WaybillSourcesTable.colEMailFrom, mbFrom.EmailAddress)).Length;
+						_logger.Info(String.Format("WaybillEmailSourceHandler: Делаем попытку выбрать нужные записи иначе: " +
+							"количество через * - {0}, через % - {1}, исходное - {2}", count1, count2, sources.Count()));
+					}
 					continue;
 				}
 				else

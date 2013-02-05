@@ -201,6 +201,14 @@ and pd.AgencyEnabled= 1",
 				connection.Open();
 				var adapter = new MySqlDataAdapter(GetSQLSources(), connection);
 				adapter.Fill(dtSources);
+				if(SourceType == "WAYBILL") {
+					if (dtSources.Rows == null) {
+						_logger.Info("WaybillEmailSourceHandler: При загрузке источников получили таблицу с null на месте строк");
+					}
+					else if (dtSources.Rows.Count == 0) {
+						_logger.Info("WaybillEmailSourceHandler: При загрузке источников получили пустую таблицу");
+					}
+				}
 			}
 		}
 
