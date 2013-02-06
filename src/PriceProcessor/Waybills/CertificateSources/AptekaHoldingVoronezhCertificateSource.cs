@@ -45,8 +45,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			if (String.IsNullOrEmpty(certificateFilenameMask))
 				return;
 
-			if (certificateFilenameMask.Length != 5) {
-				Log.WarnFormat("Для строки документа {0} загрузка сертификатов производиться не будет тк длинна маски '{1}' не равна 5",
+			if (certificateFilenameMask.Length < 5) {
+				Log.WarnFormat("Для строки документа {0} загрузка сертификатов производиться не будет тк длинна маски '{1}' меньше 5",
 					task.DocumentLine.Id,
 					certificateFilenameMask);
 				return;
