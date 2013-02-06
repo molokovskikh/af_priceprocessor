@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Handlers
 
 
 			handler.Process();
-			Assert.That(handler.Threads.Count, Is.EqualTo(2));
+			Assert.That(handler.Threads.Count, Is.EqualTo(3));
 			Assert.IsTrue(handler.FindByPriceItemId(1));
 			Assert.IsTrue(handler.FindByPriceItemId(3));
 			Assert.That(handler.Threads[0].ProcessItem.PriceCode, Is.EqualTo(1));
