@@ -257,14 +257,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 					parentSynonym),
 				_connection);
 			daSynonymFirmCr.Fill(dsMyDB, "SynonymFirmCr");
-			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"
-insert into farm.SynonymFirmCr (PriceCode, CodeFirmCr, Synonym) values (?PriceCode, ?CodeFirmCr, ?OriginalSynonym);
-set @LastSynonymFirmCrCode = last_insert_id();
-insert farm.UsedSynonymFirmCrLogs (SynonymFirmCrCode) values (@LastSynonymFirmCrCode);
-SET @insertCommand = if(?IsAutomatic, 'insert into farm.AutomaticProducerSynonyms (ProducerSynonymId) values (@LastSynonymFirmCrCode);', 'select @LastSynonymFirmCrCode;');
-PREPARE insertExCom FROM @insertCommand;
-EXECUTE insertExCom;
-select @LastSynonymFirmCrCode;");
+			daSynonymFirmCr.InsertCommand = new MySqlCommand(@"SELECT farm.CreateProducerSynonym(?PriceCode, ?CodeFirmCr, ?OriginalSynonym, ?IsAutomatic);");
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?PriceCode", MySqlDbType.Int64);
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?OriginalSynonym", MySqlDbType.String);
 			daSynonymFirmCr.InsertCommand.Parameters.Add("?CodeFirmCr", MySqlDbType.Int64);
