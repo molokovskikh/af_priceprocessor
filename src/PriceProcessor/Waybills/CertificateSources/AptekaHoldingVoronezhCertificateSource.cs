@@ -8,8 +8,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public class AptekaHoldingVoronezhCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
-		private ILog _logger = LogManager.GetLogger(typeof(AptekaHoldingVoronezhCertificateSource));
-
 		public bool CertificateExists(DocumentLine documentLine)
 		{
 			var exists = !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
@@ -25,27 +23,35 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			if (!Directory.Exists(certificatesPath)) {
-				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
+				Log.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
 					certificatesPath,
 					task);
 				return;
 			}
 
-			if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
-				AddFiles(certificatesPath, task.DocumentLine.CertificateFilename, files);
-
-			if (!String.IsNullOrEmpty(task.DocumentLine.ProtocolFilemame))
-				AddFiles(certificatesPath, task.DocumentLine.ProtocolFilemame, files);
-
-			if (!String.IsNullOrEmpty(task.DocumentLine.PassportFilename))
-				AddFiles(certificatesPath, task.DocumentLine.PassportFilename, files);
+			AddFiles(task, certificatesPath, task.DocumentLine.CertificateFilename, files);
+			AddFiles(task, certificatesPath, task.DocumentLine.ProtocolFilemame, files);
+			AddFiles(task, certificatesPath, task.DocumentLine.PassportFilename, files);
 
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
 		}
 
-		private void AddFiles(string certificatesPath, string certificateFilenameMask, IList<CertificateFile> list)
+		private void AddFiles(CertificateTask task,
+			string certificatesPath,
+			string certificateFilenameMask,
+			IList<CertificateFile> list)
 		{
+			if (String.IsNullOrEmpty(certificateFilenameMask))
+				return;
+
+			if (certificateFilenameMask.Length != 5) {
+				Log.WarnFormat("Для строки документа {0} загрузка сертификатов производиться не будет тк длинна маски '{1}' не равна 5",
+					task.DocumentLine.Id,
+					certificateFilenameMask);
+				return;
+			}
+
 			var files = Directory.GetFiles(certificatesPath, certificateFilenameMask + "*");
 
 			foreach (var file in files) {

@@ -8,8 +8,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
 	public class FarmKomplektCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
-		private ILog _logger = LogManager.GetLogger(typeof(FarmKomplektCertificateSource));
-
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
