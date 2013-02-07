@@ -13,7 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 
 			if (!Directory.Exists(certificatesPath)) {
-				_logger.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
+				Log.WarnFormat("Директория {0} для задачи сертификата {1} не существует",
 					certificatesPath,
 					task);
 				return;
