@@ -1,4 +1,5 @@
 ﻿using System;
+using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
@@ -198,6 +199,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant, Is.True);
 			Assert.That(document.Lines[3].VitallyImportant, Is.True);
 			Assert.That(document.Lines[7].VitallyImportant, Is.True);
+		}
+
+		[Test]
+		public void Check_file_format()
+		{
+			Assert.IsTrue(Moron_338_SpecialParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\Р-1642648-1.dbf")));
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-1642648-1.dbf");
+			Assert.IsTrue(document.Lines[0].VitallyImportant.Value);
 		}
 	}
 }
