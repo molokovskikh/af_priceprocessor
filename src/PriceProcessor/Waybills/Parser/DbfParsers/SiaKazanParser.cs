@@ -38,6 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("NAME")
 				&& data.Columns.Contains("PROIZV")
 				&& data.Columns.Contains("COUNTRY")
+				&& data.Columns.Contains("SHTRIHKOD")
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("CENABNDS")
 				&& data.Columns.Contains("CENASNDS")
