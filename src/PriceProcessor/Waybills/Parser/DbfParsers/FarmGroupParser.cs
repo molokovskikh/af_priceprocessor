@@ -30,6 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICEENT", "PPRICEWT", "PRISEENT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS")
+				.Line(l => l.OrderId, "NUMZ")
 				.ToDocument(document, data);
 			if (document.ProviderDocumentId != null && document.ProviderDocumentId.Length > 8
 				&& String.Equals(document.ProviderDocumentId.Substring(0, 8), Document.GenerateProviderDocumentId().Substring(0, 8)))
