@@ -210,9 +210,6 @@ namespace RemotePriceProcessor
 		bool DeleteItemInInboundList(int hashCode);
 
 		[OperationContract]
-		string[] InboundPriceItemIds();
-
-		[OperationContract]
 		Stream BaseFile(uint priceItemId);
 
 		[OperationContract]

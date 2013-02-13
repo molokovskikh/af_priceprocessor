@@ -285,26 +285,6 @@ namespace RemotePriceProcessor
 			return files;
 		}
 
-		public string[] InboundPriceItemIds()
-		{
-			LastErrorMessage = String.Empty;
-			var priceItemIds = new string[0];
-			try {
-				_clientProxy = _channelFactory.CreateChannel();
-				priceItemIds = _clientProxy.InboundPriceItemIds();
-				((ICommunicationObject)_clientProxy).Close();
-			}
-			catch (FaultException faultException) {
-				LastErrorMessage = faultException.Reason.ToString();
-				return new string[0];
-			}
-			finally {
-				AbortClientProxy();
-			}
-			return priceItemIds;
-		}
-
-
 		public WcfPriceProcessItem[] GetPriceItemList()
 		{
 			return UniversavWcfCall(() => _clientProxy.GetPriceItemList());

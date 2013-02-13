@@ -256,7 +256,7 @@ where pim.Id = ?PriceItemId",
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
-			if(InboundPriceItemIds().Contains(priceItemId.ToString()))
+			if(GetPriceItemList().Select(i => i.PriceItemId).Contains(priceItemId))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
@@ -329,15 +329,6 @@ where pim.Id = ?PriceItemId",
 				}
 				return true;
 			}
-		}
-
-		public string[] InboundPriceItemIds()
-		{
-			var count = PriceItemList.list.Count;
-			var priceItemIdList = new string[count];
-			for (var index = 0; index < count; index++)
-				priceItemIdList[index] = Convert.ToString(PriceItemList.list[index].PriceItemId);
-			return priceItemIdList;
 		}
 
 		public Stream BaseFile(uint priceItemId)
