@@ -69,5 +69,30 @@ namespace PriceProcessor.Test.Formalization
 				Assert.That(count, Is.EqualTo(1), "код прайс листа {0}", price.Id);
 			});
 		}
+
+		[Test]
+		public void Set_force_replication_after_formalization()
+		{
+			var client = TestClient.CreateNaked();
+			client.Settings.BuyingMatrix = session.Load<TestMatrix>(localPrice.Matrix.Id);
+			session.CreateSQLQuery("insert into Usersettings.AnalitFReplicationInfo(UserId, FirmCode, ForceReplication) " +
+				"select :userId, pd.FirmCode, 0 from Customers.Intersection i " +
+				"	join Usersettings.Pricesdata pd on pd.PriceCode = i.PriceId " +
+				"where i.ClientId = :clientId " +
+				"group by i.ClientId, pd.FirmCode")
+				.SetParameter("clientId", client.Id)
+				.SetParameter("userId", client.Users[0].Id)
+				.ExecuteUpdate();
+
+			FormalizeDefaultData();
+
+			var replications = session
+				.CreateSQLQuery("select FirmCode, ForceReplication from Usersettings.AnalitFReplicationInfo where UserId = :userId")
+				.SetParameter("userId", client.Users[0].Id)
+				.List<object[]>();
+			Assert.That(replications.Count, Is.GreaterThan(0));
+			foreach (var replication in replications)
+				Assert.That(replication[1], Is.EqualTo(1), replication[0].ToString());
+		}
 	}
 }

@@ -28,10 +28,17 @@ namespace Inforoom.PriceProcessor.Formalizer
 					"co.PriceCode = ?okpPriceId");
 			}
 
-			With.Connection(c => {
+			With.Transaction((c, t) => {
 				var sql = @"
 delete from farm.BuyingMatrix
 where priceId = ?priceId;
+
+update Usersettings.AnalitFReplicationInfo r
+	join Customers.Users u on u.Id = r.UserId
+		join Usersettings.RetClientsSet rcs on rcs.ClientCode = u.ClientId
+set r.ForceReplication = 1
+where rcs.BuyingMatrix = ?MatrixId
+	or rcs.OfferMatrix = ?MatrixId;
 ";
 				sql += query.ToSql() + ";";
 				var command = new MySqlCommand(sql, c);
