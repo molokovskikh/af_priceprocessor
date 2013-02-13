@@ -286,11 +286,11 @@ where pim.Id = ?PriceItemId",
 		{
 #if DEBUG
 			PriceItemList.AddItem(new PriceProcessItem(false, 1, null, 1, "jjj.123", null));
-			Thread.Sleep(1000);
+			//Thread.Sleep(1000);
 			PriceItemList.AddItem(new PriceProcessItem(false, 5, null, 1, "jjj.AAA", null));
-			Thread.Sleep(1000);
+			//Thread.Sleep(1000);
 			PriceItemList.AddItem(new PriceProcessItem(true, 2, null, 1, "jjj.345", null));
-			Thread.Sleep(1000);
+			//Thread.Sleep(1000);
 			PriceItemList.AddItem(new PriceProcessItem(true, 3, null, 1, "jjj.789", null));
 #endif
 
