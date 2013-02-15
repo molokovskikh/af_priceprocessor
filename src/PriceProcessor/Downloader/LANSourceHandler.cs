@@ -90,7 +90,7 @@ namespace Inforoom.Downloader
 				File.Delete(_downloadedFile);
 			}
 			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при удалении файла {0}", _downloadedFile), e);
+				_logger.Error(String.Format("Ошибка при удалении файла {0}", _downloadedFile), e);
 			}
 		}
 

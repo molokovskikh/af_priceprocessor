@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Helpers;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 

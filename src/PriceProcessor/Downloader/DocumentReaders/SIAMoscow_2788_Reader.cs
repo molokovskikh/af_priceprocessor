@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -187,7 +187,7 @@ namespace Inforoom.Downloader.DocumentReaders
 			return outputList.ToArray();
 		}
 
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			var list = new List<ulong>();
 

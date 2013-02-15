@@ -84,7 +84,7 @@ values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			var handler = new FormalizeHandler();
 			handler.StartWork();
 			Thread.Sleep(10000);
-			handler.StopWork();
+			handler.HardStop();
 			CheckProducerCostInCore(GetPriceCode(priceItemId));
 			// В Base должен лежать файл
 			Assert.That(Directory.GetFiles(Settings.Default.BasePath).Length, Is.EqualTo(1));
@@ -178,7 +178,7 @@ values(?PriceCode, ?PriceItemId, 1, 1, 'TestCost', 1);";
 			var handler = new FormalizeHandler();
 			handler.StartWork();
 			Thread.Sleep(10000);
-			handler.StopWork();
+			handler.HardStop();
 			CheckNdsInCore(GetPriceCode(priceItemId));
 			// В Base должен лежать файл
 			Assert.That(Directory.GetFiles(Settings.Default.BasePath).Length, Is.EqualTo(1));

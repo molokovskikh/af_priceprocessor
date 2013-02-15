@@ -100,13 +100,11 @@ namespace Inforoom.Downloader
 		/// </summary>
 		protected DateTime CurrPriceDate;
 
-		protected static string ExtrDirSuffix = "Extr";
-		protected ILog _log;
+		public const string ExtrDirSuffix = "Extr";
 
 		public BaseSourceHandler()
 		{
 			SleepTime = Settings.Default.HandlerRequestInterval;
-			_log = LogManager.GetLogger(GetType());
 		}
 
 		//Запуск обработчика
@@ -117,9 +115,9 @@ namespace Inforoom.Downloader
 			base.StartWork();
 		}
 
-		public override void StopWork()
+		public override void HardStop()
 		{
-			base.StopWork();
+			base.HardStop();
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);

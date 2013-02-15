@@ -14,7 +14,7 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.TestHelpers
 {
-	public class BaseWaybillHandlerFixture
+	public class BaseWaybillHandlerFixture : IntegrationFixture
 	{
 		protected TestAddress address;
 		protected TestClient client;
@@ -25,12 +25,10 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void SetConvertFormat()
 		{
-			using (new TransactionScope()) {
-				var settings = client.Settings;
-				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = supplier.Prices.First().Id;
-				settings.SaveAndFlush();
-			}
+			var settings = client.Settings;
+			settings.IsConvertFormat = true;
+			settings.AssortimentPriceId = supplier.Prices.First().Id;
+			settings.SaveAndFlush();
 		}
 
 		protected void CheckClientDirectory(int waitingFilesCount, DocType documentsType, TestAddress address = null)
@@ -44,25 +42,21 @@ namespace PriceProcessor.Test.TestHelpers
 			if (address == null)
 				address = client.Addresses[0];
 
-			using (new SessionScope()) {
-				var logs = TestDocumentLog.Queryable.Where(log =>
-					log.Client.Id == client.Id &&
-						log.Supplier.Id == supplier.Id &&
-						log.Address == address);
-				Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
+			var logs = TestDocumentLog.Queryable.Where(log =>
+				log.Client.Id == client.Id &&
+					log.Supplier.Id == supplier.Id &&
+					log.Address == address);
+			Assert.That(logs.Count(), Is.EqualTo(waitingCountEntries));
 
-				return logs.ToList();
-			}
+			return logs.ToList();
 		}
 
 		protected void CheckDocumentEntry(int waitingCountEntries)
 		{
-			using (new SessionScope()) {
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
-					doc.ClientCode == client.Id &&
-					doc.Address.Id == client.Addresses[0].Id);
-				Assert.That(documents.Count(), Is.EqualTo(waitingCountEntries));
-			}
+			var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
+				doc.ClientCode == client.Id &&
+				doc.Address.Id == client.Addresses[0].Id);
+			Assert.That(documents.Count(), Is.EqualTo(waitingCountEntries));
 		}
 
 		protected string[] GetFileForAddress(DocType documentsType, TestAddress address = null)
@@ -75,14 +69,12 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void SetDeliveryCodes(uint? supplierDeliveryId)
 		{
-			using (new SessionScope()) {
-				var id = supplier.Prices[0].Id;
-				var price = TestPrice.Find(id);
-				var intersection = price.Intersections.First(i => i.Client.Id == client.Id);
-				var addressIntersection = intersection.AddressIntersections.First(i => i.Address.Id == address.Id);
-				addressIntersection.SupplierDeliveryId = supplierDeliveryId.ToString();
-				addressIntersection.Save();
-			}
+			var price = supplier.Prices[0];
+			session.Refresh(price);
+			var intersection = price.Intersections.First(i => i.Client.Id == client.Id);
+			var addressIntersection = intersection.AddressIntersections.First(i => i.Address.Id == address.Id);
+			addressIntersection.SupplierDeliveryId = supplierDeliveryId.ToString();
+			addressIntersection.Save();
 		}
 
 		public string CreateSupplierDir(DocType type)
@@ -101,53 +93,49 @@ namespace PriceProcessor.Test.TestHelpers
 			if (String.IsNullOrEmpty(supplierDeliveryId))
 				supplierDeliveryId = addressId.ToString();
 
-			With.Connection(connection => {
-				var command = new MySqlCommand(@"
+			var command = new MySqlCommand(@"
 insert into Customers.AddressIntersection(AddressId, IntersectionId, SupplierDeliveryId)
 select a.Id, i.Id, ?supplierDeliveryId
 from Customers.Intersection i
-	join Customers.Addresses a on a.ClientId = i.ClientId
-	left join Customers.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
+join Customers.Addresses a on a.ClientId = i.ClientId
+left join Customers.AddressIntersection ai on ai.AddressId = a.Id and ai.IntersectionId = i.Id
 where
-	a.Id = ?AddressId
-and ai.Id is null", connection);
+a.Id = ?AddressId
+and ai.Id is null", (MySqlConnection)session.Connection);
 
-				command.Parameters.AddWithValue("?AddressId", addressId);
-				command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId);
-				var insertCount = command.ExecuteNonQuery();
-				if (insertCount == 0) {
-					command.CommandText = @"
+			command.Parameters.AddWithValue("?AddressId", addressId);
+			command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId);
+			var insertCount = command.ExecuteNonQuery();
+			if (insertCount == 0) {
+				command.CommandText = @"
 update
-  Customers.Intersection i,
-  Customers.Addresses a,
-  Customers.AddressIntersection ai
+Customers.Intersection i,
+Customers.Addresses a,
+Customers.AddressIntersection ai
 set
-  ai.SupplierDeliveryId = ?supplierDeliveryId,
-  i.SupplierClientId = ?supplierClientId
+ai.SupplierDeliveryId = ?supplierDeliveryId,
+i.SupplierClientId = ?supplierClientId
 where
-	a.ClientId = i.ClientId
+a.ClientId = i.ClientId
 and ai.AddressId = a.Id
 and ai.IntersectionId = i.Id
 and a.Id = ?AddressId
 ";
-					command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
-					command.ExecuteNonQuery();
-				}
-			});
+				command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
+				command.ExecuteNonQuery();
+			}
 		}
 
 		protected void SetConvertDocumentSettings()
 		{
-			using (new TransactionScope()) {
-				var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
-				//запоминаем начальное состояние настройки
-				var isConvertFormat = settings.IsConvertFormat;
-				//и если оно не включено, то включим принудительно для теста
-				if (!isConvertFormat) {
-					settings.IsConvertFormat = true;
-					settings.AssortimentPriceId = supplier.Prices.First().Id;
-					settings.SaveAndFlush();
-				}
+			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			//запоминаем начальное состояние настройки
+			var isConvertFormat = settings.IsConvertFormat;
+			//и если оно не включено, то включим принудительно для теста
+			if (!isConvertFormat) {
+				settings.IsConvertFormat = true;
+				settings.AssortimentPriceId = supplier.Prices.First().Id;
+				settings.SaveAndFlush();
 			}
 		}
 

@@ -65,12 +65,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 			base.StartWork();
 		}
 
-		public override void StopWork()
+		public override void HardStop()
 		{
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= OnFileCreate;
 
-			base.StopWork();
+			base.HardStop();
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);

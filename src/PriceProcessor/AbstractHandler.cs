@@ -9,6 +9,11 @@ namespace Inforoom.PriceProcessor
 {
 	public abstract class AbstractHandler
 	{
+		protected CancellationToken Cancellation;
+
+		private readonly CancellationTokenSource _cancellationSource;
+		private bool stoped = true;
+
 		/// <summary>
 		/// Ссылка на рабочую нитку
 		/// </summary>
@@ -41,6 +46,9 @@ namespace Inforoom.PriceProcessor
 
 		protected AbstractHandler()
 		{
+			_cancellationSource = new CancellationTokenSource();
+			Cancellation = _cancellationSource.Token;
+
 			_logger = log4net.LogManager.GetLogger(GetType());
 
 			knowErrors = new List<string>();
@@ -55,9 +63,9 @@ namespace Inforoom.PriceProcessor
 			get { return DateTime.Now.Subtract(lastPing).TotalMinutes < Settings.Default.HandlerTimeout; }
 		}
 
-		protected void CreateDownHandlerPath()
+		public void CreateDownHandlerPath()
 		{
-			DownHandlerPath = Path.Combine(Settings.Default.TempPath, this.GetType().Name);
+			DownHandlerPath = Path.Combine(Settings.Default.TempPath, GetType().Name);
 			if (!Directory.Exists(DownHandlerPath))
 				Directory.CreateDirectory(DownHandlerPath);
 			DownHandlerPath += Path.DirectorySeparatorChar;
@@ -102,9 +110,20 @@ namespace Inforoom.PriceProcessor
 			Ping();
 		}
 
-		public virtual void StopWork()
+		public void SoftStop()
 		{
-			tWork.Abort();
+			try {
+				_cancellationSource.Cancel();
+			}
+			catch(Exception e) {
+				_logger.Error(String.Format("Ошибка при отмене обработчика {0}", this), e);
+			}
+		}
+
+		public virtual void HardStop()
+		{
+			if (!stoped)
+				tWork.Abort();
 		}
 
 		protected void Ping()
@@ -112,31 +131,11 @@ namespace Inforoom.PriceProcessor
 			lastPing = DateTime.Now;
 		}
 
-		//Перезапуск обработчика
-		public void RestartWork()
-		{
-			_logger.Info("Перезапуск обработчика");
-			try {
-				StopWork();
-				Thread.Sleep(1000);
-			}
-			catch (Exception ex) {
-				_logger.Error("Ошибка при останове нитки обработчика", ex);
-			}
-			tWork = new Thread(ThreadWork);
-			try {
-				StartWork();
-			}
-			catch (Exception ex) {
-				_logger.Error("Ошибка при запуске нитки обработчика", ex);
-			}
-			_logger.Info("Перезапустили обработчик");
-		}
-
 		//Нитка, в которой осуществляется работа обработчика источника
 		protected void ThreadWork()
 		{
-			while (true) {
+			stoped = false;
+			while (!Cancellation.IsCancellationRequested) {
 				try {
 					ProcessData();
 				}
@@ -144,13 +143,14 @@ namespace Inforoom.PriceProcessor
 					Log(ex);
 				}
 				Ping();
-				Sleeping();
+				Wait();
 			}
+			stoped = true;
 		}
 
-		protected void Sleeping()
+		protected void Wait()
 		{
-			Thread.Sleep(SleepTime * 1000);
+			Cancellation.WaitHandle.WaitOne(SleepTime * 1000);
 		}
 
 		//Метод для обработки данных для каждого источника - свой
@@ -158,11 +158,11 @@ namespace Inforoom.PriceProcessor
 
 		protected void Log(Exception e, string message = null)
 		{
-			if (knowErrors.Contains(e.ToString()) || e is ThreadAbortException) {
-				_logger.Warn(String.Format("Ошибка в обработчике {0}", GetType().Name), e);
+			if (knowErrors.Contains(e.ToString()) || e is ThreadAbortException || e is OperationCanceledException) {
+				_logger.Warn(String.Format("Ошибка в обработчике {0}", this), e);
 			}
 			else {
-				_logger.Error(String.Format("Ошибка в обработчике {0}", GetType().Name), e);
+				_logger.Error(String.Format("Ошибка в обработчике {0}", this), e);
 				knowErrors.Add(e.ToString());
 			}
 		}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Castle.ActiveRecord;
@@ -22,7 +22,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		/// <param name="ArchFileName">имя файла-архива</param>
 		/// <param name="CurrentFileName">имя файла в архиве</param>
 		/// <returns>список сопоставленных клиентов</returns>
-		public abstract List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName);
+		public abstract List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName);
 
 		//Разделяем файлы перед обработкой, если в одном файле содержится несколько документов
 		public virtual string[] DivideFiles(string ExtractDir, string[] InputFiles)

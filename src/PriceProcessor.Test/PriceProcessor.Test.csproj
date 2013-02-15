@@ -37,6 +37,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -106,6 +107,9 @@
     <Reference Include="Rhino.Mocks">
       <HintPath>..\..\Lib\Rhino.Mocks.dll</HintPath>
     </Reference>
+    <Reference Include="SharpServer">
+      <HintPath>..\..\..\..\oss\sharp-ftp-server\src\SharpServer\bin\Debug\SharpServer.exe</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
@@ -157,6 +161,7 @@
     <Compile Include="Models\MailContextFixture.cs" />
     <Compile Include="Models\PriceFormalizationInfoFixture.cs" />
     <Compile Include="Models\RejectFixture.cs" />
+    <Compile Include="Models\WaybillSourceFixture.cs" />
     <Compile Include="PriceSourceFixture.cs" />
     <Compile Include="Services\ErrorHandlerFixture.cs" />
     <Compile Include="SetupFixture.cs" />
@@ -186,7 +191,6 @@
     <Compile Include="Waybills\DbfExporterFixture.cs" />
     <Compile Include="Waybills\Handlers\HttpPriceSourceHandlerFixture.cs" />
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
-    <Compile Include="Waybills\Handlers\WaybillFtpSourceHandlerIntegrationFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllianceHealthCareParserFixture.cs" />

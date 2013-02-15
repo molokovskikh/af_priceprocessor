@@ -296,9 +296,9 @@ namespace Inforoom.PriceProcessor
 		}
 
 		//Остановка обработчика
-		public override void StopWork()
+		public override void HardStop()
 		{
-			base.StopWork();
+			base.HardStop();
 
 			if (!tWork.Join(maxJoinTime))
 				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);

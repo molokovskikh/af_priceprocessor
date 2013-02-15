@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using FileHelper = Common.Tools.FileHelper;
 

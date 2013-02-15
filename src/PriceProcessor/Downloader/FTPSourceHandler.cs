@@ -20,6 +20,12 @@ namespace Inforoom.Downloader.Ftp
 			FileDate = fileDate;
 		}
 
+		public DownloadedFile(FileInfo fileName)
+		{
+			FileName = fileName.FullName;
+			FileDate = fileName.LastWriteTime;
+		}
+
 		public string FileName { get; set; }
 		public DateTime FileDate { get; set; }
 
@@ -49,10 +55,7 @@ namespace Inforoom.Downloader.Ftp
 	{
 		public IList<FailedFile> FailedFiles = new List<FailedFile>();
 		private static ILog _log = LogManager.GetLogger(typeof(FtpDownloader));
-		/// <summary>
-		/// Для проверки пассивного режима в тестах
-		/// </summary>
-		public bool TestFtpPassiveMode { get; set; }
+
 		/// <summary>
 		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
 		/// Если при получении какого-то файла произошла ошибка, то пытается получить этот файл еще 2 раза, если не удалось,
@@ -131,7 +134,7 @@ namespace Inforoom.Downloader.Ftp
 		{
 			DataSet dataSetEntries = null;
 			ftpClient.PassiveMode = ftpPassiveMode;
-			TestFtpPassiveMode = ftpClient.PassiveMode;
+
 #if !DEBUG
 			ftpClient.Connect(ftpHost, ftpPort);
 			ftpClient.Authenticate(username, password);
@@ -139,25 +142,32 @@ namespace Inforoom.Downloader.Ftp
 
 			dataSetEntries = ftpClient.GetList();
 #else
-			if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
-				ftpDirectory = ftpDirectory.Substring(1);
-			dataSetEntries = new DataSet();
-			var table = dataSetEntries.Tables.Add("DirInfo");
-			table.Columns.Add("Name");
-			table.Columns.Add("Date");
-			table.Columns.Add("IsDirectory");
-			var files = Directory.GetFiles(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), "*.*");
+			dataSetEntries = ToDirInfo(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), new DataSet());
+#endif
+			return dataSetEntries;
+		}
+
+		public static DataSet ToDirInfo(string dir, DataSet data)
+		{
+			var table = data.Tables["DirInfo"];
+			if (!data.Tables.Contains("DirInfo")) {
+				table = data.Tables.Add("DirInfo");
+				table.Columns.Add("Name");
+				table.Columns.Add("Date");
+				table.Columns.Add("IsDirectory");
+			}
+			var files = Directory.GetFiles(dir, "*.*");
 			foreach (var file in files) {
 				var row = table.NewRow();
 				row["Name"] = Path.GetFileName(file);
 				row["Date"] = DateTime.Now.AddDays(-1);
+				row["Size"] = new FileInfo(file).Length;
 				row["IsDirectory"] = false;
 				table.Rows.Add(row);
 			}
 			table.AcceptChanges();
-			dataSetEntries.AcceptChanges();
-#endif
-			return dataSetEntries;
+			data.AcceptChanges();
+			return data;
 		}
 
 		/// <summary>

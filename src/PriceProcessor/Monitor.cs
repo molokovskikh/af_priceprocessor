@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Security;
 using System.ServiceModel.Dispatcher;
 using System.Threading;
@@ -127,10 +128,18 @@ namespace Inforoom.PriceProcessor
 				Stopped = true;
 				Thread.Sleep(3000);
 				_monitor.Abort();
+
+				foreach (var handler in _handlers) {
+					handler.SoftStop();
+				}
+				//сначала мы просим что бы нитки остановились и даем им время на это
+				Thread.Sleep(TimeSpan.FromSeconds(5));
+
+				//теперь мы убиваем те нитки которые не остановились
 				foreach (var handler in _handlers)
 					try {
 						_logger.InfoFormat("Попытка останова обработчика {0}.", handler.GetType().Name);
-						handler.StopWork();
+						handler.HardStop();
 						_logger.InfoFormat("Обработчик {0} остановлен.", handler.GetType().Name);
 					}
 					catch (Exception exHan) {
@@ -149,9 +158,22 @@ namespace Inforoom.PriceProcessor
 		{
 			while (!Stopped) {
 				try {
-					foreach (var handler in _handlers) {
-						if (!handler.Worked)
-							handler.RestartWork();
+					var deadHandlers = _handlers.Where(h => !h.Worked).ToArray();
+					foreach (var handler in deadHandlers) {
+						try {
+							handler.SoftStop();
+							Thread.Sleep(5000);
+
+							handler.HardStop();
+
+							_handlers.Remove(handler);
+
+							var newHandler = (AbstractHandler)Activator.CreateInstance(handler.GetType());
+							_handlers.Add(newHandler);
+						}
+						catch(Exception e) {
+							_logger.Error(String.Format("Ошибка при останоке обработчика {0}", handler), e);
+						}
 					}
 
 					Thread.Sleep(500);

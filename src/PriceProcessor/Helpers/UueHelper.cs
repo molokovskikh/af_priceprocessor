@@ -1,18 +1,17 @@
-п»їusing System;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Inforoom.Common;
 using LumiSoft.Net.Mime;
-using System.Text.RegularExpressions;
 
-namespace Inforoom.PriceProcessor
+namespace Inforoom.PriceProcessor.Helpers
 {
 	public static class UueHelper
 	{
 		/// <summary>
-		/// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё СѓРєР°Р·Р°РЅРЅРѕРµ mime СЃРѕРѕР±С‰РµРЅРёРµ
-		/// Р·Р°РєРѕРґРёСЂРѕРІР°РЅРЅС‹Рј РІ UUE
+		/// Проверяет, является ли указанное mime сообщение
+		/// закодированным в UUE
 		/// </summary>
 		/// <param name="mime"></param>
 		/// <returns></returns>
@@ -26,15 +25,15 @@ namespace Inforoom.PriceProcessor
 		}
 
 		/// <summary>
-		/// Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°Р±РѕС‚РєРё С‚РµР»Р° РїРёСЃСЊРјР° РІ С„РѕСЂРјР°С‚Рµ UUE.
+		/// Функция обработки тела письма в формате UUE.
 		/// </summary>
-		/// <param name="mime">Mime СЌР»РµРјРµРЅС‚ РїРёСЃСЊРјР°</param>
-		/// <param name="tempPath">Р’СЂРµРјРµРЅРЅР°СЏ РґРёСЂРµРєС‚РѕСЂРёСЏ</param>
-		/// <returns>РРјСЏ СЂР°СЃРїР°РєРѕРІР°РЅРЅРѕРіРѕ С„Р°Р№Р»Р°</returns>
+		/// <param name="mime">Mime элемент письма</param>
+		/// <param name="tempPath">Временная директория</param>
+		/// <returns>Имя распакованного файла</returns>
 		private static string ExtractFileFromUue(Mime mime, string tempPath)
 		{
 			var extractDir = "ExtractDir";
-			//Р”РІРѕР№РЅР°СЏ РїРµСЂРµРєРѕРґРёСЂРѕРІРєР° СЃРЅР°С‡Р°Р»Р° РІ koi8r -> UTF7 -> default(cp1251)
+			//Двойная перекодировка сначала в koi8r -> UTF7 -> default(cp1251)
 			var uueFileName = tempPath + "MailTemp.uue";
 			using (var file = new FileStream(uueFileName, FileMode.Create)) {
 				var body = Encoding.GetEncoding("koi8-r").GetString(mime.MainEntity.Data);
@@ -46,7 +45,7 @@ namespace Inforoom.PriceProcessor
 			}
 			try {
 				if (ArchiveHelper.TestArchive(uueFileName)) {
-					// Р•СЃР»Рё С„Р°Р№Р» СЏРІР»СЏРµС‚СЃСЏ Р°СЂС…РёРІРѕРј
+					// Если файл является архивом
 					try {
 						FileHelper.ExtractFromArhive(uueFileName, uueFileName + extractDir);
 						string[] fileList = Directory.GetFiles(uueFileName + extractDir);
@@ -62,7 +61,7 @@ namespace Inforoom.PriceProcessor
 				}
 			}
 			finally {
-				// РЈРґР°Р»СЏРµРј Р·Р° СЃРѕР±РѕР№ СЃРѕР·РґР°РЅРЅСѓСЋ РґРёСЂРµРєС‚РѕСЂРёСЋ
+				// Удаляем за собой созданную директорию
 				if (Directory.Exists(uueFileName + extractDir))
 					try {
 						Directory.Delete(uueFileName + extractDir, true);

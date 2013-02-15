@@ -71,8 +71,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		public void SetUp(IList<string> fileNames)
 		{
-			client = TestClient.Create();
-			supplier = TestSupplier.Create();
+			client = TestClient.CreateNaked();
+			supplier = TestSupplier.CreateNaked();
 
 			var from = String.Format("{0}@test.test", client.Id);
 			PrepareSupplier(supplier, from);
@@ -99,13 +99,12 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			SetUp(new List<string> { @"..\..\Data\Waybills\0000470553.dbf" });
 			Process();
-			using (new SessionScope()) {
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
-					doc.ClientCode == client.Id &&
-					doc.Address.Id == client.Addresses[0].Id &&
-					doc.DocumentDate != null);
-				Assert.That(documents.Count(), Is.EqualTo(1));
-			}
+
+			var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id &&
+				doc.ClientCode == client.Id &&
+				doc.Address.Id == client.Addresses[0].Id &&
+				doc.DocumentDate != null);
+			Assert.That(documents.Count(), Is.EqualTo(1));
 		}
 
 		[Test, Description("Проверка, что накладная скопирована в папку клиенту")]
@@ -155,12 +154,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			var headerFile = GetSavedFiles("*(h271433).dbf");
 			Assert.That(headerFile.Count(), Is.EqualTo(1));
-			using (new SessionScope()) {
-				var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id
-					&& doc.ClientCode == client.Id
-					&& doc.Address.Id == client.Addresses[0].Id);
-				Assert.That(documents.Count(), Is.EqualTo(1));
-			}
+
+			var documents = Document.Queryable.Where(doc => doc.FirmCode == supplier.Id
+				&& doc.ClientCode == client.Id
+				&& doc.Address.Id == client.Addresses[0].Id);
+			Assert.That(documents.Count(), Is.EqualTo(1));
 
 			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillEmailSourceHandlerForTesting).Name), "*.*");
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временный файл {0}", tmpFiles.Implode());
@@ -275,10 +273,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var files = new List<string> { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
 			SetUp(files);
 
-			With.Connection(c => {
-				var helper = new MySqlHelper(c);
-				helper.Command(string.Format("insert into usersettings.WaybillExcludeFile (Mask, Supplier) value ('*40.DBF', {0});", supplier.Id)).Execute();
-			});
+			var sql = string.Format("insert into usersettings.WaybillExcludeFile (Mask, Supplier) value ('*40.DBF', {0});", supplier.Id);
+			session.CreateSQLQuery(sql)
+				.ExecuteUpdate();
 
 			Process();
 
@@ -316,9 +313,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test]
 		public void Check_destination_addresses()
 		{
-			var client = TestClient.Create();
+			client = TestClient.CreateNaked();
+			session.Transaction.Commit();
 
-			var handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+			handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
+
 			var message = Mime.Parse(@"..\..\Data\EmailSourceHandlerTest\WithCC.eml");
 
 			message.MainEntity.To.Clear();
@@ -340,7 +339,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		public void Ignore_document_for_wrong_address()
 		{
 			var begin = DateTime.Now;
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked();
 			var from = String.Format("{0}@test.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
@@ -357,17 +356,15 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			this.supplier = supplier;
 
 			Process();
-			using (new SessionScope()) {
-				var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
-				Assert.That(docs.Count, Is.EqualTo(0));
-			}
+			var docs = TestDocumentLog.Queryable.Where(d => d.LogTime > begin).ToList();
+			Assert.That(docs.Count, Is.EqualTo(0));
 		}
 
 		[Test]
 		public void Reject_message_for_client_with_another_region()
 		{
-			client = TestClient.Create(2, 2);
-			supplier = TestSupplier.Create();
+			client = TestClient.CreateNaked(2, 2);
+			supplier = TestSupplier.CreateNaked();
 			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
 			supplier.WaybillSource.EMailFrom = String.Format("{0}@sup.com", supplier.Id);
 			supplier.Save();
@@ -391,6 +388,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				ContentDisposition_FileName = "text.txt",
 				Data = Enumerable.Repeat(100, 100).Select(i => (byte)i).ToArray()
 			});
+			session.Transaction.Commit();
 			handler.ProcessMime(mime);
 
 			Assert.That(handler.Sended.Count, Is.EqualTo(1));
@@ -402,9 +400,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test]
 		public void Process_message_if_from_contains_more_than_one_address()
 		{
-			client = TestClient.Create();
+			client = TestClient.CreateNaked();
 			address = client.Addresses[0];
-			supplier = TestSupplier.Create();
+			supplier = TestSupplier.CreateNaked();
 
 			supplier.WaybillSource.EMailFrom = String.Format("edata{0}@msk.katren.ru", supplier.Id);
 			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
@@ -427,8 +425,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test]
 		public void Parse_waybill_if_parsing_enabled()
 		{
-			client = TestClient.Create();
-			supplier = TestSupplier.Create();
+			client = TestClient.CreateNaked();
+			supplier = TestSupplier.CreateNaked();
 
 			var beign = DateTime.Now;
 			//Удаляем миллисекунды из даты, т.к. они не сохраняются в базе данных
@@ -451,19 +449,17 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var files = GetFileForAddress(DocType.Waybill);
 			Assert.That(files.Length, Is.EqualTo(1));
 
-			using (new SessionScope()) {
-				var logs = TestDocumentLog.Queryable.Where(d => d.Client.Id == client.Id).ToList();
-				Assert.That(logs.Count, Is.EqualTo(1));
-				var log = logs.Single();
-				var logTime = log.LogTime;
-				Assert.That(logTime.Date.AddHours(logTime.Hour).AddMinutes(logTime.Minute).AddSeconds(logTime.Second),
-					Is.GreaterThanOrEqualTo(beign.Date.AddHours(beign.Hour).AddMinutes(beign.Minute).AddSeconds(beign.Second)));
-				Assert.That(log.DocumentSize, Is.GreaterThan(0));
+			var logs = TestDocumentLog.Queryable.Where(d => d.Client.Id == client.Id).ToList();
+			Assert.That(logs.Count, Is.EqualTo(1));
+			var log = logs.Single();
+			var logTime = log.LogTime;
+			Assert.That(logTime.Date.AddHours(logTime.Hour).AddMinutes(logTime.Minute).AddSeconds(logTime.Second),
+				Is.GreaterThanOrEqualTo(beign.Date.AddHours(beign.Hour).AddMinutes(beign.Minute).AddSeconds(beign.Second)));
+			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 
-				var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
-				Assert.That(documents.Count, Is.EqualTo(1));
-				Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
-			}
+			var documents = Document.Queryable.Where(d => d.Log.Id == log.Id).ToList();
+			Assert.That(documents.Count, Is.EqualTo(1));
+			Assert.That(documents.Single().Lines.Count, Is.EqualTo(7));
 		}
 
 		private static void PrepareSupplier(TestSupplier supplier, string from)
@@ -475,6 +471,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		private void Process()
 		{
+			session.Transaction.Commit();
 			handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
 			handler.Process();
 		}

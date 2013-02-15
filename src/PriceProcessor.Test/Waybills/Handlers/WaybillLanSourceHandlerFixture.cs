@@ -23,18 +23,9 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {
-	public class WaybillLANSourceHandlerForTesting : WaybillLanSourceHandler
-	{
-		public void Process()
-		{
-			CreateDirectoryPath();
-			ProcessData();
-		}
-	}
-
 	public class FakeSIAMoscow_2788_Reader1 : SIAMoscow_2788_Reader
 	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			throw new Exception("Не получилось сформировать SupplierClientId(FirmClientCode) и SupplierDeliveryId(FirmClientCode2) из документа.");
 		}
@@ -42,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 	public class FakeSIAMoscow_2788_Reader2 : SIAMoscow_2788_Reader
 	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			return null;
 		}
@@ -55,7 +46,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 	public class FakeSIAMoscow_2788_Reader3 : SIAMoscow_2788_Reader
 	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			return new List<ulong> { 0 };
 		}
@@ -73,7 +64,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 	public class FakeSIAMoscow_2788_Reader4 : SIAMoscow_2788_Reader
 	{
-		public override List<ulong> GetClientCodes(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection Connection, ulong FirmCode, string ArchFileName, string CurrentFileName)
 		{
 			return new List<ulong> { 0 };
 		}
@@ -122,9 +113,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		public void SetUp()
 		{
 			TestHelper.RecreateDirectories();
-			client = TestClient.Create();
+			supplier = TestSupplier.CreateNaked();
+
+			client = TestClient.CreateNaked();
 			address = client.Addresses[0];
-			supplier = TestSupplier.Create();
 
 			waybillDir = CreateSupplierDir(DocType.Waybill);
 			rejectDir = CreateSupplierDir(DocType.Reject);
@@ -132,8 +124,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		private void Process()
 		{
-			var handler = new WaybillLANSourceHandlerForTesting();
-			handler.Process();
+			session.Transaction.Commit();
+			var handler = new WaybillLanSourceHandler();
+			handler.CreateDirectoryPath();
+			handler.ProcessData();
 		}
 
 		public void PrepareLanSource(string readerClassName = "ProtekOmsk_3777_Reader")
@@ -185,12 +179,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "Проверяем корректное изменение имени файла при недопустимых символах в имени")]
 		public void Parse_error_rejects()
 		{
-			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-				var address = client.CreateAddress();
-				client.Users[0].JoinAddress(address);
-				address.Save();
-				transaction.VoteCommit();
-			}
+			var address = client.CreateAddress();
+			client.Users[0].JoinAddress(address);
+			address.Save();
 
 			Assert.That(client.Addresses.Count, Is.GreaterThanOrEqualTo(2));
 
@@ -211,7 +202,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			CheckClientDirectory(1, DocType.Reject, client.Addresses[1]);
 			CheckDocumentLogEntry(1, client.Addresses[1]);
 
-			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillLANSourceHandlerForTesting).Name), "*.*");
+			var tmpFiles = Directory.GetFiles(Path.Combine(Settings.Default.TempPath, typeof(WaybillLanSourceHandler).Name), "*.*");
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временные файлы {0}", tmpFiles.Implode());
 		}
 
@@ -278,31 +269,28 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			PrepareLanSource("SIAMoscow_2788_Reader");
 
 			//Очищаем supplierDeliveryId и supplierClientId для всех адресов, у которых установлены необходимые значения
-			With.Connection(connection => {
-				var command = new MySqlCommand(@"
+			var command = new MySqlCommand(@"
 update
-  Customers.Intersection i,
-  Customers.Addresses a,
-  Customers.AddressIntersection ai
+Customers.Intersection i,
+Customers.Addresses a,
+Customers.AddressIntersection ai
 set
-  ai.SupplierDeliveryId = null,
-  i.SupplierClientId = null
+ai.SupplierDeliveryId = null,
+i.SupplierClientId = null
 where
-	a.ClientId = i.ClientId
+a.ClientId = i.ClientId
 and ai.AddressId = a.Id
 and ai.IntersectionId = i.Id
 and ai.SupplierDeliveryId = ?supplierDeliveryId
 and  i.SupplierClientId = ?supplierClientId
-",
-					connection);
+", (MySqlConnection)session.Connection);
 
-				command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
-				command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId_0);
-				command.ExecuteNonQuery();
+			command.Parameters.AddWithValue("?supplierClientId", supplierClientId);
+			command.Parameters.AddWithValue("?supplierDeliveryId", supplierDeliveryId_0);
+			command.ExecuteNonQuery();
 
-				command.Parameters["?supplierDeliveryId"].Value = supplierDeliveryId_1;
-				command.ExecuteNonQuery();
-			});
+			command.Parameters["?supplierDeliveryId"].Value = supplierDeliveryId_1;
+			command.ExecuteNonQuery();
 
 			MaitainAddressIntersection(client.Addresses[0].Id, supplierDeliveryId_0, supplierClientId);
 			MaitainAddressIntersection(client.Addresses[1].Id, supplierDeliveryId_1, supplierClientId);

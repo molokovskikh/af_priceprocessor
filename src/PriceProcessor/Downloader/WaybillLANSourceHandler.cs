@@ -234,7 +234,7 @@ and st.SourceID = 4";
 			using (var cleaner = new FileCleaner()) {
 				var supplierId = Convert.ToUInt32(drCurrent[WaybillSourcesTable.colFirmCode]);
 				try {
-					var addresses = With.Connection(c => documentReader.GetClientCodes(c, supplierId, archFileName, fileName));
+					var addresses = With.Connection(c => documentReader.ParseAddressIds(c, supplierId, archFileName, fileName));
 					var formatFile = documentReader.FormatOutputFile(fileName, drCurrent);
 
 					cleaner.Watch(fileName);

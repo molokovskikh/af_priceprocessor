@@ -16,7 +16,7 @@ namespace Inforoom.PriceProcessor.Downloader.DocumentReaders
 			excludeExtentions = new string[] { };
 		}
 
-		public override List<ulong> GetClientCodes(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
+		public override List<ulong> ParseAddressIds(MySqlConnection connection, ulong supplierId, string archFileName, string currentFileName)
 		{
 			var sql = SqlGetClientAddressId(false, true) +
 				Environment.NewLine + GetFilterSQLFooter();
