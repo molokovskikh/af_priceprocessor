@@ -58,19 +58,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			get
 			{
-#if DEBUG
 				return _localFile;
-#else
-				return String.Empty;
-#endif
 			}
 			set
 			{
-#if DEBUG
 				_localFile = value;
-#else
-				_localFile = _localFile;
-#endif
 			}
 		}
 

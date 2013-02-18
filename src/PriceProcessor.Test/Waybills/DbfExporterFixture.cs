@@ -50,6 +50,7 @@ namespace PriceProcessor.Test.Waybills
 				SupplierCostWithoutNDS = 98.19m,
 				Quantity = 4,
 				Nds = 10,
+				ProductEntity = new Product { CatalogProduct = new Catalog { Name = "CatalogProduct" } },
 			});
 		}
 

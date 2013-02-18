@@ -20,5 +20,11 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public bool Monobrend { get; set; }
+
+		[Property]
+		public uint NameId { get; set; }
+
+		[Property]
+		public uint FormId { get; set; }
 	}
 }

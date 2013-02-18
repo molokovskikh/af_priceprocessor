@@ -4,6 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Common.Tools;
+using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
+using NHibernate.Linq;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.Models.Export
@@ -195,6 +198,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.SetField("id_artis", line.AssortimentPriceInfo.Code);
 					row.SetField("name_artis", line.AssortimentPriceInfo.Synonym);
 					row.SetField("przv_artis", line.AssortimentPriceInfo.SynonymFirmCr);
+				}
+				else {
+					if(line.ProductEntity != null)
+						row.SetField("name_artis", line.ProductEntity.CatalogProduct.Name);
+					var producer = SessionHelper.WithSession(s => s.Query<Producer>().FirstOrDefault(p => p.Id == line.ProducerId));
+					if(producer != null)
+						row.SetField("przv_artis", producer.Name);
 				}
 				row.SetField("sp_prd_id", line.Code);
 				row.SetField("name_post", line.Product);

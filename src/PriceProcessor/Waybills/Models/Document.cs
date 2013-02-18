@@ -111,7 +111,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			if (settings.AssortimentPriceId == null) {
 				_log.InfoFormat("Не задан ассортиментный прайс-лист: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
-				return false;
+				return true;
 			}
 
 			// список id товаров из накладной
