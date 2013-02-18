@@ -55,12 +55,18 @@ namespace Inforoom.PriceProcessor.Models
 			if (documentType is WaybillType) {
 				if (String.IsNullOrEmpty(WaybillUrl))
 					return null;
-				return new Uri(WaybillUrl, UriKind.Relative);
+				return new UriBuilder(WaybillUrl) {
+					Scheme = "ftp",
+					Port = 21
+				}.Uri;
 			}
 			if (documentType is RejectType) {
 				if (String.IsNullOrEmpty(RejectUrl))
 					return null;
-				return new Uri(RejectUrl, UriKind.Relative);
+				return new UriBuilder(RejectUrl) {
+					Scheme = "ftp",
+					Port = 21
+				}.Uri;
 			}
 			return null;
 		}

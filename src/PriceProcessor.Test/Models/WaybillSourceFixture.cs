@@ -25,7 +25,8 @@ namespace PriceProcessor.Test.Models
 			var source = new WaybillSource();
 			source.WaybillUrl = "ftp.oriola-russia.ru/Nakl/";
 			var uri = source.Uri(new WaybillType());
-			Assert.That(uri.ToString(), Is.EqualTo("ftp.oriola-russia.ru/Nakl/"));
+			Assert.That(uri.ToString(), Is.EqualTo("ftp://ftp.oriola-russia.ru/Nakl/"));
+			Assert.That(uri.Host, Is.EqualTo("ftp.oriola-russia.ru"));
 		}
 	}
 }
