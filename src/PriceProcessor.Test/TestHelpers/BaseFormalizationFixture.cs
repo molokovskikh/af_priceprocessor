@@ -82,6 +82,9 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void Formalize()
 		{
+			if (session.Transaction.IsActive)
+				session.Transaction.Commit();
+
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var localPrice = session.Load<Price>(price.Id);
