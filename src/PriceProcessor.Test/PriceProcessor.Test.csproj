@@ -107,9 +107,6 @@
     <Reference Include="Rhino.Mocks">
       <HintPath>..\..\Lib\Rhino.Mocks.dll</HintPath>
     </Reference>
-    <Reference Include="SharpServer">
-      <HintPath>..\..\..\..\oss\sharp-ftp-server\src\SharpServer\bin\Debug\SharpServer.exe</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Configuration.Install" />
