@@ -1,4 +1,5 @@
-﻿using Inforoom.PriceProcessor.Models;
+﻿using Inforoom.Downloader.Documents;
+using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 
 namespace PriceProcessor.Test.Models
@@ -16,6 +17,15 @@ namespace PriceProcessor.Test.Models
 			source.FtpActiveMode = true;
 			client = source.CreateFtpClient();
 			Assert.That(client.PassiveMode, Is.False);
+		}
+
+		[Test]
+		public void Parse_uri()
+		{
+			var source = new WaybillSource();
+			source.WaybillUrl = "ftp.oriola-russia.ru/Nakl/";
+			var uri = source.Uri(new WaybillType());
+			Assert.That(uri.ToString(), Is.EqualTo("ftp.oriola-russia.ru/Nakl/"));
 		}
 	}
 }

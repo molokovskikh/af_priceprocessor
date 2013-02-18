@@ -55,12 +55,12 @@ namespace Inforoom.PriceProcessor.Models
 			if (documentType is WaybillType) {
 				if (String.IsNullOrEmpty(WaybillUrl))
 					return null;
-				return new Uri(WaybillUrl);
+				return new Uri(WaybillUrl, UriKind.Relative);
 			}
 			if (documentType is RejectType) {
 				if (String.IsNullOrEmpty(RejectUrl))
 					return null;
-				return new Uri(RejectUrl);
+				return new Uri(RejectUrl, UriKind.Relative);
 			}
 			return null;
 		}
