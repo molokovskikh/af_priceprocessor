@@ -164,7 +164,7 @@ GROUP BY SupplierId
 				}
 			}
 			catch (Exception e) {
-				var errorMessage = String.Format(@"Ошибка при попытке забрать документы с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
+				var errorMessage = String.Format("Ошибка при попытке забрать документы с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
 					waybillSource.Id,
 					documentType.DocType.GetDescription(),
 					uri);
