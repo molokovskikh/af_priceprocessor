@@ -22,7 +22,6 @@ namespace Inforoom.PriceProcessor.Waybills
 		protected Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>> {
 			{ 6256, new List<Type> { typeof(Avesta_6256_SpecialParser) } }, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
 			{ 2747, new List<Type> { typeof(KazanFarmDbfParser) } }, //Накладная в формате dbf от Казань-Фарм.
-			{ 7999, new List<Type> { typeof(TrediFarmCheboksarySpecialParser) } }, // Если накладная от Трэдифарм Чебоксары, обрабатываем ее специальным парсером
 			{ 7957, new List<Type> { typeof(ZhdanovKazanSpecialParser) } }, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
 			{
 				8063, new List<Type> {
