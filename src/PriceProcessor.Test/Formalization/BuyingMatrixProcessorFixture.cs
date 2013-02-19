@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Common.MySql;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
@@ -30,12 +31,8 @@ namespace PriceProcessor.Test.Formalization
 		{
 			FormalizeDefaultData();
 
-			With.Connection(c => {
-				var command = new MySqlCommand("select count(*) from farm.BuyingMatrix where PriceId = ?Priceid", c);
-				command.Parameters.AddWithValue("?PriceId", price.Id);
-				var count = Convert.ToUInt32(command.ExecuteScalar());
-				Assert.That(count, Is.GreaterThan(0));
-			});
+			var count = MatrixItemsCount();
+			Assert.That(count, Is.GreaterThan(0));
 		}
 
 		[Test]
@@ -62,11 +59,16 @@ namespace PriceProcessor.Test.Formalization
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;;
 911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;;");
 
-			With.Connection(c => {
+			var count = MatrixItemsCount();
+			Assert.That(count, Is.EqualTo(1), "код прайс листа {0}", price.Id);
+		}
+
+		private uint MatrixItemsCount()
+		{
+			return With.Connection(c => {
 				var command = new MySqlCommand("select count(*) from farm.BuyingMatrix where PriceId = ?Priceid", c);
 				command.Parameters.AddWithValue("?PriceId", price.Id);
-				var count = Convert.ToUInt32(command.ExecuteScalar());
-				Assert.That(count, Is.EqualTo(1), "код прайс листа {0}", price.Id);
+				return Convert.ToUInt32(command.ExecuteScalar());
 			});
 		}
 
@@ -93,6 +95,36 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(replications.Count, Is.GreaterThan(0));
 			foreach (var replication in replications)
 				Assert.That(replication[1], Is.EqualTo(1), replication[0].ToString());
+		}
+
+		[Test]
+		public void Update_filter_price_on_okp_source_price()
+		{
+			var origin = price;
+			price.CreateAssortmentBoundSynonyms(
+				"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
+				"Валента Фармацевтика/Королев Ф");
+			var core = new TestCore(price.ProductSynonyms[0], price.ProducerSynonyms[0]) {
+				CodeOKP = 931201
+			};
+			session.Save(core);
+
+			var okpPrice = new TestPrice(price.Supplier);
+			var format = Configure(okpPrice);
+			format.FCodeOkp = "F5";
+			session.Save(okpPrice);
+
+			var localOkpPrice = session.Load<Price>(okpPrice.Id);
+			localPrice.CodeOkpFilterPrice  = localOkpPrice;
+			session.Save(localPrice);
+
+			price = okpPrice;
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;931201;");
+
+			price = origin;
+			var count = MatrixItemsCount();
+			Assert.That(count, Is.EqualTo(1));
 		}
 	}
 }

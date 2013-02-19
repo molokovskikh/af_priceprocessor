@@ -1,6 +1,10 @@
 using System;
+using System.Linq;
 using Common.MySql;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
+using NHibernate;
+using NHibernate.Linq;
 using log4net;
 using MySql.Data.MySqlClient;
 
@@ -12,9 +16,24 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void UpdateBuyingMatrix(Price price)
 		{
-			if (price.Matrix == null)
-				return;
+			SessionHelper.StartSession(s => UpdateBuyingMatrix(s, price));
+		}
 
+		private void UpdateBuyingMatrix(ISession session, Price price)
+		{
+			if (price.Matrix != null)
+				UpdateMatrix(price);
+
+			var relatedPrices = session.Query<Price>()
+				.Where(p => p.CodeOkpFilterPrice == price && p.Matrix != null)
+				.ToArray();
+
+			foreach (var relatedPrice in relatedPrices)
+				UpdateMatrix(relatedPrice);
+		}
+
+		private void UpdateMatrix(Price price)
+		{
 			var query = new Query();
 			query
 				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP")
