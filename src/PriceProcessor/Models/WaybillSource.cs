@@ -52,23 +52,20 @@ namespace Inforoom.PriceProcessor.Models
 
 		public Uri Uri(InboundDocumentType documentType)
 		{
+			string data = null;
 			if (documentType is WaybillType) {
-				if (String.IsNullOrEmpty(WaybillUrl))
-					return null;
-				return new UriBuilder(WaybillUrl) {
-					Scheme = "ftp",
-					Port = 21
-				}.Uri;
+				data = WaybillUrl;
 			}
 			if (documentType is RejectType) {
-				if (String.IsNullOrEmpty(RejectUrl))
-					return null;
-				return new UriBuilder(RejectUrl) {
-					Scheme = "ftp",
-					Port = 21
-				}.Uri;
+				data = RejectUrl;
 			}
-			return null;
+			if (String.IsNullOrEmpty(data))
+				return null;
+
+			var uri = new Uri(WaybillUrl, UriKind.RelativeOrAbsolute);
+			if (!uri.IsAbsoluteUri)
+				uri = new UriBuilder("ftp" + System.Uri.SchemeDelimiter + WaybillUrl).Uri;
+			return uri;
 		}
 
 		public FTP_Client CreateFtpClient()
