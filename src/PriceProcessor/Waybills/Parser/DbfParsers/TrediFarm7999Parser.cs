@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCost, "CENASNDS")
 				.Line(l => l.Quantity, "KOLVO")
 				.Line(l => l.SerialNumber, "SERII")
-				.Line(l => l.Period, "EXPDATE")
+				.Line(l => l.Period, "EXPDATE", "SROK_GODN")
 				.Line(l => l.Nds, "NDSPOSTAV")
 				.Line(l => l.NdsAmount, "SUMMANDS")
 				.Line(l => l.Amount, "SUMMA")

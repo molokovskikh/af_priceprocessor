@@ -52,5 +52,13 @@ namespace Inforoom.PriceProcessor.Helpers
 				sessionHolder.ReleaseSession(session);
 			}
 		}
+
+		public static void StartSession(Action<ISession> action)
+		{
+			using(var scope = new TransactionScope(OnDispose.Rollback)) {
+				WithSession(action);
+				scope.VoteCommit();
+			}
+		}
 	}
 }

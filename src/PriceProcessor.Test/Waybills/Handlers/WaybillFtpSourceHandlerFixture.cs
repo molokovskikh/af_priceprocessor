@@ -21,6 +21,7 @@ using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
 using Common.Tools;
+using log4net.Config;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {

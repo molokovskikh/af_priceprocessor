@@ -65,18 +65,15 @@ GROUP BY SupplierId
 				.ToList();
 
 			foreach (var id in ids) {
-				using(var scope = new TransactionScope(OnDispose.Rollback)) {
-					SessionHelper.WithSession(s => {
-						try {
-							session = s;
-							ProcessSource(id);
-						}
-						finally {
-							session = null;
-						}
-					});
-					scope.VoteCommit();
-				}
+				SessionHelper.StartSession(s => {
+					try {
+						session = s;
+						ProcessSource(id);
+					}
+					finally {
+						session = null;
+					}
+				});
 			}
 		}
 

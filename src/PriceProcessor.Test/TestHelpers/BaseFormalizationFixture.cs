@@ -26,23 +26,16 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void CreatePrice()
 		{
-			price = TestSupplier.CreateTestSupplierWithPrice(p => {
-				var rules = p.Costs.Single().PriceItem.Format;
-				rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
-				rules.Delimiter = ";";
-				rules.FName1 = "F1";
-				rules.FFirmCr = "F2";
-				rules.FQuantity = "F3";
-				p.Costs.Single().FormRule.FieldName = "F4";
-			});
+			price = TestSupplier.CreateTestSupplierWithPrice(p => Configure(p));
 			var regionalData = new TestPriceRegionalData {
 				BaseCost = price.Costs.Single(),
 				Region = session.Load<TestRegion>((ulong)1),
 				Price = price
 			};
-			session.Save(regionalData);
 			price.RegionalData.Add(regionalData);
 			priceItem = price.Costs.First().PriceItem;
+
+			session.Save(regionalData);
 			Flush();
 		}
 
@@ -82,6 +75,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void Formalize()
 		{
+			session.Flush();
 			if (session.Transaction.IsActive)
 				session.Transaction.Commit();
 
@@ -92,6 +86,19 @@ namespace PriceProcessor.Test.TestHelpers
 			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
 			formalizer = new BasePriceParser2(reader, info);
 			formalizer.Formalize();
+		}
+
+		protected TestFormat Configure(TestPrice okpPrice)
+		{
+			priceItem = okpPrice.Costs[0].PriceItem;
+			var rules = priceItem.Format;
+			rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
+			rules.Delimiter = ";";
+			rules.FName1 = "F1";
+			rules.FFirmCr = "F2";
+			rules.FQuantity = "F3";
+			okpPrice.Costs.Single().FormRule.FieldName = "F4";
+			return rules;
 		}
 	}
 }
