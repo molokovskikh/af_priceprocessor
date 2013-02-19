@@ -440,8 +440,12 @@ namespace PriceProcessor.Test.Formalization
 		}
 
 		[Test]
-		public void daSynonymFirmCrTest_NoAutomatic()
+		public void Respect_is_automatic_flag()
 		{
+			//проверяем что IsAutomatic true
+			//мы создадим запись в AutomaticProducerSynonyms
+			//а если IsAutomatic false
+			//то не создаем
 			FakeParserSynonymTest(false, 0, typeof(FakeParser));
 			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
 			FakeParserSynonymTest(true, 1, typeof(FakeParser));
@@ -450,9 +454,7 @@ namespace PriceProcessor.Test.Formalization
 
 		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
 		{
-			var deleter = connection.CreateCommand();
-			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
-			deleter.ExecuteNonQuery();
+			Clean(connection);
 			parser.Prepare();
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
@@ -462,38 +464,46 @@ namespace PriceProcessor.Test.Formalization
 
 		private void FillDaSynonymFirmCr(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
-			var deleter = connection.CreateCommand();
-			deleter.CommandText = "delete  from AutomaticProducerSynonyms";
-			deleter.ExecuteNonQuery();
+			Clean(connection);
 			parser.Prepare();
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
+			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "456";
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = null;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
 			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
 		}
 
-		private void FakeParserSynonymTest(bool Automatic, int AutomaticProducerSynonyms, Type FakeType)
+		private void Clean(MySqlConnection connection)
 		{
-			With.Connection(c => {
-				var table = PricesValidator.LoadFormRules(priceItem.Id);
-				var row = table.Rows[0];
-				var info = new PriceFormalizationInfo(row, null);
-				if (FakeType == typeof(FakeParser)) {
-					var parser = new FakeParser(null, c, info);
-					FillDaSynonymFirmCr(parser, c, Automatic);
-				}
-				else {
-					var parser = new FakeParser2(new FakeReader(), info);
-					if (parser.Connection.State != ConnectionState.Open)
-						parser.Connection.Open();
-					FillDaSynonymFirmCr2(parser, c, Automatic);
-					parser.Connection.Close();
-				}
-				var counter = c.CreateCommand();
-				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
-				Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(AutomaticProducerSynonyms));
-			});
+			var deleter = connection.CreateCommand();
+			deleter.CommandText = "delete from AutomaticProducerSynonyms;" +
+				"delete from Farm.SynonymFirmCr where PriceCode = ?priceId";
+			deleter.Parameters.AddWithValue("priceId", price.Id);
+			deleter.ExecuteNonQuery();
+		}
+
+		private void FakeParserSynonymTest(bool automatic, int automaticProducerSynonyms, Type fakeType)
+		{
+			if (session.Transaction.IsActive)
+				session.Transaction.Commit();
+
+			var table = PricesValidator.LoadFormRules(priceItem.Id);
+			var row = table.Rows[0];
+			var info = new PriceFormalizationInfo(row, null);
+			if (fakeType == typeof(FakeParser)) {
+				var parser = new FakeParser(null, (MySqlConnection)session.Connection, info);
+				FillDaSynonymFirmCr(parser, (MySqlConnection)session.Connection, automatic);
+			}
+			else {
+				var parser = new FakeParser2(new FakeReader(), info);
+				if (parser.Connection.State != ConnectionState.Open)
+					parser.Connection.Open();
+				FillDaSynonymFirmCr2(parser, (MySqlConnection)session.Connection, automatic);
+				parser.Connection.Close();
+			}
+			var counter = session.Connection.CreateCommand();
+			counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
+			Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(automaticProducerSynonyms));
 		}
 	}
 }
