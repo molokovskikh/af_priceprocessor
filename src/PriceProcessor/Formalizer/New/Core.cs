@@ -136,6 +136,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public string Quantity;
 		public string Note;
 		public string Period;
+		public DateTime Exp;
 		public string Doc;
 		public decimal RegistryCost;
 		public decimal ProducerCost;

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.New;
@@ -101,7 +102,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				"Period, Junk, Await, MinBoundCost, " +
 				"VitallyImportant, RequestRatio, RegistryCost, " +
 				"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, Nds, " +
-				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc) values ");
+				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Exp) values ");
 			sb.Append("(");
 			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
 				drCore["PriceCode"],
@@ -121,6 +122,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
 			sb.AppendFormat("{0}, ", (drCore["ProducerCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["ProducerCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
 			sb.AppendFormat("{0}, ", (drCore["Nds"] is DBNull) ? "null" : Convert.ToUInt32(drCore["Nds"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
+
 			AddTextParameter("Code", drCore, sb);
 			sb.Append(", ");
 
@@ -140,6 +142,14 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			sb.Append(", ");
 
 			AddTextParameter("Doc", drCore, sb);
+			sb.Append(", ");
+
+			if (drCore["Period"] is DateTime) {
+				sb.AppendFormat("'{0:yyyy-MM-dd}'", drCore["Period"]);
+			}
+			else {
+				sb.AppendFormat("null");
+			}
 
 			sb.AppendLine(");");
 			sb.AppendLine("set @LastCoreID = last_insert_id();");
@@ -244,7 +254,16 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				return GetDecimalValue((decimal)value);
 			if (value is string)
 				return GetStringValue((string)value);
+			if (value is DateTime)
+				return GetDateTimeValue((DateTime)value);
 			throw new Exception(String.Format("Не знаю как преобразовать {0}", value));
+		}
+
+		private static string GetDateTimeValue(DateTime value)
+		{
+			if (value == DateTime.MinValue)
+				return "null";
+			return "'" + value.ToString(MySqlConsts.MySQLDateFormat) + "'";
 		}
 
 		public static string GetBoolValue(bool value)
