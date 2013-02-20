@@ -47,6 +47,7 @@ namespace Inforoom.Formalizer
 		{
 			DateTime periodAsDateTime;
 			if (DateTime.TryParse(Core.Period, out periodAsDateTime)) {
+				Core.Exp = periodAsDateTime;
 				var isJunk = SystemTime.Now() >= periodAsDateTime
 					|| periodAsDateTime.Subtract(SystemTime.Now()).TotalDays < 180;
 				if (isJunk)

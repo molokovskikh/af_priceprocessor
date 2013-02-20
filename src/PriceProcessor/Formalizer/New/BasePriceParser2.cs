@@ -402,6 +402,8 @@ order by c.Id",
 				return reader.IsDBNull(index) ? "" : reader.GetString(index);
 			if (type == typeof(bool))
 				return reader.GetBoolean(index);
+			if (type == typeof(DateTime))
+				return reader.IsDBNull(index) ? DateTime.MinValue : reader.GetDateTime(index);
 
 			throw new Exception(String.Format("Не знаю как считать тип {0}", type));
 		}

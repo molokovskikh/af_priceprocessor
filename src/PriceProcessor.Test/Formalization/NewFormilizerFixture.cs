@@ -452,6 +452,23 @@ namespace PriceProcessor.Test.Formalization
 			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
 		}
 
+		[Test]
+		public void Fill_exp_field()
+		{
+			priceItem.Format.FPeriod = "F5";
+			CreateDefaultSynonym();
+
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;10.12.2014;
+5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;янв;
+911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;");
+
+			session.Refresh(price);
+			var core = price.Core.First(c => c.ProductSynonym.Name.StartsWith("9 МЕСЯЦЕВ"));
+			Assert.That(core.Exp, Is.EqualTo(new DateTime(2014, 12, 10)));
+			core = price.Core.First(c => c.ProductSynonym.Name.StartsWith("5 ДНЕЙ"));
+			Assert.That(core.Exp, Is.Null);
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);
