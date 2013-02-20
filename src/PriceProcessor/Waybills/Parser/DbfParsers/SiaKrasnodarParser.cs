@@ -35,6 +35,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("GDATE")
 				&& data.Columns.Contains("SUMNDS2")
 				&& data.Columns.Contains("PRICE1")
+				&& !data.Columns.Contains("GNVLS")
 				&& data.Columns.Contains("PRICE2");
 		}
 	}
