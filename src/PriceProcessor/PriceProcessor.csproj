@@ -327,6 +327,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\SferaLipetsk12323Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SiaKrasnodarParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TrediFarm7999Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmCheboksaryParser.cs" />

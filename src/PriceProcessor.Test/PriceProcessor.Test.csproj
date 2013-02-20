@@ -221,6 +221,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\SiaChernozemie21ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaInternationalKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SIAInternationalOmskParserFixture2.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SiaKrasnodarParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\StatuSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TrediFarm7999ParcerFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UgFarm13769ParserFixture.cs" />
