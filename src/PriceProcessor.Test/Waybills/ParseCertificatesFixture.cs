@@ -340,6 +340,8 @@ delete from documents.Certificates where Id = :certificateId;
 		[Test(Description = "простой вызов обработки задачи сертификата")]
 		public void SimpleCertificatesSourceHandler()
 		{
+			Clean();
+
 			string supplierCertificatesDir;
 			string certificateFile;
 			var task = SuccessProcessCertificate(out supplierCertificatesDir, out certificateFile);
@@ -848,6 +850,8 @@ delete from documents.Certificates where Id = :certificateId;
 		[Test]
 		public void Ignore_duplicate_task()
 		{
+			Clean();
+
 			string dir;
 			string file;
 			var task = SuccessProcessCertificate(out dir, out file);
@@ -862,8 +866,6 @@ delete from documents.Certificates where Id = :certificateId;
 
 		private CertificateTask SuccessProcessCertificate(out string supplierCertificatesDir, out string certificateFile)
 		{
-			Clean();
-
 			var certificateSource = CreateRealSourceForSupplier(supplier);
 			var serialNumber = Path.GetRandomFileName();
 			var catalog = TestCatalogProduct.Queryable.First();
