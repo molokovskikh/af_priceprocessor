@@ -46,6 +46,7 @@ namespace PriceProcessor.Test.Handlers
 		public void TearDown()
 		{
 			handler.Threads.Each(t => t.AbortThread());
+			handler.Threads.Each(t => t.Join(1000));
 		}
 
 		[Test]

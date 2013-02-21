@@ -133,6 +133,11 @@ namespace Inforoom.Formalizer
 			_thread.Interrupt();
 		}
 
+		public void Join(int timeout = -1)
+		{
+			_thread.Join(timeout);
+		}
+
 		public string TID
 		{
 			get { return _thread.Name; }

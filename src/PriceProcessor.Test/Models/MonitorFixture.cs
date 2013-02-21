@@ -15,7 +15,8 @@ namespace PriceProcessor.Test.Models
 		public class TestHandler : BaseSourceHandler
 		{
 			public DateTime Started;
-			public ManualResetEvent ManualResetEvent = new ManualResetEvent(false);
+			public ManualResetEvent Continue = new ManualResetEvent(false);
+			public static ManualResetEvent New = new ManualResetEvent(false);
 			public static List<TestHandler> Handlers = new List<TestHandler>();
 
 			private bool normal;
@@ -30,6 +31,7 @@ namespace PriceProcessor.Test.Models
 				JoinTimeout = 200;
 				this.normal = normal;
 				Handlers.Add(this);
+				New.Set();
 			}
 
 			public override void ProcessData()
@@ -47,7 +49,7 @@ namespace PriceProcessor.Test.Models
 					//clr не будет кидать thread abort exception
 					//если мы сидим в finaly
 					if (!normal)
-						ManualResetEvent.WaitOne();
+						Continue.WaitOne();
 				}
 			}
 		}
@@ -56,12 +58,14 @@ namespace PriceProcessor.Test.Models
 		public void Restart_handle()
 		{
 			var testHandler = new TestHandler(false);
+			TestHandler.New.Reset();
+
 			var monitor = new Monitor(testHandler);
 			monitor.StopWaitTimeout = 200;
 			monitor.Start();
-			Thread.Sleep(1000);
+			TestHandler.New.WaitOne(2000);
 
-			testHandler.ManualResetEvent.Set();
+			testHandler.Continue.Set();
 			monitor.Stop();
 			Assert.That(TestHandler.Handlers.Count, Is.EqualTo(2));
 			Assert.That(TestHandler.Handlers[1].Started, Is.GreaterThan(DateTime.MinValue));
