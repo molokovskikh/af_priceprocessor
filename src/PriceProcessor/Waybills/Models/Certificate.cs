@@ -41,8 +41,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public CertificateFile NewFile(CertificateFile file)
 		{
-			if (CertificateFiles == null)
-				CertificateFiles = new List<CertificateFile>();
+			if (CertificateFiles.Contains(file))
+				return file;
 
 			file.Certificates.Add(this);
 			CertificateFiles.Add(file);
