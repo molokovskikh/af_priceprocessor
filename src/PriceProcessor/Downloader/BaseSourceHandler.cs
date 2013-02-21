@@ -119,8 +119,10 @@ namespace Inforoom.Downloader
 		{
 			base.HardStop();
 
-			if (!tWork.Join(maxJoinTime))
-				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
+			if (!Stoped) {
+				if (!tWork.Join(JoinTimeout))
+					_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", JoinTimeout);
+			}
 		}
 
 		//Типа источника

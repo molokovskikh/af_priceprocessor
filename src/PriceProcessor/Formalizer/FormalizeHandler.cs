@@ -72,8 +72,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 			base.HardStop();
 
-			if (!tWork.Join(maxJoinTime))
-				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
+			if (!tWork.Join(JoinTimeout))
+				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", JoinTimeout);
 
 			Thread.Sleep(600);
 
@@ -96,7 +96,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				_logger.InfoFormat("Ожидаем останов нитки {0}", pt[i].TID);
 				pt[i].AbortThread();
 				int _currentWaitTime = 0;
-				while ((_currentWaitTime < maxJoinTime) && ((pt[i].ThreadState & ThreadState.Stopped) == 0)) {
+				while ((_currentWaitTime < JoinTimeout) && ((pt[i].ThreadState & ThreadState.Stopped) == 0)) {
 					if ((pt[i].ThreadState & ThreadState.WaitSleepJoin) > 0)
 						pt[i].InterruptThread();
 					Thread.Sleep(1000);
@@ -105,7 +105,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if ((pt[i].ThreadState & ThreadState.Stopped) > 0)
 					_logger.InfoFormat("Останов нитки выполнен {0}", pt[i].TID);
 				else
-					_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", pt[i].TID, maxJoinTime);
+					_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", pt[i].TID, JoinTimeout);
 			}
 
 			//удяляем пулл временных папок

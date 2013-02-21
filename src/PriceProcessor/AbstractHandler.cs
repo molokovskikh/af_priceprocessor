@@ -11,8 +11,9 @@ namespace Inforoom.PriceProcessor
 	{
 		protected CancellationToken Cancellation;
 
+		protected bool Stoped = true;
+
 		private readonly CancellationTokenSource _cancellationSource;
-		private bool stoped = true;
 
 		/// <summary>
 		/// Ссылка на рабочую нитку
@@ -35,7 +36,7 @@ namespace Inforoom.PriceProcessor
 		/// <summary>
 		/// кол-во милисекунд, которые выделяются на завершение нитки
 		/// </summary>
-		protected const int maxJoinTime = 5000;
+		protected int JoinTimeout = 5000;
 
 		protected readonly log4net.ILog _logger;
 
@@ -122,7 +123,7 @@ namespace Inforoom.PriceProcessor
 
 		public virtual void HardStop()
 		{
-			if (!stoped)
+			if (!Stoped)
 				tWork.Abort();
 		}
 
@@ -134,18 +135,22 @@ namespace Inforoom.PriceProcessor
 		//Нитка, в которой осуществляется работа обработчика источника
 		protected void ThreadWork()
 		{
-			stoped = false;
-			while (!Cancellation.IsCancellationRequested) {
-				try {
-					ProcessData();
+			Stoped = false;
+			try {
+				while (!Cancellation.IsCancellationRequested) {
+					try {
+						ProcessData();
+					}
+					catch (Exception ex) {
+						Log(ex);
+					}
+					Ping();
+					Wait();
 				}
-				catch (Exception ex) {
-					Log(ex);
-				}
-				Ping();
-				Wait();
 			}
-			stoped = true;
+			finally {
+				Stoped = true;
+			}
 		}
 
 		protected void Wait()
