@@ -52,7 +52,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void PriceLogTimeTest()
 		{
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked();
 			var price = supplier.Prices[0];
 			price.Costs[0].PriceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
 			session.Save(price.Costs[0].PriceItem.Format);
@@ -66,12 +66,11 @@ namespace PriceProcessor.Test.Handlers
 			if(!Directory.Exists(Settings.Default.InboundPath))
 				Directory.CreateDirectory(Settings.Default.InboundPath);
 			File.SetLastAccessTime("test1.dbf", DateTime.Now);
-			Thread.Sleep(1000);
 			var handler = new FakeHandler();
 			handler.FillSourcesTable();
 			handler.SetDrCurrent(price.Costs[0].PriceItem.Id);
 			var now = DateTime.Now;
-			Thread.Sleep(1000);
+			now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
 			handler.LogDownloadedPriceTest(3, "test.dbf", "test1.dbf");
 			var downlog = session.CreateSQLQuery(String.Format(@"select Max(logtime) from
 logs.downlogs where PriceItemId = {0}",
@@ -80,7 +79,7 @@ logs.downlogs where PriceItemId = {0}",
 			var item = session.Load<PriceItem>(price.Costs[0].PriceItem.Id);
 			Assert.That(item.LastDownload, Is.LessThanOrEqualTo(now));
 			Assert.That(item.LocalLastDownload, Is.GreaterThanOrEqualTo(now));
-			Assert.That(downlog, Is.GreaterThan(now));
+			Assert.That(downlog, Is.GreaterThanOrEqualTo(now));
 		}
 	}
 }
