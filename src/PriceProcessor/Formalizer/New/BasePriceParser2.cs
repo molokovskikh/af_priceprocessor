@@ -109,9 +109,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 			string selectCostFormRulesSQL;
 			if (costType == CostTypes.MultiColumn)
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", _priceInfo.PriceCode);
+				selectCostFormRulesSQL = String.Format("select *, (exists(select * from usersettings.pricesregionaldata prd where prd.pricecode=pc.pricecode and prd.basecost=pc.costcode limit 1)) as NewBaseCost from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", _priceInfo.PriceCode);
 			else
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", _priceInfo.PriceCode, _priceInfo.CostCode.Value);
+				selectCostFormRulesSQL = String.Format("select *, (exists(select * from usersettings.pricesregionaldata prd where prd.pricecode=pc.pricecode and prd.basecost=pc.costcode limit 1)) as NewBaseCost from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", _priceInfo.PriceCode, _priceInfo.CostCode.Value);
 			var daPricesCost = new MySqlDataAdapter(selectCostFormRulesSQL, _connection);
 			var dtPricesCost = new DataTable("PricesCosts");
 			daPricesCost.Fill(dtPricesCost);

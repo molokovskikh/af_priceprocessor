@@ -78,7 +78,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		{
 			Id = Convert.ToUInt32(row["CostCode"]);
 			Name = (string)row["CostName"];
-			IsBaseCost = ("1" == row["BaseCost"].ToString());
+			IsBaseCost = ("1" == row["NewBaseCost"].ToString());
 			FieldName = (string)row["FieldName"];
 			Begin = (row["TxtBegin"] is DBNull) ? -1 : Convert.ToInt32(row["TxtBegin"]);
 			End = (row["TxtEnd"] is DBNull) ? -1 : Convert.ToInt32(row["TxtEnd"]);
