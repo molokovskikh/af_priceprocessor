@@ -95,6 +95,8 @@ namespace RemotePriceProcessor
 			binding.TransferMode = TransferMode.Streamed;
 			binding.MaxReceivedMessageSize = Int32.MaxValue;
 			binding.MaxBufferSize = MaxBufferSize;
+			binding.SendTimeout += new TimeSpan(0, 1, 0);
+			binding.ReceiveTimeout += new TimeSpan(0, 1, 0);
 			return binding;
 		}
 
