@@ -181,9 +181,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						foreach (var line in Lines) {
-							var code =
-								(String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
-							var listSupplierCode = dbSupplierCodes.Where(syn => !String.IsNullOrEmpty(code) && syn.Code.Trim().ToUpper() == code && syn.Product != null).ToList();
+							var code = (String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var codeCr = (String.IsNullOrEmpty(line.CodeCr) == false ? line.CodeCr.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var listSupplierCode = dbSupplierCodes.Where(syn =>
+								!String.IsNullOrEmpty(code)
+									&& syn.Code.Trim().ToUpper() == code
+									&& syn.CodeCr.Trim().ToUpper() == codeCr
+									&& syn.Product != null)
+								.ToList();
 							if(listSupplierCode.Count > 0) {
 								// если нашли код, то сопоставляем и по продукту и по производителю
 								var firstSupplierCode = listSupplierCode.First();

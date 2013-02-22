@@ -285,6 +285,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string Cipher { get; set; }
 
+		/// <summary>
+		/// Код производителя
+		/// </summary>
+		[Property]
+		public string CodeCr { get; set; }
+
 		//список идентификаторов документов которые отдает протек
 		//нужно для того что бы после разбора по этим идентификаторам загрузить файлы
 		[HasMany(Cascade = ManyRelationCascadeEnum.All)]

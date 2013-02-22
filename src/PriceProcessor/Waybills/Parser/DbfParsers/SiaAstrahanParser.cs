@@ -40,6 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.EAN13, "EAN13")
 				.Line(l => l.Nds, "NDS_PR")
 				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV")
+				.Line(l => l.CodeCr, "VCODE")
 				.ToDocument(document, data);
 
 			return document;
