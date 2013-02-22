@@ -14,8 +14,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private readonly string _filename;
 		private readonly XmlReader _reader;
-		private bool _inPrice;
-		private bool _readed;
 		private Stream _stream;
 
 		public FarmaimpeksOKPReader(string filename)
