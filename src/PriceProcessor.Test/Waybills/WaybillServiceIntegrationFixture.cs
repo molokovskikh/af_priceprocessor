@@ -104,7 +104,7 @@ namespace PriceProcessor.Test.Waybills
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer2.Id,
 				Product = session.Load<Product>(product4.Id),
-				CodeCr = "1"
+				CodeCr = "2"
 			};
 			session.Save(supplierCode4);
 			var supplierCode5 = new SupplierCode {
@@ -112,7 +112,7 @@ namespace PriceProcessor.Test.Waybills
 				Supplier = session.Load<Supplier>(supplier.Id),
 				ProducerId = (int)producer3.Id,
 				Product = session.Load<Product>(product5.Id),
-				CodeCr = "1"
+				CodeCr = "3"
 			};
 			session.Save(supplierCode5);
 
@@ -140,6 +140,7 @@ namespace PriceProcessor.Test.Waybills
 			line.Product = "Виагра";
 			line.Producer = " Тестовый производитель  ";
 			line.Code = "45678";
+			line.CodeCr = "1";
 
 			// сопоставляется по наименованию, product3, производитель - null
 			line = doc.NewLine();
@@ -151,12 +152,14 @@ namespace PriceProcessor.Test.Waybills
 			line.Product = "эластичный бинт";
 			line.Producer = "Воронежфарм";
 			line.Code = "789";
+			line.CodeCr = "2";
 
 			// сопоставляется по коду, product5, producer3
 			line = doc.NewLine();
 			line.Product = "Салфетки";
 			line.Producer = "Воронежфарм";
 			line.Code = "12345";
+			line.CodeCr = "3";
 
 			// сопоставляется по наименованию, потому как такого кода нет в базе, product6, producer3
 			line = doc.NewLine();
