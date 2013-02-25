@@ -295,7 +295,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public void CreateCertificateTasks()
 		{
-			Tasks.ForEach(task => task.Save());
+			//если источник сертификатов достаточно медленный
+			//то нужно проверять что задача не дубль
+			Tasks.Where(t => !t.IsDuplicate()).Each(task => task.Save());
 		}
 	}
 }

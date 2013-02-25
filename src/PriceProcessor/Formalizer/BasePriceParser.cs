@@ -442,9 +442,9 @@ namespace Inforoom.Formalizer
 
 			var selectCostFormRulesSQL = String.Empty;
 			if (costType == CostTypes.MultiColumn)
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", priceCode);
+				selectCostFormRulesSQL = String.Format("select *, (exists(select * from usersettings.pricesregionaldata prd where prd.pricecode=pc.pricecode and prd.basecost=pc.costcode limit 1)) as NewBaseCost from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode", priceCode);
 			else
-				selectCostFormRulesSQL = String.Format("select * from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", priceCode, costCode.Value);
+				selectCostFormRulesSQL = String.Format("select *, (exists(select * from usersettings.pricesregionaldata prd where prd.pricecode=pc.pricecode and prd.basecost=pc.costcode limit 1)) as NewBaseCost from usersettings.PricesCosts pc, farm.CostFormRules cfr where pc.PriceCode={0} and cfr.CostCode = pc.CostCode and pc.CostCode = {1}", priceCode, costCode.Value);
 
 			var daPricesCost = new MySqlDataAdapter(selectCostFormRulesSQL, MyConn);
 			var dtPricesCost = new DataTable("PricesCosts");
@@ -458,7 +458,7 @@ namespace Inforoom.Formalizer
 					new CoreCost(
 						Convert.ToInt64(r["CostCode"]),
 						(string)r["CostName"],
-						("1" == r["BaseCost"].ToString()),
+						("1" == r["NewBaseCost"].ToString()),
 						(string)r["FieldName"],
 						(r["TxtBegin"] is DBNull) ? -1 : Convert.ToInt32(r["TxtBegin"]),
 						(r["TxtEnd"] is DBNull) ? -1 : Convert.ToInt32(r["TxtEnd"])));
@@ -474,13 +474,6 @@ namespace Inforoom.Formalizer
 					if (bc.Length == 0)
 						throw new WarningFormalizeException(Settings.Default.BaseCostNotExistsError, firmCode, priceCode, firmShortName, priceName);
 
-					if (bc.Length > 1) {
-						throw new WarningFormalizeException(
-							String.Format(Settings.Default.DoubleBaseCostsError,
-								bc[0].costCode,
-								bc[1].costCode),
-							firmCode, priceCode, firmShortName, priceName);
-					}
 					currentCoreCosts.Remove(bc[0]);
 					currentCoreCosts.Insert(0, bc[0]);
 				}

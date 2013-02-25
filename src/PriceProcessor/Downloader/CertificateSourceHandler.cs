@@ -33,6 +33,11 @@ namespace Inforoom.PriceProcessor.Downloader
 			ErrorCount++;
 			Exception = exception;
 		}
+
+		public override string ToString()
+		{
+			return Exception.ToString();
+		}
 	}
 
 	public class CertificateSourceHandler : AbstractHandler
@@ -106,6 +111,13 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private void ProcessTask(CertificateTask certificateTask)
 		{
+			//мы можем создать дублирующиеся задачи
+			//по этому одна из предыдущих задач может уже загрузить сертификаты
+			//если это так то ничего делать не нужно
+			ActiveRecordMediator.Refresh(certificateTask.DocumentLine);
+			if (certificateTask.DocumentLine.Certificate != null)
+				return;
+
 			var source = DetectSource(certificateTask);
 
 			if (source != null) {
@@ -205,7 +217,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
 				try {
 					session.CreateSQLQuery(@"
-	update  
+	update
 		documents.Certificates c,
 		catalogs.Products p,
 		documents.DocumentBodies db
@@ -214,10 +226,10 @@ namespace Inforoom.PriceProcessor.Downloader
 	where
 		c.Id = :certificateId
 		and p.CatalogId = c.catalogId
-		and db.ProductId is not null 
-		and db.SerialNumber is not null 
-		and db.ProductId = p.Id 
-		and db.SerialNumber = :serialNumber 
+		and db.ProductId is not null
+		and db.SerialNumber is not null
+		and db.ProductId = p.Id
+		and db.SerialNumber = :serialNumber
 		and db.CertificateId is null;
 		")
 						.SetParameter("certificateId", certificate.Id)

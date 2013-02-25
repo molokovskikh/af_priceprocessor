@@ -24,19 +24,25 @@ namespace Inforoom.PriceProcessor
 	/// <summary>
 	/// Класс для отслеживание работа обработчиков источников.
 	/// </summary>
-	public class Monitor
+	public class Monitor : AbstractHandler
 	{
 		private readonly List<AbstractHandler> _handlers;
-		private readonly Thread _monitor;
-		private readonly ILog _logger = LogManager.GetLogger(typeof(Monitor));
-
-		private bool Stopped;
 
 		private ServiceHost _priceProcessorHost;
 		private ServiceHost _waybillServiceHost;
 		private const string _strProtocol = @"net.tcp://";
 
 		private static Monitor _instance;
+
+		public int StopWaitTimeout = 5000;
+
+		public Monitor(params AbstractHandler[] handlers)
+		{
+			SleepTime = 500;
+			_handlers = new List<AbstractHandler>();
+			_handlers.AddRange(handlers);
+			tWork.Name = "MonitorThread";
+		}
 
 		private Monitor()
 		{
@@ -58,8 +64,6 @@ namespace Inforoom.PriceProcessor
 				new DocSourceHandler()
 #endif
 			};
-
-			_monitor = new Thread(MonitorWork) { Name = "MonitorThread" };
 		}
 
 		public static Monitor GetInstance()
@@ -76,13 +80,18 @@ namespace Inforoom.PriceProcessor
 			return null;
 		}
 
-		//запускаем монитор с обработчиками
 		public void Start()
+		{
+			StartWork();
+		}
+
+		//запускаем монитор с обработчиками
+		public override void StartWork()
 		{
 			try {
 				StartServices();
 
-				foreach (var handler in _handlers)
+				foreach (var handler in _handlers) {
 					try {
 						handler.StartWork();
 						_logger.InfoFormat("Запущен обработчик {0}.", handler.GetType().Name);
@@ -90,7 +99,9 @@ namespace Inforoom.PriceProcessor
 					catch (Exception exHan) {
 						_logger.ErrorFormat("Ошибка при старте обработчика {0}:\r\n{1}", handler.GetType().Name, exHan);
 					}
-				_monitor.Start();
+				}
+
+				base.StartWork();
 				_logger.Info("PriceProcessor запущен.");
 			}
 			catch (Exception ex) {
@@ -125,15 +136,14 @@ namespace Inforoom.PriceProcessor
 		public void Stop()
 		{
 			try {
-				Stopped = true;
-				Thread.Sleep(3000);
-				_monitor.Abort();
+				SoftStop();
 
 				foreach (var handler in _handlers) {
 					handler.SoftStop();
 				}
 				//сначала мы просим что бы нитки остановились и даем им время на это
-				Thread.Sleep(TimeSpan.FromSeconds(5));
+				Thread.Sleep(StopWaitTimeout);
+				HardStop();
 
 				//теперь мы убиваем те нитки которые не остановились
 				foreach (var handler in _handlers)
@@ -154,32 +164,24 @@ namespace Inforoom.PriceProcessor
 			_logger.Info("PriceProcessor остановлен.");
 		}
 
-		private void MonitorWork()
+		public override void ProcessData()
 		{
-			while (!Stopped) {
+			var deadHandlers = _handlers.Where(h => !h.Worked).ToArray();
+			foreach (var handler in deadHandlers) {
 				try {
-					var deadHandlers = _handlers.Where(h => !h.Worked).ToArray();
-					foreach (var handler in deadHandlers) {
-						try {
-							handler.SoftStop();
-							Thread.Sleep(5000);
+					handler.SoftStop();
+					Thread.Sleep(StopWaitTimeout);
 
-							handler.HardStop();
+					handler.HardStop();
 
-							_handlers.Remove(handler);
+					_handlers.Remove(handler);
 
-							var newHandler = (AbstractHandler)Activator.CreateInstance(handler.GetType());
-							_handlers.Add(newHandler);
-						}
-						catch(Exception e) {
-							_logger.Error(String.Format("Ошибка при останоке обработчика {0}", handler), e);
-						}
-					}
-
-					Thread.Sleep(500);
+					var newHandler = (AbstractHandler)Activator.CreateInstance(handler.GetType());
+					newHandler.StartWork();
+					_handlers.Add(newHandler);
 				}
-				catch (Exception e) {
-					_logger.Error("Ошибка в нитке", e);
+				catch(Exception e) {
+					_logger.Error(String.Format("Ошибка при останоке обработчика {0}", handler), e);
 				}
 			}
 		}

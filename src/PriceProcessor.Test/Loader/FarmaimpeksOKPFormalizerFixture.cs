@@ -20,7 +20,7 @@ namespace PriceProcessor.Test.Loader
 		[SetUp]
 		public void SetUp()
 		{
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked();
 			_price = supplier.Prices[0];
 			_price.PriceType = PriceType.Assortment;
 			Save(_price);

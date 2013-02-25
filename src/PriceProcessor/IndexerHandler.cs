@@ -300,8 +300,8 @@ namespace Inforoom.PriceProcessor
 		{
 			base.HardStop();
 
-			if (!tWork.Join(maxJoinTime))
-				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", maxJoinTime);
+			if (!tWork.Join(JoinTimeout))
+				_logger.ErrorFormat("Рабочая нитка не остановилась за {0} миллисекунд.", JoinTimeout);
 
 			//Пытаемся корректно остановить нитки
 			for (int i = taskList.Count - 1; i >= 0; i--)
@@ -326,7 +326,7 @@ namespace Inforoom.PriceProcessor
 				_logger.InfoFormat("Ожидаем останов нитки {0}", taskList[i].Id);
 				taskList[i].AbortThread();
 				int _currentWaitTime = 0;
-				while ((_currentWaitTime < maxJoinTime) && ((taskList[i].ThreadState & ThreadState.Stopped) == 0)) {
+				while ((_currentWaitTime < JoinTimeout) && ((taskList[i].ThreadState & ThreadState.Stopped) == 0)) {
 					if ((taskList[i].ThreadState & ThreadState.WaitSleepJoin) > 0)
 						taskList[i].InterruptThread();
 					Thread.Sleep(1000);
@@ -335,7 +335,7 @@ namespace Inforoom.PriceProcessor
 				if ((taskList[i].ThreadState & ThreadState.Stopped) > 0)
 					_logger.InfoFormat("Останов нитки выполнен {0}", taskList[i].Id);
 				else
-					_logger.InfoFormat("Нитка сопоставления {0} не остановилась за {1} миллисекунд.", taskList[i].Id, maxJoinTime);
+					_logger.InfoFormat("Нитка сопоставления {0} не остановилась за {1} миллисекунд.", taskList[i].Id, JoinTimeout);
 			}
 		}
 

@@ -173,13 +173,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 				if (baseCosts.Length == 0)
 					throw new WarningFormalizeException(PriceProcessor.Settings.Default.BaseCostNotExistsError, _priceInfo);
 
-				if (baseCosts.Length > 1) {
-					throw new WarningFormalizeException(
-						String.Format(PriceProcessor.Settings.Default.DoubleBaseCostsError,
-							baseCosts[0].Id,
-							baseCosts[1].Id),
-						_priceInfo);
-				}
 				var baseCost = baseCosts.Single();
 
 				if (baseCost.Begin == -1 && baseCost.End == -1 && String.Empty == baseCost.FieldName)

@@ -1,4 +1,5 @@
-﻿using Castle.ActiveRecord;
+﻿using System.Linq;
+using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
 using Common.Tools;
@@ -37,6 +38,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		[BelongsTo("DocumentBodyId")]
 		public virtual DocumentLine DocumentLine { get; set; }
+
+		public virtual bool IsDuplicate()
+		{
+			return Queryable.Any(t => t.CertificateSource == CertificateSource
+				&& t.SerialNumber == SerialNumber
+				&& t.CatalogProduct == CatalogProduct);
+		}
 
 		public override string ToString()
 		{
