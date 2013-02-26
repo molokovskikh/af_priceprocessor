@@ -15,3 +15,4 @@ _ReSharper.*
 *.Publish.xml
 build/
 packages/
+src/*.properties
