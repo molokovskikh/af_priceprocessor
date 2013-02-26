@@ -123,8 +123,11 @@ namespace Inforoom.PriceProcessor
 
 		public virtual void HardStop()
 		{
-			if (!Stoped)
+			if (!Stoped) {
+				_logger.Debug("Вызываем Thread.Abort()");
 				tWork.Abort();
+				_logger.Debug("Вызов завершен Thread.Abort()");
+			}
 		}
 
 		protected void Ping()
