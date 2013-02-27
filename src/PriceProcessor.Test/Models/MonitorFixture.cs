@@ -62,6 +62,7 @@ namespace PriceProcessor.Test.Models
 		public void Setup()
 		{
 			events = new EventFilter<Monitor>(Level.Debug);
+			new EventFilter<TestHandler>(Level.Debug, events.FakeAppender);
 		}
 
 		[TearDown]
