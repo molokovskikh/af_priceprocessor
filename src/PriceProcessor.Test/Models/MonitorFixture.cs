@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Models
 		public class TestHandler : BaseSourceHandler
 		{
 			public DateTime Started;
-			public ManualResetEvent Continue = new ManualResetEvent(false);
+			public ManualResetEvent Aborted = new ManualResetEvent(false);
 			public static ManualResetEvent New = new ManualResetEvent(false);
 			public static List<TestHandler> Handlers = new List<TestHandler>();
 
@@ -50,10 +50,7 @@ namespace PriceProcessor.Test.Models
 					}
 				}
 				finally {
-					//clr не будет кидать thread abort exception
-					//если мы сидим в finaly
-					if (!normal)
-						Continue.WaitOne();
+					Aborted.Set();
 				}
 			}
 		}
@@ -80,9 +77,10 @@ namespace PriceProcessor.Test.Models
 			var monitor = new Monitor(testHandler);
 			monitor.StopWaitTimeout = 200;
 			monitor.Start();
-			TestHandler.New.WaitOne(2000);
 
-			testHandler.Continue.Set();
+			testHandler.Aborted.WaitOne(1000);
+			TestHandler.New.WaitOne(1000);
+
 			monitor.Stop();
 			Assert.That(TestHandler.Handlers.Count, Is.EqualTo(2), events.Events.Implode(e => e.MessageObject));
 			Assert.That(TestHandler.Handlers[1].Started, Is.GreaterThan(DateTime.MinValue));
