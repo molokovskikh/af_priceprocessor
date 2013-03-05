@@ -1120,6 +1120,7 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		public int MySqlMaxPacketSize
 		{
 			get { return (int)this["MySqlMaxPacketSize"]; }
