@@ -466,6 +466,15 @@ order by c.Id",
 				yield return "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", usedProducerSynonyms) + ");";
 		}
 
+		public IDisposable Profile(string text)
+		{
+			var watch = Stopwatch.StartNew();
+			return new DisposibleAction(() => {
+				watch.Stop();
+				_logger.DebugFormat("{0}, {1}с", text, watch.Elapsed.TotalSeconds);
+			});
+		}
+
 		/// <summary>
 		/// Окончание разбора прайса, с последующим логированием статистики
 		/// </summary>
@@ -491,28 +500,24 @@ order by c.Id",
 				var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 				try {
-					InsertNewProducerSynonyms(transaction);
-					InsertNewCosts();
-#if BUTCHER
-					var buffer = new byte[10 * 1024 * 1024];
-					var batcher = new Batcher(_connection);
-					var encoding = Encoding.GetEncoding(1251);
-					Action<string, int> withBuffer = (command, bytes) => encoding.GetBytes(command, 0, command.Length, buffer, bytes);
+					using (Profile("Вставка синонимов производителей"))
+						InsertNewProducerSynonyms(transaction);
 
-					foreach (var populatedBytes in PrepareData(withBuffer))
-					{
-						batcher.Send(buffer, populatedBytes);
-					}
-#else
+					using (Profile("Вставка новых записей в Core"))
+						InsertNewCosts();
+
 					var builder = new StringBuilder();
 					var command = new MySqlCommand(null, _connection);
+					command.CommandText = "SET unique_checks=0;SET foreign_key_checks=0;SET autocommit=0;";
+					command.ExecuteNonQuery();
 					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
 						command.CommandText = builder.ToString();
+						//if (_logger.IsDebugEnabled)
+						//	_logger.Debug(command.CommandText);
 						builder.Clear();
-						command.ExecuteNonQuery();
+						using (Profile("Обновление Core и CoreCosts"))
+							command.ExecuteNonQuery();
 					}
-#endif
-
 					Maintain(transaction, logMessage);
 
 					transaction.Commit();
@@ -543,28 +548,17 @@ order by c.Id",
 
 		private IEnumerable<int> PrepareData(Action<string, int> populateCommand)
 		{
-			var MaxPacketSize = 500 * 1024;
-			var MaxCommandCount = 500;
-			var index = 0;
 			var populatedBytes = 0;
 			foreach (var command in BuildSql().Where(c => !String.IsNullOrEmpty(c))) {
-				if (_logger.IsDebugEnabled)
-					_logger.Debug(command);
-
-				if (index > MaxCommandCount || populatedBytes + command.Length > MaxPacketSize) {
-					if (_logger.IsDebugEnabled)
-						_logger.Debug("Запуск");
+				if (populatedBytes + command.Length > Settings.Default.MySqlMaxPacketSize) {
 					yield return populatedBytes;
 					populatedBytes = 0;
-					index = 0;
 				}
 				populateCommand(command, populatedBytes);
 				populatedBytes += command.Length;
-				index++;
 			}
 			if (populatedBytes > 0)
 				yield return populatedBytes;
-			yield break;
 		}
 
 		private void Maintain(MySqlTransaction transaction, StringBuilder logMessage)
@@ -847,7 +841,7 @@ and a.FirmCode = p.FirmCode;",
 		{
 			if(PosName == null)
 				return false;
-			DataRow[] dr = dtForbidden.Select(String.Format("Forbidden = '{0}'", PosName.Replace("'", "''")));
+			var dr = dtForbidden.Select(String.Format("Forbidden = '{0}'", PosName.Replace("'", "''")));
 			return dr.Length > 0;
 		}
 

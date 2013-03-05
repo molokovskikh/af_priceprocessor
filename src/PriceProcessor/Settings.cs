@@ -1120,5 +1120,9 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		public int MySqlMaxPacketSize
+		{
+			get { return (int)this["MySqlMaxPacketSize"]; }
+		}
 	}
 }
