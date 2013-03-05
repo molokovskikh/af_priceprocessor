@@ -508,8 +508,6 @@ order by c.Id",
 
 					var builder = new StringBuilder();
 					var command = new MySqlCommand(null, _connection);
-					command.CommandText = "SET unique_checks=0;SET foreign_key_checks=0;SET autocommit=0;";
-					command.ExecuteNonQuery();
 					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
 						command.CommandText = builder.ToString();
 						//if (_logger.IsDebugEnabled)
