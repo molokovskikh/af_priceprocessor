@@ -15,7 +15,7 @@ from Documents.FileCertificates f
 where d.Id <> f.Id;
 
 delete f
-from Documents.FileCertificate f
+from Documents.FileCertificates f
 	join for_delete d on d.Id = f.Id;
 
 alter table Documents.FileCertificates
