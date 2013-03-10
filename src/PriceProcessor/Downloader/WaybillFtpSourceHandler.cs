@@ -168,7 +168,7 @@ GROUP BY SupplierId
 
 				if (!_failedSources.Contains(waybillSource.Id)) {
 					_failedSources.Add(waybillSource.Id);
-					_logger.Error(errorMessage, e);
+					_logger.Warn(errorMessage, e);
 				}
 				else
 					_logger.Debug(errorMessage, e);
