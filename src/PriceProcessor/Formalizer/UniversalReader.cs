@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -67,7 +69,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override object EndConsume()
 		{
-			_position.Core.Costs = Costs.ToArray();
+			_position.Core.Costs = Costs.GroupBy(c => c.Description).Select(g => g.First()).ToArray();
 			Costs.Clear();
 			return _position;
 		}
@@ -227,11 +229,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private List<CostDescription> _descriptions;
 		private Cost _cost;
+		private Dictionary<string, CostDescription> lookup;
 
 		public PriceCostState(string tag, List<CostDescription> descriptions) : base(tag)
 		{
 			IsConsumable = true;
 			_descriptions = descriptions;
+			lookup = _descriptions.ToDictionary(h => h.Name, h => h);
 		}
 
 		public override void BeginConsume()
@@ -241,8 +245,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override object EndConsume()
 		{
-			if (_cost.IsValid() && ((PriceItemState)Prev).Costs
-				.FirstOrDefault(c => c.Description.Name.ToLower() == _cost.Description.Name.ToLower()) == null)
+			if (_cost.IsValid())
 				((PriceItemState)Prev).Costs.Add(_cost);
 			DescriptionOparation(_cost);
 			return null;
@@ -267,11 +270,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if (String.IsNullOrEmpty(value))
 					return;
 
-				_cost.Description = _descriptions.FirstOrDefault(d => d.Name.Match(value));
-				if (_cost.Description == null) {
+				if (!lookup.TryGetValue(value, out _cost.Description)) {
 					var costDescription = new CostDescription { Name = value };
 					_cost.Description = costDescription;
 					_descriptions.Add(costDescription);
+					lookup = _descriptions.ToDictionary(h => h.Name, h => h);
 				}
 				return;
 			}
@@ -356,6 +359,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					}
 				}
 			} while (_reader.Read());
+			yield break;
 		}
 
 		public enum State
