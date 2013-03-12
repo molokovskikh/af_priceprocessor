@@ -169,16 +169,21 @@ namespace Inforoom.PriceProcessor
 			var deadHandlers = _handlers.Where(h => !h.Worked).ToArray();
 			foreach (var handler in deadHandlers) {
 				try {
+					_logger.DebugFormat("Попытка остановки обработчика {0}", handler);
 					handler.SoftStop();
 					Thread.Sleep(StopWaitTimeout);
 
 					handler.HardStop();
 
 					_handlers.Remove(handler);
+					_logger.DebugFormat("Обработчик остановлен {0}", handler);
 
-					var newHandler = (AbstractHandler)Activator.CreateInstance(handler.GetType());
+					var type = handler.GetType();
+					_logger.DebugFormat("Попытка запуска обработчика {0}", type);
+					var newHandler = (AbstractHandler)Activator.CreateInstance(type);
 					newHandler.StartWork();
 					_handlers.Add(newHandler);
+					_logger.DebugFormat("Обработчик запущен {0}", type);
 				}
 				catch(Exception e) {
 					_logger.Error(String.Format("Ошибка при останоке обработчика {0}", handler), e);

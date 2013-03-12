@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Common.Tools;
 using Inforoom.Downloader;
@@ -7,6 +8,7 @@ using Inforoom.PriceProcessor;
 using NUnit.Framework;
 using log4net.Config;
 using log4net.Core;
+using log4net.Layout;
 using Monitor = Inforoom.PriceProcessor.Monitor;
 
 namespace PriceProcessor.Test.Models
@@ -82,7 +84,12 @@ namespace PriceProcessor.Test.Models
 			TestHandler.New.WaitOne(1000);
 
 			monitor.Stop();
-			Assert.That(TestHandler.Handlers.Count, Is.EqualTo(2), events.Events.Implode(e => e.MessageObject));
+			var l = new PatternLayout("%date{HH:mm:ss.fff} [%-5thread] %-5level %-29logger{1} %message%n");
+			var writer = new StringWriter();
+			foreach (var e in events.Events) {
+				l.Format(writer, e);
+			}
+			Assert.That(TestHandler.Handlers.Count, Is.EqualTo(2), writer.ToString());
 			Assert.That(TestHandler.Handlers[1].Started, Is.GreaterThan(DateTime.MinValue));
 		}
 	}
