@@ -157,7 +157,7 @@ GROUP BY SupplierId
 				if (!haveErrors && _failedSources.Contains(waybillSource.Id)) {
 					waybillSource.LastError = DateTime.Now;
 					_failedSources.Remove(waybillSource.Id);
-					_logger.ErrorFormat("После возникновения ошибок загрузка накладных прошла успешно. Код поставщика: {0}", waybillSource.Id);
+					_logger.WarnFormat("После возникновения ошибок загрузка накладных прошла успешно. Код поставщика: {0}", waybillSource.Id);
 				}
 			}
 			catch (Exception e) {
