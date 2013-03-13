@@ -196,6 +196,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AllianceHealthCareParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingVolgogradParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AstrahanFarm12729ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BelotelovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParserFixture.cs" />
