@@ -15,6 +15,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class AptekaHoldingSingleParserFixture
 	{
+		[Test, Description("Просто проверяем, что при отсутствии колонки TZENA парсинг происходит")]
+		public void No_Tzena()
+		{
+			WaybillParser.Parse("30893754_001.dbf");
+		}
+
 		[Test]
 		public void Parse()
 		{
