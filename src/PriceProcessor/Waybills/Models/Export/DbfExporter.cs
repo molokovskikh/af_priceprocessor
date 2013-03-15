@@ -177,6 +177,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("otp_cena", typeof(decimal)),
 				new DataColumn("rcena", typeof(decimal)),
 				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
+				new DataColumn("id_producer", typeof(string)) { MaxLength = 20 },
+				new DataColumn("sp_producer_id", typeof(string)) { MaxLength = 20 },
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
@@ -198,6 +200,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.SetField("id_artis", line.AssortimentPriceInfo.Code);
 					row.SetField("name_artis", line.AssortimentPriceInfo.Synonym);
 					row.SetField("przv_artis", line.AssortimentPriceInfo.SynonymFirmCr);
+					row.SetField("id_producer", line.AssortimentPriceInfo.CodeCr);
 				}
 				else {
 					if(line.ProductEntity != null)
@@ -251,6 +254,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("otp_cena", line.SaleCost);
 				row.SetField("rcena", line.RetailCost);
 				row.SetField("shifr", line.Cipher);
+				row.SetField("sp_producer_id", line.CodeCr);
 
 				var invoice = document.Invoice;
 				if (invoice != null) {

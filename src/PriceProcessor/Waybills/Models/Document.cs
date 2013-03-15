@@ -130,6 +130,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					var info = new AssortimentPriceInfo();
 					uint res;
 					info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
+					info.CodeCr = core.CodeCr;
 					info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
 					info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
 					line.AssortimentPriceInfo = info;

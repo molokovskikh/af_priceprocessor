@@ -99,6 +99,16 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(data.Rows[0]["rcena"], Is.EqualTo(3));
 		}
 
+		[Test]
+		public void ExportCodeCr()
+		{
+			document.Lines[0].AssortimentPriceInfo = new AssortimentPriceInfo { CodeCr = "0000055555" };
+			document.Lines[0].CodeCr = "123456";
+			var data = ExportFile();
+			Assert.That(data.Rows[0]["id_producer"], Is.EqualTo("0000055555"));
+			Assert.That(data.Rows[0]["sp_producer_id"], Is.EqualTo("123456"));
+		}
+
 		private DataTable ExportFile()
 		{
 			var file = "Export_universal_dbf.dbf";

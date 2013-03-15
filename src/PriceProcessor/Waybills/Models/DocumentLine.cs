@@ -10,6 +10,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public uint? Code { get; set; }
 		public string Synonym { get; set; }
 		public string SynonymFirmCr { get; set; }
+		public string CodeCr { get; set; }
 	}
 
 	[ActiveRecord("ProtekDocs", Schema = "Documents")]
