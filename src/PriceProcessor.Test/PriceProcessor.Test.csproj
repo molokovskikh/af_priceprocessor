@@ -198,6 +198,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AstrahanFarm12729ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelotelovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BTKParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParserFixture.cs" />
