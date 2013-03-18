@@ -83,7 +83,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			var table = new DataTable();
 			table.Columns.AddRange(new[] {
 				new DataColumn("postid_af", typeof(int)),
-				new DataColumn("post_name_af") { MaxLength = 255 },
+				new DataColumn("PostNameAF") { MaxLength = 255 },
 				new DataColumn("apt_af", typeof(int)),
 				new DataColumn("aname_af") { MaxLength = 255 },
 				new DataColumn("ttn") { MaxLength = 50 },
@@ -98,7 +98,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("sgodn", typeof(DateTime)),
 				new DataColumn("sert") { MaxLength = 150 },
 				new DataColumn("sert_date", typeof(DateTime)),
-				new DataColumn("prcena_bnds", typeof(decimal)) {
+				new DataColumn("prcenabnds", typeof(decimal)) {
 					ExtendedProperties = {
 						{ "presision", 12 },
 						{ "scale", 2 },
@@ -177,8 +177,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("otp_cena", typeof(decimal)),
 				new DataColumn("rcena", typeof(decimal)),
 				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
-				new DataColumn("id_producer", typeof(string)) { MaxLength = 20 },
-				new DataColumn("sp_producer_id", typeof(string)) { MaxLength = 20 },
+				new DataColumn("idproducer", typeof(string)) { MaxLength = 20 },
+				new DataColumn("sp_prdr_id", typeof(string)) { MaxLength = 20 },
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
@@ -190,7 +190,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			foreach (var line in document.Lines) {
 				var row = table.NewRow();
 				row.SetField("postid_af", document.FirmCode);
-				row.SetField("post_name_af", document.Log.Supplier.FullName);
+				row.SetField("PostNameAF", document.Log.Supplier.FullName);
 				row.SetField("apt_af", document.Address.Id);
 				row.SetField("aname_af", document.Address.Name);
 				row.SetField("ttn", document.ProviderDocumentId);
@@ -200,7 +200,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.SetField("id_artis", line.AssortimentPriceInfo.Code);
 					row.SetField("name_artis", line.AssortimentPriceInfo.Synonym);
 					row.SetField("przv_artis", line.AssortimentPriceInfo.SynonymFirmCr);
-					row.SetField("id_producer", line.AssortimentPriceInfo.CodeCr);
+					row.SetField("idproducer", line.AssortimentPriceInfo.CodeCr);
 				}
 				else {
 					if(line.ProductEntity != null)
@@ -232,7 +232,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				}
 				row.SetField("sert_date", nullPeriod);
 
-				row.SetField("prcena_bnds", line.ProducerCostWithoutNDS);
+				row.SetField("prcenabnds", line.ProducerCostWithoutNDS);
 				row.SetField("gr_cena", line.RegistryCost);
 				row.SetField("reg_date", line.RegistryDate);
 				row.SetField("sp_markup", line.SupplierPriceMarkup);
@@ -254,7 +254,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("otp_cena", line.SaleCost);
 				row.SetField("rcena", line.RetailCost);
 				row.SetField("shifr", line.Cipher);
-				row.SetField("sp_producer_id", line.CodeCr);
+				row.SetField("sp_prdr_id", line.CodeCr);
 
 				var invoice = document.Invoice;
 				if (invoice != null) {

@@ -105,8 +105,8 @@ namespace PriceProcessor.Test.Waybills
 			document.Lines[0].AssortimentPriceInfo = new AssortimentPriceInfo { CodeCr = "0000055555" };
 			document.Lines[0].CodeCr = "123456";
 			var data = ExportFile();
-			Assert.That(data.Rows[0]["id_producer"], Is.EqualTo("0000055555"));
-			Assert.That(data.Rows[0]["sp_producer_id"], Is.EqualTo("123456"));
+			Assert.That(data.Rows[0]["idproducer"], Is.EqualTo("0000055555"));
+			Assert.That(data.Rows[0]["sp_prdr_id"], Is.EqualTo("123456"));
 		}
 
 		private DataTable ExportFile()
