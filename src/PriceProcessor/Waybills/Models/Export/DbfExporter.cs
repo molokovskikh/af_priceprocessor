@@ -89,6 +89,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("ttn") { MaxLength = 50 },
 				new DataColumn("ttn_date", typeof(DateTime)),
 				new DataColumn("id_artis", typeof(int)),
+				new DataColumn("idproducer", typeof(int)),
 				new DataColumn("name_artis") { MaxLength = 255 },
 				new DataColumn("przv_artis") { MaxLength = 150 },
 				new DataColumn("sp_prd_id") { MaxLength = 20 },
@@ -130,6 +131,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					}
 				},
 				//дополнительные поля
+				new DataColumn("sp_prdr_id", typeof(string)) { MaxLength = 20 },
 				new DataColumn("sp_markup", typeof(decimal)),
 				new DataColumn("p_nds_amnt", typeof(decimal)),
 				new DataColumn("p_amnt", typeof(decimal)),
@@ -177,8 +179,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("otp_cena", typeof(decimal)),
 				new DataColumn("rcena", typeof(decimal)),
 				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
-				new DataColumn("idproducer", typeof(string)) { MaxLength = 20 },
-				new DataColumn("sp_prdr_id", typeof(string)) { MaxLength = 20 },
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
