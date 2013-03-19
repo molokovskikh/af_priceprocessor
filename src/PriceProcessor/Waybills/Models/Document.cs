@@ -129,8 +129,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					var core = ls.OrderBy(c => c.Code).FirstOrDefault();
 					var info = new AssortimentPriceInfo();
 					uint res;
+					int codeCr;
 					info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
-					info.CodeCr = core.CodeCr;
+					info.CodeCr = int.TryParse(core.CodeCr, out codeCr) ? (int?)codeCr : null;
 					info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
 					info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
 					line.AssortimentPriceInfo = info;

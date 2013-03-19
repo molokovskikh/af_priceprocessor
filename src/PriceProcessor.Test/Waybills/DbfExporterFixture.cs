@@ -102,10 +102,10 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void ExportCodeCr()
 		{
-			document.Lines[0].AssortimentPriceInfo = new AssortimentPriceInfo { CodeCr = "0000055555" };
+			document.Lines[0].AssortimentPriceInfo = new AssortimentPriceInfo { CodeCr = 55555 };
 			document.Lines[0].CodeCr = "123456";
 			var data = ExportFile();
-			Assert.That(data.Rows[0]["idproducer"], Is.EqualTo("0000055555"));
+			Assert.That(data.Rows[0]["idproducer"], Is.EqualTo(55555));
 			Assert.That(data.Rows[0]["sp_prdr_id"], Is.EqualTo("123456"));
 		}
 
