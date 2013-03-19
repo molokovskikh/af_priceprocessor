@@ -57,6 +57,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].OrderId, Is.EqualTo(null));
 			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(null));
 			Assert.That(document.Lines[0].RegistryDate, Is.EqualTo(null));
+			Assert.That(document.Lines[0].CodeCr, Is.EqualTo("8741688"));
 		}
 	}
 }

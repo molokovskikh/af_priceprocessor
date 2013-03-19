@@ -46,6 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "SERTDATE")
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.RegistryCost, "REGPRC")
+				.Line(l => l.CodeCr, "CODEPST")
 				.Line(l => l.RegistryDate, "DATEPRC");
 		}
 
