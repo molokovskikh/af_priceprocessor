@@ -47,6 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].CertificateAuthority, Is.EqualTo("ФГУ \"ЦС МЗ РФ\" г. Москва"));
 			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("22.12.2011"));
 			Assert.That(document.Lines[0].OrderId, Is.EqualTo(31899656));
+			Assert.That(document.Lines[5].RegistryCost, Is.EqualTo(1292));
 		}
 	}
 }
