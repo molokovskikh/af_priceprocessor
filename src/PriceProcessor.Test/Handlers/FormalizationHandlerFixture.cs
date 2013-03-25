@@ -22,11 +22,6 @@ namespace PriceProcessor.Test.Handlers
 		{
 			get { return pt; }
 		}
-
-		public void Process()
-		{
-			ProcessData();
-		}
 	}
 
 	[TestFixture]
@@ -68,7 +63,7 @@ namespace PriceProcessor.Test.Handlers
 			PriceItemList.list.Add(item);
 
 
-			handler.Process();
+			handler.ProcessData();
 			Assert.That(handler.Threads.Count, Is.EqualTo(3));
 			Assert.IsTrue(handler.FindByPriceItemId(1));
 			Assert.IsTrue(handler.FindByPriceItemId(3));
@@ -103,6 +98,46 @@ namespace PriceProcessor.Test.Handlers
 			var wcf = new WCFPriceProcessorService();
 			wcf.DeleteItemInInboundList(checkedItem.GetHashCode());
 			Assert.IsFalse(PriceItemList.list.Any(l => l.FilePath == "jjj.AAA"));
+		}
+
+		[Test]
+		public void Limit_retransed_price_count()
+		{
+			Settings.Default.MaxWorkThread = 10;
+			Settings.Default.MaxRetransThread = 3;
+
+			var items = new List<PriceProcessItem> {
+				new PriceProcessItem(false, 1, null, 1, "1.dbf", null) {
+					CreateTime = DateTime.UtcNow.AddHours(-1)
+				},
+				new PriceProcessItem(false, 2, null, 1, "2.dbf", null) {
+					CreateTime = DateTime.UtcNow.AddHours(-1)
+				},
+				new PriceProcessItem(false, 3, null, 1, "3.dbf", null) {
+					CreateTime = DateTime.UtcNow.AddHours(-1)
+				},
+				new PriceProcessItem(false, 4, null, 1, "4.dbf", null) {
+					CreateTime = DateTime.UtcNow.AddHours(-1)
+				},
+				new PriceProcessItem(false, 5, null, 1, "5.dbf", null) {
+					CreateTime = DateTime.UtcNow.AddHours(-1)
+				},
+			};
+
+			PriceItemList.list = items;
+
+			foreach (var item in items) {
+				File.WriteAllText(item.FilePath, "");
+			}
+
+			var ready = handler.GetReadyForStart(items);
+			foreach (var item in ready) {
+				handler.Threads.Add(new PriceProcessThread(item, null, false));
+			}
+
+			var count = handler.Threads.Count;
+			handler.Threads.Clear();
+			Assert.That(count, Is.EqualTo(3));
 		}
 	}
 }

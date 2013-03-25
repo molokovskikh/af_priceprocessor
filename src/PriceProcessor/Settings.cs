@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Configuration;
+
 namespace Inforoom.PriceProcessor
 {
 
@@ -1124,6 +1126,13 @@ namespace Inforoom.PriceProcessor
 		public int MySqlMaxPacketSize
 		{
 			get { return (int)this["MySqlMaxPacketSize"]; }
+		}
+
+		[ApplicationScopedSetting]
+		public int MaxRetransThread
+		{
+			get { return (int)this["MaxRetransThread"]; }
+			set { this["MaxRetransThread"] = value; }
 		}
 	}
 }

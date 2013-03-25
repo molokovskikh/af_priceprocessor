@@ -277,18 +277,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		private void ProcessItemList(IList<PriceProcessItem> processList)
 		{
-			processList
-				.Where(i => !File.Exists(i.FilePath))
-				.ToList()
-				.ForEach(i => {
-					//удаляем элемент из списка
-					processList.Remove(i);
-					//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
-					if (processList != PriceItemList.list)
-						PriceItemList.list.Remove(i);
-				});
-
-			foreach (var item in processList.TakeWhile(i => pt.Count < Settings.Default.MaxWorkThread).Where(i => i.IsReadyForProcessing(pt))) {
+			var ready = GetReadyForStart(processList);
+			foreach (var item in ready) {
 				_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
 				FileHashItem hashItem;
 				if (_errorMessages.Contains(item.FilePath))
@@ -304,6 +294,26 @@ namespace Inforoom.PriceProcessor.Formalizer
 					_lastFormalizationDate = DateTime.UtcNow;
 				_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
 			}
+		}
+
+		public IEnumerable<PriceProcessItem> GetReadyForStart(IList<PriceProcessItem> processList)
+		{
+			processList
+				.Where(i => !File.Exists(i.FilePath))
+				.ToList()
+				.ForEach(i => {
+					//удаляем элемент из списка
+					processList.Remove(i);
+					//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
+					if (processList != PriceItemList.list)
+						PriceItemList.list.Remove(i);
+				});
+
+			var ready = processList
+				.TakeWhile(i => pt.Count < Settings.Default.MaxWorkThread)
+				.Where(i => i.Downloaded || pt.Count(t => !t.ProcessItem.Downloaded) < Settings.Default.MaxRetransThread)
+				.Where(i => i.IsReadyForProcessing(pt));
+			return ready;
 		}
 
 		/// <summary>
