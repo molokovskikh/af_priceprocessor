@@ -36,41 +36,6 @@ namespace Inforoom.Downloader.DocumentReaders
 			return InputFiles;
 		}
 
-		protected string GetFilterSQLFooter()
-		{
-			return @"
-GROUP BY AddressId";
-		}
-
-		protected string SqlGetClientAddressId(bool filterBySupplierClientId, bool filterBySupplierDeliveryId)
-		{
-			var sqlSupplierClientId = String.Empty;
-			var sqlSupplierDeliveryId = String.Empty;
-
-			if (filterBySupplierClientId)
-				sqlSupplierClientId = " FutureInter.SupplierClientId = ?SupplierClientId ";
-			if (filterBySupplierDeliveryId)
-				sqlSupplierDeliveryId = " AddrInter.SupplierDeliveryId = ?SupplierDeliveryId ";
-
-			var sqlCondition = sqlSupplierClientId;
-			if (filterBySupplierClientId && filterBySupplierDeliveryId)
-				sqlCondition = String.Format(" {0} AND {1} ", sqlSupplierClientId, sqlSupplierDeliveryId);
-			else
-				sqlCondition += sqlSupplierDeliveryId;
-
-			var sqlQuery = @"
-SELECT
-    Addr.Id as AddressId
-FROM
-	Customers.Addresses Addr
-JOIN Customers.AddressIntersection AddrInter ON AddrInter.AddressId = Addr.Id
-JOIN usersettings.PricesData pd ON pd.FirmCode = ?SupplierId
-JOIN Customers.Intersection FutureInter ON FutureInter.Id = AddrInter.IntersectionId AND FutureInter.PriceId = pd.PriceCode
-WHERE
-" + sqlCondition;
-			return sqlQuery;
-		}
-
 		public string[] ExcludeExtentions
 		{
 			get { return excludeExtentions; }

@@ -5,6 +5,7 @@ using System.Text;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
+using Inforoom.PriceProcessor.Queries;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
@@ -191,8 +192,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var list = new List<ulong>();
 
-			var SQL = SqlGetClientAddressId(true, true) +
-				Environment.NewLine + GetFilterSQLFooter();
+			var SQL = AddressIdQuery.SqlGetClientAddressId(true, true);
 
 			string FirmClientCode, DeliveryCode;
 			try {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Inforoom.PriceProcessor.Queries;
 using MySql.Data.MySqlClient;
 using System.IO;
 using System.Data;
@@ -70,8 +71,7 @@ namespace Inforoom.Downloader.DocumentReaders
 		{
 			var list = new List<ulong>();
 
-			string SQL = SqlGetClientAddressId(true, true) +
-				Environment.NewLine + GetFilterSQLFooter();
+			string SQL = AddressIdQuery.SqlGetClientAddressId(true, true);
 
 			string FirmClientCode, DeliveryCode;
 			try {

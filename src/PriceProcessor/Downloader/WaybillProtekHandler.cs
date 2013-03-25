@@ -13,6 +13,7 @@ using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Queries;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
@@ -135,7 +136,6 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	public class WaybillProtekHandler : AbstractHandler
 	{
-		private string uri;
 		private IList<OrderHead> orders = new List<OrderHead>();
 
 		public static List<ProtekServiceConfig> Configs = new List<ProtekServiceConfig> {
@@ -283,16 +283,15 @@ namespace Inforoom.PriceProcessor.Downloader
 		public override void ProcessData()
 		{
 			foreach (var config in Configs) {
-				uri = config.Url;
-				Load(config.ClientId, config.InstanceId);
+				Load(config);
 			}
 		}
 
-		protected void Load(int clientId, int instanceId)
+		protected void Load(ProtekServiceConfig config)
 		{
-			WithService(uri, service => {
-				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", clientId, instanceId);
-				var responce = service.getBladingHeaders(new getBladingHeadersRequest(clientId, instanceId));
+			WithService(config.Url, service => {
+				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", config.ClientId, config.InstanceId);
+				var responce = service.getBladingHeaders(new getBladingHeadersRequest(config.ClientId, config.InstanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
 
 				try {
@@ -301,11 +300,11 @@ namespace Inforoom.PriceProcessor.Downloader
 
 					_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 					foreach (var blading in responce.@return.blading) {
-						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, clientId, instanceId, blading.bladingId.Value));
+						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, config.ClientId, config.InstanceId, blading.bladingId.Value));
 						_logger.InfoFormat("Загрузил накладную {0}", blading.bladingId.Value);
 						foreach (var body in blanding.@return.blading) {
 							using (var scope = new TransactionScope(OnDispose.Rollback)) {
-								var document = ToDocument(body);
+								var document = ToDocument(body, config);
 								document = WaybillFormatDetector.ProcessDocument(document, orders);
 								if (document == null)
 									continue;
@@ -323,57 +322,53 @@ namespace Inforoom.PriceProcessor.Downloader
 					}
 				}
 				finally {
-					service.closeBladingSession(new closeBladingSessionRequest(sessionId, clientId, instanceId));
+					service.closeBladingSession(new closeBladingSessionRequest(sessionId, config.ClientId, config.InstanceId));
 					Ping(); // чтобы монитор не перезапустил рабочий поток
 				}
 			});
 		}
 
-		private Document ToDocument(Blading blading)
+		public Document ToDocument(Blading blading, ProtekServiceConfig config)
 		{
 			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
 
-			var orderId = (uint?)blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
-
-			IList<uint> orderIds = new List<uint>();
-
-			if (orderId != null) orderIds.Add(orderId.Value);
-			orders.Clear(); // очистка списка заказов
-
-			// если заказы объединены (накладной соответствует несколько заказов)
-			if (orderId == null && blading.bladingFolder != null) {
-				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
-				orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
+			var order = GetOrder(blading);
+			Supplier supplier = null;
+			Address address = null;
+			if (order != null) {
+				supplier = order.Price.Supplier;
+				address = order.Address;
+			}
+			else if (!String.IsNullOrEmpty(blading.payerId.ToString()) &&
+				!String.IsNullOrEmpty(blading.recipientId.ToString())) {
+				var query = new AddressIdQuery(config.SupplierId) {
+					SupplierClientId = blading.payerId.ToString(),
+					SupplierDeliveryId = blading.recipientId.ToString(),
+				};
+				var addressIds = query.Query();
+				if (addressIds.Count > 0) {
+					supplier = Supplier.Find(config.SupplierId);
+					address = Address.Find(addressIds.First());
+				}
 			}
 
-			if (orderId == null) {
-				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
-				return null;
-			}
-
-			var order = OrderHead.TryFind(orderId.Value);
-
-			if (order == null) {
-				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
-					orderId,
+			if (address == null) {
+				_logger.WarnFormat("Для накладной {0}({1}) не удалось определить получателя код клиента {2} код доставки {3}",
 					blading.bladingId,
-					blading.baseId);
+					blading.baseId,
+					blading.payerId,
+					blading.recipientId);
 				return null;
 			}
 
-			foreach (var id in orderIds) {
-				var ord = OrderHead.TryFind(id);
-				if (ord != null) orders.Add(ord);
-			}
-
-			var log = new DocumentReceiveLog(order.Price.Supplier, order.Address) {
+			var log = new DocumentReceiveLog(supplier, address) {
 				DocumentType = DocType.Waybill,
 				IsFake = true,
 				Comment = "Получен через сервис Протек"
 			};
 
 			var document = new Document(log, "ProtekHandler") {
-				OrderId = orderId,
+				OrderId = order == null ? (uint?)null : order.Id,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
 			};
@@ -449,6 +444,43 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 
 			return document;
+		}
+
+		private OrderHead GetOrder(Blading blading)
+		{
+			var orderId = (uint?)blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
+
+			IList<uint> orderIds = new List<uint>();
+
+			if (orderId != null) orderIds.Add(orderId.Value);
+			orders.Clear(); // очистка списка заказов
+
+			// если заказы объединены (накладной соответствует несколько заказов)
+			if (orderId == null && blading.bladingFolder != null) {
+				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
+				orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
+			}
+
+			if (orderId == null) {
+				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
+				return null;
+			}
+
+			var order = OrderHead.TryFind(orderId.Value);
+
+			if (order == null) {
+				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
+					orderId,
+					blading.bladingId,
+					blading.baseId);
+				return null;
+			}
+
+			foreach (var id in orderIds) {
+				var ord = OrderHead.TryFind(id);
+				if (ord != null) orders.Add(ord);
+			}
+			return order;
 		}
 
 		public static void Dump(string path, Blading blading)

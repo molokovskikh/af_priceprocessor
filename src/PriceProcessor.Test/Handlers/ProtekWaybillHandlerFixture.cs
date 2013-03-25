@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
 using NHibernate.Criterion;
+using NHibernate.Linq;
 using NUnit.Framework;
 using Rhino.Mocks;
 using Test.Support;
@@ -28,7 +29,7 @@ namespace PriceProcessor.Test.Handlers
 
 		public void Process()
 		{
-			Load(261543, 1072995);
+			Load(new ProtekServiceConfig(null, 261543, 1072995, 0));
 		}
 
 		public override void WithService(string uri, Action<ProtekService> action)
@@ -41,7 +42,7 @@ namespace PriceProcessor.Test.Handlers
 	}
 
 	[TestFixture]
-	public class ProtekWaybillHandlerFixture
+	public class ProtekWaybillHandlerFixture : IntegrationFixture
 	{
 		private TestClient client1;
 		private TestOrder order1;
@@ -52,26 +53,26 @@ namespace PriceProcessor.Test.Handlers
 		private FakeProtekHandler fake;
 		private Blading blading;
 		private DateTime begin;
+		private TestSupplier supplier;
 
 		[SetUp]
 		public void SetUp()
 		{
-			using (new SessionScope()) {
-				client1 = TestClient.Create();
-				client2 = TestClient.Create();
-				var price = TestSupplier.CreateTestSupplierWithPrice();
-				order1 = new TestOrder();
-				order1.Client = client1;
-				order1.Address = client1.Addresses[0];
-				order1.Price = price;
-				order1.Save();
+			supplier = TestSupplier.CreateNaked();
+			client1 = TestClient.CreateNaked();
+			client2 = TestClient.CreateNaked();
 
-				order2 = new TestOrder();
-				order2.Client = client2;
-				order2.Address = client2.Addresses[0];
-				order2.Price = price;
-				order2.Save();
-			}
+			order1 = new TestOrder();
+			order1.Client = client1;
+			order1.Address = client1.Addresses[0];
+			order1.Price = supplier.Prices[0];
+			order1.Save();
+
+			order2 = new TestOrder();
+			order2.Client = client2;
+			order2.Address = client2.Addresses[0];
+			order2.Price = supplier.Prices[0];
+			order2.Save();
 
 			fake = new FakeProtekHandler();
 
@@ -115,54 +116,48 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Process_protek_waybills()
 		{
-			using (new SessionScope()) {
-				var settings = WaybillSettings.Find(order1.Client.Id);
-				//Формат сохранения в dbf теперь не является форматом по умолчанию
-				settings.ProtekWaybillSavingType = WaybillFormat.ProtekDbf;
-				settings.Save();
-			}
+			var settings = WaybillSettings.Find(order1.Client.Id);
+			//Формат сохранения в dbf теперь не является форматом по умолчанию
+			settings.ProtekWaybillSavingType = WaybillFormat.ProtekDbf;
+			settings.Save();
 
 			fake.Process();
-			using (new SessionScope()) {
-				var documents = Documents();
-				Assert.That(documents.Count, Is.EqualTo(1));
-				var document = documents[0];
-				Assert.That(document.Lines.Count, Is.EqualTo(1));
-				var line = document.Lines[0];
-				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
-				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
-				var log = document.Log;
-				Assert.That(log, Is.Not.Null);
-				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.dbf", log.Id)));
-				Assert.That(log.DocumentSize, Is.GreaterThan(0));
-				Check_DocumentLine_SetProductId(document);
-			}
+
+			var documents = Documents();
+			Assert.That(documents.Count, Is.EqualTo(1));
+			var document = documents[0];
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			var line = document.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+			Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+			var log = document.Log;
+			Assert.That(log, Is.Not.Null);
+			Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.dbf", log.Id)));
+			Assert.That(log.DocumentSize, Is.GreaterThan(0));
+			Check_DocumentLine_SetProductId(document);
 		}
 
 		[Test]
 		public void ProcessProtekWaybillsSst()
 		{
-			using (new SessionScope()) {
-				var settings = WaybillSettings.Find(order1.Client.Id);
-				//По умолчанию форматом сохранения является формат sst
-				Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(WaybillFormat.Sst));
-			}
+			var settings = WaybillSettings.Find(order1.Client.Id);
+			//По умолчанию форматом сохранения является формат sst
+			Assert.That(settings.ProtekWaybillSavingType, Is.EqualTo(WaybillFormat.Sst));
 
 			fake.Process();
-			using (new SessionScope()) {
-				var documents = Documents();
-				Assert.That(documents.Count, Is.EqualTo(1));
-				var document = documents[0];
-				Assert.That(document.Lines.Count, Is.EqualTo(1));
-				var line = document.Lines[0];
-				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
-				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
-				var log = document.Log;
-				Assert.That(log, Is.Not.Null);
-				Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.sst", log.Id)));
-				Assert.That(log.DocumentSize, Is.GreaterThan(0));
-				Check_DocumentLine_SetProductId(document);
-			}
+
+			var documents = Documents();
+			Assert.That(documents.Count, Is.EqualTo(1));
+			var document = documents[0];
+			Assert.That(document.Lines.Count, Is.EqualTo(1));
+			var line = document.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+			Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+			var log = document.Log;
+			Assert.That(log, Is.Not.Null);
+			Assert.That(log.FileName, Is.EqualTo(String.Format("{0}.sst", log.Id)));
+			Assert.That(log.DocumentSize, Is.GreaterThan(0));
+			Check_DocumentLine_SetProductId(document);
 		}
 
 		private List<Document> Documents()
@@ -185,10 +180,8 @@ namespace PriceProcessor.Test.Handlers
 			};
 
 			fake.Process();
-			using (new SessionScope()) {
-				var documents = Documents();
-				Assert.That(documents[0].Lines[0].ProtekDocIds[0].DocId, Is.EqualTo(5478));
-			}
+			var documents = Documents();
+			Assert.That(documents[0].Lines[0].ProtekDocIds[0].DocId, Is.EqualTo(5478));
 		}
 
 		[Test]
@@ -223,17 +216,15 @@ namespace PriceProcessor.Test.Handlers
 
 			DateTime begin = DateTime.Now;
 			fake.Process();
-			using (new SessionScope()) {
-				var documents = Documents();
-				Assert.That(documents.Count, Is.EqualTo(1));
-				Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
-				var line = documents[0].Lines[0];
-				Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
-				Assert.That(line.NdsAmount, Is.EqualTo(12.3));
-				Assert.That(documents[0].Log, Is.Not.Null);
-				Check_DocumentLine_SetProductId(documents[0]);
-				Assert.That(documents[0].OrderId, Is.EqualTo(order1.Id));
-			}
+			var documents = Documents();
+			Assert.That(documents.Count, Is.EqualTo(1));
+			Assert.That(documents[0].Lines.Count, Is.EqualTo(1));
+			var line = documents[0].Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Коринфар таб п/о 10мг № 50"));
+			Assert.That(line.NdsAmount, Is.EqualTo(12.3));
+			Assert.That(documents[0].Log, Is.Not.Null);
+			Check_DocumentLine_SetProductId(documents[0]);
+			Assert.That(documents[0].OrderId, Is.EqualTo(order1.Id));
 		}
 
 		public void Check_DocumentLine_SetProductId(Document document)
@@ -267,26 +258,39 @@ namespace PriceProcessor.Test.Handlers
 		public void Test_Parse_and_Convert_to_Dbf()
 		{
 			client1.Settings.IsConvertFormat = true;
-			TestDrugstoreSettings settings;
+			client1.Settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
+			session.Flush();
 
-			using (new TransactionScope()) {
-				settings = TestDrugstoreSettings.Queryable.SingleOrDefault(s => s.Id == order1.Client.Id);
-				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
-				settings.SaveAndFlush();
-			}
-			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address != null ? order1.Address.Id.ToString() : order1.Client.Id.ToString());
+			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
 			if (Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);
+
 			fake.Process();
-			using (new TransactionScope()) {
-				settings.IsConvertFormat = false;
-				settings.AssortimentPriceId = null;
-				settings.SaveAndFlush();
-			}
-			var files_dbf = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
-			Assert.That(files_dbf.Count(), Is.EqualTo(1));
+
+			var files = Directory.GetFiles(Path.Combine(docRoot, "Waybills"), "*.dbf");
+			Assert.That(files.Count(), Is.EqualTo(1));
+		}
+
+		[Test]
+		public void Detect_client_for_unknown_order_id()
+		{
+			var intersection = session.Query<TestAddressIntersection>()
+				.First(a => a.Intersection.Price.Supplier.Id == supplier.Id
+					&& a.Intersection.Client.Id == client1.Id
+					&& a.Address.Id == client1.Addresses[0].Id);
+			intersection.Intersection.SupplierClientId = "54150";
+			intersection.SupplierDeliveryId = "83943";
+
+			Flush();
+			session.Transaction.Commit();
+
+			blading.payerId = 54150;
+			blading.recipientId = 83943;
+
+			blading.@uint = null;
+			var doc = fake.ToDocument(blading, new ProtekServiceConfig("", 0, 0, supplier.Id));
+			Assert.That(doc.Address.Id, Is.EqualTo(client1.Addresses[0].Id));
 		}
 
 		[Test]
