@@ -34,10 +34,10 @@ namespace Inforoom.PriceProcessor.Queries
 				parametrs.Add(new MySqlParameter("?SupplierClientId", SupplierClientId));
 
 			var sql = SqlGetClientAddressId(includeClientId, true);
-			var ds = With.Connection(c => MySqlHelper.ExecuteDataset(
+			var ds = With.DeadlockWraper(() => With.Connection(c => MySqlHelper.ExecuteDataset(
 				c,
 				sql,
-				parametrs.ToArray()));
+				parametrs.ToArray())));
 
 			return ds.Tables[0].AsEnumerable().Select(r => Convert.ToUInt32(r["AddressId"])).ToList();
 		}
