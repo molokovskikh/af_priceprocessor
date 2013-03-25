@@ -47,6 +47,7 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void Do_not_put_more_than_one_price_with_same_setting_to_formalization()
 		{
+			Settings.Default.MaxRetransThread = 3;
 			var item = new PriceProcessItem(false, 1, 1, 1, "1.txt", null);
 			item.CreateTime = item.CreateTime.AddMinutes(-10);
 			File.WriteAllText("1.txt", "");
