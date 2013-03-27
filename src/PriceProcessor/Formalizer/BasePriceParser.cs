@@ -1548,16 +1548,17 @@ where
 
 					if (dtPrice.Rows.Count > 0) {
 						_logger.Debug("попытка открыть транзакцию");
-						MySqlTransaction _prepareTransaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
+						var transaction = MyConn.BeginTransaction(IsolationLevel.ReadCommitted);
 						_logger.Debug("транзакция открыта");
 
-						DateTime tmPrepare = DateTime.UtcNow;
+						var tmPrepare = DateTime.UtcNow;
 						try {
 							try {
 								Prepare();
+								transaction.Commit();
 							}
 							finally {
-								_prepareTransaction.Commit();
+								With.SafeRollback(transaction);
 							}
 						}
 						finally {
@@ -1565,7 +1566,7 @@ where
 						}
 
 
-						DateTime tmFormalize = DateTime.UtcNow;
+						var tmFormalize = DateTime.UtcNow;
 						try {
 							InternalFormalize();
 						}
@@ -1574,7 +1575,7 @@ where
 						}
 					}
 
-					DateTime tmFinalize = DateTime.UtcNow;
+					var tmFinalize = DateTime.UtcNow;
 					try {
 						FinalizePrice();
 					}
