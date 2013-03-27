@@ -253,6 +253,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				296883, 1128459, 14015),
 		};
 
+		public int IgnoreOrderToId;
+		public int IgnoreOrderFromId;
+
+		public WaybillProtekHandler()
+		{
+			IgnoreOrderFromId = 40478560;
+			IgnoreOrderToId = 40522194;
+		}
+
 		public virtual void WithService(string uri, Action<ProtekService> action)
 		{
 			var endpoint = new EndpointAddress(uri);
@@ -339,8 +348,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				supplier = order.Price.Supplier;
 				address = order.Address;
 			}
-			else if (!String.IsNullOrEmpty(blading.payerId.ToString()) &&
-				!String.IsNullOrEmpty(blading.recipientId.ToString())) {
+			else if (!String.IsNullOrEmpty(blading.recipientId.ToString())) {
 				var query = new AddressIdQuery(config.SupplierId, false) {
 					SupplierDeliveryId = blading.recipientId.ToString(),
 				};
@@ -465,7 +473,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			//игнорируем потеряные заказы
 			orders = orderIds
-				.Where(id => id < 40478560 && id > 40522194)
+				.Where(id => id < IgnoreOrderFromId || id > IgnoreOrderToId)
 				.Select(id => OrderHead.TryFind(id))
 				.Where(o => o != null)
 				.ToList();

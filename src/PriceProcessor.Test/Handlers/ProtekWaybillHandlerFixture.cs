@@ -75,6 +75,8 @@ namespace PriceProcessor.Test.Handlers
 			order2.Save();
 
 			fake = new FakeProtekHandler();
+			fake.IgnoreOrderFromId = 0;
+			fake.IgnoreOrderToId = 100;
 
 			fake.headerResponce = new getBladingHeadersResponse {
 				@return = new EZakazXML {
