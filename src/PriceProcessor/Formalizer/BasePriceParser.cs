@@ -1557,8 +1557,9 @@ where
 								Prepare();
 								transaction.Commit();
 							}
-							finally {
+							catch(Exception) {
 								With.SafeRollback(transaction);
+								throw;
 							}
 						}
 						finally {
