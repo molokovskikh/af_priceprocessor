@@ -341,8 +341,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 			else if (!String.IsNullOrEmpty(blading.payerId.ToString()) &&
 				!String.IsNullOrEmpty(blading.recipientId.ToString())) {
-				var query = new AddressIdQuery(config.SupplierId) {
-					SupplierClientId = blading.payerId.ToString(),
+				var query = new AddressIdQuery(config.SupplierId, false) {
 					SupplierDeliveryId = blading.recipientId.ToString(),
 				};
 				var addressIds = query.Query();
@@ -448,39 +447,29 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private OrderHead GetOrder(Blading blading)
 		{
-			var orderId = (uint?)blading.@uint; // если заказы не объединены (накладной соответствует 1 заказ)
-
-			IList<uint> orderIds = new List<uint>();
-
-			if (orderId != null) orderIds.Add(orderId.Value);
 			orders.Clear(); // очистка списка заказов
 
+			var orderIds = new List<uint>();
+			if (blading.@uint != null)
+				orderIds.Add((uint)blading.@uint);
+
 			// если заказы объединены (накладной соответствует несколько заказов)
-			if (orderId == null && blading.bladingFolder != null) {
-				orderId = blading.bladingFolder.Select(f => (uint?)f.orderUint).FirstOrDefault(id => id != null); // берем первый заказ
+			if (orderIds.Count == 0 && blading.bladingFolder != null) {
 				orderIds = blading.bladingFolder.Where(f => f.orderUint != null).Select(f => (uint)f.orderUint.Value).Distinct().ToList(); // берем все заказы
 			}
 
-			if (orderId == null) {
+			if (orderIds.Count == 0) {
 				_logger.WarnFormat("Для накладной {0}({1}) не задан номер заказа", blading.bladingId, blading.baseId);
 				return null;
 			}
 
-			var order = OrderHead.TryFind(orderId.Value);
-
-			if (order == null) {
-				_logger.WarnFormat("Не найден заказ {0} для накладной {1}({2})",
-					orderId,
-					blading.bladingId,
-					blading.baseId);
-				return null;
-			}
-
-			foreach (var id in orderIds) {
-				var ord = OrderHead.TryFind(id);
-				if (ord != null) orders.Add(ord);
-			}
-			return order;
+			//игнорируем потеряные заказы
+			orders = orderIds
+				.Where(id => id < 40478560 && id > 40522194)
+				.Select(id => OrderHead.TryFind(id))
+				.Where(o => o != null)
+				.ToList();
+			return orders.FirstOrDefault();
 		}
 
 		public static void Dump(string path, Blading blading)

@@ -279,13 +279,11 @@ namespace PriceProcessor.Test.Handlers
 				.First(a => a.Intersection.Price.Supplier.Id == supplier.Id
 					&& a.Intersection.Client.Id == client1.Id
 					&& a.Address.Id == client1.Addresses[0].Id);
-			intersection.Intersection.SupplierClientId = "54150";
 			intersection.SupplierDeliveryId = "83943";
 
 			Flush();
 			session.Transaction.Commit();
 
-			blading.payerId = 54150;
 			blading.recipientId = 83943;
 
 			blading.@uint = null;
