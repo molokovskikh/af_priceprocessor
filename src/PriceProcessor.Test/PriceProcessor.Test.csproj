@@ -134,9 +134,10 @@
     <Compile Include="Formalization\FakeParsers.cs" />
     <Compile Include="Formalization\IntegrationFormalizerFixture.cs" />
     <Compile Include="Formalization\NativeDbfPriceParcerFixture.cs" />
-    <Compile Include="Formalization\NewFormilizerFixture.cs" />
+    <Compile Include="Formalization\FormalizerFixture.cs" />
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
+    <Compile Include="Formalization\FormatFixture.cs" />
     <Compile Include="Handlers\EmailSourceHandlerFixture.cs" />
     <Compile Include="Handlers\FormalizationHandlerFixture.cs" />
     <Compile Include="Handlers\HandlerFixture.cs" />

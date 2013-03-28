@@ -47,13 +47,18 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 	}
 
+	public interface IConfigurable
+	{
+		void Configure(PriceReader reader);
+	}
+
 	public interface IParser
 	{
 		DataTable Parse(string filename);
 		DataTable Parse(string filename, bool specialProcessing);
 	}
 
-	public class TextParser : IParser
+	public class TextParser : IParser, IConfigurable
 	{
 		private readonly ISlicer _slicer;
 		private readonly Encoding _encoding;
@@ -94,6 +99,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			return Parse(filename, false);
 		}
+
+		public void Configure(PriceReader reader)
+		{
+			var configurable = _slicer as IConfigurable;
+			if (configurable != null)
+				configurable.Configure(reader);
+		}
 	}
 
 	public class TxtFieldDef : IComparer, IComparable<TxtFieldDef>
@@ -129,24 +141,36 @@ namespace Inforoom.PriceProcessor.Formalizer
 		void Slice(DataTable table, string line, DataRow row, bool specialProcessing);
 	}
 
-	public class PositionSlicer : ISlicer
+	public class PositionSlicer : ISlicer, IConfigurable
 	{
-		private readonly List<TxtFieldDef> _rules;
 		private BasePriceParser _parser;
+		private PriceReader _reader;
+
+		private List<TxtFieldDef> _rules;
 		private List<CoreCost> _costs;
+		private DataTable _table;
+		private List<CostDescription> _costs2;
+
+		public PositionSlicer(DataTable table)
+		{
+			_table = table;
+		}
 
 		public PositionSlicer(DataTable table, BasePriceParser parser, List<CoreCost> coreCosts)
 		{
 			_parser = parser;
 			_costs = coreCosts;
-			_rules = LoadRules(table);
+			_table = table;
 		}
 
 		private List<TxtFieldDef> LoadRules(DataTable table)
 		{
 			var sliceRules = new List<TxtFieldDef>();
 			foreach (PriceFields field in Enum.GetValues(typeof(PriceFields))) {
-				_parser.SetFieldName(field, null);
+				if (_parser != null)
+					_parser.SetFieldName(field, null);
+				else
+					_reader.SetFieldName(field, null);
 				if (field == PriceFields.OriginalName || field == PriceFields.Name2 || field == PriceFields.Name3)
 					continue;
 
@@ -161,17 +185,33 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if (begin == DBNull.Value || end == DBNull.Value)
 					continue;
 
-				_parser.SetFieldName(field, name);
+				if (_parser != null)
+					_parser.SetFieldName(field, name);
+				else
+					_reader.SetFieldName(field, name);
 				sliceRules.Add(new TxtFieldDef(name, Convert.ToInt32(begin), Convert.ToInt32(end)));
 			}
 
-			foreach (var cc in _costs) {
-				cc.fieldName = "Cost" + cc.costCode;
-				sliceRules.Add(
-					new TxtFieldDef(
-						cc.fieldName,
-						cc.txtBegin,
-						cc.txtEnd));
+			if (_costs != null) {
+				foreach (var cc in _costs) {
+					cc.fieldName = "Cost" + cc.costCode;
+					sliceRules.Add(
+						new TxtFieldDef(
+							cc.fieldName,
+							cc.txtBegin,
+							cc.txtEnd));
+				}
+			}
+
+			if (_costs2 != null) {
+				foreach (var cc in _costs2) {
+					cc.FieldName = "Cost" + cc.Id;
+					sliceRules.Add(
+						new TxtFieldDef(
+							cc.FieldName,
+							cc.Begin,
+							cc.End));
+				}
 			}
 
 			if (sliceRules.Count < 1)
@@ -194,6 +234,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 					length = line.Length - begin;
 				row[rule.FieldName] = line.Substring(begin, length).Trim();
 			}
+		}
+
+		public void Configure(PriceReader reader)
+		{
+			_reader = reader;
+			_costs2 = reader.CostDescriptions;
+			_rules = LoadRules(_table);
 		}
 	}
 

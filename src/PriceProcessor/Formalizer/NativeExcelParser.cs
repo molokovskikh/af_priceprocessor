@@ -32,17 +32,20 @@ namespace Inforoom.PriceProcessor.Formalizer
 			CurrPos = 0;
 
 			_loader.PeriodField = GetFieldName(PriceFields.Period);
-			_loader.PriceItemId = (uint)priceItemId;
-			dtPrice = _loader.Load(priceFileName);
+			if (priceItemId == 822)
+				_loader.NullDate = new DateTime(1953, 01, 01);
+			dtPrice = _loader.Parse(priceFileName);
 
 			base.Open();
 		}
 	}
 
-	public class ExcelLoader
+	public class ExcelLoader : IParser, IConfigurable
 	{
 		private readonly int _startLine;
 		private readonly string _sheetName;
+
+		public DateTime NullDate;
 
 		public ExcelLoader(string sheetName, int startLine) : this()
 		{
@@ -54,14 +57,17 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 		}
 
-
 		public string PeriodField { get; set; }
-		public uint PriceItemId { get; set; }
 
-		public DataTable Load(string file)
+		public DataTable Parse(string filename, bool specialProcessing)
+		{
+			return Parse(filename);
+		}
+
+		public DataTable Parse(string file)
 		{
 			var workbook = Workbook.Load(file);
-			var worksheet = workbook.Worksheets.Where(w => String.Compare(w.Name, _sheetName, true) == 0).FirstOrDefault();
+			var worksheet = workbook.Worksheets.FirstOrDefault(w => String.Compare(w.Name, _sheetName, true) == 0);
 			if (worksheet == null)
 				worksheet = workbook.Worksheets[0];
 
@@ -82,8 +88,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					if (columnName == PeriodField) {
 						var dateTimeValue = cell.TryToGetValueAsDateTime();
 						if (dateTimeValue != null) {
-							//медицина пишет в срок годносит 1953 год если срок годности не ограничен всякие скальпели и прочее
-							if (PriceItemId == 822u && dateTimeValue == new DateTime(1953, 01, 01))
+							if (dateTimeValue == NullDate)
 								row[columnName] = DBNull.Value;
 							else
 								row[columnName] = dateTimeValue;
@@ -142,6 +147,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 			row[columnName] = cell.Value;
+		}
+
+		public void Configure(PriceReader reader)
+		{
+			PeriodField = reader.GetFieldName(PriceFields.Period);
 		}
 	}
 }

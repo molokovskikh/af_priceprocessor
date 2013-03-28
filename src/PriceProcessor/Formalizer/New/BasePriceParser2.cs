@@ -15,10 +15,6 @@ using log4net;
 using MySql.Data.MySqlClient;
 using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
 
-#if BUTCHER
-using MySql.Data.MySqlClient.Source;
-#endif
-
 namespace Inforoom.PriceProcessor.Formalizer.New
 {
 	public class BasePriceParser2
@@ -90,8 +86,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		}
 
 		private ProducerResolver _producerResolver;
-
-		private bool _saveInCore = false;
+		private bool _saveInCore;
 
 		public BasePriceParser2(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{

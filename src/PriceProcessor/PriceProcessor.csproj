@@ -157,6 +157,7 @@
     <Compile Include="Formalizer\FarmaimpeksOKPFormalizer.cs" />
     <Compile Include="Formalizer\FarmaimpeksOKPReader.cs" />
     <Compile Include="Formalizer\New\Alerts.cs" />
+    <Compile Include="Formalizer\New\BufferFormalizer.cs" />
     <Compile Include="Formalizer\New\PriceReader.cs" />
     <Compile Include="Formalizer\New\ProducerResolver.cs" />
     <Compile Include="Formalizer\FarmaimpeksReader.cs" />

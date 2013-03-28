@@ -10,8 +10,8 @@ namespace Inforoom.PriceProcessor.Helpers
 	public static class UueHelper
 	{
 		/// <summary>
-		/// Проверяет, является ли указанное mime сообщение
-		/// закодированным в UUE
+		/// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё СѓРєР°Р·Р°РЅРЅРѕРµ mime СЃРѕРѕР±С‰РµРЅРёРµ
+		/// Р·Р°РєРѕРґРёСЂРѕРІР°РЅРЅС‹Рј РІ UUE
 		/// </summary>
 		/// <param name="mime"></param>
 		/// <returns></returns>
@@ -25,15 +25,15 @@ namespace Inforoom.PriceProcessor.Helpers
 		}
 
 		/// <summary>
-		/// Функция обработки тела письма в формате UUE.
+		/// Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°Р±РѕС‚РєРё С‚РµР»Р° РїРёСЃСЊРјР° РІ С„РѕСЂРјР°С‚Рµ UUE.
 		/// </summary>
-		/// <param name="mime">Mime элемент письма</param>
-		/// <param name="tempPath">Временная директория</param>
-		/// <returns>Имя распакованного файла</returns>
+		/// <param name="mime">Mime СЌР»РµРјРµРЅС‚ РїРёСЃСЊРјР°</param>
+		/// <param name="tempPath">Р’СЂРµРјРµРЅРЅР°СЏ РґРёСЂРµРєС‚РѕСЂРёСЏ</param>
+		/// <returns>РРјСЏ СЂР°СЃРїР°РєРѕРІР°РЅРЅРѕРіРѕ С„Р°Р№Р»Р°</returns>
 		private static string ExtractFileFromUue(Mime mime, string tempPath)
 		{
 			var extractDir = "ExtractDir";
-			//Двойная перекодировка сначала в koi8r -> UTF7 -> default(cp1251)
+			//Р”РІРѕР№РЅР°СЏ РїРµСЂРµРєРѕРґРёСЂРѕРІРєР° СЃРЅР°С‡Р°Р»Р° РІ koi8r -> UTF7 -> default(cp1251)
 			var uueFileName = tempPath + "MailTemp.uue";
 			using (var file = new FileStream(uueFileName, FileMode.Create)) {
 				var body = Encoding.GetEncoding("koi8-r").GetString(mime.MainEntity.Data);
@@ -45,7 +45,7 @@ namespace Inforoom.PriceProcessor.Helpers
 			}
 			try {
 				if (ArchiveHelper.TestArchive(uueFileName)) {
-					// Если файл является архивом
+					// Р•СЃР»Рё С„Р°Р№Р» СЏРІР»СЏРµС‚СЃСЏ Р°СЂС…РёРІРѕРј
 					try {
 						FileHelper.ExtractFromArhive(uueFileName, uueFileName + extractDir);
 						string[] fileList = Directory.GetFiles(uueFileName + extractDir);
@@ -61,7 +61,7 @@ namespace Inforoom.PriceProcessor.Helpers
 				}
 			}
 			finally {
-				// Удаляем за собой созданную директорию
+				// РЈРґР°Р»СЏРµРј Р·Р° СЃРѕР±РѕР№ СЃРѕР·РґР°РЅРЅСѓСЋ РґРёСЂРµРєС‚РѕСЂРёСЋ
 				if (Directory.Exists(uueFileName + extractDir))
 					try {
 						Directory.Delete(uueFileName + extractDir, true);

@@ -26,7 +26,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 	public class PriceReader : IReader
 	{
 		private DataTable _priceData;
-		private uint _priceItemId;
 		private int _index = -1;
 
 		private string junkPos;
@@ -46,14 +45,13 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceReader));
 
-		public PriceReader(DataRow priceInfo, IParser parser, string filename, PriceFormalizationInfo info)
+		public PriceReader(IParser parser, string filename, PriceFormalizationInfo info)
 		{
 			_logger.DebugFormat("Создали класс для обработки файла {0}", filename);
 
+			var priceInfo = info.FormRulesData.Rows[0];
 			_filename = filename;
 			_parser = parser;
-
-			_priceItemId = Convert.ToUInt32(priceInfo[FormRules.colPriceItemId]);
 			_priceInfo = info;
 
 			fieldNames = new string[Enum.GetNames(typeof(PriceFields)).Length];
@@ -113,7 +111,15 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		public void Open()
 		{
-			_priceData = _parser.Parse(_filename);
+			var configurable = _parser as IConfigurable;
+			if (configurable != null)
+				configurable.Configure(this);
+
+			var priceItemIds = new List<long> {
+				903, 1177, 951, 235, 910, 996, 1170,
+				886, 1160, 90, 494, 822, 1184, 941, 468, 879, 479, 651, 977, 1004, 1032, 917, 628, 8
+			};
+			_priceData = _parser.Parse(_filename, priceItemIds.Contains(_priceInfo.PriceItemId));
 		}
 
 		private void CheckColumnPresents()

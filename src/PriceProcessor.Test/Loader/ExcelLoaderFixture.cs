@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Text;
 using ExcelLibrary.BinaryFileFormat;
@@ -92,7 +92,7 @@ namespace PriceProcessor.Test.Loader
 
 		private DataTable Load(int id)
 		{
-			return loader.Load(String.Format(@"..\..\data\ExcelLoaderFixture\{0}.xls", id));
+			return loader.Parse(String.Format(@"..\..\data\ExcelLoaderFixture\{0}.xls", id));
 		}
 	}
 }

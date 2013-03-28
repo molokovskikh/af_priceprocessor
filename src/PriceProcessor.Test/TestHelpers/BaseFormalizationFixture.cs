@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,12 +17,17 @@ namespace PriceProcessor.Test.TestHelpers
 		protected string file;
 		protected TestPrice price;
 		protected TestPriceItem priceItem;
-		private BasePriceParser2 formalizer;
+		protected string defaultContent;
+
+		protected IPriceFormalizer formalizer;
 
 		[SetUp]
 		public void Setup()
 		{
 			file = "test.txt";
+			defaultContent = @"9 ĞœĞ•Ğ¡Ğ¯Ğ¦Ğ•Ğ’ ĞšĞ Ğ•Ğœ Ğ”/ĞŸĞ ĞĞ¤Ğ˜Ğ›ĞĞšĞ¢Ğ˜ĞšĞ˜ Ğ˜ ĞšĞĞ Ğ Ğ•ĞšĞ¦Ğ˜Ğ˜ Ğ ĞĞ¡Ğ¢Ğ¯Ğ–Ğ•Ğš 150ĞœĞ›;Ğ’Ğ°Ğ»ĞµĞ½Ñ‚Ğ° Ğ¤Ğ°Ñ€Ğ¼Ğ°Ñ†ĞµĞ²Ñ‚Ğ¸ĞºĞ°/ĞšĞ¾Ñ€Ğ¾Ğ»ĞµĞ² Ğ¤;2864;220.92;
+5 Ğ”ĞĞ•Ğ™ Ğ’ĞĞĞĞ Ğ”/ĞĞĞ“ Ğ¡ĞœĞ¯Ğ“Ğ§ĞĞ®Ğ©ĞĞ¯ â„–10 ĞŸĞĞš. 25Ğ“;Ğ¡Ğ°Ğ½ĞºÑ‚-ĞŸĞµÑ‚ĞµÑ€Ğ±ÑƒÑ€Ğ³ÑĞºĞ°Ñ Ñ„.Ñ„.;24;73.88;
+911 Ğ’Ğ•ĞĞĞ›Ğ“ĞĞ Ğ“Ğ•Ğ›Ğ¬ Ğ”/ ĞĞĞ“ ĞŸĞ Ğ˜ Ğ¢Ğ¯Ğ–Ğ•Ğ¡Ğ¢Ğ˜ Ğ‘ĞĞ›Ğ˜ Ğ˜ ĞĞ¢Ğ•ĞšĞĞ¥ Ğ¢Ğ£Ğ‘Ğ 100ĞœĞ›;Ğ¢Ğ²Ğ¸Ğ½Ñ Ğ¢ÑĞº;40;44.71;";
 		}
 
 		protected void CreatePrice()
@@ -42,21 +48,18 @@ namespace PriceProcessor.Test.TestHelpers
 		protected void FormalizeDefaultData()
 		{
 			CreateDefaultSynonym();
-
-			Formalize(@"9 ÌÅÑßÖÅÂ ÊĞÅÌ Ä/ÏĞÎÔÈËÀÊÒÈÊÈ È ÊÎĞĞÅÊÖÈÈ ĞÀÑÒßÆÅÊ 150ÌË;Âàëåíòà Ôàğìàöåâòèêà/Êîğîëåâ Ô;2864;220.92;
-5 ÄÍÅÉ ÂÀÍÍÀ Ä/ÍÎÃ ÑÌßÃ×ÀŞÙÀß ¹10 ÏÀÊ. 25Ã;Ñàíêò-Ïåòåğáóğãñêàÿ ô.ô.;24;73.88;
-911 ÂÅÍÎËÃÎÍ ÃÅËÜ Ä/ ÍÎÃ ÏĞÈ ÒßÆÅÑÒÈ ÁÎËÈ È ÎÒÅÊÀÕ ÒÓÁÀ 100ÌË;Òâèíñ Òıê;40;44.71;");
+			Formalize(defaultContent);
 		}
 
 		public void CreateDefaultSynonym()
 		{
-			price.AddProductSynonym("911 ÂÅÍÎËÃÎÍ ÃÅËÜ Ä/ ÍÎÃ ÏĞÈ ÒßÆÅÑÒÈ ÁÎËÈ È ÎÒÅÊÀÕ ÒÓÁÀ 100ÌË");
+			price.AddProductSynonym("911 Ğ’Ğ•ĞĞĞ›Ğ“ĞĞ Ğ“Ğ•Ğ›Ğ¬ Ğ”/ ĞĞĞ“ ĞŸĞ Ğ˜ Ğ¢Ğ¯Ğ–Ğ•Ğ¡Ğ¢Ğ˜ Ğ‘ĞĞ›Ğ˜ Ğ˜ ĞĞ¢Ğ•ĞšĞĞ¥ Ğ¢Ğ£Ğ‘Ğ 100ĞœĞ›");
 			price.CreateAssortmentBoundSynonyms(
-				"5 ÄÍÅÉ ÂÀÍÍÀ Ä/ÍÎÃ ÑÌßÃ×ÀŞÙÀß ¹10 ÏÀÊ. 25Ã",
-				"Ñàíêò-Ïåòåğáóğãñêàÿ ô.ô.");
+				"5 Ğ”ĞĞ•Ğ™ Ğ’ĞĞĞĞ Ğ”/ĞĞĞ“ Ğ¡ĞœĞ¯Ğ“Ğ§ĞĞ®Ğ©ĞĞ¯ â„–10 ĞŸĞĞš. 25Ğ“",
+				"Ğ¡Ğ°Ğ½ĞºÑ‚-ĞŸĞµÑ‚ĞµÑ€Ğ±ÑƒÑ€Ğ³ÑĞºĞ°Ñ Ñ„.Ñ„.");
 			price.CreateAssortmentBoundSynonyms(
-				"9 ÌÅÑßÖÅÂ ÊĞÅÌ Ä/ÏĞÎÔÈËÀÊÒÈÊÈ È ÊÎĞĞÅÊÖÈÈ ĞÀÑÒßÆÅÊ 150ÌË",
-				"Âàëåíòà Ôàğìàöåâòèêà/Êîğîëåâ Ô");
+				"9 ĞœĞ•Ğ¡Ğ¯Ğ¦Ğ•Ğ’ ĞšĞ Ğ•Ğœ Ğ”/ĞŸĞ ĞĞ¤Ğ˜Ğ›ĞĞšĞ¢Ğ˜ĞšĞ˜ Ğ˜ ĞšĞĞ Ğ Ğ•ĞšĞ¦Ğ˜Ğ˜ Ğ ĞĞ¡Ğ¢Ğ¯Ğ–Ğ•Ğš 150ĞœĞ›",
+				"Ğ’Ğ°Ğ»ĞµĞ½Ñ‚Ğ° Ğ¤Ğ°Ñ€Ğ¼Ğ°Ñ†ĞµĞ²Ñ‚Ğ¸ĞºĞ°/ĞšĞ¾Ñ€Ğ¾Ğ»ĞµĞ² Ğ¤");
 			session.Save(price);
 			session.Flush();
 			session.Transaction.Commit();
@@ -79,13 +82,20 @@ namespace PriceProcessor.Test.TestHelpers
 			if (session.Transaction.IsActive)
 				session.Transaction.Commit();
 
+			if (formalizer == null)
+				formalizer = CreateFormalizer();
+
+			formalizer.Formalize();
+		}
+
+		private IPriceFormalizer CreateFormalizer()
+		{
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var localPrice = session.Load<Price>(price.Id);
 			var info = new PriceFormalizationInfo(row, localPrice);
-			var reader = new PriceReader(row, new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
-			formalizer = new BasePriceParser2(reader, info);
-			formalizer.Formalize();
+			var reader = new PriceReader(new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
+			return new FakeFormalizer(new BasePriceParser2(reader, info));
 		}
 
 		protected TestFormat Configure(TestPrice okpPrice)
@@ -99,6 +109,38 @@ namespace PriceProcessor.Test.TestHelpers
 			rules.FQuantity = "F3";
 			okpPrice.Costs.Single().FormRule.FieldName = "F4";
 			return rules;
+		}
+
+		public class FakeFormalizer : IPriceFormalizer
+		{
+			private BasePriceParser2 parser;
+
+			public FakeFormalizer(BasePriceParser2 parser)
+			{
+				this.parser = parser;
+			}
+
+			public void Formalize()
+			{
+				parser.Formalize();
+			}
+
+			public IList<string> GetAllNames()
+			{
+				throw new System.NotImplementedException();
+			}
+
+			public bool Downloaded { get; set; }
+			public string InputFileName { get; set; }
+			public int formCount { get; private set; }
+			public int unformCount { get; private set; }
+			public int zeroCount { get; private set; }
+			public int forbCount { get; private set; }
+			public int maxLockCount { get; private set; }
+			public long priceCode { get; private set; }
+			public long firmCode { get; private set; }
+			public string firmShortName { get; private set; }
+			public string priceName { get; private set; }
 		}
 	}
 }

@@ -21,7 +21,7 @@ using Test.Support.Catalog;
 namespace PriceProcessor.Test.Formalization
 {
 	[TestFixture]
-	public class NewFormilizerFixture : BaseFormalizationFixture
+	public class FormalizerFixture : BaseFormalizationFixture
 	{
 		[SetUp]
 		public void Setup()
