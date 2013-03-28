@@ -24,6 +24,7 @@ namespace PriceProcessor.Test.TestHelpers
 		[SetUp]
 		public void Setup()
 		{
+			formalizer = null;
 			file = "test.txt";
 			defaultContent = @"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;
@@ -86,6 +87,7 @@ namespace PriceProcessor.Test.TestHelpers
 				formalizer = CreateFormalizer();
 
 			formalizer.Formalize();
+			formalizer = null;
 		}
 
 		private IPriceFormalizer CreateFormalizer()
