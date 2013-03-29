@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Formalize_excel()
 		{
-			priceItem.Format.PriceFormat = PriceFormatType.Xls;
+			priceItem.Format.PriceFormat = PriceFormatType.NativeXls;
 
 			var book = new Workbook();
 			var worksheet = new Worksheet("test");
@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Formalize_dbf()
 		{
-			priceItem.Format.PriceFormat = PriceFormatType.Dbf;
+			priceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
 			file = "test.dbf";
 
 			var table = new DataTable();
