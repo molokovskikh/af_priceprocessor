@@ -507,6 +507,19 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Costs.Select(c => c.Cost), Is.EquivalentTo(new[] { 220.92, 230.00 }));
 		}
 
+
+		[Test]
+		public void Formalize_price_with_delete_insert()
+		{
+			Settings.Default.SyncPriceCodes.Remove(price.Id.ToString());
+			price.IsUpdate = false;
+			FormalizeDefaultData();
+			Formalize(defaultContent);
+
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(3));
+		}
+
 		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
 		public void ParseWithoutBaseCostErrorTest()
 		{

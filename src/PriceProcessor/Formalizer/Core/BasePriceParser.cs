@@ -493,6 +493,8 @@ order by c.Id",
 				var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 				try {
+					CleanupCore();
+
 					using (Profile("Вставка синонимов производителей"))
 						InsertNewProducerSynonyms(transaction);
 
@@ -535,6 +537,32 @@ order by c.Id",
 
 			if (tryCount > _loggingStat.maxLockCount)
 				_loggingStat.maxLockCount = tryCount;
+		}
+
+		private void CleanupCore()
+		{
+			if (PriceInfo.IsUpdating)
+				return;
+
+			var command = new MySqlCommand("", _connection);
+			if (costType == CostTypes.MiltiFile) {
+				command.CommandText = String.Format(@"
+delete
+farm.Core0
+from
+farm.CoreCosts,
+farm.Core0
+where
+CoreCosts.Core_Id = Core0.Id
+and Core0.PriceCode = {0}
+and CoreCosts.PC_CostCode = {1};",
+					PriceInfo.PriceCode, PriceInfo.CostCode);
+			}
+			else {
+				command.CommandText = String.Format("delete from farm.Core0 where PriceCode={0};", PriceInfo.PriceCode);
+			}
+
+			_logger.InfoFormat("Удаление записей из Core0 {0}", StatCommand(command));
 		}
 
 		private IEnumerable<int> PrepareData(Action<string, int> populateCommand)
