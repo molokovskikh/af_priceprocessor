@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {

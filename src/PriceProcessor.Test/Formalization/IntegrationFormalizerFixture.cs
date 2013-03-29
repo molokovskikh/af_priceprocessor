@@ -6,7 +6,6 @@ using System.Text;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;

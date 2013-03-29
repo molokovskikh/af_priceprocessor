@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
-using Inforoom.Formalizer;
 using log4net;
 using MySql.Data.MySqlClient;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class ProducerResolver
 	{
 		private ILog _logger = LogManager.GetLogger(typeof(ProducerResolver));
 
-		private PriceFormalizationInfo _priceInfo;
 		private FormalizeStats _stats;
 
 		public DataTable Assortment;
@@ -20,9 +18,8 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
 
-		public ProducerResolver(PriceFormalizationInfo priceInfo, FormalizeStats stats, DataTable excludes, DataTable producerSynonyms)
+		public ProducerResolver(FormalizeStats stats, DataTable excludes, DataTable producerSynonyms)
 		{
-			_priceInfo = priceInfo;
 			_stats = stats;
 			_excludes = excludes;
 			_producerSynonyms = producerSynonyms;

@@ -5,7 +5,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
@@ -40,8 +40,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private ILog _log = LogManager.GetLogger(typeof(FarmaimpeksFormalizer));
 
-		public FarmaimpeksFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(filename, connection, data)
+		public FarmaimpeksFormalizer(string filename, PriceFormalizationInfo data)
+			: base(filename, data)
 		{
 		}
 
@@ -62,13 +62,13 @@ namespace Inforoom.PriceProcessor.Formalizer
 					if (cost == null) {
 						_log.WarnFormat(
 							"Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс",
-							_priceInfo.FirmShortName, parsedPrice.Id);
+							Info.FirmShortName, parsedPrice.Id);
 						continue;
 					}
 
 					var info = new PriceFormalizationInfo(priceInfo, cost.Price);
 
-					var parser = new BasePriceParser2(reader, info);
+					var parser = new BasePriceParser(reader, info);
 					parser.Downloaded = Downloaded;
 
 					var ls = parser.GetAllNames();
@@ -83,21 +83,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			using (var reader = new FarmaimpeksReader(_fileName)) {
 				foreach (var parsedPrice in reader.Prices()) {
-					var supplierId = _priceInfo.FirmCode;
+					var supplierId = Info.FirmCode;
 					PriceCost cost;
 					using (new SessionScope(FlushAction.Never)) {
 						cost = PriceCost.Queryable.FirstOrDefault(c => c.Price.Supplier.Id == supplierId && c.CostName == parsedPrice.Id);
 					}
 
 					if (cost == null) {
-						_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", _priceInfo.FirmShortName, parsedPrice.Id);
+						_log.WarnFormat("Не смог найти прайс лист у поставщика {0} с именем '{1}', пропуская этот прайс", Info.FirmShortName, parsedPrice.Id);
 						continue;
 					}
 
-					_priceInfo.IsUpdating = true;
-					_priceInfo.CostCode = cost.Id;
-					_priceInfo.PriceItemId = cost.PriceItemId;
-					_priceInfo.PriceCode = cost.Price.Id;
+					Info.IsUpdating = true;
+					Info.CostCode = cost.Id;
+					Info.PriceItemId = cost.PriceItemId;
+					Info.PriceCode = cost.Price.Id;
 
 					FormalizePrice(reader);
 

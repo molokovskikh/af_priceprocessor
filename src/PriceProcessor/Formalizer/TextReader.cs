@@ -7,46 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
-	public abstract class NativeParser : InterPriceParser
-	{
-		protected TextParser Parser;
-
-		protected NativeParser(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(priceFileName, connection, data)
-		{
-		}
-
-		protected NativeParser(Encoding encoding, ISlicer slicer, string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: this(priceFileName, connection, data)
-		{
-			var row = data.FormRulesData.Rows[0];
-			var startLine = row["StartLine"] is DBNull ? -1 : Convert.ToInt32(row["StartLine"]);
-			Parser = new TextParser(slicer, encoding, startLine);
-		}
-
-		public override void Open()
-		{
-			var priceItemIds = new List<long>() {
-				903, 1177, 951, 235, 910, 996, 1170,
-				886, 1160, 90, 494, 822, 1184, 941, 468, 879, 479, 651, 977, 1004, 1032, 917, 628, 8
-			};
-
-			convertedToANSI = true;
-
-			// Если текущий priceItemId содержится в этом списке, то для него начальный и конечный символ "
-			// будет заменяться на пустоту, а "" на " (с помощью регулярного выражения)
-			dtPrice = Parser.Parse(priceFileName, priceItemIds.Contains(priceItemId));
-			CurrPos = 0;
-			base.Open();
-		}
-	}
-
 	public interface IConfigurable
 	{
 		void Configure(PriceReader reader);
@@ -60,16 +26,17 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 	public class TextParser : IParser, IConfigurable
 	{
-		private readonly ISlicer _slicer;
 		private readonly Encoding _encoding;
 		private readonly int _startLine;
 
 		public TextParser(ISlicer slicer, Encoding encoding, int startLine)
 		{
 			_encoding = encoding;
-			_slicer = slicer;
+			Slicer = slicer;
 			_startLine = startLine;
 		}
+
+		public ISlicer Slicer { get; private set; }
 
 		public DataTable Parse(string filename, bool specialProcessing)
 		{
@@ -87,7 +54,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 					var row = table.NewRow();
 
-					_slicer.Slice(table, line, row, specialProcessing);
+					Slicer.Slice(table, line, row, specialProcessing);
 
 					table.Rows.Add(row);
 				}
@@ -102,7 +69,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public void Configure(PriceReader reader)
 		{
-			var configurable = _slicer as IConfigurable;
+			var configurable = Slicer as IConfigurable;
 			if (configurable != null)
 				configurable.Configure(reader);
 		}
@@ -143,34 +110,24 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 	public class PositionSlicer : ISlicer, IConfigurable
 	{
-		private BasePriceParser _parser;
 		private PriceReader _reader;
 
 		private List<TxtFieldDef> _rules;
-		private List<CoreCost> _costs;
+		private List<CostDescription> _costs;
+		private PriceFormalizationInfo _info;
 		private DataTable _table;
-		private List<CostDescription> _costs2;
 
-		public PositionSlicer(DataTable table)
+		public PositionSlicer(DataTable table, PriceFormalizationInfo info)
 		{
 			_table = table;
-		}
-
-		public PositionSlicer(DataTable table, BasePriceParser parser, List<CoreCost> coreCosts)
-		{
-			_parser = parser;
-			_costs = coreCosts;
-			_table = table;
+			_info = info;
 		}
 
 		private List<TxtFieldDef> LoadRules(DataTable table)
 		{
 			var sliceRules = new List<TxtFieldDef>();
 			foreach (PriceFields field in Enum.GetValues(typeof(PriceFields))) {
-				if (_parser != null)
-					_parser.SetFieldName(field, null);
-				else
-					_reader.SetFieldName(field, null);
+				_reader.SetFieldName(field, null);
 				if (field == PriceFields.OriginalName || field == PriceFields.Name2 || field == PriceFields.Name3)
 					continue;
 
@@ -185,37 +142,22 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if (begin == DBNull.Value || end == DBNull.Value)
 					continue;
 
-				if (_parser != null)
-					_parser.SetFieldName(field, name);
-				else
-					_reader.SetFieldName(field, name);
+				_reader.SetFieldName(field, name);
 				sliceRules.Add(new TxtFieldDef(name, Convert.ToInt32(begin), Convert.ToInt32(end)));
 			}
 
-			if (_costs != null) {
-				foreach (var cc in _costs) {
-					cc.fieldName = "Cost" + cc.costCode;
-					sliceRules.Add(
-						new TxtFieldDef(
-							cc.fieldName,
-							cc.txtBegin,
-							cc.txtEnd));
-				}
+			foreach (var cc in _costs) {
+				cc.FieldName = "Cost" + cc.Id;
+				sliceRules.Add(
+					new TxtFieldDef(
+						cc.FieldName,
+						cc.Begin,
+						cc.End));
 			}
 
-			if (_costs2 != null) {
-				foreach (var cc in _costs2) {
-					cc.FieldName = "Cost" + cc.Id;
-					sliceRules.Add(
-						new TxtFieldDef(
-							cc.FieldName,
-							cc.Begin,
-							cc.End));
-				}
-			}
 
 			if (sliceRules.Count < 1)
-				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, _parser.firmCode, _parser.priceCode, _parser.firmShortName, _parser.priceName);
+				throw new WarningFormalizeException(Settings.Default.MinFieldCountError, _info.FirmCode, _info.PriceCode, _info.FirmShortName, _info.PriceName);
 
 			return sliceRules;
 		}
@@ -239,7 +181,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public void Configure(PriceReader reader)
 		{
 			_reader = reader;
-			_costs2 = reader.CostDescriptions;
+			_costs = reader.CostDescriptions;
 			_rules = LoadRules(_table);
 		}
 	}
@@ -281,52 +223,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 				row[column.ColumnName] = values[columnIndex].Trim();
 				columnIndex++;
 			}
-		}
-	}
-
-	public class FixedNativeTextParser1251 : NativeParser
-	{
-		public FixedNativeTextParser1251(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(priceFileName, connection, data)
-		{
-			Parser = new TextParser(new PositionSlicer(data.FormRulesData, this, currentCoreCosts),
-				Encoding.GetEncoding(1251),
-				-1);
-		}
-	}
-
-	public class FixedNativeTextParser866 : NativeParser
-	{
-		public FixedNativeTextParser866(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(priceFileName, connection, data)
-		{
-			Parser = new TextParser(new PositionSlicer(data.FormRulesData, this, currentCoreCosts),
-				Encoding.GetEncoding(866),
-				-1);
-		}
-	}
-
-	public class DelimiterNativeTextParser1251 : NativeParser
-	{
-		public DelimiterNativeTextParser1251(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(Encoding.GetEncoding(1251),
-				new DelimiterSlicer(data.FormRulesData.Rows[0][FormRules.colDelimiter].ToString()),
-				priceFileName,
-				connection,
-				data)
-		{
-		}
-	}
-
-	public class DelimiterNativeTextParser866 : NativeParser
-	{
-		public DelimiterNativeTextParser866(string priceFileName, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(Encoding.GetEncoding(866),
-				new DelimiterSlicer(data.FormRulesData.Rows[0][FormRules.colDelimiter].ToString()),
-				priceFileName,
-				connection,
-				data)
-		{
 		}
 	}
 }

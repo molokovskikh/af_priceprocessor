@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Text;
-using Inforoom.Formalizer;
 using log4net;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class Alerts
 	{

@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using NHibernate;
 using NHibernate.Linq;

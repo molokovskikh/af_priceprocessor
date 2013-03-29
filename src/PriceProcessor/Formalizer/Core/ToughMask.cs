@@ -1,9 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
-using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor;
 
-namespace Inforoom.Formalizer
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public enum NameGroup
 	{

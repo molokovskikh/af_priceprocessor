@@ -1,11 +1,9 @@
 using System;
 using System.Data;
 using System.Linq;
-using Inforoom.Formalizer;
-using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class PriceFormalizationInfo
 	{
@@ -36,10 +34,6 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			IsAssortmentPrice = Convert.ToInt32(row[FormRules.colPriceType]) == Settings.Default.ASSORT_FLG;
 			PriceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]);
 			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
-
-			PricePurpose = PricePurpose.Normal;
-			if (IsAssortmentPrice)
-				PricePurpose |= PricePurpose.Assortment;
 			PrevRowCount = row[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(row[FormRules.colPrevRowCount]);
 		}
 
@@ -57,7 +51,5 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public bool IsAssortmentPrice { get; set; }
 		public CostTypes CostType { get; set; }
 		public bool IsUpdating { get; set; }
-
-		public PricePurpose PricePurpose { get; set; }
 	}
 }

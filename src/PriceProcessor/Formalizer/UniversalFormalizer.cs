@@ -6,7 +6,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 
@@ -14,17 +14,17 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class UniversalFormalizer : BaseFormalizer, IPriceFormalizer
 	{
-		public UniversalFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
-			: base(filename, connection, data)
+		public UniversalFormalizer(string filename, PriceFormalizationInfo data)
+			: base(filename, data)
 		{
 		}
 
 		public void Formalize()
 		{
 			using (var stream = File.OpenRead(_fileName)) {
-				//В качестве решения по "Ошибка #9597 Трэдифарм Белгород" все прайс-листы с форматом UniversalFormalizer делаем "обновляемыми", 
+				//В качестве решения по "Ошибка #9597 Трэдифарм Белгород" все прайс-листы с форматом UniversalFormalizer делаем "обновляемыми",
 				//т.к. BasePriceParser2 не умеет удалять "старые" позиции при простой формализации
-				_priceInfo.IsUpdating = true;
+				Info.IsUpdating = true;
 
 				var reader = new UniversalReader(stream);
 

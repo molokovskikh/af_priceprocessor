@@ -1,8 +1,7 @@
 ﻿using System;
 using Common.Tools;
-using Inforoom.PriceProcessor.Formalizer.New;
 
-namespace Inforoom.Formalizer
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class FormalizationPosition
 	{

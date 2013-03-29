@@ -156,14 +156,15 @@
     <Compile Include="Formalizer\FarmaimpeksFormalizer.cs" />
     <Compile Include="Formalizer\FarmaimpeksOKPFormalizer.cs" />
     <Compile Include="Formalizer\FarmaimpeksOKPReader.cs" />
-    <Compile Include="Formalizer\New\Alerts.cs" />
-    <Compile Include="Formalizer\New\BufferFormalizer.cs" />
-    <Compile Include="Formalizer\New\PriceReader.cs" />
-    <Compile Include="Formalizer\New\ProducerResolver.cs" />
+    <Compile Include="Formalizer\Core\Alerts.cs" />
+    <Compile Include="Formalizer\Core\BufferFormalizer.cs" />
+    <Compile Include="Formalizer\Core\PriceReader.cs" />
+    <Compile Include="Formalizer\Core\ProducerResolver.cs" />
     <Compile Include="Formalizer\FarmaimpeksReader.cs" />
     <Compile Include="Formalizer\RejectUpdater.cs" />
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
+    <Compile Include="Formalizer\Core\Utils.cs" />
     <Compile Include="Helpers\MimeEntityExtentions.cs" />
     <Compile Include="Helpers\MySqlUtils.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
@@ -199,27 +200,22 @@
     <Compile Include="Downloader\PathSourceHandler.cs" />
     <Compile Include="Downloader\WaybillLanSourceHandler.cs" />
     <Compile Include="Downloader\WaybillEmailSourceHandler.cs" />
-    <Compile Include="Formalizer\BasePriceParser.cs" />
-    <Compile Include="Formalizer\New\BasePriceParser2.cs" />
-    <Compile Include="Formalizer\CommerceMLParser.cs" />
-    <Compile Include="Formalizer\FormalizationPosition.cs" />
+    <Compile Include="Formalizer\Core\BasePriceParser.cs" />
+    <Compile Include="Formalizer\Core\FormalizationPosition.cs" />
     <Compile Include="Formalizer\FormalizeHandler.cs" />
-    <Compile Include="Formalizer\InterPriceParser.cs" />
-    <Compile Include="Formalizer\NativeDbfPriceParser.cs" />
-    <Compile Include="Formalizer\NativeExcelParser.cs" />
-    <Compile Include="Formalizer\NativeParser.cs" />
-    <Compile Include="Formalizer\New\Core.cs" />
-    <Compile Include="Formalizer\New\Searcher.cs" />
-    <Compile Include="Formalizer\New\PriceFormalizationInfo.cs" />
-    <Compile Include="Formalizer\New\PriceLoggingStat.cs" />
+    <Compile Include="Formalizer\ExcelReader.cs" />
+    <Compile Include="Formalizer\TextReader.cs" />
+    <Compile Include="Formalizer\Core\Core.cs" />
+    <Compile Include="Formalizer\Core\Searcher.cs" />
+    <Compile Include="Formalizer\Core\PriceFormalizationInfo.cs" />
+    <Compile Include="Formalizer\Core\PriceLoggingStat.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />
     <Compile Include="Formalizer\Helpers\SqlBuilder.cs" />
-    <Compile Include="Formalizer\New\Exceptions.cs" />
-    <Compile Include="Formalizer\SudakovXMLParser.cs" />
-    <Compile Include="Formalizer\ToughDate.cs" />
-    <Compile Include="Formalizer\ToughMask.cs" />
+    <Compile Include="Formalizer\Core\Exceptions.cs" />
+    <Compile Include="Formalizer\Core\ToughDate.cs" />
+    <Compile Include="Formalizer\Core\ToughMask.cs" />
     <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Mailer.cs" />
@@ -230,11 +226,6 @@
     <Compile Include="Monitor.cs" />
     <Compile Include="PriceItemList.cs" />
     <Compile Include="PriceProcessItem.cs" />
-    <Compile Include="PriceProcessorResource.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>PriceProcessorResource.resx</DependentUpon>
-    </Compile>
     <Compile Include="PriceProcessorService.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -457,11 +448,6 @@
     <Compile Include="WCFPriceProcessorService.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="PriceProcessorResource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>PriceProcessorResource.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="ProjectInstaller.resx">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -474,10 +460,6 @@
     <None Include="app.release.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Formalizer\Resources\CommerceML.xsd" />
-    <None Include="Formalizer\Resources\CommerceML.xsx">
-      <DependentUpon>CommerceML.xsd</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Common.Tools\Common.Tools\7zip\7z.dll">
@@ -488,8 +470,6 @@
       <Link>7zip\7z.exe</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Formalizer\Resources\PriceProtek.xsl" />
-    <Content Include="Formalizer\Resources\PriceSudakov.xsl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common.MySql\Common.MySql\Common.MySql.csproj">

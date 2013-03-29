@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using Common.MySql;
 using Common.Tools;
-using Inforoom.Formalizer;
-using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
 using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
-	public class BasePriceParser2
+	public class BasePriceParser
 	{
 		//Соедиение с базой данных
 		protected MySqlConnection _connection;
@@ -87,8 +84,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private ProducerResolver _producerResolver;
 		private bool _saveInCore;
+		private RejectUpdater _rejectUpdater = new RejectUpdater();
 
-		public BasePriceParser2(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
+		public BasePriceParser(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{
 			_logger = LogManager.GetLogger(GetType());
 			_reader = reader;
@@ -210,7 +208,7 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			_logger.Debug("загрузили Forbidden");
 
 			daSynonym = new MySqlDataAdapter(String.Format(@"
-SELECT 
+SELECT
 	s.SynonymCode,
 	LOWER(s.Synonym) AS Synonym,
 	s.ProductId,
@@ -264,7 +262,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 			dtSynonymFirmCr.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 			_logger.Debug("загрузили SynonymFirmCr");
 
-			_producerResolver = new ProducerResolver(PriceInfo, _stats, dtExcludes, dtSynonymFirmCr);
+			_producerResolver = new ProducerResolver(_stats, dtExcludes, dtSynonymFirmCr);
 			_producerResolver.Load(_connection);
 
 			daUnrecExp = new MySqlDataAdapter(
@@ -348,7 +346,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 select cc.*
 from farm.Core0 c
 	join farm.CoreCosts cc on cc.Core_Id = c.id
-where c.PriceCode = {0} 
+where c.PriceCode = {0}
 order by c.Id",
 					_priceInfo.PriceCode);
 			else
@@ -689,7 +687,7 @@ and a.FirmCode = p.FirmCode;",
 
 			foreach (var drNewProducerSynonym in createdProducerSynonyms) {
 				if (!Convert.IsDBNull(drNewProducerSynonym["SynonymFirmCrCode"]))
-					//Если код синонима производителя существует, то он был создан не PriceProcessor и 
+					//Если код синонима производителя существует, то он был создан не PriceProcessor и
 					//получен из базы при сохранении прайса
 					drNewProducerSynonym.AcceptChanges();
 				else {
@@ -761,6 +759,9 @@ and a.FirmCode = p.FirmCode;",
 				}
 
 				new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
+
+				if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations)
+					_rejectUpdater.Save(PriceInfo.Price.IsRejectCancellations);
 				_logger.Debug("конец Formalize");
 			}
 		}
@@ -826,6 +827,23 @@ and a.FirmCode = p.FirmCode;",
 						core.ExistsCore = _searcher.Find(core);
 					_newCores.Add(core);
 				}
+
+				PostProcessPosition(position);
+			}
+		}
+
+		private void PostProcessPosition(FormalizationPosition position)
+		{
+			DataRow row = null;
+			var reader = _reader as PriceReader;
+			if (reader != null)
+				row = reader.CurrentRow;
+
+			if (row == null)
+				return;
+
+			if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations) {
+				_rejectUpdater.Process(position, row);
 			}
 		}
 

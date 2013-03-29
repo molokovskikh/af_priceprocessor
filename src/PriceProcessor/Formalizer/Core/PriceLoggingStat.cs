@@ -1,4 +1,4 @@
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class PriceLoggingStat
 	{

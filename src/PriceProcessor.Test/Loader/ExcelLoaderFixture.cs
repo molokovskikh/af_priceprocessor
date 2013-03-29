@@ -10,12 +10,12 @@ namespace PriceProcessor.Test.Loader
 	[TestFixture]
 	public class ExcelLoaderFixture
 	{
-		private ExcelLoader loader;
+		private ExcelReader loader;
 
 		[SetUp]
 		public void Setup()
 		{
-			loader = new ExcelLoader();
+			loader = new ExcelReader();
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
 		}
 

@@ -8,8 +8,8 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using NHibernate.Linq;
@@ -454,10 +454,8 @@ namespace PriceProcessor.Test.Formalization
 			//мы создадим запись в AutomaticProducerSynonyms
 			//а если IsAutomatic false
 			//то не создаем
-			FakeParserSynonymTest(false, 0, typeof(FakeParser));
-			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
+			FakeParserSynonymTest(false, 0);
+			FakeParserSynonymTest(true, 1);
 		}
 
 		[Test]
@@ -477,23 +475,12 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Exp, Is.Null);
 		}
 
-		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
+		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);
 			parser.Prepare();
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
-			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
-		}
-
-		private void FillDaSynonymFirmCr(FakeParser parser, MySqlConnection connection, bool automatic)
-		{
-			Clean(connection);
-			parser.Prepare();
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "456";
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = null;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
 			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
 		}
@@ -507,7 +494,7 @@ namespace PriceProcessor.Test.Formalization
 			deleter.ExecuteNonQuery();
 		}
 
-		private void FakeParserSynonymTest(bool automatic, int automaticProducerSynonyms, Type fakeType)
+		private void FakeParserSynonymTest(bool automatic, int automaticProducerSynonyms)
 		{
 			if (session.Transaction.IsActive)
 				session.Transaction.Commit();
@@ -515,17 +502,11 @@ namespace PriceProcessor.Test.Formalization
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var info = new PriceFormalizationInfo(row, null);
-			if (fakeType == typeof(FakeParser)) {
-				var parser = new FakeParser(null, (MySqlConnection)session.Connection, info);
-				FillDaSynonymFirmCr(parser, (MySqlConnection)session.Connection, automatic);
-			}
-			else {
-				var parser = new FakeParser2(new FakeReader(), info);
-				if (parser.Connection.State != ConnectionState.Open)
-					parser.Connection.Open();
-				FillDaSynonymFirmCr2(parser, (MySqlConnection)session.Connection, automatic);
-				parser.Connection.Close();
-			}
+			var parser = new FakeParser(new FakeReader(), info);
+			if (parser.Connection.State != ConnectionState.Open)
+				parser.Connection.Open();
+			FillDaSynonymFirmCr2(parser, (MySqlConnection)session.Connection, automatic);
+			parser.Connection.Close();
 			var counter = session.Connection.CreateCommand();
 			counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
 			Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(automaticProducerSynonyms));
@@ -541,7 +522,7 @@ namespace PriceProcessor.Test.Formalization
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var info = new PriceFormalizationInfo(row, null);
-			new FakeParser(null, (MySqlConnection)session.Connection, info);
+			new FakeParser(new FakeReader(), info);
 		}
 	}
 }

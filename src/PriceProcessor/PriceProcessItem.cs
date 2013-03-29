@@ -5,7 +5,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
 using MySql.Data.MySqlClient;
 
@@ -200,7 +201,7 @@ group by pi.Id",
 		public void CopyToInbound(string extrFileName, MySqlConnection connection, MySqlTransaction transaction)
 		{
 			var command = new MySqlCommand(@"
-update usersettings.PriceItems 
+update usersettings.PriceItems
 set LastDownload = ?FileTime, LocalLastDownload=?LocalLastDownload
 where Id = ?Id",
 				connection, transaction);

@@ -5,15 +5,10 @@ using System.Data;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using Common.Tools;
 using System.Linq;
-using Inforoom.Formalizer;
-using Inforoom.PriceProcessor;
 using log4net;
-using MySql.Data.MySqlClient;
-using Enumerable = System.Linq.Enumerable;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public interface IReader
 	{
@@ -76,6 +71,20 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 			foreach (PriceFields pf in Enum.GetValues(typeof(PriceFields))) {
 				var tmpName = (PriceFields.OriginalName == pf) ? "FName1" : "F" + pf;
 				SetFieldName(pf, priceInfo[tmpName] is DBNull ? String.Empty : (string)priceInfo[tmpName]);
+			}
+		}
+
+		public DataRow CurrentRow
+		{
+			get
+			{
+				if (_index == -1)
+					return null;
+
+				if (_priceData == null)
+					return null;
+
+				return _priceData.Rows[_index];
 			}
 		}
 
@@ -170,6 +179,9 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 		private void ValidateCosts()
 		{
+			if (CostDescriptions == null)
+				return;
+
 			if (CostDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)
 				throw new WarningFormalizeException(PriceProcessor.Settings.Default.CostsNotExistsError, _priceInfo);
 
@@ -181,7 +193,11 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 
 				var baseCost = baseCosts.Single();
 
-				if (baseCost.Begin == -1 && baseCost.End == -1 && String.Empty == baseCost.FieldName)
+				var isPositionParser = _parser is TextParser && ((TextParser)_parser).Slicer is PositionSlicer;
+				if (isPositionParser && baseCost.Begin == -1 && baseCost.End == -1)
+					throw new WarningFormalizeException(PriceProcessor.Settings.Default.FieldNameBaseCostsError, _priceInfo);
+
+				if (!isPositionParser && String.Empty == baseCost.FieldName)
 					throw new WarningFormalizeException(PriceProcessor.Settings.Default.FieldNameBaseCostsError, _priceInfo);
 			}
 		}
@@ -564,8 +580,15 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		public Cost[] ProcessCosts(List<CostDescription> descriptions)
 		{
 			var costs = new List<Cost>();
+
+			if (descriptions == null)
+				return costs.ToArray();
+
 			for (var i = 0; i < descriptions.Count; i++) {
 				var description = descriptions[i];
+
+				if (String.IsNullOrEmpty(description.FieldName))
+					continue;
 
 				var costValue = _priceData.Rows[_index][description.FieldName];
 				var value = Cost.Parse(costValue);
