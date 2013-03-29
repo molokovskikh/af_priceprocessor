@@ -70,7 +70,10 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public void Analyze(string Input)
 		{
-			m = re.Match(Input);
+			if (String.IsNullOrEmpty(Input))
+				m = null;
+			else
+				m = re.Match(Input);
 		}
 
 		public void Clear(string Input)

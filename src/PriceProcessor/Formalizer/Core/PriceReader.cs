@@ -191,7 +191,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				if (baseCosts.Length == 0)
 					throw new WarningFormalizeException(PriceProcessor.Settings.Default.BaseCostNotExistsError, _priceInfo);
 
-				var baseCost = baseCosts.Single();
+				var baseCost = baseCosts.First();
 
 				var isPositionParser = _parser is TextParser && ((TextParser)_parser).Slicer is PositionSlicer;
 				if (isPositionParser && baseCost.Begin == -1 && baseCost.End == -1)
