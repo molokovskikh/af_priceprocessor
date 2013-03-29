@@ -23,7 +23,7 @@ set PriceFormatId = (select Id from Farm.PriceFmts where ParserClassName = 'Nati
 where PriceFormatId = (select Id from Farm.PriceFmts where ParserClassName = 'ExcelParser');
 
 delete from Farm.PriceFmts
-where ParserClassName in ('ExcelParser', 'PriceDbfParser', 'DelimiterTextParser1251', 'DelimiterTextParser866', 'FixedTextParser1251', 'FixedTextParser1251');
+where ParserClassName in ('ExcelParser', 'PriceDbfParser', 'DelimiterTextParser1251', 'DelimiterTextParser866', 'FixedTextParser1251', 'FixedTextParser866');
 
 update Farm.PriceFmts
 set ParserClassName = 'ExcelParser'
