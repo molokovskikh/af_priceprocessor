@@ -15,6 +15,7 @@ namespace PriceProcessor.Test.TestHelpers
 	public class BaseFormalizationFixture : IntegrationFixture
 	{
 		protected string file;
+		protected TestSupplier supplier;
 		protected TestPrice price;
 		protected TestPriceItem priceItem;
 		protected string defaultContent;
@@ -33,16 +34,12 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void CreatePrice()
 		{
-			price = TestSupplier.CreateTestSupplierWithPrice(p => Configure(p));
-			var regionalData = new TestPriceRegionalData {
-				BaseCost = price.Costs.Single(),
-				Region = session.Load<TestRegion>((ulong)1),
-				Price = price
-			};
-			price.RegionalData.Add(regionalData);
+			supplier = TestSupplier.CreateNaked();
+			price = supplier.Prices[0];
 			priceItem = price.Costs.First().PriceItem;
+			Configure(price);
 
-			session.Save(regionalData);
+			session.Save(supplier);
 			Flush();
 		}
 

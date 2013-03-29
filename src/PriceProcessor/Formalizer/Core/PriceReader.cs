@@ -153,10 +153,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 			ValidateCosts();
 			Open();
-			if (null != toughMask)
-				toughMask.Analyze(GetFieldRawValue(PriceFields.Name1));
 
-			do {
+			while (Next()) {
 				var name = GetFieldValue(PriceFields.Name1);
 
 				if (String.IsNullOrEmpty(name))
@@ -174,7 +172,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				//Получается, что если формализовали по наименованию, то это позиция будет отображена клиенту
 				InsertToCore(position, costs);
 				yield return position;
-			} while (Next());
+			}
 		}
 
 		private void ValidateCosts()
@@ -190,15 +188,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				var baseCosts = CostDescriptions.Where(c => c.IsBaseCost).ToArray();
 				if (baseCosts.Length == 0)
 					throw new WarningFormalizeException(PriceProcessor.Settings.Default.BaseCostNotExistsError, _priceInfo);
-
-				var baseCost = baseCosts.First();
-
-				var isPositionParser = _parser is TextParser && ((TextParser)_parser).Slicer is PositionSlicer;
-				if (isPositionParser && baseCost.Begin == -1 && baseCost.End == -1)
-					throw new WarningFormalizeException(PriceProcessor.Settings.Default.FieldNameBaseCostsError, _priceInfo);
-
-				if (!isPositionParser && String.Empty == baseCost.FieldName)
-					throw new WarningFormalizeException(PriceProcessor.Settings.Default.FieldNameBaseCostsError, _priceInfo);
 			}
 		}
 

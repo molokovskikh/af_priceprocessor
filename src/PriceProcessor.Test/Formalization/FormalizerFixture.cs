@@ -3,6 +3,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
@@ -12,6 +13,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
+using NHibernate.Hql.Ast.ANTLR.Tree;
 using NHibernate.Linq;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -475,6 +477,49 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Exp, Is.Null);
 		}
 
+		[Test]
+		public void Process_data_with_mask()
+		{
+			priceItem.Format.NameMask = @"(?<Name>.+?)\((?<Code>.+)\)";
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ(0564978);Валента Фармацевтика/Королев Ф;2864;220.92;");
+
+			session.Refresh(price);
+			var core = price.Core[0];
+			Assert.That(core.ProductSynonym.Name, Is.EqualTo("9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ"));
+			Assert.AreEqual("0564978", core.Code);
+		}
+
+		[Test]
+		public void Formalize_with_base_columns()
+		{
+			var newRegion = session.Load<TestRegion>(2ul);
+			supplier.AddRegion(newRegion);
+			var data = price.RegionalData.First(r => r.Region == newRegion);
+			data.BaseCost = price.NewPriceCost();
+			data.BaseCost.FormRule.FieldName = "F5";
+
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00;");
+
+			session.Refresh(price);
+			var core = price.Core[0];
+			Assert.That(core.Costs.Select(c => c.Cost), Is.EquivalentTo(new[] { 220.92, 230.00 }));
+		}
+
+		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
+		public void ParseWithoutBaseCostErrorTest()
+		{
+			price.Costs[0].BaseCost = false;
+			if (session.Transaction.IsActive)
+				session.Transaction.Commit();
+
+			var table = PricesValidator.LoadFormRules(priceItem.Id);
+			var row = table.Rows[0];
+			var info = new PriceFormalizationInfo(row, null);
+			new FakeParser(new FakeReader(), info);
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);
@@ -510,19 +555,6 @@ namespace PriceProcessor.Test.Formalization
 			var counter = session.Connection.CreateCommand();
 			counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
 			Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(automaticProducerSynonyms));
-		}
-
-		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
-		public void ParseWithoutBaseCostErrorTest()
-		{
-			price.Costs[0].BaseCost = false;
-			if (session.Transaction.IsActive)
-				session.Transaction.Commit();
-
-			var table = PricesValidator.LoadFormRules(priceItem.Id);
-			var row = table.Rows[0];
-			var info = new PriceFormalizationInfo(row, null);
-			new FakeParser(new FakeReader(), info);
 		}
 	}
 }
