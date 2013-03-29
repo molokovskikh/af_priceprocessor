@@ -5,7 +5,7 @@ using System.Reflection;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using NHibernate;
 using NUnit.Framework;
@@ -88,7 +88,7 @@ namespace PriceProcessor.Test
 			var row = _forbiddenProducers.NewRow();
 			row["Name"] = "TestFirm";
 			_forbiddenProducers.Rows.Add(row);
-			var resolver = new ProducerResolver(null, new FormalizeStats(), null, _producerSynonyms);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			resolver.ForbiddenProdusers = _forbiddenProducers;
 			resolver.Assortment = _assortiment;
 			resolver.MonobrendAssortment = _monobrendAssortiment;
@@ -111,7 +111,7 @@ namespace PriceProcessor.Test
 			producerSynonyms.Columns.Add("InternalProducerSynonymId");
 			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 
-			var resolver = new ProducerResolver(null, new FormalizeStats(), null, producerSynonyms);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
@@ -153,7 +153,7 @@ namespace PriceProcessor.Test
 			producerSynonyms.Columns.Add("InternalProducerSynonymId");
 			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 
-			var resolver = new ProducerResolver(null, new FormalizeStats(), null, producerSynonyms);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",

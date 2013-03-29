@@ -3,7 +3,8 @@ using System.IO;
 using System.Data;
 using Castle.ActiveRecord;
 using Common.MySql;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
@@ -98,7 +99,7 @@ namespace Inforoom.Formalizer
 				NHibernateUtil.Initialize(price);
 				priceInfo = new PriceFormalizationInfo(dataRow, price);
 			}
-			return With.Connection(c => (IPriceFormalizer)Activator.CreateInstance(parserClass, new object[] { fileName, c, priceInfo }));
+			return With.Connection(c => (IPriceFormalizer)Activator.CreateInstance(parserClass, new object[] { fileName, priceInfo }));
 		}
 
 		public static DataTable LoadFormRules(uint priceItemId)

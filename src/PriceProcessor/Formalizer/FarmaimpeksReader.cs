@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {

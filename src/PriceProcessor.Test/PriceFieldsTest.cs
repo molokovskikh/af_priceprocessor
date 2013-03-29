@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Inforoom.PriceProcessor.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using NUnit.Framework;
 using Inforoom.Formalizer;
 

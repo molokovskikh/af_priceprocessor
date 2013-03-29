@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Common.Tools;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using Inforoom.PriceProcessor;
@@ -45,15 +45,9 @@ namespace Inforoom.Formalizer
 		IList<string> GetAllNames();
 		bool Downloaded { get; set; }
 		string InputFileName { get; set; }
-		int formCount { get; }
-		int unformCount { get; }
-		int zeroCount { get; }
-		int forbCount { get; }
-		int maxLockCount { get; }
-		long priceCode { get; }
-		long firmCode { get; }
-		string firmShortName { get; }
-		string priceName { get; }
+
+		PriceLoggingStat Stat { get; }
+		PriceFormalizationInfo Info { get; }
 	}
 
 	public class PriceProcessThread

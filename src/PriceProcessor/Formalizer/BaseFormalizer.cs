@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using Common.Tools;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 
@@ -12,48 +12,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class BaseFormalizer
 	{
-		protected PriceFormalizationInfo _priceInfo;
 		protected string _fileName;
 		protected DataTable _data;
 
-		public BaseFormalizer(string filename, MySqlConnection connection, PriceFormalizationInfo data)
+		public BaseFormalizer(string filename, PriceFormalizationInfo data)
 		{
+			Info = data;
 			_fileName = filename;
 			_data = data.FormRulesData;
-			_priceInfo = data;
 		}
 
 		public bool Downloaded { get; set; }
 		public string InputFileName { get; set; }
-		public int formCount { get; protected set; }
-		public int unformCount { get; protected set; }
-		public int zeroCount { get; protected set; }
-		public int forbCount { get; protected set; }
 
-		public int maxLockCount
-		{
-			get { return 0; }
-		}
-
-		public long priceCode
-		{
-			get { return _priceInfo.PriceCode; }
-		}
-
-		public long firmCode
-		{
-			get { return _priceInfo.FirmCode; }
-		}
-
-		public string firmShortName
-		{
-			get { return _priceInfo.FirmShortName; }
-		}
-
-		public string priceName
-		{
-			get { return _priceInfo.PriceName; }
-		}
+		public PriceLoggingStat Stat { get; protected set; }
+		public PriceFormalizationInfo Info { get; protected set; }
 
 		protected void UpdateIntersection(MySqlCommand command, List<Customer> customers, List<CostDescription> costs)
 		{
@@ -99,7 +72,7 @@ where i.PriceId = ?priceId;
 
 drop temporary table if exists for_update;",
 						setSql.Implode(), filterSql.Implode(" and "));
-					command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
+					command.Parameters.AddWithValue("?priceId", Info.PriceCode);
 					command.ExecuteNonQuery();
 				}
 
@@ -144,7 +117,7 @@ where {1} and {2} and i.PriceId = ?priceId",
 					setSql.Implode(),
 					filterSql.Implode(" and "),
 					intersectionFilter.Implode(" and "));
-				command.Parameters.AddWithValue("?priceId", _priceInfo.PriceCode);
+				command.Parameters.AddWithValue("?priceId", Info.PriceCode);
 				command.ExecuteNonQuery();
 			}
 		}
@@ -164,13 +137,10 @@ where {1} and {2} and i.PriceId = ?priceId",
 
 		protected void FormalizePrice(IReader reader)
 		{
-			var parser = new BasePriceParser2(reader, _priceInfo);
+			var parser = new BasePriceParser(reader, Info);
 			parser.Downloaded = Downloaded;
 			parser.Formalize();
-			formCount += parser.Stat.formCount;
-			forbCount += parser.Stat.forbCount;
-			unformCount += parser.Stat.unformCount;
-			zeroCount += parser.Stat.zeroCount;
+			Stat = parser.Stat;
 		}
 	}
 }

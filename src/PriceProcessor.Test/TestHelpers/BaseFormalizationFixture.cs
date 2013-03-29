@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 using Test.Support;
@@ -15,6 +15,7 @@ namespace PriceProcessor.Test.TestHelpers
 	public class BaseFormalizationFixture : IntegrationFixture
 	{
 		protected string file;
+		protected TestSupplier supplier;
 		protected TestPrice price;
 		protected TestPriceItem priceItem;
 		protected string defaultContent;
@@ -33,16 +34,12 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void CreatePrice()
 		{
-			price = TestSupplier.CreateTestSupplierWithPrice(p => Configure(p));
-			var regionalData = new TestPriceRegionalData {
-				BaseCost = price.Costs.Single(),
-				Region = session.Load<TestRegion>((ulong)1),
-				Price = price
-			};
-			price.RegionalData.Add(regionalData);
+			supplier = TestSupplier.CreateNaked();
+			price = supplier.Prices[0];
 			priceItem = price.Costs.First().PriceItem;
+			Configure(price);
 
-			session.Save(regionalData);
+			session.Save(supplier);
 			Flush();
 		}
 
@@ -97,7 +94,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var localPrice = session.Load<Price>(price.Id);
 			var info = new PriceFormalizationInfo(row, localPrice);
 			var reader = new PriceReader(new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
-			return new FakeFormalizer(new BasePriceParser2(reader, info));
+			return new FakeFormalizer(new BasePriceParser(reader, info));
 		}
 
 		protected TestFormat Configure(TestPrice okpPrice)
@@ -115,9 +112,9 @@ namespace PriceProcessor.Test.TestHelpers
 
 		public class FakeFormalizer : IPriceFormalizer
 		{
-			private BasePriceParser2 parser;
+			private BasePriceParser parser;
 
-			public FakeFormalizer(BasePriceParser2 parser)
+			public FakeFormalizer(BasePriceParser parser)
 			{
 				this.parser = parser;
 			}
@@ -134,15 +131,9 @@ namespace PriceProcessor.Test.TestHelpers
 
 			public bool Downloaded { get; set; }
 			public string InputFileName { get; set; }
-			public int formCount { get; private set; }
-			public int unformCount { get; private set; }
-			public int zeroCount { get; private set; }
-			public int forbCount { get; private set; }
-			public int maxLockCount { get; private set; }
-			public long priceCode { get; private set; }
-			public long firmCode { get; private set; }
-			public string firmShortName { get; private set; }
-			public string priceName { get; private set; }
+
+			public PriceLoggingStat Stat { get; private set; }
+			public PriceFormalizationInfo Info { get; private set; }
 		}
 	}
 }

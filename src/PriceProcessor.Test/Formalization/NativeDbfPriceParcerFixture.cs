@@ -6,7 +6,7 @@ using System.Text;
 using Common.MySql;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using NHibernate.Linq;
@@ -48,12 +48,10 @@ namespace PriceProcessor.Test.Formalization
 			price.IsStrict = false;
 			session.Save(price);
 			Reopen();
-			var connection = new MySqlConnection(ConnectionHelper.GetConnectionString());
-			var parser = new NativeDbfPriceParser(@"..\..\Data\BadTestFile.dbf",
-				connection,
+			var parser = new PriceDbfParser(@"..\..\Data\BadTestFile.dbf",
 				new PriceFormalizationInfo(row, price));
 
-			Assert.DoesNotThrow(parser.Open);
+			Assert.DoesNotThrow(parser.Formalize);
 		}
 	}
 }

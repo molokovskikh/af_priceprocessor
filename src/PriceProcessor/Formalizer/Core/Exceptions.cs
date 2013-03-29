@@ -1,6 +1,6 @@
 using System;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class WarningFormalizeException : FormalizeException
 	{
@@ -65,33 +65,12 @@ namespace Inforoom.PriceProcessor.Formalizer.New
 		//Кол-во "запрещенных" позиций
 		public readonly int ForbCount = -1;
 
-		public RollbackFormalizeException(string message) : base(message)
-		{
-		}
-
 		public RollbackFormalizeException(string message, PriceFormalizationInfo priceInfo, PriceLoggingStat stat) : base(message, priceInfo)
 		{
 			FormCount = stat.formCount;
 			ZeroCount = stat.zeroCount;
 			UnformCount = stat.unformCount;
 			ForbCount = stat.forbCount;
-		}
-
-		public RollbackFormalizeException(string message, Int64 ClientCode,
-			Int64 PriceCode, string ClientName, string PriceName)
-			: base(message, ClientCode, PriceCode, ClientName, PriceName)
-		{
-		}
-
-		public RollbackFormalizeException(string message, Int64 ClientCode,
-			Int64 PriceCode, string ClientName, string PriceName,
-			int FormCount, int ZeroCount, int UnformCount, int ForbCount)
-			: base(message, ClientCode, PriceCode, ClientName, PriceName)
-		{
-			this.FormCount = FormCount;
-			this.ZeroCount = ZeroCount;
-			this.UnformCount = UnformCount;
-			this.ForbCount = ForbCount;
 		}
 	}
 }

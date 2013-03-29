@@ -1,10 +1,8 @@
 using System;
 using System.Data;
 using System.Globalization;
-using Common.Tools;
-using Inforoom.Formalizer;
 
-namespace Inforoom.PriceProcessor.Formalizer.New
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class Cost
 	{

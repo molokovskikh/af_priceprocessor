@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using NUnit.Framework;
 

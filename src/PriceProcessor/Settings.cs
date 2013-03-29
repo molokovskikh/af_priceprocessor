@@ -262,17 +262,6 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("У базовой цены прайса не определенно название поля.")]
-		public string FieldNameBaseCostsError
-		{
-			get
-			{
-				return ((string)(this["FieldNameBaseCostsError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("Кол-во нулевых позиций выше допустимого.")]
 		public string ZeroRollbackError
 		{

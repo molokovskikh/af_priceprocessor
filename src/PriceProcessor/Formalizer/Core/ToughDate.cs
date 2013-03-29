@@ -1,8 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
-using Inforoom.PriceProcessor;
 
-namespace Inforoom.Formalizer
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	/// <summary>
 	/// Summary description for ToughDate.

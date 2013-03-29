@@ -2,6 +2,7 @@
 using System.Data;
 using Castle.ActiveRecord;
 using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 
 namespace Inforoom.PriceProcessor.Models
 {

@@ -8,7 +8,7 @@ using System.Text;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
+using Inforoom.PriceProcessor.Formalizer.Core;
 
 namespace Inforoom.PriceProcessor.Formalizer.Helpers
 {
@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return value;
 		}
 
-		public void SetValue(object value, Core core)
+		public void SetValue(object value, Core.Core core)
 		{
 			_coreField.SetValue(core, value);
 		}
@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		private static FieldMap[] GetCoreFieldMaps()
 		{
-			return typeof(Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
+			return typeof(Core.Core).GetFields().Where(f => f.Name != "Costs").Select(f => new FieldMap(f)).ToArray();
 		}
 
 		private static FieldMap[] _fieldMaps;
@@ -81,93 +81,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			s = s.Replace("\"", "\\\"");
 			s = s.Replace("`", "\\`");
 			return s;
-		}
-
-		private static void AddTextParameter(string paramName, DataRow dr, StringBuilder sb)
-		{
-			if (dr[paramName] is DBNull)
-				sb.Append("''");
-			else
-				sb.AppendFormat("'{0}'", StringToMySqlString(dr[paramName].ToString()));
-		}
-
-		public static void InsertCorePosition(DataRow drCore, StringBuilder sb, DataRow drNewProducerSynonym)
-		{
-			var producerSynonymId = drCore["SynonymFirmCrCode"];
-			if (drNewProducerSynonym != null)
-				producerSynonymId = drNewProducerSynonym["SynonymFirmCrCode"];
-
-			sb.AppendLine("insert into farm.Core0 (" +
-				"PriceCode, ProductId, CodeFirmCr, SynonymCode, SynonymFirmCrCode, " +
-				"Period, Junk, Await, MinBoundCost, " +
-				"VitallyImportant, RequestRatio, RegistryCost, " +
-				"MaxBoundCost, OrderCost, MinOrderCount, ProducerCost, Nds, " +
-				"Code, CodeCr, Unit, Volume, Quantity, Note, Doc, Exp) values ");
-			sb.Append("(");
-			sb.AppendFormat("{0}, {1}, {2}, {3}, {4}, ",
-				drCore["PriceCode"],
-				drCore["ProductId"],
-				Convert.IsDBNull(drCore["CodeFirmCr"]) ? "null" : drCore["CodeFirmCr"].ToString(),
-				drCore["SynonymCode"],
-				Convert.IsDBNull(producerSynonymId) ? "null" : producerSynonymId.ToString());
-			sb.AppendFormat("'{0}', ", (drCore["Period"] is DBNull) ? String.Empty : drCore["Period"].ToString());
-			sb.AppendFormat("{0}, ", drCore["Junk"]);
-			sb.AppendFormat("'{0}', ", drCore["Await"]);
-			sb.AppendFormat("{0}, ", (drCore["MinBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MinBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", drCore["VitallyImportant"]);
-			sb.AppendFormat("{0}, ", (drCore["RequestRatio"] is DBNull) ? "null" : drCore["RequestRatio"].ToString());
-			sb.AppendFormat("{0}, ", (drCore["RegistryCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["RegistryCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["MaxBoundCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["MaxBoundCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["OrderCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["OrderCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["MinOrderCount"] is DBNull) ? "null" : drCore["MinOrderCount"].ToString());
-			sb.AppendFormat("{0}, ", (drCore["ProducerCost"] is DBNull) ? "null" : Convert.ToDecimal(drCore["ProducerCost"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-			sb.AppendFormat("{0}, ", (drCore["Nds"] is DBNull) ? "null" : Convert.ToUInt32(drCore["Nds"]).ToString(CultureInfo.InvariantCulture.NumberFormat));
-
-			AddTextParameter("Code", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("CodeCr", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Unit", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Volume", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Quantity", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Note", drCore, sb);
-			sb.Append(", ");
-
-			AddTextParameter("Doc", drCore, sb);
-			sb.Append(", ");
-
-			if (drCore["Period"] is DateTime) {
-				sb.AppendFormat("'{0:yyyy-MM-dd}'", drCore["Period"]);
-			}
-			else {
-				sb.AppendFormat("null");
-			}
-
-			sb.AppendLine(");");
-			sb.AppendLine("set @LastCoreID = last_insert_id();");
-		}
-
-		public static void InsertCoreCosts(StringBuilder builder, List<CoreCost> coreCosts)
-		{
-			builder.AppendLine("insert into farm.CoreCosts (Core_ID, PC_CostCode, Cost) values ");
-			var firstInsert = true;
-			foreach (var cost in coreCosts) {
-				if (cost.cost.HasValue && cost.cost > 0) {
-					if (!firstInsert)
-						builder.Append(", ");
-					firstInsert = false;
-					builder.AppendFormat("(@LastCoreID, {0}, {1}) ", cost.costCode, (cost.cost.HasValue && (cost.cost > 0)) ? cost.cost.Value.ToString(CultureInfo.InvariantCulture.NumberFormat) : "null");
-				}
-			}
-			builder.AppendLine(";");
 		}
 
 		public static string InsertCoreCommand(PriceFormalizationInfo info, NewCore core)

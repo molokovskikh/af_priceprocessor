@@ -5,7 +5,6 @@ using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Formalizer.New;
 using MySql.Data.MySqlClient;
 using NUnit.Framework;
 using FileHelper = Common.Tools.FileHelper;
@@ -59,10 +58,6 @@ namespace PriceProcessor.Test.TestHelpers
 			return data;
 		}
 
-		public static void Formalize<T>(string file) where T : BasePriceParser
-		{
-			Formalize<T>(file, Convert.ToInt32(Path.GetFileNameWithoutExtension(file)));
-		}
 
 		public static IPriceFormalizer Formalize(string file, int priceItemId)
 		{
@@ -76,11 +71,6 @@ namespace PriceProcessor.Test.TestHelpers
 		public static void Formalize(Type formatType, string file)
 		{
 			Formalize(formatType, file, Convert.ToInt32(Path.GetFileNameWithoutExtension(file)));
-		}
-
-		public static void Formalize<T>(string file, int priceItemId) where T : BasePriceParser
-		{
-			Formalize(typeof(T), file, priceItemId);
 		}
 
 		public static void Formalize(Type formatType, string file, int priceItemId)

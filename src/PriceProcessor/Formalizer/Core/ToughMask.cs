@@ -1,9 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
-using Inforoom.PriceProcessor.Formalizer.New;
-using Inforoom.PriceProcessor;
 
-namespace Inforoom.Formalizer
+namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public enum NameGroup
 	{
@@ -72,7 +70,10 @@ namespace Inforoom.Formalizer
 
 		public void Analyze(string Input)
 		{
-			m = re.Match(Input);
+			if (String.IsNullOrEmpty(Input))
+				m = null;
+			else
+				m = re.Match(Input);
 		}
 
 		public void Clear(string Input)

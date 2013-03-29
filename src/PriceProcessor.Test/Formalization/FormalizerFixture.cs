@@ -3,15 +3,17 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
-using Inforoom.PriceProcessor.Formalizer.New;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
+using NHibernate.Hql.Ast.ANTLR.Tree;
 using NHibernate.Linq;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -454,10 +456,8 @@ namespace PriceProcessor.Test.Formalization
 			//мы создадим запись в AutomaticProducerSynonyms
 			//а если IsAutomatic false
 			//то не создаем
-			FakeParserSynonymTest(false, 0, typeof(FakeParser));
-			FakeParserSynonymTest(false, 0, typeof(FakeParser2));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser));
-			FakeParserSynonymTest(true, 1, typeof(FakeParser2));
+			FakeParserSynonymTest(false, 0);
+			FakeParserSynonymTest(true, 1);
 		}
 
 		[Test]
@@ -477,23 +477,68 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Exp, Is.Null);
 		}
 
-		private void FillDaSynonymFirmCr2(FakeParser2 parser, MySqlConnection connection, bool automatic)
+		[Test]
+		public void Process_data_with_mask()
+		{
+			priceItem.Format.NameMask = @"(?<Name>.+?)\((?<Code>.+)\)";
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ(0564978);Валента Фармацевтика/Королев Ф;2864;220.92;");
+
+			session.Refresh(price);
+			var core = price.Core[0];
+			Assert.That(core.ProductSynonym.Name, Is.EqualTo("9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ"));
+			Assert.AreEqual("0564978", core.Code);
+		}
+
+		[Test]
+		public void Formalize_with_base_columns()
+		{
+			var newRegion = session.Load<TestRegion>(2ul);
+			supplier.AddRegion(newRegion);
+			var data = price.RegionalData.First(r => r.Region == newRegion);
+			data.BaseCost = price.NewPriceCost();
+			data.BaseCost.FormRule.FieldName = "F5";
+
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00;");
+
+			session.Refresh(price);
+			var core = price.Core[0];
+			Assert.That(core.Costs.Select(c => c.Cost), Is.EquivalentTo(new[] { 220.92, 230.00 }));
+		}
+
+
+		[Test]
+		public void Formalize_price_with_delete_insert()
+		{
+			Settings.Default.SyncPriceCodes.Remove(price.Id.ToString());
+			price.IsUpdate = false;
+			FormalizeDefaultData();
+			Formalize(defaultContent);
+
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(3));
+		}
+
+		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
+		public void ParseWithoutBaseCostErrorTest()
+		{
+			price.Costs[0].BaseCost = false;
+			if (session.Transaction.IsActive)
+				session.Transaction.Commit();
+
+			var table = PricesValidator.LoadFormRules(priceItem.Id);
+			var row = table.Rows[0];
+			var info = new PriceFormalizationInfo(row, null);
+			new FakeParser(new FakeReader(), info);
+		}
+
+		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);
 			parser.Prepare();
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "123";
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
-			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
-		}
-
-		private void FillDaSynonymFirmCr(FakeParser parser, MySqlConnection connection, bool automatic)
-		{
-			Clean(connection);
-			parser.Prepare();
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = price.Id;
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = "456";
-			parser.DaSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = null;
 			parser.DaSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = automatic;
 			parser.DaSynonymFirmCr.InsertCommand.ExecuteNonQuery();
 		}
@@ -507,7 +552,7 @@ namespace PriceProcessor.Test.Formalization
 			deleter.ExecuteNonQuery();
 		}
 
-		private void FakeParserSynonymTest(bool automatic, int automaticProducerSynonyms, Type fakeType)
+		private void FakeParserSynonymTest(bool automatic, int automaticProducerSynonyms)
 		{
 			if (session.Transaction.IsActive)
 				session.Transaction.Commit();
@@ -515,33 +560,14 @@ namespace PriceProcessor.Test.Formalization
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
 			var info = new PriceFormalizationInfo(row, null);
-			if (fakeType == typeof(FakeParser)) {
-				var parser = new FakeParser(null, (MySqlConnection)session.Connection, info);
-				FillDaSynonymFirmCr(parser, (MySqlConnection)session.Connection, automatic);
-			}
-			else {
-				var parser = new FakeParser2(new FakeReader(), info);
-				if (parser.Connection.State != ConnectionState.Open)
-					parser.Connection.Open();
-				FillDaSynonymFirmCr2(parser, (MySqlConnection)session.Connection, automatic);
-				parser.Connection.Close();
-			}
+			var parser = new FakeParser(new FakeReader(), info);
+			if (parser.Connection.State != ConnectionState.Open)
+				parser.Connection.Open();
+			FillDaSynonymFirmCr2(parser, (MySqlConnection)session.Connection, automatic);
+			parser.Connection.Close();
 			var counter = session.Connection.CreateCommand();
 			counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
 			Assert.That(Convert.ToInt32(counter.ExecuteScalar()), Is.EqualTo(automaticProducerSynonyms));
-		}
-
-		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
-		public void ParseWithoutBaseCostErrorTest()
-		{
-			price.Costs[0].BaseCost = false;
-			if (session.Transaction.IsActive)
-				session.Transaction.Commit();
-
-			var table = PricesValidator.LoadFormRules(priceItem.Id);
-			var row = table.Rows[0];
-			var info = new PriceFormalizationInfo(row, null);
-			new FakeParser(null, (MySqlConnection)session.Connection, info);
 		}
 	}
 }
