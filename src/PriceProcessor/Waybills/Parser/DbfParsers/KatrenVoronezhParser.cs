@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
-				.DocumentHeader(d => d.ProviderDocumentId, "QueryNum")
+				.DocumentHeader(d => d.ProviderDocumentId, "DocNum")
 				.DocumentHeader(d => d.DocumentDate, "QueryDate")
 				.DocumentInvoice(i => i.InvoiceNumber, "DocNum")
 				.DocumentInvoice(i => i.InvoiceDate, "DocDate")
@@ -57,7 +57,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "D_SERTIF")
 				.Line(l => l.VitallyImportant, "GV")
 				.Line(l => l.EAN13, "EAN13")
-				.Line(l => l.OrderId, "NUMZAK");
+				.Line(l => l.OrderId, "QueryNum");
 		}
 
 		public override void PostParsing(Document doc)

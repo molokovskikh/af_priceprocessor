@@ -18,7 +18,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse("241417.dbf");
 
 			Assert.That(document.Lines.Count, Is.EqualTo(16));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("297967"));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("241417"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.10.2011"));
 
 			var invoice = document.Invoice;
@@ -70,7 +70,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificatesDate, Is.EqualTo("15.06.2011"));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.EAN13, Is.EqualTo("7290008016766"));
-			Assert.That(line.OrderId, Is.EqualTo(22842823));
+			Assert.That(line.OrderId, Is.EqualTo(297967));
 		}
 	}
 }
