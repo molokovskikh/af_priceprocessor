@@ -51,6 +51,7 @@ namespace PriceProcessor.Test
 		private uint CatchWarningFormalizeExceptionTestPrepareData(PriceFormatType priceFormatId = PriceFormatType.NativeDbf, CostType priceCostType = CostType.MultiColumn)
 		{
 			var supplier = TestSupplier.Create();
+			supplier.Disabled = true;
 			var price = supplier.Prices[0];
 			price.CostType = priceCostType;
 
@@ -58,6 +59,7 @@ namespace PriceProcessor.Test
 			var format = price.Costs.Single().PriceItem.Format;
 			format.PriceFormat = priceFormatId;
 
+			supplier.Save();
 			price.Save();
 			return item.Id;
 		}
