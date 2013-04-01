@@ -35,8 +35,9 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void ReadCostsWithoutBaseCostTest()
 		{
-			price.Costs[0].BaseCost = false;
-			session.Save(price.Costs[0]);
+			price.RegionalData.Each(r => r.BaseCost = null);
+			session.Save(price);
+
 			Formalize();
 		}
 
@@ -518,19 +519,6 @@ namespace PriceProcessor.Test.Formalization
 
 			session.Refresh(price);
 			Assert.That(price.Core.Count, Is.EqualTo(3));
-		}
-
-		[Test(Description = "Проверяет, что корректно создается парсер, если нет ценовой колонки с атрибутом BaseCost=1")]
-		public void ParseWithoutBaseCostErrorTest()
-		{
-			price.Costs[0].BaseCost = false;
-			if (session.Transaction.IsActive)
-				session.Transaction.Commit();
-
-			var table = PricesValidator.LoadFormRules(priceItem.Id);
-			var row = table.Rows[0];
-			var info = new PriceFormalizationInfo(row, null);
-			new FakeParser(new FakeReader(), info);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)

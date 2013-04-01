@@ -251,17 +251,6 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("Прайс имеет две базовые цены : {0} и {1}.")]
-		public string DoubleBaseCostsError
-		{
-			get
-			{
-				return ((string)(this["DoubleBaseCostsError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("Кол-во нулевых позиций выше допустимого.")]
 		public string ZeroRollbackError
 		{
