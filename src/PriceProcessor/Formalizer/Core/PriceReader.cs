@@ -181,10 +181,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			if (CostDescriptions == null)
 				return;
 
-			var exits = _priceData.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
 			validCosts = CostDescriptions
 				.Where(c => !String.IsNullOrEmpty(c.FieldName))
-				.Where(c => exits.Contains(c.FieldName))
+				.Where(c => _priceData.Columns.Contains(c.FieldName))
 				.ToList();
 
 			if (CostDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)

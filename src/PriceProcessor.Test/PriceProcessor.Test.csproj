@@ -134,6 +134,7 @@
     <Compile Include="Formalization\IntegrationFormalizerFixture.cs" />
     <Compile Include="Formalization\NativeDbfPriceParcerFixture.cs" />
     <Compile Include="Formalization\FormalizerFixture.cs" />
+    <Compile Include="Formalization\PriceReaderFixture.cs" />
     <Compile Include="Formalization\RejectsFixture.cs" />
     <Compile Include="Formalization\RequestTest.cs" />
     <Compile Include="Formalization\FormatFixture.cs" />

@@ -13,6 +13,10 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public Price Price;
 		public DataTable FormRulesData;
 
+		public PriceFormalizationInfo()
+		{
+		}
+
 		public PriceFormalizationInfo(DataRow row, Price price)
 		{
 			Price = price;
