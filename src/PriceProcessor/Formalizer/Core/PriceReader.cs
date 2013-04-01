@@ -147,7 +147,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			Alerts.NotConfiguredAllert(sb, _priceInfo);
 
 			if (_priceData.Rows.Count == 0)
-				throw new FormalizeException("В полученом прайс листе не удалось найти ни одной позиции", _priceInfo);
+				throw new WarningFormalizeException("В полученом прайс листе не удалось найти ни одной позиции", _priceInfo);
 		}
 
 		public IEnumerable<FormalizationPosition> Read()
