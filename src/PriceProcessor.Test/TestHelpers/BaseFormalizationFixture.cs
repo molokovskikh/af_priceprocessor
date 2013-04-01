@@ -21,10 +21,12 @@ namespace PriceProcessor.Test.TestHelpers
 		protected string defaultContent;
 
 		protected IPriceFormalizer formalizer;
+		protected bool Downloaded;
 
 		[SetUp]
 		public void Setup()
 		{
+			Downloaded = false;
 			formalizer = null;
 			file = "test.txt";
 			defaultContent = @"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -83,6 +85,7 @@ namespace PriceProcessor.Test.TestHelpers
 			if (formalizer == null)
 				formalizer = CreateFormalizer();
 
+			formalizer.Downloaded = Downloaded;
 			formalizer.Formalize();
 			formalizer = null;
 		}
@@ -93,8 +96,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var row = table.Rows[0];
 			var localPrice = session.Load<Price>(price.Id);
 			var info = new PriceFormalizationInfo(row, localPrice);
-			var reader = new PriceReader(new TextParser(new DelimiterSlicer(";"), Encoding.GetEncoding(1251), -1), file, info);
-			return new FakeFormalizer(new BasePriceParser(reader, info));
+			return new BufferFormalizer(file, info);
 		}
 
 		protected TestFormat Configure(TestPrice okpPrice)
@@ -108,32 +110,6 @@ namespace PriceProcessor.Test.TestHelpers
 			rules.FQuantity = "F3";
 			okpPrice.Costs.Single().FormRule.FieldName = "F4";
 			return rules;
-		}
-
-		public class FakeFormalizer : IPriceFormalizer
-		{
-			private BasePriceParser parser;
-
-			public FakeFormalizer(BasePriceParser parser)
-			{
-				this.parser = parser;
-			}
-
-			public void Formalize()
-			{
-				parser.Formalize();
-			}
-
-			public IList<string> GetAllNames()
-			{
-				throw new System.NotImplementedException();
-			}
-
-			public bool Downloaded { get; set; }
-			public string InputFileName { get; set; }
-
-			public PriceLoggingStat Stat { get; private set; }
-			public PriceFormalizationInfo Info { get; private set; }
 		}
 	}
 }

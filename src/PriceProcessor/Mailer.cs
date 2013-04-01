@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Mail;
 using Inforoom.PriceProcessor;
 using log4net;
@@ -9,8 +10,14 @@ namespace Inforoom.PriceProcessor
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Mailer));
 
+		public static bool Testing;
+		public static List<MailMessage> Messages = new List<MailMessage>();
+
 		public static void Send(MailMessage message)
 		{
+			if (Testing)
+				Messages.Add(message);
+
 			try {
 				var client = new SmtpClient(Settings.Default.SMTPHost);
 				client.Send(message);

@@ -36,9 +36,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private string _filename;
 		private PriceFormalizationInfo _priceInfo;
 
-		public List<CostDescription> CostDescriptions { get; set; }
-
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceReader));
+		private List<CostDescription> validCosts = new List<CostDescription>();
 
 		public PriceReader(IParser parser, string filename, PriceFormalizationInfo info)
 		{
@@ -73,6 +72,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				SetFieldName(pf, priceInfo[tmpName] is DBNull ? String.Empty : (string)priceInfo[tmpName]);
 			}
 		}
+
+		public List<CostDescription> CostDescriptions { get; set; }
 
 		public DataRow CurrentRow
 		{
@@ -151,8 +152,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public IEnumerable<FormalizationPosition> Read()
 		{
-			ValidateCosts();
 			Open();
+			ValidateCosts();
 
 			while (Next()) {
 				var name = GetFieldValue(PriceFields.Name1);
@@ -160,7 +161,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				if (String.IsNullOrEmpty(name))
 					continue;
 
-				var costs = ProcessCosts(CostDescriptions);
+				var costs = ProcessCosts(validCosts);
 
 				var position = new FormalizationPosition {
 					PositionName = name,
@@ -179,6 +180,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 			if (CostDescriptions == null)
 				return;
+
+			var exits = _priceData.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
+			validCosts = CostDescriptions
+				.Where(c => !String.IsNullOrEmpty(c.FieldName))
+				.Where(c => exits.Contains(c.FieldName))
+				.ToList();
 
 			if (CostDescriptions.Count == 0 && !_priceInfo.IsAssortmentPrice)
 				throw new WarningFormalizeException(PriceProcessor.Settings.Default.CostsNotExistsError, _priceInfo);
@@ -569,15 +576,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public Cost[] ProcessCosts(List<CostDescription> descriptions)
 		{
 			var costs = new List<Cost>();
-
-			if (descriptions == null)
-				return costs.ToArray();
-
 			for (var i = 0; i < descriptions.Count; i++) {
 				var description = descriptions[i];
-
-				if (String.IsNullOrEmpty(description.FieldName))
-					continue;
 
 				var costValue = _priceData.Rows[_index][description.FieldName];
 				var value = Cost.Parse(costValue);

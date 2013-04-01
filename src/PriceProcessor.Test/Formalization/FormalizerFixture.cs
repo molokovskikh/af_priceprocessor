@@ -30,15 +30,14 @@ namespace PriceProcessor.Test.Formalization
 		{
 			CreatePrice();
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
+			Mailer.Testing = true;
 		}
 
-		[Test]
-		public void ReadCostsWithoutBaseCostTest()
+		[TearDown]
+		public void Teardown()
 		{
-			price.RegionalData.Each(r => r.BaseCost = null);
-			session.Save(price);
-
-			Formalize();
+			Mailer.Testing = false;
+			Mailer.Messages.Clear();
 		}
 
 		[Test]
@@ -508,7 +507,6 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Costs.Select(c => c.Cost), Is.EquivalentTo(new[] { 220.92, 230.00 }));
 		}
 
-
 		[Test]
 		public void Formalize_price_with_delete_insert()
 		{
@@ -519,6 +517,25 @@ namespace PriceProcessor.Test.Formalization
 
 			session.Refresh(price);
 			Assert.That(price.Core.Count, Is.EqualTo(3));
+		}
+
+		[Test]
+		public void Warning_on_not_exits_column()
+		{
+			var newRegion = session.Load<TestRegion>(2ul);
+			supplier.AddRegion(newRegion);
+			var data = price.RegionalData.First(r => r.Region == newRegion);
+			data.BaseCost = price.NewPriceCost();
+			data.BaseCost.FormRule.FieldName = "F6";
+
+			Downloaded = true;
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;");
+
+			Assert.That(Mailer.Messages[0].Body, Is.StringContaining("отсутствуют настроенные поля"));
+			Assert.That(Mailer.Messages[0].Body, Is.StringContaining("F6"));
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(1));
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)

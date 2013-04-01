@@ -51,7 +51,7 @@ namespace PriceProcessor.Test.Formalization
 			var parser = new PriceDbfParser(@"..\..\Data\BadTestFile.dbf",
 				new PriceFormalizationInfo(row, price));
 
-			Assert.DoesNotThrow(parser.Formalize);
+			parser.Formalize();
 		}
 	}
 }
