@@ -1,13 +1,37 @@
 import RemotePriceProcessor
+import System
 import System.IO
 import System.ServiceModel
 
 desc """
 переотправляет прайс-листы из файла переданного в качестве параметра
 параметры
-File - имя файла где каждая строчка PriceId прайса который нужно перепослать
+File - имя файла где каждая строчка DownloadId прайса который нужно перепослать
 """
 task @ResendPrices:
+	lines = File.ReadAllLines(Configuration.File)
+	for l in lines:
+		id as uint
+		unless uint.TryParse(l, id):
+			continue
+		try:
+			binding = NetTcpBinding()
+			binding.Security.Mode = SecurityMode.None
+			binding.TransferMode = TransferMode.Streamed
+			factory = ChannelFactory[of IRemotePriceProcessor](binding, "net.tcp://fms:900/RemotePriceProcessorService")
+			channel = factory.CreateChannel()
+
+			parameter = WcfCallParameter(Value: id, LogInformation: LogInformation(ComputerName: Environment.MachineName, UserName: Environment.UserName))
+			channel.ResendPrice(parameter)
+		except e as FaultException:
+			print e
+
+desc """
+перепроводит прайс-листы из файла переданного в качестве параметра
+параметры
+File - имя файла где каждая строчка PriceId прайса который нужно перепроводить
+"""
+task @RetransPrices:
 	lines = File.ReadAllLines(Configuration.File)
 	for l in lines:
 		id as uint
