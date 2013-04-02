@@ -11,36 +11,73 @@ namespace PriceProcessor.Test.Formalization
 	[TestFixture]
 	public class PriceReaderFixture
 	{
-		[Test]
-		public void Ignore_case()
-		{
-			var info = PriceFormalizationInfoFixture.FakeInfo();
-			info.FormRulesData.Rows[0]["FName1"] = "F1";
-			var reader = new PriceReader(new FakePrser(), "", info);
-			reader.CostDescriptions = new List<CostDescription> {
-				new CostDescription {
-					FieldName = "f2"
-				}
-			};
-			var positions = reader.Read().ToList();
-			Assert.That(positions.Count, Is.EqualTo(1));
-			var costs = positions[0].Core.Costs;
-			Assert.That(costs.Length, Is.EqualTo(1));
-			Assert.That(costs[0].Value, Is.EqualTo(50));
-		}
-	}
+		private PriceFormalizationInfo info;
+		private DataTable table;
+		private List<CostDescription> costDescriptions;
 
-	public class FakePrser : IParser
-	{
-		public DataTable Parse(string filename)
+		[SetUp]
+		public void Setup()
 		{
-			var table = new DataTable();
+			costDescriptions = new List<CostDescription>();
+			table = new DataTable();
 			table.Columns.Add("F1");
 			table.Columns.Add("F2");
 			var row = table.NewRow();
 			row["F1"] = "Папаверин";
 			row["F2"] = "50";
 			table.Rows.Add(row);
+
+			info = PriceFormalizationInfoFixture.FakeInfo();
+			info.FormRulesData.Rows[0]["FName1"] = "F1";
+		}
+
+		[Test]
+		public void Ignore_case()
+		{
+			costDescriptions = new List<CostDescription> {
+				new CostDescription {
+					FieldName = "f2"
+				}
+			};
+
+			var positions = Read();
+			Assert.That(positions.Count, Is.EqualTo(1));
+			var costs = positions[0].Core.Costs;
+			Assert.That(costs.Length, Is.EqualTo(1));
+			Assert.That(costs[0].Value, Is.EqualTo(50));
+		}
+
+		[Test]
+		public void Read_producer_cost()
+		{
+			info.FormRulesData.Rows[0]["FProducerCost"] = "ProducerCost";
+			table.Columns.Add("ProducerCost");
+			table.Rows[0]["ProducerCost"] = 15;
+
+			var positions = Read();
+			Assert.That(positions[0].Core.ProducerCost, Is.EqualTo(15));
+		}
+
+		private List<FormalizationPosition> Read()
+		{
+			var reader = new PriceReader(new FakePrser(table), "", info);
+			reader.CostDescriptions = costDescriptions;
+			var positions = reader.Read().ToList();
+			return positions;
+		}
+	}
+
+	public class FakePrser : IParser
+	{
+		private DataTable table;
+
+		public FakePrser(DataTable table)
+		{
+			this.table = table;
+		}
+
+		public DataTable Parse(string filename)
+		{
 			return table;
 		}
 

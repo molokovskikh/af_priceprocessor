@@ -226,7 +226,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				Nds = GetUintOrDefault(PriceFields.Nds),
 				CodeOKP = GetUintOrDefault(PriceFields.CodeOKP),
 				EAN13 = GetFieldValue(PriceFields.EAN13),
-				Series = GetFieldValue(PriceFields.Series)
+				Series = GetFieldValue(PriceFields.Series),
+				ProducerCost = GetDecimalValue(PriceFields.ProducerCost)
 			};
 
 			if (quantity is int)
@@ -397,6 +398,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				case (int)PriceFields.OriginalName:
 					return GetFieldValue(PF);
 
+				case (int)PriceFields.ProducerCost:
 				case (int)PriceFields.MinBoundCost:
 				case (int)PriceFields.RegistryCost:
 				case (int)PriceFields.MaxBoundCost:
