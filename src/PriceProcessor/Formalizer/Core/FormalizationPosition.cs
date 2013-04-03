@@ -13,8 +13,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public string Code { get; set; }
 		public string FirmCr { get; set; }
 
-		public bool Junk { get; set; }
-
 		public long? ProductId { get; set; }
 		public long? CatalogId { get; set; }
 		public bool? Pharmacie { get; set; }

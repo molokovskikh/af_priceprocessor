@@ -906,7 +906,9 @@ and a.FirmCode = p.FirmCode;",
 				position.CatalogId = Convert.ToInt64(row["CatalogId"]);
 				position.SynonymCode = Convert.ToInt64(row["SynonymCode"]);
 				position.Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
-				position.Junk = Convert.ToBoolean(row["Junk"]);
+				var isJunk = Convert.ToBoolean(row["Junk"]);
+				if (isJunk)
+					position.Core.Junk = true;
 				position.AddStatus(UnrecExpStatus.NameForm);
 			}
 		}

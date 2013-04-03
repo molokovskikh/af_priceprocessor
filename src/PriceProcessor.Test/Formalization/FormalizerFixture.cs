@@ -538,6 +538,20 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(price.Core.Count, Is.EqualTo(1));
 		}
 
+		[Test]
+		public void Override_junk_with_synonym()
+		{
+			var name = "9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ";
+			CreateDefaultSynonym();
+			var synonym = price.ProductSynonyms.First(s => s.Name == name);
+			synonym.Junk = true;
+			Formalize(defaultContent);
+
+			session.Refresh(price);
+			var core = price.Core.First(c => c.ProductSynonym.Name == name);
+			Assert.That(core.Junk, Is.True);
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);

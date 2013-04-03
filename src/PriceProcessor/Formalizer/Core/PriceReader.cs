@@ -202,9 +202,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		/// </summary>
 		public void InsertToCore(FormalizationPosition position, Cost[] costs)
 		{
-			if (!position.Junk)
-				position.Junk = (bool)GetFieldValueObject(PriceFields.Junk);
-
 			var quantity = GetFieldValueObject(PriceFields.Quantity);
 			var core = new NewCore {
 				Code = GetFieldValue(PriceFields.Code),
@@ -214,7 +211,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				Quantity = quantity is DBNull ? null : quantity.ToString(),
 				Note = GetFieldValue(PriceFields.Note),
 				Doc = (string)GetFieldValueObject(PriceFields.Doc),
-				Junk = position.Junk,
+				Junk = (bool)GetFieldValueObject(PriceFields.Junk),
 				Await = (bool)GetFieldValueObject(PriceFields.Await),
 				VitallyImportant = (bool)GetFieldValueObject(PriceFields.VitallyImportant),
 				MinBoundCost = GetDecimalValue(PriceFields.MinBoundCost),
