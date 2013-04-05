@@ -9,6 +9,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "N_NACL")
 				.DocumentHeader(h => h.DocumentDate, "D_NACL")
+				.DocumentInvoice(i => i.BuyerName, "APTEKA")
+				.DocumentInvoice(i => i.ShipperInfo, "FILIAL")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FACTORY")
@@ -23,7 +25,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Period, "DATE_VALID")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.NdsAmount, "NDS_SUM")
-				.Line(l => l.Amount, "SUM")
+				.Line(l => l.Amount, "SUM", "SUM_NAKED")
+				.Line(l => l.Nds, "NDS_PR")
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.EAN13, "SCANCOD")
 				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN");
 		}
 

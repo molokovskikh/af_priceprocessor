@@ -110,5 +110,37 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.NdsAmount, Is.EqualTo(45.00000));
 			Assert.That(line.Amount, Is.EqualTo(494.98000));
 		}
+
+		[Test]
+		public void KatrenYaroslavl_Parse()
+		{
+			var doc = WaybillParser.Parse("41616381_57364.dbf");
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(4));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("57364"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("02.04.2013"));
+			var invoice = doc.Invoice;
+			Assert.That(invoice.BuyerName, Is.EqualTo("ЯРОСЛАВЛЬ, ООО *А32*"));
+			Assert.That(invoice.ShipperInfo, Is.EqualTo("Филиал ЗАО НПК \"Катрен\" в г. Я"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("36520009"));
+			Assert.That(line.Product, Is.EqualTo("5 ДНЕЙ КРЕМ Д/СТОП ОТ ПОТА И ЗАПАХА 30,0"));
+			Assert.That(line.Producer, Is.EqualTo("Фарм. фабрика Санкт-Петербурга,ОАО"));
+			Assert.That(line.Country, Is.EqualTo("россия"));
+			Assert.That(line.Quantity, Is.EqualTo(5));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(37.15));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(37.52));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.Period, Is.EqualTo("01.02.2016"));
+			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.SerialNumber, Is.EqualTo("10113"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ61.Д31039"));
+			Assert.That(line.NdsAmount, Is.EqualTo(33.77));
+			Assert.That(line.Amount, Is.EqualTo(187.6));
+			Assert.That(line.Nds, Is.EqualTo(18));
+			Assert.That(line.EAN13, Is.EqualTo("4605059010244"));
+			var billLine = doc.Lines[1];
+			Assert.That(billLine.BillOfEntryNumber, Is.EqualTo("10130020/280213/0002622/6"));
+		}
 	}
 }
