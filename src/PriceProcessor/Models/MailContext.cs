@@ -140,7 +140,7 @@ from
   inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
   inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
 where
-  c.ContactText in (" + mails + @") group by s.Id/* union
+  c.ContactText in (" + mails + @") group by s.Id union
 select
   s.Id
 from
@@ -150,7 +150,7 @@ from
   join contacts.contacts c on c.ContactOwnerId = p.Id and c.Type = 0
 where
   c.ContactText in ("
-					+ mails + ") group by s.Id*/", connection);
+					+ mails + ") group by s.Id", connection);
 				adapter.Fill(dtSuppliers);
 			}
 			var result = new List<Supplier>();
