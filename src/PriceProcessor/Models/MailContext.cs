@@ -128,6 +128,7 @@ namespace Inforoom.PriceProcessor.Models
 		private List<Supplier> GetSuppliersFromList(MailboxAddress[] mailboxes)
 		{
 			var dtSuppliers = new DataTable();
+			var mails = mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode();
 
 			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
 				connection.Open();
@@ -139,16 +140,25 @@ from
   inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
   inner join contacts.contacts c on c.ContactOwnerId = cg.Id and c.Type = 0
 where
+  c.ContactText in (" + mails + @") group by s.Id/* union
+select
+  s.Id
+from
+  Customers.Suppliers s
+  inner join contacts.contact_groups cg on cg.ContactGroupOwnerId = s.ContactGroupOwnerId and cg.Type = 10
+  join contacts.Persons p on p.ContactGroupId = cg.id
+  join contacts.contacts c on c.ContactOwnerId = p.Id and c.Type = 0
+where
   c.ContactText in ("
-					+ mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode() + ") group by s.Id",
-					connection);
+					+ mails + ") group by s.Id*/", connection);
 				adapter.Fill(dtSuppliers);
 			}
-
 			var result = new List<Supplier>();
 			using (new SessionScope()) {
 				foreach (DataRow dataRow in dtSuppliers.Rows) {
-					result.Add(ActiveRecordBase<Supplier>.Find(Convert.ToUInt32(dataRow["Id"])));
+					var id = Convert.ToUInt32(dataRow["Id"]);
+					if (!result.Select(s => s.Id).Contains(id))
+						result.Add(ActiveRecordBase<Supplier>.Find(id));
 				}
 			}
 
