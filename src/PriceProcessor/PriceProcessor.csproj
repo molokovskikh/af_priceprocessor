@@ -249,6 +249,7 @@
     <Compile Include="Waybills\CertificateSources\FarmKomplektCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ICertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\KatrenSource.cs" />
+    <Compile Include="Waybills\CertificateSources\NadezhdaFarmCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\ProtekSource.cs" />
     <Compile Include="Waybills\CertificateSources\RostaCertificateSource.cs" />
     <Compile Include="Waybills\CertificateSources\SiaSource.cs" />

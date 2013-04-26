@@ -29,7 +29,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SERIES")
 				.Line(l => l.Period, "DATEBEST")
 				.Line(l => l.VitallyImportant, "JNVLS")
-				.Line(l => l.RegistryCost, "REESTR");
+				.Line(l => l.RegistryCost, "REESTR")
+				.Line(l => l.CertificateFilename, "SERT_STR");
 		}
 
 		public static bool CheckFileFormat(DataTable table)

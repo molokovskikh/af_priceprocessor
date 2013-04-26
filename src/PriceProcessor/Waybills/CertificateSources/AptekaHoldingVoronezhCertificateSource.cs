@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
-			var certificatesPath = Path.Combine(Settings.Default.FTPOptBoxPath, task.CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
+			var certificatesPath = task.GetLocalPath();
 
 			if (!Directory.Exists(certificatesPath)) {
 				Log.WarnFormat("Директория {0} для задачи сертификата {1} не существует",

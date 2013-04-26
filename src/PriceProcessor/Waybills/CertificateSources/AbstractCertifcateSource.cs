@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 
@@ -33,6 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 	{
 		public abstract void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files);
 		protected ILog Log;
+		protected FileCleaner Cleaner = new FileCleaner();
 
 		protected AbstractCertifcateSource()
 		{
@@ -47,6 +49,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				GetFilesFromSource(task, result);
 			}
 			catch {
+				Cleaner.Dispose();
+
 				//Удаляем временные закаченные файлы
 				result.ForEach(f => {
 					try {

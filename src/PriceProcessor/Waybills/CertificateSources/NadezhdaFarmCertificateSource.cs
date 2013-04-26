@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
-using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class FarmKomplektCertificateSource : AbstractCertifcateSource, ICertificateSource
+	public class NadezhdaFarmCertificateSource : AbstractCertifcateSource, ICertificateSource
 	{
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
@@ -19,26 +20,24 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				return;
 			}
 
-			if (!String.IsNullOrEmpty(task.DocumentLine.CertificateFilename))
-				AddFile(certificatesPath, task.DocumentLine.CertificateFilename, files);
+			var foundFiles = task.DocumentLine.CertificateFilename
+				.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+				.Select(n => Path.Combine(certificatesPath, n))
+				.Where(f => File.Exists(f))
+				.Select(f => new CertificateFile(CopyToTemp(f), Path.GetFileName(f), Path.GetFileName(f)))
+				.ToList();
 
+			foundFiles.Each(files.Add);
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp Инфорум";
 		}
 
-		private void AddFile(string certificatesPath, string certificateFilename, IList<CertificateFile> list)
+		protected string CopyToTemp(string filename)
 		{
-			var originFileName = Path.Combine(certificatesPath, certificateFilename);
-
-			if (File.Exists(originFileName)) {
-				var tempFile = Path.GetTempFileName();
-				File.Copy(originFileName, tempFile, true);
-				var certificateFile = new CertificateFile(tempFile, certificateFilename, originFileName);
-				if (String.IsNullOrWhiteSpace(certificateFile.Extension)
-					|| (!certificateFile.Extension.Equals(".tif", StringComparison.OrdinalIgnoreCase) && !certificateFile.Extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)))
-					certificateFile.Extension = ".tif";
-				list.Add(certificateFile);
-			}
+			var tempFile = Path.GetTempFileName();
+			Cleaner.Watch(tempFile);
+			File.Copy(filename, tempFile, true);
+			return tempFile;
 		}
 
 		public bool CertificateExists(DocumentLine line)

@@ -25,7 +25,6 @@ Global(
 	Server : "fms.adc.analit.net",
 	HumanReadableName : "Служба обработки прайс-листов",
 	ServiceName : "PriceProcessorService",
-	Environment: @Local,
 	Profile: @catalog
 )
 

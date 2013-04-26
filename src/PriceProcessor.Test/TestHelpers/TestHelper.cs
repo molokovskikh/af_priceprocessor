@@ -189,5 +189,11 @@ where c.pricecode = {0} and cc.pc_costcode = {1} and c.synonymcode not in (44131
 				Directory.CreateDirectory(d);
 			});
 		}
+
+		public static void InitFiles(string path, params string[] files)
+		{
+			InitDirs(path);
+			files.Each(f => File.WriteAllText(Path.Combine(path, f), ""));
+		}
 	}
 }

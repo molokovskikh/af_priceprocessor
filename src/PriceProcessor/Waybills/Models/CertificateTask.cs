@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Models;
@@ -60,6 +61,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string GetErrorId()
 		{
 			return "{0}_{1}_{2}".Format(CertificateSource.Id, CatalogProduct.Id, SerialNumber);
+		}
+
+		public string GetLocalPath()
+		{
+			return Path.Combine(Settings.Default.FTPOptBoxPath, CertificateSource.FtpSupplier.Id.ToString().PadLeft(3, '0'), "Certificats");
 		}
 	}
 }
