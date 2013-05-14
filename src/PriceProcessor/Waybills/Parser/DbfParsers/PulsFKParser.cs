@@ -29,7 +29,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "QNT")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Amount, "SUMS0")
-				.Line(l => l.NdsAmount, "SUMSNDS")
 				.Line(l => l.Period, "GDATE")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.RegistryCost, "REGPRC")
@@ -42,20 +41,31 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
 
-			if (!Data.Columns.Contains("PRICE1N") && !Data.Columns.Contains("PRICEMAN")) {
-				parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
-			}
-			else if (Data.Columns.Contains("PRICE1N")) {
-				parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICE1N");
+			if (!Data.Columns.Contains("ADRPOL")) {
+				if (!Data.Columns.Contains("PRICE1N") && !Data.Columns.Contains("PRICEMAN")) {
+					parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
+				}
+				else if (Data.Columns.Contains("PRICE1N")) {
+					parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICE1N");
+				}
+				else {
+					parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
+				}
+				parcer = parcer.Line(l => l.NdsAmount, "SUMSNDS");
 			}
 			else {
-				parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
+				parcer = parcer.Line(l => l.ProducerCost, "PRICE1N").Line(l => l.Amount, "SUMSNDS");
 			}
 
-			if (Data.Columns.Contains("PRICEMAN"))
-				parcer = parcer.DocumentInvoice(i => i.RecipientId, "PODRCD");
-			else
-				parcer = parcer.DocumentInvoice(i => i.RecipientAddress, "PODRCD");
+			if (!Data.Columns.Contains("ADRPOL")) {
+				if (Data.Columns.Contains("PRICEMAN"))
+					parcer = parcer.DocumentInvoice(i => i.RecipientId, "PODRCD");
+				else
+					parcer = parcer.DocumentInvoice(i => i.RecipientAddress, "PODRCD");
+			}
+			else {
+				parcer = parcer.DocumentInvoice(i => i.RecipientAddress, "ADRPOL");
+			}
 
 			return parcer;
 		}

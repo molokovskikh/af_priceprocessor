@@ -151,12 +151,24 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Uralbiofarm_dop_fields()
+		{
+			var doc = WaybillParser.Parse("16810 (1).dbf");
+			var line = doc.Lines[0];
+			var invoice = doc.Invoice;
+			Assert.That(line.ProducerCost, Is.EqualTo(12.25));
+			Assert.That(line.Amount, Is.EqualTo(1237.81));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("429330, Чувашская Республика - Чувашия, Канаш г, Кооперативн"));
+		}
+
+		[Test]
 		public void Check_file_format()
 		{
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1843615.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1689520.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\3901847_Роста(300882R).dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\13093.dbf")));
+			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\16810 (1).dbf")));
 		}
 	}
 }
