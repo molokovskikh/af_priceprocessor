@@ -482,7 +482,7 @@ order by c.Id",
 			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95))
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
 
-			if (_loggingStat.formCount * 1.6 < _priceInfo.PrevRowCount)
+			if (_loggingStat.formCount * 4 < _priceInfo.PrevRowCount)
 				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, _priceInfo, _loggingStat);
 
 			var done = false;
