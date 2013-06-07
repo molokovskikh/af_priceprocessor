@@ -36,8 +36,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var query = new Query();
 			query
-				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP")
-				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr, c0.CodeOKP")
+				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP, IgnoreInBlackList")
+				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr, c0.CodeOKP, if(c0.CodeFirmCr is null and c0.SynonymFirmCrCode is not null, 1, 0)")
 				.From("farm.Core0 c0")
 				.Where("c0.pricecode = ?priceId")
 				.GroupBy("c0.ProductId, c0.CodeFirmCr, c0.CodeOKP");

@@ -1,6 +1,8 @@
 using System;
+using System.Data;
 using System.Linq;
 using Common.MySql;
+using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
@@ -31,7 +33,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			FormalizeDefaultData();
 
-			var count = MatrixItemsCount();
+			var count = MatrixItems().Rows.Count;
 			Assert.That(count, Is.GreaterThan(0));
 		}
 
@@ -59,16 +61,18 @@ namespace PriceProcessor.Test.Formalization
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;;
 911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;;");
 
-			var count = MatrixItemsCount();
+			var count = MatrixItems().Rows.Count;
 			Assert.That(count, Is.EqualTo(1), "код прайс листа {0}", price.Id);
 		}
 
-		private uint MatrixItemsCount()
+		private DataTable MatrixItems()
 		{
 			return With.Connection(c => {
-				var command = new MySqlCommand("select count(*) from farm.BuyingMatrix where PriceId = ?Priceid", c);
-				command.Parameters.AddWithValue("?PriceId", price.Id);
-				return Convert.ToUInt32(command.ExecuteScalar());
+				var adapter = new MySqlDataAdapter("select * from farm.BuyingMatrix where PriceId = ?Priceid", c);
+				adapter.SelectCommand.Parameters.AddWithValue("?PriceId", price.Id);
+				var table = new DataTable();
+				adapter.Fill(table);
+				return table;
 			});
 		}
 
@@ -123,8 +127,26 @@ namespace PriceProcessor.Test.Formalization
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;931201;");
 
 			price = origin;
-			var count = MatrixItemsCount();
+			var count = MatrixItems().Rows.Count;
 			Assert.That(count, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void Unknown_producers_should_be_exclude_from_black_list_matrxi()
+		{
+			price.AddProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
+			price.CreateAssortmentBoundSynonyms(
+				"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
+				"Санкт-Петербургская ф.ф.");
+			price.CreateAssortmentBoundSynonyms(
+				"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ",
+				"Валента Фармацевтика/Королев Ф");
+			Formalize(defaultContent);
+
+			var items = MatrixItems();
+			Assert.That(items.Rows.Count, Is.GreaterThan(0));
+			var row = items.AsEnumerable().First(r => r["ProducerId"] is DBNull);
+			Assert.That(row["IgnoreInBlackList"], Is.True);
 		}
 	}
 }
