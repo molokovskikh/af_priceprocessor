@@ -132,7 +132,7 @@ namespace PriceProcessor.Test.Formalization
 		}
 
 		[Test]
-		public void Unknown_producers_should_be_exclude_from_black_list_matrxi()
+		public void Unknown_producers_should_be_exclude_from_matrxi()
 		{
 			price.AddProductSynonym("911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ");
 			price.CreateAssortmentBoundSynonyms(
@@ -144,9 +144,7 @@ namespace PriceProcessor.Test.Formalization
 			Formalize(defaultContent);
 
 			var items = MatrixItems();
-			Assert.That(items.Rows.Count, Is.GreaterThan(0));
-			var row = items.AsEnumerable().First(r => r["ProducerId"] is DBNull);
-			Assert.That(row["IgnoreInBlackList"], Is.True);
+			Assert.That(items.Rows.Count, Is.EqualTo(1));
 		}
 	}
 }

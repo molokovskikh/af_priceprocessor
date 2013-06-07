@@ -36,10 +36,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var query = new Query();
 			query
-				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP, IgnoreInBlackList")
-				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr, c0.CodeOKP, if(c0.CodeFirmCr is null and c0.SynonymFirmCrCode is not null, 1, 0)")
+				.InsertInto("Farm.Buyingmatrix", "MatrixId, PriceId, Code, ProductId, ProducerId, CodeOKP")
+				.Select("?matrixId, c0.PriceCode, c0.Code, c0.ProductId, c0.CodeFirmCr, c0.CodeOKP")
 				.From("farm.Core0 c0")
 				.Where("c0.pricecode = ?priceId")
+				.Where("not (c0.CodeFirmCr is null and c0.SynonymFirmCrCode is not null)")
 				.GroupBy("c0.ProductId, c0.CodeFirmCr, c0.CodeOKP");
 			if (price.CodeOkpFilterPrice != null) {
 				query.Join("join Farm.Core0 co on co.CodeOKP = c0.CodeOKP");
