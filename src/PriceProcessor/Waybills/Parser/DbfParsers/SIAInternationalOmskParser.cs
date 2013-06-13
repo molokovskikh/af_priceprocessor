@@ -7,8 +7,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
-				//.DocumentHeader(h => h.ProviderDocumentId, "")
-				//.DocumentHeader(h => h.DocumentDate, "")
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "PROIZV")

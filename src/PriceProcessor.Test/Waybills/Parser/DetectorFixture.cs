@@ -44,7 +44,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
-		public void detect()
+		public void Detect()
 		{
 			var parser = detector.DetectParser(@"..\..\Data\Waybills\5189569_ФораФарм_лоджик-Москва_506462_.dbf", null);
 			Assert.That(parser, Is.InstanceOf<SiaParser>());

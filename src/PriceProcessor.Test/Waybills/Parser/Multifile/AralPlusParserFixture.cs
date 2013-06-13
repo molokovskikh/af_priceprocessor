@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Linq;
 using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.Multifile
 {

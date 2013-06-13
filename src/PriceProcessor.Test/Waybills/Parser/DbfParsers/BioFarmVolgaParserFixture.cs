@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Common.Tools;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {

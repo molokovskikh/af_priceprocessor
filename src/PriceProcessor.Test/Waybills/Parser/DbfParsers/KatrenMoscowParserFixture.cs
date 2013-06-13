@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
-namespace PriceProcessor.Test.Waybills.Parser
+namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
 	[TestFixture]
 	public class KatrenMoscowParserFixture

@@ -5,6 +5,7 @@ using System.Text;
 using Common.Tools;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {

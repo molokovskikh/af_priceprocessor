@@ -7,6 +7,7 @@ using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Waybills;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
@@ -11,10 +12,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse("SIAPdbf.dbf");
-			//Assert.That(doc.ProviderDocumentId, Is.EqualTo(Document.GenerateProviderDocumentId()));
-			//Assert.That(doc.DocumentDate.ToString(), Is.EqualTo(DateTime.Now.ToString()));
-			//Assert.That(doc.ProviderDocumentId, Is.EqualTo("NN"));
-			//Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("20.09.2010"));
 			var line = doc.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("Микардис 40мг Таб. Х14"));
 			Assert.That(line.Quantity, Is.EqualTo(1));

@@ -201,7 +201,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public Document DetectAndParse(DocumentReceiveLog log, string file)
+		public Document DetectAndParse(string file, DocumentReceiveLog log)
 		{
 			var parser = DetectParser(file, log);
 			if (parser == null)

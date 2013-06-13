@@ -196,7 +196,7 @@ namespace PriceProcessor.Test.Waybills
 			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id)));
 
 			var detector = new WaybillFormatDetectorFake(document); // проверяем вызов функции ComparisonWithOrders из детектора
-			detector.DetectAndParse(log, null);
+			detector.DetectAndParse(null, log);
 			document.SaveAndFlush();
 
 			var table = GetMatches(document);

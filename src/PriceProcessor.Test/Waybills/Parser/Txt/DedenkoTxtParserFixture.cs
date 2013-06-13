@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NUnit.Framework;
+using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.Txt
 {
