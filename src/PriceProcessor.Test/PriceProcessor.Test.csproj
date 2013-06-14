@@ -383,7 +383,6 @@
     <Compile Include="Waybills\Sources\SiaSourceFixture.cs" />
     <Compile Include="Waybills\SstExporterFixture.cs" />
     <Compile Include="Waybills\WaybillDocumentMethodsFixture.cs" />
-    <Compile Include="Waybills\WaybillFormatDetectorFixture.cs" />
     <Compile Include="Waybills\Handlers\WaybillFtpSourceHandlerFixture.cs" />
     <Compile Include="Waybills\Handlers\WaybillLanSourceHandlerErrorsFixture.cs" />
     <Compile Include="Waybills\Handlers\WaybillLanSourceHandlerFixture.cs" />
