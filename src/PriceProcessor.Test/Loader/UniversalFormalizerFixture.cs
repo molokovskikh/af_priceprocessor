@@ -17,7 +17,7 @@ using log4net.Core;
 namespace PriceProcessor.Test.Loader
 {
 	[TestFixture]
-	public class UniversalFormalizerFixture
+	public class UniversalFormalizerFixture : IntegrationFixture
 	{
 		private string xml;
 		private string file;
@@ -53,16 +53,14 @@ namespace PriceProcessor.Test.Loader
 ";
 
 			var supplier = TestSupplier.Create();
-			using (new SessionScope()) {
-				price = supplier.Prices[0];
-				priceItem = price.Costs[0].PriceItem;
-				var format = priceItem.Format;
-				format.PriceFormat = PriceFormatType.UniversalXml;
-				format.Save();
+			price = supplier.Prices[0];
+			priceItem = price.Costs[0].PriceItem;
+			var format = priceItem.Format;
+			format.PriceFormat = PriceFormatType.UniversalXml;
+			format.Save();
 
-				price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м", "Вухан Лифарма Кемикалз Ко");
-				price.Save();
-			}
+			price.CreateAssortmentBoundSynonyms("Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м", "Вухан Лифарма Кемикалз Ко");
+			price.Save();
 		}
 
 		[TearDown]
@@ -77,11 +75,9 @@ namespace PriceProcessor.Test.Loader
 		{
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				var cores = price.Core;
-				Assert.That(cores.Count, Is.EqualTo(1));
-			}
+			session.Refresh(price);
+			var cores = price.Core;
+			Assert.That(cores.Count, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -128,26 +124,22 @@ namespace PriceProcessor.Test.Loader
 </PriceAndSettings>";
 			var client = TestClient.Create();
 
-			TestIntersection intersection;
-			using (new SessionScope()) {
-				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
-				Assert.That(intersections.Count, Is.EqualTo(1));
-				intersection = intersections[0];
-				intersection.SupplierClientId = "122221";
-				intersection.SupplierPaymentId = "21";
-				intersection.AddressIntersections[0].SupplierDeliveryId = "122224";
-			}
+			var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
+			Assert.That(intersections.Count, Is.EqualTo(1));
+			var intersection = intersections[0];
+			intersection.SupplierClientId = "122221";
+			intersection.SupplierPaymentId = "21";
+			intersection.AddressIntersections[0].SupplierDeliveryId = "122224";
 
 			Formalize();
 
-			using (new SessionScope()) {
-				intersection = TestIntersection.Find(intersection.Id);
-				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"));
-				Assert.That(intersection.AvailableForClient, Is.True);
-				Assert.That(intersection.PriceMarkup, Is.EqualTo(10));
-				var addressintersection = intersection.AddressIntersections[0];
-				Assert.That(addressintersection.MinReq, Is.EqualTo(3000));
-			}
+			session.Refresh(intersection);
+			Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"));
+			Assert.That(intersection.AvailableForClient, Is.True);
+			Assert.That(intersection.PriceMarkup, Is.EqualTo(10));
+			var addressintersection = intersection.AddressIntersections[0];
+			session.Refresh(addressintersection);
+			Assert.That(addressintersection.MinReq, Is.EqualTo(3000));
 		}
 
 		[Test]
@@ -155,13 +147,10 @@ namespace PriceProcessor.Test.Loader
 		{
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-
-				Assert.That(price.Costs.Count, Is.EqualTo(3));
-				Assert.That(price.Costs[1].Name, Is.EqualTo("PRICE6"));
-				Assert.That(price.Costs[2].Name, Is.EqualTo("PRICE1"));
-			}
+			session.Refresh(price);
+			Assert.That(price.Costs.Count, Is.EqualTo(3));
+			Assert.That(price.Costs[1].Name, Is.EqualTo("PRICE6"));
+			Assert.That(price.Costs[2].Name, Is.EqualTo("PRICE1"));
 		}
 
 		[Test]
@@ -171,24 +160,16 @@ namespace PriceProcessor.Test.Loader
 
 			Formalize();
 
-			int firstCoreCount;
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-
-				Assert.That(price.Core.Count, Is.GreaterThan(0));
-				firstCoreCount = price.Core.Count;
-				var core = price.Core[0];
-				core.CodeOKP = 0;
-				core.Save();
-			}
+			Assert.That(price.Core.Count, Is.GreaterThan(0));
+			var firstCoreCount = price.Core.Count;
+			var core = price.Core[0];
+			core.CodeOKP = 0;
+			core.Save();
 
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-
-				Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
-			}
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
 		}
 
 		[Test(Description = "UniversalFormalizer всегда обновляет позиции в Core")]
@@ -198,21 +179,16 @@ namespace PriceProcessor.Test.Loader
 			//а BasePriceParser2 не будет починен, то этот тест должен поломаться.
 			Formalize();
 
-			int firstCoreCount;
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
+			session.Refresh(price);
 
-				Assert.That(price.Core.Count, Is.GreaterThan(0));
-				firstCoreCount = price.Core.Count;
-			}
+			Assert.That(price.Core.Count, Is.GreaterThan(0));
+			var firstCoreCount = price.Core.Count;
 
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
+			session.Refresh(price);
 
-				Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
-			}
+			Assert.That(price.Core.Count, Is.EqualTo(firstCoreCount), "Количество позиций после повторной формализации должно совпадать с первоначальной формализацией");
 		}
 
 		[Test]
@@ -220,11 +196,9 @@ namespace PriceProcessor.Test.Loader
 		{
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				var cost = price.Core[0].Costs[0];
-				Assert.That(cost.MinOrderCount, Is.EqualTo(20));
-			}
+			session.Refresh(price);
+			var cost = price.Core[0].Costs[0];
+			Assert.That(cost.MinOrderCount, Is.EqualTo(20));
 		}
 
 		[Test]
@@ -249,10 +223,8 @@ namespace PriceProcessor.Test.Loader
 </Price>";
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				Assert.That(price.Core.Count, Is.EqualTo(0));
-			}
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -311,10 +283,8 @@ namespace PriceProcessor.Test.Loader
 </Price>";
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				Assert.That(price.Core.Count, Is.EqualTo(2));
-			}
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(2));
 		}
 
 		[Test]
@@ -392,28 +362,23 @@ namespace PriceProcessor.Test.Loader
 	</Price>
 </PriceAndSettings>";
 
-			TestClient client;
-			using (new SessionScope()) {
-				client = TestClient.CreateNaked();
-				client.CreateLegalEntity();
-				client.MaintainIntersection();
+			var client = TestClient.CreateNaked();
+			client.CreateLegalEntity();
+			client.MaintainIntersection();
 
-				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
-				Assert.That(intersections.Count, Is.EqualTo(2));
-				var intersection = intersections[0];
-				intersection.SupplierClientId = "122221";
-				intersection.SupplierPaymentId = "21";
-			}
+			var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
+			Assert.That(intersections.Count, Is.EqualTo(2));
+			var intersection = intersections[0];
+			intersection.SupplierClientId = "122221";
+			intersection.SupplierPaymentId = "21";
 
 			Formalize();
 
-			using (new SessionScope()) {
-				var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
-				var intersection = intersections[0];
-				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
-				intersection = intersections[1];
-				Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
-			}
+			session.Refresh(intersection);
+			Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
+			intersection = intersections[1];
+			session.Refresh(intersection);
+			Assert.That(intersection.Cost.Name, Is.EqualTo("PRICE6"), "{0} - {1}", client.Id, price.Id);
 		}
 
 		[Test]
@@ -451,14 +416,16 @@ namespace PriceProcessor.Test.Loader
 </Price>";
 			Formalize();
 
-			using (new SessionScope()) {
-				price = TestPrice.Find(price.Id);
-				Assert.That(price.Core.Count, Is.EqualTo(2));
-			}
+			session.Refresh(price);
+			Assert.That(price.Core.Count, Is.EqualTo(2));
 		}
 
 		private void Formalize()
 		{
+			session.Flush();
+			if (session.Transaction.IsActive)
+				session.Transaction.Commit();
+
 			file = Path.GetTempFileName();
 			File.WriteAllText(file, xml);
 			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),

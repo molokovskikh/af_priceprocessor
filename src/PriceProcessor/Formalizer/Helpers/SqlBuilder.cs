@@ -74,15 +74,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 	public class SqlBuilder
 	{
-		public static string StringToMySqlString(string s)
-		{
-			s = s.Replace("\\", "\\\\");
-			s = s.Replace("\'", "\\\'");
-			s = s.Replace("\"", "\\\"");
-			s = s.Replace("`", "\\`");
-			return s;
-		}
-
 		public static string InsertCoreCommand(PriceFormalizationInfo info, NewCore core)
 		{
 			var command = new StringBuilder();
@@ -188,7 +179,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			if (value == null)
 				return "''";
-			return "'" + StringToMySqlString(value) + "'";
+			return "'" + Utils.StringToMySqlString(value) + "'";
 		}
 
 		public static string GetNullableValue(uint value)
