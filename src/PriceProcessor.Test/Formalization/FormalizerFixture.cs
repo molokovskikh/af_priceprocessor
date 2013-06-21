@@ -335,44 +335,6 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(excludes.Count, Is.EqualTo(0));
 		}
 
-		[Test, Ignore("Все исключения создаются теперь в ручную")]
-		public void Create_exclude_if_synonym_without_producer_exist()
-		{
-			new TestProducerSynonym("Вектор", null, price).Save();
-			var product1 = TestProduct.Queryable.First();
-			new TestProductSynonym("5-нок 50мг Таб. П/о Х50", product1, price).Save();
-
-			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
-
-			var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
-			Assert.That(cores.Count, Is.EqualTo(1));
-			var core1 = cores[0];
-			Assert.That(core1.Product.Id, Is.EqualTo(product1.Id));
-			Assert.That(core1.ProducerSynonym.Name, Is.EqualTo("Вектор"));
-			Assert.That(core1.Producer, Is.Null);
-
-			var excludes = TestExclude.Queryable.Where(c => c.Price == price).ToList();
-			Assert.That(excludes.Count, Is.EqualTo(1));
-			var exclude = excludes[0];
-			Assert.That(exclude.ProducerSynonym, Is.EqualTo("Вектор"));
-			Assert.That(exclude.CatalogProduct.Id, Is.EqualTo(product1.CatalogProduct.Id));
-		}
-
-		[Test, Ignore("Больше не создаем ассортимент автоматически, все вручную")]
-		public void Create_assortment_if_product_not_pharmacie()
-		{
-			price.AddProducerSynonym("Вектор", new TestProducer("KRKA"));
-			price.AddProductSynonym("5-нок 50мг Таб. П/о Х50", new TestProduct("5-нок 50мг Таб. П/о Х50"));
-			price.Save();
-
-			Formalize(@"5-нок 50мг Таб. П/о Х50;Вектор;440;66.15;");
-
-			price.Refresh();
-			var cores = TestCore.Queryable.Where(c => c.Price == price).ToList();
-			Assert.That(price.ProductSynonyms[0].Product.CatalogProduct.Producers,
-				Is.EquivalentTo(new[] { price.ProducerSynonyms[0].Producer }));
-		}
-
 		[Test]
 		public void Prefer_producer_synonym_with_producer()
 		{

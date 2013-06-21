@@ -330,7 +330,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 					var existsCore = new ExistsCore {
 						Id = reader.GetUInt64("Id")
 					};
-					foreach (var map in FieldMap.CoreFieldMaps) {
+					foreach (var map in Mapping.OfferMapping) {
 						map.SetValue(GetReaderValue(reader, reader.GetOrdinal(map.Name), map.Type), existsCore);
 					}
 					_existsCores.Add(existsCore);
@@ -436,12 +436,11 @@ order by c.Id",
 		{
 			foreach (var core in _newCores) {
 				if (core.ExistsCore == null) {
-					yield return SqlBuilder.InsertCoreCommand(_priceInfo, core);
-					if (core.Costs != null && core.Costs.Length > 0)
-						yield return SqlBuilder.InsertCostsCommand(core);
+					yield return SqlBuilder.UpdateOfferSql(_priceInfo, core);
+					yield return SqlBuilder.InsertCostSql(core);
 				}
 				else {
-					yield return SqlBuilder.UpdateCoreCommand(core);
+					yield return SqlBuilder.UpdateOfferSql(core);
 					yield return SqlBuilder.UpdateCostsCommand(core);
 				}
 			}
@@ -505,8 +504,10 @@ order by c.Id",
 					var command = new MySqlCommand(null, _connection);
 					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
 						command.CommandText = builder.ToString();
-						//if (_logger.IsDebugEnabled)
-						//	_logger.Debug(command.CommandText);
+#if DEBUG
+						if (_logger.IsDebugEnabled)
+							_logger.Debug(command.CommandText);
+#endif
 						builder.Clear();
 						using (Profile("Обновление Core и CoreCosts"))
 							command.ExecuteNonQuery();

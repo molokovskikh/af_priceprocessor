@@ -12,6 +12,7 @@ using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
 using Test.Support.log4net;
+using log4net.Config;
 using log4net.Core;
 
 namespace PriceProcessor.Test.Loader
@@ -418,6 +419,62 @@ namespace PriceProcessor.Test.Loader
 
 			session.Refresh(price);
 			Assert.That(price.Core.Count, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void Update_cost_settings()
+		{
+			xml = @"<Price>
+<Item>
+	<Code>670</Code>
+	<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+	<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+	<Unit>шт.</Unit>
+	<Volume>180,200</Volume>
+	<Quantity>268</Quantity>
+	<EAN13>3800010643771</EAN13>
+	<Period>01.01.2015</Period>
+	<Junk>0</Junk>
+	<VitallyImportant>0</VitallyImportant>
+	<Nds>0</Nds>
+	<RegistryCost>0</RegistryCost>
+	<ProducerCost>0</ProducerCost>
+	<RequestRatio>0</RequestRatio>
+	<Cost>
+		<Id>p4000191</Id>
+		<Value>151.84</Value>
+	</Cost>
+</Item>
+</Price>";
+			Formalize();
+
+			xml = @"<Price>
+<Item>
+	<Code>670</Code>
+	<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+	<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+	<Unit>шт.</Unit>
+	<Volume>180,200</Volume>
+	<Quantity>268</Quantity>
+	<EAN13>3800010643771</EAN13>
+	<Period>01.01.2015</Period>
+	<Junk>0</Junk>
+	<VitallyImportant>0</VitallyImportant>
+	<Nds>0</Nds>
+	<RegistryCost>0</RegistryCost>
+	<ProducerCost>0</ProducerCost>
+	<RequestRatio>0</RequestRatio>
+	<Cost>
+		<Id>p4000191</Id>
+		<Value>151.84</Value>
+		<MinOrderCount>5</MinOrderCount>
+	</Cost>
+</Item>
+</Price>";
+			Formalize();
+
+			price.Refresh();
+			Assert.AreEqual(5, price.Core[0].Costs[0].MinOrderCount);
 		}
 
 		private void Formalize()

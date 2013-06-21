@@ -161,6 +161,7 @@
     <Compile Include="Formalizer\Core\PriceReader.cs" />
     <Compile Include="Formalizer\Core\ProducerResolver.cs" />
     <Compile Include="Formalizer\FarmaimpeksReader.cs" />
+    <Compile Include="Formalizer\Helpers\Mapping.cs" />
     <Compile Include="Formalizer\RejectUpdater.cs" />
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
