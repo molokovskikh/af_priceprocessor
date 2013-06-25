@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<Price>
+  <Item>
+    <Code>4ZZQ-4X</Code>
+    <Product>5 дней средство д/ног 1,5г №10</Product>
+    <Producer>Санкт-Петербургская ФФ</Producer>
+    <EAN13>4605059001624</EAN13>
+    <Volume>120</Volume>
+    <Quantity>89</Quantity>
+    <Period>01.01.16</Period>
+    <RegistryCost>0</RegistryCost>
+    <VitallyImportant>0</VitallyImportant>
+    <MinBoundCost>21.75</MinBoundCost>
+    <Cost>
+      <Id>Базовый</Id>
+      <NDS>18</NDS>
+      <Value>22.84</Value>
+    </Cost>
+  </Item>
+  <Item>
+    <Code>7-6P</Code>
+    <Product>5-НОК таб 50мг №50</Product>
+    <Producer>Лек Д.Д.</Producer>
+    <EAN13>3838957090976</EAN13>
+    <Volume>288</Volume>
+    <Quantity>24</Quantity>
+    <Period>01.10.17</Period>
+    <RegistryCost>0</RegistryCost>
+    <VitallyImportant>0</VitallyImportant>
+    <MinBoundCost>80.08</MinBoundCost>
+    <Cost>
+      <Id>Базовый</Id>
+      <NDS>10</NDS>
+      <Value>81.91</Value>
+    </Cost>
+  </Item>
+</Price>

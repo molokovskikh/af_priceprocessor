@@ -22,7 +22,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		uint[] ParseWaybill(uint[] uints);
 	}
 
-	[ServiceBehavior(IncludeExceptionDetailInFaults = true)]
+	[ServiceBehavior(IncludeExceptionDetailInFaults = true,
+		InstanceContextMode = InstanceContextMode.PerCall)]
 	public class WaybillService : IWaybillService
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));

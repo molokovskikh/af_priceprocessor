@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 using Inforoom.Common;
 using System.IO;
+using NHibernate;
 using RemotePriceProcessor;
 using Common.Tools;
 using System.ServiceModel;
@@ -20,6 +21,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor
 {
+	[ServiceBehavior(InstanceContextMode = InstanceContextMode.PerCall)]
 	public class WCFPriceProcessorService : IRemotePriceProcessor, IRemotePriceProcessorOneWay
 	{
 		private static ILog log = LogManager.GetLogger(typeof(WCFPriceProcessorService));
@@ -29,6 +31,8 @@ namespace Inforoom.PriceProcessor
 		private const string MessagePriceNotFoundInArchive = "Данный прайс-лист в архиве отсутствует";
 
 		private const string MessagePriceNotFound = "Данный прайс-лист отсутствует";
+
+		public ISession Session;
 
 		public void ResendPrice(WcfCallParameter paramDownlogId)
 		{
@@ -213,7 +217,7 @@ and pf.Id = fr.PriceFormatId", c);
 				adapter.Fill(data);
 				foreach (var row in data.Rows.Cast<DataRow>()) {
 					try {
-						RetransPrice(row, Settings.Default.BasePath, true);
+						RetransPrice(Convert.ToUInt32(row["PriceItemId"]), Settings.Default.BasePath, true);
 					}
 					catch (FaultException e) {
 						log.Info(String.Format("Ошибка при перепроведении прайс листа, priceItemId = {0}", row["PriceItemId"]), e);
@@ -227,36 +231,19 @@ and pf.Id = fr.PriceFormatId", c);
 
 		public void RetransPrice(WcfCallParameter priceItemId)
 		{
-			RetransPrice(priceItemId, Settings.Default.BasePath, true);
+			RetransPrice(Convert.ToUInt32(priceItemId.Value), Settings.Default.BasePath, true);
 		}
 
-		private void RetransPrice(WcfCallParameter paramPriceItemId, string sourceDir, bool notDelete)
+		private void RetransPrice(uint priceItemid, string sourceDir, bool notDelete)
 		{
-			var priceItemId = Convert.ToUInt64(paramPriceItemId.Value);
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-				@"
-select pim.Id as PriceItemId, p.FileExtention
-from  usersettings.PriceItems pim
-  join farm.formrules f on f.Id = pim.FormRuleId
-  join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId",
-				new MySqlParameter("?PriceItemId", priceItemId));
-
-			RetransPrice(row, sourceDir, notDelete);
-		}
-
-		private void RetransPrice(DataRow row, string sourceDir, bool notDelete)
-		{
-			var priceItemId = Convert.ToUInt64(row["PriceItemId"]);
-			var extention = row["FileExtention"];
-
-			var sourceFile = Path.Combine(Path.GetFullPath(sourceDir), priceItemId.ToString() + extention);
-			var destinationFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
+			var priceitem = Session.Load<PriceItem>(priceItemid);
+			var sourceFile = priceitem.GetFilePath(sourceDir);
+			var destinationFile = priceitem.InboundFile;
 
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
-			if(GetPriceItemList().Select(i => i.PriceItemId).Contains(priceItemId))
+			if(GetPriceItemList().Select(i => i.PriceItemId).Contains(priceitem.Id))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
@@ -271,10 +258,9 @@ where pim.Id = ?PriceItemId",
 				File.Move(sourceFile, destinationFile);
 		}
 
-
 		public void RetransErrorPrice(WcfCallParameter priceItemId)
 		{
-			RetransPrice(priceItemId, Settings.Default.ErrorFilesPath, false);
+			RetransPrice(Convert.ToUInt32(priceItemId.Value), Settings.Default.ErrorFilesPath, false);
 		}
 
 		public string[] ErrorFiles()
@@ -325,18 +311,9 @@ where pim.Id = ?PriceItemId",
 
 		public Stream BaseFile(uint priceItemId)
 		{
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-				@"
-select p.FileExtention
-from  usersettings.PriceItems pim
-  join farm.formrules f on f.Id = pim.FormRuleId
-  join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId",
-				new MySqlParameter("?PriceItemId", priceItemId));
-			var extention = row["FileExtention"];
-
-			var baseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
-			var inboundFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
+			var priceitem = Session.Load<PriceItem>(priceItemId);
+			var baseFile = priceitem.BaseFile;
+			var inboundFile = priceitem.InboundFile;
 
 			if (!File.Exists(baseFile) && !File.Exists(inboundFile))
 				throw new FaultException<string>(MessagePriceNotFound,
@@ -350,7 +327,7 @@ where pim.Id = ?PriceItemId",
 
 		public HistoryFile GetFileFormHistory(WcfCallParameter downlog)
 		{
-			ulong downlogId = Convert.ToUInt64(downlog.Value);
+			var downlogId = Convert.ToUInt64(downlog.Value);
 			var filename = GetFileFromArhive(downlogId);
 			return new HistoryFile {
 				Filename = Path.GetFileName(filename),
@@ -369,34 +346,15 @@ where pim.Id = ?PriceItemId",
 
 		public void PutFileToInbound(FilePriceInfo filePriceInfo)
 		{
-			var priceItemId = filePriceInfo.PriceItemId;
 			var file = filePriceInfo.Stream;
-
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-				@"
-select p.FileExtention
-from  usersettings.PriceItems pim
-  join farm.formrules f on f.Id = pim.FormRuleId
-  join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId",
-				new MySqlParameter("?PriceItemId", priceItemId));
-			var extention = row["FileExtention"];
-
-			// Удаляем из Base файлы с таким же именем (расширения могут отличаться)
-			var oldBaseFilePattern = priceItemId.ToString() + ".*";
-
-			SearchAndDeleteFilesFromDirectory(Settings.Default.BasePath, oldBaseFilePattern);
-
+			var priceitem = Session.Load<PriceItem>(filePriceInfo.PriceItemId);
+			var mask = priceitem.Id + ".*";
+			SearchAndDeleteFilesFromDirectory(Settings.Default.BasePath, mask);
 			// На всякий случай ищем файлы с такими же именами в Inbound0, если есть, удаляем их
-			SearchAndDeleteFilesFromDirectory(Settings.Default.InboundPath, oldBaseFilePattern);
-
-			// Получаем полный путь к новому файлу
-			var newFile = Path.Combine(Path.GetFullPath(Settings.Default.InboundPath), priceItemId.ToString() + extention);
-
+			SearchAndDeleteFilesFromDirectory(Settings.Default.InboundPath, mask);
 			// Сохраняем новый файл
-			using (var fileStream = File.Create(newFile)) {
+			using (var fileStream = File.Create(priceitem.InboundFile))
 				file.CopyTo(fileStream);
-			}
 		}
 
 		public string[] InboundFiles()
@@ -406,20 +364,9 @@ where pim.Id = ?PriceItemId",
 
 		public void PutFileToBase(FilePriceInfo filePriceInfo)
 		{
-			uint priceItemId = filePriceInfo.PriceItemId;
-			Stream file = filePriceInfo.Stream;
-
-			var row = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
-				@"
-select p.FileExtention
-from  usersettings.PriceItems pim
-  join farm.formrules f on f.Id = pim.FormRuleId
-  join farm.pricefmts p on p.ID = f.PriceFormatId
-where pim.Id = ?PriceItemId",
-				new MySqlParameter("?PriceItemId", priceItemId));
-			var extention = row["FileExtention"];
-
-			var newBaseFile = Path.Combine(Path.GetFullPath(Settings.Default.BasePath), priceItemId.ToString() + extention);
+			var file = filePriceInfo.Stream;
+			var priceitem = Session.Load<PriceItem>(filePriceInfo.PriceItemId);
+			var newBaseFile = priceitem.BaseFile;
 
 			if (File.Exists(newBaseFile))
 				try {
@@ -484,7 +431,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 			long taskId = 0;
 			try {
 				log.Debug(String.Format("Попытка запуска поиска синонимов для, priceItemId = {0}", priceItemId));
-				PriceProcessItem item = PriceProcessItem.GetProcessItem(priceItemId);
+				var item = PriceProcessItem.GetProcessItem(priceItemId);
 				if (item == null) {
 					string er = String.Format("Файл прайс-листа не найден (priceItemId = {0})", priceItemId);
 					throw new FaultException<string>(er, new FaultReason(er));
@@ -499,7 +446,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 					throw new FaultException<string>(er, new FaultReason(er));
 				}
 				// создаем задачу
-				IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+				var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
 				taskId = handler.AddTask(names, (uint)item.PriceCode);
 			}
 			catch (Exception e) {
@@ -511,8 +458,8 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 
 		public string[] FindSynonymsResult(string taskId)
 		{
-			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+			var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			var task = handler.GetTask(Convert.ToInt64(taskId));
 			if (task == null)
 				return new[] { "Error", String.Format("Задача {0} не найдена", taskId) };
 			if (task.State == TaskState.Error)
@@ -528,15 +475,15 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 
 		public void StopFindSynonyms(string taskId)
 		{
-			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-			SynonymTask task = handler.GetTask(Convert.ToInt64(taskId));
+			var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			var task = handler.GetTask(Convert.ToInt64(taskId));
 			if (task != null) task.Stop();
 		}
 
 		public void AppendToIndex(string[] synonymsIds)
 		{
-			IndexerHandler handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
-			IList<int> ids = new List<int>();
+			var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			var ids = new List<int>();
 			foreach (var sid in synonymsIds) {
 				int val;
 				if (Int32.TryParse(sid, out val))

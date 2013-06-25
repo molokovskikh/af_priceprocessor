@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Messaging;
 using System.Net.Security;
 using System.ServiceModel.Dispatcher;
 using System.Threading;
@@ -12,6 +13,7 @@ using System.ServiceModel;
 using System.Net;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Wcf;
 using log4net;
 using RemotePriceProcessor;
 
@@ -30,7 +32,6 @@ namespace Inforoom.PriceProcessor
 
 		private ServiceHost _priceProcessorHost;
 		private ServiceHost _waybillServiceHost;
-		private const string _strProtocol = @"net.tcp://";
 
 		private static Monitor _instance;
 
@@ -111,25 +112,53 @@ namespace Inforoom.PriceProcessor
 
 		private void StartServices()
 		{
-			var sbUrlService = new StringBuilder();
-			sbUrlService.Append(_strProtocol)
-				.Append(Dns.GetHostName()).Append(":")
-				.Append(Settings.Default.WCFServicePort).Append("/")
-				.Append(Settings.Default.WCFServiceName);
-
-			_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof(IRemotePriceProcessor),
+			_priceProcessorHost = StartService(typeof(IRemotePriceProcessor),
 				typeof(WCFPriceProcessorService),
-				sbUrlService.ToString(), Settings.Default.WCFQueueName);
+				String.Format("net.tcp://0.0.0.0:{0}/{1}",
+					Settings.Default.WCFServicePort,
+					Settings.Default.WCFServiceName),
+				Settings.Default.WCFQueueName);
 
-			_waybillServiceHost = new ServiceHost(typeof(WaybillService));
+			_waybillServiceHost = StartWaybillService<WaybillService, IWaybillService>("net.tcp://0.0.0.0:901/WaybillService");
+		}
 
+		public static ServiceHost StartWaybillService<T, TContact>(string uri)
+		{
+			var host = new ServiceHost(typeof(T));
 			var binding = new NetTcpBinding();
 			binding.Security.Mode = SecurityMode.None;
-			_waybillServiceHost.AddServiceEndpoint(typeof(IWaybillService),
-				binding,
-				String.Format("net.tcp://{0}:901/WaybillService", Dns.GetHostName()));
-			_waybillServiceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
-			_waybillServiceHost.Open();
+			host.AddServiceEndpoint(typeof(TContact), binding, uri);
+			host.Description.Behaviors.Add(new ErrorHandlerBehavior());
+			host.Description.Behaviors.Add(new RegisterSessionBehavior());
+			host.Open();
+			return host;
+		}
+
+		public static ServiceHost StartService(Type serviceInterfaceType, Type serviceImplementationType, string uri, string wcfQueueName)
+		{
+			var serviceHost = new ServiceHost(serviceImplementationType);
+			var tcpBinding = PriceProcessorWcfHelper.CreateTcpBinding();
+			var msmqBinding = PriceProcessorWcfHelper.CreateMsmqBinding();
+			serviceHost.AddServiceEndpoint(serviceInterfaceType, tcpBinding, uri);
+
+			var queueName = GetShortQueueName(wcfQueueName);
+			if (!string.IsNullOrEmpty(queueName))
+				if (!MessageQueue.Exists(queueName))
+					MessageQueue.Create(queueName, false);
+
+			serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessorOneWay), msmqBinding, wcfQueueName);
+			serviceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
+			serviceHost.Description.Behaviors.Add(new RegisterSessionBehavior());
+			serviceHost.Open();
+			return serviceHost;
+		}
+
+		private static string GetShortQueueName(string name)
+		{
+			var parts = name.Split(new[] { '/' });
+			if (parts.Length > 1)
+				return string.Format(@".\{1}$\{0}", parts.Last(), parts[parts.Length - 2]);
+			return string.Empty;
 		}
 
 		//Остановливаем монитор

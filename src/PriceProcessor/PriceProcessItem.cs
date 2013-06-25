@@ -56,6 +56,9 @@ namespace Inforoom.PriceProcessor
 
 		public static PriceProcessItem TryToLoadPriceProcessItem(string filename)
 		{
+			if (String.IsNullOrEmpty(filename))
+				return null;
+
 			uint priceItemId = ParseId(filename);
 			var isDownloaded = IsDownloadedPrice(filename);
 
@@ -111,45 +114,14 @@ group by pi.Id",
 			return 0;
 		}
 
-		public static string GetFile(string[] files, FormatType format)
-		{
-			if (files.Length == 0) return null;
-			var filename = String.Empty;
-			switch (format) {
-				case FormatType.NativeDbf:
-					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".dbf");
-					break;
-				case FormatType.NativeXls:
-					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".xls");
-					break;
-				case FormatType.NativeDelimiter1251:
-					filename = files.FirstOrDefault(f => !String.IsNullOrEmpty(Path.GetExtension(f)) && Path.GetExtension(f).ToLower() == ".txt");
-					break;
-				default:
-					filename = files[0];
-					break;
-			}
-			if (String.IsNullOrEmpty(filename)) filename = files[0];
-			return filename;
-		}
-
 		public static PriceProcessItem GetProcessItem(uint priceItemId)
 		{
 			var dtRules = PricesValidator.LoadFormRules(priceItemId);
-			if (dtRules.Rows.Count == 0) return null;
-			var fmt = (FormatType)Convert.ToInt32(dtRules.Rows[0][FormRules.colPriceFormatId]);
-			var files = Directory.GetFiles(Settings.Default.BasePath,
-				String.Format(@"{0}.*", priceItemId));
-			if (!files.Any())
-				files = Directory.GetFiles(Settings.Default.InboundPath,
-					String.Format(@"{0}.*", priceItemId));
-
-			string filename = String.Empty;
-			if (files.Any())
-				filename = GetFile(files, fmt);
-			else return null;
-			if (String.IsNullOrEmpty(filename)) return null;
-			return TryToLoadPriceProcessItem(filename);
+			if (dtRules.Rows.Count == 0)
+				return null;
+			var mask = priceItemId + dtRules.Rows[0]["FileExtention"].ToString();
+			var files = Directory.GetFiles(Settings.Default.BasePath, mask);
+			return TryToLoadPriceProcessItem(files.FirstOrDefault());
 		}
 
 		public IList<string> GetAllNames()
@@ -164,10 +136,10 @@ group by pi.Id",
 			Directory.CreateDirectory(tempPath);
 			try {
 				try {
-					var _workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint)PriceItemId);
-					_workPrice.Downloaded = Downloaded;
-					_workPrice.InputFileName = FilePath;
-					names = _workPrice.GetAllNames();
+					var workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint)PriceItemId);
+					workPrice.Downloaded = Downloaded;
+					workPrice.InputFileName = FilePath;
+					names = workPrice.GetAllNames();
 				}
 				catch (WarningFormalizeException e) {
 					return null;

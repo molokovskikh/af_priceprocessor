@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Wcf;
 using NUnit.Framework;
 using System.IO;
 using System.ServiceModel;
@@ -14,13 +15,16 @@ using Test.Support;
 using System.Collections.Generic;
 using Test.Support.Catalog;
 using Test.Support.Suppliers;
+using Monitor = Inforoom.PriceProcessor.Monitor;
 
 namespace PriceProcessor.Test.Services
 {
 	[TestFixture, Description("Тест для перепосылки прайса")]
 	public class PriceResendFixture
 	{
-		private ServiceHost _serviceHost;
+		private ServiceHost host;
+		private ChannelFactory<IRemotePriceProcessor> factory;
+
 		private IRemotePriceProcessor priceProcessor;
 
 		private string DataDirectory = @"..\..\Data";
@@ -30,18 +34,29 @@ namespace PriceProcessor.Test.Services
 
 		private TestPrice rootPrice;
 		private TestPrice childPrice;
+		private string url;
+
+		[TestFixtureSetUp]
+		public void FixtureSetup()
+		{
+			url = "net.tcp://localhost:9847/RemotePriceProcessor";
+			host = Monitor.StartService(typeof(IRemotePriceProcessor),
+				typeof(WCFPriceProcessorService),
+				url,
+				Settings.Default.WCFQueueName);
+			factory = new ChannelFactory<IRemotePriceProcessor>(host.Description.Endpoints[0].Binding, url);
+		}
+
+		[TestFixtureTearDown]
+		public void FixtureTearDown()
+		{
+			host.Close();
+		}
 
 		[SetUp]
 		public void SetUp()
 		{
 			TestHelper.RecreateDirectories();
-			_serviceHost = new ServiceHost(typeof(WCFPriceProcessorService));
-			var binding = new NetTcpBinding();
-			binding.Security.Mode = SecurityMode.None;
-			var url = String.Format("net.tcp://{0}:9847/RemotePriceProcessor", Dns.GetHostName());
-			_serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessor), binding, url);
-			_serviceHost.Open();
-			var factory = new ChannelFactory<IRemotePriceProcessor>(binding, url);
 			priceProcessor = factory.CreateChannel();
 
 			supplier = TestSupplier.Create();
@@ -63,21 +78,18 @@ namespace PriceProcessor.Test.Services
 			else {
 				communicationObject.Close();
 			}
-			_serviceHost.Close();
 		}
 
 		private void WcfCallResendPrice(uint downlogId)
 		{
-			WcfCall(r => {
-				var paramDownlogId = new WcfCallParameter {
-					Value = downlogId,
-					LogInformation = new LogInformation {
-						ComputerName = Environment.MachineName,
-						UserName = Environment.UserName
-					}
-				};
-				r.ResendPrice(paramDownlogId);
-			});
+			var paramDownlogId = new WcfCallParameter {
+				Value = downlogId,
+				LogInformation = new LogInformation {
+					ComputerName = Environment.MachineName,
+					UserName = Environment.UserName
+				}
+			};
+			priceProcessor.ResendPrice(paramDownlogId);
 		}
 
 		private void CreatePrices()
@@ -100,11 +112,6 @@ namespace PriceProcessor.Test.Services
 				childPrice.Save();
 				scope.VoteCommit();
 			}
-		}
-
-		private void WcfCall(Action<IRemotePriceProcessor> action)
-		{
-			action(priceProcessor);
 		}
 
 		[Test, Description("Тест для перепосылки прайса, присланного по email")]
@@ -222,13 +229,13 @@ namespace PriceProcessor.Test.Services
 		public void RetransErrorPriceTest()
 		{
 			File.WriteAllBytes(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf"), new byte[0]);
-			WcfCall(p => p.RetransErrorPrice(new WcfCallParameter {
+			priceProcessor.RetransErrorPrice(new WcfCallParameter {
 				LogInformation = new LogInformation {
 					ComputerName = "test",
 					UserName = "test"
 				},
 				Value = priceItem.Id
-			}));
+			});
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
 			Assert.That(!File.Exists(Path.Combine(Settings.Default.ErrorFilesPath, priceItem.Id + ".dbf")));
 		}
@@ -237,13 +244,13 @@ namespace PriceProcessor.Test.Services
 		public void RetransPriceTest()
 		{
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf"), new byte[0]);
-			WcfCall(p => p.RetransPrice(new WcfCallParameter {
+			priceProcessor.RetransPrice(new WcfCallParameter {
 				LogInformation = new LogInformation {
 					ComputerName = "test",
 					UserName = "test"
 				},
 				Value = priceItem.Id
-			}));
+			});
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, priceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.BasePath, priceItem.Id + ".dbf")));
 		}
@@ -259,19 +266,14 @@ namespace PriceProcessor.Test.Services
 				path,
 				null));
 			File.WriteAllBytes(path, new byte[0]);
-			try {
-				WcfCall(p => p.RetransPrice(new WcfCallParameter {
-					LogInformation = new LogInformation {
-						ComputerName = "test",
-						UserName = "test"
-					},
-					Value = priceItem.Id
-				}));
-				Assert.Fail("Должны были выбросить исключение");
-			}
-			catch(FaultException ex) {
-				Assert.That(ex.Message, Is.EqualTo("Данный прайс-лист находится в очереди на формализацию"));
-			}
+			var ex = Assert.Throws<FaultException>(() => priceProcessor.RetransPrice(new WcfCallParameter {
+				LogInformation = new LogInformation {
+					ComputerName = "test",
+					UserName = "test"
+				},
+				Value = priceItem.Id
+			}));
+			Assert.That(ex.Message, Is.EqualTo("Данный прайс-лист находится в очереди на формализацию"));
 		}
 
 		[Test]
@@ -282,7 +284,7 @@ namespace PriceProcessor.Test.Services
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 
-			WcfCall(r => r.RetransPriceSmart(childPrice.Id));
+			priceProcessor.RetransPriceSmart(childPrice.Id);
 
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
 			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
@@ -294,37 +296,19 @@ namespace PriceProcessor.Test.Services
 		[Test]
 		public void Msmq_test_retrans_price()
 		{
-			ServiceHost _priceProcessorHost = null;
-			try {
-				CreatePrices();
+			CreatePrices();
+			var priceProcessor = new PriceProcessorWcfHelper(url, Settings.Default.WCFQueueName);
 
-				var sbUrlService = new StringBuilder();
-				sbUrlService.Append(@"net.tcp://")
-					.Append(Dns.GetHostName()).Append(":")
-					.Append(Settings.Default.WCFServicePort).Append("/")
-					.Append(Settings.Default.WCFServiceName);
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
+			File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
 
-				_priceProcessorHost = PriceProcessorWcfHelper.StartService(typeof(IRemotePriceProcessor),
-					typeof(WCFPriceProcessorService),
-					sbUrlService.ToString(), Settings.Default.WCFQueueName);
+			priceProcessor.RetransPrice(rootPrice.Costs[0].PriceItem.Id, true);
+			priceProcessor.RetransPrice(childPrice.Costs[0].PriceItem.Id, true);
 
-				var priceProcessor = new PriceProcessorWcfHelper(sbUrlService.ToString(), Settings.Default.WCFQueueName);
+			Thread.Sleep(1000);
 
-				File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, rootPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
-				File.WriteAllBytes(Path.Combine(Settings.Default.BasePath, childPrice.Costs[0].PriceItem.Id + ".dbf"), new byte[0]);
-
-				priceProcessor.RetransPrice(rootPrice.Costs[0].PriceItem.Id, true);
-				priceProcessor.RetransPrice(childPrice.Costs[0].PriceItem.Id, true);
-
-				Thread.Sleep(1000);
-
-				Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
-				Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
-			}
-			finally {
-				if (_priceProcessorHost != null)
-					PriceProcessorWcfHelper.StopService(_priceProcessorHost);
-			}
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, rootPrice.Costs[0].PriceItem.Id + ".dbf")));
+			Assert.That(File.Exists(Path.Combine(Settings.Default.InboundPath, childPrice.Costs[0].PriceItem.Id + ".dbf")));
 		}
 	}
 }

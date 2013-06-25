@@ -116,6 +116,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Management" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -450,6 +451,8 @@
     <Compile Include="Waybills\WaybillOrderMatcher.cs" />
     <Compile Include="Waybills\WaybillService.cs" />
     <Compile Include="WCFPriceProcessorService.cs" />
+    <Compile Include="Wcf\InstanceProvider.cs" />
+    <Compile Include="Wcf\RegisterSessionBehavior.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">

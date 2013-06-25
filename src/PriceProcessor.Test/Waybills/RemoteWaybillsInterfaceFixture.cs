@@ -23,17 +23,31 @@ namespace PriceProcessor.Test.Waybills
 	{
 		private IWaybillService service;
 		private ServiceHost host;
+		private ChannelFactory<IWaybillService> factory;
+
+		[TestFixtureSetUp]
+		public void FixtureSetup()
+		{
+			host = Monitor.StartWaybillService<WaybillService, IWaybillService>("net.tcp://localhost:9846/Waybill");
+			factory = new ChannelFactory<IWaybillService>(host.Description.Endpoints[0].Binding, "net.tcp://localhost:9846/Waybill");
+		}
+
+		[TestFixtureTearDown]
+		public void FixtureTearDown()
+		{
+			host.Close();
+		}
 
 		[SetUp]
 		public void Setup()
 		{
-			var binding = new NetTcpBinding();
-			host = new ServiceHost(typeof(WaybillService));
-			host.AddServiceEndpoint(typeof(IWaybillService), binding, "net.tcp://localhost:9846/Waybill");
-			host.Open();
-
-			var factory = new ChannelFactory<IWaybillService>(binding, "net.tcp://localhost:9846/Waybill");
 			service = factory.CreateChannel();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			((IDisposable)service).Dispose();
 		}
 
 		private string GetDocumentDir(uint? AddressId, uint? ClientCode)
@@ -59,12 +73,6 @@ namespace PriceProcessor.Test.Waybills
 				return Path.Combine(documentDir, file);
 			}
 			return fullName;
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			host.Close();
 		}
 
 		[Test]

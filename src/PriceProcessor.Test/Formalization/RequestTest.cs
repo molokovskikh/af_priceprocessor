@@ -1,30 +1,37 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using Castle.ActiveRecord;
-using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
-using Inforoom.PriceProcessor.Formalizer.Core;
 using NUnit.Framework;
-using Inforoom.PriceProcessor.Formalizer;
-using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
-using FileHelper = Common.Tools.FileHelper;
 
 namespace PriceProcessor.Test.Formalization
 {
 	[TestFixture]
-	internal class RequestTest
+	internal class RequestTest : IntegrationFixture
 	{
 		private TestPriceItem priceItem;
+		private string basepath;
+
+		[SetUp]
+		public void Setup()
+		{
+			basepath = Settings.Default.BasePath;
+			if (!Directory.Exists(basepath))
+				Directory.CreateDirectory(basepath);
+		}
+
+		[TearDown]
+		public void Teardown()
+		{
+			Directory.Delete(basepath, true);
+		}
 
 		[Test]
 		public void GetAllNamesTest()
 		{
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked();
 			var price = supplier.Prices[0];
-			price.CostType = CostType.MultiColumn;
 
 			priceItem = price.Costs.First().PriceItem;
 			var format = price.Costs.Single().PriceItem.Format;
@@ -37,34 +44,33 @@ namespace PriceProcessor.Test.Formalization
 			var costFormRule = price.Costs.Single().FormRule;
 			costFormRule.FieldName = "F4";
 
-			price.Save();
+			session.Save(price);
+			Close();
 
-			var basepath = Settings.Default.BasePath;
-			if (!Directory.Exists(basepath))
-				Directory.CreateDirectory(basepath);
-
-			var source = Path.GetFullPath(@"..\..\Data\222.txt");
-			var destination = Path.GetFullPath(Path.Combine(basepath, priceItem.Id + ".txt"));
-			File.Copy(source, destination);
+			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.Combine(basepath, priceItem.Id + ".txt"));
 
 			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
 			var names = item.GetAllNames();
-			File.Delete(destination);
 			Assert.That(names.Count(), Is.EqualTo(35));
 		}
 
 		[Test]
-		public void GetFileTest()
+		public void Respect_file_extension()
 		{
-			var files = new[] { "file1.txt", "file2", "file3.dbf", "file5.xls" };
+			var supplier = TestSupplier.CreateNaked();
+			var price = supplier.Prices[0];
 
-			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file1.txt"));
-			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeXls), Is.EqualTo("file5.xls"));
-			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDbf), Is.EqualTo("file3.dbf"));
-			Assert.That(PriceProcessItem.GetFile(files, FormatType.Xml), Is.EqualTo("file1.txt"));
+			priceItem = price.Costs.First().PriceItem;
+			var format = price.Costs.Single().PriceItem.Format;
+			format.PriceFormat = PriceFormatType.UniversalXml;
+			session.Save(price);
+			Close();
 
-			files = new[] { "file" };
-			Assert.That(PriceProcessItem.GetFile(files, FormatType.NativeDelimiter1251), Is.EqualTo("file"));
+			File.Copy(Path.GetFullPath(@"..\..\Data\222.txt"), Path.Combine(basepath, priceItem.Id + ".txt"));
+			File.Copy(Path.GetFullPath(@"..\..\Data\Respect_file_extension.xml"), Path.Combine(basepath, priceItem.Id + ".xml"));
+			var item = PriceProcessItem.GetProcessItem(priceItem.Id);
+			var names = item.GetAllNames();
+			Assert.That(names.Count(), Is.EqualTo(2));
 		}
 	}
 }

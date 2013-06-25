@@ -87,7 +87,7 @@ namespace RemotePriceProcessor
 			_channelFactory.Close();
 		}
 
-		private static NetTcpBinding CreateTcpBinding()
+		public static NetTcpBinding CreateTcpBinding()
 		{
 			var binding = new NetTcpBinding();
 			binding.Security.Transport.ProtectionLevel = ProtectionLevel.EncryptAndSign;
@@ -109,32 +109,6 @@ namespace RemotePriceProcessor
 			binding.Name = "MsmqBindingNonTransactionalNoSecurity";
 			binding.ExactlyOnce = false;
 			return binding;
-		}
-
-		public static ServiceHost StartService(Type serviceInterfaceType, Type serviceImplementationType, string wcfServiceUrl, string wcfQueueName)
-		{
-			var serviceHost = new ServiceHost(serviceImplementationType);
-			var tcpBinding = CreateTcpBinding();
-			var msmqBinding = CreateMsmqBinding();
-			serviceHost.AddServiceEndpoint(serviceInterfaceType, tcpBinding, wcfServiceUrl);
-
-			var queueName = GetShortQueueName(wcfQueueName);
-			if (!string.IsNullOrEmpty(queueName))
-				if (!MessageQueue.Exists(queueName))
-					MessageQueue.Create(queueName, false);
-
-			serviceHost.AddServiceEndpoint(typeof(IRemotePriceProcessorOneWay), msmqBinding, wcfQueueName);
-			serviceHost.Description.Behaviors.Add(new ErrorHandlerBehavior());
-			serviceHost.Open();
-			return serviceHost;
-		}
-
-		private static string GetShortQueueName(string name)
-		{
-			var parts = name.Split(new[] { '/' });
-			if (parts.Length > 1)
-				return string.Format(@".\{1}$\{0}", parts.Last(), parts[parts.Length - 2]);
-			return string.Empty;
 		}
 
 		public static void StopService(ServiceHost serviceHost)

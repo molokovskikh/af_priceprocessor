@@ -45,19 +45,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		MiltiFile = 1
 	}
 
-	public enum FormatType
-	{
-		Xml = 5,
-		NativeDbf = 8,
-		Sudakov = 9,
-		NativeXls = 10,
-		NativeDelimiter1251 = 11,
-		NativeDelimiterDOS = 12,
-		NativeFixedWIN = 13,
-		NativeFixedDOS = 14,
-		FarmImpeks = 15,
-	}
-
 	//Статистические счетчики для формализации
 	public class FormalizeStats
 	{
