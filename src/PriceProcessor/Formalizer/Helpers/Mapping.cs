@@ -8,8 +8,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 {
 	public class Mapping
 	{
-		private static Lazy<Mapping[]> _offerMapping = new Lazy<Mapping[]>(GetOfferMapping, LazyThreadSafetyMode.None);
-		private static Lazy<Mapping[]> _costMapping = new Lazy<Mapping[]>(GetCostMapping, LazyThreadSafetyMode.None);
+		private static Lazy<Mapping[]> _offerMapping = new Lazy<Mapping[]>(GetOfferMapping, LazyThreadSafetyMode.PublicationOnly);
+		private static Lazy<Mapping[]> _costMapping = new Lazy<Mapping[]>(GetCostMapping, LazyThreadSafetyMode.PublicationOnly);
 
 		private FieldInfo field;
 
