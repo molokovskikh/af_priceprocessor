@@ -26,6 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "CNTR")
 				.Line(l => l.ProducerCost, "PRICEMAN")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
+				.Line(l => l.SupplierPriceMarkup, "PRCPT")
 				.Line(l => l.Amount, "SUMS0")
 				.Line(l => l.NdsAmount, "SUMSNDS")
 				.Line(l => l.Quantity, "QNT")
