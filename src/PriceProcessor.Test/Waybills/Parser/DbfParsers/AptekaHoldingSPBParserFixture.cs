@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		public void Parse()
 		{
 			Assert.IsTrue(AptekaHoldingSPBParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\NKL_1892886.dbf")));
-			var document = WaybillParser.Parse(@"C:\00141601 (1).dbf");
+			var document = WaybillParser.Parse("NKL_1892886.dbf");
 
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("АХ1-1892886/0"));
 			Assert.That(document.DocumentDate.Value.ToShortDateString(), Is.EqualTo("01.12.2011"));

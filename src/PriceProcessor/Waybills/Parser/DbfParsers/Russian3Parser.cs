@@ -44,7 +44,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("REGPRC") &&
 				data.Columns.Contains("CNTR") &&
 				data.Columns.Contains("NUMZ") &&
-				data.Columns.Contains("SERTDATE");
+				data.Columns.Contains("SERTDATE") &&
+				data.Columns.Contains("PRCPT");
 		}
 	}
 }
