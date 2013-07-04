@@ -301,6 +301,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\MedkomMP228Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulsBrianskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Rosta11288Parser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Russian3Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahan12423Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParser.cs" />
