@@ -10,6 +10,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 	public class FarmGroupParserFixture
 	{
 		[Test]
+		public void CertificateTest()
+		{
+			var doc = WaybillParser.Parse("00180725.dbf");
+			var line = doc.Lines[0];
+			Assert.That(line.CertificateFilename, Is.EqualTo("120508-60413-O-1.JPG"));
+		}
+
+		[Test]
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse("00013602.DBF");
