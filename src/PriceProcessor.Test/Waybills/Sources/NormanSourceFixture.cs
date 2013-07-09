@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 		{
 			source = new NormanSource();
 			var line = new DocumentLine {
-				CertificateFilename = "109127-1570912-S-8.jpg",
+				CertificateFilename = "109127-1570912-r-1.jpg",
 				ProductEntity = new Product()
 			};
 			task = new CertificateTask(new CertificateSource(), line);
@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 			Assert.IsTrue(File.Exists(files[0].LocalFile), files[0].LocalFile);
 		}
 
-		[Test, Ignore("Для ручного тестирования"]
+		[Test, Ignore("Для ручного тестирования")]
 		public void Get_unknown_certificate()
 		{
 			task.DocumentLine.CertificateFilename = "10912109127-1570912-S-8.jpg";
