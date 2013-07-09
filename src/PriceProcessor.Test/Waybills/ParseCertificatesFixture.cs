@@ -653,7 +653,7 @@ delete from documents.Certificates where Id = :certificateId;
 		}
 
 
-		public class TestCertifcateSource : AbstractCertifcateSource, ICertificateSource
+		public class TestCertifcateSource : AbstractCertifcateSource
 		{
 			public List<string> LocalFiles = new List<string>();
 			public static Func<DocumentLine, bool> CertificateExistsAction;
@@ -677,7 +677,7 @@ delete from documents.Certificates where Id = :certificateId;
 				throw new NotImplementedException();
 			}
 
-			public bool CertificateExists(DocumentLine line)
+			public override bool CertificateExists(DocumentLine line)
 			{
 				if (CertificateExistsAction == null)
 					throw new NotImplementedException();

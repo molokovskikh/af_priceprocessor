@@ -6,9 +6,9 @@ using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class AptekaHoldingVoronezhCertificateSource : AbstractCertifcateSource, ICertificateSource
+	public class AptekaHoldingVoronezhCertificateSource : AbstractCertifcateSource
 	{
-		public bool CertificateExists(DocumentLine documentLine)
+		public override bool CertificateExists(DocumentLine documentLine)
 		{
 			var exists = !String.IsNullOrEmpty(documentLine.CertificateFilename) ||
 				!String.IsNullOrEmpty(documentLine.ProtocolFilemame) ||

@@ -6,7 +6,7 @@ using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class FarmKomplektCertificateSource : AbstractCertifcateSource, ICertificateSource
+	public class FarmKomplektCertificateSource : AbstractCertifcateSource
 	{
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
@@ -41,7 +41,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			}
 		}
 
-		public bool CertificateExists(DocumentLine line)
+		public override bool CertificateExists(DocumentLine line)
 		{
 			var exists = !String.IsNullOrEmpty(line.CertificateFilename);
 			if (!exists)

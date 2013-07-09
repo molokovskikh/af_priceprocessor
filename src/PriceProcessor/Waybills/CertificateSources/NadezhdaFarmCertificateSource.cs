@@ -7,7 +7,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class NadezhdaFarmCertificateSource : AbstractCertifcateSource, ICertificateSource
+	public class NadezhdaFarmCertificateSource : AbstractCertifcateSource
 	{
 		public override void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files)
 		{
@@ -40,7 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 			return tempFile;
 		}
 
-		public bool CertificateExists(DocumentLine line)
+		public override bool CertificateExists(DocumentLine line)
 		{
 			var exists = !String.IsNullOrEmpty(line.CertificateFilename);
 			if (!exists)

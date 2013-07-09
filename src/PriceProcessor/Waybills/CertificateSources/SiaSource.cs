@@ -11,9 +11,9 @@ using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class SiaSource : AbstractCertifcateSource, ICertificateSource
+	public class SiaSource : AbstractCertifcateSource
 	{
-		public bool CertificateExists(DocumentLine line)
+		public override bool CertificateExists(DocumentLine line)
 		{
 			var exists = !String.IsNullOrEmpty(line.Code) && !String.IsNullOrEmpty(line.SerialNumber);
 			if (!exists) {
@@ -52,17 +52,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			var reg = new Regex("DOCS.+?GIF");
 			return reg.Matches(data).Cast<Match>().SelectMany(m => m.Captures.Cast<Capture>().Select(c => c.Value));
-		}
-
-		protected List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
-		{
-			var name = GetType().Name;
-			return CertificateSourceCatalog.Queryable
-				.Where(
-				c => c.CertificateSource.SourceClassName == name
-					&& c.SerialNumber == serialNumber
-					&& c.CatalogProduct.Id == catalogId)
-				.ToList();
 		}
 	}
 }

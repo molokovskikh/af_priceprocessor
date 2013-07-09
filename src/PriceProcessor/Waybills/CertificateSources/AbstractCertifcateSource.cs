@@ -8,7 +8,7 @@ using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public abstract class FtpCertifcateSource : AbstractCertifcateSource, ICertificateSource
+	public abstract class FtpCertifcateSource : AbstractCertifcateSource
 	{
 		protected List<CertificateSourceCatalog> GetSourceCatalog(uint catalogId, string serialNumber)
 		{
@@ -21,7 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				.ToList();
 		}
 
-		public bool CertificateExists(DocumentLine line)
+		public override bool CertificateExists(DocumentLine line)
 		{
 			var exists = GetSourceCatalog(line.ProductEntity.CatalogProduct.Id, line.SerialNumber).Count > 0;
 			if (!exists)
@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		}
 	}
 
-	public abstract class AbstractCertifcateSource
+	public abstract class AbstractCertifcateSource : ICertificateSource
 	{
 		public abstract void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files);
 		protected ILog Log;
@@ -40,6 +40,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 		{
 			Log = LogManager.GetLogger(GetType());
 		}
+
+		public abstract bool CertificateExists(DocumentLine line);
 
 		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
 		{
