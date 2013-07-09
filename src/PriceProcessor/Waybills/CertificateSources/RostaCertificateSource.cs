@@ -8,7 +8,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
-	public class RostaCertificateSource : FtpCertifcateSource
+	public class RostaCertificateSource : FtpCertifcateSource, IRemoteFtpSource
 	{
 		/// <summary>
 		/// Для тестов
