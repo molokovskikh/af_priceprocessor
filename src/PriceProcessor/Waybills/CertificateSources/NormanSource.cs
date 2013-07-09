@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills.Models;
 
@@ -28,6 +29,13 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				}
 				using (var result = response.GetResponseStream()) {
 					var localFile = Path.GetTempFileName();
+					//если в ответ text/plain значит это ошибка
+					var contentType = new ContentType(response.ContentType);
+					if (contentType.MediaType == "text/plain") {
+						var text = new StreamReader(result, Encoding.GetEncoding(contentType.CharSet)).ReadToEnd();
+						line.CertificateError = String.Format("Поставщик не предоставил сертификат, текст ошибки {0}", text);
+						return;
+					}
 					using (var f = File.OpenWrite(localFile)) {
 						files.Add(new CertificateFile(localFile, file, file));
 						result.CopyTo(f);
