@@ -9,7 +9,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 	public class PulsRyazanParserFixture
 	{
 		[Test]
-		public void CertificateTest()
+		public void CertificateFilenameTest()
 		{
 			var doc = WaybillParser.Parse("00184493.dbf");
 			var line = doc.Lines[0];
@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Quantity, Is.EqualTo(3));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Period, Is.EqualTo("01.12.2011"));
-			Assert.That(line.Certificate, Is.EqualTo("РОСС BG.ФМ09.Д02834"));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС BG.ФМ09.Д02834"));
 			Assert.That(line.SupplierCost, Is.EqualTo(89.06));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(80.96));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(87.66));

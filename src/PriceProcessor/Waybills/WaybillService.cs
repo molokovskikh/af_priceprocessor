@@ -12,6 +12,7 @@ using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
+using Inforoom.PriceProcessor.Waybills.Parser;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills
