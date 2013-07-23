@@ -197,6 +197,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BrianskFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BTKParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\SiaSamaraParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSet_VoronezhParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParserFixture.cs" />
