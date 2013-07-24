@@ -21,12 +21,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			bool hasRegCost = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаГР").Any();
 			bool hasProducerCost = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("ЦенаИзг").Any();
 			bool hasNds = xDocument.Descendants(@"ТоварнаяПозиция").Descendants("СтавкаНДС").Any();
-
-			document.ProviderDocumentId = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок").Value;
-
-			var docDate = xDocument.XPathSelectElement("Документ/ЗаголовокДокумента/ДатаДок").Value;
+			
+			var header = xDocument.XPathSelectElement(@"Документ/ЗаголовокДокумента");
+			document.ProviderDocumentId = header.XPathSelectElement("НомерДок").Value;
+			var docDate = header.XPathSelectElement("ДатаДок").Value;
 			if (!String.IsNullOrEmpty(docDate))
 				document.DocumentDate = Convert.ToDateTime(docDate);
+
 			foreach (var position in xDocument.XPathSelectElements(@"Документ/ТоварныеПозиции/ТоварнаяПозиция")) {
 				var line = document.NewLine();
 				line.Product = position.XPathSelectElement("Товар").Value;
@@ -46,6 +47,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("ДатаВыдачиСертиф").Any())
 					line.CertificatesDate = position.XPathSelectElement("Серии/Серия/ДатаВыдачиСертиф").Value;
 
+				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("ОрганСертиф").Any())
+					line.CertificateAuthority = position.XPathSelectElement("Серии/Серия/ОрганСертиф").Value;
+
 				if (hasProducerCost) {
 					if (String.IsNullOrEmpty(position.XPathSelectElement("ЦенаИзг").Value)) line.ProducerCostWithoutNDS = null;
 					else line.ProducerCostWithoutNDS = position.Get("ЦенаИзг");
@@ -63,6 +67,30 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				}
 
 				line.SetSupplierCostByNds(line.Nds);
+				
+				if (position.XPathSelectElement("СуммаОптВклНДС") != null) {
+					string sum = position.XPathSelectElement("СуммаОптВклНДС").Value;
+					sum = sum.Replace('.', ',');
+					line.Amount = SafeConvert.ToDecimal(sum);
+				}
+
+				if (position.XPathSelectElement("СуммаНДС") != null) {
+					string sum = position.XPathSelectElement("СуммаНДС").Value;
+					sum = sum.Replace('.', ',');
+					line.NdsAmount = SafeConvert.ToDecimal(sum);
+				}
+
+				if (position.XPathSelectElement("ЦенаРозн") != null) {
+					string sum = position.XPathSelectElement("ЦенаРозн").Value;
+					sum = sum.Replace('.', ',');
+					line.RetailCost = SafeConvert.ToDecimal(sum);
+				}
+
+				if (position.XPathSelectElement("ЕАН13") != null)
+					line.EAN13 = position.XPathSelectElement("ЕАН13").Value;
+
+				if (position.XPathSelectElement("ГТД") != null)
+					line.BillOfEntryNumber = position.XPathSelectElement("ГТД").Value;
 
 				if (xDocument.Descendants(@"Серии").Descendants("Серия").Descendants("СрокГодностиТовара").Any())
 					line.Period = position.XPathSelectElement("Серии/Серия/СрокГодностиТовара").Value;

@@ -67,5 +67,30 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].VitallyImportant.Value, Is.EqualTo(false));
 			Assert.That(document.Lines[0].SupplierPriceMarkup.Value, Is.EqualTo(0));
 		}
+
+		[Test]
+		public void ParseSiaInternational()
+		{
+			var document = WaybillParser.Parse(@"64_10413501_Р-2047471.xml");
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р-2047471"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("18.07.2013")));
+			Assert.That(document.Lines[0].Product, Is.EqualTo("Алмагель А Сусп. 170мл Фл. Б М"));
+			Assert.That(document.Lines[0].Producer, Is.EqualTo("Балканфарма-Троян АД, БОЛГАРИЯ"));
+			Assert.That(document.Lines[0].Quantity, Is.EqualTo(12));
+			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(0));
+			Assert.That(document.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(88.3500));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10.0000));
+			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(106.02));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(1166.2200));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("3800009121020"));
+			Assert.That(document.Lines[0].BillOfEntryNumber, Is.EqualTo("10130032/120413/0002530/1"));
+			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("020313"));
+			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС BG.ФМ08.Д61596"));
+			Assert.That(document.Lines[0].CertificateAuthority, Is.EqualTo(@"РОСС.RU.0001.11ФМ08 ООО " + '\u0022' + "Окружной центр контроля качества" + '\u0022' + ", г. Москва"));
+			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("07.05.2013"));
+			Assert.That(document.Lines[0].Period, Is.EqualTo("01.03.2015"));
+		}
 	}
 }
