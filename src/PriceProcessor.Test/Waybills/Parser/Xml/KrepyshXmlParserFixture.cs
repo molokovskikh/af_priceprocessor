@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
+using System.Xml.XPath;
+using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 
@@ -23,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(1));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(28.57));
 			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(25.97));
-			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(10));
+			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[0].Certificates, Is.EqualTo("РОСС CN.АВ57.В05475"));
 			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(null));
 			Assert.That(document.Lines[0].Period, Is.EqualTo(null));
@@ -63,9 +67,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_with_invalid_data()
 		{
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\20101119_8055_250829_1.xml");
-			Assert.That(document.Lines[0].Nds.Value, Is.EqualTo(0));
-			Assert.That(document.Lines[0].VitallyImportant.Value, Is.EqualTo(false));
-			Assert.That(document.Lines[0].SupplierPriceMarkup.Value, Is.EqualTo(0));
+			Assert.That(document.Lines[0].Nds, Is.Null);
+			Assert.That(document.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.Null);
 		}
 
 		[Test]

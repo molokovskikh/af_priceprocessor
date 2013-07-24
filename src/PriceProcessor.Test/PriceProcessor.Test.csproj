@@ -192,6 +192,9 @@
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Waybills\Parser\CalculateValuesFixture.cs" />
     <Compile Include="Waybills\Parser\ConvertDateInDbfFixture.cs" />
+    <Compile Include="Waybills\Parser\DetectWrongXmlFixture.cs" />
+    <Compile Include="Waybills\Parser\DetectWrongPdVersionFixture.cs" />
+    <Compile Include="Waybills\Parser\DetectWrongDateInDbfFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AllianceHealthCareParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingVolgogradParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AstrahanFarm12729ParserFixture.cs" />

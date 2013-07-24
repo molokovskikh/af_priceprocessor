@@ -1,20 +1,27 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills.Models;
 
-namespace Inforoom.PriceProcessor.Waybills.Parser
+namespace Inforoom.PriceProcessor.Waybills.Parser.PdParsers
 {
 	public class ProtekParser : IDocumentParser
 	{
-		public Document Parse(string file, Document document)
+		public static bool CheckFileFormat(string file)
 		{
 			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var version = reader.ReadLine();
 				if (version != "V2")
-					throw new Exception(String.Format("Неизвестная версия документа {0}, {1}", version, file));
+					return false;
+			}
+			if (File.ReadAllLines(file).Length < 5)
+				return false;
+			return true;
+		}
 
+		public Document Parse(string file, Document document)
+		{
+			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
+				reader.ReadLine();
 				var separator = reader.ReadLine()[0];
 
 				var headerCaptions = reader.ReadLine().Split(separator);
@@ -44,12 +51,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						VitallyImportant = header.GetVitallyImportant(parts),
 						SerialNumber = header.GetSerialNumber(parts),
 					};
-					if (header.GetNds(parts).HasValue) {
-						docLine.SetNds((decimal)header.GetNds(parts));
-						docLine.SetSupplierCostByNds(docLine.Nds);
-					}
-					if (header.GetSupplierCostWithoutNds(parts).HasValue)
-						docLine.SetSupplierCostWithoutNds((decimal)header.GetSupplierCostWithoutNds(parts));
 					document.NewLine(docLine);
 				}
 			}
