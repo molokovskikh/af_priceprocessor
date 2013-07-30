@@ -56,7 +56,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("Р000036681"));
 			Assert.That(document.DocumentDate, Is.EqualTo(new DateTime(2013, 7, 12)));
-			Assert.That(document.OrderId, Is.Null);
 
 			var invoice = document.Invoice;
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("Р000036681"));
@@ -74,6 +73,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(invoice.BuyerAddress, Is.EqualTo(",393191,Тамбовская обл.,,г.Котовск,,ул. 9-й пятилетки,7,,"));
 			Assert.That(invoice.BuyerINN, Is.EqualTo("6820028685"));
 			Assert.That(invoice.BuyerKPP, Is.EqualTo("682501001"));
+
 			var line = document.Lines[0];
 			Assert.That(line.SerialNumber, Is.EqualTo("10/14/2031"));
 			Assert.That(line.Period, Is.EqualTo("01.11.2015"));
@@ -93,6 +93,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.NdsAmount, Is.EqualTo(7.70));
 			Assert.That(line.Amount, Is.EqualTo(76.96));
 			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.Unit, Is.EqualTo("упак"));
+			Assert.That(line.OrderId, Is.Null);
 		}
 	}
 }

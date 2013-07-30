@@ -13,7 +13,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "TTN")
 				.DocumentHeader(h => h.DocumentDate, "TTN_DATE")
-				.DocumentHeader(h => h.OrderId, "N_ZAK")
 				.DocumentInvoice(i => i.RecipientAddress, "ANAME_AF", "I_RES_ADR")
 				.DocumentInvoice(i => i.InvoiceNumber, "TTN", "I_NUM")
 				.DocumentInvoice(i => i.InvoiceDate, "TTN_DATE", "I_DATE")
@@ -30,6 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.BuyerINN, "I_BU_INN")
 				.DocumentInvoice(i => i.BuyerKPP, "I_BU_KPP")
 				.Line(l => l.SerialNumber, "SERIA")
+				.Line(l => l.Unit, "UNIT")
 				.Line(l => l.Period, "SGODN")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesDate, "SERT_DATE")
@@ -48,6 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "BLL_NTR_ID")
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Product, "NAME_POST")
+				.Line(l => l.OrderId, "N_ZAK")
 				.Line(l => l.Code, "SP_PRD_ID");
 		}
 
