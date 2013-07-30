@@ -11,6 +11,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Helpers
 		public static decimal? GetDecimal(string val)
 		{
 			decimal value;
+			if (!String.IsNullOrEmpty(val)) {
+				val = val.Replace('%', ' ');
+				val = val.Trim();
+			}
 			if (!String.IsNullOrEmpty(val) && decimal.TryParse(val, NumberStyles.Number, CultureInfo.CurrentCulture, out value))
 				return value;
 			if (!String.IsNullOrEmpty(val) && decimal.TryParse(val, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
