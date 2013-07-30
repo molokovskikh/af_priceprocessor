@@ -60,14 +60,18 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var invoice = document.Invoice;
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("Р000036681"));
 			Assert.That(invoice.InvoiceDate, Is.EqualTo(new DateTime(2013, 7, 12)));
+			Assert.That(invoice.DelayOfPaymentInDays, Is.EqualTo(21));
 			Assert.That(invoice.SellerAddress,  Is.EqualTo("392008, Россия, г. Тамбов, Моршанское шоссе, 17 Б"));
 			Assert.That(invoice.SellerINN, Is.EqualTo("6832031876"));
 			Assert.That(invoice.SellerKPP, Is.EqualTo("683201001"));
 			Assert.That(invoice.SellerName, Is.EqualTo("ООО " + '\u0022' + "Фармцентр" + '\u0022'));
-			Assert.That(invoice.ShipperInfo, Is.EqualTo("ООО " + '\u0022' + "Фармцентр" + '\u0022' + " 392008, Россия, г. Тамбов, Моршанское шоссе, 17 Б"));
-			Assert.That(invoice.RecipientName, Is.EqualTo("ООО" + '\u0022' + "Аптека" + '\u0022' + "Надежда" + '\u0022'));
+			Assert.That(invoice.ShipperInfo, Is.EqualTo("ООО " + '\u0022' + "Фармцентр" + '\u0022' +
+				" 392008, Россия, г. Тамбов, Моршанское шоссе, 17 Б"));
+			Assert.That(invoice.RecipientName, Is.EqualTo("ООО" + '\u0022' + "Аптека" + '\u0022' +
+				"Надежда" + '\u0022'));
 			Assert.That(invoice.RecipientId, Is.EqualTo(1193));
-			Assert.That(invoice.RecipientAddress, Is.EqualTo("ООО" + '\u0022' + "Аптека" + '\u0022' + "Надежда" + '\u0022' + " Адрес: ,393191,Тамбовская обл.,,г.Котовск,,ул. 9-й пятилетки,7,,"));
+			Assert.That(invoice.RecipientAddress, Is.EqualTo("ООО" + '\u0022' + "Аптека" + '\u0022' + "Надежда"
+				+ '\u0022' + " Адрес: ,393191,Тамбовская обл.,,г.Котовск,,ул. 9-й пятилетки,7,,"));
 			Assert.That(invoice.BuyerId, Is.EqualTo(1193));
 			Assert.That(invoice.BuyerName, Is.EqualTo("ООО" + '\u0022' + "Аптека" + '\u0022' + "Надежда" + '\u0022'));
 			Assert.That(invoice.BuyerAddress, Is.EqualTo(",393191,Тамбовская обл.,,г.Котовск,,ул. 9-й пятилетки,7,,"));

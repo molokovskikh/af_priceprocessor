@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
@@ -199,6 +200,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return Convert.ToInt32(Math.Round(val, 2) * 100);
 		}
 
+		public string DateOfPaymentDelay { get; set; }
+
 		/// <summary>
 		/// Склад
 		/// </summary>
@@ -293,6 +296,17 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					if (Document != null && Document.Lines.All(l => l.Amount.HasValue)) {
 					Amount = Document.Lines.Sum(l => l.Amount);
 					}
+			}
+
+			if (!String.IsNullOrEmpty(DateOfPaymentDelay) && !DelayOfPaymentInDays.HasValue && InvoiceDate.HasValue) {
+				DateTime res;
+				if (DateTime.TryParse(DateOfPaymentDelay, out res))
+					DelayOfPaymentInDays = (res - (DateTime)InvoiceDate).Days;
+				if (DateTime.TryParseExact(DateOfPaymentDelay, "dd.MM",
+					CultureInfo.InvariantCulture, DateTimeStyles.None, out res)) {
+					res = new DateTime(((DateTime)InvoiceDate).Year, res.Month, res.Day);
+					DelayOfPaymentInDays = (res - (DateTime)InvoiceDate).Days;
+				}
 			}
 		}
 	}
