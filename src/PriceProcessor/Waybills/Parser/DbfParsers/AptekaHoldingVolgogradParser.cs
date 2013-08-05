@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -28,6 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentInvoice(i => i.BuyerAddress, "I_BU_ADR")
 				.DocumentInvoice(i => i.BuyerINN, "I_BU_INN")
 				.DocumentInvoice(i => i.BuyerKPP, "I_BU_KPP")
+				.DocumentInvoice(i => i.DateOfPaymentDelay, "I_DEL_D")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.Unit, "UNIT")
 				.Line(l => l.Period, "SGODN")

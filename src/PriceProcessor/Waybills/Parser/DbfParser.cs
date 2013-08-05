@@ -200,7 +200,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		private static object ConvertIfNeeded(object value, Type type)
+		protected static object ConvertIfNeeded(object value, Type type)
 		{
 			if (Convert.IsDBNull(value))
 				return null;
@@ -221,6 +221,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}
 			if (type == typeof(string)) {
 				DateTime res;
+				if (DateTime.TryParseExact(value.ToString(),
+					"dd.MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+					return Convert.ToString(value);
 				if (DateTime.TryParse(value.ToString(), out res))
 					return Convert.ToDateTime(value).ToShortDateString();
 				return Convert.ToString(value);
@@ -229,7 +232,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				DateTime res;
 				if (DateTime.TryParse(value.ToString(), out res))
 					return Convert.ToDateTime(value);
-				if (DateTime.TryParseExact(value.ToString(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+				if (DateTime.TryParseExact(value.ToString(),
+					"yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
 					return res;
 				return Convert.ToDateTime(value);
 			}
