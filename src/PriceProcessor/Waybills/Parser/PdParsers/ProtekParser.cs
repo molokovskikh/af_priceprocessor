@@ -12,9 +12,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.PdParsers
 				var version = reader.ReadLine();
 				if (version != "V2")
 					return false;
+				for (int i = 0; i < 4; i++)
+					if (reader.ReadLine() == null)
+						return false;
 			}
-			if (File.ReadAllLines(file).Length < 5)
-				return false;
 			return true;
 		}
 
