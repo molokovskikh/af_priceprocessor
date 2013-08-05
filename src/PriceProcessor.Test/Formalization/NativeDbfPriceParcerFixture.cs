@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Common.MySql;
@@ -27,7 +28,9 @@ namespace PriceProcessor.Test.Formalization
 			var supplier = TestSupplier.Create();
 			_testPrice = supplier.Prices[0];
 			_testPrice.Costs[0].FormRule.FieldName = "name";
+			_testPrice.Costs[0].PriceItem.Format.PriceEncode = 1251;
 			session.Save(_testPrice);
+			session.Save(_testPrice.Costs[0].PriceItem.Format);
 		}
 
 		[Test]
@@ -43,15 +46,16 @@ namespace PriceProcessor.Test.Formalization
 			row[FormRules.colPriceItemId] = _testPrice.Costs[0].PriceItem.Id;
 			row[FormRules.colParentSynonym] = 0;
 			row["BuyingMatrix"] = 0;
+			row["PriceEncode"] = _testPrice.Costs[0].PriceItem.Format.PriceEncode;
 			rules.Rows.Add(row);
 			var price = session.Query<Price>().FirstOrDefault(p => p.Id == _testPrice.Id);
 			price.IsStrict = false;
 			session.Save(price);
 			Reopen();
-			var parser = new PriceDbfParser(@"..\..\Data\BadTestFile.dbf",
-				new PriceFormalizationInfo(row, price));
-
+			var info = new PriceFormalizationInfo(row, price);
+			var parser = new PriceDbfParser(@"..\..\Data\BadTestFile.dbf", info);
 			parser.Formalize();
+			Assert.AreEqual(info.CodePage, 1251);
 		}
 	}
 }

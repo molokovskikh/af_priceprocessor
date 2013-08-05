@@ -17,7 +17,10 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public BufferFormalizer(string filename, PriceFormalizationInfo data)
 			: base(filename, data)
 		{
-			Encoding = Encoding.GetEncoding(1251);
+			if (data.CodePage > 0)
+				Encoding = Encoding.GetEncoding(data.CodePage);
+			else
+				Encoding = Encoding.GetEncoding(1251);
 		}
 
 		public void Formalize()
@@ -47,42 +50,25 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		}
 	}
 
-	public class DelimiterTextParser1251 : BufferFormalizer
+	//public class DelimiterTextParser1251 : BufferFormalizer
+	//public class DelimiterTextParser866 : BufferFormalizer
+
+	public class DelimiterTextParser : BufferFormalizer
 	{
-		public DelimiterTextParser1251(string filename, PriceFormalizationInfo data)
+		public DelimiterTextParser(string filename, PriceFormalizationInfo data)
 			: base(filename, data)
 		{
 		}
 	}
 
-	public class DelimiterTextParser866 : BufferFormalizer
+	//public class FixedTextParser1251 : BufferFormalizer
+	//public class FixedTextParser866 : BufferFormalizer
+	public class FixedTextParser : BufferFormalizer
 	{
-		public DelimiterTextParser866(string filename, PriceFormalizationInfo data)
+		public FixedTextParser(string filename, PriceFormalizationInfo data)
 			: base(filename, data)
 		{
-			Encoding = Encoding.GetEncoding(866);
-		}
-	}
-
-	public class FixedTextParser1251 : BufferFormalizer
-	{
-		public FixedTextParser1251(string filename, PriceFormalizationInfo data)
-			: base(filename, data)
-		{
-			Parser = new TextParser(new PositionSlicer(data.FormRulesData, data),
-				Encoding.GetEncoding(1251),
-				-1);
-		}
-	}
-
-	public class FixedTextParser866 : BufferFormalizer
-	{
-		public FixedTextParser866(string filename, PriceFormalizationInfo data)
-			: base(filename, data)
-		{
-			Parser = new TextParser(new PositionSlicer(data.FormRulesData, data),
-				Encoding.GetEncoding(866),
-				-1);
+			Parser = new TextParser(new PositionSlicer(data.FormRulesData, data), Encoding, -1);
 		}
 	}
 
@@ -106,15 +92,25 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 	public class DbfReader : IParser
 	{
 		private bool strict;
+		private int _codePage;
 
-		public DbfReader(bool strict)
+		public DbfReader(bool strict, int codePage)
 		{
 			this.strict = strict;
+			_codePage = codePage;
 		}
 
 		public DataTable Parse(string filename)
 		{
-			return Dbf.Load(filename, Encoding.GetEncoding(866), false, strict);
+			Encoding coding;
+			var beliveInCodePageByte = false;
+			if (_codePage > 0)
+				coding = Encoding.GetEncoding(_codePage);
+			else {
+				coding = Encoding.GetEncoding(866);
+				beliveInCodePageByte = true;
+			}
+			return Dbf.Load(filename, coding, beliveInCodePageByte, strict);
 		}
 
 		public DataTable Parse(string filename, bool specialProcessing)
@@ -128,7 +124,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public PriceDbfParser(string filename, PriceFormalizationInfo data)
 			: base(filename, data)
 		{
-			Parser = new DbfReader(data.Price.IsStrict);
+			Parser = new DbfReader(data.Price.IsStrict, data.CodePage);
 		}
 	}
 }

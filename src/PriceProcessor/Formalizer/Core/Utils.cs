@@ -169,5 +169,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public static string colFirmStatus = "FirmStatus";
 		public static string colCostType = "CostType";
 		public static string colPriceFormatId = "PriceFormatId";
+		public static string colPriceEncode = "PriceEncode";
 	}
 }

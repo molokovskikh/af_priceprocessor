@@ -39,6 +39,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			PriceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]);
 			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);
 			PrevRowCount = row[FormRules.colPrevRowCount] is DBNull ? 0 : Convert.ToInt64(row[FormRules.colPrevRowCount]);
+			CodePage = row[FormRules.colPriceEncode] is DBNull ? 0 : Convert.ToInt32(row[FormRules.colPriceEncode]);
 		}
 
 		public string PriceName { get; set; }
@@ -55,5 +56,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public bool IsAssortmentPrice { get; set; }
 		public CostTypes CostType { get; set; }
 		public bool IsUpdating { get; set; }
+		public int CodePage { get; set; }
 	}
 }

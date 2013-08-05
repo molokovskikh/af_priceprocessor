@@ -126,7 +126,8 @@ select distinct
   pricefmts.FileExtention,
   pricefmts.ParserClassName,
   pd.BuyingMatrix,
-  pricefmts.Id as PriceFormat
+  pricefmts.Id as PriceFormat,
+  FR.PriceEncode
 from
   (usersettings.PriceItems pi,
   usersettings.pricescosts pc,
