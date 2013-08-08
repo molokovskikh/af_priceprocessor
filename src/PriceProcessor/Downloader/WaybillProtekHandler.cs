@@ -140,7 +140,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		public static List<ProtekServiceConfig> Configs = new List<ProtekServiceConfig> {
 			//калуга
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				79888, 1024847, 3287),
 
 			//воронеж
@@ -156,11 +156,11 @@ namespace Inforoom.PriceProcessor.Downloader
 				261544, 1072996, 2399),
 
 			//Москва
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				83674, 1033812, 180),
 
 			//Смоленск
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				83868, 1033815, 2495),
 
 			//Казань
@@ -186,10 +186,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			//у протека один филиал для орел и брянск а у нас два разных постащика, вторая конфигурация нужна для того что бы
 			//знать откуда получать сертификаты
 			//Орел
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				83472, 1033813, 5375),
 			//Брянск, Протек-32
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				83472, 1033813, 64),
 
 			//Тюмень
@@ -217,7 +217,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				266337, 1079622, 4631),
 
 			//Протек-05 Нижний Новгород
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				86980, 1036488, 3444),
 
 			//Протек-36 Оренбург
@@ -241,7 +241,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				292360, 1122705, 13725),
 
 			//Протек 1.3 РТП, Тверская область
-			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				29924, 1049535, 13779),
 
 			//Протек-28, Удмуртская республика
