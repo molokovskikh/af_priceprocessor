@@ -144,15 +144,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				79888, 1024847, 3287),
 
 			//воронеж
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				123108, 1064974, 5),
 
 			//Курск/Белгород
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				118855, 1053374, 220),
 
 			//тамбов
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				261544, 1072996, 2399),
 
 			//Москва
@@ -164,23 +164,23 @@ namespace Inforoom.PriceProcessor.Downloader
 				83868, 1033815, 2495),
 
 			//Казань
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				231691, 1072909, 2777),
 
 			//Екатеринбург
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				261542, 1072994, 3752),
 
 			//Пермь
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				215115, 1072912, 7114),
 
 			//Челябинск
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				261543, 1072995, 3),
 
 			//Киров
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				215116, 1072913, 7743),
 
 			//у протека один филиал для орел и брянск а у нас два разных постащика, вторая конфигурация нужна для того что бы
@@ -193,27 +193,27 @@ namespace Inforoom.PriceProcessor.Downloader
 				83472, 1033813, 64),
 
 			//Тюмень
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				250434, 1072911, 7088),
 
 			//ХМАО-Югра
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				245011, 1072914, 7740),
 
 			//Омск
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				265488, 1077902, 3777),
 
 			//Протек-02 Волгоград
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				266327, 1079618, 4166),
 
 			//Протек-12 Самара
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				266329, 1079620, 3745),
 
 			//Протек-16 Новосибирск
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				266337, 1079622, 4631),
 
 			//Протек-05 Нижний Новгород
@@ -221,23 +221,23 @@ namespace Inforoom.PriceProcessor.Downloader
 				86980, 1036488, 3444),
 
 			//Протек-36 Оренбург
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				266508, 1080034, 3496),
 
 			//Протек-17 Уфы
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				274265, 1091749, 12297),
 
 			//Протек-03, Санкт-Петербург
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				278489, 1101234, 2894),
 
 			//Протек-44, Астраханская область
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				280586, 1103126, 12675),
 
 			//Протек-37, Кемеровская область
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				292360, 1122705, 13725),
 
 			//Протек 1.3 РТП, Тверская область
@@ -245,11 +245,11 @@ namespace Inforoom.PriceProcessor.Downloader
 				29924, 1049535, 13779),
 
 			//Протек-28, Удмуртская республика
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				261545, 1124944, 7114),
 
 			//Протек-28, Удмуртская республика
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				296883, 1128459, 14015),
 		};
 
