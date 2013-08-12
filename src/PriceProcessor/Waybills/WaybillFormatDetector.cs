@@ -178,7 +178,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			var types = typeof(WaybillFormatDetector)
 				.Assembly
 				.GetTypes()
-				.Where(t => t.Namespace.EndsWith(@namespace)
+				.Where(t => t.Namespace != null
+					&& t.Namespace.EndsWith(@namespace)
 					&& t.IsPublic
 					&& !t.IsAbstract
 					&& typeof(IDocumentParser).IsAssignableFrom(t))
