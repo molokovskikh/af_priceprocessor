@@ -148,7 +148,6 @@
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
-    <Compile Include="Downloader\ProtekContract.cs" />
     <Compile Include="Downloader\WaybillProtekHandler.cs" />
     <Compile Include="Downloader\CertificateCatalogHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
@@ -167,6 +166,7 @@
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
     <Compile Include="Formalizer\Core\Utils.cs" />
+    <Compile Include="Generated\EzakazWebService.cs" />
     <Compile Include="Helpers\MimeEntityExtentions.cs" />
     <Compile Include="Helpers\MySqlUtils.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />

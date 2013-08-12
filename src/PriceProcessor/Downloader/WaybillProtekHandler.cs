@@ -20,104 +20,6 @@ using Inforoom.PriceProcessor.Waybills.Models.Export;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
-	[ServiceContract(Namespace = "http://service.ezakaz.protek.ru")]
-	public interface ProtekService
-	{
-		[OperationContract(Action = "urn:getBladingHeaders", ReplyAction = "urn:getBladingHeadersResponse")]
-		[XmlSerializerFormat(SupportFaults = true)]
-		[return: MessageParameter(Name = "return")]
-		getBladingHeadersResponse getBladingHeaders(getBladingHeadersRequest request);
-
-		[OperationContract(Action = "urn:getBladingBody", ReplyAction = "urn:getBladingBodyResponse")]
-		[XmlSerializerFormat(SupportFaults = true)]
-		[return: MessageParameter(Name = "return")]
-		getBladingBodyResponse getBladingBody(getBladingBodyRequest request);
-
-		[OperationContract(Action = "urn:closeBladingSession", ReplyAction = "urn:closeBladingSessionResponse")]
-		[XmlSerializerFormat(SupportFaults = true)]
-		[return: MessageParameter(Name = "return")]
-		closeBladingSessionResponse closeBladingSession(closeBladingSessionRequest request);
-
-		[OperationContract(Action = "urn:getSertImages", ReplyAction = "urn:getSertImagesResponse")]
-		[XmlSerializerFormat(SupportFaults = true)]
-		[return: MessageParameter(Name = "return")]
-		getSertImagesResponse getSertImages(getSertImagesRequest request);
-
-		[OperationContractAttribute(Action = "urn:getSertDocType", ReplyAction = "urn:getSertDocTypeResponse")]
-		[XmlSerializerFormatAttribute(SupportFaults = true)]
-		[return: MessageParameterAttribute(Name = "return")]
-		getSertDocTypeResponse getSertDocType(getSertDocTypeRequest request);
-	}
-
-	[MessageContract(WrapperName = "getSertDocTypeResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
-	public class getSertDocTypeResponse
-	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified, IsNullable = true)] public EZakazXML @return;
-
-		public getSertDocTypeResponse()
-		{
-		}
-
-		public getSertDocTypeResponse(EZakazXML @return)
-		{
-			this.@return = @return;
-		}
-	}
-
-	[MessageContract(WrapperName = "getSertDocType", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
-	public class getSertDocTypeRequest
-	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int clientId;
-
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
-
-		public getSertDocTypeRequest()
-		{
-		}
-
-		public getSertDocTypeRequest(int clientId, int instCode)
-		{
-			this.clientId = clientId;
-			this.instCode = instCode;
-		}
-	}
-
-	[MessageContract(WrapperName = "getSertImagesResponse", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
-	public class getSertImagesResponse
-	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public EZakazXML @return;
-
-		public getSertImagesResponse()
-		{
-		}
-
-		public getSertImagesResponse(EZakazXML @return)
-		{
-			this.@return = @return;
-		}
-	}
-
-	[MessageContract(WrapperName = "getSertImages", WrapperNamespace = "http://service.ezakaz.protek.ru", IsWrapped = true)]
-	public class getSertImagesRequest
-	{
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElementAttribute(Form = XmlSchemaForm.Unqualified)] public int clientId;
-
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int instCode;
-
-		[MessageBodyMember(Namespace = "http://service.ezakaz.protek.ru")] [XmlElement(Form = XmlSchemaForm.Unqualified)] public int theDocId;
-
-		public getSertImagesRequest()
-		{
-		}
-
-		public getSertImagesRequest(int clientId, int instCode, int theDocId)
-		{
-			this.clientId = clientId;
-			this.instCode = instCode;
-			this.theDocId = theDocId;
-		}
-	}
-
 	public class ProtekServiceConfig
 	{
 		public string Url;
@@ -262,7 +164,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			IgnoreOrderToId = 40522194;
 		}
 
-		public virtual void WithService(string uri, Action<ProtekService> action)
+		public virtual void WithService(string uri, Action<EzakazWebService> action)
 		{
 			var endpoint = new EndpointAddress(uri);
 			var binding = new BasicHttpBinding {
@@ -272,7 +174,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				MaxBufferSize = 10 * 1024 * 1024,
 				MaxReceivedMessageSize = 10 * 1024 * 1024
 			};
-			var factory = new ChannelFactory<ProtekService>(binding, endpoint);
+			var factory = new ChannelFactory<EzakazWebService>(binding, endpoint);
 			var service = factory.CreateChannel();
 			var communicationObject = ((ICommunicationObject)service);
 			try {
@@ -300,7 +202,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			WithService(config.Url, service => {
 				_logger.InfoFormat("Запрос накладных, clientId = {0} instanceId = {1}", config.ClientId, config.InstanceId);
-				var responce = service.getBladingHeaders(new getBladingHeadersRequest(config.ClientId, config.InstanceId));
+				var responce = service.getBladingHeaders(new getBladingHeaders(config.ClientId, config.InstanceId));
 				var sessionId = responce.@return.wsSessionIdStr;
 
 				try {
@@ -309,7 +211,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 					_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 					foreach (var blading in responce.@return.blading) {
-						var blanding = service.getBladingBody(new getBladingBodyRequest(sessionId, config.ClientId, config.InstanceId, blading.bladingId.Value));
+						var blanding = service.getBladingBody(new getBladingBody(sessionId, config.ClientId, config.InstanceId, blading.bladingId.Value));
 						_logger.InfoFormat("Загрузил накладную {0}", blading.bladingId.Value);
 						foreach (var body in blanding.@return.blading) {
 							using (var scope = new TransactionScope(OnDispose.Rollback)) {
@@ -331,13 +233,13 @@ namespace Inforoom.PriceProcessor.Downloader
 					}
 				}
 				finally {
-					service.closeBladingSession(new closeBladingSessionRequest(sessionId, config.ClientId, config.InstanceId));
+					service.closeBladingSession(new closeBladingSession(sessionId, config.ClientId, config.InstanceId));
 					Ping(); // чтобы монитор не перезапустил рабочий поток
 				}
 			});
 		}
 
-		public Document ToDocument(Blading blading, ProtekServiceConfig config)
+		public Document ToDocument(blading blading, ProtekServiceConfig config)
 		{
 			Dump(ConfigurationManager.AppSettings["DebugProtekPath"], blading);
 
@@ -453,7 +355,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			return document;
 		}
 
-		private OrderHead GetOrder(Blading blading)
+		private OrderHead GetOrder(blading blading)
 		{
 			orders.Clear(); // очистка списка заказов
 
@@ -480,7 +382,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			return orders.FirstOrDefault();
 		}
 
-		public static void Dump(string path, Blading blading)
+		public static void Dump(string path, blading blading)
 		{
 			if (String.IsNullOrEmpty(path))
 				return;

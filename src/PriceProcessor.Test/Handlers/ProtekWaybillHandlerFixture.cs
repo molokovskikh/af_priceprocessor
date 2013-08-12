@@ -32,9 +32,9 @@ namespace PriceProcessor.Test.Handlers
 			Load(new ProtekServiceConfig(null, 261543, 1072995, 0));
 		}
 
-		public override void WithService(string uri, Action<ProtekService> action)
+		public override void WithService(string uri, Action<EzakazWebService> action)
 		{
-			var service = MockRepository.GenerateStub<ProtekService>();
+			var service = MockRepository.GenerateStub<EzakazWebService>();
 			service.Stub(s => s.getBladingHeaders(null)).IgnoreArguments().Return(headerResponce);
 			service.Stub(s => s.getBladingBody(null)).IgnoreArguments().Return(bodyResponce);
 			action(service);
@@ -51,7 +51,7 @@ namespace PriceProcessor.Test.Handlers
 		private TestOrder order2;
 
 		private FakeProtekHandler fake;
-		private Blading blading;
+		private blading blading;
 		private DateTime begin;
 		private TestSupplier supplier;
 
@@ -79,20 +79,20 @@ namespace PriceProcessor.Test.Handlers
 			fake.IgnoreOrderToId = 100;
 
 			fake.headerResponce = new getBladingHeadersResponse {
-				@return = new EZakazXML {
+				@return = new eZakazXML {
 					blading = new[] {
-						new Blading {
+						new blading {
 							bladingId = 1,
 						},
 					}
 				}
 			};
 
-			blading = new Blading {
+			blading = new blading {
 				bladingId = 1,
 				@uint = (int?)order1.Id,
 				bladingItems = new[] {
-					new BladingItem {
+					new bladingItem {
 						itemId = 3345,
 						itemName = "Коринфар таб п/о 10мг № 50",
 						manufacturerName = "",
@@ -107,7 +107,7 @@ namespace PriceProcessor.Test.Handlers
 				},
 			};
 			fake.bodyResponce = new getBladingBodyResponse {
-				@return = new EZakazXML {
+				@return = new eZakazXML {
 					blading = new[] { blading }
 				}
 			};
@@ -172,9 +172,9 @@ namespace PriceProcessor.Test.Handlers
 		public void Save_document_id()
 		{
 			blading.bladingItems[0].bladingItemSeries = new[] {
-				new BladingItemSeries {
+				new bladingItemSeries {
 					bladingItemSeriesCertificates = new[] {
-						new BladingItemSeriesCertificate {
+						new bladingItemSeriesCertificate {
 							docId = 5478
 						}
 					}
@@ -192,7 +192,7 @@ namespace PriceProcessor.Test.Handlers
 			Thread.Sleep(1000);
 			fake.bodyResponce.@return.blading[0].@uint = null;
 			fake.bodyResponce.@return.blading[0].bladingFolder = new[] {
-				new BladingFolder {
+				new bladingFolder {
 					bladingId = null,
 					folderNum = "",
 					orderDate = null,
@@ -203,7 +203,7 @@ namespace PriceProcessor.Test.Handlers
 					orderUint = (int?)order1.Id,
 					orderUstr = ""
 				},
-				new BladingFolder {
+				new bladingFolder {
 					bladingId = null,
 					folderNum = "",
 					orderDate = null,
