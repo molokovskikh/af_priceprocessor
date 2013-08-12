@@ -7,7 +7,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using Inforoom.PriceProcessor.Waybills.Models;
-using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
@@ -205,15 +204,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			if (Convert.IsDBNull(value))
 				return null;
-
-			if (type == typeof(uint) || type == typeof(uint?))
-				return ParseHelper.GetUInt(value.ToString());
-
-			if (type == typeof(int) || type == typeof(int?))
-				return ParseHelper.GetInt(value.ToString());
-
-			if (type == typeof(decimal) || type == typeof(decimal?))
-				return ParseHelper.GetDecimal(value.ToString());
+			if (type == typeof(uint) || type == typeof(uint?)) {
+				if (value is String)
+					return ParseHelper.GetUInt((String)value);
+				return Convert.ToUInt32(value);
+			}
+			if (type == typeof(int) || type == typeof(int?)) {
+				if (value is String)
+					return ParseHelper.GetInt((String)value);
+				return Convert.ToInt32(value);
+			}
+			if (type == typeof(decimal) || type == typeof(decimal?)) {
+				if (value is String)
+					return ParseHelper.GetDecimal((String)value);
+				return Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+			}
 			if (type == typeof(string)) {
 				DateTime res;
 				if (DateTime.TryParseExact(value.ToString(),
@@ -223,7 +228,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					return Convert.ToDateTime(value).ToShortDateString();
 				return Convert.ToString(value);
 			}
-
 			if (type == typeof(DateTime) || type == typeof(DateTime?)) {
 				DateTime res;
 				if (DateTime.TryParse(value.ToString(), out res))
@@ -231,11 +235,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (DateTime.TryParseExact(value.ToString(),
 					"yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
 					return res;
-				if (type == typeof(DateTime))
-					return DateTime.Now;
-				return null;
+				return Convert.ToDateTime(value);
 			}
-
 			if (type == typeof(bool) || type == typeof(bool?)) {
 				bool res;
 				if (Boolean.TryParse(value.ToString(), out res))
@@ -245,7 +246,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					return false;
 				if (lowerValue == "да")
 					return true;
-				return ParseHelper.GetBoolean(value.ToString());
+				return Convert.ToBoolean(Convert.ToInt32(value));
 			}
 			throw new Exception("Преобразование для этого типа не реализовано");
 		}

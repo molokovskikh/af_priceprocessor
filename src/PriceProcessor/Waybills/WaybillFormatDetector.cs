@@ -10,7 +10,6 @@ using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
-using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NHibernate.Criterion;
 using NHibernate.Linq;
@@ -119,7 +118,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				else if ((extention == ".xml") || (extention == ".data"))
 					type = DetectXmlParser(file);
 				else if (extention == ".pd")
-					type = DetectPdParser(file);
+					type = typeof(ProtekParser);
 				else if (extention == ".txt")
 					type = DetectTxtParser(file);
 			}
@@ -153,10 +152,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			return DetectParser(file, "Xml");
 		}
 
-		private static Type DetectPdParser(string file)
-		{
-			return DetectParser(file, "Pd");
-		}
 		private static Type DetectXlsParser(string file)
 		{
 			return DetectParser(file, "Xls");
