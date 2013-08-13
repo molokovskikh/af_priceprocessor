@@ -131,6 +131,7 @@
     <Compile Include="Formalization\BasePriceParserFixture.cs" />
     <Compile Include="DownloaderTest.cs" />
     <Compile Include="Formalization\BuyingMatrixProcessorFixture.cs" />
+    <Compile Include="Formalization\EncodingFixture.cs" />
     <Compile Include="Formalization\FakeParsers.cs" />
     <Compile Include="Formalization\IntegrationFormalizerFixture.cs" />
     <Compile Include="Formalization\NativeDbfPriceParcerFixture.cs" />

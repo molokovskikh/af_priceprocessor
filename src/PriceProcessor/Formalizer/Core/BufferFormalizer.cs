@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				.ToList();
 		}
 
-		private PriceReader CreateReader()
+		protected PriceReader CreateReader()
 		{
 			var row = Info.FormRulesData.Rows[0];
 			var slicer = new DelimiterSlicer(row[FormRules.colDelimiter].ToString());
