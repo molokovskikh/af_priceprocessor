@@ -148,7 +148,6 @@
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
-    <Compile Include="Downloader\ProtekContract.cs" />
     <Compile Include="Downloader\WaybillProtekHandler.cs" />
     <Compile Include="Downloader\CertificateCatalogHandler.cs" />
     <Compile Include="Downloader\WaybillFtpSourceHandler.cs" />
@@ -167,6 +166,7 @@
     <Compile Include="Formalizer\UniversalFormalizer.cs" />
     <Compile Include="Formalizer\UniversalReader.cs" />
     <Compile Include="Formalizer\Core\Utils.cs" />
+    <Compile Include="Generated\EzakazWebService.cs" />
     <Compile Include="Helpers\MimeEntityExtentions.cs" />
     <Compile Include="Helpers\MySqlUtils.cs" />
     <Compile Include="Helpers\ReflectionHelper.cs" />
@@ -439,7 +439,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\Protek9Parser.cs" />
     <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
-    <Compile Include="Waybills\Parser\ProtekParser.cs" />
+    <Compile Include="Waybills\Parser\PdParsers\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\ProtekXmlParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaMskParser.cs" />

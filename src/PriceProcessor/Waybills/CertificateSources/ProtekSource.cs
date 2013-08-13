@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			new WaybillProtekHandler().WithService(config.Url, s => {
 				foreach (var id in task.DocumentLine.ProtekDocIds) {
-					var response = s.getSertImages(new getSertImagesRequest(config.ClientId, config.InstanceId, id.DocId));
+					var response = s.getSertImages(new getSertImages(config.ClientId, config.InstanceId, id.DocId));
 					var index = 1;
 					foreach (var sertImage in response.@return.sertImage) {
 						var tempFile = Path.GetTempFileName();

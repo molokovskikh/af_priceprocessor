@@ -1,10 +1,14 @@
 ﻿import System
+import System.Linq.Enumerable
 import System.ServiceModel
 import LumiSoft.Net.IMAP from "lib/LumiSoft.Net.dll"
 import LumiSoft.Net.IMAP.Client
 import LumiSoft.Net.Mime
 import LumiSoft.Net.SMTP.Client
 import System.IO
+import System.Xml
+import System.Xml.Linq
+import System.Xml.XPath.Extensions
 import file from Deploy.bake
 import file from WindowsServiceSupport.bake
 import file from Lib.bake
@@ -124,3 +128,23 @@ Desc """
 """
 Task @ResendMiniMails:
 	ResendLetters(true)
+
+desc """
+обновиляет интерфейс для сервиса протек
+
+у протека свое представление о прекрасном
+для опциональных полей они ставят minOccurs=0 что заставляет .net
+генерировать безумную обертку
+сначала правим wsdl а затем генерирум классы
+"""
+task "update:wsdl":
+	doc = XDocument.Load("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService?wsdl")
+	for element in doc.Descendants().Where({e| e.Name.LocalName == @element}):
+		attr = element.Attribute("minOccurs")
+		continue unless attr
+		if attr.Value == "0":
+			attr.Value = "1"
+			element.SetAttributeValue("nillable", "true")
+	doc.Save(@wsdl)
+	Sh("SvcUtil.exe /nologo /noconfig /targetClientVersion:Version35 wsdl /directory:src/PriceProcessor/Generated")
+	Rm(@wsdl)

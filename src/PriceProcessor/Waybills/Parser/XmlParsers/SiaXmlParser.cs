@@ -58,7 +58,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 		public static bool CheckFileFormat(string file)
 		{
 			var document = XDocument.Load(file);
-			return document.XPathSelectElement("Документ/ЗаголовокДокумента/ТипДок") != null;
+			return document.XPathSelectElement("Документ/ЗаголовокДокумента/ТипДок") != null
+				&& document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция").Any();
 		}
 	}
 
