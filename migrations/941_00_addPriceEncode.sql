@@ -1,0 +1,1 @@
+ALTER TABLE `farm`.`FormRules` ADD COLUMN `PriceEncode` INT(3) UNSIGNED NOT NULL AFTER `TxtCodeOKPEnd`;
