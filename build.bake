@@ -34,17 +34,28 @@ Global(
 
 #если мы запускаем тесты на сервере не надо загружать проект что бы
 #не блокировать библиотеки
-unless Configuration.IsDefined(@notInteractive):
-	Engine.Execute("LoadProject")
+task @ready:
+	unless Configuration.IsDefined(@notInteractive):
+		Engine.Execute("LoadProject")
 
 task @ParseWaybills:
 	binding = NetTcpBinding()
+	binding.SendTimeout = TimeSpan.FromMinutes(30)
+	binding.OpenTimeout = TimeSpan.FromMinutes(30)
+	binding.ReceiveTimeout = TimeSpan.FromMinutes(30)
 	binding.Security.Mode = SecurityMode.None
 	factory = ChannelFactory[of IWaybillService](binding, "net.tcp://fms:901/WaybillService")
 	channel = factory.CreateChannel()
-	id = Convert.ToUInt32(Configuration.Id)
-	a = (id,)
-	results = channel.ParseWaybill(a)
+	ids = List[of uint]()
+	dataFile = Configuration.Maybe.dataFile
+	if dataFile:
+		for l in File.ReadAllLines(dataFile.ToString()):
+			ids.Add(uint.Parse(l.Trim()))
+
+	if Configuration.Maybe.id:
+		ids.Add(Convert.ToUInt32(Configuration.Id))
+
+	results = channel.ParseWaybill(ids.ToArray())
 	for result in results:
 		print result
 
