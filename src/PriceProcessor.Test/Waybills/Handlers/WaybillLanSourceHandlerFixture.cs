@@ -133,7 +133,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		public void PrepareLanSource(string readerClassName = "ProtekOmsk_3777_Reader")
 		{
 			client.Save();
-			supplier.WaybillSource.SourceType = WaybillSourceType.FtpInforoom;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.FtpInforoom;
 			supplier.WaybillSource.ReaderClassName = readerClassName;
 			supplier.Save();
 		}

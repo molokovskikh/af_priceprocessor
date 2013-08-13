@@ -17,7 +17,7 @@ using Test.Support;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
 using FileHelper = Common.Tools.FileHelper;
-using WaybillSourceType = Test.Support.WaybillSourceType;
+//using WaybillSourceType = Test.Support.WaybillSourceType;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {
@@ -365,7 +365,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			client = TestClient.CreateNaked(2, 2);
 			supplier = TestSupplier.CreateNaked();
-			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
 			supplier.WaybillSource.EMailFrom = String.Format("{0}@sup.com", supplier.Id);
 			supplier.Save();
 
@@ -405,7 +405,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			supplier = TestSupplier.CreateNaked();
 
 			supplier.WaybillSource.EMailFrom = String.Format("edata{0}@msk.katren.ru", supplier.Id);
-			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
 			supplier.Save();
 
 			FileHelper.DeleteDir(Settings.Default.DocumentPath);
@@ -434,7 +434,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			var email = String.Format("edata{0}@msk.katren.ru", supplier.Id);
 			supplier.WaybillSource.EMailFrom = email;
-			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
 			supplier.Save();
 			client.Save();
 
@@ -464,7 +464,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		private static void PrepareSupplier(TestSupplier supplier, string from)
 		{
-			supplier.WaybillSource.SourceType = WaybillSourceType.Email;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
 			supplier.WaybillSource.EMailFrom = from;
 			supplier.Save();
 		}

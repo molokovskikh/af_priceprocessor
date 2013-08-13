@@ -46,9 +46,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			using (new SessionScope()) {
 				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
-					source.SourceType == WaybillSourceType.FtpSupplier);
+					source.SourceType == TestWaybillSourceType.FtpSupplier);
 				foreach (var source in supplierFtpSources) {
-					source.SourceType = WaybillSourceType.ForTesting;
+					source.SourceType = TestWaybillSourceType.ForTesting;
 					source.Update();
 				}
 			}
@@ -77,9 +77,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			using (new SessionScope()) {
 				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
-					source.SourceType == WaybillSourceType.ForTesting);
+					source.SourceType == TestWaybillSourceType.ForTesting);
 				foreach (var source in supplierFtpSources) {
-					source.SourceType = WaybillSourceType.FtpSupplier;
+					source.SourceType = TestWaybillSourceType.FtpSupplier;
 					source.Update();
 				}
 			}
@@ -212,7 +212,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			var supplier = TestSupplier.CreateNaked();
 			var source = supplier.WaybillSource;
-			source.SourceType = WaybillSourceType.FtpSupplier;
+			source.SourceType = TestWaybillSourceType.FtpSupplier;
 			source.UserName = user;
 			source.Password = password;
 			var waybillUri = new UriBuilder("ftp", ftpHost, ftpPort, ftpWaybillDirectory);

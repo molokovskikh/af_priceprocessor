@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 					maxLogId = DocumentReceiveLog.Queryable.Max(l => (int)l.Id);
 			}
 			var supplier = TestSupplier.Create();
-			supplier.WaybillSource.SourceType = WaybillSourceType.FtpInforoom;
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.FtpInforoom;
 			supplier.WaybillSource.ReaderClassName = "SIAMoscow_2788_Reader";
 			supplier.Save();
 
