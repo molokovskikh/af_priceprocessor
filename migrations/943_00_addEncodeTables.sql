@@ -2,38 +2,36 @@
 
 ALTER TABLE `farm`.`FormRules` MODIFY COLUMN `PriceEncode` INT(3) UNSIGNED NOT NULL DEFAULT 0;
 
-update `farm`.`FormRules` fr
-join farm.pricefmts p on p.Id = fr.PriceFormatId
- set `PriceEncode` = 1251
- where p.ParserClassName = 'DelimiterTextParser1251' or p.ParserClassName = 'FixedTextParser1251';
+insert into farm.pricefmts (Format, Comment, FileExtention, ParserClassName)
+value ('NativeDelim', 'Текстовый файл с разделителями без Jet', '.txt', 'DelimiterTextParser');
 
-update `farm`.`FormRules` fr
- set PriceFormatId = 11
- where PriceFormatId = 12;
+set @NativeDelim = LAST_INSERT_ID();
 
- update `farm`.`FormRules` fr
- set PriceFormatId = 13
- where PriceFormatId = 14;
+update farm.FormRules
+set PriceFormatId = @NativeDelim
+where PriceFormatId = 11;
 
- delete from farm.pricefmts
-where id = 12 or id = 14;
+update farm.FormRules
+set PriceEncode = 1251
+where PriceFormatId = @NativeDelim;
 
-update farm.pricefmts
-set
-`Format` = 'NativeDelim',
-ParserClassName = 'DelimiterTextParser'
-where id = 11;
+update farm.FormRules
+set PriceFormatId = @NativeDelim
+where PriceFormatId = 12;
 
-update farm.pricefmts
-set
-`Format` = 'NativeFixed',
-ParserClassName = 'FixedTextParser'
-where id = 13;
+insert into farm.pricefmts (Format, Comment, FileExtention, ParserClassName)
+value ('NativeFixed', 'Текстовый файл с фиксированной шириной колонок без Jet', '.txt', 'FixedTextParser');
 
-update farm.pricefmts
-set Comment = 'Текстовый файл с разделителями без Jet'
-where id = 11;
+set @NativeFixedId = LAST_INSERT_ID();
 
-update farm.pricefmts
-set Comment = 'Текстовый файл с фиксированной шириной колонок без Jet'
-where id = 13;
+update farm.FormRules
+set PriceFormatId = @NativeFixedId
+where PriceFormatId = 13;
+
+update farm.FormRules
+set PriceEncode = 1251
+where PriceFormatId = @NativeFixedId;
+
+update farm.FormRules
+set PriceFormatId = @NativeFixedId
+where PriceFormatId = 14;
