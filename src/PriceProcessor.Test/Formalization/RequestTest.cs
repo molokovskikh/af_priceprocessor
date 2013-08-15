@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Formalization
 
 			priceItem = price.Costs.First().PriceItem;
 			var format = price.Costs.Single().PriceItem.Format;
-			format.PriceFormat = PriceFormatType.NativeDelimiter1251;
+			format.PriceFormat = PriceFormatType.NativeDelim;
 			format.Delimiter = ";";
 			format.FName1 = "F2";
 			format.FFirmCr = "F3";

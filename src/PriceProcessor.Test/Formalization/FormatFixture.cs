@@ -73,7 +73,7 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Formalize_fixed()
 		{
-			priceItem.Format.PriceFormat = PriceFormatType.FixedWIN;
+			priceItem.Format.PriceFormat = PriceFormatType.NativeFixed;
 			var lines = Data();
 			var maxLengths = Enumerable.Range(0, lines[0].Length)
 				.Select(i => lines.Select(l => l[i]).Max(l => l.Length))

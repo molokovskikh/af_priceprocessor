@@ -103,7 +103,7 @@ namespace PriceProcessor.Test.TestHelpers
 		{
 			priceItem = okpPrice.Costs[0].PriceItem;
 			var rules = priceItem.Format;
-			rules.PriceFormat = PriceFormatType.NativeDelimiter1251;
+			rules.PriceFormat = PriceFormatType.NativeDelim;
 			rules.Delimiter = ";";
 			rules.FName1 = "F1";
 			rules.FFirmCr = "F2";
