@@ -204,13 +204,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 									(String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 								var listSynonym =
 									dbListSynonym.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
-								if (listSynonym.Count == 0) continue;
+								if (listSynonym.Count == 0)
+									continue;
 								line.ProductEntity = listSynonym.Select(syn => syn.Product).FirstOrDefault();
 								// если сопоставили позицию по продукту, сопоставляем по производителю
 								var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 								var listSynonymFirmCr =
 									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
-								if (listSynonymFirmCr.Count == 0) continue;
+								if (listSynonymFirmCr.Count == 0)
+									continue;
 
 								if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
 									line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
@@ -242,7 +244,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Lines.Each(l => l.CalculateValues()); // расчет недостающих значений для позиций в накладной
 			if (Invoice == null && HaveDataToInvoce())
 				Invoice = new Invoice { Document = this };
-			if (Invoice != null) Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
+			if (Invoice != null)
+				Invoice.CalculateValues(); // расчет недостающих значений для счета-фактуры
 		}
 
 		public bool HaveDataToInvoce()

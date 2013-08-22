@@ -65,12 +65,14 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
 		{
-			if (documentLog == null) return null;
+			if (documentLog == null)
+				return null;
 			var extention = Path.GetExtension(file.ToLower());
 			var firmCode = documentLog.Supplier.Id;
 
 			var parsersTypes = specParsers.ContainsKey(firmCode) ? specParsers[firmCode] : null;
-			if (parsersTypes == null) return null;
+			if (parsersTypes == null)
+				return null;
 
 			foreach (var parserType in parsersTypes) {
 				var checkMethod = parserType.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
@@ -97,7 +99,8 @@ namespace Inforoom.PriceProcessor.Waybills
 					args = new[] { file };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
-				if (check) return parserType;
+				if (check)
+					return parserType;
 			}
 			return null;
 		}
