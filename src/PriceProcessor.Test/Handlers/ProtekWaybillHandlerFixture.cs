@@ -265,7 +265,8 @@ namespace PriceProcessor.Test.Handlers
 
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address.Id.ToString());
 			var waybillsPath = Path.Combine(docRoot, "Waybills");
-			if (Directory.Exists(waybillsPath)) Directory.Delete(waybillsPath, true);
+			if (Directory.Exists(waybillsPath))
+				Directory.Delete(waybillsPath, true);
 			Directory.CreateDirectory(waybillsPath);
 
 			fake.Process();

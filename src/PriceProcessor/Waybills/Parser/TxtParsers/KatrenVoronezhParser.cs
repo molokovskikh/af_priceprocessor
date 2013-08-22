@@ -67,13 +67,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split('|');
-				if (header.Length != 23) return false;
-				if (!header[4].ToLower().Contains("катрен")) return false;
+				if (header.Length != 23)
+					return false;
+				if (!header[4].ToLower().Contains("катрен"))
+					return false;
 				var bodyCaption = reader.ReadLine();
-				if (!bodyCaption.ToLower().Equals("[body]")) return false;
+				if (!bodyCaption.ToLower().Equals("[body]"))
+					return false;
 				var body = reader.ReadLine().Split('|');
-				if (body.Length != 24) return false;
-				if (body[0] != "1") return false;
+				if (body.Length != 24)
+					return false;
+				if (body[0] != "1")
+					return false;
 			}
 			return true;
 		}
