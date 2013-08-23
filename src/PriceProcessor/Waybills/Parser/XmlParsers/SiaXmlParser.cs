@@ -27,8 +27,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Quantity = UInt32.Parse(position.XPathSelectElement("Количество").Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
 				line.ProducerCostWithoutNDS = position.Get("ЦенаИзг");
 				line.RegistryCost = position.GetOptional("ЦенаГР");
-				if (!hasOpt) line.SupplierPriceMarkup = null;
-				else line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
+				if (!hasOpt)
+					line.SupplierPriceMarkup = null;
+				else
+					line.SupplierPriceMarkup = Convert.ToDecimal(position.XPathSelectElement("НаценОпт").Value, CultureInfo.InvariantCulture);
 				line.SupplierCostWithoutNDS = position.Get("ЦенаОпт");
 				line.Certificates = position.XPathSelectElement("Серии/Серия/НомерСертиф").Value;
 				line.SerialNumber = position.XPathSelectElement("Серии/Серия/СерияТовара").Value;
