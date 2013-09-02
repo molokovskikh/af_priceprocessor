@@ -41,9 +41,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					else
 						r["VID"] = "False";
 				});
-				parcer = parcer.Line(l => l.VitallyImportant, "VID")
-					.Line(l => l.CertificatesDate, "SER_DATE");
+				parcer = parcer.Line(l => l.VitallyImportant, "VID");
 			}
+
+			if (data.Columns.Contains("SER_DATE"))
+				parcer = parcer.Line(l => l.CertificatesDate, "SER_DATE");
+
 			parcer.ToDocument(document, data);
 
 			return document;
