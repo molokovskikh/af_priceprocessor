@@ -46,15 +46,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					parcer = parcer.Line(l => l.ProducerCostWithoutNDS, "MAKERPRICE", "PRICE1");
 				}
 				else if (Data.Columns.Contains("PRICE1N")) {
-					parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICE1N");
+					parcer = parcer.Line(l => l.ProducerCost, "PRICE1")
+						.Line(l => l.ProducerCostWithoutNDS, "PRICE1N");
 				}
 				else {
-					parcer = parcer.Line(l => l.ProducerCost, "PRICE1").Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
+					parcer = parcer.Line(l => l.ProducerCost, "PRICE1")
+						.Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
 				}
 				parcer = parcer.Line(l => l.NdsAmount, "SUMSNDS");
 			}
 			else {
-				parcer = parcer.Line(l => l.ProducerCost, "PRICE1N").Line(l => l.Amount, "SUMSNDS");
+				parcer = parcer.Line(l => l.ProducerCost, "PRICE1N")
+					.Line(l => l.Amount, "SUMSNDS")
+					.Line(l => l.ProducerCostWithoutNDS, "PRICE1");
 			}
 
 			if (!Data.Columns.Contains("ADRPOL")) {

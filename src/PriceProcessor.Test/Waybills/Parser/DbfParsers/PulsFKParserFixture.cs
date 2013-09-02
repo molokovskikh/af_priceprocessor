@@ -158,6 +158,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var line = doc.Lines[0];
 			var invoice = doc.Invoice;
 			Assert.That(line.ProducerCost, Is.EqualTo(12.25));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(11.14));
 			Assert.That(line.Amount, Is.EqualTo(1237.81));
 			Assert.That(invoice.RecipientAddress, Is.EqualTo("429330, Чувашская Республика - Чувашия, Канаш г, Кооперативн"));
 		}
