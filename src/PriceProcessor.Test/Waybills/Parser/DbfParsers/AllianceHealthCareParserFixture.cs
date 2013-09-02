@@ -37,5 +37,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ПК08.Д07127"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("12.01.2012"));
 		}
+
+		[Test]
+		public void ParseWithoutVID()
+		{
+			var document = WaybillParser.Parse("22548653_Брянскфарм(n0047142).dbf");
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("6700000098"));
+			Assert.That(line.Product, Is.EqualTo("Игрушка/Набор №300: ведро-креп.больш/совок №8/граб.№8/3форм(35547)"));
+		}
 	}
 }
