@@ -14,13 +14,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			document.ProviderDocumentId = data.Rows[0]["SERIA"].ToString();
 			document.DocumentDate = Convert.ToDateTime(data.Rows[0]["SROK_GOD"]);
 			data.Rows.Remove(data.Rows[0]);
-			data.Rows.Cast<DataRow>().Each(r => {
-				if (r["VID"].ToString() == "ЖВЛС")
-					r["VID"] = "True";
-				else
-					r["VID"] = "False";
-			});
-			new DbfParser()
+
+			var parcer = new DbfParser()
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "TOVAR")
 				.Line(l => l.Producer, "PROIZV")
@@ -37,8 +32,23 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Amount, "SUM_SNDS")
 				.Line(l => l.NdsAmount, "SUM_NDS")
-				.Line(l => l.CertificatesDate, "SER_DATE")
-				.ToDocument(document, data);
+				.Line(l => l.CertificatesDate, "SER_DATE");
+
+			if (data.Columns.Contains("VID")) {
+				data.Rows.Cast<DataRow>().Each(r => {
+					if (r["VID"].ToString() == "ЖВЛС")
+						r["VID"] = "True";
+					else
+						r["VID"] = "False";
+				});
+				parcer = parcer.Line(l => l.VitallyImportant, "VID");
+			}
+
+			if (data.Columns.Contains("SER_DATE"))
+				parcer = parcer.Line(l => l.CertificatesDate, "SER_DATE");
+
+			parcer.ToDocument(document, data);
+
 			return document;
 		}
 
