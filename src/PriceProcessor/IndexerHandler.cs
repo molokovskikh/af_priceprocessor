@@ -38,7 +38,8 @@ namespace Inforoom.PriceProcessor
 
 		public void AddInfo(uint firmcode, string firmname, uint pricecode, uint productId, bool junk)
 		{
-			if (_summary.Where(i => i.FirmCode == firmcode).Count() > 0) return;
+			if (_summary.Any(i => i.FirmCode == firmcode))
+				return;
 			var info = new SynonymInfo() { FirmCode = firmcode, FirmName = firmname, PriceCode = pricecode, ProductId = productId, Junk = junk };
 			_summary.Add(info);
 		}
@@ -71,7 +72,7 @@ namespace Inforoom.PriceProcessor
 		private readonly long id;
 		private readonly uint priceCode; // код прайс-листа
 		private readonly IList<string> names; // список позиций в прайс-листе
-		private volatile bool stopped = false;
+		private volatile bool stopped;
 
 
 		private readonly Dictionary<string, SynonymSummary> matches;
@@ -80,7 +81,7 @@ namespace Inforoom.PriceProcessor
 		private readonly Thread thread;
 
 		//время прерывания рабочей нитки
-		private DateTime? _abortingTime = null;
+		private DateTime? _abortingTime;
 
 		private readonly ILog _logger = LogManager.GetLogger(typeof(SynonymTask));
 
@@ -104,12 +105,12 @@ namespace Inforoom.PriceProcessor
 
 		public uint Rate { get; private set; } // процент выполнения задачи
 
-		public SynonymTask(IList<string> _names, uint _pricecode, IndexerHandler _owner)
+		public SynonymTask(IList<string> names, uint pricecode, IndexerHandler owner)
 		{
 			State = TaskState.None;
-			priceCode = _pricecode;
-			names = _names;
-			handler = _owner;
+			priceCode = pricecode;
+			this.names = names;
+			handler = owner;
 			id = DateTime.Now.Ticks;
 			matches = new Dictionary<string, SynonymSummary>();
 			thread = new Thread(ThreadWork);
@@ -176,11 +177,11 @@ namespace Inforoom.PriceProcessor
 		private void DoMatching()
 		{
 			_logger.InfoFormat("Старт сопоставления для {0} позиций", names.Count());
-			FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(handler.IdxDir));
-			IndexReader reader = IndexReader.Open(IdxDirectory, true);
-			IndexSearcher searcher = new IndexSearcher(reader);
-			KeywordAnalyzer analyzer = new KeywordAnalyzer();
-			QueryParser parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "Synonym", analyzer);
+			var idxDirectory = FSDirectory.Open(new DirectoryInfo(handler.IdxDir));
+			var reader = IndexReader.Open(idxDirectory, true);
+			var searcher = new IndexSearcher(reader);
+			var analyzer = new KeywordAnalyzer();
+			var parser = new QueryParser(Lucene.Net.Util.Version.LUCENE_29, "Synonym", analyzer);
 			uint counter = 0;
 			try {
 				foreach (var position in names) {
@@ -191,15 +192,15 @@ namespace Inforoom.PriceProcessor
 					}
 					string name = position.Trim().ToUpper().Replace("\"", "_QUOTE_").Replace("\\", "_LSLASH_"); // почуму-то KeywordAnalyzer не находит фразы, если в них есть кавычки
 
-					Query query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
+					var query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
 					name = name.Replace("_QUOTE_", "\"").Replace("_LSLASH_", "\\");
 					if (matches.ContainsKey(name)) continue;
-					TopScoreDocCollector collector = TopScoreDocCollector.create(10000, true);
+					var collector = TopScoreDocCollector.create(10000, true);
 					searcher.Search(query, collector);
-					ScoreDoc[] hits = collector.TopDocs().scoreDocs;
+					var hits = collector.TopDocs().scoreDocs;
 					foreach (var scoreDoc in hits) {
-						Document document = searcher.Doc(scoreDoc.doc);
-						uint pcode = Convert.ToUInt32(document.Get("PriceCode"));
+						var document = searcher.Doc(scoreDoc.doc);
+						var pcode = Convert.ToUInt32(document.Get("PriceCode"));
 						// если уже существует синоним с таким PriceCode - не добавляем в результирующий набор
 						if (priceCode == pcode) {
 							if (matches.ContainsKey(name))
@@ -222,7 +223,7 @@ namespace Inforoom.PriceProcessor
 				reader.Close();
 				searcher.Close();
 				analyzer.Close();
-				IdxDirectory.Close();
+				idxDirectory.Close();
 				StopDate = DateTime.UtcNow;
 			}
 			State = TaskState.Success;
@@ -325,12 +326,12 @@ namespace Inforoom.PriceProcessor
 				//Если нитка работает, то ожидаем ее останов
 				_logger.InfoFormat("Ожидаем останов нитки {0}", taskList[i].Id);
 				taskList[i].AbortThread();
-				int _currentWaitTime = 0;
-				while ((_currentWaitTime < JoinTimeout) && ((taskList[i].ThreadState & ThreadState.Stopped) == 0)) {
+				var currentWaitTime = 0;
+				while ((currentWaitTime < JoinTimeout) && ((taskList[i].ThreadState & ThreadState.Stopped) == 0)) {
 					if ((taskList[i].ThreadState & ThreadState.WaitSleepJoin) > 0)
 						taskList[i].InterruptThread();
 					Thread.Sleep(1000);
-					_currentWaitTime += 1000;
+					currentWaitTime += 1000;
 				}
 				if ((taskList[i].ThreadState & ThreadState.Stopped) > 0)
 					_logger.InfoFormat("Останов нитки выполнен {0}", taskList[i].Id);
@@ -341,7 +342,7 @@ namespace Inforoom.PriceProcessor
 
 		protected bool CanDoIndex()
 		{
-			double diff = now.TotalSeconds - workTime.TotalSeconds;
+			var diff = now.TotalSeconds - workTime.TotalSeconds;
 			if (diff > 0 && diff <= SleepTime)
 				return true;
 			return false;
@@ -353,22 +354,24 @@ namespace Inforoom.PriceProcessor
 				DoIndex();
 			now = DateTime.Now.TimeOfDay;
 			ProcessTaskList();
-			if (!CanDoIndex()) return;
+			if (!CanDoIndex())
+				return;
 			// производим индексацию данных
 			DoIndex();
 		}
 
 		protected bool DoIndex(IList<ProductSynonym> synonyms, bool append, bool optimize)
 		{
-			if (append && !Directory.Exists(IdxDir)) return false;
-			FSDirectory IdxDirectory = FSDirectory.Open(new System.IO.DirectoryInfo(IdxDir));
-			KeywordAnalyzer analyzer = new KeywordAnalyzer();
-			IndexWriter writer = new IndexWriter(IdxDirectory, analyzer, !append, IndexWriter.MaxFieldLength.UNLIMITED);
+			if (append && !Directory.Exists(IdxDir))
+				return false;
+			var idxDirectory = FSDirectory.Open(new DirectoryInfo(IdxDir));
+			var analyzer = new KeywordAnalyzer();
+			var writer = new IndexWriter(idxDirectory, analyzer, !append, IndexWriter.MaxFieldLength.UNLIMITED);
 			try {
 				_logger.Info("Старт индексации синонимов...");
 				foreach (var synonym in synonyms) {
-					string synstr = synonym.Synonym.Replace("\"", "_QUOTE_").Replace("\\", "_LSLASH_");
-					Document doc = new Document();
+					var synstr = synonym.Synonym.Replace("\"", "_QUOTE_").Replace("\\", "_LSLASH_");
+					var doc = new Document();
 					doc.Add(
 						new Field(
 							"FirmCode",
@@ -390,7 +393,6 @@ namespace Inforoom.PriceProcessor
 					doc.Add(
 						new Field(
 							"ProductId",
-							//synonym.ProductId.ToString(),
 							synonym.Product.Id.ToString(),
 							Field.Store.YES,
 							Field.Index.NO));
@@ -416,7 +418,7 @@ namespace Inforoom.PriceProcessor
 			finally {
 				writer.Close();
 				analyzer.Close();
-				IdxDirectory.Close();
+				idxDirectory.Close();
 			}
 			_logger.Info("Индексация завершена");
 			return true;
@@ -424,7 +426,8 @@ namespace Inforoom.PriceProcessor
 
 		protected void DoIndex()
 		{
-			if (Directory.Exists(IdxDir)) Directory.Delete(IdxDir, true);
+			if (Directory.Exists(IdxDir))
+				Directory.Delete(IdxDir, true);
 			_logger.Info("Загрузка синонимов из БД...");
 			IList<ProductSynonym> synonyms;
 			using (new SessionScope()) {
@@ -444,7 +447,7 @@ namespace Inforoom.PriceProcessor
 				synonyms = ProductSynonym.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
 			}
 			_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
-			bool res = DoIndex(synonyms, true, false);
+			var res = DoIndex(synonyms, true, false);
 			if (res)
 				_logger.Info("Добавление завершено...");
 			else
@@ -453,11 +456,11 @@ namespace Inforoom.PriceProcessor
 
 		public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)
 		{
-			string[] result = new string[matches.Count + 1];
+			var result = new string[matches.Count + 1];
 			result[0] = "Success";
-			int i = 1;
+			var i = 1;
 			foreach (var key in matches) {
-				string res = String.Empty;
+				var res = String.Empty;
 				var summary = key.Value.Summary();
 				res += summary.Count.ToString();
 				res += ";";
