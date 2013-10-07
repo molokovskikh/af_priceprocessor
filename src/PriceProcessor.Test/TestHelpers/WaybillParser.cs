@@ -5,6 +5,7 @@ using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Test.Support;
@@ -12,28 +13,28 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.TestHelpers
 {
-	// Класс для тестов, чтобы не повторять ошибок вроде "забыл добавить новый парсер в DetectParser()"
+	// РљР»Р°СЃСЃ РґР»СЏ С‚РµСЃС‚РѕРІ, С‡С‚РѕР±С‹ РЅРµ РїРѕРІС‚РѕСЂСЏС‚СЊ РѕС€РёР±РѕРє РІСЂРѕРґРµ "Р·Р°Р±С‹Р» РґРѕР±Р°РІРёС‚СЊ РЅРѕРІС‹Р№ РїР°СЂСЃРµСЂ РІ DetectParser()"
 	public class WaybillParser
 	{
-		public static Document Parse(string filePath)
-		{
-			var doc = Parse(filePath, null);
-			return doc;
-		}
-
-		public static Document Parse(string filePath, DocumentReceiveLog documentLog)
+		public static Document Parse(string filePath, DocumentReceiveLog log = null)
 		{
 			var detector = new WaybillFormatDetector();
 			if (!File.Exists(filePath))
 				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
-			var parser = detector.DetectParser(filePath, documentLog);
+			var parser = detector.DetectParser(filePath, log);
 			if (!detector.IsSpecialParser(parser)) {
 				CheckUniqueDbfParser(filePath);
 				CheckUniqueSstParser(filePath);
 			}
 			if (parser == null)
 				return null;
-			var doc = parser.Parse(filePath, new Document());
+			log = log ??
+				new DocumentReceiveLog(new Supplier(), new Address { Client = new Client() });
+			if (log.ClientCode == null) {
+				log.ClientCode = 0;
+			}
+			var document = new Document(log, parser.GetType().Name);
+			var doc = parser.Parse(filePath, document);
 			if (doc != null) {
 				doc.SetProductId();
 				doc.CalculateValues();
@@ -49,7 +50,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var parsers = WaybillFormatDetector.GetSuitableParsers(file, "Dbf").ToList();
 
 			if (parsers.Count > 1)
-				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));
+				throw new Exception(String.Format("Р”Р»СЏ СЂР°Р·Р±РѕСЂР° РґР°РЅРЅРѕРіРѕ С„РѕСЂРјР°С‚Р° РїРѕРґС…РѕРґРёС‚ Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ РїР°СЂСЃРµСЂР°, {0}", parsers.Implode()));
 		}
 
 		private static void CheckUniqueSstParser(string file)
@@ -60,7 +61,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var parsers = WaybillFormatDetector.GetSuitableParsers(file, "Sst").ToList();
 
 			if (parsers.Count > 1)
-				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));
+				throw new Exception(String.Format("Р”Р»СЏ СЂР°Р·Р±РѕСЂР° РґР°РЅРЅРѕРіРѕ С„РѕСЂРјР°С‚Р° РїРѕРґС…РѕРґРёС‚ Р±РѕР»РµРµ РѕРґРЅРѕРіРѕ РїР°СЂСЃРµСЂР°, {0}", parsers.Implode()));
 		}
 
 		public static IDocumentParser GetParserType(string filePath, DocumentReceiveLog documentLog)

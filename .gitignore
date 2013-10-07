@@ -14,5 +14,6 @@ Thumbs.db
 _ReSharper.*
 *.Publish.xml
 build/
+output/
 packages/
 src/*.properties

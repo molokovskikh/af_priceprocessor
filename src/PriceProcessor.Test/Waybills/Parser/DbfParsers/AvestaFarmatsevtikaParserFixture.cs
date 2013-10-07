@@ -139,7 +139,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse3()
 		{
-			DocumentReceiveLog documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 6256u } };
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 6256u } };
 			var fileName = @"..\..\Data\Waybills\4049766_Авеста-Фармацевтика(118955).dbf";
 			Assert.IsFalse(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
 

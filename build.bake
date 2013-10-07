@@ -29,7 +29,8 @@ Global(
 	Server : "fms.adc.analit.net",
 	HumanReadableName : "Служба обработки прайс-листов",
 	ServiceName : "PriceProcessorService",
-	Profile: @catalog
+	Profile: @catalog,
+	NugetPackageName: @RemotePriceProcessor
 )
 
 #если мы запускаем тесты на сервере не надо загружать проект что бы
