@@ -312,7 +312,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			}
 
 			using (var writer = new StreamWriter(file, false, Encoding.GetEncoding(866)))
-				Dbf2.Save(table, writer);
+				Dbf2.SaveAsMsFoxPro(table, writer);
 		}
 
 		public static void SaveProtek(Document document, string filename)
