@@ -130,7 +130,6 @@ Desc """
 Task @ResendWaybills:
 	ResendLetters(false)
 
-
 Desc """
 Переотправляет не обработанные мини-письма, берет письмо из kvasovtest и переотправляет его
 
@@ -160,3 +159,8 @@ task "update:wsdl":
 	doc.Save(@wsdl)
 	Sh("SvcUtil.exe /nologo /noconfig /targetClientVersion:Version35 wsdl /directory:src/PriceProcessor/Generated")
 	Rm(@wsdl)
+	name = "src/PriceProcessor/Generated/EzakazWebService.cs"
+	print """sed -ri 's/, Order=[0-9]+//' $name"""
+	Bash("""sed -ri 's/, Order=[0-9]+//' $name""")
+	Bash("""unix2dos $name""")
+	Bash("""clean.sh $name""")
