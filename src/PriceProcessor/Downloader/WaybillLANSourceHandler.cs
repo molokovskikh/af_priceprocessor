@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
@@ -163,6 +164,10 @@ and st.SourceID = 4";
 				var ff = Directory.GetFiles(pricePath);
 				// Отсекаем файлы с некорректным расширением
 				var newFiles = new List<string>();
+
+				//задержка что бы избежать канликтов в dfs
+				Thread.Sleep(500);
+
 				foreach (var newFileName in ff) {
 					if (Array.Exists(documentReader.ExcludeExtentions,
 						s => s.Equals(Path.GetExtension(newFileName), StringComparison.OrdinalIgnoreCase))) {
