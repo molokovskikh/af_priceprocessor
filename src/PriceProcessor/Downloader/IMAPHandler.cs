@@ -94,6 +94,9 @@ namespace Inforoom.PriceProcessor.Downloader
 						ImapReader.PingReader();
 
 						items = FetchUIDs();
+						if (log.IsDebugEnabled) {
+							log.DebugFormat("Получено {0} uids", items.Length);
+						}
 
 						ImapReader.PingReader();
 
@@ -101,6 +104,10 @@ namespace Inforoom.PriceProcessor.Downloader
 							continue;
 
 						foreach (var item in items) {
+							if (log.IsDebugEnabled) {
+								log.DebugFormat("Обработка {0}", item.UID);
+							}
+
 							IMAP_FetchItem[] OneItem = null;
 							try {
 								OneItem = FetchMessages(item.UID);
