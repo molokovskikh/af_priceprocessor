@@ -64,7 +64,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		{
 			var sequenceUids = new IMAP_SequenceSet();
 			sequenceUids.Parse("1:*", long.MaxValue);
-			return _imapClient.FetchMessages(sequenceUids, IMAP_FetchItem_Flags.UID, false, false);
+			return _imapClient.FetchMessages(sequenceUids, IMAP_FetchItem_Flags.UID, false, false)
+				?? Enumerable.Empty<IMAP_FetchItem>().ToArray();
 		}
 
 		public IMAP_FetchItem[] FetchMessages(int uid)
@@ -86,26 +87,23 @@ namespace Inforoom.PriceProcessor.Downloader
 				ConnectToIMAP();
 
 				try {
-					IMAP_FetchItem[] items;
+					var items = Enumerable.Empty<IMAP_FetchItem>().ToArray();
 					var toDelete = new List<IMAP_FetchItem>();
 					do {
 						toDelete.Clear();
-
 						ImapReader.PingReader();
-
 						items = FetchUIDs();
 						if (log.IsDebugEnabled) {
-							log.DebugFormat("Получено {0} uids", items.Length);
+							log.DebugFormat("Получено {0} UIDs", items.Length);
 						}
-
+						//обрабатываем мисьма пачками что бы уменьшить вероятность появления дублей
+						//при остановке шатной или аварийной остановке
+						items = items.Take(100).ToArray();
 						ImapReader.PingReader();
-
-						if (items == null || items.Length == 0)
-							continue;
 
 						foreach (var item in items) {
 							if (log.IsDebugEnabled) {
-								log.DebugFormat("Обработка {0}", item.UID);
+								log.DebugFormat("Обработка {0} UID", item.UID);
 							}
 
 							IMAP_FetchItem[] OneItem = null;
@@ -122,7 +120,7 @@ namespace Inforoom.PriceProcessor.Downloader
 							}
 							catch (Exception ex) {
 								if (log.IsDebugEnabled) {
-									log.Debug(String.Format("Не удалось обработать письмо {0}", item.UID), ex);
+									log.Debug(String.Format("Не удалось обработать письмо {0} UID", item.UID), ex);
 								}
 								Message = null;
 								var errorInfo = GetErrorInfo(item.UID);
@@ -138,10 +136,10 @@ namespace Inforoom.PriceProcessor.Downloader
 						if (toDelete.Count > 0) {
 							var sequence = new IMAP_SequenceSet();
 
-							sequence.Parse(String.Join(",", toDelete.Select(i => i.UID.ToString()).ToArray()), long.MaxValue);
+							sequence.Parse(String.Join(",", toDelete.Select(i => i.UID.ToString())), long.MaxValue);
 							imapClient.DeleteMessages(sequence, true);
 						}
-					} while (items != null && items.Length > 0 && toDelete.Count > 0);
+					} while (items.Length > 0 && toDelete.Count > 0);
 				}
 				finally {
 					Message = null;
