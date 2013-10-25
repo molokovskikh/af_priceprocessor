@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using log4net;
 using LumiSoft.Net.IMAP;
 using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
@@ -30,6 +31,8 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	public class IMAPHandler
 	{
+		private ILog log = LogManager.GetLogger(typeof(IMAPHandler));
+
 		public IIMAPReader ImapReader { get; private set; }
 
 		public List<UIDInfo> ErrorInfos { get; set; }
@@ -111,6 +114,9 @@ namespace Inforoom.PriceProcessor.Downloader
 								toDelete.Add(item);
 							}
 							catch (Exception ex) {
+								if (log.IsDebugEnabled) {
+									log.Debug(String.Format("Не удалось обработать письмо {0}", item.UID), ex);
+								}
 								Message = null;
 								var errorInfo = GetErrorInfo(item.UID);
 								if (UIDTimeout(errorInfo)) {
