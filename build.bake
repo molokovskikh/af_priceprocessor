@@ -1,7 +1,7 @@
 ﻿import System
 import System.Linq.Enumerable
 import System.ServiceModel
-import LumiSoft.Net.IMAP from "lib/LumiSoft.Net.dll"
+import LumiSoft.Net.IMAP from "LumiSoft.Net"
 import LumiSoft.Net.IMAP.Client
 import LumiSoft.Net.Mime
 import LumiSoft.Net.SMTP.Client
