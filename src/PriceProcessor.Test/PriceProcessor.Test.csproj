@@ -228,7 +228,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\RostaOmskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Roton2946ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Russian3ParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahan12423ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmVoronezhParser2Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaAstrahanParserFixture.cs" />

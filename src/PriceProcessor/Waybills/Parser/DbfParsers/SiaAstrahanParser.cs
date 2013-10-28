@@ -16,6 +16,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		{
 			var data = Dbf.Load(file, Encoding);
 
+			if (data.Columns.Contains("GNVLS")) {
+				foreach (DataRow dataRow in data.Rows) {
+					if (dataRow["GNVLS"].ToString() == "ЖНВЛС") {
+						dataRow["GNVLS"] = 1;
+					}
+					else {
+						dataRow["GNVLS"] = 0;
+					}
+				}
+			}
+
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "DCODE")
 				.DocumentHeader(h => h.DocumentDate, "DATE_DOC")
@@ -39,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "EAN13", "BARCOD")
 				.Line(l => l.Nds, "NDS_PR")
-				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV")
+				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV", "GNVLS")
 				.Line(l => l.CodeCr, "VCODE")
 				.ToDocument(document, data);
 
@@ -52,8 +63,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("PRICE_REES") &&
 				data.Columns.Contains("PRICE_BASE") &&
 				data.Columns.Contains("PRO_NNDS") &&
-				data.Columns.Contains("SUM_OPL") &&
-				!data.Columns.Contains("GNVLS");
+				data.Columns.Contains("SUM_OPL")
+				&& data.Columns.Contains("PRODUCT")
+				&& (data.Columns.Contains("PRODUCER") || data.Columns.Contains("PRODUCER2"));
 		}
 	}
 }
