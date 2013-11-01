@@ -335,7 +335,6 @@
     <Compile Include="Waybills\Parser\Txt\PharmelKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\TredifarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\VectorGroupKalugaParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\ZhdanovKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TrediFarmCheboksarySpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TredifarmCheboksaryParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectorFixture.cs" />

@@ -23,10 +23,8 @@ namespace Inforoom.PriceProcessor.Waybills
 		protected Dictionary<uint, IList<Type>> specParsers = new Dictionary<uint, IList<Type>> {
 			{ 6256, new List<Type> { typeof(Avesta_6256_SpecialParser) } }, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
 			{ 2747, new List<Type> { typeof(KazanFarmDbfParser) } }, //Накладная в формате dbf от Казань-Фарм.
-			{ 7957, new List<Type> { typeof(ZhdanovKazanSpecialParser) } }, // Накладная от ИП Жданов (Казань), обрабатываем специальным парсером.
 			{
 				8063, new List<Type> {
-					typeof(ZhdanovKazanSpecialParser),
 					typeof(BizonKazanSpecialParser)
 				}
 			}, // Накладная (dbf) от ООО "Бизон" (Казань)
@@ -54,7 +52,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 4910, new List<Type> { typeof(FarmPartnerKalugaParser) } }, // Фармпартнер (Калуга)
 			{ 7949, new List<Type> { typeof(MarimedsnabSpecialParser) } }, // Маримедснаб (Йошкар-Ола)
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
-			{ 2286, new List<Type> { typeof(GenesisMMskSpecialParser) } }, // Генезис-М (Москва)
 			{ 11349, new List<Type> { typeof(BiofarmCheboksarySpecialParcer) } }, // Биофарм (Чебоксары)
 		};
 

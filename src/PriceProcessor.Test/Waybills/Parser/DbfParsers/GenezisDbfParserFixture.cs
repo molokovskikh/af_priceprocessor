@@ -60,7 +60,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Nds, Is.EqualTo(0));
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.Period, Is.EqualTo("07.02.2011"));
-			Assert.That(line.SerialNumber, Is.Empty);
+			Assert.IsNull(line.SerialNumber);
 			Assert.That(line.Certificates, Is.EqualTo("РОСС IT.ПК05.В27822"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(66.84));
 			Assert.That(line.SupplierCost, Is.EqualTo(66.84));
@@ -143,6 +143,22 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].SupplierCostWithoutNDS, Is.EqualTo(273.27000));
 			Assert.That(doc.Lines[0].SupplierCost, Is.EqualTo(300.60));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
+		}
+
+		[Test]
+		public void Parse_medchesta()
+		{
+			var doc = WaybillParser.Parse("348275_НаклОтМедчКВам.DBF");
+			Assert.AreEqual(49, doc.Lines.Count);
+
+			var line = doc.Lines[3];
+			Assert.IsTrue(line.VitallyImportant.Value);
+			Assert.AreEqual("90314", line.Code);
+			Assert.AreEqual("Амлодипин таб.0,005г №30", line.Product);
+			Assert.AreEqual("Вертекс", line.Producer);
+			Assert.AreEqual(10, line.Nds);
+			Assert.AreEqual(42.39, line.RegistryCost);
+			Assert.AreEqual("Россия", line.Country);
 		}
 	}
 }

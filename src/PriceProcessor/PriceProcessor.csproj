@@ -308,7 +308,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\KatrenMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOrelParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Organika13449Parser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\OriolaStavropol13525Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaTula4013Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PulseKazan13149Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmSKDParser.cs" />
@@ -337,7 +336,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\Vazakor_144_Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VitaLineKazanParser.cs" />
     <Compile Include="Waybills\Parser\FarmImpeksKalugaParser.cs" />
-    <Compile Include="Waybills\Parser\GenesisMMskSpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\HealthIndustrySmolenskParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\KatrenKazanSpecialParser.cs" />
@@ -373,7 +371,6 @@
     <Compile Include="Waybills\Parser\TxtParsers\KatrenVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PharmelKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\VectorGroupKalugaParser.cs" />
-    <Compile Include="Waybills\Parser\ZhdanovKazanSpecialParser.cs" />
     <Compile Include="Waybills\Parser\TrediFarmCheboksarySpecialParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenLipezkParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelOldTxtParser.cs" />

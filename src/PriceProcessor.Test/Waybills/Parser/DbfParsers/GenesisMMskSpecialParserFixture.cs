@@ -13,11 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 2286 } }; // код поставщика Генезис-М (Москва)
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\M-84275.dbf", documentLog) is GenesisMMskSpecialParser);
-
-			Assert.IsTrue(GenesisMMskSpecialParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\M-84275.dbf")));
-			var document = WaybillParser.Parse("M-84275.dbf", documentLog);
+			var document = WaybillParser.Parse("M-84275.dbf");
 
 			Assert.That(document.Lines.Count, Is.EqualTo(3));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("М-84275"));
