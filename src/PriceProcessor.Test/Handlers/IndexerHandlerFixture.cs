@@ -97,7 +97,8 @@ namespace PriceProcessor.Test.Handlers
 		[Test]
 		public void DoMatchTest()
 		{
-			if (Directory.Exists(_handler.IdxDir)) Directory.Delete(_handler.IdxDir, true);
+			if (Directory.Exists(_handler.IdxDir))
+				Directory.Delete(_handler.IdxDir, true);
 
 			Price price1 = Price.Queryable.FirstOrDefault();
 			Price price2 = Price.Queryable.Where(p => p.Id != price1.Id && p.Supplier.Id != price1.Supplier.Id).FirstOrDefault();
@@ -129,7 +130,8 @@ namespace PriceProcessor.Test.Handlers
 				}
 			}
 
-			if (Directory.Exists(_handler.IdxDir)) Directory.Delete(_handler.IdxDir, true);
+			if (Directory.Exists(_handler.IdxDir))
+				Directory.Delete(_handler.IdxDir, true);
 
 			_handler.DoIndex(synonyms, false, true);
 
@@ -182,7 +184,8 @@ namespace PriceProcessor.Test.Handlers
 			Thread.Sleep(1000);
 			Assert.That(_handler.GetTask(taskId), Is.Not.Null);
 			for (int i = 0; i < 10; i++) {
-				if (_handler.GetTask(taskId).State != TaskState.Running) break;
+				if (_handler.GetTask(taskId).State != TaskState.Running)
+					break;
 				Thread.Sleep(10000);
 			}
 			matches = _handler.GetTask(taskId).Matches;
@@ -228,7 +231,8 @@ namespace PriceProcessor.Test.Handlers
 			Thread.Sleep(1000);
 
 			for (int i = 0; i < 10; i++) {
-				if (_handler.GetTask(taskId).State != TaskState.Running) break;
+				if (_handler.GetTask(taskId).State != TaskState.Running)
+					break;
 				Thread.Sleep(10000);
 			}
 

@@ -31,8 +31,10 @@ namespace Inforoom.PriceProcessor
 			var downloadedList = list.FindAll(item => item.Downloaded && (item.PriceItemId == PriceItemId));
 			if (downloadedList.Count > 0) {
 				downloadedList.Sort(delegate(PriceProcessItem a, PriceProcessItem b) {
-					if (a.FileTime > b.FileTime) return -1;
-					else return 1;
+					if (a.FileTime > b.FileTime)
+						return -1;
+					else
+						return 1;
 				});
 				return downloadedList[0];
 			}

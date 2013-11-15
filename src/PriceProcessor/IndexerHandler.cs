@@ -194,7 +194,8 @@ namespace Inforoom.PriceProcessor
 
 					var query = parser.Parse(String.Format("Synonym:\"{0}\"", name));
 					name = name.Replace("_QUOTE_", "\"").Replace("_LSLASH_", "\\");
-					if (matches.ContainsKey(name)) continue;
+					if (matches.ContainsKey(name))
+						continue;
 					var collector = TopScoreDocCollector.create(10000, true);
 					searcher.Search(query, collector);
 					var hits = collector.TopDocs().scoreDocs;
@@ -439,7 +440,8 @@ namespace Inforoom.PriceProcessor
 
 		public void AppendToIndex(IList<int> ids)
 		{
-			if (ids.Count == 0) return;
+			if (ids.Count == 0)
+				return;
 			_logger.Info("Добавление синонимов к индексу...");
 			_logger.Info("Загрузка синонимов из БД...");
 			IList<ProductSynonym> synonyms;

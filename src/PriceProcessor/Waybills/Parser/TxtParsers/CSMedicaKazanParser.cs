@@ -33,11 +33,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
-				if (header.Length != 7) return false;
+				if (header.Length != 7)
+					return false;
 				var bodyCaption = reader.ReadLine();
-				if (!bodyCaption.ToLower().Equals("[body]")) return false;
+				if (!bodyCaption.ToLower().Equals("[body]"))
+					return false;
 				var body = reader.ReadLine().Split(';');
-				if (body.Length != 27) return false;
+				if (body.Length != 27)
+					return false;
 			}
 			return true;
 		}

@@ -95,7 +95,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			MultifileDocument.DeleteMergedFiles(docsForParsing);
 
 			docs.Each(d => {
-				if (d.Log.IsFake) d.Log.Save();
+				if (d.Log.IsFake)
+					d.Log.Save();
 				d.Save();
 				d.CreateCertificateTasks();
 			});

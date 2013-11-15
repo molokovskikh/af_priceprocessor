@@ -97,12 +97,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 						document.SetInvoice().NDSAmount = GetDecimal(parts[1]);
 					if (key == "общая стоимость с ндс")
 						document.SetInvoice().Amount = GetDecimal(parts[1]);
-					if (++lineCounter == headerLinesCount) break;
+					if (++lineCounter == headerLinesCount)
+						break;
 				}
 				foreach (var body in parser.Body()) {
 					var line = body.Split(';');
 					int ival;
-					if (!Int32.TryParse(line[0], out ival)) continue;
+					if (!Int32.TryParse(line[0], out ival))
+						continue;
 					ReadBody(document, body);
 				}
 			}
@@ -127,7 +129,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 						continue;
 					}
 					var parts = line.Split(';');
-					if (parts.Length < 2) return false;
+					if (parts.Length < 2)
+						return false;
 
 					if (parts[0].ToLower().Contains("продавец")
 						|| parts[0].ToLower().Contains("номер накладной")

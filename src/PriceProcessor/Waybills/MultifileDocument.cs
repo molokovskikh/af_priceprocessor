@@ -158,8 +158,10 @@ namespace Inforoom.PriceProcessor.Waybills
 			catch (Exception e) {
 				var log = LogManager.GetLogger(typeof(MultifileDocument));
 				log.Error("Ошибка при слиянии многофайловых накладных", e);
-				if (headerFile != null) WaybillService.SaveWaybill(headerFile.GetFileName());
-				if (bodyFile != null) WaybillService.SaveWaybill(bodyFile.GetFileName());
+				if (headerFile != null)
+					WaybillService.SaveWaybill(headerFile.GetFileName());
+				if (bodyFile != null)
+					WaybillService.SaveWaybill(bodyFile.GetFileName());
 				return documents.Select(d => new DocumentForParsing(d)).ToList();
 			}
 		}

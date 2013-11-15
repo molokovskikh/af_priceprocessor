@@ -38,7 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (!headerCaption.ToLower().Equals("[header]"))
 					return false;
 				var header = reader.ReadLine().Split(';');
-				if (header.Length != 16 || !header[10].ToLower().Contains("фармпартнер")) return false;
+				if (header.Length != 16 || !header[10].ToLower().Contains("фармпартнер"))
+					return false;
 				var bodyCaption = reader.ReadLine();
 				string line = reader.ReadLine();
 				while (line != null) {
@@ -49,8 +50,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				if (line == null)
 					return false;
 				var body = reader.ReadLine().Split(';');
-				if (body.Length != 22) return false;
-				if (GetDecimal(body[7]) == null || GetDecimal(body[8]) == null) return false;
+				if (body.Length != 22)
+					return false;
+				if (GetDecimal(body[7]) == null || GetDecimal(body[8]) == null)
+					return false;
 			}
 			return true;
 		}

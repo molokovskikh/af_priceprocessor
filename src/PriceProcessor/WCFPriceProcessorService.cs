@@ -243,7 +243,7 @@ and pf.Id = fr.PriceFormatId", c);
 			if (File.Exists(destinationFile))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
-			if(GetPriceItemList().Select(i => i.PriceItemId).Contains(priceitem.Id))
+			if (GetPriceItemList().Select(i => i.PriceItemId).Contains(priceitem.Id))
 				throw new FaultException<string>(MessagePriceInQueue, new FaultReason(MessagePriceInQueue));
 
 			if ((!File.Exists(sourceFile)) && (!File.Exists(destinationFile)))
@@ -252,7 +252,7 @@ and pf.Id = fr.PriceFormatId", c);
 			if (!File.Exists(sourceFile))
 				throw new FaultException<string>(MessagePriceNotFound, new FaultReason(MessagePriceNotFound));
 
-			if(notDelete)
+			if (notDelete)
 				File.Copy(sourceFile, destinationFile);
 			else
 				File.Move(sourceFile, destinationFile);
@@ -477,7 +477,8 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 		{
 			var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
 			var task = handler.GetTask(Convert.ToInt64(taskId));
-			if (task != null) task.Stop();
+			if (task != null)
+				task.Stop();
 		}
 
 		public void AppendToIndex(string[] synonymsIds)

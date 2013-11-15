@@ -143,7 +143,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					return false;
 				string line;
 				while ((line = reader.ReadLine()) != null)
-					if (line.Split('|').Length < 24) return false;
+					if (line.Split('|').Length < 24)
+						return false;
 				return true;
 			}
 		}

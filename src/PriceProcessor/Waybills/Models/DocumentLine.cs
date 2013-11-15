@@ -406,7 +406,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public void SetSupplierPriceMarkup()
 		{
-			if (!ProducerCostWithoutNDS.HasValue && !ProducerCostWithoutNDS.HasValue) return;
+			if (!ProducerCostWithoutNDS.HasValue && !ProducerCostWithoutNDS.HasValue)
+				return;
 			if (!SupplierPriceMarkup.HasValue && ProducerCostWithoutNDS.HasValue
 				&& SupplierCostWithoutNDS.HasValue && (ProducerCostWithoutNDS.Value != 0)) {
 				SupplierPriceMarkup = null;
