@@ -36,7 +36,6 @@ namespace PriceProcessor.Test.TestHelpers
 			var document = new Document(log, parser.GetType().Name);
 			var doc = parser.Parse(filePath, document);
 			if (doc != null) {
-				doc.SetProductId();
 				doc.CalculateValues();
 			}
 			return doc;

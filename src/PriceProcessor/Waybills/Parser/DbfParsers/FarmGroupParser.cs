@@ -23,7 +23,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "QUANT")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesDate, "DATES")
+				.Line(l => l.CertificateAuthority, "SERTWHO")
 				.Line(l => l.SupplierPriceMarkup, "MARGIN")
+				.Line(l => l.CertificateFilename, "I_SERT")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.RegistryCost, "REESTR")
 				.Line(l => l.Country, "COUNTRY")
@@ -31,7 +33,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCostWithoutNDS, "PRICEENT", "PPRICEWT", "PRISEENT")
 				.Line(l => l.VitallyImportant, "PV", "GV", "JVLS", "GNVLS")
 				.Line(l => l.OrderId, "NUMZ")
-				.Line(l => l.CertificateFilename, "I_SERT")
 				.ToDocument(document, data);
 			if (document.ProviderDocumentId != null && document.ProviderDocumentId.Length > 8
 				&& String.Equals(document.ProviderDocumentId.Substring(0, 8), Document.GenerateProviderDocumentId().Substring(0, 8)))
