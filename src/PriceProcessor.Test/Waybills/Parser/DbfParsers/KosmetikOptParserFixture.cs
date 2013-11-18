@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parser()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\real_№УТKO0000566_from_16.03.2011.dbf");
+			var doc = WaybillParser.Parse(@"real_№УТKO0000566_from_16.03.2011.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(17));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("УТKO0000566"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("16.03.2011"));
@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void KosmetikPlusParser()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\real_No.0001684_from_05.07.2011.dbf");
+			var doc = WaybillParser.Parse(@"real_No.0001684_from_05.07.2011.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("УТKO0001684"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("05.07.2011"));
@@ -67,6 +67,17 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			Assert.IsTrue(KosmetikOptParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\real_№УТKO0000566_from_16.03.2011.dbf")));
 			Assert.IsTrue(KosmetikOptParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\real_No.0001684_from_05.07.2011.dbf")));
+		}
+
+		[Test]
+		public void Kosmetic_plus_parser2()
+		{
+			var doc = WaybillParser.Parse("real №УТKП0005371 from 14.11.2013.dbf");
+			Assert.AreEqual(78, doc.Lines.Count);
+			Assert.AreEqual("ООО \"Инфанта\", г. Казань, ул. Гвардейская, д. № 42", doc.Invoice.RecipientAddress);
+			var line = doc.Lines[0];
+			Assert.AreEqual("2258 ЛЕСНОЙ БАЛЬЗАМ Ополаскиватель" +
+				" с экстратами коры и дуба и пихты на отваре трав 250мл", line.Product);
 		}
 	}
 }

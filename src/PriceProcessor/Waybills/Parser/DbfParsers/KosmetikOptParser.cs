@@ -9,9 +9,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NOMER")
 				.DocumentHeader(d => d.DocumentDate, "DATA")
+				.DocumentInvoice(i => i.RecipientAddress, "PARTNAME")
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "NAME")
-				.Line(l => l.Producer, "NAIMPROIZV")
+				.Line(l => l.Producer, "NAIMPROIZV", "PROIZV")
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.Quantity, "KOLICH")
 				.Line(l => l.Nds, "STNDS")
@@ -22,8 +23,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		{
 			return data.Columns.Contains("KOD") &&
 				data.Columns.Contains("NAME") &&
-				data.Columns.Contains("NAIMPROIZV") &&
-				data.Columns.Contains("SROK") &&
+				(data.Columns.Contains("NAIMPROIZV") || data.Columns.Contains("PROIZV")) &&
 				data.Columns.Contains("KOLICH") &&
 				data.Columns.Contains("STNDS") &&
 				data.Columns.Contains("CENA") &&
