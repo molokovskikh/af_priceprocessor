@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.TestHelpers
 		{
 			var settings = client.Settings;
 			settings.IsConvertFormat = true;
-			settings.AssortimentPriceId = supplier.Prices.First().Id;
+			settings.AssortmentPriceId = supplier.Prices.First().Id;
 			settings.SaveAndFlush();
 		}
 
@@ -134,7 +134,7 @@ and a.Id = ?AddressId
 			//и если оно не включено, то включим принудительно для теста
 			if (!isConvertFormat) {
 				settings.IsConvertFormat = true;
-				settings.AssortimentPriceId = supplier.Prices.First().Id;
+				settings.AssortmentPriceId = supplier.Prices.First().Id;
 				settings.SaveAndFlush();
 			}
 		}

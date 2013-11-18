@@ -77,7 +77,7 @@ namespace PriceProcessor.Test.Waybills
 				PriceName = "Ассортиментный"
 			};
 			session.Save(assortPrice);
-			client.Settings.AssortimentPriceId = assortPrice.Id;
+			client.Settings.AssortmentPriceId = assortPrice.Id;
 			session.Save(client.Settings);
 			var synonym = new TestProductSynonym("Тестовый синоним товара",
 				session.Load<TestProduct>(_product.Id), assortPrice);

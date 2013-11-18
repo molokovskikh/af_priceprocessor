@@ -668,7 +668,7 @@ delete from documents.Certificates where Id = :certificateId;
 
 				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
 				files.Add(new CertificateFile(Path.GetTempFileName(), "1"));
-				files.ForEach(f => {
+				files.Each(f => {
 					LocalFiles.Add(f.LocalFile);
 					if (!File.Exists(f.LocalFile))
 						File.WriteAllText(f.LocalFile, "this is test text");
