@@ -191,7 +191,7 @@ namespace Inforoom.Downloader
 
 			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
 				mail.Save();
-				mail.Attachments.ForEach(a =>
+				mail.Attachments.Each(a =>
 					File.Copy(
 						a.LocalFileName,
 						Path.Combine(Settings.Default.AttachmentPath, a.GetSaveFileName())));
