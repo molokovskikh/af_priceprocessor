@@ -8,16 +8,17 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net.Config;
 using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using Inforoom.Downloader;
 using System.IO;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
+using Test.Support.log4net;
 using Test.Support.Suppliers;
 using Castle.ActiveRecord;
 using FileHelper = Common.Tools.FileHelper;
-//using WaybillSourceType = Test.Support.WaybillSourceType;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {

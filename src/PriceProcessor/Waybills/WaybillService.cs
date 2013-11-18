@@ -151,14 +151,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			});
 		}
 
-		private static bool ZeroFile(DocumentReceiveLog log)
-		{
-			if (log.DocumentSize == 0) {
-				return true;
-			}
-			return false;
-		}
-
 		private static Document Process(bool shouldCheckClientSettings,
 			DocumentReceiveLog log,
 			string fileName)
@@ -170,7 +162,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (WaybillExcludeFile(log))
 				return null;
 
-			if (ZeroFile(log))
+			if (log.DocumentSize == 0)
 				return null;
 
 			if (shouldCheckClientSettings
