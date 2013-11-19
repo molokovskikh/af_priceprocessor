@@ -68,7 +68,6 @@ namespace Inforoom.PriceProcessor
 					{ Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver" },
 					{ Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider" },
 					{ Environment.ConnectionStringName, Literals.GetConnectionName() },
-					{ Environment.ProxyFactoryFactoryClass, "NHibernate.ByteCode.Castle.ProxyFactoryFactory, NHibernate.ByteCode.Castle" },
 					{ Environment.Hbm2ddlKeyWords, "none" }
 				});
 			ActiveRecordStarter.Initialize(assemblies, config);
