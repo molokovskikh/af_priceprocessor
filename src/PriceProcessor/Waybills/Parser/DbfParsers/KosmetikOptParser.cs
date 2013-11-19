@@ -16,7 +16,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.Quantity, "KOLICH")
 				.Line(l => l.Nds, "STNDS")
-				.Line(l => l.SupplierCostWithoutNDS, "CENA");
+				.Line(l => l.SupplierCostWithoutNDS, "CENA")
+				.Line(l => l.SupplierCost, "CENASNDS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

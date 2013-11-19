@@ -72,12 +72,13 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Kosmetic_plus_parser2()
 		{
-			var doc = WaybillParser.Parse("real №УТKП0005371 from 14.11.2013.dbf");
+			var doc = WaybillParser.Parse("real №УТKП0005371 from 14.11.2013-1.dbf");
 			Assert.AreEqual(78, doc.Lines.Count);
 			Assert.AreEqual("ООО \"Инфанта\", г. Казань, ул. Гвардейская, д. № 42", doc.Invoice.RecipientAddress);
 			var line = doc.Lines[0];
 			Assert.AreEqual("2258 ЛЕСНОЙ БАЛЬЗАМ Ополаскиватель" +
 				" с экстратами коры и дуба и пихты на отваре трав 250мл", line.Product);
+			Assert.AreEqual(0, line.Nds);
 		}
 	}
 }
