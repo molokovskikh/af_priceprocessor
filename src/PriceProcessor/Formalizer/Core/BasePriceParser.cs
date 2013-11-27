@@ -733,13 +733,13 @@ and a.FirmCode = p.FirmCode;",
 		}
 
 		/// <summary>
-		/// анализируем цены и формируем список, если ценовая колонка имеет более 5% позиций с неустановленной ценой
+		/// анализируем цены и формируем список, если ценовая колонка имеет более 85% позиций с неустановленной ценой
 		/// </summary>
 		private void ProcessUndefinedCost(PriceLoggingStat stat)
 		{
 			var stringBuilder = new StringBuilder();
 			foreach (var cost in _reader.CostDescriptions)
-				if (cost.UndefinedCostCount > stat.formCount * 0.05)
+				if (cost.UndefinedCostCount > stat.formCount * 0.85)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
 
 			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
