@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
@@ -396,7 +397,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 		public static bool CheckByHeaderPart(string file, IEnumerable<string> name, string commentMark)
 		{
-			if (Path.GetExtension(file).ToLower() != ".txt")
+			if (!Path.GetExtension(file).Match(".txt"))
 				return false;
 
 			using (var parser = new HeaderBodyParser(file, commentMark)) {

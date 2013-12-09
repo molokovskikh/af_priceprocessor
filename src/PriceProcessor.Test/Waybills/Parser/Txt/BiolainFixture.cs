@@ -31,5 +31,13 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
 			Assert.That(doc.Lines[0].SupplierPriceMarkup, Is.EqualTo(15.35));
 		}
+
+		[Test]
+		public void Parse2()
+		{
+			var doc = WaybillParser.Parse("29501.txt");
+			Assert.AreEqual(doc.Parser, "BiolainParser");
+			Assert.That(doc.Lines.Count, Is.GreaterThan(0));
+		}
 	}
 }
