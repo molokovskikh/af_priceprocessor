@@ -25,10 +25,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.CertificateAuthority, "CERTORG")
 				.Line(l => l.CertificatesDate, "CERTDATE")
-				.DocumentInvoice(i => i.BuyerName, "BUYERNAME")
-				.DocumentInvoice(i => i.BuyerId, "BUYERCODE")
-				.DocumentInvoice(i => i.SellerName, "SUPNAME")
-				.DocumentInvoice(i => i.RecipientAddress, "CARGERNAME", "COMMENT");
+				.Invoice(i => i.BuyerName, "BUYERNAME")
+				.Invoice(i => i.BuyerId, "BUYERCODE")
+				.Invoice(i => i.SellerName, "SUPNAME")
+				.Invoice(i => i.RecipientAddress, "CARGERNAME", "COMMENT");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

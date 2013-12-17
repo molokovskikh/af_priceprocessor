@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "NDOC")
 				.DocumentHeader(h => h.DocumentDate, "DATEDOC")
-				.DocumentInvoice(i => i.Amount, "SUMPAY")
+				.Invoice(i => i.Amount, "SUMPAY")
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")

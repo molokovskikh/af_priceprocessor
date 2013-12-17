@@ -7,35 +7,45 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class AptekaHoldingVolgogradParser : BaseDbfParser
+	public class AptekaHoldingVolgogradParser : BaseDbfParser2
 	{
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "TTN")
 				.DocumentHeader(h => h.DocumentDate, "TTN_DATE")
-				.DocumentInvoice(i => i.RecipientAddress, "ANAME_AF", "I_RES_ADR")
-				.DocumentInvoice(i => i.InvoiceNumber, "TTN", "I_NUM")
-				.DocumentInvoice(i => i.InvoiceDate, "TTN_DATE", "I_DATE")
-				.DocumentInvoice(i => i.SellerAddress, "I_SEL_ADR")
-				.DocumentInvoice(i => i.SellerINN, "I_SEL_INN")
-				.DocumentInvoice(i => i.SellerKPP, "I_SEL_KPP")
-				.DocumentInvoice(i => i.SellerName, "I_SEL_NAME")
-				.DocumentInvoice(i => i.ShipperInfo, "I_SHIP_ADR")
-				.DocumentInvoice(i => i.RecipientName, "I_RES_NAME")
-				.DocumentInvoice(i => i.RecipientId, "I_RES_ID")
-				.DocumentInvoice(i => i.BuyerId, "I_BU_ID")
-				.DocumentInvoice(i => i.BuyerName, "I_BU_NAME")
-				.DocumentInvoice(i => i.BuyerAddress, "I_BU_ADR")
-				.DocumentInvoice(i => i.BuyerINN, "I_BU_INN")
-				.DocumentInvoice(i => i.BuyerKPP, "I_BU_KPP")
-				.DocumentInvoice(i => i.DateOfPaymentDelay, "I_DEL_D")
+				.Invoice(i => i.InvoiceNumber, "I_NUM", "TTN")
+				.Invoice(i => i.InvoiceDate, "I_DATE", "TTN_DATE")
+				.Invoice(i => i.SellerName, "I_SEL_NAME")
+				.Invoice(i => i.SellerAddress, "I_SEL_ADR")
+				.Invoice(i => i.SellerINN, "I_SEL_INN")
+				.Invoice(i => i.SellerKPP, "I_SEL_KPP")
+				.Invoice(i => i.ShipperInfo, "I_SHIP_ADR")
+				.Invoice(i => i.RecipientId, "I_RES_ID")
+				.Invoice(i => i.RecipientName, "I_RES_NAME")
+				.Invoice(i => i.RecipientAddress, "ANAME_AF", "I_RES_ADR")
+				.Invoice(i => i.BuyerId, "I_BU_ID")
+				.Invoice(i => i.BuyerName, "I_BU_NAME")
+				.Invoice(i => i.BuyerAddress, "I_BU_ADR")
+				.Invoice(i => i.BuyerINN, "I_BU_INN")
+				.Invoice(i => i.BuyerKPP, "I_BU_KPP")
+				.Invoice(i => i.DateOfPaymentDelay, "I_DEL_D")
+				.Invoice(i => i.AmountWithoutNDS0, "amnt_e_0")
+				.Invoice(i => i.AmountWithoutNDS10, "amnt_e_10")
+				.Invoice(i => i.AmountWithoutNDS18, "amnt_e_18")
+				.Invoice(i => i.Amount18, "amnt_w_18")
+				.Invoice(i => i.Amount10, "amnt_w_10")
+				.Invoice(i => i.NDSAmount, "amnt_n_all")
+				.Invoice(i => i.NDSAmount10, "amnt_n_10")
+				.Invoice(i => i.NDSAmount18, "amnt_n_18")
+				.Invoice(i => i.AmountWithoutNDS, "amnt_e_all")
+				.Invoice(i => i.Amount, "amnt")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.Unit, "UNIT")
 				.Line(l => l.Period, "SGODN")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesDate, "SERT_DATE")
-				.Line(l => l.ProducerCostWithoutNDS, "PRCENA_BND")
+				.Line(l => l.ProducerCostWithoutNDS, "PRCENA_BND", "PRCENABNDS")
 				.Line(l => l.RegistryCost, "GR_CENA")
 				.Line(l => l.SupplierCostWithoutNDS, "PCENA_BNDS")
 				.Line(l => l.Nds, "NDS")
@@ -51,15 +61,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Product, "NAME_POST")
 				.Line(l => l.OrderId, "N_ZAK")
-				.Line(l => l.Code, "SP_PRD_ID");
-		}
-
-		public static bool CheckFileFormat(DataTable data)
-		{
-			return data.Columns.Contains("PRCENA_BND") &&
-				data.Columns.Contains("TTN") &&
-				data.Columns.Contains("TTN_DATE") &&
-				data.Columns.Contains("PRZV_POST");
+				.Line(l => l.Code, "SP_PRD_ID")
+				.Line(l => l.OrderId, "N_ZAK");
 		}
 	}
 }

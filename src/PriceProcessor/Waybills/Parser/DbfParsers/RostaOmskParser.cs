@@ -31,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "BARCODE")
-				.DocumentInvoice(i => i.ShipperInfo, "VENDOR")
+				.Invoice(i => i.ShipperInfo, "VENDOR")
 				.ToDocument(document, data);
 			return document;
 		}

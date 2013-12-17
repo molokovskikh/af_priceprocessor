@@ -195,6 +195,7 @@
     <Compile Include="Waybills\Parser\CalculateValuesFixture.cs" />
     <Compile Include="Waybills\Parser\ConvertDateInDbfFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\CSMedikaPovolzhyeParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\FarmCenterFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MatveevFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongXmlFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongPdVersionFixture.cs" />

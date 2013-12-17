@@ -18,31 +18,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		private List<Action<Document, DataRow>> _headerActions = new List<Action<Document, DataRow>>();
 		private List<Action<Invoice, DataRow>> _invoiceActions = new List<Action<Invoice, DataRow>>();
 
-		private static PropertyInfo GetInfo(Expression<Func<DocumentLine, object>> expression)
-		{
-			if (expression.Body.NodeType == ExpressionType.Convert) {
-				var ex = (UnaryExpression)expression.Body;
-				return (PropertyInfo)((MemberExpression)ex.Operand).Member;
-			}
-			if (expression.Body.NodeType == ExpressionType.MemberAccess) {
-				return (PropertyInfo)(((MemberExpression)expression.Body).Member);
-			}
-			throw new Exception("Неизвестный тип выражения");
-		}
+		public List<string> LineFields = new List<string>();
 
-		private static PropertyInfo GetInfo(Expression<Func<Document, object>> expression)
-		{
-			if (expression.Body.NodeType == ExpressionType.Convert) {
-				var ex = (UnaryExpression)expression.Body;
-				return (PropertyInfo)((MemberExpression)ex.Operand).Member;
-			}
-			if (expression.Body.NodeType == ExpressionType.MemberAccess) {
-				return (PropertyInfo)(((MemberExpression)expression.Body).Member);
-			}
-			throw new Exception("Неизвестный тип выражения");
-		}
-
-		private static PropertyInfo GetInfo(Expression<Func<Invoice, object>> expression)
+		private static PropertyInfo GetInfo<T>(Expression<Func<T, object>> expression)
 		{
 			if (expression.Body.NodeType == ExpressionType.Convert) {
 				var ex = (UnaryExpression)expression.Body;
@@ -112,18 +90,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		/// <summary>
-		/// Выбирает данные из столбца, в котором значения не null
-		/// </summary>
-		public DbfParser DocumentInvoiceIfNull(Expression<Func<Invoice, object>> ex, params string[] names)
+		private DbfParser CollectAction<T>(Expression<Func<T, object>> ex, string[] names, List<Action<T, DataRow>> actions)
 		{
 			var propertyInfo = GetInfo(ex);
-			_invoiceActions.Add((line, dataRow) => {
+			actions.Add((line, dataRow) => {
 				foreach (var name in names) {
 					if (!dataRow.Table.Columns.Contains(name))
 						continue;
 					var value = dataRow[name];
-					if(value == DBNull.Value)
+					if (value is DBNull)
 						continue;
 					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
 					break;
@@ -132,73 +107,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		public DbfParser DocumentInvoice(Expression<Func<Invoice, object>> ex, params string[] names)
+		public DbfParser Invoice(Expression<Func<Invoice, object>> ex, params string[] names)
 		{
-			var propertyInfo = GetInfo(ex);
-			_invoiceActions.Add((line, dataRow) => {
-				foreach (var name in names) {
-					if (!dataRow.Table.Columns.Contains(name))
-						continue;
-					var value = dataRow[name];
-					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
-					break;
-				}
-			});
-			return this;
+			return CollectAction(ex, names, _invoiceActions);
 		}
-
-		public DbfParser DocumentInvoice(Expression<Func<DocumentLine, bool>> expression)
-		{
-			if (expression.Body.NodeType == ExpressionType.Call) {
-				var ex = (MethodCallExpression)expression.Body;
-				var methodInfo = ex.Method;
-				var argumentType = methodInfo.GetParameters()[0].ParameterType;
-				PropertyInfo argument = null;
-				foreach (var arg in ex.Arguments) {
-					var op = ((UnaryExpression)((UnaryExpression)arg).Operand).Operand;
-					argument = ((PropertyInfo)((MemberExpression)op).Member);
-					break;
-				}
-				if (argument != null)
-					_invoiceActions.Add((line, dataRow) =>
-						methodInfo.Invoke(line, new[] { ConvertIfNeeded(argument.GetValue(line, new object[] { }), argumentType) }));
-			}
-			return this;
-		}
-
 
 		public DbfParser Line(Expression<Func<DocumentLine, object>> ex, params string[] names)
 		{
-			var propertyInfo = GetInfo(ex);
-			_lineActions.Add((line, dataRow) => {
-				foreach (var name in names) {
-					if (!dataRow.Table.Columns.Contains(name))
-						continue;
-					var value = dataRow[name];
-					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
-					break;
-				}
-			});
-			return this;
-		}
-
-		public DbfParser Line(Expression<Func<DocumentLine, bool>> expression)
-		{
-			if (expression.Body.NodeType == ExpressionType.Call) {
-				var ex = (MethodCallExpression)expression.Body;
-				var methodInfo = ex.Method;
-				var argumentType = methodInfo.GetParameters()[0].ParameterType;
-				PropertyInfo argument = null;
-				foreach (var arg in ex.Arguments) {
-					var op = ((UnaryExpression)((UnaryExpression)arg).Operand).Operand;
-					argument = ((PropertyInfo)((MemberExpression)op).Member);
-					break;
-				}
-				if (argument != null)
-					_lineActions.Add((line, dataRow) =>
-						methodInfo.Invoke(line, new[] { ConvertIfNeeded(argument.GetValue(line, new object[] { }), argumentType) }));
-			}
-			return this;
+			LineFields.AddRange(names);
+			return CollectAction(ex, names, _lineActions);
 		}
 
 		protected static object ConvertIfNeeded(object value, Type type)
@@ -247,7 +164,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					return true;
 				return ParseHelper.GetBoolean(value.ToString());
 			}
-			throw new Exception("Преобразование для этого типа не реализовано");
+			throw new Exception(String.Format("Преобразование для {0} не реализовано", type));
 		}
 
 		public void ToDocument(Document document, DataTable table)

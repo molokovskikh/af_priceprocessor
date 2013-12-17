@@ -15,7 +15,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			Assert.IsTrue(BrianskFarmParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\77277071.DBF")));
 			var doc = WaybillParser.Parse("77277071.DBF");
 			var line = doc.Lines[0];
 			var invoice = doc.Invoice;

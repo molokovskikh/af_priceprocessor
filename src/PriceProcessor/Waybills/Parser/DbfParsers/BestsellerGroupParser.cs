@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICEENT")
-				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMM")
+				.Invoice(i => i.AmountWithoutNDS, "SUMM")
 				.Line(l => l.Amount, "SUMMWNDS")
 				.Line(l => l.NdsAmount, "SUMMNDS")
 				.Line(l => l.VitallyImportant, "PV");

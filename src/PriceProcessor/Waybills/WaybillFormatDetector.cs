@@ -197,13 +197,21 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 
 			foreach (var type in types) {
-				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
-				if (detectFormat == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
+				if (typeof(BaseDbfParser2).IsAssignableFrom(type)) {
+					var parser = (BaseDbfParser2)Activator.CreateInstance(type);
+					var hitpoints = parser.CalculateHitPoints((DataTable)args[0]);
+					if (hitpoints > 0)
+						yield return type;
+				}
+				else {
+					var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+					if (detectFormat == null)
+						throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
 
-				var result = (bool)detectFormat.Invoke(null, args);
-				if (result)
-					yield return type;
+					var result = (bool)detectFormat.Invoke(null, args);
+					if (result)
+						yield return type;
+				}
 			}
 		}
 

@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NOMDOC") //NOMDOC = Номер накладной
 				.DocumentHeader(d => d.DocumentDate, "DATDOC") //DATDOC = Дата накладной
-				.DocumentInvoice(i => i.BuyerAddress, "TO") //.Line()//TO = Адрес аптеки??? есть - инвойс получатель
+				.Invoice(i => i.BuyerAddress, "TO") //.Line()//TO = Адрес аптеки??? есть - инвойс получатель
 				.Line(l => l.Code, "CodeTov") //CodeTov = Код товара
 				.Line(l => l.Product, "TovName") //TovName = Наименование
 				.Line(l => l.Producer, "PrName") //PrName = Производитель

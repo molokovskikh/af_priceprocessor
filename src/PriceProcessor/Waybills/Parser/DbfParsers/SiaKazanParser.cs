@@ -28,8 +28,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.EAN13, "SHTRIHKOD")
 				.Line(l => l.Amount, "SUMMA")
 				.Line(l => l.BillOfEntryNumber, "N_DECLAR")
-				.DocumentInvoice(i => i.BuyerName, "APTEKA")
-				.DocumentInvoice(i => i.RecipientAddress, "ADDRESS");
+				.Invoice(i => i.BuyerName, "APTEKA")
+				.Invoice(i => i.RecipientAddress, "ADDRESS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

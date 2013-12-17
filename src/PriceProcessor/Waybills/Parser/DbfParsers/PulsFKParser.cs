@@ -10,15 +10,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var parcer = new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
 				.DocumentHeader(d => d.ProviderDocumentId, "NDOC")
-				.DocumentInvoice(i => i.InvoiceNumber, "BILLNUM")
-				.DocumentInvoice(i => i.InvoiceDate, "BILLDT")
-				.DocumentInvoice(i => i.AmountWithoutNDS, "SUMPAY")
+				.Invoice(i => i.InvoiceNumber, "BILLNUM")
+				.Invoice(i => i.InvoiceDate, "BILLDT")
+				.Invoice(i => i.AmountWithoutNDS, "SUMPAY")
 
-				.DocumentInvoice(i => i.NDSAmount10, "SUMNDS10")
-				.DocumentInvoice(i => i.NDSAmount18, "SUMNDS20")
-				.DocumentInvoice(i => i.AmountWithoutNDS10, "SUM10")
-				.DocumentInvoice(i => i.AmountWithoutNDS18, "SUM20")
-				.DocumentInvoice(i => i.AmountWithoutNDS0, "SUM0")
+				.Invoice(i => i.NDSAmount10, "SUMNDS10")
+				.Invoice(i => i.NDSAmount18, "SUMNDS20")
+				.Invoice(i => i.AmountWithoutNDS10, "SUM10")
+				.Invoice(i => i.AmountWithoutNDS18, "SUM20")
+				.Invoice(i => i.AmountWithoutNDS0, "SUM0")
 
 				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
@@ -63,12 +63,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 			if (!Data.Columns.Contains("ADRPOL")) {
 				if (Data.Columns.Contains("PRICEMAN"))
-					parcer = parcer.DocumentInvoice(i => i.RecipientId, "PODRCD");
+					parcer = parcer.Invoice(i => i.RecipientId, "PODRCD");
 				else
-					parcer = parcer.DocumentInvoice(i => i.RecipientAddress, "PODRCD");
+					parcer = parcer.Invoice(i => i.RecipientAddress, "PODRCD");
 			}
 			else {
-				parcer = parcer.DocumentInvoice(i => i.RecipientAddress, "ADRPOL");
+				parcer = parcer.Invoice(i => i.RecipientAddress, "ADRPOL");
 			}
 
 			return parcer;

@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificateAuthority, "SERTKEM")
 				.Line(l => l.CertificatesDate, "SERTDATA")
 				.Line(l => l.BillOfEntryNumber, "GTD")
-				.DocumentInvoice(i => i.BuyerName, "KLI");
+				.Invoice(i => i.BuyerName, "KLI");
 		}
 
 		public static bool CheckFileFormat(DataTable table)

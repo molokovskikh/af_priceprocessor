@@ -13,8 +13,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var parser = base.GetParser();
 
 			return parser
-				.DocumentInvoice(i => i.RecipientId, "customerCD")
-				.DocumentInvoice(i => i.RecipientAddress, "customerNM")
+				.Invoice(i => i.RecipientId, "customerCD")
+				.Invoice(i => i.RecipientAddress, "customerNM")
 				.Line(i => i.OrderId, "orderID");
 		}
 
