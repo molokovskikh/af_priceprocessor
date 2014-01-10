@@ -7,16 +7,6 @@ namespace Inforoom.PriceProcessor.Helpers
 {
 	public class MySqlUtils
 	{
-		public static void InTransaction(Action<MySqlConnection> action)
-		{
-			With.DeadlockWraper(() => With.Transaction((c, t) => action(c)));
-		}
-
-		public static void InTransaction(Action<MySqlConnection, MySqlTransaction> action)
-		{
-			With.DeadlockWraper(() => With.Transaction(action));
-		}
-
 		public static DataTable Fill(string sql)
 		{
 			return With.Connection(c => {

@@ -168,7 +168,6 @@
     <Compile Include="Services\ErrorHandlerFixture.cs" />
     <Compile Include="SetupFixture.cs" />
     <Compile Include="Handlers\HttpSourceHandlerFixture.cs" />
-    <Compile Include="MySqlUtilsFixture.cs" />
     <Compile Include="PriceFieldsTest.cs" />
     <Compile Include="PriceItemListTest.cs" />
     <Compile Include="PriceProcessItemFixture.cs" />
