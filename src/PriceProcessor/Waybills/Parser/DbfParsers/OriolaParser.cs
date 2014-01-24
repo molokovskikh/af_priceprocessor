@@ -6,7 +6,7 @@
 		{
 			return new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "NAKLNUM")
-				.DocumentHeader(h => h.WriteTime, "NAKLDATE")
+				.DocumentHeader(h => h.DocumentDate, "NAKLDATE")
 				.Line(l => l.Code, "PREPCODE")
 				.Line(l => l.EAN13, "BARCODE")
 				.Line(l => l.Product, "PREPNAME")
@@ -26,7 +26,9 @@
 				.Line(l => l.Certificates, "CRT")
 				.Line(l => l.CertificatesDate, "CRTBGNDT")
 				.Line(l => l.CertificateAuthority, "CRTORG")
+				.Line(l => l.DateOfManufacture, "SRSEXPDATE")
 				.Line(l => l.RegistryDate, "REGDT")
+				.Line(l => l.Period, "SRSMNFDATE")
 				.Line(l => l.RegistryCost, "REGPRC");
 		}
 	}
