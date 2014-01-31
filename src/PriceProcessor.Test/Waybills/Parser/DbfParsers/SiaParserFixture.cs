@@ -1,5 +1,6 @@
 ﻿using System;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -12,8 +13,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_with_incorrect_reg_date()
 		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\8472653.dbf");
-			Assert.That(document.Lines[0].CertificatesDate, Is.Null);
+			var document = WaybillParser.Parse(@"8472653.dbf");
+			Assert.AreEqual("  .  .", document.Lines[0].CertificatesDate);
 		}
 
 		[Test]
@@ -74,8 +75,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\8916_REESTR.dbf");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.Lines[4].RegistryCost, Is.EqualTo(82.0615));
-			Assert.That(doc.Lines[0].RegistryCost, Is.Null);
-			Assert.That(doc.Lines[2].RegistryCost, Is.Null);
+			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
+			Assert.That(doc.Lines[2].RegistryCost, Is.EqualTo(0));
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("ЗАМЕНИТЕЛЬ САХАРА\"РИО ГОЛД\" N1200 ТАБЛ"));
 		}
 
@@ -341,7 +342,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Code, Is.EqualTo("76561"));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Натрия хлорида раствор для инъекций 0,9%, р-р д/ин., 0,9 %, амп. 10 мл, №10, 0"));
 			Assert.That(document.Lines[0].Producer, Is.EqualTo("Сишуи Ксирканг Фармасьютикал Ко.Лтд/Китай"));
-			Assert.That(document.Lines[0].Country, Is.Empty);
+			Assert.IsNull(document.Lines[0].Country);
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(7));
 			Assert.That(document.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(18.78));
 			Assert.That(document.Lines[0].SupplierCost, Is.EqualTo(23.70));
@@ -391,7 +392,20 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Period, Is.EqualTo("01.08.2014"));
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.Nds, Is.EqualTo(10));
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo(""));
+			Assert.IsNull(line.BillOfEntryNumber);
+		}
+
+		[Test]
+		public void Parse_sia_tula()
+		{
+			var doc = WaybillParser.Parse("Р-1766562.DBF");
+			Assert.AreEqual(13, doc.Lines.Count);
+			var line = doc.Lines[0];
+			Assert.AreEqual("Алька-прим шип.таб. Х10", line.Product);
+			Assert.AreEqual("Польфарма Фармацевтический завод", line.Producer);
+			Assert.AreEqual(2, line.Quantity);
+			Assert.AreEqual(107.78, line.ProducerCostWithoutNDS);
+			Assert.AreEqual(107.78, line.SupplierCost);
 		}
 	}
 }
