@@ -153,6 +153,10 @@ namespace Inforoom.PriceProcessor.Downloader
 			//Протек-28, Удмуртская республика
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				296883, 1128459, 14015),
+
+			//Протек-39, Респ Дагестан, Ставропольский край
+			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService.EzakazWebServiceHttpSoap12Endpoint/",
+				315511, 1149019, 15477),
 		};
 
 		public int IgnoreOrderToId;
