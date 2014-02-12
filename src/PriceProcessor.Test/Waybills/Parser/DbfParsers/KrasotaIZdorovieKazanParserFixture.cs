@@ -50,6 +50,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("Р 52343-2005"));
 			Assert.That(line.Period, Is.EqualTo("01.07.2013"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(144.07));
+			Assert.AreEqual(170, line.SupplierCost);
 			Assert.That(line.Quantity, Is.EqualTo(1));
 			Assert.That(line.Amount, Is.EqualTo(170));
 			Assert.That(line.NdsAmount, Is.EqualTo(25.93m));
