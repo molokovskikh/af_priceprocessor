@@ -60,7 +60,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "BLL_NTR_ID")
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Product, "NAME_POST")
-				.Line(l => l.OrderId, "N_ZAK")
 				.Line(l => l.Code, "SP_PRD_ID")
 				.Line(l => l.OrderId, "N_ZAK");
 		}

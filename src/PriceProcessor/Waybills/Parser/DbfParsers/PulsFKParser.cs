@@ -28,7 +28,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCost, "PRICE2")
 				.Line(l => l.Quantity, "QNT")
 				.Line(l => l.Nds, "NDS")
-				.Line(l => l.Amount, "SUMS0")
 				.Line(l => l.Period, "GDATE")
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.RegistryCost, "REGPRC")
@@ -53,7 +52,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					parcer = parcer.Line(l => l.ProducerCost, "PRICE1")
 						.Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
 				}
-				parcer = parcer.Line(l => l.NdsAmount, "SUMSNDS");
+				parcer
+					.Line(l => l.NdsAmount, "SUMSNDS")
+					.Line(l => l.Amount, "SUMS0");
 			}
 			else {
 				parcer = parcer.Line(l => l.ProducerCost, "PRICE1N")

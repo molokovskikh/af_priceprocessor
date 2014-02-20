@@ -277,6 +277,7 @@
     <Compile Include="Waybills\Models\OrderHead.cs" />
     <Compile Include="Waybills\Models\OrderItem.cs" />
     <Compile Include="Waybills\Models\WaybillSettings.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ABGroupParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingCheboksaryParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingLipetskParser.cs" />

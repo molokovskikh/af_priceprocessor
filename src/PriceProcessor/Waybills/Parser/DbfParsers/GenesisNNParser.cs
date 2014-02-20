@@ -26,7 +26,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.NdsAmount, "NDS_SUM")
 				.Line(l => l.Amount, "SUM", "SUM_NAKED")
-				.Line(l => l.Nds, "NDS_PR")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "SCANCOD")
 				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN");

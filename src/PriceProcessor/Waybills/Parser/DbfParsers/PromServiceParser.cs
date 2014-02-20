@@ -8,31 +8,23 @@ using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class PromServiceParser : IDocumentParser
+	public class PromServiceParser : BaseDbfParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
-
-		public Document Parse(string file, Document document)
+		public override DbfParser GetParser()
 		{
-			var data = Dbf.Load(file, Encoding);
-
-			new DbfParser()
+			return new DbfParser()
 				.DocumentHeader(h => h.DocumentDate, "DATEDOC")
 				.Line(l => l.Code, "KOD")
 				.Line(l => l.Product, "TOVAR")
 				.Line(l => l.Producer, "PROIZV")
-				.Line(l => l.SerialNumber, "SERIYA")
 				.Line(l => l.Period, "DATEGODN")
 				.Line(l => l.SupplierCost, "PRICE")
 				.Line(l => l.ProducerCost, "PRPROIZV")
 				.Line(l => l.Amount, "ITOG")
 				.Line(l => l.NdsAmount, "SUM_NDS")
 				.Line(l => l.Quantity, "KOLVO")
-				.Line(l => l.SerialNumber, "SERIA")
-				.Line(l => l.Nds, "STNDS")
-				.ToDocument(document, data);
-
-			return document;
+				.Line(l => l.SerialNumber, "SERIA", "SERIYA")
+				.Line(l => l.Nds, "STNDS");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

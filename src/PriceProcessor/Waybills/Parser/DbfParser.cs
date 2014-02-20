@@ -18,7 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		private List<Action<Document, DataRow>> _headerActions = new List<Action<Document, DataRow>>();
 		private List<Action<Invoice, DataRow>> _invoiceActions = new List<Action<Invoice, DataRow>>();
 
-		public List<string> LineFields = new List<string>();
+		public Dictionary<PropertyInfo, string[]> LineMap = new Dictionary<PropertyInfo, string[]>();
 
 		private static PropertyInfo GetInfo<T>(Expression<Func<T, object>> expression)
 		{
@@ -31,7 +31,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			}
 			throw new Exception("Неизвестный тип выражения");
 		}
-
 
 		// Если fieldName - это поле, из которого будет читаться ProviderDocumentId,
 		// то этот метод делает проверку на то, что в поле ProviderDocumentId содержатся не порядковые номера
@@ -90,7 +89,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		private DbfParser CollectAction<T>(Expression<Func<T, object>> ex, string[] names, List<Action<T, DataRow>> actions)
+		private PropertyInfo CollectAction<T>(Expression<Func<T, object>> ex, string[] names, List<Action<T, DataRow>> actions)
 		{
 			var propertyInfo = GetInfo(ex);
 			actions.Add((line, dataRow) => {
@@ -104,18 +103,25 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					break;
 				}
 			});
-			return this;
+			return propertyInfo;
 		}
 
 		public DbfParser Invoice(Expression<Func<Invoice, object>> ex, params string[] names)
 		{
-			return CollectAction(ex, names, _invoiceActions);
+			CollectAction(ex, names, _invoiceActions);
+			return this;
 		}
 
 		public DbfParser Line(Expression<Func<DocumentLine, object>> ex, params string[] names)
 		{
-			LineFields.AddRange(names);
-			return CollectAction(ex, names, _lineActions);
+			var property = CollectAction(ex, names, _lineActions);
+			try {
+				LineMap.Add(property, names);
+			}
+			catch(ArgumentException e) {
+				throw new ArgumentException(String.Format("Ключи {0}", property), e);
+			}
+			return this;
 		}
 
 		protected static object ConvertIfNeeded(object value, Type type)

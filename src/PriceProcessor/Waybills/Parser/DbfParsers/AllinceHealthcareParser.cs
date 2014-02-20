@@ -28,7 +28,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.RegistryCost, "CENA_GRU")
 				.Line(l => l.Certificates, "SER_NOM")
 				.Line(l => l.SerialNumber, "SERIA")
-				.Line(l => l.VitallyImportant, "VID")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Amount, "SUM_SNDS")
 				.Line(l => l.NdsAmount, "SUM_NDS")
@@ -43,9 +42,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				});
 				parcer = parcer.Line(l => l.VitallyImportant, "VID");
 			}
-
-			if (data.Columns.Contains("SER_DATE"))
-				parcer = parcer.Line(l => l.CertificatesDate, "SER_DATE");
 
 			parcer.ToDocument(document, data);
 

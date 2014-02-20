@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -14,15 +16,26 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 	/// </summary>
 	public abstract class BaseDbfParser2 : BaseDbfParser
 	{
+		private static Dictionary<PropertyInfo, int> knownWeights = new Dictionary<PropertyInfo, int> {
+			{ typeof(DocumentLine).GetProperty("Product"), 1000 },
+			{ typeof(DocumentLine).GetProperty("Quantity"), 1000 },
+			{ typeof(DocumentLine).GetProperty("SupplierCost"), 500 },
+			{ typeof(DocumentLine).GetProperty("SupplierCostWithoutNDS"), 500 },
+		};
+
 		public int CalculateHitPoints(DataTable data)
 		{
 			var parser = GetParser();
-			var fields = parser.LineFields;
+			var fields = parser.LineMap;
 			var columns = data.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToArray();
-			var matchCount = fields.Intersect(columns, StringComparer.OrdinalIgnoreCase).Count();
-			if (matchCount < fields.Count * 0.5)
+			var weight = fields
+				.Where(p => p.Value.Intersect(columns, StringComparer.OrdinalIgnoreCase).Any())
+				.Select(f => f.Key)
+				.Sum(p => knownWeights.GetValueOrDefault(p, 1));
+			var count = fields.SelectMany(f => f.Value).Intersect(columns, StringComparer.OrdinalIgnoreCase).Count();
+			if (weight < 2500 || count < fields.Count * 0.5)
 				return 0;
-			return matchCount;
+			return weight;
 		}
 	}
 
