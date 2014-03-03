@@ -100,11 +100,8 @@ namespace PriceProcessor.Test.Formalization
 		[Test, Description("Проверяем, что при формализации прайса мы не создаем автоматический синоним, созданный по ассортименту")]
 		public void Complex_double_firmalize_no_automatic_synonim()
 		{
-			With.Connection(c => {
-				var deleter = c.CreateCommand();
-				deleter.CommandText = "delete from AutomaticProducerSynonyms";
-				deleter.ExecuteNonQuery();
-			});
+			session.CreateSQLQuery("delete from AutomaticProducerSynonyms")
+				.ExecuteUpdate();
 
 			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
 			product.CatalogProduct.Pharmacie = true;
@@ -118,7 +115,7 @@ namespace PriceProcessor.Test.Formalization
 				"Санкт-Петербургская ф.ф.");
 			session.Save(price);
 			TestAssortment.CheckAndCreate(product, producer);
-			Close();
+			Reopen();
 
 			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
 5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
@@ -126,12 +123,9 @@ namespace PriceProcessor.Test.Formalization
 			Formalize();
 			Formalize();
 
-			With.Connection(c => {
-				var counter = c.CreateCommand();
-				counter.CommandText = "select count(*) from AutomaticProducerSynonyms";
-				var count = counter.ExecuteScalar();
-				Assert.That(count, Is.EqualTo(0));
-			});
+			var count = session.CreateSQLQuery("select count(*) from AutomaticProducerSynonyms")
+				.UniqueResult<long>();
+			Assert.That(count, Is.EqualTo(0));
 		}
 
 		[Test]
