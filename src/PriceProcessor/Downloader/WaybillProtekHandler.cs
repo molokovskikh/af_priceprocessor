@@ -156,7 +156,7 @@ namespace Inforoom.PriceProcessor.Downloader
 
 			//Протек-39, Респ Дагестан, Ставропольский край
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
-				315511, 1149019, 15477),
+				323878, 1150923, 15477),
 		};
 
 		public int IgnoreOrderToId;
