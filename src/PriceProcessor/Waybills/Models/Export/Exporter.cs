@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Models.Export
 {
@@ -12,6 +13,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		SstLong = 2,
 		LessUniversalDbf = 3,
 		UniversalDbf = 4,
+		InfoDrugstoreXml = 5,
 	}
 
 	/// <summary>
@@ -22,15 +24,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		/// <summary>
 		/// Сохраняет данные в файл.
 		/// </summary>
-		public static void Save(Document document, WaybillFormat type)
+		public static void Save(Document document, WaybillFormat type, WaybillSettings settings)
 		{
-			var log = Convert(document, type);
+			var log = Convert(document, type, settings);
 
 			ActiveRecordMediator.Save(document.Log);
 			ActiveRecordMediator.Save(log);
 		}
 
-		public static DocumentReceiveLog Convert(Document document, WaybillFormat type)
+		public static DocumentReceiveLog Convert(Document document, WaybillFormat type, WaybillSettings settings)
 		{
 			var extention = ".dbf";
 			if (type == WaybillFormat.Sst
@@ -64,6 +66,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			else if (type == WaybillFormat.UniversalDbf) {
 				DbfExporter.SaveUniversalDbf(document, filename);
 			}
+			else if (type == WaybillFormat.InfoDrugstoreXml) {
+				using(var session = SessionHelper.GetSessionFactory().OpenSession())
+					XmlExporter.SaveInfoDrugstore(session, settings, document, filename);
+			}
 			else {
 				using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
 					using (var sw = new StreamWriter(fs, Encoding.GetEncoding(1251))) {
@@ -83,7 +89,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		{
 			var settings = WaybillSettings.Find(document.ClientCode);
 			if (!ConvertIfNeeded(document, settings)) {
-				Save(document, settings.ProtekWaybillSavingType);
+				Save(document, settings.ProtekWaybillSavingType, settings);
 			}
 		}
 
@@ -91,7 +97,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		{
 			if (settings.IsConvertFormat
 				&& document.SetAssortimentInfo(settings)) {
-				Save(document, settings.WaybillConvertFormat);
+				Save(document, settings.WaybillConvertFormat, settings);
 				return true;
 			}
 			return false;

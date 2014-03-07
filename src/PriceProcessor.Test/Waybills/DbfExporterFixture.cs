@@ -57,7 +57,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Export_protek_dbf_file()
 		{
-			Exporter.Convert(document, WaybillFormat.ProtekDbf);
+			Exporter.Convert(document, WaybillFormat.ProtekDbf, new WaybillSettings());
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).dbf");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 			Assert.That(log.FileName, Is.EqualTo("001-01.dbf"));

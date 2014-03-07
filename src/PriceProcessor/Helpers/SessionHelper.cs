@@ -60,5 +60,11 @@ namespace Inforoom.PriceProcessor.Helpers
 				scope.VoteCommit();
 			}
 		}
+
+		public static ISessionFactory GetSessionFactory()
+		{
+			return ActiveRecordMediator.GetSessionFactoryHolder()
+				.GetSessionFactory(typeof(ActiveRecordBase));
+		}
 	}
 }

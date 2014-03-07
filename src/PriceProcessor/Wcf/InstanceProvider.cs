@@ -4,6 +4,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Dispatcher;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Helpers;
 using NHibernate;
 using ISession = NHibernate.ISession;
 
@@ -19,9 +20,7 @@ namespace Inforoom.PriceProcessor.Wcf
 		{
 			this.type = type;
 			this.field = field;
-			factory = ActiveRecordMediator
-				.GetSessionFactoryHolder()
-				.GetSessionFactory(typeof(ActiveRecordBase));
+			factory = SessionHelper.GetSessionFactory();
 		}
 
 		public object GetInstance(InstanceContext instanceContext)

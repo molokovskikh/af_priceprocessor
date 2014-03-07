@@ -32,6 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			Parser = parser;
 			Log = log;
 			WriteTime = DateTime.Now;
+			DocumentDate = DateTime.Now;
 			FirmCode = Convert.ToUInt32(log.Supplier.Id);
 			ClientCode = log.ClientCode.Value;
 			Address = log.Address;

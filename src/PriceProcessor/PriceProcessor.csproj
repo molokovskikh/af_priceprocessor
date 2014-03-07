@@ -270,6 +270,7 @@
     <Compile Include="Waybills\Models\Export\DbfExporter.cs" />
     <Compile Include="Waybills\Models\Export\Exporter.cs" />
     <Compile Include="Waybills\Models\Export\SstExport.cs" />
+    <Compile Include="Waybills\Models\Export\XmlExporter.cs" />
     <Compile Include="Waybills\Models\Invoice.cs" />
     <Compile Include="Waybills\Models\Mail.cs" />
     <Compile Include="Waybills\Models\MailRecipient.cs" />

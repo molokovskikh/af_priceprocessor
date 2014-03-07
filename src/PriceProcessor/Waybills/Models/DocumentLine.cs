@@ -329,6 +329,36 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			}
 		}
 
+		public string ExportCode
+		{
+			get
+			{
+				if (AssortimentPriceInfo != null && AssortimentPriceInfo.Code != null)
+					return AssortimentPriceInfo.Code.ToString();
+				return Code;
+			}
+		}
+
+		public string ExportProduct
+		{
+			get
+			{
+				if (AssortimentPriceInfo != null && AssortimentPriceInfo.Code != null)
+					return AssortimentPriceInfo.Synonym;
+				return Product;
+			}
+		}
+
+		public string ExportProducer
+		{
+			get
+			{
+				if (AssortimentPriceInfo != null && AssortimentPriceInfo.Code != null)
+					return AssortimentPriceInfo.SynonymFirmCr;
+				return Producer;
+			}
+		}
+
 		public void SetAmount()
 		{
 			if (!Amount.HasValue && SupplierCost.HasValue && Quantity.HasValue)
