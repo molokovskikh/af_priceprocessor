@@ -28,7 +28,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Nds.Value, Is.EqualTo(18));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ99.В14241"));
 			Assert.That(line.SerialNumber, Is.Null);
-			Assert.That(document.DocumentDate, Is.Null);
 		}
 
 		[Test]

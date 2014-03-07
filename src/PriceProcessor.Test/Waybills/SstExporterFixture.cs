@@ -67,7 +67,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var content = File.ReadAllText(resultFile, Encoding.GetEncoding(1251));
 			Assert.That(content, Is.StringContaining("[Header]"));
-			Assert.That(content, Is.StringContaining("001-01;;432.04;ПОСТАВКА;39.28;0;РУБЛЬ;;;;ЦВ Протек;;;;;;;"));
+			Assert.That(content, Is.StringContaining("001-01;07.03.2014;432.04;ПОСТАВКА;39.28;0;РУБЛЬ;;;;ЦВ Протек;;;;;;;"));
 			Assert.That(content, Is.StringContaining("[Body]"));
 			var index = content.IndexOf(";S123S");
 			Assert.That(index, Is.GreaterThan(0));

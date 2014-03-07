@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				if(document.ProviderDocumentId == null)
 					document.ProviderDocumentId = element.XPathSelectElement("TTN").Value;
 				var docDate = element.XPathSelectElement("TTN_DATE") == null ? null : element.XPathSelectElement("TTN_DATE").Value;
-				if (!String.IsNullOrEmpty(docDate) && document.DocumentDate == null)
+				if (!String.IsNullOrEmpty(docDate))
 					document.DocumentDate = Convert.ToDateTime(docDate);
 				var line = document.NewLine();
 				line.Product = element.XPathSelectElement("NAME_POST").Value;
