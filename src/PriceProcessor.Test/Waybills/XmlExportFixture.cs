@@ -21,10 +21,11 @@ namespace PriceProcessor.Test.Waybills
 			var client = TestClient.CreateNaked();
 			var settings = session.Load<WaybillSettings>(client.Id);
 			settings.AssortimentPriceId = supplier.Prices[0].Id;
+			settings.WaybillConvertFormat = WaybillFormat.InfoDrugstoreXml;
 			var intersection = session.Query<TestAddressIntersection>()
 				.First(i => i.Address == client.Addresses[0] && i.Intersection.Price == supplier.Prices[0]);
 			intersection.SupplierDeliveryId = "sdf934";
-			session.Flush();
+			session.Transaction.Commit();
 
 			var document = new Document(new DocumentReceiveLog(
 				session.Load<Supplier>(supplier.Id),
@@ -35,9 +36,10 @@ namespace PriceProcessor.Test.Waybills
 			line.Producer = "Polfa/Polpharma";
 			line.Quantity = 13;
 
-			var filename = Path.GetRandomFileName();
-			XmlExporter.SaveInfoDrugstore(session, settings, document, filename);
+			var log = Exporter.Convert(document, settings.WaybillConvertFormat, settings);
+			var filename = log.GetRemoteFileNameExt();
 			var doc = XDocument.Load(filename);
+			Assert.AreEqual("0_Тестовый поставщик(0).xml", Path.GetFileName(filename));
 			var xml = @"<PACKET NAME=""Электронная накладная"" ID="""" FROM=""Тестовый поставщик"" TYPE=""12"">
   <SUPPLY>
     <INVOICE_DATE>07.03.2014</INVOICE_DATE>

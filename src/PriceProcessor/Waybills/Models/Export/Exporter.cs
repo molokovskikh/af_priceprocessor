@@ -16,9 +16,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		InfoDrugstoreXml = 5,
 	}
 
-	/// <summary>
-	/// Осуществляет сохранение накладной в SST формате.
-	/// </summary>
 	public class Exporter
 	{
 		/// <summary>
@@ -34,11 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 		public static DocumentReceiveLog Convert(Document document, WaybillFormat type, WaybillSettings settings)
 		{
-			var extention = ".dbf";
-			if (type == WaybillFormat.Sst
-				|| type == WaybillFormat.SstLong)
-				extention = ".sst";
-
+			var extention = settings.GetExportExtension(type);
 			var log = document.Log;
 			//если нет файла значит документ из сервиса протека
 			if (String.IsNullOrEmpty(document.Log.FileName)) {

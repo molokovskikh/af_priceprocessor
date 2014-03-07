@@ -30,5 +30,19 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			return true;
 		}
+
+		public string GetExportExtension(WaybillFormat type)
+		{
+			if (type == WaybillFormat.Sst
+				|| type == WaybillFormat.SstLong)
+				return ".sst";
+			if (type == WaybillFormat.ProtekDbf
+				|| type == WaybillFormat.LessUniversalDbf
+				|| type == WaybillFormat.UniversalDbf)
+				return ".dbf";
+			if (type == WaybillFormat.InfoDrugstoreXml)
+				return ".xml";
+			return ".dat";
+		}
 	}
 }
