@@ -37,6 +37,7 @@ namespace PriceProcessor.Test.Waybills
 			};
 			document = new Document(log) {
 				ProviderDocumentId = "001-01",
+				DocumentDate = new DateTime(2014, 3, 7)
 			};
 			document.SetInvoice();
 			document.NewLine(new DocumentLine {

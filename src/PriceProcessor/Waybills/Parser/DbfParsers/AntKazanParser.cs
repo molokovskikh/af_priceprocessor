@@ -12,6 +12,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Product, "Name")
 				.Line(l => l.Quantity, "Kol")
 				.Line(l => l.Certificates, "Sertificat")
+				.Line(l => l.CertificateAuthority, "PRIM")
+				.Line(l => l.CertificatesDate, "DATE_MAKED")
 				.Line(l => l.Period, "Date_end")
 				.Line(l => l.SerialNumber, "Seria")
 				.Line(l => l.Country, "Country")
@@ -22,7 +24,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Code, "NNUM")
 				.Line(l => l.Unit, "ED")
 				.Line(l => l.NdsAmount, "NDS_SUM")
-				.Line(l => l.Amount, "SUMMA");
+				.Line(l => l.Amount, "SUMMA")
+				.Line(l => l.BillOfEntryNumber, "GTD")
+				.Line(l => l.VitallyImportant, "TYPET");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

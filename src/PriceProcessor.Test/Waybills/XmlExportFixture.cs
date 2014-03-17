@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Inforoom.PriceProcessor.Models;
@@ -29,7 +30,9 @@ namespace PriceProcessor.Test.Waybills
 
 			var document = new Document(new DocumentReceiveLog(
 				session.Load<Supplier>(supplier.Id),
-				session.Load<Address>(client.Addresses[0].Id)));
+				session.Load<Address>(client.Addresses[0].Id))) {
+					DocumentDate = new DateTime(2014, 3, 7)
+				};
 			var line = document.NewLine();
 			line.Code = "21603";
 			line.Product = "Алька-прим шип.таб. Х10";

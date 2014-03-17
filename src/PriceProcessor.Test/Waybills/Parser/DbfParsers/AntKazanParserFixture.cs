@@ -46,5 +46,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Period, Is.EqualTo(null));
 			Assert.That(line.SerialNumber, Is.EqualTo(null));
 		}
+
+		[Test]
+		public void Parse_vitally_important()
+		{
+			var doc = WaybillParser.Parse("Та003539.dbf");
+			Assert.IsTrue(doc.Lines[1].VitallyImportant.Value);
+		}
 	}
 }
