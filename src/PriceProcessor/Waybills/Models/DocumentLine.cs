@@ -218,7 +218,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public decimal? ExciseTax { get; set; }
 
 		/// <summary>
-		/// № Таможенной декларации
+		/// № Таможенной декларации, Номер ГТД
 		/// </summary>
 		[Property]
 		public string BillOfEntryNumber { get; set; }

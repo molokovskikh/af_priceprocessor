@@ -199,6 +199,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\FarmCenterFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MatveevFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\YarFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongXmlFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongPdVersionFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongDateInDbfFixture.cs" />
