@@ -872,7 +872,7 @@ and a.FirmCode = p.FirmCode;",
 				return;
 
 			if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations) {
-				_rejectUpdater.Process(position, row);
+				_rejectUpdater.Process(position);
 			}
 		}
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using Castle.ActiveRecord;
+using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Core;
 
@@ -15,16 +16,16 @@ namespace Inforoom.PriceProcessor.Models
 		{
 		}
 
-		public Reject(FormalizationPosition position, DataRow row)
+		public Reject(FormalizationPosition position)
 		{
 			Product = position.PositionName;
 			ProductId = (uint?)position.ProductId;
 			Producer = position.FirmCr;
 			ProducerId = (uint?)position.CodeFirmCr;
-			Series = row["SERNM"].ToString();
-			LetterNo = row["LETTERSNR"].ToString();
-			LetterDate = (DateTime)row["LETTERSDT"];
-			CauseRejects = row["QUALNMR"].ToString();
+			Series = position.Core.Code;
+			LetterNo = position.Core.CodeCr;
+			LetterDate = SafeConvert.ToDateTime(position.Core.Note);
+			CauseRejects = position.Core.Doc;
 		}
 
 		[PrimaryKey]

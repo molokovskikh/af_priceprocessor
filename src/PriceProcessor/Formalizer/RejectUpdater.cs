@@ -14,9 +14,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 	{
 		private IList<Reject> rejects = new List<Reject>();
 
-		public void Process(FormalizationPosition position, DataRow row)
+		public void Process(FormalizationPosition position)
 		{
-			rejects.Add(new Reject(position, row));
+			rejects.Add(new Reject(position));
 		}
 
 		public void Save(bool cancellations)
