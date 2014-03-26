@@ -63,6 +63,10 @@ namespace PriceProcessor.Test.Formalization
 			format.PriceFormat = PriceFormatType.NativeDbf;
 			format.FName1 = "DRUGTXT";
 			format.FFirmCr = "MNFNMR";
+			format.FCode = "SERNM";
+			format.FCodeCr = "LETTERSNR";
+			format.FNote = "LETTERSDT";
+			format.FDoc = "QUALNMR";
 			Save(price, format);
 
 			realPrice = Price.Find(price.Id);
