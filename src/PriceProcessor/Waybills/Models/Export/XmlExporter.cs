@@ -43,7 +43,7 @@ group by ai.SupplierDeliveryId")
 				foreach (var line in document.Lines) {
 					writer.WriteStartElement("ITEM");
 					writer.Element("CODE", line.ExportCode);
-					writer.Element("NAME", line.ExportProducer);
+					writer.Element("NAME", line.ExportProduct);
 					writer.Element("VENDOR", line.ExportProducer);
 					writer.Element("QTTY", line.Quantity);
 					writer.Element("SPRICE", line.SupplierCostWithoutNDS);

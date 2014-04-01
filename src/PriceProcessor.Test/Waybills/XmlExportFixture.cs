@@ -50,7 +50,7 @@ namespace PriceProcessor.Test.Waybills
     <ITEMS>
       <ITEM>
         <CODE>21603</CODE>
-        <NAME>Polfa/Polpharma</NAME>
+        <NAME>Алька-прим шип.таб. Х10</NAME>
         <VENDOR>Polfa/Polpharma</VENDOR>
         <QTTY>13</QTTY>
       </ITEM>
