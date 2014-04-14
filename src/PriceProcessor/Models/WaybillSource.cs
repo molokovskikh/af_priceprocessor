@@ -62,9 +62,9 @@ namespace Inforoom.PriceProcessor.Models
 			if (String.IsNullOrEmpty(data))
 				return null;
 
-			var uri = new Uri(WaybillUrl, UriKind.RelativeOrAbsolute);
+			var uri = new Uri(data, UriKind.RelativeOrAbsolute);
 			if (!uri.IsAbsoluteUri)
-				uri = new UriBuilder("ftp" + System.Uri.SchemeDelimiter + WaybillUrl).Uri;
+				uri = new UriBuilder("ftp" + System.Uri.SchemeDelimiter + data).Uri;
 			return uri;
 		}
 

@@ -28,5 +28,15 @@ namespace PriceProcessor.Test.Models
 			Assert.That(uri.ToString(), Is.EqualTo("ftp://ftp.oriola-russia.ru/Nakl/"));
 			Assert.That(uri.Host, Is.EqualTo("ftp.oriola-russia.ru"));
 		}
+
+		[Test]
+		public void Get_source()
+		{
+			var source = new WaybillSource {
+				WaybillUrl = "ftp2.yarfarma.ru/invoice/",
+				RejectUrl = "ftp2.yarfarma.ru/deny/"
+			};
+			Assert.AreEqual("ftp://ftp2.yarfarma.ru/deny/", source.Uri(new RejectType()).ToString());
+		}
 	}
 }
