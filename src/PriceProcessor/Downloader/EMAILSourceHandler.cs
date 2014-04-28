@@ -99,11 +99,9 @@ namespace Inforoom.Downloader
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			var matched = false;
 
-			var attachmentFileName = string.Empty;
-
 			var attachments = m.GetValidAttachements();
 			foreach (var entity in attachments) {
-				attachmentFileName = SaveAttachement(entity);
+				var attachmentFileName = SaveAttachement(entity);
 				UnPack(m, ref matched, fromList, attachmentFileName);
 				Cleanup();
 			}

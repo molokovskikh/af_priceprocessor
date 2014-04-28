@@ -59,11 +59,11 @@ group by ai.SupplierDeliveryId")
 					writer.Element("ISGV", line.VitallyImportant);
 					writer.WriteEndElement();
 				}
-				writer.WriteEndElement();//ITEMS
+				writer.WriteEndElement(); //ITEMS
 
-				writer.WriteEndElement();//SUPPLY
+				writer.WriteEndElement(); //SUPPLY
 
-				writer.WriteEndElement();//PACKET
+				writer.WriteEndElement(); //PACKET
 			}
 		}
 	}

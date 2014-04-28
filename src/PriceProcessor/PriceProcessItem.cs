@@ -8,12 +8,15 @@ using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
+using log4net;
 using MySql.Data.MySqlClient;
 
 namespace Inforoom.PriceProcessor
 {
 	public class PriceProcessItem
 	{
+		private ILog log = LogManager.GetLogger(typeof(PriceProcessItem));
+
 		//Скачан ли прайс-лист или переподложен
 		public bool Downloaded { get; private set; }
 
@@ -181,6 +184,15 @@ where Id = ?Id",
 			command.Parameters.AddWithValue("?FileTime", FileTime);
 			command.Parameters.AddWithValue("?LocalLastDownload", LocalLastDownload);
 			command.ExecuteNonQuery();
+
+			var ignore = Convert.ToBoolean(MySqlHelper.ExecuteScalar(connection, @"
+select SilentSkipProcessing from Usersettings.PricesData pd
+join Usersettings.PricesCosts pc on pc.PriceCode = pd.PriceCode
+where pc.PriceItemId = ?priceItemId", new MySqlParameter("priceItemId", PriceItemId)));
+			if (ignore) {
+				log.WarnFormat("Обработка прайса отключена, игнорирую файл {0}", FilePath);
+				return;
+			}
 
 			if (File.Exists(FilePath))
 				File.Delete(FilePath);
