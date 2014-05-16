@@ -104,6 +104,7 @@ namespace Inforoom.PriceProcessor.Models
 
 		public void Fix(string downloadId, int minRepeatTranCount)
 		{
+			LogTime = DateTime.Now;
 			DownloadId = NullableConvert.ToUInt32(downloadId);
 			ResultId = (int) ((MaxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
 		}
