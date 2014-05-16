@@ -9,6 +9,7 @@ using System.Xml;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Core;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
@@ -491,7 +492,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			return _reader.Name.Match(name);
 		}
 
-		public void SendWarning(PriceLoggingStat stat)
+		public void SendWarning(FormLog stat)
 		{
 		}
 	}

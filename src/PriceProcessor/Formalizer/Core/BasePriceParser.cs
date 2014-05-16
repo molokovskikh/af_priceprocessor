@@ -8,6 +8,7 @@ using System.Threading;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.Helpers;
+using Inforoom.PriceProcessor.Models;
 using log4net;
 using MySql.Data.MySqlClient;
 using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
@@ -63,7 +64,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		protected readonly ILog _logger;
 
 		protected PriceFormalizationInfo _priceInfo;
-		protected PriceLoggingStat _loggingStat = new PriceLoggingStat();
+		protected FormLog _loggingStat;
 
 		private Searcher _searcher;
 
@@ -77,7 +78,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			get { return _priceInfo; }
 		}
 
-		public PriceLoggingStat Stat
+		public FormLog Stat
 		{
 			get { return _loggingStat; }
 		}
@@ -92,6 +93,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			_reader = reader;
 
 			_priceInfo = priceInfo;
+			_loggingStat = new FormLog(priceInfo);
 
 			_connection = new MySqlConnection(Literals.ConnectionString());
 			dsMyDB = new DataSet();
@@ -125,7 +127,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			newRow["PriceItemId"] = priceItemId;
 			newRow["Forb"] = position.PositionName;
 			dtForb.Rows.Add(newRow);
-			_loggingStat.forbCount++;
+			_loggingStat.Forb++;
 		}
 
 		/// <summary>
@@ -149,7 +151,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			drZero["Doc"] = core.Doc;
 
 			dtZero.Rows.Add(drZero);
-			_loggingStat.zeroCount++;
+			_loggingStat.Zero++;
 		}
 
 		/// <summary>
@@ -192,7 +194,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				drUnrecExp["HandMade"] = 0;
 
 			dtUnrecExp.Rows.Add(drUnrecExp);
-			_loggingStat.unrecCount++;
 		}
 
 		/// <summary>
@@ -436,18 +437,21 @@ order by c.Id",
 		{
 			foreach (var core in _newCores) {
 				if (core.ExistsCore == null) {
-					yield return SqlBuilder.UpdateOfferSql(_priceInfo, core);
-					yield return SqlBuilder.InsertCostSql(core);
+					Stat.InsertCoreCount++;
+					yield return SqlBuilder.InsertOfferSql(_priceInfo, core);
+					yield return SqlBuilder.InsertCostSql(core, Stat);
 				}
 				else {
-					yield return SqlBuilder.UpdateOfferSql(core);
-					yield return SqlBuilder.UpdateCostsCommand(core);
+					yield return SqlBuilder.UpdateOfferSql(core, Stat);
+					yield return SqlBuilder.UpdateCostsCommand(core, Stat);
 				}
 			}
 
 			var forDelete = _existsCores.Where(c => c.NewCore == null).Select(c => c.Id.ToString()).ToArray();
-			if (forDelete.Length > 0)
+			if (forDelete.Length > 0) {
+				Stat.DeleteCoreCount += forDelete.Length;
 				yield return "delete from farm.Core0 where Core0.Id in (" + String.Join(", ", forDelete.ToArray()) + ");";
+			}
 
 			var usedProductSynonyms = _newCores.GroupBy(c => c.SynonymCode).Select(c => c.Key.ToString()).ToArray();
 			if (usedProductSynonyms.Length > 0)
@@ -478,10 +482,10 @@ order by c.Id",
 				SendWarning(_loggingStat);
 			}
 
-			if (Settings.Default.CheckZero && (_loggingStat.zeroCount > (_loggingStat.formCount + _loggingStat.unformCount + _loggingStat.zeroCount) * 0.95))
+			if (Settings.Default.CheckZero && (_loggingStat.Zero > (_loggingStat.Form + _loggingStat.UnForm+ _loggingStat.Zero) * 0.95))
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
 
-			if (_loggingStat.formCount * 4 < _priceInfo.PrevRowCount)
+			if (_loggingStat.Form* 4 < _priceInfo.PrevRowCount)
 				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, _priceInfo, _loggingStat);
 
 			var done = false;
@@ -492,6 +496,8 @@ order by c.Id",
 				var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 				try {
+					//на случай если повтор
+					Stat.Reset();
 					CleanupCore();
 
 					using (Profile("Вставка синонимов производителей"))
@@ -536,8 +542,8 @@ order by c.Id",
 				}
 			} while (!done);
 
-			if (tryCount > _loggingStat.maxLockCount)
-				_loggingStat.maxLockCount = tryCount;
+			if (tryCount > _loggingStat.MaxLockCount)
+				_loggingStat.MaxLockCount = tryCount;
 		}
 
 		private void CleanupCore()
@@ -615,11 +621,13 @@ and CoreCosts.PC_CostCode = {1};",
 			cleanUpCommand.Parameters.Clear();
 			if (Downloaded) {
 				cleanUpCommand.CommandText = String.Format(
-					"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};", _loggingStat.formCount, _loggingStat.unformCount, priceItemId);
+					"UPDATE usersettings.PriceItems SET RowCount={0}, PriceDate=now(), LastFormalization=now(), UnformCount={1} WHERE Id={2};",
+						_loggingStat.Form.GetValueOrDefault(), _loggingStat.UnForm.GetValueOrDefault(), priceItemId);
 			}
 			else {
 				cleanUpCommand.CommandText = String.Format(
-					"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};", _loggingStat.formCount, _loggingStat.unformCount, priceItemId);
+					"UPDATE usersettings.PriceItems SET RowCount={0}, LastFormalization=now(), UnformCount={1} WHERE Id={2};",
+						_loggingStat.Form.GetValueOrDefault(), _loggingStat.UnForm.GetValueOrDefault(), priceItemId);
 			}
 			cleanUpCommand.CommandText += String.Format(@"
 UPDATE usersettings.AnalitFReplicationInfo A, usersettings.PricesData P
@@ -735,11 +743,11 @@ and a.FirmCode = p.FirmCode;",
 		/// <summary>
 		/// анализируем цены и формируем список, если ценовая колонка имеет более 85% позиций с неустановленной ценой
 		/// </summary>
-		private void ProcessUndefinedCost(PriceLoggingStat stat)
+		private void ProcessUndefinedCost(FormLog stat)
 		{
 			var stringBuilder = new StringBuilder();
 			foreach (var cost in _reader.CostDescriptions)
-				if (cost.UndefinedCostCount > stat.formCount * 0.85)
+				if (cost.UndefinedCostCount > stat.Form * 0.85)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" имеет {1} позиций с незаполненной ценой\n", cost.Name, cost.UndefinedCostCount);
 
 			Alerts.ToManyZeroCostAlert(stringBuilder, _priceInfo);
@@ -748,17 +756,17 @@ and a.FirmCode = p.FirmCode;",
 		/// <summary>
 		/// анализируем цены и формируем сообщение, если ценовая колонка имеет все позиции установленными в 0
 		/// </summary>
-		private void ProcessZeroCost(PriceLoggingStat stat)
+		private void ProcessZeroCost(FormLog stat)
 		{
 			var stringBuilder = new StringBuilder();
 			foreach (var cost in _reader.CostDescriptions)
-				if ((cost.ZeroCostCount > 0 && stat.formCount == 0) || cost.ZeroCostCount == stat.formCount)
+				if ((cost.ZeroCostCount > 0 && stat.Form == 0) || cost.ZeroCostCount == stat.Form)
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
 
 			Alerts.ZeroCostAlert(stringBuilder, _priceInfo);
 		}
 
-		private void SendWarning(PriceLoggingStat stat)
+		private void SendWarning(FormLog stat)
 		{
 			ProcessZeroCost(stat);
 			ProcessUndefinedCost(stat);
@@ -836,9 +844,9 @@ and a.FirmCode = p.FirmCode;",
 				_producerResolver.ResolveProducer(position);
 
 				if (!position.IsSet(UnrecExpStatus.NameForm))
-					_loggingStat.unformCount++;
+					_loggingStat.UnForm++;
 				else
-					_loggingStat.formCount++;
+					_loggingStat.Form++;
 
 				if (position.IsNotSet(UnrecExpStatus.FullForm) && !position.NotCreateUnrecExp)
 					InsertToUnrec(position);

@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public bool Downloaded { get; set; }
 		public string InputFileName { get; set; }
 
-		public PriceLoggingStat Stat { get; protected set; }
+		public FormLog Stat { get; protected set; }
 		public PriceFormalizationInfo Info { get; protected set; }
 
 		protected void UpdateIntersection(MySqlCommand command, List<Customer> customers, List<CostDescription> costs)

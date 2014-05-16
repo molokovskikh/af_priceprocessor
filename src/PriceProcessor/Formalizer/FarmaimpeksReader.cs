@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Core;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
@@ -111,7 +112,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public List<CostDescription> CostDescriptions { get; set; }
 
-		public void SendWarning(PriceLoggingStat stat)
+		public void SendWarning(FormLog stat)
 		{
 		}
 	}

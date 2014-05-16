@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer.Core;
+using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
 using log4net;
 using MySql.Data.MySqlClient;
 
@@ -38,20 +40,13 @@ namespace Inforoom.Formalizer
 				downloadId = id.ToString();
 			}
 
-			LogToDb(command => {
-				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Form, Unform, Zero, Forb, ResultId, TotalSecs, DownloadId) VALUES (NOW(), ?Host, ?PriceItemId, ?Form, ?Unform, ?Zero, ?Forb, ?ResultId, ?TotalSecs, ?DownloadId)";
-				command.Parameters.Clear();
-				command.Parameters.AddWithValue("?Host", Environment.MachineName);
-				command.Parameters.AddWithValue("?PriceItemId", _processItem.PriceItemId);
-				command.Parameters.AddWithValue("?Form", p.Stat.formCount);
-				command.Parameters.AddWithValue("?Unform", p.Stat.unformCount);
-				command.Parameters.AddWithValue("?Zero", p.Stat.zeroCount);
-				command.Parameters.AddWithValue("?Forb", p.Stat.forbCount);
-				command.Parameters.AddWithValue("?ResultId", (p.Stat.maxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
-				command.Parameters.AddWithValue("?TotalSecs", FormSecs);
-				command.Parameters.AddWithValue("?DownloadId", downloadId);
-				command.ExecuteNonQuery();
-			});
+			using(var session = SessionHelper.GetSessionFactory().OpenSession())
+			using(var trx = session.BeginTransaction()){
+				p.Stat.Fix(downloadId, Settings.Default.MinRepeatTranCount);
+				p.Stat.TotalSecs = (uint?)FormSecs;
+				session.Save(p.Stat);
+				trx.Commit();
+			}
 
 			if (_prevErrorMessage != String.Empty)
 				Mailer.SendToWarningList(messageSubject, messageBody);

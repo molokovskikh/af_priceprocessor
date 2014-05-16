@@ -1,4 +1,5 @@
 using System;
+using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Formalizer.Core
 {
@@ -65,12 +66,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		//Кол-во "запрещенных" позиций
 		public readonly int ForbCount = -1;
 
-		public RollbackFormalizeException(string message, PriceFormalizationInfo priceInfo, PriceLoggingStat stat) : base(message, priceInfo)
+		public RollbackFormalizeException(string message, PriceFormalizationInfo priceInfo, FormLog stat) : base(message, priceInfo)
 		{
-			FormCount = stat.formCount;
-			ZeroCount = stat.zeroCount;
-			UnformCount = stat.unformCount;
-			ForbCount = stat.forbCount;
+			FormCount = (int)stat.Form.GetValueOrDefault();
+			ZeroCount = (int)stat.Zero.GetValueOrDefault();
+			UnformCount = (int)stat.UnForm.GetValueOrDefault();
+			ForbCount = (int)stat.Forb.GetValueOrDefault();
 		}
 	}
 }

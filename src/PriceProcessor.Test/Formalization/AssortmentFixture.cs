@@ -29,7 +29,7 @@ namespace PriceProcessor.Test
 			throw new NotImplementedException();
 		}
 
-		public void SendWarning(PriceLoggingStat stat)
+		public void SendWarning(FormLog stat)
 		{
 			throw new NotImplementedException();
 		}

@@ -6,6 +6,7 @@ using System.Text;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Formalizer.Core;
+using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
 
 namespace PriceProcessor.Test.Formalization
@@ -45,7 +46,7 @@ namespace PriceProcessor.Test.Formalization
 			return new List<Customer>();
 		}
 
-		public void SendWarning(PriceLoggingStat stat)
+		public void SendWarning(FormLog stat)
 		{
 		}
 	}

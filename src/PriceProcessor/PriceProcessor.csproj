@@ -210,7 +210,6 @@
     <Compile Include="Formalizer\Core\Core.cs" />
     <Compile Include="Formalizer\Core\Searcher.cs" />
     <Compile Include="Formalizer\Core\PriceFormalizationInfo.cs" />
-    <Compile Include="Formalizer\Core\PriceLoggingStat.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />
     <Compile Include="Formalizer\PriceProcessThread.cs" />
     <Compile Include="Formalizer\PricesValidator.cs" />

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Inforoom.PriceProcessor.Models;
 using log4net;
 
 namespace Inforoom.PriceProcessor.Formalizer.Core
@@ -15,7 +16,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		IEnumerable<FormalizationPosition> Read();
 		List<CostDescription> CostDescriptions { get; set; }
 		IEnumerable<Customer> Settings();
-		void SendWarning(PriceLoggingStat stat);
+		void SendWarning(FormLog stat);
 	}
 
 	public class PriceReader : IReader
@@ -106,7 +107,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			return Enumerable.Empty<Customer>();
 		}
 
-		public void SendWarning(PriceLoggingStat stat)
+		public void SendWarning(FormLog stat)
 		{
 			CheckColumnPresents();
 		}

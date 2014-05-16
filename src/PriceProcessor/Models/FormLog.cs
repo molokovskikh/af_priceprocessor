@@ -4,12 +4,25 @@ using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Common.Tools;
+using Inforoom.Formalizer;
+using Inforoom.PriceProcessor.Formalizer.Core;
 
 namespace Inforoom.PriceProcessor.Models
 {
 	[ActiveRecord("FormLogs", Schema = "Logs")]
 	public class FormLog : ActiveRecordLinqBase<FormLog>
 	{
+		public FormLog()
+		{
+		}
+
+		public FormLog(PriceFormalizationInfo priceInfo)
+		{
+			Host = Environment.MachineName;
+			PriceItemId = (uint?)priceInfo.PriceItemId;
+		}
+
 		[PrimaryKey]
 		public virtual uint RowId { get; set; }
 
@@ -45,5 +58,42 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual uint? DownloadId { get; set; }
+
+		[Property]
+		public virtual int InsertCoreCount { get; set; }
+
+		[Property]
+		public virtual int UpdateCoreCount { get; set; }
+
+		[Property]
+		public virtual int DeleteCoreCount { get; set; }
+
+		[Property]
+		public virtual int InsertCostCount { get; set; }
+
+		[Property]
+		public virtual int UpdateCostCount { get; set; }
+
+		[Property]
+		public virtual int DeleteCostCount { get; set; }
+
+		public virtual int MaxLockCount { get; set; }
+
+		public virtual void Reset()
+		{
+			InsertCoreCount = 0;
+			UpdateCoreCount = 0;
+			DeleteCoreCount = 0;
+
+			InsertCoreCount = 0;
+			UpdateCoreCount = 0;
+			DeleteCostCount = 0;
+		}
+
+		public void Fix(string downloadId, int minRepeatTranCount)
+		{
+			DownloadId = NullableConvert.ToUInt32(downloadId);
+			ResultId = (int) ((MaxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
+		}
 	}
 }

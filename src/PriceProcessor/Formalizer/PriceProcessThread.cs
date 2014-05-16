@@ -5,6 +5,7 @@ using System.Threading;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
 using log4net;
 using Inforoom.PriceProcessor;
 using FileHelper = Common.Tools.FileHelper;
@@ -46,7 +47,7 @@ namespace Inforoom.Formalizer
 		bool Downloaded { get; set; }
 		string InputFileName { get; set; }
 
-		PriceLoggingStat Stat { get; }
+		FormLog Stat { get; }
 		PriceFormalizationInfo Info { get; }
 	}
 
