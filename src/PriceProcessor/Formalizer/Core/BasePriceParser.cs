@@ -482,10 +482,10 @@ order by c.Id",
 				SendWarning(_loggingStat);
 			}
 
-			if (Settings.Default.CheckZero && (_loggingStat.Zero > (_loggingStat.Form + _loggingStat.UnForm+ _loggingStat.Zero) * 0.95))
+			if (Settings.Default.CheckZero && (_loggingStat.Zero.GetValueOrDefault() > (_loggingStat.Form.GetValueOrDefault() + _loggingStat.UnForm.GetValueOrDefault() + _loggingStat.Zero.GetValueOrDefault()) * 0.95))
 				throw new RollbackFormalizeException(Settings.Default.ZeroRollbackError, _priceInfo, _loggingStat);
 
-			if (_loggingStat.Form* 4 < _priceInfo.PrevRowCount)
+			if (_loggingStat.Form.GetValueOrDefault() * 4 < _priceInfo.PrevRowCount)
 				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, _priceInfo, _loggingStat);
 
 			var done = false;
@@ -760,7 +760,7 @@ and a.FirmCode = p.FirmCode;",
 		{
 			var stringBuilder = new StringBuilder();
 			foreach (var cost in _reader.CostDescriptions)
-				if ((cost.ZeroCostCount > 0 && stat.Form == 0) || cost.ZeroCostCount == stat.Form)
+				if ((cost.ZeroCostCount > 0 && stat.Form.GetValueOrDefault() == 0) || cost.ZeroCostCount == stat.Form.GetValueOrDefault())
 					stringBuilder.AppendFormat("ценовая колонка \"{0}\" полностью заполнена '0'\n", cost.Name);
 
 			Alerts.ZeroCostAlert(stringBuilder, _priceInfo);

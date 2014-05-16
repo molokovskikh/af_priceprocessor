@@ -21,6 +21,18 @@ namespace Inforoom.PriceProcessor.Models
 		{
 			Host = Environment.MachineName;
 			PriceItemId = (uint?)priceInfo.PriceItemId;
+			InsertCoreCount = 0;
+			UpdateCoreCount = 0;
+			DeleteCoreCount = 0;
+
+			InsertCostCount = 0;
+			UpdateCostCount = 0;
+			DeleteCostCount = 0;
+
+			Form = 0;
+			Zero = 0;
+			UnForm = 0;
+			Forb = 0;
 		}
 
 		[PrimaryKey]
