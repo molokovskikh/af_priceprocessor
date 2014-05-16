@@ -16,4 +16,4 @@ _ReSharper.*
 build/
 output/
 packages/
-src/*.properties
+*.gen.*
