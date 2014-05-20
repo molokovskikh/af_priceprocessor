@@ -22,10 +22,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCostWithoutNDS, "PR_PRICE")
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.Certificates, "DOKUMENT")
+				.Line(l => l.CertificateAuthority, "SERTWHO")
 				.Line(l => l.Nds, "PCT_NDS")
 				.Line(l => l.SerialNumber, "SERIA")
 				.Line(l => l.VitallyImportant, "JNVLS")
-				.Line(l => l.RegistryCost, "REESTR");
+				.Line(l => l.RegistryCost, "REESTR")
+				.Line(l => l.BillOfEntryNumber, "GTD");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
@@ -36,7 +38,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("VOLUME")
 				&& data.Columns.Contains("SROK")
 				&& data.Columns.Contains("PR_PRICE")
-				&& data.Columns.Contains("DOKUMENT");
+				&& data.Columns.Contains("DOKUMENT")
+				&& !data.Columns.Contains("BARCOD")
+				&& !data.Columns.Contains("VCODE");
 		}
 	}
 }
