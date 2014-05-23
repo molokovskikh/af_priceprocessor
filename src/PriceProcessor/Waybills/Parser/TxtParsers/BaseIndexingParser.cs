@@ -95,6 +95,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int SerialNumberIndex = -1;
 		protected int PeriodIndex = -1;
 		protected int CertificatesIndex = -1;
+		protected int CertificateAuthorityIndex = -1;
 		protected int RegistryCostIndex = -1;
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
@@ -170,6 +171,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			return null;
 		}
 
+		protected static decimal? GetDecimal(string[] parts, int index)
+		{
+			return GetDecimal(GetString(parts, index));
+		}
+
 		protected static decimal? GetDecimal(string value)
 		{
 			if (String.IsNullOrEmpty(value))
@@ -179,6 +185,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				return res;
 			if (decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out res))
 				return res;
+			return null;
+		}
+
+		private static string GetString(string[] parts, int index)
+		{
+			if (parts.Length > index && index > 0)
+				return GetString(parts[index]);
 			return null;
 		}
 
@@ -332,47 +345,22 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				docLine.Code = parts[CodeIndex];
 			docLine.Product = parts[ProductIndex];
 			docLine.Producer = parts[ProducerIndex];
-			docLine.Country = GetString(parts[CountryIndex]);
-			docLine.Quantity = Convert.ToUInt32(GetDecimal(parts[QuantityIndex]));
-
-			if ((UnitIndex > 0) && parts.Length > UnitIndex)
-				docLine.Unit = GetString(parts[UnitIndex]);
-
-			if ((ProducerCostWithoutNdsIndex > 0) && parts.Length > ProducerCostWithoutNdsIndex)
-				docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostWithoutNdsIndex]);
-
-			if (SupplierCostIndex > 0)
-				docLine.SupplierCost = GetDecimal(parts[SupplierCostIndex]);
-
-			if ((NdsIndex > 0) && (parts.Length > NdsIndex))
-				docLine.Nds = (uint?)GetDecimal(parts[NdsIndex]);
-
-			if ((SupplierPriceMarkupIndex > 0) && (parts.Length > SupplierPriceMarkupIndex))
-				docLine.SupplierPriceMarkup = GetDecimal(parts[SupplierPriceMarkupIndex]);
-
-			if ((SupplierCostWithoutNdsIndex > 0) && (parts.Length > SupplierCostWithoutNdsIndex))
-				docLine.SupplierCostWithoutNDS = GetDecimal(parts[SupplierCostWithoutNdsIndex]);
-
-			if ((ExciseTaxIndex > 0) && (parts.Length > ExciseTaxIndex))
-				docLine.ExciseTax = GetDecimal(parts[ExciseTaxIndex]);
-
-			if ((SerialNumberIndex > 0) && (parts.Length > SerialNumberIndex))
-				docLine.SerialNumber = GetString(parts[SerialNumberIndex]);
-
-			if ((PeriodIndex > 0) && (parts.Length > PeriodIndex))
-				docLine.Period = GetString(parts[PeriodIndex]);
-
-			if ((CertificatesIndex > 0) && (parts.Length > CertificatesIndex))
-				docLine.Certificates = GetString(parts[CertificatesIndex]);
-
-			if ((CertificatesDateIndex > 0) && (parts.Length > CertificatesDateIndex))
-				docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
-
-			if ((RegistryCostIndex > 0) && (parts.Length > RegistryCostIndex))
-				docLine.RegistryCost = GetDecimal(parts[RegistryCostIndex]);
-
-			if ((BillOfEntryNumberIndex > 0) && (parts.Length > BillOfEntryNumberIndex))
-				docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
+			docLine.Country = GetString(parts, CountryIndex);
+			docLine.Quantity = (uint?)GetDecimal(parts[QuantityIndex]);
+			docLine.Unit = GetString(parts, UnitIndex);
+			docLine.ProducerCostWithoutNDS = GetDecimal(parts, ProducerCostWithoutNdsIndex);
+			docLine.SupplierCost = GetDecimal(parts, SupplierCostIndex);
+			docLine.Nds = (uint?)GetDecimal(parts, NdsIndex);
+			docLine.SupplierPriceMarkup = GetDecimal(parts, SupplierPriceMarkupIndex);
+			docLine.SupplierCostWithoutNDS = GetDecimal(parts, SupplierCostWithoutNdsIndex);
+			docLine.ExciseTax = GetDecimal(parts, ExciseTaxIndex);
+			docLine.SerialNumber = GetString(parts, SerialNumberIndex);
+			docLine.Period = GetString(parts, PeriodIndex);
+			docLine.Certificates = GetString(parts, CertificatesIndex);
+			docLine.CertificateAuthority = GetString(parts, CertificateAuthorityIndex);
+			docLine.CertificatesDate = GetString(parts, CertificatesDateIndex);
+			docLine.RegistryCost = GetDecimal(parts, RegistryCostIndex);
+			docLine.BillOfEntryNumber = GetString(parts, BillOfEntryNumberIndex);
 
 			if ((VitallyImportantIndex > 0) && parts.Length > VitallyImportantIndex && !String.IsNullOrEmpty(parts[VitallyImportantIndex])) {
 				docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
@@ -382,17 +370,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					docLine.VitallyImportant = false;
 			}
 
-			if ((EAN13Index > 0) && parts.Length > EAN13Index)
-				docLine.EAN13 = GetString(parts[EAN13Index]);
-
-			if ((AmountIndex > 0) && parts.Length > AmountIndex && !String.IsNullOrEmpty(parts[AmountIndex]))
-				docLine.Amount = GetDecimal(parts[AmountIndex]);
-
-			if ((NdsAmountIndex > 0) && parts.Length > NdsAmountIndex && !String.IsNullOrEmpty(parts[NdsAmountIndex]))
-				docLine.NdsAmount = GetDecimal(parts[NdsAmountIndex]);
-
-			if ((ProducerCostIndex > 0) && parts.Length > ProducerCostIndex && !String.IsNullOrEmpty(parts[ProducerCostIndex]))
-				docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+			docLine.EAN13 = GetString(parts, EAN13Index);
+			docLine.Amount = GetDecimal(parts, AmountIndex);
+			docLine.NdsAmount = GetDecimal(parts, NdsAmountIndex);
+			docLine.ProducerCost = GetDecimal(parts, ProducerCostIndex);
 		}
 
 		public static bool CheckByHeaderPart(string file, IEnumerable<string> name, string commentMark)
