@@ -45,7 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Period, "SGODN")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesDate, "SERT_DATE")
-				.Line(l => l.ProducerCostWithoutNDS, "PRCENA_BND", "PRCENABNDS")
+				.Line(l => l.ProducerCostWithoutNDS, "PRCENA_BND", "PRCENABNDS", "prcen_bnds")
 				.Line(l => l.RegistryCost, "GR_CENA")
 				.Line(l => l.SupplierCostWithoutNDS, "PCENA_BNDS")
 				.Line(l => l.Nds, "NDS")

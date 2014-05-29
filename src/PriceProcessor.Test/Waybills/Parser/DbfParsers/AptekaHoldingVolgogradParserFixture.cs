@@ -100,5 +100,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Unit, Is.EqualTo("упак"));
 			Assert.That(line.OrderId, Is.Null);
 		}
+
+		[Test]
+		public void Parse_regul()
+		{
+			var doc = WaybillParser.Parse("Рн001075.dbf");
+			var line = doc.Lines[0];
+			Assert.AreEqual("Атенолол Никомед табл.п.о. 100 мг №30 Nycomed GmbH/Германия/", line.Product);
+			Assert.AreEqual(36.19, line.ProducerCostWithoutNDS);
+		}
 	}
 }
