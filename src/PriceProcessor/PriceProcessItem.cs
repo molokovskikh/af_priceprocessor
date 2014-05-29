@@ -144,7 +144,7 @@ group by pi.Id",
 					workPrice.InputFileName = FilePath;
 					names = workPrice.GetAllNames();
 				}
-				catch (WarningFormalizeException e) {
+				catch (WarningFormalizeException) {
 					return null;
 				}
 			}
