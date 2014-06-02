@@ -78,7 +78,7 @@ namespace PriceProcessor.Test.Waybills
 				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
 				price.SaveAndFlush();
 
-				core = new TestCore() { Price = price, Code = supplierCode, ProductSynonym = synonym, Product = product, Quantity = "0", Period = "01.01.2015" };
+				core = new TestCore(synonym) { Price = price, Code = supplierCode, Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
 
 				transaction.VoteCommit();
@@ -158,7 +158,7 @@ namespace PriceProcessor.Test.Waybills
 				var synonym = price.ProductSynonyms[price.ProductSynonyms.Count - 1];
 				price.SaveAndFlush();
 
-				core = new TestCore() { Price = price, Code = "123456", ProductSynonym = synonym, Product = product, Quantity = "0", Period = "01.01.2015" };
+				core = new TestCore(synonym) { Price = price, Code = "123456", Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
 
 				transaction.VoteCommit();

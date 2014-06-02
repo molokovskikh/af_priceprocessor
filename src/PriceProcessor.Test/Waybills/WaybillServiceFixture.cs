@@ -204,10 +204,10 @@ namespace PriceProcessor.Test.Waybills
 				var producerSynonym = new TestProducerSynonym { Price = price, Name = "Плива Хрватска д.о.о./АВД фарма ГмбХ и Ко КГ", Producer = producer };
 				producerSynonym.SaveAndFlush();
 
-				var core = new TestCore() { Price = price, Code = "1234567", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
+				var core = new TestCore(productSynonym, producerSynonym) { Price = price, Code = "1234567", Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
 
-				core = new TestCore() { Price = price, Code = "111111", ProductSynonym = productSynonym, ProducerSynonym = producerSynonym, Product = product, Producer = producer, Quantity = "0", Period = "01.01.2015" };
+				core = new TestCore(productSynonym, producerSynonym) { Price = price, Code = "111111", Quantity = "0", Period = "01.01.2015" };
 				core.SaveAndFlush();
 
 				settings.IsConvertFormat = true;

@@ -87,13 +87,9 @@ namespace PriceProcessor.Test.Waybills
 				assortPrice);
 			session.Save(prSynonym);
 			session.Flush();
-			var core = new TestCore {
+			var core = new TestCore(synonym, prSynonym) {
 				Code = "0000",
-				Producer = session.Load<TestProducer>(_producer.Id),
 				Price = assortPrice,
-				ProducerSynonym = prSynonym,
-				ProductSynonym = synonym,
-				Product = session.Load<TestProduct>(_product.Id),
 				Quantity = "1",
 				Period = "01.01.2100"
 			};
