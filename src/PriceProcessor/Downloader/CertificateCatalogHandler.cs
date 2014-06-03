@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
-				var sources = CertificateSource.Queryable.Where(s => s.IsDisabled).ToArray();
+				var sources = CertificateSource.Queryable.Where(s => !s.IsDisabled).ToArray();
 				foreach (var source in sources) {
 					var ftpSource = source.GetCertificateSource() as IRemoteFtpSource;
 					if (ftpSource == null)

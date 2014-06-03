@@ -143,6 +143,8 @@ namespace Inforoom.Downloader.Ftp
 
 			dataSetEntries = ftpClient.GetList();
 #else
+			if (ftpDirectory.StartsWith("/"))
+				ftpDirectory = ftpDirectory.Remove(0, 1);
 			dataSetEntries = ToDirInfo(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), new DataSet());
 #endif
 			return dataSetEntries;
@@ -155,6 +157,7 @@ namespace Inforoom.Downloader.Ftp
 				table = data.Tables.Add("DirInfo");
 				table.Columns.Add("Name");
 				table.Columns.Add("Date");
+				table.Columns.Add("Size");
 				table.Columns.Add("IsDirectory");
 			}
 			var files = Directory.GetFiles(dir, "*.*");
