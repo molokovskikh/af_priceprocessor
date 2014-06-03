@@ -80,7 +80,7 @@ namespace PriceProcessor.Test.Waybills
 				LocalFileName = Path.GetFullPath(@"..\..\Data\RostaSertList.dbf")
 			};
 
-			BasicConfigurator.Configure();
+			session.Transaction.Commit();
 			var handler = new CertificateCatalogHandler();
 			handler.CreateDownHandlerPath();
 			handler.ProcessData();
