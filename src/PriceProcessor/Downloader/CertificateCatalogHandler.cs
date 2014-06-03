@@ -53,6 +53,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				Cleanup();
 				Ping();
 				var catalogFile = GetCatalogFile(ftpSource, source);
+				if (catalogFile == null)
+					return;
 				cleaner.Watch(catalogFile.LocalFileName);
 				Ping();
 				ImportCatalogFile(catalogFile, source, ftpSource);
