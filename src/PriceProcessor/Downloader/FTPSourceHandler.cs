@@ -81,6 +81,7 @@ namespace Inforoom.Downloader.Ftp
 
 			var receivedFiles = new List<DownloadedFile>();
 			using (var ftpClient = new FTP_Client()) {
+				_log.DebugFormat("Загрузка файлов с ftp://{0}@{1}:{2}/{3}/{4}", username, ftpHost, ftpPort, ftpDirectory, fileMask);
 				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory, ftpPassiveMode);
 				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows) {
 					if (Convert.ToBoolean(entry["IsDirectory"]))
@@ -183,8 +184,7 @@ namespace Inforoom.Downloader.Ftp
 			for (var i = 0; i < countAttempts; i++) {
 				try {
 					if (File.Exists(downloadedFileName)) {
-						var log = log4net.LogManager.GetLogger(GetType());
-						log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
+						_log.DebugFormat("Загрузка файла. Файл {0} уже существует. Удаляем", downloadedFileName);
 						File.Delete(downloadedFileName);
 					}
 					using (var fileStream = new FileStream(downloadedFileName, FileMode.CreateNew)) {

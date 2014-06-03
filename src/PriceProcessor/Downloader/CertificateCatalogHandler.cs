@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.Downloader.Ftp;
@@ -22,42 +23,40 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	public class CertificateCatalogHandler : AbstractHandler
 	{
-		public CertificateCatalogHandler()
-		{
-			SleepTime = 5;
-		}
-
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
-				var sources = CertificateSource.Queryable.ToArray();
+				var sources = CertificateSource.Queryable.Where(s => s.IsDisabled).ToArray();
 				foreach (var source in sources) {
 					var ftpSource = source.GetCertificateSource() as IRemoteFtpSource;
-					if (ftpSource != null)
+					if (ftpSource == null)
+						continue;
+
+					try {
 						DownloadFile(source, ftpSource);
+					}
+					catch(Exception e) {
+						_logger.Error(String.Format("Не удалось загрузить перекодировочную таблица сертификатов ftp://{0}@{1}:{2}/{3}/{4}",
+							ftpSource.FtpUser,
+							ftpSource.FtpHost,
+							ftpSource.FtpPort,
+							ftpSource.FtpDir,
+							ftpSource.Filename), e);
+					}
 				}
 			}
 		}
 
 		private void DownloadFile(CertificateSource source, IRemoteFtpSource ftpSource)
 		{
-			Cleanup();
-
-			Ping();
-
-			var catalogFile = GetCatalogFile(ftpSource, source);
-
-			Ping();
-
-			try {
-				if (catalogFile != null)
-					ImportCatalogFile(catalogFile, source, ftpSource);
-
+			using(var cleaner = new FileCleaner()) {
+				Cleanup();
 				Ping();
-			}
-			finally {
-				if (catalogFile != null && File.Exists(catalogFile.LocalFileName))
-					File.Delete(catalogFile.LocalFileName);
+				var catalogFile = GetCatalogFile(ftpSource, source);
+				cleaner.Watch(catalogFile.LocalFileName);
+				Ping();
+				ImportCatalogFile(catalogFile, source, ftpSource);
+				Ping();
 			}
 		}
 

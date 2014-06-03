@@ -33,6 +33,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public int Priority { get; set; }
 
+		[Property]
+		public bool IsDisabled { get; set; }
+
 		[HasAndBelongsToMany(typeof(Supplier),
 			Lazy = true,
 			ColumnKey = "CertificateSourceId",
