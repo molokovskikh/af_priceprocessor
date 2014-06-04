@@ -229,17 +229,6 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("Файл не содержит листов")]
-		public string SheetsNotExistsError
-		{
-			get
-			{
-				return ((string)(this["SheetsNotExistsError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("Прайс не имеет базовой цены.")]
 		public string BaseCostNotExistsError
 		{
@@ -273,17 +262,6 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("Лист не содержит полей.")]
-		public string FieldsNotExistsError
-		{
-			get
-			{
-				return ((string)(this["FieldsNotExistsError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("Не удалось разобрать маску имени {0}")]
 		public string ParseMaskError
 		{
@@ -312,17 +290,6 @@ namespace Inforoom.PriceProcessor
 			get
 			{
 				return ((string)(this["MinFieldCountError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("Ошибка в разборе срока годности для значения \'{0}\'.")]
-		public string PeriodParseError
-		{
-			get
-			{
-				return ((string)(this["PeriodParseError"]));
 			}
 		}
 
@@ -367,17 +334,6 @@ namespace Inforoom.PriceProcessor
 			get
 			{
 				return ((string)(this["UnknowCostTypeError"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("Попытка формализовать ценовую колонку мультиколоночного прайс-листа как прайс.")]
-		public string MulticolumnAsPriceError
-		{
-			get
-			{
-				return ((string)(this["MulticolumnAsPriceError"]));
 			}
 		}
 
