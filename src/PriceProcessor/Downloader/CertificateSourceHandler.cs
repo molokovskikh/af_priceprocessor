@@ -111,64 +111,69 @@ namespace Inforoom.PriceProcessor.Downloader
 
 		private void ProcessTask(CertificateTask certificateTask)
 		{
-			//мы можем создать дублирующиеся задачи
-			//по этому одна из предыдущих задач может уже загрузить сертификаты
-			//если это так то ничего делать не нужно
-			ActiveRecordMediator.Refresh(certificateTask.DocumentLine);
-			if (certificateTask.DocumentLine.Certificate != null)
-				return;
+			var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+			try {
+				//мы можем создать дублирующиеся задачи
+				//по этому одна из предыдущих задач может уже загрузить сертификаты
+				//если это так то ничего делать не нужно
+				session.Refresh(certificateTask.DocumentLine);
+				if (certificateTask.DocumentLine.Certificate != null)
+					return;
 
-			var source = DetectSource(certificateTask);
+				var source = DetectSource(certificateTask);
 
-			if (source != null) {
-				var files = source.CertificateSourceParser.GetCertificateFiles(certificateTask);
-
-				if (files.Count > 0)
-					try {
-						CreateCertificate(certificateTask, source.CertificateSourceParser, files);
+				if (source == null) {
+					_logger.ErrorFormat("Для задачи сертификата {0} не был найден источник", certificateTask);
+					using (new TransactionScope()) {
+						certificateTask.Delete();
 					}
-					finally {
-						foreach (var certificateFileEntry in files) {
-							if (File.Exists(certificateFileEntry.LocalFile))
-								try {
-									File.Delete(certificateFileEntry.LocalFile);
-								}
-								catch (Exception exception) {
-									_logger.WarnFormat(
-										"Для задачи сертификата {0} возникла ошибка при удалении локального файла {1}: {2}",
-										certificateTask,
-										certificateFileEntry.LocalFile,
-										exception);
-								}
-						}
-						var directoryName = Path.GetDirectoryName(files.Last(f => !String.IsNullOrEmpty(f.LocalFile)).LocalFile);
-						try {
-							if (!String.IsNullOrEmpty(directoryName)
-								&& Directory.Exists(directoryName)
-								&& Directory.GetDirectories(directoryName).Length == 0
-								&& Directory.GetFiles(directoryName).Length == 0)
-								Directory.Delete(directoryName);
-						}
-						catch (Exception exception) {
-							_logger.WarnFormat(
-								"Для задачи сертификата {0} возникла ошибка при удалении локальной директории {1}: {2}",
-								certificateTask,
-								directoryName,
-								exception);
-						}
-					}
-				else {
+					return;
+				}
+				var files = source.CertificateSourceParser.GetCertificateFiles(certificateTask, session);
+				if (files.Count == 0) {
 					_logger.WarnFormat("Для задачи сертификата {0} не были получены файлы", certificateTask);
 					using (new TransactionScope()) {
 						certificateTask.Delete();
 					}
+					return;
+				}
+
+				try {
+					CreateCertificate(certificateTask, source.CertificateSourceParser, files);
+				}
+				finally {
+					foreach (var certificateFileEntry in files) {
+						if (File.Exists(certificateFileEntry.LocalFile))
+							try {
+								File.Delete(certificateFileEntry.LocalFile);
+							}
+							catch (Exception exception) {
+								_logger.WarnFormat(
+									"Для задачи сертификата {0} возникла ошибка при удалении локального файла {1}: {2}",
+									certificateTask,
+									certificateFileEntry.LocalFile,
+									exception);
+							}
+					}
+					var directoryName = Path.GetDirectoryName(files.Last(f => !String.IsNullOrEmpty(f.LocalFile)).LocalFile);
+					try {
+						if (!String.IsNullOrEmpty(directoryName)
+							&& Directory.Exists(directoryName)
+							&& Directory.GetDirectories(directoryName).Length == 0
+							&& Directory.GetFiles(directoryName).Length == 0)
+							Directory.Delete(directoryName);
+					}
+					catch (Exception exception) {
+						_logger.WarnFormat(
+							"Для задачи сертификата {0} возникла ошибка при удалении локальной директории {1}: {2}",
+							certificateTask,
+							directoryName,
+							exception);
+					}
 				}
 			}
-			else {
-				_logger.ErrorFormat("Для задачи сертификата {0} не был найден источник", certificateTask);
-				using (new TransactionScope()) {
-					certificateTask.Delete();
-				}
+			finally {
+				ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 			}
 		}
 

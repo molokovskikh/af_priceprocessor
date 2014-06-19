@@ -18,6 +18,7 @@ using log4net.Appender;
 using log4net.Config;
 using log4net.Core;
 using log4net.Filter;
+using NHibernate;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Documents;
@@ -513,7 +514,7 @@ delete from documents.Certificates where Id = :certificateId;
 				return !String.IsNullOrEmpty(line.SerialNumber);
 			}
 
-			public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+			public IList<CertificateFile> GetCertificateFiles(CertificateTask task, ISession session)
 			{
 				throw new Exception("Возникла ошибка при обработке задачи: {0}".Format(task));
 			}
@@ -526,7 +527,7 @@ delete from documents.Certificates where Id = :certificateId;
 				return !String.IsNullOrEmpty(line.SerialNumber);
 			}
 
-			public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+			public IList<CertificateFile> GetCertificateFiles(CertificateTask task, ISession session)
 			{
 				var list = new List<CertificateFile>();
 
@@ -704,7 +705,7 @@ delete from documents.Certificates where Id = :certificateId;
 			var task = new CertificateTask();
 
 			try {
-				source.GetCertificateFiles(task);
+				source.GetCertificateFiles(task, session);
 				Assert.Fail("Не возникло исключение NotImplementedException");
 			}
 			catch (NotImplementedException) {

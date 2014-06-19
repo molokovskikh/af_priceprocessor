@@ -40,16 +40,10 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					var dirName = ExtractFtpDir(certificateSourceCatalog.OriginFilePath);
 					var fileName = ExtractFileName(certificateSourceCatalog.OriginFilePath);
 
-					var downloadFiles = downloader.GetFilesFromSource(
-						FtpHost,
-						FtpPort,
-						dirName,
-						FtpUser,
-						FtpPassword,
-						fileName,
-						DateTime.MinValue,
-						tempDowloadDir);
-
+					var uri = new UriBuilder(task.CertificateSource.LookupUrl) {
+						Path = Path.Combine(dirName, fileName)
+					}.Uri;
+					var downloadFiles = downloader.DownloadedFiles(uri, DateTime.MinValue, tempDowloadDir);
 					if (downloadFiles.Count > 0)
 						files.Add(new CertificateFile(
 							downloadFiles[0].FileName,
@@ -87,36 +81,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				result = originFilePath.Substring(0, originFilePath.IndexOf("/"));
 
 			return result;
-		}
-
-		public string FtpHost
-		{
-			get { return Settings.Default.RostaCertificateFtp; }
-		}
-
-		public int FtpPort
-		{
-			get { return 21; }
-		}
-
-		public string FtpDir
-		{
-			get { return "LIST"; }
-		}
-
-		public string FtpUser
-		{
-			get { return Settings.Default.RostaCertificateFtpUserName; }
-		}
-
-		public string FtpPassword
-		{
-			get { return Settings.Default.RostaCertificateFtpPassword; }
-		}
-
-		public string Filename
-		{
-			get { return "SERT_LIST.DBF"; }
 		}
 
 		public void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row)

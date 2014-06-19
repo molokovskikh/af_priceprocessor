@@ -34,8 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		protected string CopyToTemp(string filename)
 		{
-			var tempFile = Path.GetTempFileName();
-			Cleaner.Watch(tempFile);
+			var tempFile = Cleaner.TmpFile();
 			File.Copy(filename, tempFile, true);
 			return tempFile;
 		}

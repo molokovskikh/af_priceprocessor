@@ -40,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 			sourceCatalog.Save();
 
 			var task = new CertificateTask(certificateSource, line);
-			var files = source.GetCertificateFiles(task);
+			var files = source.GetCertificateFiles(task, null);
 			Assert.That(files.Count, Is.EqualTo(4));
 		}
 	}

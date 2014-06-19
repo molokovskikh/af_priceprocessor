@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Data;
+using System.Linq;
 using System.Net.Sockets;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using log4net;
 using LumiSoft.Net.FTP.Client;
 using System.Threading;
+using MySql.Data.MySqlClient;
 using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Downloader.Ftp
@@ -266,6 +268,29 @@ namespace Inforoom.Downloader.Ftp
 				SourcesTableColumns.colFTPDir, source.FtpDir,
 				SourcesTableColumns.colFTPLogin, source.FtpLogin,
 				SourcesTableColumns.colFTPPassword, source.FtpPassword));
+		}
+
+		public IList<DownloadedFile> DownloadedFiles(Uri uri, DateTime lastDownloadTime, string dir)
+		{
+			var filename = "";
+			var dirname = "";
+			var fileNameSplit = uri.AbsolutePath.LastIndexOf('/');
+			if (fileNameSplit < 0) {
+				dirname = uri.AbsolutePath;
+			} else {
+				dirname = uri.AbsolutePath.SliceBegin(fileNameSplit);
+				filename = uri.AbsolutePath.SliceEnd(fileNameSplit);
+			}
+
+			return GetFilesFromSource(
+				uri.Host,
+				uri.Port,
+				dirname,
+				uri.UserInfo.Split(':').FirstOrDefault(),
+				uri.UserInfo.Split(':').Skip(1).FirstOrDefault(),
+				filename,
+				lastDownloadTime,
+				dir);
 		}
 	}
 

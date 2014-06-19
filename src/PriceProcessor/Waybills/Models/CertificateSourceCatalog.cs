@@ -39,6 +39,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string OriginFilePath { get; set; }
 
+		/// <summary>
+		/// Описание файла - Всероссийский сертификат соответствия/Декларация и тд
+		/// </summary>
+		[Property]
+		public string Note { get; set; }
+
 		public Core FindCore(IEnumerable<Core> cores)
 		{
 			if (string.IsNullOrEmpty(SupplierProducerCode))

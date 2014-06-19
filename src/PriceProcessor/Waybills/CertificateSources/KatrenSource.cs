@@ -26,11 +26,15 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var filename = certificateSourceCatalog.OriginFilePath;
 				var mask = String.Format("{0}*{1}", Path.GetFileNameWithoutExtension(filename), Path.GetExtension(filename));
 
-				var dir = Path.Combine(FtpDir, Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath));
+				var uri = new Uri(task.CertificateSource.LookupUrl);
+				var dir = Path.Combine(Path.GetDirectoryName(uri.AbsolutePath),
+					Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath));
 				using (var ftpClient = new FTP_Client()) {
 					ftpClient.PassiveMode = true;
-					ftpClient.Connect(FtpHost, FtpPort);
-					ftpClient.Authenticate(FtpUser, FtpPassword);
+					ftpClient.Connect(uri.Host, uri.Port);
+					if (!String.IsNullOrEmpty(uri.UserInfo))
+						ftpClient.Authenticate(uri.UserInfo.Split(':').FirstOrDefault(),
+							uri.UserInfo.Split(':').Skip(1).FirstOrDefault());
 					ftpClient.SetCurrentDir(dir);
 					var ftpFiles = ftpClient.GetList();
 					var filesToDownload = ftpFiles.Tables["DirInfo"]
@@ -53,36 +57,6 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			if (files.Count == 0)
 				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp поставщика";
-		}
-
-		public string FtpHost
-		{
-			get { return "orel.katren.ru"; }
-		}
-
-		public int FtpPort
-		{
-			get { return 99; }
-		}
-
-		public string FtpDir
-		{
-			get { return "serts"; }
-		}
-
-		public string FtpUser
-		{
-			get { return "FTP_ANALIT"; }
-		}
-
-		public string FtpPassword
-		{
-			get { return "36AzQA63"; }
-		}
-
-		public string Filename
-		{
-			get { return "table.dbf"; }
 		}
 
 		public void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row)

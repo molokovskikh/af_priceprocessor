@@ -5,6 +5,7 @@ using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
+using NHibernate;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 {
@@ -32,20 +33,29 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 	public abstract class AbstractCertifcateSource : ICertificateSource
 	{
-		public abstract void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files);
+		protected ISession Session;
 		protected ILog Log;
-		protected FileCleaner Cleaner = new FileCleaner();
+		protected FileCleaner Cleaner;
 
 		protected AbstractCertifcateSource()
 		{
 			Log = LogManager.GetLogger(GetType());
+			Cleaner = new FileCleaner();
+		}
+
+		protected AbstractCertifcateSource(FileCleaner cleaner)
+			: this()
+		{
+			Cleaner = cleaner;
 		}
 
 		public abstract bool CertificateExists(DocumentLine line);
+		public abstract void GetFilesFromSource(CertificateTask task, IList<CertificateFile> files);
 
-		public IList<CertificateFile> GetCertificateFiles(CertificateTask task)
+		public IList<CertificateFile> GetCertificateFiles(CertificateTask task, ISession session)
 		{
 			var result = new List<CertificateFile>();
+			Session = session;
 
 			try {
 				GetFilesFromSource(task, result);
@@ -64,6 +74,9 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					}
 				});
 				throw;
+			}
+			finally {
+				Session = null;
 			}
 
 			return result;

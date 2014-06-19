@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Net;
 using Castle.ActiveRecord;
+using Common.NHibernate;
 using Common.Tools;
 using Inforoom.Downloader.Ftp;
 using Inforoom.PriceProcessor.Helpers;
@@ -16,6 +18,13 @@ namespace Inforoom.PriceProcessor.Downloader
 {
 	public class CertificateCatalogFile
 	{
+		public CertificateCatalogFile(CertificateSource source, DateTime fileDate, string localFileName)
+		{
+			Source = source;
+			FileDate = fileDate;
+			LocalFileName = localFileName;
+		}
+
 		public CertificateSource Source { get; set; }
 		public DateTime FileDate { get; set; }
 		public string LocalFileName { get; set; }
@@ -36,12 +45,8 @@ namespace Inforoom.PriceProcessor.Downloader
 						DownloadFile(source, ftpSource);
 					}
 					catch(Exception e) {
-						_logger.Error(String.Format("Не удалось загрузить перекодировочную таблица сертификатов ftp://{0}@{1}:{2}/{3}/{4}",
-							ftpSource.FtpUser,
-							ftpSource.FtpHost,
-							ftpSource.FtpPort,
-							ftpSource.FtpDir,
-							ftpSource.Filename), e);
+						_logger.Error(String.Format("Не удалось загрузить перекодировочную таблица сертификатов {0}",
+							source.DecodeTableUrl), e);
 					}
 				}
 			}
@@ -52,7 +57,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			using(var cleaner = new FileCleaner()) {
 				Cleanup();
 				Ping();
-				var catalogFile = GetCatalogFile(ftpSource, source);
+				var catalogFile = GetCatalogFile(ftpSource, source, cleaner);
 				if (catalogFile == null)
 					return;
 				cleaner.Watch(catalogFile.LocalFileName);
@@ -123,56 +128,41 @@ where
 		")
 						.SetParameter("certificateSourceId", catalogFile.Source.Id)
 						.ExecuteUpdate();
+
+					session.SaveEach(catalogList);
+					source.LastDecodeTableDownload = catalogFile.FileDate;
+					session.Update(source);
 				}
 				finally {
 					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(session);
 				}
-
-				catalogList.ForEach(c => c.Save());
-
-				var sessionUpdate = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
-				try {
-					sessionUpdate.CreateSQLQuery(@"
-	update
-		documents.CertificateSources
-	set
-		FtpFileDate = :FtpFileDate
-	where
-		Id = :certificateSourceId
-		")
-						.SetParameter("certificateSourceId", catalogFile.Source.Id)
-						.SetParameter("FtpFileDate", catalogFile.FileDate)
-						.ExecuteUpdate();
-				}
-				finally {
-					ActiveRecordMediator.GetSessionFactoryHolder().ReleaseSession(sessionUpdate);
-				}
-
 				transaction.VoteCommit();
 				_logger.InfoFormat("Транзакция по обновлению каталога сертификатов завершена успешно");
 			}
 		}
 
-		public virtual CertificateCatalogFile GetCatalogFile(IRemoteFtpSource ftpSource, CertificateSource source)
+		public virtual CertificateCatalogFile GetCatalogFile(IRemoteFtpSource ftpSource, CertificateSource source, FileCleaner cleaner)
 		{
 			var downloader = new FtpDownloader();
+			var uri = new Uri(source.DecodeTableUrl);
+			if (uri.Scheme.Match("ftp")) {
+				var downloadFiles = downloader.DownloadedFiles(uri,
+					source.LastDecodeTableDownload.HasValue ? source.LastDecodeTableDownload.Value : DateTime.MinValue,
+					DownHandlerPath);
 
-			var downloadFiles = downloader.GetFilesFromSource(
-				ftpSource.FtpHost,
-				ftpSource.FtpPort,
-				ftpSource.FtpDir,
-				ftpSource.FtpUser,
-				ftpSource.FtpPassword,
-				ftpSource.Filename,
-				source.FtpFileDate.HasValue ? source.FtpFileDate.Value : DateTime.MinValue,
-				DownHandlerPath);
-
-			if (downloadFiles.Count > 0)
-				return new CertificateCatalogFile {
-					Source = source,
-					FileDate = downloadFiles[0].FileDate,
-					LocalFileName = downloadFiles[0].FileName
-				};
+				if (downloadFiles.Count > 0)
+					return new CertificateCatalogFile(source, downloadFiles[0].FileDate, downloadFiles[0].FileName);
+			}
+			else if (uri.Scheme.Match("file")) {
+				var src = new FileInfo(uri.LocalPath);
+				if (!src.Exists)
+					return null;
+				if (Math.Abs((DateTime.Now - src.LastWriteTime).TotalMilliseconds) > Settings.Default.FileDownloadInterval
+					&& source.LastDecodeTableDownload != src.LastWriteTime) {
+					var dst = src.CopyTo(cleaner.TmpFile());
+					return new CertificateCatalogFile(source, src.LastWriteTime, dst.FullName);
+				}
+			}
 
 			return null;
 		}

@@ -81,7 +81,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 			};
 			Save(certificsteCatalog);
 			Reopen();
-			rostaSource.GetCertificateFiles(task);
+			rostaSource.GetCertificateFiles(task, session);
 			// Проверяем, что временная папка удалена
 			Assert.That(Directory.Exists(rostaSource.TMPDownloadDir), Is.False);
 		}

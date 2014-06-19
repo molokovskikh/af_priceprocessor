@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 					}
 				}
 			};
-			var files = source.GetCertificateFiles(task);
+			var files = source.GetCertificateFiles(task, null);
 			Assert.That(files.Count, Is.GreaterThan(0));
 			var file = files[0];
 			Assert.That(file.ExternalFileId, Is.Not.Null);

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.CertificateSources;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -10,6 +12,20 @@ namespace PriceProcessor.Test.Waybills.Sources
 	[TestFixture]
 	public class NadezhdaFarmCertificateSourceFixture
 	{
+		private FileCleaner cleaner;
+
+		[SetUp]
+		public void Setup()
+		{
+			cleaner = new FileCleaner();
+		}
+
+		[TearDown]
+		public void Teardown()
+		{
+			cleaner.Dispose();
+		}
+
 		[Test]
 		public void Load_certificates()
 		{

@@ -28,7 +28,19 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public bool SearchInAssortmentPrice { get; set; }
 
 		[Property]
-		public DateTime? FtpFileDate { get; set; }
+		public DateTime? LastDecodeTableDownload { get; set; }
+
+		/// <summary>
+		/// Корневой url для поиска сертификатов
+		/// </summary>
+		[Property]
+		public string LookupUrl { get; set; }
+
+		/// <summary>
+		/// Url для поиска таблицы перекодировки, таблица должна быть в формате dbf
+		/// </summary>
+		[Property]
+		public string DecodeTableUrl { get; set; }
 
 		[Property]
 		public int Priority { get; set; }
@@ -54,12 +66,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 	public interface IRemoteFtpSource
 	{
-		string FtpHost { get; }
-		int FtpPort { get; }
-		string FtpDir { get; }
-		string FtpUser { get; }
-		string FtpPassword { get; }
-		string Filename { get; }
 		void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row);
 	}
 }

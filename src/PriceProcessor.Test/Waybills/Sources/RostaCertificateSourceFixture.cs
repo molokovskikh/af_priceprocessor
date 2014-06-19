@@ -49,19 +49,15 @@ namespace PriceProcessor.Test.Waybills.Sources
 			};
 
 			Assert.That(rostaSource.CertificateExists(line), Is.False);
-
-			using (new TransactionScope(OnDispose.Commit)) {
-				var catalog = new CertificateSourceCatalog {
-					CertificateSource = _source,
-					SerialNumber = line.SerialNumber,
-					//Код в накладной и в каталоге может не совпадать, сравниваем по CatalogId
-					SupplierCode = "C!" + line.Code,
-					CatalogProduct = product.CatalogProduct,
-					OriginFilePath = Path.GetRandomFileName()
-				};
-				catalog.Save();
-			}
-
+			var catalog = new CertificateSourceCatalog {
+				CertificateSource = _source,
+				SerialNumber = line.SerialNumber,
+				//Код в накладной и в каталоге может не совпадать, сравниваем по CatalogId
+				SupplierCode = "C!" + line.Code,
+				CatalogProduct = product.CatalogProduct,
+				OriginFilePath = Path.GetRandomFileName()
+			};
+			catalog.Save();
 			Assert.That(rostaSource.CertificateExists(line), Is.True);
 		}
 
@@ -76,25 +72,23 @@ namespace PriceProcessor.Test.Waybills.Sources
 				SerialNumber = "C392764"
 			};
 
-			using (new TransactionScope(OnDispose.Commit)) {
-				var catalog = new CertificateSourceCatalog {
-					CertificateSource = _source,
-					SerialNumber = task.DocumentLine.SerialNumber,
-					SupplierCode = task.DocumentLine.Code,
-					OriginFilePath = "005/0052602p-0.gif"
-				};
-				catalog.Save();
+			var catalog = new CertificateSourceCatalog {
+				CertificateSource = _source,
+				SerialNumber = task.DocumentLine.SerialNumber,
+				SupplierCode = task.DocumentLine.Code,
+				OriginFilePath = "005/0052602p-0.gif"
+			};
+			catalog.Save();
 
-				catalog = new CertificateSourceCatalog {
-					CertificateSource = _source,
-					SerialNumber = task.DocumentLine.SerialNumber,
-					SupplierCode = task.DocumentLine.Code,
-					OriginFilePath = "005/0052602pd-0.gif"
-				};
-				catalog.Save();
-			}
+			catalog = new CertificateSourceCatalog {
+				CertificateSource = _source,
+				SerialNumber = task.DocumentLine.SerialNumber,
+				SupplierCode = task.DocumentLine.Code,
+				OriginFilePath = "005/0052602pd-0.gif"
+			};
+			catalog.Save();
 
-			var files = rostaSource.GetCertificateFiles(task);
+			var files = rostaSource.GetCertificateFiles(task, session);
 
 			Assert.That(files.Count, Is.EqualTo(2));
 			var file = files[0];

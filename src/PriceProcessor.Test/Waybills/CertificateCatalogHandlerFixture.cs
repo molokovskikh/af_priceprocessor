@@ -39,7 +39,8 @@ namespace PriceProcessor.Test.Waybills
 
 			_source = new CertificateSource {
 				SourceClassName = typeof(RostaCertificateSource).Name,
-				SearchInAssortmentPrice = true
+				SearchInAssortmentPrice = true,
+				DecodeTableUrl = "ftp://ftpanalit:imalit76@ftp.apteka-raduga.ru:21/LIST/SERT_LIST.DBF"
 			};
 			ftpSource = (IRemoteFtpSource)_source.GetCertificateSource();
 			_source.Suppliers = new List<Supplier>();
@@ -71,14 +72,10 @@ namespace PriceProcessor.Test.Waybills
 
 			var catalogs = session.Query<CertificateSourceCatalog>().Where(c => c.CertificateSource == _source).ToList();
 
-			Assert.That(_source.FtpFileDate, Is.Null, "Дата файла с ftp не должна быть заполнена");
+			Assert.That(_source.LastDecodeTableDownload, Is.Null, "Дата файла с ftp не должна быть заполнена");
 			Assert.That(catalogs.Count, Is.EqualTo(0), "Таблица не должна быть заполнена");
 
-			var catalogFile = new CertificateCatalogFile {
-				Source = _source,
-				FileDate = DateTime.Now,
-				LocalFileName = Path.GetFullPath(@"..\..\Data\RostaSertList.dbf")
-			};
+			var catalogFile = new CertificateCatalogFile(_source, DateTime.Now, Path.GetFullPath(@"..\..\Data\RostaSertList.dbf"));
 
 			session.Transaction.Commit();
 			var handler = new CertificateCatalogHandler();
@@ -86,8 +83,8 @@ namespace PriceProcessor.Test.Waybills
 			handler.ProcessData();
 
 			session.Refresh(_source);
-			Assert.That(_source.FtpFileDate, Is.Not.Null, "Дата файла с ftp должна быть заполнена");
-			Assert.That(_source.FtpFileDate.Value.Subtract(catalogFile.FileDate).TotalSeconds, Is.LessThan(1), "Дата файла не совпадает");
+			Assert.That(_source.LastDecodeTableDownload, Is.Not.Null, "Дата файла с ftp должна быть заполнена");
+			Assert.That(_source.LastDecodeTableDownload.Value.Subtract(catalogFile.FileDate).TotalSeconds, Is.LessThan(1), "Дата файла не совпадает");
 
 			var existsCatalogs = session.Query<CertificateSourceCatalog>().Where(c => c.CertificateSource == _source).ToList();
 			Assert.That(existsCatalogs.Count, Is.GreaterThan(0), "Таблица должна быть заполнена");

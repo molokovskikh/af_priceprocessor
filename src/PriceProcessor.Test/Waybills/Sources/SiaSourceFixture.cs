@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 				Code = "22651",
 				SerialNumber = "835495"
 			};
-			var files = source.GetCertificateFiles(task);
+			var files = source.GetCertificateFiles(task, null);
 			Assert.That(files.Count, Is.GreaterThan(0));
 			var file = files[0];
 			Assert.That(File.Exists(file.LocalFile), Is.True, "файл не существует {0}", file.LocalFile);
