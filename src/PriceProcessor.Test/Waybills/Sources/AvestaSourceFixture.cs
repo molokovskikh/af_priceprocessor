@@ -62,5 +62,17 @@ namespace PriceProcessor.Test.Waybills.Sources
 			Assert.IsNull(line.CertificateError);
 			Assert.AreEqual(1, files.Count);
 		}
+
+		[Test]
+		public void Read_catalog()
+		{
+			var source = new AvestaSource();
+			var table = Dbf.Load(@"..\..\Data\avesta_cert_catalog.dbf");
+			var catalog = new CertificateSourceCatalog();
+			source.ReadSourceCatalog(catalog, table.Rows[0]);
+			Assert.AreEqual("47599", catalog.SupplierCode);
+			Assert.AreEqual("1961013", catalog.SerialNumber);
+			Assert.AreEqual(@"\СЕРТИФИКАТЫ\КОРВАЛОЛ капли 25мл Ф-Лексредства (фл-кап инд уп)\1961013\Декларация.tif", catalog.OriginFilePath);
+		}
 	}
 }

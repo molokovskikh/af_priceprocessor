@@ -58,6 +58,8 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 		public void ReadSourceCatalog(CertificateSourceCatalog catalog, DataRow row)
 		{
+			catalog.SupplierCode = row["matcode"].ToString();
+			catalog.SerialNumber = row["seria"].ToString();
 			catalog.OriginFilePath = row["risfile"].ToString();
 			catalog.Note = row["tipdoc"].ToString();
 		}
