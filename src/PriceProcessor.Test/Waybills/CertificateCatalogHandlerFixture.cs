@@ -103,8 +103,11 @@ namespace PriceProcessor.Test.Waybills
 		public void Get_local_file()
 		{
 			using(var cleaner = new FileCleaner()) {
+				var tmpFile = cleaner.TmpFile();
+				var fileInfo = new FileInfo(tmpFile);
+				fileInfo.LastWriteTime = DateTime.Now.AddDays(1);
 				var source = new CertificateSource {
-					DecodeTableUrl = new Uri(Path.GetFullPath(cleaner.TmpFile())).ToString()
+					DecodeTableUrl = new Uri(fileInfo.FullName).ToString()
 				};
 				var handler = new CertificateCatalogHandler();
 				handler.CreateDownHandlerPath();
