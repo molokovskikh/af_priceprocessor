@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net.Util;
 using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills.CertificateSources
@@ -28,8 +29,11 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				task.DocumentLine.CertificateError = "Нет записи в таблице перекодировки";
 				return;
 			}
-			foreach (var map in maps) {
-				var file = Path.Combine(new Uri(task.CertificateSource.LookupUrl).LocalPath, map.OriginFilePath);
+			foreach (var map in maps.Where(m => !String.IsNullOrWhiteSpace(m.OriginFilePath))) {
+				var path = map.OriginFilePath;
+				if (path[0] == Path.DirectorySeparatorChar)
+					path = path.Slice(1, -1);
+				var file = Path.Combine(new Uri(task.CertificateSource.LookupUrl).LocalPath, path);
 				if (File.Exists(file)) {
 					var tmp = Cleaner.TmpFile();
 					File.Copy(file, tmp, true);

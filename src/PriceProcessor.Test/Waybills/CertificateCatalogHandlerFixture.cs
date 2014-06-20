@@ -27,30 +27,30 @@ namespace PriceProcessor.Test.Waybills
 	{
 		private CertificateSource _source;
 		private TestSupplier _supplier;
-		private IRemoteFtpSource ftpSource;
+		private CertificateCatalogHandler handler;
 
 		[SetUp]
 		public void SetUp()
 		{
-			_supplier = TestSupplier.CreateNaked(session);
-			var realSupplier = session.Load<Supplier>(_supplier.Id);
-
 			session.DeleteEach<CertificateSource>();
 
-			_source = new CertificateSource {
-				SourceClassName = typeof(RostaCertificateSource).Name,
-				SearchInAssortmentPrice = true,
-				DecodeTableUrl = "ftp://ftpanalit:imalit76@ftp.apteka-raduga.ru:21/LIST/SERT_LIST.DBF"
-			};
-			ftpSource = (IRemoteFtpSource)_source.GetCertificateSource();
-			_source.Suppliers = new List<Supplier>();
-			_source.Suppliers.Add(realSupplier);
+			_supplier = TestSupplier.CreateNaked(session);
+			_source = new CertificateSource();
+			_source.SourceClassName = "";
+			_source.Suppliers.Add(session.Load<Supplier>(_supplier.Id));
 			session.Save(_source);
+
+			handler = new CertificateCatalogHandler();
+			handler.CreateDownHandlerPath();
 		}
 
 		[Test(Description = "проверяем заполнение таблицы каталога сертификатов")]
 		public void ImportCatalogFile()
 		{
+			_source.SourceClassName = typeof(RostaCertificateSource).Name;
+			_source.SearchInAssortmentPrice = true;
+			_source.DecodeTableUrl = "ftp://ftpanalit:imalit76@ftp.apteka-raduga.ru:21/LIST/SERT_LIST.DBF";
+
 			FileHelper.InitDir(Path.Combine(Settings.Default.FTPOptBoxPath, "LIST"));
 			File.Copy(@"..\..\Data\RostaSertList.dbf", Path.Combine(Settings.Default.FTPOptBoxPath, "LIST", "SERT_LIST.DBF"));
 			var rostaCertList = Dbf.Load(@"..\..\Data\RostaSertList.dbf");
@@ -78,8 +78,6 @@ namespace PriceProcessor.Test.Waybills
 			var catalogFile = new CertificateCatalogFile(_source, DateTime.Now, Path.GetFullPath(@"..\..\Data\RostaSertList.dbf"));
 
 			session.Transaction.Commit();
-			var handler = new CertificateCatalogHandler();
-			handler.CreateDownHandlerPath();
 			handler.ProcessData();
 
 			session.Refresh(_source);
@@ -109,11 +107,28 @@ namespace PriceProcessor.Test.Waybills
 				var source = new CertificateSource {
 					DecodeTableUrl = new Uri(fileInfo.FullName).ToString()
 				};
-				var handler = new CertificateCatalogHandler();
-				handler.CreateDownHandlerPath();
 				var  file = handler.GetCatalogFile(source, cleaner);
 				Assert.IsNotNull(file);
 			}
+		}
+
+		[Test(Description = "Загрузка файлов производится после сравнения дат, но файловая система хранит даты с большей точностью чем mysql")]
+		public void Do_not_reload_not_changed_file()
+		{
+			_source.SourceClassName = typeof(AvestaSource).Name;
+			_source.DecodeTableUrl = new Uri(Path.GetFullPath(@"..\..\Data\avesta_cert_catalog.dbf")).ToString();
+
+			session.Transaction.Commit();
+
+			handler.ProcessData();
+
+			var catalog = session.Query<CertificateSourceCatalog>().FirstOrDefault(c => c.CertificateSource == _source);
+			Assert.IsNotNull(catalog);
+
+			handler.ProcessData();
+
+			var catalog1 = session.Query<CertificateSourceCatalog>().FirstOrDefault(c => c.CertificateSource == _source);
+			Assert.AreEqual(catalog.Id, catalog1.Id);
 		}
 	}
 }

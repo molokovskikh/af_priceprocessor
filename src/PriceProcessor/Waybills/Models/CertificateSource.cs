@@ -15,6 +15,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	{
 		public static Assembly Assembly = Assembly.GetExecutingAssembly();
 
+		public CertificateSource()
+		{
+			Suppliers = new List<Supplier>();
+		}
+
 		[PrimaryKey]
 		public uint Id { get; set; }
 

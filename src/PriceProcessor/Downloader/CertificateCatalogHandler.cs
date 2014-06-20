@@ -157,8 +157,9 @@ where
 				var src = new FileInfo(uri.LocalPath);
 				if (!src.Exists)
 					return null;
+				//в базе даты хранятся с точнотью до секунды сравнивать их нужно так же
 				if (Math.Abs((DateTime.Now - src.LastWriteTime).TotalMilliseconds) > Settings.Default.FileDownloadInterval
-					&& source.LastDecodeTableDownload != src.LastWriteTime) {
+					&& Math.Abs((source.LastDecodeTableDownload.GetValueOrDefault() - src.LastWriteTime).TotalSeconds) > 1) {
 					var dst = src.CopyTo(cleaner.TmpFile(), true);
 					return new CertificateCatalogFile(source, src.LastWriteTime, dst.FullName);
 				}

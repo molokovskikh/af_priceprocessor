@@ -48,7 +48,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 				CertificateSource = source,
 				SupplierCode = "jsodfij1",
 				SerialNumber = "012011",
-				OriginFilePath = "Декларация.tif",
+				OriginFilePath = @"\Декларация.tif",
 			});
 			var loader = new AvestaSource(cleaner);
 			var line = new DocumentLine {
