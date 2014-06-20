@@ -63,6 +63,8 @@ and st.SourceID = 4";
 					drLanSource = dtSources.Rows[0];
 
 					var clazz = drLanSource[WaybillSourcesTable.colReaderClassName].ToString();
+					if (String.IsNullOrEmpty(clazz))
+						continue;
 					var documentReader = ReflectionHelper.GetDocumentReader<BaseDocumentReader>(clazz);
 
 					foreach (var documentType in _documentTypes)

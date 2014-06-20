@@ -296,9 +296,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				.Replace("/", String.Empty);
 		}
 
-		public void AddCertificateTask(DocumentLine documentLine, CertificateSource certificateSource)
+		public void AddCertificateTask(DocumentLine documentLine, CertificateSource source)
 		{
-			Tasks.Add(new CertificateTask(certificateSource, documentLine));
+			if (source.IsDisabled)
+				return;
+			Tasks.Add(new CertificateTask(source, documentLine));
 		}
 
 		public void CreateCertificateTasks()
