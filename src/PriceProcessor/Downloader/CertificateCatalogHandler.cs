@@ -57,7 +57,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			using(var cleaner = new FileCleaner()) {
 				Cleanup();
 				Ping();
-				var catalogFile = GetCatalogFile(ftpSource, source, cleaner);
+				var catalogFile = GetCatalogFile(source, cleaner);
 				if (catalogFile == null)
 					return;
 				cleaner.Watch(catalogFile.LocalFileName);
@@ -141,7 +141,7 @@ where
 			}
 		}
 
-		public virtual CertificateCatalogFile GetCatalogFile(IRemoteFtpSource ftpSource, CertificateSource source, FileCleaner cleaner)
+		public virtual CertificateCatalogFile GetCatalogFile(CertificateSource source, FileCleaner cleaner)
 		{
 			var downloader = new FtpDownloader();
 			var uri = new Uri(source.DecodeTableUrl);
@@ -159,7 +159,7 @@ where
 					return null;
 				if (Math.Abs((DateTime.Now - src.LastWriteTime).TotalMilliseconds) > Settings.Default.FileDownloadInterval
 					&& source.LastDecodeTableDownload != src.LastWriteTime) {
-					var dst = src.CopyTo(cleaner.TmpFile());
+					var dst = src.CopyTo(cleaner.TmpFile(), true);
 					return new CertificateCatalogFile(source, src.LastWriteTime, dst.FullName);
 				}
 			}

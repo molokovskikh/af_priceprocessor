@@ -98,5 +98,19 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(catalogWithoutCatalog, Is.Not.Null, "Позиция не существует");
 			Assert.That(catalogWithoutCatalog.CatalogProduct, Is.Null, "Позиция не должна быть сопоставлена с каталогом");
 		}
+
+		[Test]
+		public void Get_local_file()
+		{
+			using(var cleaner = new FileCleaner()) {
+				var source = new CertificateSource {
+					DecodeTableUrl = new Uri(Path.GetFullPath(cleaner.TmpFile())).ToString()
+				};
+				var handler = new CertificateCatalogHandler();
+				handler.CreateDownHandlerPath();
+				var  file = handler.GetCatalogFile(source, cleaner);
+				Assert.IsNotNull(file);
+			}
+		}
 	}
 }
