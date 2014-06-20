@@ -41,7 +41,7 @@ namespace Inforoom.Formalizer
 			}
 
 			using(var session = SessionHelper.GetSessionFactory().OpenSession())
-			using(var trx = session.BeginTransaction()){
+			using(var trx = session.BeginTransaction()) {
 				p.Stat.Fix(downloadId, Settings.Default.MinRepeatTranCount);
 				p.Stat.TotalSecs = (uint?)FormSecs;
 				session.Save(p.Stat);

@@ -277,7 +277,8 @@ namespace Inforoom.Downloader.Ftp
 			var fileNameSplit = uri.AbsolutePath.LastIndexOf('/');
 			if (fileNameSplit < 0) {
 				dirname = uri.AbsolutePath;
-			} else {
+			}
+			else {
 				dirname = uri.AbsolutePath.SliceBegin(fileNameSplit);
 				filename = uri.AbsolutePath.SliceEnd(fileNameSplit);
 			}

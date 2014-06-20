@@ -107,7 +107,7 @@ namespace PriceProcessor.Test.Waybills
 				var source = new CertificateSource {
 					DecodeTableUrl = new Uri(fileInfo.FullName).ToString()
 				};
-				var  file = handler.GetCatalogFile(source, cleaner);
+				var file = handler.GetCatalogFile(source, cleaner);
 				Assert.IsNotNull(file);
 			}
 		}
