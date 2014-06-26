@@ -10,19 +10,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class SiaAstrahanParser : IDocumentParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(866);
-
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding);
+			var data = Dbf.Load(file);
 
 			if (data.Columns.Contains("GNVLS")) {
 				foreach (DataRow dataRow in data.Rows) {
-					if (dataRow["GNVLS"].ToString() == "ЖНВЛС") {
-						dataRow["GNVLS"] = 1;
-					}
-					else {
-						dataRow["GNVLS"] = 0;
+					if (dataRow["GNVLS"] is string || dataRow["GNVLS"] is DBNull) {
+						if (dataRow["GNVLS"].ToString() == "ЖНВЛС") {
+							dataRow["GNVLS"] = 1;
+						}
+						else {
+							dataRow["GNVLS"] = 0;
+						}
 					}
 				}
 			}

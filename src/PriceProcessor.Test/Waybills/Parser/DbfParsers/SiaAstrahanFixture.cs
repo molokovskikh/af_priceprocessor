@@ -86,5 +86,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual(new DateTime(2013, 10, 28), doc.DocumentDate);
 			Assert.AreEqual(28, doc.Lines.Count);
 		}
+
+		[Test]
+		public void Parse_sia_volgograd_vitally_important()
+		{
+			var doc = WaybillParser.Parse(@"Р-1390032.DBF");
+			Assert.IsTrue(doc.Lines[4].VitallyImportant.Value);
+		}
 	}
 }
