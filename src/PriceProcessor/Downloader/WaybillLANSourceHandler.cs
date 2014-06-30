@@ -131,7 +131,7 @@ and st.SourceID = 4";
 				// Путь к папке, из которой нужно забирать накладную
 				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
 				pricePath = Path.Combine(Settings.Default.FTPOptBoxPath,
-					supplierId.ToString(),
+					supplierId.ToString().PadLeft(3, '0'),
 					_currentDocumentType.FolderName);
 				// Получаем все файлы из этой папки
 				var ff = Directory.GetFiles(pricePath);
