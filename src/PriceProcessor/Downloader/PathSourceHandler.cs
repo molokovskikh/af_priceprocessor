@@ -66,7 +66,7 @@ namespace Inforoom.Downloader
 					}
 
 					if (!String.IsNullOrEmpty(CurrFileName)) {
-						var correctArchive = ProcessArchiveIfNeeded(priceSource);
+						var correctArchive = FileHelper.ProcessArchiveIfNeeded(CurrFileName, ExtrDirSuffix, priceSource.ArchivePassword);
 						foreach (var drS in drLS) {
 							SetCurrentPriceCode(drS);
 							string extractFile = null;
@@ -134,29 +134,10 @@ namespace Inforoom.Downloader
 			return source.IsReadyForDownload();
 		}
 
-		private bool ProcessArchiveIfNeeded(PriceSource priceSource)
-		{
-			bool CorrectArchive = true;
-			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-			if (ArchiveHelper.IsArchive(CurrFileName)) {
-				if (ArchiveHelper.TestArchive(CurrFileName, priceSource.ArchivePassword)) {
-					try {
-						FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix, priceSource.ArchivePassword);
-					}
-					catch (ArchiveHelper.ArchiveException) {
-						CorrectArchive = false;
-					}
-				}
-				else
-					CorrectArchive = false;
-			}
-			return CorrectArchive;
-		}
-
 		protected override void CopyToHistory(UInt64 downloadLogId)
 		{
-			var HistoryFileName = Path.Combine(DownHistoryPath, downloadLogId + Path.GetExtension(CurrFileName));
-			FileHelper.Safe(() => File.Copy(CurrFileName, HistoryFileName));
+			var historyFileName = Path.Combine(DownHistoryPath, downloadLogId + Path.GetExtension(CurrFileName));
+			FileHelper.Safe(() => File.Copy(CurrFileName, historyFileName));
 		}
 
 		protected override PriceProcessItem CreatePriceProcessItem(string normalName)

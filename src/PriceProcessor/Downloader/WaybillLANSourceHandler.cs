@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
@@ -51,116 +52,86 @@ and st.SourceID = 4";
 
 		public override void ProcessData()
 		{
-			//набор строк похожих источников
-			DataRow drLanSource;
 			// Заполняем таблицу с данными о поставщиках.
 			FillSourcesTable();
 
-			while (dtSources.Rows.Count > 0) {
+			foreach(var row in dtSources.Rows.Cast<DataRow>()) {
+				var supplierId = Convert.ToUInt32(row[WaybillSourcesTable.colFirmCode]);
+				drCurrent = row;
 				try {
 					_currentDocumentType = null;
-					// Берем нулевую строку (с данными о поставщике)
-					drLanSource = dtSources.Rows[0];
-
-					var clazz = drLanSource[WaybillSourcesTable.colReaderClassName].ToString();
-					if (String.IsNullOrEmpty(clazz))
+					var clazz = row[WaybillSourcesTable.colReaderClassName].ToString();
+					if (String.IsNullOrEmpty(clazz)) {
+						_logger.WarnFormat("Игнорирую источник для поставщика с кодом {0} тк не задан формат разбора имени документа", supplierId);
 						continue;
+					}
 					var documentReader = ReflectionHelper.GetDocumentReader<BaseDocumentReader>(clazz);
 
-					foreach (var documentType in _documentTypes)
+					foreach (var documentType in _documentTypes) {
 						try {
 							_currentDocumentType = documentType;
 
 							// Получаем список файлов из папки
-							var files = GetFileFromSource(documentReader);
+							var files = GetFileFromSource(supplierId, documentReader);
 
 							foreach (var sourceFileName in files) {
 								GetCurrentFile(sourceFileName);
+								if (String.IsNullOrEmpty(CurrFileName))
+									continue;
 
-								if (!String.IsNullOrEmpty(CurrFileName)) {
-									var CorrectArchive = true;
-									//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-									if (ArchiveHelper.IsArchive(CurrFileName)) {
-										if (ArchiveHelper.TestArchive(CurrFileName)) {
-											try {
-												PriceProcessor.FileHelper.ExtractFromArhive(CurrFileName, CurrFileName + ExtrDirSuffix);
-											}
-											catch (ArchiveHelper.ArchiveException) {
-												CorrectArchive = false;
-											}
+								var correctArchive = PriceProcessor.FileHelper.ProcessArchiveIfNeeded(CurrFileName, ExtrDirSuffix);
+								if (correctArchive) {
+									if (!ProcessWaybillFile(CurrFileName, row, documentReader)) {
+										using (var mm = new MailMessage(
+											Settings.Default.FarmSystemEmail,
+											Settings.Default.DocumentFailMail,
+											String.Format("{0} ({1})", row[WaybillSourcesTable.colShortName], SourceType),
+											String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
+												row[WaybillSourcesTable.colFirmCode],
+												row[SourcesTableColumns.colShortName],
+												_currentDocumentType.GetType().Name,
+												DateTime.Now,
+												"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."))) {
+											if (!String.IsNullOrEmpty(CurrFileName))
+												mm.Attachments.Add(new Attachment(CurrFileName));
+											var sc = new SmtpClient(Settings.Default.SMTPHost);
+											sc.Send(mm);
 										}
-										else
-											CorrectArchive = false;
 									}
-
-									if (CorrectArchive) {
-										if (!ProcessWaybillFile(CurrFileName, drLanSource, documentReader)) {
-											using (var mm = new MailMessage(
-												Settings.Default.FarmSystemEmail,
-												Settings.Default.DocumentFailMail,
-												String.Format("{0} ({1})", drLanSource[WaybillSourcesTable.colShortName], SourceType),
-												String.Format("Код поставщика : {0}\nФирма: {1}\nТип: {2}\nДата: {3}\nПричина: {4}",
-													drLanSource[WaybillSourcesTable.colFirmCode],
-													drLanSource[SourcesTableColumns.colShortName],
-													_currentDocumentType.GetType().Name,
-													DateTime.Now,
-													"Не удалось сопоставить документ клиентам. Подробнее смотрите в таблице logs.document_logs."))) {
-												if (!String.IsNullOrEmpty(CurrFileName))
-													mm.Attachments.Add(new Attachment(CurrFileName));
-												var sc = new SmtpClient(Settings.Default.SMTPHost);
-												sc.Send(mm);
-											}
-										}
-										//После обработки файла удаляем его из папки
-										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
-											File.Delete(sourceFileName);
-									}
-									else {
-										var supplierId = Convert.ToUInt32(drLanSource[WaybillSourcesTable.colFirmCode]);
-										DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), documentType.DocType, String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
-										//Распаковать файл не удалось, поэтому удаляем его из папки
-										if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
-											File.Delete(sourceFileName);
-									}
-									Cleanup();
+									//После обработки файла удаляем его из папки
+									if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
+										File.Delete(sourceFileName);
 								}
+								else {
+									DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(CurrFileName), documentType.DocType, String.Format("Не удалось распаковать файл '{0}'", Path.GetFileName(CurrFileName)));
+									//Распаковать файл не удалось, поэтому удаляем его из папки
+									if (!String.IsNullOrEmpty(sourceFileName) && File.Exists(sourceFileName))
+										File.Delete(sourceFileName);
+								}
+								Cleanup();
 							}
 						}
 						catch (Exception e) {
 							//Обрабатываем ошибку в случае обработки одного из типов документов
-							var message = String.Format("Источник : {0}\nТип : {1}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode], documentType.GetType().Name);
+							var message = String.Format("Источник : {0}\nТип : {1}", supplierId, documentType.GetType().Name);
 							Log(e, message);
 						}
-
-
-					drLanSource.Delete();
-					dtSources.AcceptChanges();
+					}
 				}
 				catch (Exception ex) {
-					var error = String.Format("Источник : {0}", dtSources.Rows[0][WaybillSourcesTable.colFirmCode]);
-					Log(ex, error);
-					try {
-						dtSources.Rows[0].Delete();
-					}
-					catch {
-					}
-					try {
-						dtSources.AcceptChanges();
-					}
-					catch {
-					}
+					Log(ex, String.Format("Источник : {0}", supplierId));
 				}
 			}
 		}
 
-		protected string[] GetFileFromSource(BaseDocumentReader documentReader)
+		protected string[] GetFileFromSource(uint supplierId, BaseDocumentReader documentReader)
 		{
 			var pricePath = String.Empty;
 			try {
 				// Путь к папке, из которой нужно забирать накладную
 				// \FTPOptBox\<Код постащика>\Waybills\ (или \Rejects\)
 				pricePath = Path.Combine(Settings.Default.FTPOptBoxPath,
-					dtSources.Rows[0]["FirmCode"].ToString().PadLeft(3, '0'),
+					supplierId.ToString(),
 					_currentDocumentType.FolderName);
 				// Получаем все файлы из этой папки
 				var ff = Directory.GetFiles(pricePath);

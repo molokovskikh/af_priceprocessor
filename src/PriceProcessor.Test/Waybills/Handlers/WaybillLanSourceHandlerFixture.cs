@@ -12,6 +12,7 @@ using Inforoom.Downloader.Documents;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
+using log4net.Config;
 using PriceProcessor.Test.TestHelpers;
 using NUnit.Framework;
 using Inforoom.Downloader;
@@ -20,6 +21,8 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using Test.Support;
 using Test.Support.Suppliers;
+using NHibernate.Linq;
+using ReflectionHelper = Inforoom.PriceProcessor.Helpers.ReflectionHelper;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {
@@ -114,28 +117,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			TestHelper.RecreateDirectories();
 			supplier = TestSupplier.CreateNaked();
+			supplier.WaybillSource.SourceType = TestWaybillSourceType.FtpInforoom;
 
 			client = TestClient.CreateNaked();
 			address = client.Addresses[0];
 
 			waybillDir = CreateSupplierDir(DocType.Waybill);
 			rejectDir = CreateSupplierDir(DocType.Reject);
-		}
-
-		private void Process()
-		{
-			session.Transaction.Commit();
-			var handler = new WaybillLanSourceHandler();
-			handler.CreateDirectoryPath();
-			handler.ProcessData();
-		}
-
-		public void PrepareLanSource(string readerClassName = "ProtekOmsk_3777_Reader")
-		{
-			client.Save();
-			supplier.WaybillSource.SourceType = TestWaybillSourceType.FtpInforoom;
-			supplier.WaybillSource.ReaderClassName = readerClassName;
-			supplier.Save();
 		}
 
 		/// <summary>
@@ -148,7 +136,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			CopyFile(waybillDir, filePath);
 
-			PrepareLanSource();
+			supplier.WaybillSource.ReaderClassName = "ProtekOmsk_3777_Reader";
 			MaitainAddressIntersection(address.Id);
 
 			Process();
@@ -156,7 +144,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			CheckClientDirectory(1, DocType.Waybill);
 			CheckDocumentLogEntry(1);
 		}
-
 
 		[Test]
 		public void Delete_broken_file()
@@ -166,7 +153,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			File.Copy(filePath, Path.Combine(waybillDir, "1.dbf"));
 			CopyFile(waybillDir, filePath);
 
-			PrepareLanSource();
+			supplier.WaybillSource.ReaderClassName = "ProtekOmsk_3777_Reader";
 			MaitainAddressIntersection(address.Id);
 
 			Process();
@@ -181,7 +168,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			var address = client.CreateAddress();
 			client.Users[0].JoinAddress(address);
-			address.Save();
+			session.Save(address);
 
 			Assert.That(client.Addresses.Count, Is.GreaterThanOrEqualTo(2));
 
@@ -189,7 +176,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			CopyFile(rejectDir, filePath);
 
-			PrepareLanSource("SupplierFtpReader");
+			supplier.WaybillSource.ReaderClassName = "SupplierFtpReader";
 
 			MaitainAddressIntersection(client.Addresses[0].Id);
 			MaitainAddressIntersection(client.Addresses[1].Id, client.Addresses[0].Id.ToString());
@@ -206,20 +193,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.That(tmpFiles.Count(), Is.EqualTo(0), "не удалили временные файлы {0}", tmpFiles.Implode());
 		}
 
-		private void CopyFile(string directory, string filePath)
-		{
-			File.Copy(filePath,
-				Path.Combine(directory,
-					String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
-		}
-
 		[Test]
 		public void Parse_waybills_Convert_Dbf_format()
 		{
 			var filePath = @"..\..\Data\Waybills\890579.dbf";
 			CopyFile(waybillDir, filePath);
 
-			PrepareLanSource();
+			supplier.WaybillSource.ReaderClassName = "ProtekOmsk_3777_Reader";
 			MaitainAddressIntersection(client.Addresses[0].Id);
 
 			SetConvertDocumentSettings();
@@ -228,35 +208,30 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			CheckClientDirectory(2, DocType.Waybill);
 
-			using (new SessionScope()) {
-				var logs = TestDocumentLog.Queryable.Where(l =>
-					l.Client.Id == client.Id &&
-						l.Supplier.Id == supplier.Id &&
-						l.Address == client.Addresses[0]);
+			var logs = session.Query<TestDocumentLog>().Where(l =>
+				l.Client.Id == client.Id &&
+					l.Supplier.Id == supplier.Id &&
+					l.Address == client.Addresses[0]);
 
-				Assert.That(logs.Count(), Is.EqualTo(2));
-				Assert.That(logs.Count(l => l.IsFake), Is.EqualTo(1));
-				Assert.That(logs.Count(l => !l.IsFake), Is.EqualTo(1));
+			Assert.That(logs.Count(), Is.EqualTo(2));
+			Assert.That(logs.Count(l => l.IsFake), Is.EqualTo(1));
+			Assert.That(logs.Count(l => !l.IsFake), Is.EqualTo(1));
 
-				var log = logs.SingleOrDefault(l => !l.IsFake);
-				var file_dbf = GetFileForAddress(DocType.Waybill).Single(f => f.IndexOf(log.Id.ToString()) > -1);
+			var log = logs.SingleOrDefault(l => !l.IsFake);
+			var file_dbf = GetFileForAddress(DocType.Waybill).Single(f => f.IndexOf(log.Id.ToString()) > -1);
 
-				var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
-				Assert.IsTrue(data.Columns.Contains("postid_af"));
-				Assert.IsTrue(data.Columns.Contains("ttn"));
-				Assert.IsTrue(data.Columns.Contains("przv_post"));
-			}
+			var data = Dbf.Load(file_dbf, Encoding.GetEncoding(866));
+			Assert.IsTrue(data.Columns.Contains("postid_af"));
+			Assert.IsTrue(data.Columns.Contains("ttn"));
+			Assert.IsTrue(data.Columns.Contains("przv_post"));
 		}
 
 		[Test]
 		public void TestSIAMoscow2788()
 		{
-			using (var transaction = new TransactionScope(OnDispose.Rollback)) {
-				var address = client.CreateAddress();
-				client.Users[0].JoinAddress(address);
-				address.Save();
-				transaction.VoteCommit();
-			}
+			var address = client.CreateAddress();
+			client.Users[0].JoinAddress(address);
+			session.Save(address);
 
 			//Эти коды доставки вбиты в файлы, которые используются в качестве примера для теста (переменная files)
 			//Прописываем эти коды доставки у тестового клиента, чтобы относительно него разбирались данные тестовые файлы
@@ -266,7 +241,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			var files = new[] { "826874436_20091202030542372.zip", "826874436_20091202090615283.zip", "826874436_20091202102538565.zip" };
 
-			PrepareLanSource("SIAMoscow_2788_Reader");
+			supplier.WaybillSource.ReaderClassName = "SIAMoscow_2788_Reader";
 
 			//Очищаем supplierDeliveryId и supplierClientId для всех адресов, у которых установлены необходимые значения
 			var command = new MySqlCommand(@"
@@ -302,6 +277,28 @@ and  i.SupplierClientId = ?supplierClientId
 			var path = Path.GetFullPath(Settings.Default.DocumentPath);
 			var clientDirectories = Directory.GetDirectories(Path.GetFullPath(Settings.Default.DocumentPath));
 			Assert.IsTrue(clientDirectories.Length > 1, "Не создано ни одной директории для клиента-получателя накладной " + path + " " + clientDirectories.Length);
+		}
+
+		[Test]
+		public void Process_missconfigured_record()
+		{
+			Process();
+		}
+
+		private void CopyFile(string directory, string filePath)
+		{
+			File.Copy(filePath,
+				Path.Combine(directory,
+					String.Format("{0}_{1}", client.Addresses[0].Id, Path.GetFileName(filePath))));
+		}
+
+		private void Process()
+		{
+			session.Flush();
+			session.Transaction.Commit();
+			var handler = new WaybillLanSourceHandler();
+			handler.CreateDirectoryPath();
+			handler.ProcessData();
 		}
 	}
 }

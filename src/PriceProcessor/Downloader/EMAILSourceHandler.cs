@@ -140,7 +140,7 @@ namespace Inforoom.Downloader
 								SetCurrentPriceCode(drS);
 
 								// Пробуем разархивировать
-								var correctArchive = CheckFile(drS["ArchivePassword"].ToString());
+								var correctArchive = FileHelper.ProcessArchiveIfNeeded(CurrFileName, ExtrDirSuffix, drS["ArchivePassword"].ToString());
 
 								if (correctArchive) {
 									string extrFile;
@@ -179,32 +179,6 @@ namespace Inforoom.Downloader
 			}
 			catch {
 			}
-		}
-
-		protected bool CheckFile()
-		{
-			return CheckFile(null);
-		}
-
-		private bool CheckFile(string archivePassword)
-		{
-			var fileName = CurrFileName;
-			var tempExtractDir = CurrFileName + ExtrDirSuffix;
-
-			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-			if (ArchiveHelper.IsArchive(fileName)) {
-				if (ArchiveHelper.TestArchive(fileName, archivePassword)) {
-					try {
-						FileHelper.ExtractFromArhive(fileName, tempExtractDir, archivePassword);
-						return true;
-					}
-					catch (ArchiveHelper.ArchiveException) {
-						return false;
-					}
-				}
-				return false;
-			}
-			return true;
 		}
 
 		protected string SaveAttachement(MimeEntity ent)

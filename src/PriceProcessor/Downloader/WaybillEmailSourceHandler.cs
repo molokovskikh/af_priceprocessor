@@ -15,6 +15,7 @@ using MySql.Data.MySqlClient;
 using System.IO;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
+using FileHelper = Inforoom.PriceProcessor.FileHelper;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.Downloader
@@ -394,7 +395,7 @@ WHERE a.Id = ?AddressId
 					var savedFiles = new List<string>();
 					foreach (var entity in attachments) {
 						SaveAttachement(entity);
-						var correctArchive = CheckFile();
+						var correctArchive = FileHelper.ProcessArchiveIfNeeded(CurrFileName, ExtrDirSuffix);
 						matched = true;
 						if (!correctArchive) {
 							DocumentReceiveLog.Log(Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]),

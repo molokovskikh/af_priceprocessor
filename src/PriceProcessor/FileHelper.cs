@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor
 				if (CheckMask(Path.GetFileName(file), ExtrMask))
 					return file;
 			}
-			return string.Empty;
+			return String.Empty;
 		}
 
 		public static void ExtractFromArhive(string ArchName, string TempDir)
@@ -81,6 +81,44 @@ namespace Inforoom.PriceProcessor
 			catch (Exception e) {
 				_log.Error("Ошибка на которую можно забить", e);
 			}
+		}
+
+		public static bool ProcessArchiveIfNeeded(string file, string sufix, string password)
+		{
+			var result = true;
+			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+			if (ArchiveHelper.IsArchive(file)) {
+				if (ArchiveHelper.TestArchive(file, password)) {
+					try {
+						ExtractFromArhive(file, file + sufix, password);
+					}
+					catch (ArchiveHelper.ArchiveException) {
+						result = false;
+					}
+				}
+				else
+					result = false;
+			}
+			return result;
+		}
+
+		public static bool ProcessArchiveIfNeeded(string file, string sufix)
+		{
+			var result = true;
+			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
+			if (ArchiveHelper.IsArchive(file)) {
+				if (ArchiveHelper.TestArchive(file)) {
+					try {
+						ExtractFromArhive(file, file + sufix);
+					}
+					catch (ArchiveHelper.ArchiveException) {
+						result = false;
+					}
+				}
+				else
+					result = false;
+			}
+			return result;
 		}
 	}
 }
