@@ -66,6 +66,15 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(table.Rows.Count, Is.EqualTo(1));
 		}
 
+		[Test(Description = "Похоже что analitf не корректно обрабатывает / в имени файла, заменяем его")]
+		public void Strip_slash()
+		{
+			document.ProviderDocumentId = "001-01/1";
+			Exporter.Convert(document, WaybillFormat.ProtekDbf, new WaybillSettings());
+			Assert.That(log.DocumentSize, Is.GreaterThan(0));
+			Assert.That(log.FileName, Is.EqualTo("001-01_1.dbf"));
+		}
+
 		[Test]
 		public void Export_universal_dbf()
 		{

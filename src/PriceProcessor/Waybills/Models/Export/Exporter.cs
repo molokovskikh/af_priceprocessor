@@ -37,9 +37,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			if (String.IsNullOrEmpty(document.Log.FileName)) {
 				log.IsFake = false;
 
-				var id = document.ProviderDocumentId;
-				if (string.IsNullOrEmpty(id))
-					id = document.Log.Id.ToString();
+				var id = (document.ProviderDocumentId ?? document.Log.Id.ToString()).Replace('/', '_');
 				log.FileName = id + extention;
 			}
 			else {
