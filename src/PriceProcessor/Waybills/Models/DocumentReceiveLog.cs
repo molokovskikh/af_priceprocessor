@@ -266,7 +266,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 						+ "С уважением, АК \"Инфорум\".");
 			}
 
-			var lastUpdate = session.CreateSQLQuery(@"select max(AFTime)
+			var lastUpdate = session.CreateSQLQuery(@"
+select max(if(ifnull(AFNetTime, '1901-01-01') > ifnull(AFTime, '1901-01-01'), AFNetTime, AFTime))
 from logs.AuthorizationDates d
 join Customers.UserAddresses ua on ua.UserId = d.UserId
 where ua.AddressId = :addressId")
