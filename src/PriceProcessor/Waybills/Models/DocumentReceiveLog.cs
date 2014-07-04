@@ -267,7 +267,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			}
 
 			var lastUpdate = session.CreateSQLQuery(@"
-select max(if(ifnull(AFNetTime, '1901-01-01') > ifnull(AFTime, '1901-01-01'), AFNetTime, AFTime))
+select cast(max(if(ifnull(AFNetTime, '1901-01-01') > ifnull(AFTime, '1901-01-01'), AFNetTime, AFTime)) as datetime)
 from logs.AuthorizationDates d
 join Customers.UserAddresses ua on ua.UserId = d.UserId
 where ua.AddressId = :addressId")
