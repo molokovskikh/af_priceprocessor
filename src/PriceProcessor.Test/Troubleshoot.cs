@@ -10,8 +10,6 @@ namespace PriceProcessor.Test
 		[Test]
 		public void t()
 		{
-			var w = WaybillParser.Parse(@"C:\ПрофитмедСПб_791_434_14.dbf");
-			Console.WriteLine(w.Parser);
 		}
 	}
 }
