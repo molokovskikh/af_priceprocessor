@@ -14,28 +14,22 @@ namespace PriceProcessor.Test.Waybills.Sources
 		public void Check_sia_source()
 		{
 			var source = new SiaSource();
-			var task = new CertificateTask();
+			var task = new CertificateTask {
+				CertificateSource = new CertificateSource {
+					LookupUrl = "http://sia:321632@online.penza.siaint.ru/Home/GetCert"
+				}
+			};
 			task.DocumentLine = new DocumentLine {
-				Code = "22651",
-				SerialNumber = "835495"
+				Code = "84029",
+				SerialNumber = "0020214"
 			};
 			var files = source.GetCertificateFiles(task, null);
 			Assert.That(files.Count, Is.GreaterThan(0));
 			var file = files[0];
 			Assert.That(File.Exists(file.LocalFile), Is.True, "файл не существует {0}", file.LocalFile);
-			Assert.That(file.ExternalFileId, Is.EqualTo(@"DOCS\2011\3\19\649995736_2.GIF"));
-			Assert.That(file.OriginFilename, Is.EqualTo(@"649995736_2.GIF"));
+			Assert.That(file.ExternalFileId, Is.EqualTo(@"http://online.penza.siaint.ru/Home/GetFile?NaimFile=DOCS\2014\4\5\707504403_1.GIF"));
+			Assert.That(file.OriginFilename, Is.EqualTo(@"707504403_1.GIF"));
 			Assert.That(file.Extension, Is.EqualTo(".GIF"));
-		}
-
-		[Test]
-		public void Parse_files()
-		{
-			var files = SiaSource.ParseFiles(@"DOCS\2011\3\19\649995736_2.GIF\r\nDOCS\2011\9\22\663082976_1.GIF").ToList();
-			Assert.That(files, Is.EquivalentTo(new[] { @"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF" }));
-
-			files = SiaSource.ParseFiles(@"<tr><td>DOCS\2011\3\19\649995736_2.GIF</td><td>DOCS\2011\9\22\663082976_1.GIF</td></tr>").ToList();
-			Assert.That(files, Is.EquivalentTo(new[] { @"DOCS\2011\3\19\649995736_2.GIF", @"DOCS\2011\9\22\663082976_1.GIF" }));
 		}
 	}
 }

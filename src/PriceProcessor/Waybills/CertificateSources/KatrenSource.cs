@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Security.Policy;
 using Common.Tools;
 using Inforoom.Downloader.Ftp;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net.FTP.Client;
 
@@ -32,9 +35,9 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				using (var ftpClient = new FTP_Client()) {
 					ftpClient.PassiveMode = true;
 					ftpClient.Connect(uri.Host, uri.Port);
-					if (!String.IsNullOrEmpty(uri.UserInfo))
-						ftpClient.Authenticate(uri.UserInfo.Split(':').FirstOrDefault(),
-							uri.UserInfo.Split(':').Skip(1).FirstOrDefault());
+					var credentials = Util.GetCredentials(uri);
+					if (credentials != null)
+						ftpClient.Authenticate(credentials.UserName, credentials.Password);
 					ftpClient.SetCurrentDir(dir);
 					var ftpFiles = ftpClient.GetList();
 					var filesToDownload = ftpFiles.Tables["DirInfo"]
