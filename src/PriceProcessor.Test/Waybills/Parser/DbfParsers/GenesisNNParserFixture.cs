@@ -137,11 +137,24 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SerialNumber, Is.EqualTo("10113"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ61.Д31039"));
 			Assert.That(line.NdsAmount, Is.EqualTo(33.77));
-			Assert.That(line.Amount, Is.EqualTo(187.6));
+			Assert.That(line.Amount, Is.EqualTo(221.35));
 			Assert.That(line.Nds, Is.EqualTo(18));
 			Assert.That(line.EAN13, Is.EqualTo("4605059010244"));
 			var billLine = doc.Lines[1];
 			Assert.That(billLine.BillOfEntryNumber, Is.EqualTo("10130020/280213/0002622/6"));
+		}
+
+		[Test]
+		public void Parse_profitmed()
+		{
+			var doc = WaybillParser.Parse("ПрофитмедСПб_791_434_14.dbf");
+			Assert.AreEqual("791/434-14", doc.ProviderDocumentId);
+			Assert.AreEqual("03.07.2014", doc.DocumentDate.Value.ToShortDateString());
+			var line = doc.Lines[0];
+			Assert.AreEqual("Аскорбиновая кислота таб жеват 25мг N10 бум параф (крутка)", line.Product);
+			Assert.AreEqual("Марбиофарм ОАО", line.Producer);
+			Assert.AreEqual(5.5, line.SupplierCostWithoutNDS);
+			Assert.AreEqual(10, line.Nds);
 		}
 	}
 }

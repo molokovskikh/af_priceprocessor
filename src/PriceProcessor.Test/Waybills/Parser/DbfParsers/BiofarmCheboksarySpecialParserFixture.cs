@@ -16,10 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
-			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 11349 } }; // код поставщика Биофарм (Чебоксары)
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\00031412.dbf", documentLog) is BiofarmCheboksarySpecialParcer);
-
-			var doc = WaybillParser.Parse("00031412.dbf", documentLog);
+			var doc = WaybillParser.Parse("00031412.dbf");
 
 			Assert.That(doc.Lines.Count, Is.EqualTo(31));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("2Б00031412"));

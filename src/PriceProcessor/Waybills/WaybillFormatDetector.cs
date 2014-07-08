@@ -43,7 +43,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 11427, new List<Type> { typeof(PokrevskySpecialParser) } }, // Накладная от ИП Покревский
 			{ 7, new List<Type> { typeof(OriolaVoronezhSpecialParser) } }, // Накладная от Ориола (Воронеж)
 			{ 182, new List<Type> { typeof(LekRusChernozemieSpecialParser) } }, // Накладная от Лекрус Центральное Черноземье
-			//{4138, new List<Type>{typeof(KatrenVrnSpecialParser)}}, // Накладная от Катрен Воронеж, пока не используется
 			{ 338, new List<Type> { typeof(Moron_338_SpecialParser) } }, // Накладная от Морон (Челябинск)
 			{ 4001, new List<Type> { typeof(Moron_338_SpecialParser) } },
 			{ 7146, new List<Type> { typeof(Moron_338_SpecialParser) } },
@@ -52,7 +51,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 4910, new List<Type> { typeof(FarmPartnerKalugaParser) } }, // Фармпартнер (Калуга)
 			{ 7949, new List<Type> { typeof(MarimedsnabSpecialParser) } }, // Маримедснаб (Йошкар-Ола)
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
-			{ 11349, new List<Type> { typeof(BiofarmCheboksarySpecialParcer) } }, // Биофарм (Чебоксары)
 		};
 
 		public bool IsSpecialParser(IDocumentParser parser)
