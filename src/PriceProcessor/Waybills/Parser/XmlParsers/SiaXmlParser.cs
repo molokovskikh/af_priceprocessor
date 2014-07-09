@@ -67,9 +67,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 	public static class Extentions
 	{
-		public static decimal Get(this XElement element, string selector)
+		public static decimal? Get(this XElement element, string selector)
 		{
-			return Convert.ToDecimal(element.XPathSelectElement(selector).Value, CultureInfo.InvariantCulture);
+			var el = element.XPathSelectElement(selector);
+			if (el== null)
+				return null;
+			return Convert.ToDecimal(el.Value, CultureInfo.InvariantCulture);
 		}
 
 		public static decimal? GetOptional(this XElement element, string selector)

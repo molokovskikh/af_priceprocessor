@@ -9,6 +9,7 @@ using System.Xml.XPath;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
+using log4net;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 {
@@ -61,11 +62,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 		public static bool CheckFileFormat(string file)
 		{
-			var document = XDocument.Load(file);
-			return document.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок") != null
-				&& document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция").Any()
-				&& document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция").Count() ==
-					document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция/Товар").Count();
+			try {
+				var document = XDocument.Load(file);
+				return document.XPathSelectElement("Документ/ЗаголовокДокумента/НомерДок") != null
+					&& document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция").Any()
+					&& document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция").Count() ==
+						document.XPathSelectElements("Документ/ТоварныеПозиции/ТоварнаяПозиция/Товар").Count();
+			}
+			catch (XmlException) {
+				return false;
+			}
 		}
 	}
 }

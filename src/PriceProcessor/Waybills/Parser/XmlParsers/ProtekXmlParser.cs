@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -16,20 +17,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				document.DocumentDate = Convert.ToDateTime(docDate);
 			foreach (var element in xdocument.XPathSelectElements("КоммерческаяИнформация/Документ/Товары/Товар")) {
 				var line = document.NewLine();
-				line.Product = element.XPathSelectElement("Наименование").Value;
-				line.Producer = element.XPathSelectElement("Изготовитель/ОфициальноеНаименование").Value;
-				line.Code = element.XPathSelectElement("Ид").Value;
-				var country_element = element.XPathSelectElement("Страна");
-				if (country_element != null)
-					line.Country = country_element.Value;
+				line.Product = (string)element.XPathSelectElement("Наименование");
+				line.Producer = (string)element.XPathSelectElement("Изготовитель/ОфициальноеНаименование");
+				line.Code = (string)element.XPathSelectElement("Ид");
+				line.Country = (string)element.XPathSelectElement("Страна");
 				line.SupplierCost = element.Get("ЦенаЗаЕдиницу");
 				line.ProducerCostWithoutNDS = element.Get("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_PRDPRCWONDS']/Значение");
-				var serialNumber = element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_SERIA']/Значение").Value;
-				if (serialNumber != null)
-					line.SerialNumber = serialNumber.Split('^')[0];
-				line.Quantity = Convert.ToUInt32(element.XPathSelectElement("Количество").Value);
-				line.VitallyImportant = Convert.ToInt32(element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_VITAL_MED']/Значение").Value) == 1;
-				line.SetNds(element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка"));
+				line.SerialNumber = ((string)element
+					.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_SERIA']/Значение") ?? "")
+					.Split('^').FirstOrDefault();
+				line.Quantity = (uint?)element.XPathSelectElement("Количество");
+				line.VitallyImportant = (int?)element.XPathSelectElement("ЗначенияСвойств/ЗначенияСвойства[Ид='NAKLBD_VITAL_MED']/Значение") == 1;
+				line.Nds = (uint?)element.Get("СтавкиНалогов/СтавкаНалога[Наименование='НДС']/Ставка");
 				document.Lines.Add(line);
 			}
 			return document;

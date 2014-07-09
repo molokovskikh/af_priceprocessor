@@ -49,10 +49,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public override void PostParsing(Document doc)
 		{
 			foreach (var documentLine in doc.Lines) {
-				if (!string.IsNullOrEmpty(documentLine.Period))
-					documentLine.Period = DateTime.ParseExact(documentLine.Period, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None).ToShortDateString();
-				if (!string.IsNullOrEmpty(documentLine.CertificatesDate))
-					documentLine.CertificatesDate = DateTime.ParseExact(documentLine.CertificatesDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None).ToShortDateString();
+				DateTime value;
+				if (DateTime.TryParseExact(documentLine.Period, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value))
+					documentLine.Period = value.ToShortDateString();
+				if (DateTime.TryParseExact(documentLine.CertificatesDate, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out value))
+					documentLine.CertificatesDate  = value.ToShortDateString();
 			}
 		}
 	}

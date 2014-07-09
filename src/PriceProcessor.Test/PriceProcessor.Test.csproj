@@ -193,6 +193,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\CSMedikaPovolzhyeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmCenterFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\ForaFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MatveevFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\YarFarmParserFixture.cs" />
