@@ -508,6 +508,17 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(core.Junk, Is.True);
 		}
 
+		[Test]
+		public void Post_process()
+		{
+			price.PostProcessing = "UniqMaxCost";
+			CreateDefaultSynonym();
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;10.12.2014;
+9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;10.12.2014;");
+			session.Refresh(price);
+			Assert.AreEqual(1, price.Core.Count);
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);

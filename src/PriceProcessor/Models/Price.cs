@@ -38,6 +38,9 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual bool IsStrict { get; set; }
 
+		[Property]
+		public virtual string PostProcessing { get; set; }
+
 		[BelongsTo]
 		public virtual Matrix Matrix { get; set; }
 

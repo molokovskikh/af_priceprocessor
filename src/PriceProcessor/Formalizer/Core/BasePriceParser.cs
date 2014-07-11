@@ -8,6 +8,7 @@ using System.Threading;
 using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.Helpers;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using log4net;
 using MySql.Data.MySqlClient;
@@ -796,11 +797,47 @@ and a.FirmCode = p.FirmCode;",
 				}
 
 				new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
+				if (PriceInfo.Price.PostProcessing.Match("UniqMaxCost")) {
+					UniqMaxCost();
+				}
 
 				if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations)
 					_rejectUpdater.Save(PriceInfo.Price.IsRejectCancellations);
 				_logger.Debug("конец Formalize");
 			}
+		}
+
+		private void UniqMaxCost()
+		{
+			SessionHelper.StartSession(s => {
+				var sql = @"
+drop temporary table if exists Farm.MaxCosts;
+create temporary table Farm.MaxCosts engine = memory
+select SynonymCode, SynonymFirmCrCode, Max(Cost) as Cost
+from Farm.Core0 c
+join Farm.CoreCosts cc on cc.Core_ID = c.Id
+where c.PriceCode = :priceId
+group by c.SynonymCode, c.SynonymFirmCrCode;
+
+drop temporary table if exists Farm.UniqIds;
+create temporary table Farm.UniqIds engine = memory
+select min(c.Id) as Id
+from Farm.core0 c
+join Farm.CoreCosts cc on cc.Core_ID = c.Id
+join Farm.MaxCosts m on m.SynonymCode = c.SynonymCode and m.SynonymFirmCrCode = c.SynonymFirmCrCode and m.Cost = cc.Cost
+group by c.SynonymCode, c.SynonymFirmCrCode;
+
+delete c from Farm.Core0 c
+where not exists(select * from Farm.UniqIds i where c.Id = i.Id)
+	and c.PriceCode = :priceId;
+
+drop temporary table Farm.UniqIds;
+drop temporary table Farm.MaxCosts;
+";
+				s.CreateSQLQuery(sql)
+					.SetParameter("priceId", PriceInfo.Price.Id)
+					.ExecuteUpdate();
+			});
 		}
 
 		public IDisposable Timer(string message)
