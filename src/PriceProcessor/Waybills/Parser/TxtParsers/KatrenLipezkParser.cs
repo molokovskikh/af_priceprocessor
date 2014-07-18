@@ -51,9 +51,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					return false;
 				if (GetInteger(body[8]) == null)
 					return false;
-				//Убрал проверку по RegistryCostIndex, так как она не объективна. Потому что RegistryCost может быть и пустым значением.
-				//if (GetDecimal(body[18]) == null)
-				//  return false;
 			}
 			return true;
 		}
