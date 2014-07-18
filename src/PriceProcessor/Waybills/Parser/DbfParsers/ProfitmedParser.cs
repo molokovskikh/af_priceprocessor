@@ -2,13 +2,13 @@ using System.Data;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class GenesisNNParser : BaseDbfParser
+	public class ProfitmedParser : BaseDbfParser
 	{
 		public override DbfParser GetParser()
 		{
 			return new DbfParser()
-				.DocumentHeader(h => h.ProviderDocumentId, "N_NACL", "N_NAKL")
-				.DocumentHeader(h => h.DocumentDate, "D_NACL", "D_NAKL")
+				.DocumentHeader(h => h.ProviderDocumentId, "N_NAKL")
+				.DocumentHeader(h => h.DocumentDate, "D_NAKL")
 				.Invoice(i => i.BuyerName, "APTEKA")
 				.Invoice(i => i.ShipperInfo, "FILIAL")
 				.Line(l => l.Code, "CODE")
@@ -17,7 +17,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Quantity, "QUANTITY")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE_MAKE")
-				.Line(l => l.SupplierCostWithoutNDS, "PRICE_NAKE")
+				.Line(l => l.SupplierCost, "PRICE_NAKE")
 				.Line(l => l.Nds, "NDS_PR")
 				.Line(l => l.RegistryCost, "PRICE_REES")
 				.Line(l => l.VitallyImportant, "ISLIFE")
@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return (table.Columns.Contains("N_NACL") || table.Columns.Contains("N_NAKL")) &&
 				(table.Columns.Contains("D_NACL") || table.Columns.Contains("D_NAKL")) &&
 				table.Columns.Contains("PRICE_NAKE") &&
-				!table.Columns.Contains("PRICE_MK_N");
+				table.Columns.Contains("PRICE_MK_N");
 		}
 	}
 }
