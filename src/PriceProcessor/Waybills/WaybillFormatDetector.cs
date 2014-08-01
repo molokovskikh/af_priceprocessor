@@ -181,10 +181,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					&& t.IsPublic
 					&& !t.IsAbstract
 					&& typeof(IDocumentParser).IsAssignableFrom(t))
-				.ToList();
+				.ToArray();
 
-			types = types.OrderBy(t => t.Name).ToList();
-
+			types = types.OrderBy(t => t.Name).ToArray();
 			object[] args;
 			if (group == "Dbf") {
 				var data = Dbf.Load(file);
@@ -194,22 +193,35 @@ namespace Inforoom.PriceProcessor.Waybills
 				args = new[] { file };
 			}
 
-			foreach (var type in types) {
-				if (typeof(BaseDbfParser2).IsAssignableFrom(type)) {
+			var normal = types.Where(t => !typeof(BaseDbfParser2).IsAssignableFrom(t));
+			var smart = types.Where(t => typeof(BaseDbfParser2).IsAssignableFrom(t));
+
+			var found = false;
+			foreach (var type in normal) {
+				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
+				if (detectFormat == null)
+					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
+
+				var result = (bool)detectFormat.Invoke(null, args);
+				if (result) {
+					found = true;
+					yield return type;
+				}
+			}
+
+			if (!found) {
+				var maxHipoints = 0;
+				Type leader = null;
+				foreach (var type in smart) {
 					var parser = (BaseDbfParser2)Activator.CreateInstance(type);
 					var hitpoints = parser.CalculateHitPoints((DataTable)args[0]);
-					if (hitpoints > 0)
-						yield return type;
+					if (hitpoints > maxHipoints) {
+						maxHipoints = hitpoints;
+						leader = type;
+					}
 				}
-				else {
-					var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
-					if (detectFormat == null)
-						throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
-
-					var result = (bool)detectFormat.Invoke(null, args);
-					if (result)
-						yield return type;
-				}
+				if (leader != null)
+					yield return leader;
 			}
 		}
 
