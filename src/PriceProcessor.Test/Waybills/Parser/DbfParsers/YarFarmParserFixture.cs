@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse_alpha_medica()
 		{
-			var doc = WaybillParser.Parse(@"C:\Users\kvasov\Downloads\b036504.dbf");
+			var doc = WaybillParser.Parse(@"b036504.dbf");
 			Assert.AreEqual(1, doc.Lines.Count);
 			var line = doc.Lines[0];
 			Assert.AreEqual("612", line.Code);
