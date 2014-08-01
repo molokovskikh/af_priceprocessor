@@ -33,7 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Select(f => f.Key)
 				.Sum(p => knownWeights.GetValueOrDefault(p, 1));
 			var count = fields.SelectMany(f => f.Value).Intersect(columns, StringComparer.OrdinalIgnoreCase).Count();
-			if (weight < 2500 || count < fields.Count * 0.5)
+			if (weight < 2500 || count < columns.Length * 0.5)
 				return 0;
 			return weight;
 		}

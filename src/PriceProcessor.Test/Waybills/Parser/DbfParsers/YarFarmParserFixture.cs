@@ -22,5 +22,22 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual(1.7, line.SupplierCostWithoutNDS);
 			Assert.AreEqual(1.87, line.SupplierCost);
 		}
+
+		[Test]
+		public void Parse_alpha_medica()
+		{
+			var doc = WaybillParser.Parse(@"C:\Users\kvasov\Downloads\b036504.dbf");
+			Assert.AreEqual(1, doc.Lines.Count);
+			var line = doc.Lines[0];
+			Assert.AreEqual("612", line.Code);
+			Assert.AreEqual("Изм. арт. давл. WA-55 автомат, 3Check, аритмия, манжета М-L, адаптер в компл.", line.Product);
+			Assert.AreEqual("B.Well", line.Producer);
+			Assert.AreEqual("КИТАЙ", line.Country);
+			Assert.AreEqual(1362, line.SupplierCost);
+			Assert.AreEqual(0, line.Nds);
+			Assert.AreEqual("РОСС GB.ИМ04.Д01219", line.Certificates);
+			Assert.AreEqual("10130090/181013/0083963/1", line.BillOfEntryNumber);
+			Assert.AreEqual(1, line.Quantity);
+		}
 	}
 }
