@@ -29,13 +29,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 
 			foreach (var position in xDocument.XPathSelectElements(@"Документ/ТоварныеПозиции/ТоварнаяПозиция")) {
 				var line = document.NewLine();
-				line.Product = position.XPathSelectElement("Товар").Value;
+				line.Product = (string)position.XPathSelectElement("Товар");
 				line.Producer = (string)position.XPathSelectElement("Изготовитель");
+				line.Country = (string)position.XPathSelectElement("СтранаИзготовителя");
+				line.Code = (string)position.XPathSelectElement("КодТовара");
 				line.Quantity = ParseHelper.GetUInt((string)position.XPathSelectElement("Количество"));
 				line.SupplierCostWithoutNDS = ParseHelper.GetDecimal((string)position.XPathSelectElement("ЦенаОпт"));
 				line.Certificates = (string)position.XPathSelectElement("Серии/Серия/НомерСертиф");
-				line.Country = (string)position.XPathSelectElement("СтранаИзготовителя");
-				line.Code = (string)position.XPathSelectElement("КодТовара");
 				line.SupplierPriceMarkup = ParseHelper.GetDecimal((string)position.XPathSelectElement("НаценОпт"));
 				line.CertificatesDate = (string)position.XPathSelectElement("Серии/Серия/ДатаВыдачиСертиф");
 				line.CertificateAuthority = (string)position.XPathSelectElement("Серии/Серия/ОрганСертиф");

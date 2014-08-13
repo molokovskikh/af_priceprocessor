@@ -1,5 +1,6 @@
 ﻿using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 4138u } }; // код Катрен Воронеж
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\275748.dbf", documentLog) is KatrenVrnSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\275748.dbf", documentLog) is KatrenVrnSpecialParser);
 
 			var doc = WaybillParser.Parse("275748.dbf", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(14));

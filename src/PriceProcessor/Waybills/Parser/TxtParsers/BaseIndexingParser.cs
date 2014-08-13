@@ -134,8 +134,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected string separator = ";";
 
 		protected string CommentMark;
-		protected bool CalculateSupplierPriceMarkup;
-
 
 		protected virtual void SetIndexes()
 		{

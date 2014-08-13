@@ -1,4 +1,5 @@
 ﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 182u } }; // Лекрус Центральное Черноземье
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\00039401.dbf", documentLog) is LekRusChernozemieSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\00039401.dbf", documentLog) is LekRusChernozemieSpecialParser);
 
 			var document = WaybillParser.Parse("00039401.dbf", documentLog);
 

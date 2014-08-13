@@ -77,6 +77,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				var header = reader.ReadLine().Split(';');
 				if (header.Length != 6)
 					return false;
+				if (!header[3].Equals("ООО РАФЭЛ", StringComparison.CurrentCultureIgnoreCase))
+					return false;
 				var bodyCaption = reader.ReadLine();
 				if (!bodyCaption.ToLower().Equals("[body]"))
 					return false;

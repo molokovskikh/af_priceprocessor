@@ -1,6 +1,7 @@
 ﻿using System;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -94,7 +95,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		private DocumentReceiveLog CreateDocumentLog(uint supplierId, string fileName)
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = supplierId } };
-			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(fileName, documentLog) is Avesta_6256_SpecialParser);
 			return documentLog;
 		}
 
@@ -141,7 +142,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 6256u } };
 			var fileName = @"..\..\Data\Waybills\4049766_Авеста-Фармацевтика(118955).dbf";
-			Assert.IsFalse(WaybillParser.GetParserType(fileName, documentLog) is Avesta_6256_SpecialParser);
+			Assert.IsFalse(new WaybillFormatDetector().DetectParser(fileName, documentLog) is Avesta_6256_SpecialParser);
 
 			var doc = WaybillParser.Parse("4049766_Авеста-Фармацевтика(118955).dbf", documentLog);
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("118955"));

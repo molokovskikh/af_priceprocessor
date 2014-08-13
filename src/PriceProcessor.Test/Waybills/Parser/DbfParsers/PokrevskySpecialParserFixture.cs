@@ -1,4 +1,5 @@
 ﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 11427 } }; // код поставщика ИП Покревский
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\541_POKR.dbf", documentLog) is PokrevskySpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\541_POKR.dbf", documentLog) is PokrevskySpecialParser);
 			var document = WaybillParser.Parse(@"541_POKR.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(16));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("541"));

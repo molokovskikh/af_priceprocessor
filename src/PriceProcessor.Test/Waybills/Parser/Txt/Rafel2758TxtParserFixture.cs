@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 		[Test]
 		public void Parse()
 		{
-			var doc = WaybillParser.Parse(@"02387.txt");
+			var doc = WaybillParser.Parse("02387.txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(17));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("ПР-ЧЛН02387"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("21.05.2012")));

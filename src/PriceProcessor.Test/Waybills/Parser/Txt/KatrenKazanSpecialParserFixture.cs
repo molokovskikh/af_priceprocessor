@@ -1,5 +1,6 @@
 ﻿using System;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 2754 }, }; // код поставщика "Катрен" (Казань)
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\218817.txt", documentLog) is KatrenKazanSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\218817.txt", documentLog) is KatrenKazanSpecialParser);
 
 			var doc = WaybillParser.Parse(@"218817.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(12));

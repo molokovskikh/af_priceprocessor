@@ -1,6 +1,7 @@
 ﻿using System;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -15,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public DocumentReceiveLog CreateLogEntry(uint supplierId, string fileName)
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = supplierId } };
-			Assert.IsTrue(WaybillParser.GetParserType(fileName, documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(fileName, documentLog) is Moron_338_SpecialParser);
 			return documentLog;
 		}
 
@@ -23,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 338u } };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\3668585_5_00475628.dbf", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\3668585_5_00475628.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3668585_5_00475628.dbf", documentLog);
 
@@ -55,7 +56,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_Ekaterinburg_farm()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 4001u } };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\bi055540.DBF", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\bi055540.DBF", documentLog) is Moron_338_SpecialParser);
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\bi055540.DBF", documentLog);
 
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("55540"));
@@ -79,7 +80,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_Katren_Ufa()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7146u } };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\K_69960.dbf", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\K_69960.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\K_69960.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(21));
@@ -106,7 +107,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_ForaFarm_Chelyabinsk()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 5802u } };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\44027.dbf", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\44027.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\44027.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(6));
@@ -133,7 +134,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_Katren_Ufa_with_column_vital()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7146u } };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\K_12345.dbf", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\K_12345.dbf", documentLog) is Moron_338_SpecialParser);
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\K_12345.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(22));
@@ -191,7 +192,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 338u } };
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog);
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog) is Moron_338_SpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\3716168_Морон_482025_.dbf", documentLog) is Moron_338_SpecialParser);
 
 			Assert.That(document.Lines.Count, Is.EqualTo(9));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("482025"));

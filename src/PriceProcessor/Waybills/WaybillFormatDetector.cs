@@ -5,15 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Common.Tools;
-using Inforoom.PriceProcessor.Downloader;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
-using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NHibernate.Criterion;
-using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -51,12 +47,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 4910, new List<Type> { typeof(FarmPartnerKalugaParser) } }, // Фармпартнер (Калуга)
 			{ 7949, new List<Type> { typeof(MarimedsnabSpecialParser) } }, // Маримедснаб (Йошкар-Ола)
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
+			{ 2109, new List<Type> { typeof(BelaLtdParser) } }, // БЕЛА ЛТД, Код 2109
 		};
-
-		public bool IsSpecialParser(IDocumentParser parser)
-		{
-			return specParsers.Select(item => item.Value).Any(parsers => parsers.Contains(parser.GetType()));
-		}
 
 		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
 		{
@@ -102,25 +94,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public virtual IDocumentParser DetectParser(string file, DocumentReceiveLog documentLog)
 		{
-			var extention = Path.GetExtension(file.ToLower());
-			Type type;
-
-			type = GetSpecialParser(file, documentLog);
-
-			if (type == null) {
-				if (extention == ".dbf")
-					type = DetectDbfParser(file);
-				else if (extention == ".sst")
-					type = DetectSstParser(file);
-				else if (extention == ".xls")
-					type = DetectXlsParser(file);
-				else if ((extention == ".xml") || (extention == ".data"))
-					type = DetectXmlParser(file);
-				else if (extention == ".pd")
-					type = DetectPdParser(file);
-				else if (extention == ".txt")
-					type = DetectTxtParser(file);
-			}
+			var type = GetSuitableParsers(file, documentLog).FirstOrDefault();
 			if (type == null) {
 				log4net.LogManager.GetLogger("InfoLog").InfoFormat("Не удалось определить тип парсера накладной. Файл {0}", file);
 #if !DEBUG
@@ -136,41 +110,36 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
 
-		private static Type DetectDbfParser(string file)
+		public IEnumerable<Type> GetSuitableParsers(string file, DocumentReceiveLog documentLog)
 		{
-			return DetectParser(file, "Dbf");
+			var extention = Path.GetExtension(file.ToLower());
+
+			var type = GetSpecialParser(file, documentLog);
+			if (type != null)
+				return new[] { type };
+
+			if (extention == ".dbf") {
+				return GetSuitableParsers(file, "Dbf");
+			}
+			else if (extention == ".sst") {
+				return GetSuitableParsers(file, "Sst");
+			}
+			else if (extention == ".xls") {
+				return GetSuitableParsers(file, "Xls");
+			}
+			else if ((extention == ".xml") || (extention == ".data")) {
+				return GetSuitableParsers(file, "Xml");
+			}
+			else if (extention == ".pd") {
+				return GetSuitableParsers(file, "Pd");
+			}
+			else if (extention == ".txt") {
+				return GetSuitableParsers(file, "Txt");
+			}
+			return Enumerable.Empty<Type>();
 		}
 
-		private static Type DetectTxtParser(string file)
-		{
-			return DetectParser(file, "Txt");
-		}
-
-		private static Type DetectXmlParser(string file)
-		{
-			return DetectParser(file, "Xml");
-		}
-
-		private static Type DetectPdParser(string file)
-		{
-			return DetectParser(file, "Pd");
-		}
-		private static Type DetectXlsParser(string file)
-		{
-			return DetectParser(file, "Xls");
-		}
-
-		private static Type DetectSstParser(string file)
-		{
-			return DetectParser(file, "Sst");
-		}
-
-		private static Type DetectParser(string file, string group)
-		{
-			return GetSuitableParsers(file, group).FirstOrDefault();
-		}
-
-		public static IEnumerable<Type> GetSuitableParsers(string file, string group)
+		private IEnumerable<Type> GetSuitableParsers(string file, string group)
 		{
 			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
 			var types = typeof(WaybillFormatDetector)
@@ -181,6 +150,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					&& t.IsPublic
 					&& !t.IsAbstract
 					&& typeof(IDocumentParser).IsAssignableFrom(t))
+				.Except(specParsers.SelectMany(item => item.Value))
 				.ToArray();
 
 			types = types.OrderBy(t => t.Name).ToArray();

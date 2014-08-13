@@ -7,6 +7,15 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 	[ActiveRecord("Addresses", Schema = "Customers", Lazy = true)]
 	public class Address : ActiveRecordLinqBase<Address>
 	{
+		public Address()
+		{
+		}
+
+		public Address(Client client)
+		{
+			Client = client;
+		}
+
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
 

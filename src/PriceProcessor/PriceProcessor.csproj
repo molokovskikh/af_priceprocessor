@@ -289,6 +289,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\BagautdinovKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorKazanParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BaltimorYoshkarOlaParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelotelovParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BestsellerGroupParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BikovCheboksary12649Parser.cs" />
@@ -441,7 +442,6 @@
     <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
     <Compile Include="Waybills\Parser\PdParsers\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\ProtekXmlParser.cs" />
-    <Compile Include="Waybills\Parser\XmlParsers\SiaXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaMskParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\TredifarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\TxtParser.cs" />

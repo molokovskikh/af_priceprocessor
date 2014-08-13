@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Orel()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\82936.txt");
+			var doc = WaybillParser.Parse("82936.txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(38));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("82936"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("30.04.2010")));
@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Voronezh()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3767013_Катрен(91136).txt");
+			var doc = WaybillParser.Parse("3767013_Катрен(91136).txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(5));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("91136"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("03.05.2010")));
@@ -70,7 +70,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Voronezh2()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\3919268_Катрен_118340_.txt");
+			var doc = WaybillParser.Parse("3919268_Катрен_118340_.txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(7));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("118340"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("08.06.2010")));
@@ -98,7 +98,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Lipezk()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\2569__1_.txt");
+			var doc = WaybillParser.Parse("2569__1_.txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(5));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("2569"));
 			Assert.That(doc.DocumentDate, Is.EqualTo((Convert.ToDateTime("18.10.2007"))));
@@ -126,7 +126,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Voronezh_LipezkVarmatcia()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7286067_Катрен(49073).txt");
+			var doc = WaybillParser.Parse("7286067_Катрен(49073).txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(17));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("49073"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("01.03.2011")));
@@ -155,7 +155,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Voronezh_LipezkVarmatcia2()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\7286069_Катрен(51346).txt");
+			var doc = WaybillParser.Parse("7286069_Катрен(51346).txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(12));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("51346"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("03.03.2011")));
@@ -184,7 +184,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Katren_Voronezh_LipezkVarmatcia3()
 		{
-			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\57455.txt");
+			var doc = WaybillParser.Parse("57455.txt");
 			Assert.That(doc.Lines.Count, Is.EqualTo(12));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("57455"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("11.03.2011")));
@@ -236,7 +236,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse_Rosta_Tumen()
 		{
-			var doc = WaybillParser.Parse(@"3911727_Роста(78381_9).txt");
+			var doc = WaybillParser.Parse("3911727_Роста(78381_9).txt");
 
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("78381/9"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("04.06.2010")));

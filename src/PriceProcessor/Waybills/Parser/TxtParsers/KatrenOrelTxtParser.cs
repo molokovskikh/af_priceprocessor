@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
@@ -9,26 +11,36 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		{
 			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
-				if (!headerCaption.ToLower().Equals("[header]"))
+				if (headerCaption == null)
 					return false;
-				var header = reader.ReadLine().Split(';');
-				if ((header.Length != 7) || !header[3].ToLower().Contains("зао нпк катрен"))
+				if (!headerCaption.Equals("[header]", StringComparison.InvariantCultureIgnoreCase))
+					return false;
+				var headerLine = reader.ReadLine();
+				if (headerLine == null)
+					return false;
+				var header = headerLine.Split(';');
+				if (header.Length != 7 || header[3].IndexOf("зао нпк катрен", StringComparison.CurrentCultureIgnoreCase) < 0)
 					return false;
 
 				var bodyCaption = reader.ReadLine();
-				if (!bodyCaption.ToLower().Equals("[body]"))
+				if (bodyCaption == null)
+					return false;
+				if (!bodyCaption.Equals("[body]", StringComparison.InvariantCultureIgnoreCase))
 					return false;
 
-				var body = reader.ReadLine().Split(';');
+				var bodyLine = reader.ReadLine();
+				if (bodyLine == null)
+					return false;
+				var body = bodyLine.Split(';');
+				if (body.Length < 11)
+					return false;
 				if (GetDecimal(body[6]) == null)
 					return false;
 
-				//дополнительная проверка для даты. Так как может быть например строка 02/10, которая воспринимается как дата. 
-				//На количество столбцов не смог привязаться, так как есть накладные для парсера KetrenVrnParser, у которых тоже 20 столбцов.
-				if ((body[10].IndexOf("/") > -1 && body[10].Split('/').Length < 3) ||
-					(body[10].IndexOf("-") > -1 && body[10].Split('-').Length < 3))
-					return false;
-				if (GetDateTime(body[10]) == null)
+				//пытаемся разобрать дату по шаблону иначе слишком много неопределенности
+				//мы можем маленькое число интерпретировать как дату пример 9.28
+				DateTime period;
+				if (!DateTime.TryParseExact(body[10], "dd.MM.yyyy", CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out period))
 					return false;
 			}
 			return true;

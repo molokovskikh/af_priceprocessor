@@ -24,7 +24,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CertificatesDateIndex = 14;
 			RegistryCostIndex = 22;
 			VitallyImportantIndex = 26;
-			CalculateSupplierPriceMarkup = true;
 		}
 
 		public static bool CheckFileFormat(string file)

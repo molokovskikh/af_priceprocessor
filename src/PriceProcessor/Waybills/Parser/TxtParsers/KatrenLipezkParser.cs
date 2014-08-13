@@ -31,15 +31,27 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		{
 			using (var reader = new StreamReader(file, Encoding.GetEncoding(1251))) {
 				var headerCaption = reader.ReadLine();
-				if (!headerCaption.ToLower().Equals("[header]"))
+				if (headerCaption == null)
 					return false;
-				var header = reader.ReadLine().Split(';');
-				if ((header.Length != 7) || !header[3].ToLower().Contains("зао нпк катрен"))
+				if (!headerCaption.Equals("[header]", StringComparison.InvariantCultureIgnoreCase))
+					return false;
+				var headerLine = reader.ReadLine();
+				if (headerLine == null)
+					return false;
+				var header = headerLine.Split(';');
+				if (header.Length != 7 || header[3].IndexOf("зао нпк катрен", StringComparison.CurrentCultureIgnoreCase) < 0)
 					return false;
 				var bodyCaption = reader.ReadLine();
-				if (!bodyCaption.ToLower().Equals("[body]"))
+				if (bodyCaption == null)
 					return false;
-				var body = reader.ReadLine().Split(';');
+				if (!bodyCaption.Equals("[body]", StringComparison.InvariantCultureIgnoreCase))
+					return false;
+				var bodyLine = reader.ReadLine();
+				if (bodyLine == null)
+					return false;
+				var body = bodyLine.Split(';');
+				if (body.Length < 9)
+					return false;
 				if (GetDecimal(body[6]) == null)
 					return false;
 				//если нет числа в колонке, то не подходит парсер

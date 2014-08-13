@@ -1,5 +1,6 @@
 ﻿using Common.Tools;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -16,7 +17,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(MarimedsnabSpecialParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\NKL_nnnnnnnn.dbf")));
 
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7949 } }; // код поставщика Маримедснаб (Йошкар-Ола)
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\NKL_nnnnnnnn.dbf", documentLog) is MarimedsnabSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\NKL_nnnnnnnn.dbf", documentLog) is MarimedsnabSpecialParser);
 
 			var document = WaybillParser.Parse(@"NKL_nnnnnnnn.dbf", documentLog);
 

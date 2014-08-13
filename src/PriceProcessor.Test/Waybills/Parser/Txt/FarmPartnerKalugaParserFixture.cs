@@ -1,5 +1,6 @@
 ﻿using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 4910u } }; // код поставщика Фармпартнер (Калуга)            
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\06532.sst", documentLog) is FarmPartnerKalugaParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\06532.sst", documentLog) is FarmPartnerKalugaParser);
 
 			var doc = WaybillParser.Parse("06532.sst", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(1));

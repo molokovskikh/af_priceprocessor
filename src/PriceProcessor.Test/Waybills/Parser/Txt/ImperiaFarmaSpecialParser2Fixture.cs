@@ -1,4 +1,5 @@
 ﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -12,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 74u }, }; // код поставщика Империя-Фарма
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\KZ069425_корр.txt", documentLog) is ImperiaFarmaSpecialParser2);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\KZ069425_корр.txt", documentLog) is ImperiaFarmaSpecialParser2);
 			var doc = WaybillParser.Parse("KZ069425_корр.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(1));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("КЗ069425"));

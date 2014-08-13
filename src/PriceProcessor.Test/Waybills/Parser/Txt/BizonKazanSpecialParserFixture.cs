@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			// код поставщика "Бизон" (Казань)
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 8063 }, };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\N000011720.txt", documentLog) is BizonKazanSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\N000011720.txt", documentLog) is BizonKazanSpecialParser);
 
 			var doc = WaybillParser.Parse("N000011720.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(15));
@@ -71,7 +71,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_without_period()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 8063 }, };
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\13755.txt", documentLog) is BizonKazanSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\13755.txt", documentLog) is BizonKazanSpecialParser);
 			var doc = WaybillParser.Parse("13755.txt", documentLog);
 			Assert.That(doc.Lines.Count, Is.EqualTo(11));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-000013755"));

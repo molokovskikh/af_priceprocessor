@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -38,6 +39,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 		{
 			var document = XDocument.Load(file);
 			return document.XPathSelectElement("КоммерческаяИнформация") != null;
+		}
+	}
+
+	public static class Extentions
+	{
+		public static decimal? Get(this XElement element, string selector)
+		{
+			var el = element.XPathSelectElement(selector);
+			if (el== null)
+				return null;
+			return Convert.ToDecimal(el.Value, CultureInfo.InvariantCulture);
 		}
 	}
 }

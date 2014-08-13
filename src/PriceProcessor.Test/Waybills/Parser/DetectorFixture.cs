@@ -65,17 +65,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(parser5, Is.InstanceOf<GenesisNNParser>());
 		}
 
-		[Test]
-		public void DetectSpecialParserTest()
-		{
-			var type = typeof(Avesta_6256_SpecialParser);
-			var constructor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
-
-			var parser = (IDocumentParser)constructor.Invoke(new object[0]);
-			bool res = detector.IsSpecialParser(parser);
-			Assert.True(res);
-		}
-
 		public class WaybillFormatDetectorFake : WaybillFormatDetector
 		{
 			public void AddSpecParser(uint firmCode, Type parserType)

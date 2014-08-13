@@ -1,4 +1,5 @@
 ﻿using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using NUnit.Framework;
@@ -13,7 +14,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse()
 		{
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7 } }; // код поставщика Ориола (Воронеж)
-			Assert.IsTrue(WaybillParser.GetParserType(@"..\..\Data\Waybills\Reon_AX_Comp_Nzak.dbf", documentLog) is OriolaVoronezhSpecialParser);
+			Assert.IsTrue(new WaybillFormatDetector().DetectParser(@"..\..\Data\Waybills\Reon_AX_Comp_Nzak.dbf", documentLog) is OriolaVoronezhSpecialParser);
 			var document = WaybillParser.Parse(@"Reon_AX_Comp_Nzak.dbf", documentLog);
 			Assert.That(document.Lines.Count, Is.EqualTo(29));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("1006044"));
