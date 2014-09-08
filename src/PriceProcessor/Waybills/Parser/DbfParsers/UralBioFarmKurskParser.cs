@@ -30,6 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCost, "ZNIZG_S_N")
 				.Line(l => l.SupplierCostWithoutNDS, "ZNPROD")
 				.Line(l => l.SupplierCost, "ZNPROD_S_N")
+				.Line(l => l.RegistryCost, "GR_CENA")
 				.Line(l => l.Amount, "SUMNDS")
 				.Line(l => l.NdsAmount, "NDSSUM")
 				.Line(l => l.Quantity, "KOLF")
@@ -38,6 +39,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SER")
 				.Line(l => l.BillOfEntryNumber, "OKDP")
 				.Line(l => l.Nds, "NDS")
+				.Line(l => l.VitallyImportant, "PV")
 				.ToDocument(document, data);
 
 			return document;
