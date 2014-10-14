@@ -408,7 +408,7 @@ namespace Inforoom.PriceProcessor
 							"Synonym",
 							synstr.Trim().ToUpper(),
 							Field.Store.YES,
-							Field.Index.TOKENIZED));
+							Field.Index.ANALYZED));
 					writer.AddDocument(doc);
 				}
 				if (optimize) {
