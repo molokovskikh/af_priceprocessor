@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 		public static decimal? Get(this XElement element, string selector)
 		{
 			var el = element.XPathSelectElement(selector);
-			if (el== null)
+			if (el == null)
 				return null;
 			return Convert.ToDecimal(el.Value, CultureInfo.InvariantCulture);
 		}
