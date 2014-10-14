@@ -4,6 +4,7 @@ using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
+	[TestFixture]
 	class VegaParserFixture
 	{
 		[Test]
