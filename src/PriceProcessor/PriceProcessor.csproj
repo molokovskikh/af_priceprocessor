@@ -360,6 +360,7 @@
     <Compile Include="Waybills\Parser\TxtParsers\RostaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\SiaVoronezhParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\AVIA_Kos7895XlsParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\VegaParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\VselennajaZdorovyaParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\PureProfitParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\TTMF_8049_Parser.cs" />
