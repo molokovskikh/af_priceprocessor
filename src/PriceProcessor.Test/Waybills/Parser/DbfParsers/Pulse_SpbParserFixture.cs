@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
@@ -28,6 +29,26 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Producer, Is.EqualTo("Экополис"));
 			Assert.That(line.Certificates, Is.EqualTo("СП № 002734"));
 			Assert.That(line.VitallyImportant, Is.True);
+		}
+
+		/// <summary>
+		/// Новые данные от задачи
+		/// http://redmine.analit.net/issues/28233
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\8352663.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(9));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("8352663"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.10.2014")));
+
+			var line = document.Lines[2];
+			Assert.That(line.Code, Is.EqualTo("362694"));
+			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130030/030714/0003533/3"));
+			Assert.That(line.EAN13, Is.EqualTo("4603149000106"));
+			Assert.That(line.CountryCode, Is.EqualTo("756"));
+			Assert.That(line.UnitCode, Is.EqualTo("796"));
 		}
 	}
 }
