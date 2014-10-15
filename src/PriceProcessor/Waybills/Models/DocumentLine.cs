@@ -212,6 +212,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string Unit { get; set; }
 
 		/// <summary>
+		/// Код единицы измерения
+		/// </summary>
+		[Property]
+		public string UnitCode { get; set; }
+
+		/// <summary>
 		/// В том числе акциз
 		/// </summary>
 		[Property]

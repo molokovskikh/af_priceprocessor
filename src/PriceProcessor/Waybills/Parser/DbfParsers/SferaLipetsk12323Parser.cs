@@ -26,6 +26,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Producer, "ENTERP")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICEWONDS")
+				.Line(l => l.EAN13, "EAN")
+				.Line(l => l.UnitCode, "PCE")
+				.Line(l => l.CountryCode, "CNTRCODE")
+				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.ProducerCost, "PRICEENT");
 		}
 

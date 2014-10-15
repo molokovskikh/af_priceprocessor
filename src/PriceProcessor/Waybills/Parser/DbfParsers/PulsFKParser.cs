@@ -38,6 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificateAuthority, "SERTORG")
 				.Line(l => l.CertificatesDate, "SERTGIVE", "SERTDATE")
 				.Line(l => l.OrderId, "NUMZ")
+				.Line(l => l.CountryCode, "cntrcode")
+				.Line(l => l.UnitCode, "unitcode")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
 
 			if (!Data.Columns.Contains("ADRPOL")) {
