@@ -16,6 +16,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Code, "sp_prd_id ") //код товара поставщика
 				.Line(l => l.Quantity, "kol_tov ") //Заказанное кол-во товара
 				.Line(l => l.SupplierCost, "pcena_nds ") //Цена поставщика с НДС
+				.Line(l => l.ProducerCostWithoutNDS, "prcena_bnd") //Цена производителя без НДС
 				.Line(l => l.Nds, "nds ") //НДС
 				.Line(l => l.NdsAmount, "p_nds_amnt") //Сумма НДС
 				.Line(l => l.Amount, "p_amnt") //Сумма с НДС
