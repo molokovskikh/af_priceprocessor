@@ -40,6 +40,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "OKDP")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.VitallyImportant, "PV")
+				.Line(l => l.OrderId, "NUMZAK")
 				.ToDocument(document, data);
 
 			return document;

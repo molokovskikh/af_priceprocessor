@@ -46,5 +46,22 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("POCCRU.ФМ01.Д38608, 01.11.11, ФГБУ\"ЦЭККМП\"Росздравнадзора, 01.10.13"));
 			Assert.IsNull(line.BillOfEntryNumber);
 		}
+
+		/// <summary>
+		/// К требованию
+		/// http://redmine.analit.net/issues/28387
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			Assert.IsTrue(UralBioFarmKurskParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\4734.DBF")));
+			var document = WaybillParser.Parse("4734.DBF");
+
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("4037"));
+			Assert.That(line.Product, Is.EqualTo("Валерианы настойка 25мл фл-капельн стекло"));
+			Assert.That(line.OrderId, Is.EqualTo(59111373));
+		
+		}
 	}
 }
