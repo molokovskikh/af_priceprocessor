@@ -73,25 +73,5 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.EAN13, Is.EqualTo("7290008016766"));
 			Assert.That(line.OrderId, Is.EqualTo(297967));
 		}
-
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse2()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\369151.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(30));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("369151"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.10.2014")));
-
-			var line = document.Lines[0];
-			Assert.That(line.Code, Is.EqualTo("35475160"));
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10206090/080314/0001177/01"));
-			Assert.That(line.EAN13, Is.EqualTo("6414100009230"));
-			Assert.That(line.CountryCode, Is.EqualTo("246"));
-			Assert.That(line.UnitCode, Is.EqualTo("778"));
-		}
 	}
 }

@@ -29,7 +29,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCostWithoutNDS, "CENAPROIZ")
 				.Line(l => l.VitallyImportant, "PV")
 				.Line(l => l.EAN13, "SHTRIH")
-				.Line(l => l.UnitCode, "KODEI")
 				.Line(l => l.CertificateFilename, "SERTFILE")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.OrderId, "DOC_ID")

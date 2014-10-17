@@ -30,8 +30,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			CertificatesDateIndex = 21;
 			VitallyImportantIndex = 22;
 			EAN13Index = 23;
-			CountryCodeIndex = 24;
-			UnitCodeIndex = 25;
 		}
 
 		public override Document Parse(string file, Document document)

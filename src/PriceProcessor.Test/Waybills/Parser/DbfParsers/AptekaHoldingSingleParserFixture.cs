@@ -217,25 +217,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsNullOrEmpty(document.Lines[8].PassportFilename);
 		}
 
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse8()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\6562_2488183.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(7));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("АХ1-2488183"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("13.10.2014")));
-
-			Assert.That(document.Lines[0].Code, Is.EqualTo("37164"));
-			Assert.That(document.Lines[0].UnitCode, Is.EqualTo("778"));
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo("4605964003874"));
-			Assert.That(document.Lines[0].CountryCode, Is.EqualTo("643"));
-			Assert.That(document.Lines[5].BillOfEntryNumber, Is.EqualTo("10103090/190214/0000966/1"));
-		}
-
 		[Test]
 		public void Universal_format_test()
 		{

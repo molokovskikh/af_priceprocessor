@@ -53,8 +53,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Period, "DATEB")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.Country, "COUNTRY")
-				.Line(l => l.CountryCode, "CNTRCODE")
-				.Line(l => l.UnitCode, "UNITCODE")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.CertificatesDate, "D_SERTIF")
 				.Line(l => l.VitallyImportant, "GV")

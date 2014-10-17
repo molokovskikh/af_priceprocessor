@@ -46,24 +46,5 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			Assert.IsTrue(NadezhdaFarmTambovOrelParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\418312_0.dbf")));
 		}
-
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse2()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\446406_0.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(3));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("446406"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("10.10.2014")));
-
-			var line = document.Lines[2];
-			Assert.That(line.Code, Is.EqualTo("10156"));
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130032/240314/0001852/2"));
-			Assert.That(line.EAN13, Is.EqualTo("4823004503669"));
-			Assert.That(line.CountryCode, Is.EqualTo("80"));
-		}
 	}
 }

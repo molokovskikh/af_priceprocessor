@@ -1,5 +1,4 @@
-﻿using System;
-using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
+﻿using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 
@@ -122,26 +121,6 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(invoice.AmountWithoutNDS, Is.EqualTo(933.92));
 			Assert.That(invoice.NDSAmount, Is.EqualTo(132.01));
 			Assert.That(invoice.Amount, Is.EqualTo(1065.93));
-		}
-
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse3()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\a85504.txt");
-			Assert.That(document.Lines.Count, Is.EqualTo(3));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("85504"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("10.10.2014")));
-
-			var line = document.Lines[1];
-			Assert.That(line.Code, Is.Null);
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10113083/030514/0006320/1"));
-			Assert.That(line.EAN13, Is.EqualTo("4607068626911"));
-			Assert.That(line.CountryCode, Is.EqualTo("428"));
-			Assert.That(line.UnitCode, Is.EqualTo("796"));
 		}
 
 		[Test]

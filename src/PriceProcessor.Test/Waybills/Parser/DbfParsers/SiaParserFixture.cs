@@ -407,23 +407,5 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.AreEqual(107.78, line.ProducerCostWithoutNDS);
 			Assert.AreEqual(107.78, line.SupplierCost);
 		}
-
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse_lekrus()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00013666.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(4));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("00013666"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("09.10.2014")));
-
-			var line = document.Lines[2];
-			Assert.That(line.Code, Is.EqualTo("155955"));
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/070711/0013819/1"));
-			Assert.That(line.EAN13, Is.EqualTo("4013054003923"));
-		}
 	}
 }

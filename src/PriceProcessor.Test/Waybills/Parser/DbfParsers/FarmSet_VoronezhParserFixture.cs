@@ -37,25 +37,5 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.OrderId, Is.EqualTo(35302648));
 			Assert.That(line.CountryCode, Is.EqualTo("100"));
 		}
-
-		/// <summary>
-		/// Новые данные от задачи
-		/// http://redmine.analit.net/issues/28233
-		/// </summary>
-		[Test]
-		public void Parse2()
-		{
-			var document = WaybillParser.Parse(@"..\..\Data\Waybills\Ли081018.dbf");
-			Assert.That(document.Lines.Count, Is.EqualTo(10));
-			Assert.That(document.ProviderDocumentId, Is.EqualTo("ФК002081018"));
-			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("08.10.2014")));
-
-			var line = document.Lines[3];
-			Assert.That(line.Code, Is.EqualTo("12879"));
-			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/090714/0011201/3"));
-			Assert.That(line.EAN13, Is.EqualTo("4013054001264"));
-			Assert.That(line.CountryCode, Is.EqualTo("276"));
-			Assert.That(line.UnitCode, Is.EqualTo("778"));
-		}
 	}
 }

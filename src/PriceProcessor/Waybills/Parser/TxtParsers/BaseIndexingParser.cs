@@ -130,8 +130,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int AmountWithoutNDSIndex = -1;
 		protected int InvoiceNDSAmountIndex = -1;
 		protected int InvoiceAmountIndex = -1;
-		protected int UnitCodeIndex = -1;
-		protected int CountryCodeIndex = -1;
 
 		protected string separator = ";";
 
@@ -371,8 +369,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			}
 
 			docLine.EAN13 = GetString(parts, EAN13Index);
-			docLine.CountryCode = GetString(parts, CountryCodeIndex);
-			docLine.UnitCode = GetString(parts, UnitCodeIndex);
 			docLine.Amount = GetDecimal(parts, AmountIndex);
 			docLine.NdsAmount = GetDecimal(parts, NdsAmountIndex);
 			docLine.ProducerCost = GetDecimal(parts, ProducerCostIndex);
