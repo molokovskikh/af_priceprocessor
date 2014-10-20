@@ -452,7 +452,10 @@
     </None>
     <None Include="Data\EmailSourceHandlerTest\Good.eml" />
     <None Include="Data\Waybills\00000049080.sst" />
+    <None Include="Data\Waybills\00013666.dbf" />
     <None Include="Data\Waybills\00841624.dbf" />
+    <None Include="Data\Waybills\369151.dbf" />
+    <None Include="Data\Waybills\6562_2488183.dbf" />
     <None Include="Data\Waybills\Р-143129.dbf" />
     <None Include="Rosta\611.dbf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
