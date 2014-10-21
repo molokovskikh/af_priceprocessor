@@ -336,7 +336,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				document.SetInvoice().Amount = GetDecimal(header[InvoiceAmountIndex]);
 		}
 
-		protected void ReadBody(Document document, string line)
+		protected virtual void ReadBody(Document document, string line)
 		{
 			var parts = line.Split(separator.ToCharArray());
 			var docLine = document.NewLine();

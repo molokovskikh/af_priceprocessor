@@ -351,6 +351,7 @@
     <Compile Include="Waybills\Parser\KatrenVrnSpecialParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\AmarilisParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\AptekaHoldingKazanParser2.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\KatrenOrelPlotnikovParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\CSMedicaKazanParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\DedenkoTxtParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\Impakt12743Parser.cs" />

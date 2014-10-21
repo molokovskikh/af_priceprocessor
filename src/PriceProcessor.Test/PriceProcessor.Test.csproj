@@ -270,6 +270,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\Vazakor_144_Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VitaLineKazanParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\AmarilisParser.cs" />
+    <Compile Include="Waybills\Parser\Txt\KatrenOrelPlotnikovParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\FarmImpeksKalugaFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\GenesisMMskSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVoronezhParserFixture.cs" />
