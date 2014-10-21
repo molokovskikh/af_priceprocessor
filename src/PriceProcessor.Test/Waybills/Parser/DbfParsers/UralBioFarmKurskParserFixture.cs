@@ -49,7 +49,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 		/// <summary>
 		/// К требованию
-		/// http://redmine.analit.net/issues/28387
+		/// http://redmine.analit.net/issues/27411
 		/// </summary>
 		[Test]
 		public void Parse2()
