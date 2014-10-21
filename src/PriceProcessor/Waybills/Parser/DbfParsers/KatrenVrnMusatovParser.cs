@@ -46,7 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("PPRICEWT")
 				&& data.Columns.Contains("PRICE")
 				&& data.Columns.Contains("PRODUSER")
-				&& !data.Columns.Contains("DocNum");
+				&& !data.Columns.Contains("UNITCODE");
 		}
 	}
 }

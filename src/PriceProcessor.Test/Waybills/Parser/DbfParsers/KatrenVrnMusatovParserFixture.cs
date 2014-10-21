@@ -92,6 +92,10 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line1.Nds, Is.EqualTo(10));
 			Assert.That(line1.Amount, Is.EqualTo(868.45));
 			Assert.That(line1.NdsAmount, Is.EqualTo(78.95));
+
+			//Дополнительная проверка к задаче
+			//http://redmine.analit.net/issues/28639
+			var document = WaybillParser.Parse("407734.dbf");
 		}
 
 		[Test]
