@@ -337,6 +337,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
 				line.EAN13 = bladingItem.prodsbar;
+				line.CountryCode = bladingItem.countryCode;
+				line.BillOfEntryNumber = bladingItem.gtdn;
 				if (bladingItem.bladingItemSeries != null) {
 					var certificates = bladingItem.bladingItemSeries
 						.Where(s => s.bladingItemSeriesCertificates != null)
