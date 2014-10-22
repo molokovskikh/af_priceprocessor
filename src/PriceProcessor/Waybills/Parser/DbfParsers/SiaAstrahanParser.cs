@@ -52,6 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "NDS_PR")
 				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV", "GNVLS")
 				.Line(l => l.CodeCr, "VCODE")
+				.Line(l => l.OrderId, "idorder")
 				.ToDocument(document, data);
 
 			return document;
