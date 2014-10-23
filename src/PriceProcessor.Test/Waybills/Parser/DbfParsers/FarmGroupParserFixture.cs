@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 using PriceProcessor.Test.TestHelpers;
@@ -108,6 +109,27 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Country, Is.EqualTo("Россия"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(11.92));
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
+		}
+
+		/// <summary>
+		/// К задаче
+		/// http://redmine.analit.net/issues/28233
+		/// </summary>
+		[Test]
+		public void Parse_CIA()
+		{
+			var file = @"..\..\Data\Waybills\Р5921938.DBF";
+			var document = WaybillParser.Parse(file);
+
+			Assert.That(document.Lines.Count, Is.EqualTo(13));
+			var line = document.Lines[0];
+
+			Assert.That(line.Code, Is.EqualTo("4056"));
+			Assert.That(line.EAN13, Is.EqualTo("4030685240329"));
+			Assert.That(line.UnitCode, Is.EqualTo("778"));
+			Assert.That(line.CountryCode, Is.EqualTo("380"));
+			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10113080/250214/0003145/4"));
+
 		}
 	}
 }
