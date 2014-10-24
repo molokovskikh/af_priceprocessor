@@ -131,8 +131,8 @@ namespace Inforoom.PriceProcessor.Downloader
 				274265, 1091749, 12297),
 
 			//Протек-03, Санкт-Петербург
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
-				278489, 1101234, 2894),
+			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
+				103376, 1066472, 2894),
 
 			//Протек-44, Астраханская область
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
