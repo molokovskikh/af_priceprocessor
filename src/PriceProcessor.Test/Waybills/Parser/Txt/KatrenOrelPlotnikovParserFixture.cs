@@ -11,7 +11,6 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 	[TestFixture]
 	public class KatrenOrelPlotnikovParserFixture
 	{
-
 		[Test]
 		public void Parse()
 		{
