@@ -67,6 +67,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			ProducerIndex = 2;
 			CountryIndex = 3;
 			QuantityIndex = 4;
+			ProducerCostWithoutNdsIndex = 5;
 			SupplierCostIndex = 6;
 			SupplierCostWithoutNdsIndex = 7;
 			NdsIndex = 8;
@@ -87,6 +88,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			ProducerIndex = Array.FindIndex(parts, p => p.Equals("Производитель", StringComparison.CurrentCultureIgnoreCase));
 			CountryIndex = Array.FindIndex(parts, p => p.Equals("Страна", StringComparison.CurrentCultureIgnoreCase));
 			QuantityIndex = Array.FindIndex(parts, p => p.Equals("Кол-Во", StringComparison.CurrentCultureIgnoreCase));
+			ProducerCostWithoutNdsIndex = Array.FindIndex(parts, p => p.Equals("ЦЗИ", StringComparison.CurrentCultureIgnoreCase));
 			SupplierCostIndex = Array.FindIndex(parts, p => p.Equals("Цена с НДС", StringComparison.CurrentCultureIgnoreCase));
 			SupplierCostWithoutNdsIndex = Array.FindIndex(parts, p => p.Equals("Цена без НДС", StringComparison.CurrentCultureIgnoreCase));
 			NdsIndex = Array.FindIndex(parts, p => p.Equals("Ставка НДС", StringComparison.CurrentCultureIgnoreCase));
@@ -107,7 +109,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 				return;
 			}
 
-			base.ReadBody(document,line);
+			base.ReadBody(document, line);
 		}
 	}
 }
