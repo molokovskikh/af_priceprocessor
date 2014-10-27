@@ -61,7 +61,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Code, Is.EqualTo("4037"));
 			Assert.That(line.Product, Is.EqualTo("Валерианы настойка 25мл фл-капельн стекло"));
 			Assert.That(line.OrderId, Is.EqualTo(59111373));
-		
 		}
 	}
 }

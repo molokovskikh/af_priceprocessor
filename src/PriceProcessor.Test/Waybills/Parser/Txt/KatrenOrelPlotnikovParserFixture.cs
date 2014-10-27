@@ -11,12 +11,11 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 	[TestFixture]
 	public class KatrenOrelPlotnikovParserFixture
 	{
-
 		[Test]
 		public void Parse()
 		{
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\359308.txt");
-			Assert.That(KatrenOrelPlotnikovParser.CheckFileFormat(@"..\..\Data\Waybills\359308.txt"),Is.True);
+			Assert.That(KatrenOrelPlotnikovParser.CheckFileFormat(@"..\..\Data\Waybills\359308.txt"), Is.True);
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("359308"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("13.12.2012")));
 
@@ -36,7 +35,8 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.SerialNumber, Is.EqualTo("180912"));
 			Assert.That(line.Period, Is.EqualTo("01.10.2014"));
-			Assert.That(line.RegistryCost, Is.EqualTo(48.19));
+			Assert.That(line.Period, Is.EqualTo("01.10.2014"));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(31.37));
 		}
 	}
 }

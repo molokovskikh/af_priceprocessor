@@ -129,7 +129,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.UnitCode, Is.EqualTo("778"));
 			Assert.That(line.CountryCode, Is.EqualTo("380"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10113080/250214/0003145/4"));
-
 		}
 	}
 }
