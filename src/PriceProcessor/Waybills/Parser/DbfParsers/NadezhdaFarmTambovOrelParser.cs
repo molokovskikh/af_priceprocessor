@@ -33,6 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificateFilename, "SERT_STR")
 				.Line(l => l.CountryCode, "IDCOUNTRY")
 				.Line(l => l.EAN13, "EAN13")
+				.Line(l => l.UnitCode, "OKEI")
 				.Line(l => l.BillOfEntryNumber, "GTDCODE");
 		}
 
