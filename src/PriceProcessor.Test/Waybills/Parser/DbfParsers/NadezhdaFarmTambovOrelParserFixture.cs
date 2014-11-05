@@ -65,5 +65,22 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.EAN13, Is.EqualTo("4823004503669"));
 			Assert.That(line.CountryCode, Is.EqualTo("80"));
 		}
+	
+		/// <summary>
+		/// Unitcode от задачи
+		/// http://redmine.analit.net/issues/29029
+		/// </summary>
+		[Test]
+		public void Parse3()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\467884_0.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(6));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("467884"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("23.10.2014")));
+
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("32845"));
+			Assert.That(line.UnitCode, Is.EqualTo("778"));
+		}
 	}
 }
