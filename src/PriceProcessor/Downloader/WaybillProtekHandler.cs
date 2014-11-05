@@ -343,6 +343,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.EAN13 = bladingItem.prodsbar;
 				line.CountryCode = bladingItem.countryCode;
 				line.BillOfEntryNumber = bladingItem.gtdn;
+				line.UnitCode = bladingItem.cvpItemOkei.ToString();
 				if (bladingItem.bladingItemSeries != null) {
 					var certificates = bladingItem.bladingItemSeries
 						.Where(s => s.bladingItemSeriesCertificates != null)
