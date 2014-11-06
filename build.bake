@@ -9,14 +9,6 @@ import System.IO
 import System.Xml
 import System.Xml.Linq
 import System.Xml.XPath.Extensions
-import file from Deploy.bake
-import file from WindowsServiceSupport.bake
-import file from Lib.bake
-import file from Migration.bake
-import file from Test.bake
-import file from Tools.bake
-import file from DB.bake
-import file from MySql.bake
 
 [ServiceContract]
 interface IWaybillService:
