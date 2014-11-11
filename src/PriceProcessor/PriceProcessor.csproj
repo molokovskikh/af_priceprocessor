@@ -102,6 +102,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="NPOI">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework" />
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -265,6 +277,7 @@
     <Compile Include="Waybills\Models\DocumentLine.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLog.cs" />
     <Compile Include="Waybills\Models\Export\DbfExporter.cs" />
+    <Compile Include="Waybills\Models\Export\ExcelExporter.cs" />
     <Compile Include="Waybills\Models\Export\Exporter.cs" />
     <Compile Include="Waybills\Models\Export\SstExport.cs" />
     <Compile Include="Waybills\Models\Export\XmlExporter.cs" />

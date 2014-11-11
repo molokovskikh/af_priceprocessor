@@ -18,6 +18,5 @@ namespace PriceProcessor.Test.Waybills.Models
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\369151.dbf");
 			ExcelExporter.SaveLipetskFarmacia(document, "./waybill.xls");
 		}
-
 	}
 }

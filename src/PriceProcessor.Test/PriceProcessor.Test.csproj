@@ -95,6 +95,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\NHibernate.dll</HintPath>
     </Reference>
+    <Reference Include="NPOI">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OOXML">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OOXML.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats">
+      <HintPath>..\..\packages\NPOI.2.0.6\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
@@ -186,6 +198,7 @@
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
+    <Compile Include="Waybills\Models\LipetskFormaciaExporterFixture.cs" />
     <Compile Include="Waybills\Parser\CalculateValuesFixture.cs" />
     <Compile Include="Waybills\Parser\ConvertDateInDbfFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ABGroupParserFixture.cs" />

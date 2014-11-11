@@ -59,7 +59,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				DbfExporter.SaveUniversalDbf(document, filename);
 			}
 			else if (type == WaybillFormat.LipetskFarmacia) {
-				ExcelExporter.SaveLipetskFarmacia(document,filename);
+				ExcelExporter.SaveLipetskFarmacia(document, filename);
 			}
 			else if (type == WaybillFormat.InfoDrugstoreXml) {
 				using(var session = SessionHelper.GetSessionFactory().OpenSession())

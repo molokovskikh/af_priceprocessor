@@ -8,12 +8,11 @@ using NPOI.SS.UserModel;
 using NPOI.XWPF.UserModel;
 namespace Inforoom.PriceProcessor.Waybills.Models.Export
 {
-	public class  ExcelExporter
+	public class ExcelExporter
 	{
 		public static void SaveLipetskFarmacia(Document document, string filename)
 		{
-			using (FileStream sw = File.Create(filename))
-			{
+			using (FileStream sw = File.Create(filename)) {
 				var workbook = new HSSFWorkbook();
 				ISheet sheet1 = workbook.CreateSheet("Sheet1");
 				var row = sheet1.CreateRow(0);
@@ -50,7 +49,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.CreateCell(7).SetCellValue(""); //что такое оптовая надбавка?
 					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString()); //то ли это? не уверен, что отпускная
 					row.CreateCell(9).SetCellValue(line.NdsAmount.ToString());
-					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString());//то ли это? не уверен, что отпускная
+					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString()); //то ли это? не уверен, что отпускная
 					row.CreateCell(11).SetCellValue(""); //что такое розничная торговая надбавка?
 					row.CreateCell(12).SetCellValue(line.RetailCost.ToString());
 					row.CreateCell(13).SetCellValue(line.Quantity.ToString());
