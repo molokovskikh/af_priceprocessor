@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("Сибазон табл 5мг №20"));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Органика РОССИЯ"));
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("10212"));
-			Assert.That(doc.Lines[0].Period, Is.EqualTo("2017-03-01T00:00:00+04:00"));
+			Assert.That(doc.Lines[0].Period, Is.EqualTo("2017-03-01T00:00:00+03:00"));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("RU.ФМ10.Д11862"));
 			Assert.That(doc.Lines[0].CertificatesDate, Is.EqualTo("28.02.2012"));
 			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(10.34));
