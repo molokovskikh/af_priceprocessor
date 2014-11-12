@@ -34,11 +34,11 @@
   </xs:schema>
   <position>
     <TTN>3987</TTN>
-    <TTN_DATE>2012-12-10T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-10T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Сибазон табл 5мг №20</NAME_POST>
     <PRZV_POST>Органика РОССИЯ</PRZV_POST>
     <SERIA>10212</SERIA>
-    <SGODN>2017-03-01T00:00:00+04:00</SGODN>
+    <SGODN>2017-03-01T00:00:00+03:00</SGODN>
     <SERT>RU.ФМ10.Д11862</SERT>
     <SERT_DATE>28.02.2012</SERT_DATE>
     <PRCENA_BNDS>10.34</PRCENA_BNDS>
@@ -54,11 +54,11 @@
   </position>
   <position>
     <TTN>22821</TTN>
-    <TTN_DATE>2012-12-25T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-25T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Презервативы Маскулан 2Y Classic с пупырышками №3</NAME_POST>
     <PRZV_POST>Фармацевтика ГМБХ Германия</PRZV_POST>
     <SERIA>10D203  д.в.08.10</SERIA>
-    <SGODN>2015-03-01T00:00:00+04:00</SGODN>
+    <SGODN>2015-03-01T00:00:00+03:00</SGODN>
     <SERT>DE.ИМ13.В02714 №0113521</SERT>
     <SERT_DATE>26.05.2010</SERT_DATE>
     <NDS>10</NDS>
@@ -73,11 +73,11 @@
   </position>
   <position>
     <TTN>3987</TTN>
-    <TTN_DATE>2012-12-10T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-10T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Трамадол р-р д/ин(амп) 50мг/мл 2мл №5</NAME_POST>
     <PRZV_POST>МЭЗ ФГУП РОССИЯ</PRZV_POST>
     <SERIA>290612</SERIA>
-    <SGODN>2015-07-01T00:00:00+04:00</SGODN>
+    <SGODN>2015-07-01T00:00:00+03:00</SGODN>
     <SERT>RU.ФМ01.Д00164</SERT>
     <SERT_DATE>15.08.2012</SERT_DATE>
     <PRCENA_BNDS>57.57</PRCENA_BNDS>
@@ -93,11 +93,11 @@
   </position>
   <position>
     <TTN>3987</TTN>
-    <TTN_DATE>2012-12-10T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-10T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Фенобарбитал табл 100мг №10</NAME_POST>
     <PRZV_POST>Татхимфармпрепараты ЗАО РОССИЯ</PRZV_POST>
     <SERIA>80312</SERIA>
-    <SGODN>2017-04-01T00:00:00+04:00</SGODN>
+    <SGODN>2017-04-01T00:00:00+03:00</SGODN>
     <SERT>RU.ФМ01.Д12653</SERT>
     <SERT_DATE>04.04.2012</SERT_DATE>
     <PRCENA_BNDS>6.46</PRCENA_BNDS>
@@ -113,11 +113,11 @@
   </position>
   <position>
     <TTN>3987</TTN>
-    <TTN_DATE>2012-12-10T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-10T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Реланиум р-р для в/в и в/м введ(амп) 5мг/мл 2мл №5</NAME_POST>
     <PRZV_POST>Варшав.ФЗ Польфа Польша</PRZV_POST>
     <SERIA>05ЕХ0512</SERIA>
-    <SGODN>2017-05-01T00:00:00+04:00</SGODN>
+    <SGODN>2017-05-01T00:00:00+03:00</SGODN>
     <SERT>PL.ФМ01.Д00532</SERT>
     <SERT_DATE>21.08.2012</SERT_DATE>
     <PRCENA_BNDS>66.19</PRCENA_BNDS>
@@ -133,11 +133,11 @@
   </position>
   <position>
     <TTN>3987</TTN>
-    <TTN_DATE>2012-12-10T00:00:00+04:00</TTN_DATE>
+    <TTN_DATE>2012-12-10T00:00:00+03:00</TTN_DATE>
     <NAME_POST>Релиум табл п/о 5мг №20</NAME_POST>
     <PRZV_POST>Тархом.ФЗ Польфа Польша</PRZV_POST>
     <SERIA>10712</SERIA>
-    <SGODN>2015-07-01T00:00:00+04:00</SGODN>
+    <SGODN>2015-07-01T00:00:00+03:00</SGODN>
     <SERT>PL.ФМ01.Д12248</SERT>
     <SERT_DATE>06.09.2012</SERT_DATE>
     <PRCENA_BNDS>18.64</PRCENA_BNDS>
