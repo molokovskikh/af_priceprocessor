@@ -15,7 +15,37 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			using (FileStream sw = File.Create(filename)) {
 				var workbook = new HSSFWorkbook();
 				ISheet sheet1 = workbook.CreateSheet("Sheet1");
-				var row = sheet1.CreateRow(0);
+
+				var row = sheet1.CreateRow(1);
+				row.CreateCell(5).SetCellValue("Наименование организации: Представитель АК \"Инфорум\", г.Воронеж, Ленинский пр-т.160, офис 415");
+				
+				row = sheet1.CreateRow(2);
+				row.CreateCell(2).SetCellValue("Отдел:");
+				row.CreateCell(3).SetCellValue("_______________________________________");
+
+				row = sheet1.CreateRow(3);
+				row.CreateCell(0).SetCellValue("Требование №");
+				row.CreateCell(1).SetCellValue("_______________________");
+				row.CreateCell(5).SetCellValue("Накладная №");
+				row.CreateCell(6).SetCellValue("_______________________");
+
+				row = sheet1.CreateRow(4);
+				row.CreateCell(1).SetCellValue("от \"___\"_________________20___г");
+				row.CreateCell(6).SetCellValue("от \"___\"_________________20___г");
+
+				row = sheet1.CreateRow(5);
+				row.CreateCell(0).SetCellValue("Кому: Аптечный пункт");
+				row.CreateCell(1).SetCellValue("_______________________");
+				row.CreateCell(5).SetCellValue("Через кого");
+				row.CreateCell(6).SetCellValue("_______________________");
+
+				row = sheet1.CreateRow(6);
+				row.CreateCell(0).SetCellValue("Основание отпуска");
+				row.CreateCell(1).SetCellValue("_______________________");
+				row.CreateCell(5).SetCellValue("Доверенность №_____");
+				row.CreateCell(6).SetCellValue("от \"___\"_________________20___г");
+
+				row = sheet1.CreateRow(8);
 				row.CreateCell(0).SetCellValue("№ пп");
 				row.CreateCell(1).SetCellValue("Наименование и краткая характеристика товара");
 				row.CreateCell(2).SetCellValue("Серия товара Сертификат");
@@ -36,7 +66,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.CreateCell(17).SetCellValue("Код единицы");
 				row.CreateCell(18).SetCellValue("ГТД");
 
-				var i = 0;
+				var i = 8;
 				foreach (var line in document.Lines) {
 					row = sheet1.CreateRow(++i);
 					row.CreateCell(0).SetCellValue(i);
@@ -44,13 +74,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.CreateCell(2).SetCellValue(line.Certificates);
 					row.CreateCell(3).SetCellValue(line.Period);
 					row.CreateCell(4).SetCellValue(line.Producer);
-					row.CreateCell(5).SetCellValue(line.ProducerCostWithoutNDS.ToString()); //цена без ндс это именно цена производителя?
-					row.CreateCell(6).SetCellValue(line.Quantity.ToString()); //как узнать затребованное кол-во?
-					row.CreateCell(7).SetCellValue(""); //что такое оптовая надбавка?
-					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString()); //то ли это? не уверен, что отпускная
+					row.CreateCell(5).SetCellValue(line.ProducerCostWithoutNDS.ToString()); 
+					row.CreateCell(6).SetCellValue(line.Quantity.ToString()); //сложно вычисляется с ордерами
+					row.CreateCell(7).SetCellValue(line.SupplierPriceMarkup.ToString());
+					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString()); 
 					row.CreateCell(9).SetCellValue(line.NdsAmount.ToString());
-					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString()); //то ли это? не уверен, что отпускная
-					row.CreateCell(11).SetCellValue(""); //что такое розничная торговая надбавка?
+					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString()); 
+					row.CreateCell(11).SetCellValue(""); //нельзя вычислить на клиенте
 					row.CreateCell(12).SetCellValue(line.RetailCost.ToString());
 					row.CreateCell(13).SetCellValue(line.Quantity.ToString());
 					row.CreateCell(14).SetCellValue(line.Amount.ToString());
