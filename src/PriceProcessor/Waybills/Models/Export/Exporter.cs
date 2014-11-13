@@ -33,6 +33,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		public static DocumentReceiveLog Convert(Document document, WaybillFormat type, WaybillSettings settings)
 		{
 			var extention = settings.GetExportExtension(type);
+			//Нужен для липецкфармации
+			DocumentReceiveLog originalLog = null;
 			var log = document.Log;
 			//если нет файла значит документ из сервиса протека
 			if (String.IsNullOrEmpty(document.Log.FileName)) {
@@ -43,6 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			}
 			else {
 				log.IsFake = true;
+				originalLog = log;
 				log = new DocumentReceiveLog(log, extention);
 				ActiveRecordMediator.SaveAndFlush(log);
 			}
@@ -59,6 +62,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				DbfExporter.SaveUniversalDbf(document, filename);
 			}
 			else if (type == WaybillFormat.LipetskFarmacia) {
+				//Оригинал нам тут тоже пригодится
+				if (originalLog != null)
+					originalLog.IsFake = false;
 				ExcelExporter.SaveLipetskFarmacia(document, filename);
 			}
 			else if (type == WaybillFormat.InfoDrugstoreXml) {

@@ -42,6 +42,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				return ".dbf";
 			if (type == WaybillFormat.InfoDrugstoreXml)
 				return ".xml";
+			if (type == WaybillFormat.LipetskFarmacia)
+				return ".xls";
 			return ".dat";
 		}
 	}
