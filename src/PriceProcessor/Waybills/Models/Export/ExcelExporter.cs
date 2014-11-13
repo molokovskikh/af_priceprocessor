@@ -67,9 +67,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.CreateCell(18).SetCellValue("ГТД");
 
 				var i = 8;
-				foreach (var line in document.Lines) {
+				var lines = document.Lines.OrderBy(b=>b.Id);
+				foreach (var line in lines) {
 					row = sheet1.CreateRow(++i);
-					row.CreateCell(0).SetCellValue(i);
+					row.CreateCell(0).SetCellValue(i-8);
 					row.CreateCell(1).SetCellValue(line.Product);
 					row.CreateCell(2).SetCellValue(line.Certificates);
 					row.CreateCell(3).SetCellValue(line.Period);
@@ -78,12 +79,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.CreateCell(6).SetCellValue(line.Quantity.ToString()); //сложно вычисляется с ордерами
 					row.CreateCell(7).SetCellValue(line.SupplierPriceMarkup.ToString());
 					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString()); 
-					row.CreateCell(9).SetCellValue(line.NdsAmount.ToString());
+					row.CreateCell(9).SetCellValue(line.Nds.ToString());
 					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString()); 
 					row.CreateCell(11).SetCellValue(""); //нельзя вычислить на клиенте
 					row.CreateCell(12).SetCellValue(line.RetailCost.ToString());
 					row.CreateCell(13).SetCellValue(line.Quantity.ToString());
-					row.CreateCell(14).SetCellValue(line.Amount.ToString());
+					row.CreateCell(14).SetCellValue("");
 					row.CreateCell(15).SetCellValue(line.EAN13);
 					row.CreateCell(16).SetCellValue(line.CountryCode);
 					row.CreateCell(17).SetCellValue(line.UnitCode);
