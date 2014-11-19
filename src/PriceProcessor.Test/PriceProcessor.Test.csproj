@@ -204,6 +204,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ABGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\CSMedikaPovolzhyeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\FarmCenterFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ForaFarmParserFixture.cs" />
