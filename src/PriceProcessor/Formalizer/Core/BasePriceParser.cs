@@ -453,14 +453,6 @@ order by c.Id",
 				Stat.DeleteCoreCount += forDelete.Length;
 				yield return "delete from farm.Core0 where Core0.Id in (" + String.Join(", ", forDelete.ToArray()) + ");";
 			}
-
-			var usedProductSynonyms = _newCores.GroupBy(c => c.SynonymCode).Select(c => c.Key.ToString()).ToArray();
-			if (usedProductSynonyms.Length > 0)
-				yield return "update farm.UsedSynonymLogs set LastUsed = now() where SynonymCode in (" + String.Join(", ", usedProductSynonyms) + ");";
-
-			var usedProducerSynonyms = _newCores.Where(c => c.SynonymFirmCrCode != 0).GroupBy(c => c.SynonymFirmCrCode).Select(c => c.Key.ToString()).ToArray();
-			if (usedProducerSynonyms.Length > 0)
-				yield return "update farm.UsedSynonymFirmCrLogs set LastUsed = now() where SynonymFirmCrCode in (" + String.Join(", ", usedProducerSynonyms) + ");";
 		}
 
 		public IDisposable Profile(string text)
