@@ -21,22 +21,18 @@ namespace PriceProcessor.Test.Waybills.Models
 			var settings = new WaybillSettings();
 			settings.IsConvertFormat = true;
 			var address = @"..\..\Data\Waybills\446406_0.dbf";
-			var startLog = new DocumentReceiveLog
-			{
+			var startLog = new DocumentReceiveLog {
 				Id = 100,
-				Supplier = new Supplier
-				{
+				Supplier = new Supplier {
 					Id = 201,
 					Name = "Тестовый поставщик"
 				},
 				DocumentType = DocType.Waybill,
 				LogTime = DateTime.Now,
 				ClientCode = 1001,
-				Address = new Address
-				{
+				Address = new Address {
 					Id = 501,
-					Org = new Org
-					{
+					Org = new Org {
 						FullName = "Тестовое юр.лицо"
 					}
 				}

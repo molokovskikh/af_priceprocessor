@@ -51,7 +51,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Invoice.Amount, Is.EqualTo(87.69));
 			Assert.That(document.Invoice.AmountWithoutNDS, Is.EqualTo(79.72));
 			Assert.That(document.Invoice.NDSAmount, Is.EqualTo(7.97));
-
 		}
 	}
 }

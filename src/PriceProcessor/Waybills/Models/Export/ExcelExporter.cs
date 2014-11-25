@@ -67,10 +67,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.CreateCell(18).SetCellValue("ГТД");
 
 				var i = 8;
-				var lines = document.Lines.OrderBy(b=>b.Id);
+				var lines = document.Lines.OrderBy(b => b.Id);
 				foreach (var line in lines) {
 					row = sheet1.CreateRow(++i);
-					row.CreateCell(0).SetCellValue(i-8);
+					row.CreateCell(0).SetCellValue(i - 8);
 					row.CreateCell(1).SetCellValue(line.Product);
 					row.CreateCell(2).SetCellValue(line.Certificates);
 					row.CreateCell(3).SetCellValue(line.Period);
