@@ -50,9 +50,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		}
 	}
 
-	//public class DelimiterTextParser1251 : BufferFormalizer
-	//public class DelimiterTextParser866 : BufferFormalizer
-
 	public class DelimiterTextParser : BufferFormalizer
 	{
 		public DelimiterTextParser(string filename, PriceFormalizationInfo data)
@@ -61,8 +58,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		}
 	}
 
-	//public class FixedTextParser1251 : BufferFormalizer
-	//public class FixedTextParser866 : BufferFormalizer
 	public class FixedTextParser : BufferFormalizer
 	{
 		public FixedTextParser(string filename, PriceFormalizationInfo data)
