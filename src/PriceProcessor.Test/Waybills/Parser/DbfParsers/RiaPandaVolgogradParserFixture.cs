@@ -22,8 +22,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse("605 3311.dbf");
 			Assert.IsTrue(RiaPandaVolgogradParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\605 3311.dbf")));
 			Assert.That(document.ProviderDocumentId, Is.EqualTo("33117"));
-			Assert.That(document.DocumentDate, Is.EqualTo(new DateTime(2014,11,06)));
-			Assert.That(document.Lines.Count,Is.EqualTo(13));
+			Assert.That(document.DocumentDate, Is.EqualTo(new DateTime(2014, 11, 06)));
+			Assert.That(document.Lines.Count, Is.EqualTo(13));
 
 			var line = document.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("Dt. Vistong: Сироп Подорожника и Мать-и-мачехи, фл 150мл"));
