@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Formalize_excel()
 		{
 			priceItem.Format.PriceFormat = PriceFormatType.NativeXls;
-
+			priceItem.Format.FOptimizationSkip = "F5";
 			var book = new Workbook();
 			var worksheet = new Worksheet("test");
 			book.Worksheets.Add(worksheet);
@@ -48,12 +48,14 @@ namespace PriceProcessor.Test.Formalization
 		{
 			priceItem.Format.PriceFormat = PriceFormatType.NativeDbf;
 			file = "test.dbf";
+			priceItem.Format.FOptimizationSkip = "F5";
 
 			var table = new DataTable();
 			table.Columns.Add("F1");
 			table.Columns.Add("F2");
 			table.Columns.Add("F3");
 			table.Columns.Add("F4");
+			table.Columns.Add("F5");
 
 			var lines = Data();
 			for (var i = 0; i < lines.Length; i++) {
@@ -85,9 +87,13 @@ namespace PriceProcessor.Test.Formalization
 			priceItem.Format.TxtQuantityBegin = priceItem.Format.TxtFirmCrEnd;
 			priceItem.Format.TxtQuantityEnd = priceItem.Format.TxtQuantityBegin + maxLengths[2] - 1;
 
+
 			var rule = price.Costs.First().FormRule;
 			rule.TxtBegin = priceItem.Format.TxtQuantityEnd + 1;
 			rule.TxtEnd = rule.TxtBegin + maxLengths[3] - 1;
+
+			priceItem.Format.TxtOptimizationSkipBegin = rule.TxtEnd + 3;
+			priceItem.Format.TxtOptimizationSkipEnd = priceItem.Format.TxtOptimizationSkipBegin;
 
 			var content = lines.Select(p => p.Select((s, i) => s.PadRight(maxLengths[i], ' ')).Implode(""))
 				.Implode(Environment.NewLine);
@@ -113,6 +119,7 @@ namespace PriceProcessor.Test.Formalization
 			var cores = session.Query<TestCore>().Where(c => c.Price == price).ToList();
 			Assert.That(cores.Count, Is.EqualTo(3));
 			Assert.That(cores[0].ProductSynonym.Name, Is.EqualTo("9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ"));
+			Assert.That(cores[0].OptimizationSkip, Is.True);
 		}
 	}
 }

@@ -83,6 +83,7 @@ namespace PriceProcessor.Test.Loader
 			<Id>P2526</Id>
 			<Value>10</Value>
 		</Cost>
+		<optimizationSkip>1</optimizationSkip>
 	</Item>
 	<Item>
 		<Code>17390</Code>
@@ -92,6 +93,7 @@ namespace PriceProcessor.Test.Loader
 			<Id>P2525</Id>
 			<Value>50</Value>
 		</Cost>
+		<optimizationSkip>0</optimizationSkip>
 	</Item>
 </Price>
 ";
@@ -106,6 +108,8 @@ namespace PriceProcessor.Test.Loader
 			Assert.That(cost.Value, Is.EqualTo(10.50));
 			cost = position.Core.Costs[1];
 			Assert.That(cost.Value, Is.EqualTo(10));
+			Assert.That(position.Core.OptimizationSkip, Is.True);
+			Assert.That(positions[1].Core.OptimizationSkip, Is.False);
 			Assert.That(positions[1].Core.Costs.Length, Is.EqualTo(1));
 		}
 

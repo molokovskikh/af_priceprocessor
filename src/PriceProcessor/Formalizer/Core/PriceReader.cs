@@ -54,6 +54,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 			awaitPos = priceInfo[FormRules.colSelfAwaitPos].ToString();
 			junkPos = priceInfo[FormRules.colSelfJunkPos].ToString();
+
 			vitallyImportantMask = priceInfo[FormRules.colSelfVitallyImportantMask].ToString();
 			toughDate = new ToughDate();
 			if (String.Empty != nameMask)
@@ -225,7 +226,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				CodeOKP = GetUintOrDefault(PriceFields.CodeOKP),
 				EAN13 = GetFieldValue(PriceFields.EAN13),
 				Series = GetFieldValue(PriceFields.Series),
-				ProducerCost = GetDecimalValue(PriceFields.ProducerCost)
+				ProducerCost = GetDecimalValue(PriceFields.ProducerCost),
+				OptimizationSkip = (bool)GetFieldValueObject(PriceFields.OptimizationSkip)
 			};
 
 			if (quantity is int)
@@ -371,6 +373,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public virtual object GetFieldValueObject(PriceFields PF)
 		{
 			switch ((int)PF) {
+				case (int)PriceFields.OptimizationSkip:
+					return GetBoolValue(PF);
 				case (int)PriceFields.Await:
 					return GetBoolValue(PF, awaitPos);
 
@@ -524,6 +528,14 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			if (String.Empty == value)
 				return null;
 			return value;
+		}
+
+		private object GetBoolValue(PriceFields priceField)
+		{
+			string fieldValue = GetFieldValue(priceField);
+			if(fieldValue == "1")
+				return true;
+			return false;
 		}
 
 		protected bool GetBoolValue(PriceFields priceField, string mask)

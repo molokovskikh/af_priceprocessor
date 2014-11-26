@@ -29,9 +29,9 @@ namespace PriceProcessor.Test.TestHelpers
 			Downloaded = false;
 			formalizer = null;
 			file = "test.txt";
-			defaultContent = @"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
-5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;
-911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;";
+			defaultContent = @"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;1;
+5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;0;
+911 ВЕНОЛГОН ГЕЛЬ Д/ НОГ ПРИ ТЯЖЕСТИ БОЛИ И ОТЕКАХ ТУБА 100МЛ;Твинс Тэк;40;44.71;1;";
 		}
 
 		protected void CreatePrice()
@@ -108,6 +108,8 @@ namespace PriceProcessor.Test.TestHelpers
 			rules.FName1 = "F1";
 			rules.FFirmCr = "F2";
 			rules.FQuantity = "F3";
+			rules.FOptimizationSkip = "F6";
+
 			okpPrice.Costs.Single().FormRule.FieldName = "F4";
 			return rules;
 		}

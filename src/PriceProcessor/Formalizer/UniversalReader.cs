@@ -137,6 +137,11 @@ namespace Inforoom.PriceProcessor.Formalizer
 				return;
 			}
 
+			if (tag.Match("OptimizationSkip")) {
+				core.OptimizationSkip = value == "1";
+				return;
+			}
+
 			if (tag.Match("Await")) {
 				if (value == "0")
 					core.Await = false;
