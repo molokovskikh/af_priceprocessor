@@ -456,7 +456,7 @@ namespace PriceProcessor.Test.Formalization
 			data.BaseCost.FormRule.FieldName = "F5";
 
 			CreateDefaultSynonym();
-			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00;");
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00");
 
 			session.Refresh(price);
 			var core = price.Core[0];

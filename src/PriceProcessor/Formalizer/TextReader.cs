@@ -174,7 +174,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 				var length = rule.End - rule.Begin + 1;
 				if (length > line.Length - begin)
 					length = line.Length - begin;
-				row[rule.FieldName] = line.Substring(begin, length).Trim();
+				var chunk = line.Substring(begin, length).Trim();
+				row[rule.FieldName] = chunk;
 			}
 		}
 

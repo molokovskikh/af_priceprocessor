@@ -36,7 +36,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		[Description("Минимальное количество")] MinOrderCount,
 		[Description("Код EAN-13 (штрих-код)")] EAN13,
 		[Description("код ОКП")] CodeOKP,
-		[Description("Серия")] Series
+		[Description("Серия")] Series,
+		[Description("Флаг игнорирования оптимизации")] OptimizationSkip
 	}
 
 	public enum CostTypes

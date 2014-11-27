@@ -157,7 +157,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public uint CodeOKP;
 		public string Series;
-
+		public bool OptimizationSkip;
 		/// <summary>
 		/// будь бдителен может быть null
 		/// </summary>
