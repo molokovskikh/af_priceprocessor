@@ -84,8 +84,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		public static void SaveProtek(Document document)
 		{
 			var settings = WaybillSettings.Find(document.ClientCode);
-			if (!ConvertIfNeeded(document, settings)) {
+			var log = document.Log;
+			var converted = ConvertIfNeeded(document, settings);
+			var lipetskFarmaciaFlag = settings.IsConvertFormat && settings.WaybillConvertFormat == WaybillFormat.LipetskFarmacia;
+			if (!converted || lipetskFarmaciaFlag) {
 				Save(document, settings.ProtekWaybillSavingType, settings);
+				//липецкфармации мы даем 2 файла, но экспорт - делает фейковым изначальный лог файла и заменяет его, поэтому надо ручками сделать его не фейковым
+				if (lipetskFarmaciaFlag)
+					log.IsFake = false;
 			}
 		}
 
