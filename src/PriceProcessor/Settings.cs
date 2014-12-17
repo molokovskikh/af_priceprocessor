@@ -942,7 +942,7 @@ namespace Inforoom.PriceProcessor
 		{
 			get
 			{
-				return ((string)(this["DownWaybillsPath"]));
+				return global::Common.Tools.FileHelper.MakeRooted((string)(this["DownWaybillsPath"]));
 			}
 		}
 

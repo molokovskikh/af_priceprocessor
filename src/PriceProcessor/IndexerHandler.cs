@@ -294,7 +294,7 @@ namespace Inforoom.PriceProcessor
 			SleepTime = 60;
 			workTime = TimeSpan.Parse("02:00:00");
 			taskList = new List<SynonymTask>();
-			IdxDir = Settings.Default.IdxDir;
+			IdxDir = global::Common.Tools.FileHelper.MakeRooted(Settings.Default.IdxDir);
 		}
 
 		//Остановка обработчика

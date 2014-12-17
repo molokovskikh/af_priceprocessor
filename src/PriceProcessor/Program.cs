@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework.Config;
 using Common.MySql;
+using Common.Tools;
+using Common.Tools.Threading;
 #if !DEBUG
 using System.ServiceProcess;
 #else
@@ -22,12 +25,18 @@ namespace Inforoom.PriceProcessor
 {
 	public static class Program
 	{
-		public static void Main()
+		public static int Main(string[] args)
 		{
 			SystemInfo.NullText = null;
 			XmlConfigurator.Configure();
 			var log = LogManager.GetLogger(typeof(Program));
 			try {
+
+				if (args.FirstOrDefault().Match("install")) {
+					CommandService.Install();
+					return 0;
+				}
+
 				With.DefaultConnectionStringName = Literals.GetConnectionName();
 				InitActiveRecord(new[] { typeof(Document).Assembly });
 				//устанавливаем значение NullText для параметра %ndc и других
@@ -52,9 +61,11 @@ namespace Inforoom.PriceProcessor
 				};
 				ServiceBase.Run(ServicesToRun);
 #endif
+				return 0;
 			}
 			catch (Exception e) {
 				log.Error("Ошибка запуска сервиса обработки прайс листов", e);
+				return 1;
 			}
 		}
 
