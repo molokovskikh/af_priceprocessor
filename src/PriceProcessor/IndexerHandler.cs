@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Castle.ActiveRecord;
+using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using log4net;
@@ -14,6 +15,7 @@ using Lucene.Net.Search;
 using Lucene.Net.Documents;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Store;
+using NHibernate.Linq;
 using Directory = System.IO.Directory;
 using Document = Lucene.Net.Documents.Document;
 
@@ -431,8 +433,8 @@ namespace Inforoom.PriceProcessor
 				Directory.Delete(IdxDir, true);
 			_logger.Info("Загрузка синонимов из БД...");
 			IList<ProductSynonym> synonyms;
-			using (new SessionScope()) {
-				synonyms = ProductSynonym.Queryable.Select(s => s).ToList();
+			using(var session = SessionHelper.GetSessionFactory().OpenSession()) {
+				synonyms = session.Query<ProductSynonym>().Where(s => s.Synonym != null).ToList();
 			}
 			_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
 			DoIndex(synonyms, false, true);
@@ -445,8 +447,8 @@ namespace Inforoom.PriceProcessor
 			_logger.Info("Добавление синонимов к индексу...");
 			_logger.Info("Загрузка синонимов из БД...");
 			IList<ProductSynonym> synonyms;
-			using (new SessionScope()) {
-				synonyms = ProductSynonym.Queryable.Where(s => ids.Contains(s.SynonymCode)).ToList();
+			using(var session = SessionHelper.GetSessionFactory().OpenSession()) {
+				synonyms = session.Query<ProductSynonym>().Where(s => ids.Contains(s.SynonymCode) && s.Product != null).ToList();
 			}
 			_logger.InfoFormat("Загрузили {0} синонимов", synonyms.Count());
 			var res = DoIndex(synonyms, true, false);
