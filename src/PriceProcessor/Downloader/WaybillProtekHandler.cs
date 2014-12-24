@@ -220,7 +220,7 @@ namespace Inforoom.PriceProcessor.Downloader
 					_logger.InfoFormat("Получили накладные, всего {0} для сессии {1}", responce.@return.blading.Length, sessionId);
 					foreach (var blading in responce.@return.blading) {
 						var blanding = service.getBladingBody(new getBladingBody(sessionId, config.ClientId, config.InstanceId, blading.bladingId.Value));
-						_logger.InfoFormat("Загрузил накладную {0}", blading.bladingId.Value);
+						_logger.InfoFormat("Загрузил накладную {0}({1})", blading.bladingId, blading.baseId);
 						foreach (var body in blanding.@return.blading) {
 							using (var scope = new TransactionScope(OnDispose.Rollback)) {
 								var document = ToDocument(body, config);
@@ -230,7 +230,12 @@ namespace Inforoom.PriceProcessor.Downloader
 
 								document.Log.Save();
 								document.Save();
-								document.CreateCertificateTasks();
+								try {
+									document.CreateCertificateTasks();
+								}
+								catch(Exception e) {
+									_logger.Error(String.Format("Не удалось создать задачи для загрузки сертификатов по накладной {0}", document.Log.Id), e);
+								}
 
 								Exporter.SaveProtek(document);
 								scope.VoteCommit();
