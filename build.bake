@@ -17,12 +17,12 @@ interface IWaybillService:
 
 
 Global(
-	Project : "PriceProcessor",
-	Server : "fms.adc.analit.net",
-	HumanReadableName : "Служба обработки прайс-листов",
-	ServiceName : "PriceProcessorService",
+	Project: "PriceProcessor",
+	Server: "processor.adc.analit.net",
+	HumanReadableName: "Служба обработки прайс-листов",
 	Profile: @catalog,
-	NugetPackageName: @RemotePriceProcessor
+	NugetPackageName: @RemotePriceProcessor,
+	DeployTo: """\\processor.adc.analit.net\apps\priceprocessor\bin\"""
 )
 
 #если мы запускаем тесты на сервере не надо загружать проект что бы
@@ -37,7 +37,7 @@ task @ParseWaybills:
 	binding.OpenTimeout = TimeSpan.FromMinutes(30)
 	binding.ReceiveTimeout = TimeSpan.FromMinutes(30)
 	binding.Security.Mode = SecurityMode.None
-	factory = ChannelFactory[of IWaybillService](binding, "net.tcp://fms:901/WaybillService")
+	factory = ChannelFactory[of IWaybillService](binding, "net.tcp://${Globals.Server}:901/WaybillService")
 	channel = factory.CreateChannel()
 	ids = List[of uint]()
 	dataFile = Configuration.Maybe.dataFile
