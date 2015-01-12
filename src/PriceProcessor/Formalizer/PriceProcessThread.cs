@@ -8,6 +8,8 @@ using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using log4net;
 using Inforoom.PriceProcessor;
+using MySql.Data.MySqlClient;
+using NPOI.SS.Formula.Functions;
 using FileHelper = Common.Tools.FileHelper;
 
 namespace Inforoom.Formalizer
@@ -177,37 +179,47 @@ namespace Inforoom.Formalizer
 
 					Directory.CreateDirectory(tempPath);
 
-					try {
-						ProcessState = PriceProcessState.CallValidate;
-						_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
+					var max = 4;
+					for (var i = 1; i < max; i++) {
+						try {
+							ProcessState = PriceProcessState.CallValidate;
+							_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
 
-						_workPrice.Downloaded = ProcessItem.Downloaded;
-						_workPrice.InputFileName = ProcessItem.FilePath;
+							_workPrice.Downloaded = ProcessItem.Downloaded;
+							_workPrice.InputFileName = ProcessItem.FilePath;
 
-						ProcessState = PriceProcessState.CallFormalize;
-						_workPrice.Formalize();
+							ProcessState = PriceProcessState.CallFormalize;
+							_workPrice.Formalize();
 
-						FormalizeOK = true;
-						_log.FormSecs = (long)DateTime.UtcNow.Subtract(StartDate).TotalSeconds;
-						_log.SuccesLog(_workPrice);
-					}
-					catch (Exception e) {
-						WarningFormalizeException warning =
-							(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
-						if (warning != null) {
-							_log.WarningLog(warning, warning.Message);
-							FormalizeOK = true;
+							_log.SuccesLog(_workPrice);
+							break;
 						}
-						else {
-							throw;
+						catch (MySqlException e) {
+							//Duplicate entry '%s' for key %d
+							//всего скорее это значит что одновременно формализовался прайс-лист с такими же синонимами, нужно повторить попытку
+							if (e.Number == 1062) {
+								_logger.WarnFormat(String.Format("Повторяю формализацию прайс-листа попытка {0} из {1}", i, max), e);
+							}
+						}
+						catch (Exception e) {
+							var warning =
+								(e as WarningFormalizeException) ?? (e.InnerException as WarningFormalizeException);
+							if (warning != null) {
+								_log.WarningLog(warning, warning.Message);
+								break;
+							}
+							else {
+								throw;
+							}
+						}
+						finally {
+							var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
+							_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
+							allWorkTimeString = tsFormalize.ToString();
 						}
 					}
-					finally {
-						var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
-						_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
-						allWorkTimeString = tsFormalize.ToString();
-					}
 
+					FormalizeOK = true;
 					ProcessState = PriceProcessState.FinalCopy;
 					//Если файл не скопируется, то из Inbound он не удалиться и будет попытка формализации еще раз
 					if (File.Exists(tempFileName))
