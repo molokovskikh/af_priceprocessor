@@ -57,7 +57,8 @@ namespace PriceProcessor.Test.Waybills.Sources
 			FTP_Server server = null;
 			try {
 				server = new FTP_Server();
-				server.BindInfo = new[] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, new Random().Next(10000, 20000)), };
+				var port = new Random().Next(10000, 20000);
+				server.BindInfo = new[] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, port), };
 				server.StartServer();
 				var testProduct = new TestProduct("Тестовый продукт");
 				session.Save(testProduct);
@@ -81,7 +82,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 					OriginFilePath = KatrenSource.ToOriginFileName(0x1B9EFC8),
 				};
 				session.Save(sourceCatalog);
-				certificateSource.LookupUrl = "ftp://127.0.0.1:10001/";
+				certificateSource.LookupUrl = String.Format("ftp://127.0.0.1:{0}/", port);
 
 				source.GetFilesFromSource(new CertificateTask(certificateSource, line), new List<CertificateFile>());
 			}
