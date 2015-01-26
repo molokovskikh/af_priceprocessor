@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
@@ -8,7 +9,9 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using LumiSoft.Net;
 using LumiSoft.Net.FTP.Server;
 using NUnit.Framework;
+using Rhino.Mocks.Constraints;
 using Test.Support;
+using Is = NUnit.Framework.Is;
 
 namespace PriceProcessor.Test.Waybills.Sources
 {
@@ -51,8 +54,10 @@ namespace PriceProcessor.Test.Waybills.Sources
 		[Test]
 		public void Load_file_without_dir()
 		{
-			using (var server = new FTP_Server()) {
-				server.BindInfo = new [] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, 10001), };
+			FTP_Server server = null;
+			try {
+				server = new FTP_Server();
+				server.BindInfo = new [] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, new Random().Next(10000, 20000)), };
 				server.StartServer();
 				var testProduct = new TestProduct("Тестовый продукт");
 				session.Save(testProduct);
@@ -79,6 +84,10 @@ namespace PriceProcessor.Test.Waybills.Sources
 				certificateSource.LookupUrl = "ftp://127.0.0.1:10001/";
 
 				source.GetFilesFromSource(new CertificateTask(certificateSource, line), new List<CertificateFile>());
+			}
+			finally {
+				if (server != null)
+					server.Dispose();
 			}
 		}
 	}
