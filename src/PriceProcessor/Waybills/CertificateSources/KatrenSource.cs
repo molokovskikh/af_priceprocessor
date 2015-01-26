@@ -30,15 +30,18 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 				var mask = String.Format("{0}*{1}", Path.GetFileNameWithoutExtension(filename), Path.GetExtension(filename));
 
 				var uri = new Uri(task.CertificateSource.LookupUrl);
-				var dir = Path.Combine(Path.GetDirectoryName(uri.AbsolutePath),
-					Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath));
+				var dir = Path.Combine(Path.GetDirectoryName(uri.AbsolutePath) ?? "",
+					Path.GetDirectoryName(certificateSourceCatalog.OriginFilePath) ?? "");
 				using (var ftpClient = new FTP_Client()) {
 					ftpClient.PassiveMode = true;
 					ftpClient.Connect(uri.Host, uri.Port);
 					var credentials = Util.GetCredentials(uri);
 					if (credentials != null)
 						ftpClient.Authenticate(credentials.UserName, credentials.Password);
-					ftpClient.SetCurrentDir(dir);
+					else
+						ftpClient.Authenticate("anonymous", "");
+					if (!String.IsNullOrEmpty(dir))
+						ftpClient.SetCurrentDir(dir);
 					var ftpFiles = ftpClient.GetList();
 					var filesToDownload = ftpFiles.Tables["DirInfo"]
 						.AsEnumerable()
