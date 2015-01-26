@@ -31,7 +31,6 @@ namespace Inforoom.PriceProcessor
 			XmlConfigurator.Configure();
 			var log = LogManager.GetLogger(typeof(Program));
 			try {
-
 				if (args.FirstOrDefault().Match("install")) {
 					CommandService.Install();
 					return 0;

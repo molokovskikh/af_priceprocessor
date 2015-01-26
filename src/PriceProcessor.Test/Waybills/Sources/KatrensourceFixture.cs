@@ -57,7 +57,7 @@ namespace PriceProcessor.Test.Waybills.Sources
 			FTP_Server server = null;
 			try {
 				server = new FTP_Server();
-				server.BindInfo = new [] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, new Random().Next(10000, 20000)), };
+				server.BindInfo = new[] { new BindInfo(BindInfoProtocol.TCP, IPAddress.Loopback, new Random().Next(10000, 20000)), };
 				server.StartServer();
 				var testProduct = new TestProduct("Тестовый продукт");
 				session.Save(testProduct);
