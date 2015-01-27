@@ -55,8 +55,8 @@ namespace Inforoom.Downloader.Ftp
 
 	public class FtpDownloader
 	{
-		public IList<FailedFile> FailedFiles = new List<FailedFile>();
 		private static ILog _log = LogManager.GetLogger(typeof(FtpDownloader));
+		public static bool UseStub;
 
 		/// <summary>
 		/// Забирает файлы из фтп директории, сохраняет их локально и возвращает список локальных путей для этих файлов.
@@ -83,7 +83,8 @@ namespace Inforoom.Downloader.Ftp
 
 			var receivedFiles = new List<DownloadedFile>();
 			using (var ftpClient = new FTP_Client()) {
-				_log.DebugFormat("Загрузка файлов с ftp://{0}@{1}:{2}/{3}/{4}", username, ftpHost, ftpPort, ftpDirectory, fileMask);
+				var url = String.Format("ftp://{0}@{1}:{2}{3}/{4}", username, ftpHost, ftpPort, ftpDirectory, fileMask);
+				_log.DebugFormat("Загрузка файлов с {0}", url);
 				var dataSetEntries = GetFtpFilesAndDirectories(ftpClient, ftpHost, ftpPort, username, password, ftpDirectory, ftpPassiveMode);
 				foreach (DataRow entry in dataSetEntries.Tables["DirInfo"].Rows) {
 					if (Convert.ToBoolean(entry["IsDirectory"]))
@@ -96,7 +97,8 @@ namespace Inforoom.Downloader.Ftp
 
 					var fileWriteTime = Convert.ToDateTime(entry["Date"]);
 #if DEBUG
-					lastDownloadTime = DateTime.Now.AddMonths(-1);
+					if (UseStub)
+						lastDownloadTime = DateTime.Now.AddMonths(-1);
 #endif
 
 					if (((fileWriteTime.CompareTo(lastDownloadTime) > 0) &&
@@ -108,27 +110,28 @@ namespace Inforoom.Downloader.Ftp
 #if !DEBUG
 							ReceiveFile(ftpClient, fileInDirectory, downloadedFile);
 #else
-							// Для тестов
-							if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
-								ftpDirectory = ftpDirectory.Substring(1);
-							var path = Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory);
-							File.Copy(Path.Combine(path, fileInDirectory), downloadedFile, true);
+							if (UseStub) {
+								// Для тестов
+								if (ftpDirectory.StartsWith(@"/", StringComparison.OrdinalIgnoreCase))
+									ftpDirectory = ftpDirectory.Substring(1);
+								var path = Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory);
+								File.Copy(Path.Combine(path, fileInDirectory), downloadedFile, true);
+							}
+							else {
+								ReceiveFile(ftpClient, fileInDirectory, downloadedFile);
+							}
 #endif
 							receivedFiles.Add(new DownloadedFile(downloadedFile, fileWriteTime));
 							FileHelper.ClearReadOnly(downloadedFile);
 						}
 						catch (Exception e) {
-							FailedFiles.Add(new FailedFile(fileInDirectory, e));
-							_log.Debug("Ошибка при попытке загрузить файл с FTP поставщика", e);
+							_log.Debug(String.Format("Ошибка при попытке загрузить файл {0}", url), e);
 						}
 					}
 					else {
 						_log.DebugFormat("Файл {0} уже забран и дата файла еще не обновлена. Не забираем.", fileInDirectory);
 					}
 				}
-#if !DEBUG
-				ftpClient.Disconnect();
-#endif
 			}
 			return receivedFiles;
 		}
@@ -137,17 +140,22 @@ namespace Inforoom.Downloader.Ftp
 		{
 			DataSet dataSetEntries = null;
 			ftpClient.PassiveMode = ftpPassiveMode;
-
-#if !DEBUG
-			ftpClient.Connect(ftpHost, ftpPort);
-			ftpClient.Authenticate(username, password);
-			ftpClient.SetCurrentDir(ftpDirectory);
-
-			dataSetEntries = ftpClient.GetList();
-#else
-			if (ftpDirectory.StartsWith("/"))
-				ftpDirectory = ftpDirectory.Remove(0, 1);
-			dataSetEntries = ToDirInfo(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), new DataSet());
+#if DEBUG
+			if (UseStub) {
+				if (ftpDirectory.StartsWith("/"))
+					ftpDirectory = ftpDirectory.Remove(0, 1);
+				dataSetEntries = ToDirInfo(Path.Combine(Settings.Default.FTPOptBoxPath, ftpDirectory), new DataSet());
+			}
+			else {
+#endif
+				ftpClient.Connect(ftpHost, ftpPort);
+				if (!String.IsNullOrEmpty(username))
+					ftpClient.Authenticate(username, password);
+				else
+					ftpClient.Authenticate("anonymous", "");
+				dataSetEntries = ftpClient.GetList();
+#if DEBUG
+			}
 #endif
 			return dataSetEntries;
 		}
@@ -204,7 +212,7 @@ namespace Inforoom.Downloader.Ftp
 			}
 		}
 
-		public DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
+		public static DownloadedFile GetFileFromSource(PriceSource source, string downHandlerPath)
 		{
 			var ftpHost = source.PricePath;
 			if (ftpHost.StartsWith(@"ftp://", StringComparison.OrdinalIgnoreCase))
@@ -260,16 +268,6 @@ namespace Inforoom.Downloader.Ftp
 			return new DownloadedFile(downFileName, priceDateTime);
 		}
 
-		public DataRow[] GetLikeSources(DataTable sources, PriceSource source)
-		{
-			return sources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}') and (ISNULL({8}, '') = '{9}')",
-				SourcesTableColumns.colPricePath, source.PricePath,
-				SourcesTableColumns.colPriceMask, source.PriceMask,
-				SourcesTableColumns.colFTPDir, source.FtpDir,
-				SourcesTableColumns.colFTPLogin, source.FtpLogin,
-				SourcesTableColumns.colFTPPassword, source.FtpPassword));
-		}
-
 		public IList<DownloadedFile> DownloadedFiles(Uri uri, DateTime lastDownloadTime, string dir)
 		{
 			var filename = "";
@@ -305,8 +303,7 @@ namespace Inforoom.Downloader.Ftp
 		protected override void GetFileFromSource(PriceSource source)
 		{
 			try {
-				var downloader = new FtpDownloader();
-				var file = downloader.GetFileFromSource(source, DownHandlerPath);
+				var file = FtpDownloader.GetFileFromSource(source, DownHandlerPath);
 				if (file != null) {
 					CurrFileName = file.FileName;
 					CurrPriceDate = file.FileDate;
@@ -319,8 +316,12 @@ namespace Inforoom.Downloader.Ftp
 
 		public override DataRow[] GetLikeSources(PriceSource source)
 		{
-			var downloader = new FtpDownloader();
-			return downloader.GetLikeSources(dtSources, source);
+			return dtSources.Select(String.Format("({0} = '{1}') and ({2} = '{3}') and (ISNULL({4}, '') = '{5}') and (ISNULL({6}, '') = '{7}') and (ISNULL({8}, '') = '{9}')",
+				SourcesTableColumns.colPricePath, source.PricePath,
+				SourcesTableColumns.colPriceMask, source.PriceMask,
+				SourcesTableColumns.colFTPDir, source.FtpDir,
+				SourcesTableColumns.colFTPLogin, source.FtpLogin,
+				SourcesTableColumns.colFTPPassword, source.FtpPassword));
 		}
 	}
 
@@ -342,32 +343,8 @@ namespace Inforoom.Downloader.Ftp
 		protected override string GetShortErrorMessage(Exception e)
 		{
 			var message = String.Empty;
-			//var ftpClientException = e as FTP_ClientException;
 			var socketException = e as SocketException;
 			var threadAbortException = e as ThreadAbortException;
-			/*
-			if (ftpClientException != null)
-			{
-				switch (ftpClientException.StatusCode)
-				{
-					case (int)FTP_StatusCode.UserNotLoggedIn:
-						{
-							message += ErrorMessageInvalidLoginOrPassword;
-							break;
-						}
-					case (int)FTP_StatusCode.ServiceNotAvaliable:
-						{
-							message += ErrorMessageServiceNotAvaliable;
-							break;
-						}
-					default:
-						{
-							message += NetworkErrorMessage;
-							break;
-						}
-				}
-			}
-			else*/
 			if (socketException != null)
 				return NetworkErrorMessage;
 			if (threadAbortException != null)

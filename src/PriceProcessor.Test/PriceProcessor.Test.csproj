@@ -406,7 +406,7 @@
     <Compile Include="Waybills\Sources\AptekaHoldingVoronezhCertificateSourceFixture.cs" />
     <Compile Include="Waybills\Sources\AvestaSourceFixture.cs" />
     <Compile Include="Waybills\Sources\FarmKomplektCertificateSourceFixture.cs" />
-    <Compile Include="Waybills\Sources\KatrensourceFixture.cs" />
+    <Compile Include="Waybills\Sources\KatrenSourceFixture.cs" />
     <Compile Include="Waybills\Sources\NadezhdaFarmCertificateSourceFixture.cs" />
     <Compile Include="Waybills\Sources\NormanSourceFixture.cs" />
     <Compile Include="Waybills\Sources\ProtekSourceFixture.cs" />

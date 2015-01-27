@@ -152,6 +152,8 @@ where
 
 				if (downloadFiles.Count > 0)
 					return new CertificateCatalogFile(source, downloadFiles[0].FileDate, downloadFiles[0].FileName);
+				else
+					_logger.DebugFormat("Файл {0} не найден", uri);
 			}
 			else if (uri.Scheme.Match("file")) {
 				var src = new FileInfo(uri.LocalPath);
