@@ -103,14 +103,14 @@ GROUP BY SupplierId
 
 		private void ReceiveDocuments(InboundDocumentType documentType, WaybillSource waybillSource, Uri uri)
 		{
+			var haveErrors = false;
+			if (uri == null)
+				return;
+
 			_logger.InfoFormat("Попытка получения документов с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
 				waybillSource.Id,
 				documentType.DocType.GetDescription(),
 				uri);
-
-			var haveErrors = false;
-			if (uri == null)
-				return;
 
 			try {
 				using (var ftpClient = waybillSource.CreateFtpClient()) {
