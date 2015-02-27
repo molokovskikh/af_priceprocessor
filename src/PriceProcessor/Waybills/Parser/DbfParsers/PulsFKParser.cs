@@ -86,7 +86,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("PRICE2")
 				&& data.Columns.Contains("NUMZ")
 				&& !data.Columns.Contains("NAMEAPT")
-				&& !data.Columns.Contains("SUMITEM")) {
+				&& !data.Columns.Contains("SUMITEM")
+				&& !data.Columns.Contains("UNITNAME")) {
 				if(data.Columns.Contains("SELLERID")) {
 					foreach (DataRow row in data.Rows) {
 						if (row["SELLERID"].ToString() != "1111")
