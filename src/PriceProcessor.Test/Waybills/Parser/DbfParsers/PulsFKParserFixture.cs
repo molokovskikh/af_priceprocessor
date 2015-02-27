@@ -9,7 +9,7 @@ using PriceProcessor.Test.TestHelpers;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
-	public class PulsFkParserFixture
+	public class PulsFKParserFixture
 	{
 		[Test]
 		public void Parse()
