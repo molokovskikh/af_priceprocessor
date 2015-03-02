@@ -163,7 +163,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(invoice.RecipientAddress, Is.EqualTo("429330, Чувашская Республика - Чувашия, Канаш г, Кооперативн"));
 		}
 
-		[Test]
+		[Test(Description = "Проверка перечисленных накладных на соответствие парсеру PulsFKParser")]
 		public void Check_file_format()
 		{
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1843615.dbf")));
@@ -171,6 +171,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\3901847_Роста(300882R).dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\13093.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\16810 (1).dbf")));
+			Assert.IsFalse(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\5066_5014C.dbf")), 
+					"Накладная 'Волгофарм' по-прежнему удовлетворяет парсеру PulsFKParser");
 		}
 	}
 }
