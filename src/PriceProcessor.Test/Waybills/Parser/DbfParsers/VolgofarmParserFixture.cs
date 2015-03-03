@@ -48,7 +48,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.IsTrue(line0.OrderId == 0u);
 			Assert.IsTrue(line0.BillOfEntryNumber == "10130032/241214/0009781/1");
 			Assert.IsTrue(line0.ProducerCostWithoutNDS == 68.36m);
-			Assert.IsTrue(line0.Amount == 751.96m);
+			Assert.IsTrue(line0.Amount == 842.2m);
 		}
 	}
 }

@@ -38,7 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.OrderId, "NUMZ")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD")
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE1")
-				.Line(l => l.Amount, "SUMS0");
+				.Line(l => l.Amount, "SUMPAY");											// поле "SUMPAY" стали использовать вместо "SUMS0"
 
 			return parcer;
 		}
