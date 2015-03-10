@@ -34,11 +34,25 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(11.99));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(11.45));
 			Assert.That(line.NdsAmount, Is.EqualTo(12m));
-			Assert.That(line.Amount, Is.EqualTo(131.9));
+			Assert.That(line.Amount, Is.EqualTo(131.89));
 			Assert.That(line.OrderId, Is.EqualTo(37468018));
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
 			Assert.That(doc.Invoice.RecipientId, Is.EqualTo(13505));
 			Assert.That(doc.Invoice.RecipientAddress, Is.EqualTo("307340, Курская обл., Рыльский р-н, с. Ивановское, ул. Ананьева, д. 1б"));
+		}
+
+		/// <summary>
+		/// К задаче http://redmine.analit.net/issues/26071
+		/// </summary>
+		[Test]
+		public void PulsBrianskParserConvert()
+		{
+			var doc = WaybillParser.Parse("наклПульсПетина00037595.dbf");
+			Assert.That(doc.Parser, Is.EqualTo("PulsBrianskParser"));
+			var line = doc.Lines[0];
+			line.SetAmount(); //Правоцируем посчитать все самостоятельно
+			Assert.That(line.Code, Is.EqualTo("37671"));
+			Assert.That(line.Amount, Is.EqualTo(240.14));
 		}
 	}
 }
