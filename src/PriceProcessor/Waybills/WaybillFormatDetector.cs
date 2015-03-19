@@ -48,6 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 7949, new List<Type> { typeof(MarimedsnabSpecialParser) } }, // Маримедснаб (Йошкар-Ола)
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
 			{ 2109, new List<Type> { typeof(BelaLtdParser) } }, // БЕЛА ЛТД, Код 2109
+			{ 7524, new List<Type> { typeof(KronikaLtdParser) } }, //Кроника-Фарм, Код 7524
 		};
 
 		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
