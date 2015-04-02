@@ -188,7 +188,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		//теоритически имя файла может содержать символы которых нет в 1251
 		//windows хранит файлы как utf-16 а здесь он будет как utf-8 в базе же он будет как 1251
-		//тогда при вставке эти символы заменятся на "похожие" и имя файла изменится 
+		//тогда при вставке эти символы заменятся на "похожие" и имя файла изменится
 		//и при последующих операциях мы его не найдем
 		//для того что бы этого не произошло чистим имя файла
 		private static string CleanupFilename(string fileName)
@@ -242,19 +242,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public virtual void Check(ISession session)
 		{
-			if (!Address.Enabled || !Address.Client.Enabled) {
-				if(!Address.Enabled)
-					RejectReason = RejectReasonType.AddressDisable;
-				else if(!Address.Client.Enabled)
-					RejectReason = RejectReasonType.ClientDisable;
-				throw new EMailSourceHandlerException(
-					String.Format("Адрес доставки {0} отключен", Address.Id),
-					"Ваше Сообщение не доставлено одной или нескольким аптекам",
-					"Добрый день.\r\n\r\n"
-						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. аптека отключена в рамках системы АналитФармация.\r\n\r\n"
-						+ "С уважением, АК \"Инфорум\".");
-			}
-
 			if ((Address.Client.MaskRegion & Supplier.RegionMask) == 0) {
 				RejectReason = RejectReasonType.AddressNoAvailable;
 				throw new EMailSourceHandlerException(
