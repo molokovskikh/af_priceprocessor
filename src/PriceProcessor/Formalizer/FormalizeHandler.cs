@@ -6,11 +6,15 @@ using System.IO;
 using Inforoom.Formalizer;
 using System.Collections;
 using Inforoom.PriceProcessor;
+using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Models;
+using NHibernate;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
 	public class FormalizeHandler : AbstractHandler
 	{
+		protected ISession Session;
 		private readonly FileSystemWatcher FSW;
 
 		//список с рабочими нитками формализации
@@ -69,7 +73,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			FSW.EnableRaisingEvents = false;
 			FSW.Created -= OnFileCreate;
-
 			base.HardStop();
 
 			if (!tWork.Join(JoinTimeout))
@@ -189,13 +192,19 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			//накладываем lock на список во время обработки процедуры, что не проверять по два раза
 			lock (PriceItemList.list) {
-				DeleteDoubleItems();
-
-				ProcessThreads();
-
-				AddPriceProcessThread();
-
-				CheckFormalizationFail();
+				//тут мы такие создаем сессию, но в случае чего освобождаем ресурсы для большей безопасности
+				SessionHelper.StartSession(s => {
+					try {
+						Session = s;
+						DeleteDoubleItems();
+						ProcessThreads();
+						AddPriceProcessThread();
+						CheckFormalizationFail();
+					}
+					finally {
+						Session = null;
+					}
+				});
 			}
 
 			//обновляем дату последнего отчета в лог
@@ -298,16 +307,15 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public IEnumerable<PriceProcessItem> GetReadyForStart(IList<PriceProcessItem> processList)
 		{
-			processList
-				.Where(i => !File.Exists(i.FilePath))
-				.ToList()
-				.ForEach(i => {
+			var notExist = processList.Where(i => !File.Exists(i.FilePath)).ToList();
+			notExist.ForEach(i =>
+			{
 					//удаляем элемент из списка
 					processList.Remove(i);
 					//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
 					if (processList != PriceItemList.list)
 						PriceItemList.list.Remove(i);
-				});
+			});
 
 			var ready = processList
 				.TakeWhile(i => pt.Count < Settings.Default.MaxWorkThread)
@@ -323,9 +331,21 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			lock (pt) {
 				var statisticMessage = String.Empty;
-
 				for (var i = pt.Count - 1; i >= 0; i--) {
 					var p = pt[i];
+					//Если формализация выполняется более X минут, то создаем ошибку в логе, чтобы она отразилась в приложении статистике
+					if (DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes >= Settings.Default.LongFormalizationWarningTimeout)
+					{
+						var log = new FormLog();
+						log.Host = Environment.MachineName;
+						log.PriceItemId = (uint?)p.ProcessItem.PriceItemId;
+						log.LogTime = DateTime.Now;
+						log.ResultId = 15;
+						log.Addition = "Прайс формализовался более " + Settings.Default.LongFormalizationWarningTimeout + " минут";
+						Session.Save(log);
+						Session.Flush();
+					}
+
 					//Если нитка не работает, то удаляем ее
 					if (p.FormalizeEnd || !p.ThreadIsAlive || ((p.ThreadState & ThreadState.Stopped) > 0)) {
 						DeleteProcessThread(p);
