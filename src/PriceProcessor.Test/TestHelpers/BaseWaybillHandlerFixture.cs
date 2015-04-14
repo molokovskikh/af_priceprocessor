@@ -8,6 +8,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using MySql.Data.MySqlClient;
+using NHibernate.Linq;
 using NUnit.Framework;
 using Test.Support;
 using Test.Support.Suppliers;
@@ -28,7 +29,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var settings = client.Settings;
 			settings.IsConvertFormat = true;
 			settings.AssortmentPriceId = supplier.Prices.First().Id;
-			settings.SaveAndFlush();
+			session.Save(settings);
 		}
 
 		protected void CheckClientDirectory(int waitingFilesCount, DocType documentsType, TestAddress address = null)
@@ -74,7 +75,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var intersection = price.Intersections.First(i => i.Client.Id == client.Id);
 			var addressIntersection = intersection.AddressIntersections.First(i => i.Address.Id == address.Id);
 			addressIntersection.SupplierDeliveryId = supplierDeliveryId.ToString();
-			addressIntersection.Save();
+			session.Save(addressIntersection);
 		}
 
 		public string CreateSupplierDir(DocType type)
@@ -128,14 +129,14 @@ and a.Id = ?AddressId
 
 		protected void SetConvertDocumentSettings()
 		{
-			var settings = TestDrugstoreSettings.Queryable.Where(s => s.Id == client.Id).SingleOrDefault();
+			var settings = session.Query<TestDrugstoreSettings>().SingleOrDefault(s => s.Id == client.Id);
 			//запоминаем начальное состояние настройки
 			var isConvertFormat = settings.IsConvertFormat;
 			//и если оно не включено, то включим принудительно для теста
 			if (!isConvertFormat) {
 				settings.IsConvertFormat = true;
 				settings.AssortmentPriceId = supplier.Prices.First().Id;
-				settings.SaveAndFlush();
+				session.Save(settings);
 			}
 		}
 

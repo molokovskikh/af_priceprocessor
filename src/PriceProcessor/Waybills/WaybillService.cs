@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.ServiceModel;
@@ -14,6 +15,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using log4net;
+using NHibernate;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -51,11 +53,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			return new uint[0];
 		}
 
-		public static void ParseWaybill(DocumentReceiveLog log)
-		{
-			ParseWaybills(new[] { log }.ToList());
-		}
-
 		public void Process(List<DocumentReceiveLog> logs)
 		{
 			try {
@@ -70,20 +67,25 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public static void ParseWaybills(List<DocumentReceiveLog> logs)
-		{
-			new WaybillService().Process(logs);
-		}
-
 		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
 		{
 			if (shouldCheckClientSettings)
 				logs = CheckDocs(logs);
 
+			var rejects = logs.Where(l => l.DocumentType == DocType.Reject).ToArray();
+			foreach (var reject in rejects) {
+				try {
+					SessionHelper.WithSession(s => ProcessReject(s, reject));
+				}
+				catch(Exception e) {
+					_log.Error(String.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
+				}
+			}
+
 			var docsForParsing = MultifileDocument.Merge(logs);
 			var docs = docsForParsing.Select(d => {
 				try {
-					return Process(shouldCheckClientSettings, d.DocumentLog, d.FileName);
+					return ProcessWaybill(d.DocumentLog, d.FileName);
 				}
 				catch (Exception e) {
 					var filename = d.FileName;
@@ -109,8 +111,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				try {
 					SessionHelper.WithSession(s => l.Check(s));
 					l.SaveAndFlush();
-					var settings = WaybillSettings.Find(l.ClientCode.Value);
-
 					l.CopyDocumentToClientDirectory();
 					return l;
 				}
@@ -151,35 +151,39 @@ namespace Inforoom.PriceProcessor.Waybills
 			});
 		}
 
-		private static Document Process(bool shouldCheckClientSettings,
-			DocumentReceiveLog log,
-			string fileName)
+		private static Document ProcessWaybill(DocumentReceiveLog log, string filename)
 		{
-			var settings = WaybillSettings.Find(log.ClientCode.Value);
 			if (log.DocumentType == DocType.Reject)
 				return null;
 
+			var settings = WaybillSettings.Find(log.ClientCode.Value);
 			if (WaybillExcludeFile(log))
 				return null;
 
 			if (log.DocumentSize == 0)
 				return null;
 
-			if (shouldCheckClientSettings
-				&& !settings.ShouldParseWaybill())
-				return null;
-
 			// ждем пока файл появится в удаленной директории
 			if (!log.FileIsLocal())
-				ShareFileHelper.WaitFile(fileName, 5000);
+				ShareFileHelper.WaitFile(filename, 5000);
 
-			var doc = new WaybillFormatDetector().DetectAndParse(fileName, log);
+			var doc = new WaybillFormatDetector().DetectAndParse(filename, log);
 			// для мульти файла, мы сохраняем в источнике все файлы,
 			// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 			if (doc != null)
 				Exporter.ConvertIfNeeded(doc, settings);
 
 			return doc;
+		}
+
+		private static void ProcessReject(ISession session, DocumentReceiveLog log)
+		{
+			if (log.Supplier.RejectParser == "NadezhdaFarm") {
+				var reject = RejectHeader.ReadReject(log, log.GetFileName());
+				if (reject.Lines.Count > 0) {
+					session.Save(reject);
+				}
+			}
 		}
 
 		public static void SaveWaybill(string filename)

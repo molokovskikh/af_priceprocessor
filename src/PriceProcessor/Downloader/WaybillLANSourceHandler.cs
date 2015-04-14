@@ -227,7 +227,7 @@ and st.SourceID = 4";
 
 						_logger.InfoFormat("WaybillLanSourceHandler: обработка файла {0}", fileName);
 						documentReader.ImportDocument(log, fileName);
-						WaybillService.ParseWaybill(log);
+						new WaybillService().Process(new[] { log }.ToList());
 					}
 				}
 				catch (Exception e) {

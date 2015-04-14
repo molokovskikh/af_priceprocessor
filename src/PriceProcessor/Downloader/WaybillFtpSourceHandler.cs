@@ -179,11 +179,10 @@ GROUP BY SupplierId
 		{
 			var logs = ProcessWaybill(documentType.DocType, waybillSource, downloadedFile);
 			// Обработка накладной(или отказа), помещение ее в папку клиенту
-			foreach (var log in logs)
-				WaybillService.ParseWaybill(log);
+			new WaybillService().Process(logs);
 		}
 
-		private IEnumerable<DocumentReceiveLog> ProcessWaybill(DocType documentType, WaybillSource source, DownloadedFile downloadedFile)
+		private List<DocumentReceiveLog> ProcessWaybill(DocType documentType, WaybillSource source, DownloadedFile downloadedFile)
 		{
 			var documentLogs = new List<DocumentReceiveLog>();
 			var reader = new SupplierFtpReader();

@@ -49,22 +49,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public bool IsFake { get; set; }
 
-		private string _localFile;
-
 		/// <summary>
 		/// Для тестов
 		/// </summary>
-		public string LocalFileName
-		{
-			get
-			{
-				return _localFile;
-			}
-			set
-			{
-				_localFile = value;
-			}
-		}
+		public string LocalFileName { get; set; }
 
 		public DocumentReceiveLog()
 		{
@@ -90,14 +78,14 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public virtual bool FileIsLocal()
 		{
-			return !String.IsNullOrEmpty(_localFile);
+			return !String.IsNullOrEmpty(LocalFileName);
 		}
 
 		//файл документа может быть локальным (если он прошел через PriceProcessor и лежит в temp) или пришедшим от клиента тогда он лежит на ftp
 		public virtual string GetFileName()
 		{
-			if (!String.IsNullOrEmpty(_localFile))
-				return _localFile;
+			if (!String.IsNullOrEmpty(LocalFileName))
+				return LocalFileName;
 
 			return GetRemoteFileName();
 		}
@@ -174,7 +162,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				}
 				var document = new DocumentReceiveLog(supplier, address) {
 					FileName = fileName,
-					_localFile = localFile,
+					LocalFileName = localFile,
 					DocumentType = documentType,
 					Comment = comment,
 					MessageUid = messageId,
@@ -219,8 +207,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			var destinationFileName = GetRemoteFileNameExt();
 
 			//Проверяем, если у нас файл не локальный, то он уже лежит в destinationFileName и _localFile = null.
-			if (GetFileName() != destinationFileName && File.Exists(_localFile))
-				File.Copy(_localFile, destinationFileName, true);
+			if (GetFileName() != destinationFileName && File.Exists(LocalFileName))
+				File.Copy(LocalFileName, destinationFileName, true);
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
@@ -228,7 +216,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				File.SetLastAccessTime(destinationFileName, DateTime.Now);
 
 			if (_logger.IsDebugEnabled)
-				WaybillService.SaveWaybill(_localFile);
+				WaybillService.SaveWaybill(LocalFileName);
 		}
 
 		public static List<DocumentReceiveLog> LoadByIds(uint[] ids)

@@ -168,6 +168,7 @@
     <Compile Include="Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Models\MailContextFixture.cs" />
     <Compile Include="Models\MonitorFixture.cs" />
+    <Compile Include="Models\OrderRejectFixture.cs" />
     <Compile Include="Models\PriceFormalizationInfoFixture.cs" />
     <Compile Include="Models\RejectFixture.cs" />
     <Compile Include="Models\WaybillSourceFixture.cs" />

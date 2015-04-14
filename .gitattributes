@@ -1,1 +1,2 @@
 src/PriceProcessor.Test/Data/Waybills/н-023623.dbf -crlf -diff
+src/PriceProcessor.Test/Data/** -whitespace

@@ -26,11 +26,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public WaybillFormat WaybillConvertFormat { get; set; }
 
-		public bool ShouldParseWaybill()
-		{
-			return true;
-		}
-
 		public string GetExportExtension(WaybillFormat type)
 		{
 			if (type == WaybillFormat.Sst
