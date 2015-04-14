@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
@@ -13,6 +16,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Models;
 using MySql.Data.MySqlClient;
+using NHibernate.Event;
 using NHibernate.Hql.Ast.ANTLR.Tree;
 using NHibernate.Linq;
 using NUnit.Framework;
@@ -38,6 +42,48 @@ namespace PriceProcessor.Test.Formalization
 		{
 			Mailer.Testing = false;
 			Mailer.Messages.Clear();
+		}
+
+		[Test(Description = "Проверка того, что прайс процессор оставляет лог, если формализация прайса занимает слишком долгое время")]
+		public void CheckForLongFormalization()
+		{
+			//Суть следующая - я знаю, что есть файл 552.zip, содержащий прайс
+			//Так как прайсы исчезают - использовать его мы не будем, а просто скопируем несколько раз
+			//Далее мы запускаем прайс процессор. В настройках время, которое считается долгим уже выставленно на 0 минут
+			//Задача состоит в том, чтобы проверить, что лог, который оставит PriceProcessor имеет правильную форму
+
+			//путь должен начинаться с трех подъемов, так как тесты и приложение ведут отсчет из разных мест
+			var outerPath = @"..\..\..\PriceProcessor.Test\Data\";
+			outerPath = Path.GetFullPath(outerPath);
+			var sourceFile = "priceExample";
+			var ext = ".zip";
+
+			for (var i = 1; i < 6; i++) {
+				var newPath = outerPath + i + ext;
+				if (File.Exists(newPath))
+					File.Delete(newPath);
+				File.Copy(outerPath + sourceFile + ext, newPath);
+				PriceItemList.list.Add(new PriceProcessItem(true, 1, 1, 1, newPath, null) { CreateTime = new DateTime(2012, 12, 3, 9, 10, 0) });
+			}
+			//Удаляем старые логи, для чистоты теста
+			session.Query<FormLog>().ToList().Each(i => session.Delete(i));
+			session.Flush();
+
+			var handler = new FormalizeHandler();
+			handler.StartWork();
+			handler.ProcessData();
+			handler.ProcessData();
+			handler.HardStop();
+
+			//Нужен коммит текущей транзакции, иначе чистого результата мы не увидим
+			if(session.Transaction != null && session.Transaction.IsActive)
+				session.Transaction.Commit();
+			session.Clear();
+
+			var list = session.Query<FormLog>().ToList();
+			var log = list.FirstOrDefault(i => i.Addition.Contains("Прайс формализовался более 0 минут"));
+			Assert.That(log, Is.Not.Null, "Должен был создаться лог о длительной формализации");
+			Assert.That(log.ResultId, Is.EqualTo(15), "У лога длительной формализации должен быть правильный тип, иначе StatViewer не поймет как его отображать");
 		}
 
 		[Test]
@@ -533,7 +579,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			var deleter = connection.CreateCommand();
 			deleter.CommandText = "delete from AutomaticProducerSynonyms;" +
-				"delete from Farm.SynonymFirmCr where PriceCode = ?priceId";
+								"delete from Farm.SynonymFirmCr where PriceCode = ?priceId";
 			deleter.Parameters.AddWithValue("priceId", price.Id);
 			deleter.ExecuteNonQuery();
 		}

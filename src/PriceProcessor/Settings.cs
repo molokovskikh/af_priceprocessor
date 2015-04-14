@@ -348,6 +348,20 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
+		/// <summary>
+		/// По истечении этого времени, в лог заночится предупреждение о том, что прайс делается слишком долго
+		/// </summary>
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("20")]
+		public int LongFormalizationWarningTimeout
+		{
+			get
+			{
+				return ((int)(this["LongFormalizationWarningTimeout"]));
+			}
+		}
+
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("False")]
