@@ -47,33 +47,46 @@ namespace PriceProcessor.Test.Formalization
 		[Test(Description = "Проверка того, что прайс процессор оставляет лог, если формализация прайса занимает слишком долгое время")]
 		public void CheckForLongFormalization()
 		{
-			//Суть следующая - я знаю, что есть файл 552.zip, содержащий прайс
+			//Суть следующая - я создал файл priceExample.zip, содержащий прайс
 			//Так как прайсы исчезают - использовать его мы не будем, а просто скопируем несколько раз
 			//Далее мы запускаем прайс процессор. В настройках время, которое считается долгим уже выставленно на 0 минут
 			//Задача состоит в том, чтобы проверить, что лог, который оставит PriceProcessor имеет правильную форму
 
 			//путь должен начинаться с трех подъемов, так как тесты и приложение ведут отсчет из разных мест
-			var outerPath = @"..\..\..\PriceProcessor.Test\Data\";
+			var outerPath = @"..\..\..\PriceProcessor.Test\Data\HandlersTests\";
 			outerPath = Path.GetFullPath(outerPath);
+			Console.WriteLine("Путь к директории:");
+			Console.WriteLine(Settings.Default.InboundPath);
+			Console.WriteLine(outerPath);
 			var sourceFile = "priceExample";
 			var ext = ".zip";
 
+			Console.WriteLine("Пути к файлам:");
 			for (var i = 1; i < 6; i++) {
 				var newPath = outerPath + i + ext;
 				if (File.Exists(newPath))
 					File.Delete(newPath);
 				File.Copy(outerPath + sourceFile + ext, newPath);
+
+				Console.WriteLine(newPath);
 				PriceItemList.list.Add(new PriceProcessItem(true, 1, 1, 1, newPath, null) { CreateTime = new DateTime(2012, 12, 3, 9, 10, 0) });
 			}
 			//Удаляем старые логи, для чистоты теста
 			session.Query<FormLog>().ToList().Each(i => session.Delete(i));
 			session.Flush();
-
-			var handler = new FormalizeHandler();
-			handler.StartWork();
-			handler.ProcessData();
-			handler.ProcessData();
-			handler.HardStop();
+			//Что-то с этим inboundPath не так. Падают тесты на Jenkins.
+			var inboundPath = Settings.Default.InboundPath;
+			try {
+				Settings.Default["InboundPath"] = "c:\\";
+				var handler = new FormalizeHandler();
+				handler.StartWork();
+				handler.ProcessData();
+				handler.ProcessData();
+				handler.HardStop();
+			}
+			finally {
+				Settings.Default["InboundPath"] = inboundPath;
+			}
 
 			//Нужен коммит текущей транзакции, иначе чистого результата мы не увидим
 			if(session.Transaction != null && session.Transaction.IsActive)
