@@ -149,7 +149,7 @@ GROUP BY SupplierId
 						}
 						catch(Exception e) {
 							haveErrors = true;
-							_logger.Error(String.Format("Не удалось загрузить файл {0} с ftp {1}", source, uri), e);
+							LogError(e, waybillSource, uri, documentType);
 						}
 					}
 				}
@@ -161,18 +161,23 @@ GROUP BY SupplierId
 				}
 			}
 			catch (Exception e) {
-				var errorMessage = String.Format("Ошибка при попытке забрать документы с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
-					waybillSource.Id,
-					documentType.DocType.GetDescription(),
-					uri);
-
-				if (!_failedSources.Contains(waybillSource.Id)) {
-					_failedSources.Add(waybillSource.Id);
-					_logger.Warn(errorMessage, e);
-				}
-				else
-					_logger.Debug(errorMessage, e);
+				LogError(e, waybillSource, uri, documentType);
 			}
+		}
+
+		private void LogError(Exception e, WaybillSource source, Uri uri, InboundDocumentType documentType)
+		{
+			var errorMessage = String.Format("Ошибка при попытке забрать документы с FTP поставщика (код поставщика: {0}).\nТип документов: {1}.\nUrl: {2}",
+				source.Id,
+				documentType.DocType.GetDescription(),
+				uri);
+
+			if (!_failedSources.Contains(source.Id)) {
+				_failedSources.Add(source.Id);
+				_logger.Warn(errorMessage, e);
+			}
+			else
+				_logger.Debug(errorMessage, e);
 		}
 
 		public void ProcessFile(InboundDocumentType documentType, WaybillSource waybillSource, DownloadedFile downloadedFile)
