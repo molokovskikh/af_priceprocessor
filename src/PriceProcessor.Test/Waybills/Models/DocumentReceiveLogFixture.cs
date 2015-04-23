@@ -26,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Models
 			Assert.Catch<EMailSourceHandlerException>(() => log.Check(session));
 		}
 
-		[Test]
+		[Test, Ignore("Функционал, реализованный в задаче http://redmine.analit.net/issues/32741 отменяет данный тест")]
 		public void Check_user_update_time()
 		{
 			var client = TestClient.CreateNaked();
