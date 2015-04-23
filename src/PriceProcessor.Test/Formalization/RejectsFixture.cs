@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Formalization
 				null,
 				"Описание. Средняя масса. Отклонение от средней массы.");
 
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			price = supplier.Prices[0];
 			price.PriceType = PriceType.Assortment;
 			priceItem = price.Costs[0].PriceItem;
@@ -105,6 +105,7 @@ namespace PriceProcessor.Test.Formalization
 		{
 			Formalize();
 
+			realPrice = session.Load<Price>(realPrice.Id);
 			realPrice.IsRejects = false;
 			realPrice.IsRejectCancellations = true;
 			Save(realPrice);

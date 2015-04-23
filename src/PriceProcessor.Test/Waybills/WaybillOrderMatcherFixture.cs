@@ -119,58 +119,47 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void ComparisonWithOrdersTestIfOrderIdInDocumentLineTest()
 		{
-			Document document;
-			using (new SessionScope()) {
-				order1 = BuildOrder();
-				order1.Save();
-				var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 };
-				item.Save();
-				item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 };
-				item.Save();
-				item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 };
-				item.Save();
-				item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 };
-				item.Save();
+			order1 = BuildOrder();
+			order1.Items.Add(new OrderItem { Code = "Code1", Order = order1, Quantity = 20 });
+			order1.Items.Add(new OrderItem { Code = "Code2", Order = order1, Quantity = 25 });
+			order1.Items.Add(new OrderItem { Code = "Code3", Order = order1, Quantity = 50 });
+			order1.Items.Add(new OrderItem { Code = "Code4", Order = order1, Quantity = 100 });
+			session.Save(order1);
 
-				order2 = BuildOrder();
-				order2.Save();
-				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 };
-				item.Save();
-				item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 };
-				item.Save();
-				item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 };
-				item.Save();
+			order2 = BuildOrder();
+			order2.Items.Add(new OrderItem { Code = "Code3", Order = order2, Quantity = 15 });
+			order2.Items.Add(new OrderItem { Code = "Code3", Order = order2, Quantity = 10 });
+			order2.Items.Add(new OrderItem { Code = "Code5", Order = order2, Quantity = 15 });
+			session.Save(order2);
 
-				log = new DocumentReceiveLog { Supplier = appSupplier, ClientCode = client.Id, Address = address, MessageUid = 123, DocumentSize = 100 };
-				document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
+			log = new DocumentReceiveLog { Supplier = appSupplier, ClientCode = client.Id, Address = address, MessageUid = 123, DocumentSize = 100 };
+			var document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
 
-				var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20, OrderId = order1.Id };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 15, OrderId = order1.Id };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 5, OrderId = order2.Id };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 50, OrderId = order1.Id };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 25, OrderId = order2.Id };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = null, Quantity = 75 };
-				document.NewLine(docline);
-				docline = new DocumentLine { Document = document, Code = "Code5", Quantity = 10, OrderId = order2.Id };
-				document.NewLine(docline);
-				log.Save();
-				document.Save();
-			}
+			var docline = new DocumentLine { Document = document, Code = "Code1", Quantity = 20, OrderId = order1.Id };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 15, OrderId = order1.Id };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = "Code2", Quantity = 5, OrderId = order2.Id };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 50, OrderId = order1.Id };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = "Code3", Quantity = 25, OrderId = order2.Id };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = null, Quantity = 75 };
+			document.NewLine(docline);
+			docline = new DocumentLine { Document = document, Code = "Code5", Quantity = 10, OrderId = order2.Id };
+			document.NewLine(docline);
+			session.Save(log);
+			session.Save(document);
+			session.Flush();
 
-			using (new SessionScope()) {
-				order1 = OrderHead.Find(order1.Id);
-				order2 = OrderHead.Find(order2.Id);
-				orders.Add(order1);
-				orders.Add(order2);
+			order1 = OrderHead.Find(order1.Id);
+			order2 = OrderHead.Find(order2.Id);
+			orders.Add(order1);
+			orders.Add(order2);
 
-				Match(document);
-				document.SaveAndFlush();
-			}
+			Match(document);
+			session.Save(document);
 
 			var line = document.Lines[0];
 			Assert.That(document.Lines[0].OrderItems, Is.EquivalentTo(new[] { order1.Items[0] }));
@@ -209,7 +198,7 @@ namespace PriceProcessor.Test.Waybills
 		private void Match(Document document)
 		{
 			var orderItems = orders.SelectMany(o => o.Items).ToList();
-			WaybillOrderMatcher.SafeComparisonWithOrders(document, orderItems);
+			WaybillOrderMatcher.ComparisonWithOrders(document, orderItems);
 		}
 
 		private OrderHead BuildOrder()
