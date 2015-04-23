@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Common.MySql;
 using Inforoom.Common;
 using Inforoom.Downloader.Ftp;
@@ -22,6 +23,8 @@ namespace PriceProcessor.Test
 			With.DefaultConnectionStringName = Literals.GetConnectionName();
 			//мы не должны обращаться к настроящему ftp, вместо этого нужно использовать директорию для эмуляции
 			FtpDownloader.UseStub = true;
+			var inboundPath = Path.GetFullPath(@"..\..\..\PriceProcessor.Test\Data\Inbound\");
+			Settings.Default["InboundPath"] = inboundPath;
 			Program.InitActiveRecord(new[] { typeof(TestClient).Assembly, typeof(Document).Assembly });
 		}
 	}
