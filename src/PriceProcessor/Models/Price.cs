@@ -12,7 +12,7 @@ namespace Inforoom.PriceProcessor.Models
 	}
 
 	[ActiveRecord("PricesData", Schema = "Usersettings", DynamicUpdate = true)]
-	public class Price : ActiveRecordLinqBase<Price>
+	public class Price
 	{
 		[PrimaryKey("PriceCode")]
 		public virtual uint Id { get; set; }

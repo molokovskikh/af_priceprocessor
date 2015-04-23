@@ -214,13 +214,11 @@ namespace PriceProcessor.Test.Waybills
 
 		private OrderHead BuildOrder()
 		{
-			OrderHead order1;
-			order1 = new OrderHead {
+			return new OrderHead {
 				ClientCode = client.Id,
 				Address = address,
-				Price = Price.Find(price.Id)
+				Price = session.Load<Price>(price.Id)
 			};
-			return order1;
 		}
 
 		[Test(Description = "Проверка корректности обработки пустого документа")]

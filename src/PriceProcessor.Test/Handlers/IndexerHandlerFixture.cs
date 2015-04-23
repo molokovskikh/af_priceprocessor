@@ -8,6 +8,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
+using NHibernate.Linq;
 using NUnit.Framework;
 using Test.Support;
 
@@ -100,9 +101,8 @@ namespace PriceProcessor.Test.Handlers
 			if (Directory.Exists(_handler.IdxDir))
 				Directory.Delete(_handler.IdxDir, true);
 
-			Price price1 = Price.Queryable.FirstOrDefault();
-			Price price2 = Price.Queryable.Where(p => p.Id != price1.Id && p.Supplier.Id != price1.Supplier.Id).FirstOrDefault();
-			//TestProduct product = TestProduct.Queryable.FirstOrDefault();
+			Price price1 = session.Query<Price>().FirstOrDefault();
+			Price price2 = session.Query<Price>().FirstOrDefault(p => p.Id != price1.Id && p.Supplier.Id != price1.Supplier.Id);
 			Product product = Product.Queryable.FirstOrDefault();
 
 			DateTime now = DateTime.Now;

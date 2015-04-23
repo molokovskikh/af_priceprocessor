@@ -183,7 +183,7 @@ and logs.Rowid = ?DownLogId",
 		public void RetransPriceSmart(uint priceId)
 		{
 			With.Connection(c => {
-				var price = Price.Find(priceId);
+				var price = Session.Load<Price>(priceId);
 				if (price.ParentSynonym != null)
 					priceId = price.ParentSynonym.Value;
 

@@ -49,19 +49,15 @@ namespace Inforoom.PriceProcessor.Models
 		public static RejectHeader ReadReject(DocumentReceiveLog log, string fileName)
 		{
 			var reject = new RejectHeader(log);
-			using (var reader = new StreamReader(File.OpenRead(fileName), Encoding.GetEncoding(1251)))
-			{
+			using (var reader = new StreamReader(File.OpenRead(fileName), Encoding.GetEncoding(1251))) {
 				string line;
 				var rejectFound = false;
-				while ((line = reader.ReadLine()) != null)
-				{
-					if (line.Trim() == "О Т К А З Ы")
-					{
+				while ((line = reader.ReadLine()) != null) {
+					if (line.Trim() == "О Т К А З Ы") {
 						rejectFound = true;
 						continue;
 					}
-					if (line.Trim() == "СФОРМИРОВАННЫЙ ЗАКАЗ")
-					{
+					if (line.Trim() == "СФОРМИРОВАННЫЙ ЗАКАЗ") {
 						break;
 					}
 					if (!rejectFound)

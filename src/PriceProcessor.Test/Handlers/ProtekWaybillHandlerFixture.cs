@@ -58,21 +58,21 @@ namespace PriceProcessor.Test.Handlers
 		[SetUp]
 		public void SetUp()
 		{
-			supplier = TestSupplier.CreateNaked();
-			client1 = TestClient.CreateNaked();
-			client2 = TestClient.CreateNaked();
+			supplier = TestSupplier.CreateNaked(session);
+			client1 = TestClient.CreateNaked(session);
+			client2 = TestClient.CreateNaked(session);
 
 			order1 = new TestOrder();
 			order1.Client = client1;
 			order1.Address = client1.Addresses[0];
 			order1.Price = supplier.Prices[0];
-			order1.Save();
+			session.Save(order1);
 
 			order2 = new TestOrder();
 			order2.Client = client2;
 			order2.Address = client2.Addresses[0];
 			order2.Price = supplier.Prices[0];
-			order2.Save();
+			session.Save(order2);
 
 			fake = new FakeProtekHandler();
 			fake.IgnoreOrderFromId = 0;
@@ -216,7 +216,6 @@ namespace PriceProcessor.Test.Handlers
 				}
 			};
 
-			DateTime begin = DateTime.Now;
 			fake.Process();
 			var documents = Documents();
 			Assert.That(documents.Count, Is.EqualTo(1));
@@ -234,7 +233,7 @@ namespace PriceProcessor.Test.Handlers
 			var line = document.Lines[0];
 
 			var listSynonym = new List<string> { line.Product };
-			var priceCodes = Price.Queryable
+			var priceCodes = session.Query<Price>()
 				.Where(p => (p.Supplier.Id == document.FirmCode))
 				.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 

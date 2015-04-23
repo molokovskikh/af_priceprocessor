@@ -12,6 +12,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using log4net;
 using NHibernate.Criterion;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
@@ -146,16 +147,16 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		///<summary>
 		/// сопоставление в накладной названию продуктов ProductId.
 		/// </summary>
-		/// 
-		public Document SetProductId()
+		///
+		public void SetProductId()
 		{
 			try {
-				using (new SessionScope()) {
+				SessionHelper.StartSession(s => {
 					// получаем Id прайсов, из которых мы будем брать синонимы.
-					var priceCodes = Price.Queryable.Where(p => (p.Supplier.Id == FirmCode))
+					var priceCodes = s.Query<Price>().Where(p => (p.Supplier.Id == FirmCode))
 						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
 					if (priceCodes.Count <= 0)
-						return this;
+						return;
 
 					// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
 					// Если накладная большая, то будем выбирать из неё продукты блоками.
@@ -220,7 +221,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 									line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
 									// если фармацевтика, то производителя ищем с учетом ассортимента
 								else {
-									var assortment = Assortment.Queryable.Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
+									var assortment = s.Query<Assortment>().Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
 									foreach (var producerSynonym in listSynonymFirmCr) {
 										if (assortment.Any(a => a.ProducerId == producerSynonym.CodeFirmCr)) {
 											line.ProducerId = producerSynonym.CodeFirmCr;
@@ -233,12 +234,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 						index += count;
 						count = GetCount(realBatchSize, index);
 					}
-				}
+				});
 			}
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);
 			}
-			return this;
 		}
 
 		public void CalculateValues()

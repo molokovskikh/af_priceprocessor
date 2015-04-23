@@ -4,7 +4,7 @@ using Castle.ActiveRecord.Framework;
 namespace Inforoom.PriceProcessor.Models
 {
 	[ActiveRecord("Assortment", Schema = "Catalogs")]
-	public class Assortment : ActiveRecordLinqBase<Assortment>
+	public class Assortment
 	{
 		[PrimaryKey]
 		public uint Id { get; set; }

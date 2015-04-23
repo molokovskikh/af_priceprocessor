@@ -69,7 +69,7 @@ namespace PriceProcessor.Test.Formalization
 			format.FDoc = "QUALNMR";
 			Save(price, format);
 
-			realPrice = Price.Find(price.Id);
+			realPrice = session.Load<Price>(price.Id);
 			realPrice.IsRejects = true;
 			Save(realPrice);
 

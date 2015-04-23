@@ -93,12 +93,12 @@ namespace Inforoom.Formalizer
 
 		public static IPriceFormalizer CreateFormalizer(string fileName, DataRow dataRow, Type parserClass)
 		{
-			PriceFormalizationInfo priceInfo;
-			using (new SessionScope()) {
-				var price = Price.Find(Convert.ToUInt32(dataRow[FormRules.colPriceCode]));
+			PriceFormalizationInfo priceInfo = null;
+			SessionHelper.StartSession(s => {
+				var price = s.Load<Price>(Convert.ToUInt32(dataRow[FormRules.colPriceCode]));
 				NHibernateUtil.Initialize(price);
 				priceInfo = new PriceFormalizationInfo(dataRow, price);
-			}
+			});
 			return With.Connection(c => (IPriceFormalizer)Activator.CreateInstance(parserClass, new object[] { fileName, priceInfo }));
 		}
 
