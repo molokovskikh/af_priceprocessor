@@ -53,7 +53,6 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
-
 		[Test]
 		public void Parse_waybill_without_header()
 		{

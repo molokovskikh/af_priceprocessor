@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using log4net;
+using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
 
@@ -103,12 +104,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<SupplierCode>()).ToList();
 		}
 
-		protected List<T> GetListSynonymFromDb<T>(List<string> synonyms, List<uint> priceCodes, string colName = "Synonym")
+		protected IList<T> GetListSynonymFromDb<T>(ISession session, List<string> synonyms, List<uint> priceCodes, string colName = "Synonym")
 		{
 			var criteriaSynonym = DetachedCriteria.For<T>();
 			criteriaSynonym.Add(Restrictions.In(colName, synonyms));
 			criteriaSynonym.Add(Restrictions.In("Price.Id", priceCodes));
-			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<T>()).ToList();
+			return criteriaSynonym.GetExecutableCriteria(session).List<T>();
 		}
 
 		public bool SetAssortimentInfo(WaybillSettings settings)
@@ -174,9 +175,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(
 								line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
 						//получаем из базы данные для выбранной части продуктов из накладной.
-						var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(productNames, priceCodes);
+						var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(s, productNames, priceCodes);
 						//получаем из базы данные для выбранной части производителей из накладной.
-						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(firmNames, priceCodes);
+						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(s, firmNames, priceCodes);
 						//выбираем из накладной коды
 						var сodes =
 							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Code)).Select(
@@ -205,26 +206,25 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								// если не удалось сопоставить по коду, то сопоставляем по наименованию
 								var productName =
 									(String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
-								var listSynonym =
-									dbListSynonym.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null).ToList();
-								if (listSynonym.Count == 0)
-									continue;
-								line.ProductEntity = listSynonym.Select(syn => syn.Product).FirstOrDefault();
+								line.ProductEntity = dbListSynonym
+									.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null)
+									.Select(x => x.Product)
+									.FirstOrDefault();
 								// если сопоставили позицию по продукту, сопоставляем по производителю
 								var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 								var listSynonymFirmCr =
-									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.CodeFirmCr != null).ToList();
+									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.Producer != null).ToList();
 								if (listSynonymFirmCr.Count == 0)
 									continue;
 
 								if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
-									line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.CodeFirmCr).FirstOrDefault();
+									line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.Producer.Id).FirstOrDefault();
 									// если фармацевтика, то производителя ищем с учетом ассортимента
 								else {
 									var assortment = s.Query<Assortment>().Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
 									foreach (var producerSynonym in listSynonymFirmCr) {
-										if (assortment.Any(a => a.ProducerId == producerSynonym.CodeFirmCr)) {
-											line.ProducerId = producerSynonym.CodeFirmCr;
+										if (assortment.Any(a => a.ProducerId == producerSynonym.Producer.Id)) {
+											line.ProducerId = producerSynonym.Producer.Id;
 											break;
 										}
 									}

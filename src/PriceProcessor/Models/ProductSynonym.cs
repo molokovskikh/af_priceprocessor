@@ -1,4 +1,6 @@
-﻿using Castle.ActiveRecord;
+﻿using System;
+using System.Text.RegularExpressions;
+using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
 using Inforoom.PriceProcessor.Formalizer;
 
@@ -7,6 +9,8 @@ namespace Inforoom.PriceProcessor.Models
 	[ActiveRecord("Synonym", Schema = "farm")]
 	public class ProductSynonym : ActiveRecordLinqBase<ProductSynonym>
 	{
+		private static Regex normalizationRegex = new Regex(@"\s", RegexOptions.Compiled);
+
 		public ProductSynonym()
 		{
 		}
@@ -51,5 +55,15 @@ namespace Inforoom.PriceProcessor.Models
 		/// </summary>
 		[Property]
 		public string SupplierCode { get; set; }
+
+		[Property]
+		public string Canonical { get; set; }
+
+		public static string MakeCanonical(string value)
+		{
+			if (String.IsNullOrEmpty(value))
+				return "";
+			return normalizationRegex.Replace(value, "").ToLower();
+		}
 	}
 }

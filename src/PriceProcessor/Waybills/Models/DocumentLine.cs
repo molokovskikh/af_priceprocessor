@@ -108,7 +108,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// Id производителя
 		/// </summary>
 		[Property]
-		public int? ProducerId { get; set; }
+		public uint? ProducerId { get; set; }
 
 		/// <summary>
 		/// Производитель

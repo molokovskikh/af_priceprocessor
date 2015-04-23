@@ -62,7 +62,7 @@ namespace PriceProcessor.Test.Waybills
 			_supplierCode = new SupplierCode {
 				Code = "45678",
 				Supplier = session.Load<Supplier>(_supplier.Id),
-				ProducerId = (int)_producer.Id,
+				ProducerId = _producer.Id,
 				Product = session.Load<Product>(_product.Id),
 				CodeCr = string.Empty
 			};

@@ -28,8 +28,8 @@ namespace PriceProcessor.Test.Waybills
 		[SetUp]
 		public void Setup()
 		{
-			client = TestClient.CreateNaked();
-			supplier = TestSupplier.CreateNaked();
+			client = TestClient.CreateNaked(session);
+			supplier = TestSupplier.CreateNaked(session);
 			log = new DocumentReceiveLog(session.Load<Supplier>(supplier.Id), session.Load<Address>(client.Addresses[0].Id)) {
 				FileName = "1234.dbf"
 			};
@@ -52,7 +52,7 @@ namespace PriceProcessor.Test.Waybills
 			session.Save(_product);
 			session.Save(_producer);
 			_line = new DocumentLine {
-				ProducerId = (int)_producer.Id,
+				ProducerId = _producer.Id,
 				ProductEntity = _product,
 				Product = "123",
 				Document = document

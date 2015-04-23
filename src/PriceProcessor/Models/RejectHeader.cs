@@ -7,6 +7,8 @@ using System.Text;
 using Castle.ActiveRecord;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
+using NHibernate;
+using NHibernate.Linq;
 using NHibernate.Type;
 
 namespace Inforoom.PriceProcessor.Models
@@ -82,6 +84,30 @@ namespace Inforoom.PriceProcessor.Models
 			}
 			return reject;
 		}
+
+		public void Normalize(ISession session)
+		{
+			var priceIds = session.Query<Price>().Where(p => p.Supplier == Supplier)
+				.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToArray();
+			if (priceIds.Length <= 0)
+				return;
+			var productNames = Lines.Select(l => ProductSynonym.MakeCanonical(l.Product)).ToArray();
+			var productSynonyms = session.Query<ProductSynonym>()
+				.Where(s => productNames.Contains(s.Canonical) && s.Product != null && priceIds.Contains(s.Price.Id))
+				.ToArray();
+			var productLookup = productSynonyms.ToLookup(s => s.Canonical, s => s.Product);
+
+			var producerNames = Lines.Select(l => ProductSynonym.MakeCanonical(l.Producer)).ToArray();
+			var producerSynonyms = session.Query<ProducerSynonym>()
+				.Where(s => producerNames.Contains(s.Canonical) && s.Producer != null && priceIds.Contains(s.Price.Id))
+				.ToArray();
+			var producerLookup = producerSynonyms.ToLookup(s => s.Canonical, s => s.Producer);
+
+			foreach (var line in Lines) {
+				line.ProductEntity = productLookup[ProductSynonym.MakeCanonical(line.Product)].FirstOrDefault();
+				line.ProducerEntity = producerLookup[ProductSynonym.MakeCanonical(line.Producer)].FirstOrDefault();
+			}
+		}
 	}
 
 	[ActiveRecord(Schema = "Documents")]
@@ -96,8 +122,14 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual string Product { get; set; }
 
+		[BelongsTo("ProductId")]
+		public virtual Product ProductEntity { get; set; }
+
 		[Property]
 		public virtual string Producer { get; set; }
+
+		[BelongsTo("ProducerId")]
+		public virtual Producer ProducerEntity { get; set; }
 
 		[Property]
 		public virtual decimal? Cost { get; set; }

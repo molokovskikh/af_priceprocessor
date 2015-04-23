@@ -71,7 +71,7 @@ namespace PriceProcessor.Test.Waybills
 			var supplierCode2 = new SupplierCode {
 				Code = "45678",
 				Supplier = session.Load<Supplier>(supplier.Id),
-				ProducerId = (int)producer2.Id,
+				ProducerId = producer2.Id,
 				Product = session.Load<Product>(product2.Id),
 				CodeCr = "1"
 			};
@@ -79,7 +79,7 @@ namespace PriceProcessor.Test.Waybills
 			var supplierCode4 = new SupplierCode {
 				Code = "789",
 				Supplier = session.Load<Supplier>(supplier.Id),
-				ProducerId = (int)producer2.Id,
+				ProducerId = producer2.Id,
 				Product = session.Load<Product>(product4.Id),
 				CodeCr = "2"
 			};
@@ -87,7 +87,7 @@ namespace PriceProcessor.Test.Waybills
 			var supplierCode5 = new SupplierCode {
 				Code = "12345",
 				Supplier = session.Load<Supplier>(supplier.Id),
-				ProducerId = (int)producer3.Id,
+				ProducerId = producer3.Id,
 				Product = session.Load<Product>(product5.Id),
 				CodeCr = "3"
 			};

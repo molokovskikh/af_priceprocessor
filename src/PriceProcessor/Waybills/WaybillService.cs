@@ -181,6 +181,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (log.Supplier.RejectParser == "NadezhdaFarm") {
 				var reject = RejectHeader.ReadReject(log, log.GetFileName());
 				if (reject.Lines.Count > 0) {
+					try {
+						reject.Normalize(session);
+					}
+					catch(Exception e) {
+						_log.Error(String.Format("Не удалось идентифицировать товары отказа {0}", log.GetFileName()), e);
+					}
 					session.Save(reject);
 				}
 			}

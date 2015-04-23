@@ -37,13 +37,16 @@ namespace Inforoom.PriceProcessor.Models
 		/// <summary>
 		/// Код производителя ProducerId
 		/// </summary>
-		[Property]
-		public int? CodeFirmCr { get; set; }
+		[BelongsTo("CodeFirmCr")]
+		public Producer Producer { get; set; }
 
 		/// <summary>
 		/// Код, присвоенный поставщиком
 		/// </summary>
 		[Property]
 		public string SupplierCode { get; set; }
+
+		[Property]
+		public string Canonical { get; set; }
 	}
 }

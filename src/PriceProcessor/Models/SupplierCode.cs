@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Models
 		public Product Product { get; set; }
 
 		[Property]
-		public int? ProducerId { get; set; }
+		public uint? ProducerId { get; set; }
 
 		[Property]
 		public string Code { get; set; }
