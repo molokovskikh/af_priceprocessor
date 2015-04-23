@@ -74,19 +74,12 @@ namespace PriceProcessor.Test.Formalization
 			//Удаляем старые логи, для чистоты теста
 			session.Query<FormLog>().ToList().Each(i => session.Delete(i));
 			session.Flush();
-			//Что-то с этим inboundPath не так. Падают тесты на Jenkins.
-			var inboundPath = Settings.Default.InboundPath;
-			try {
-				Settings.Default["InboundPath"] = "c:\\";
-				var handler = new FormalizeHandler();
-				handler.StartWork();
-				handler.ProcessData();
-				handler.ProcessData();
-				handler.HardStop();
-			}
-			finally {
-				Settings.Default["InboundPath"] = inboundPath;
-			}
+
+			var handler = new FormalizeHandler();
+			handler.StartWork();
+			handler.ProcessData();
+			handler.ProcessData();
+			handler.HardStop();
 
 			//Нужен коммит текущей транзакции, иначе чистого результата мы не увидим
 			if(session.Transaction != null && session.Transaction.IsActive)
