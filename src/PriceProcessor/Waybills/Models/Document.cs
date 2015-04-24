@@ -210,6 +210,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 									.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null)
 									.Select(x => x.Product)
 									.FirstOrDefault();
+								if (line.ProductEntity == null)
+									continue;
 								// если сопоставили позицию по продукту, сопоставляем по производителю
 								var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
 								var listSynonymFirmCr =
