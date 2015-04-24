@@ -142,7 +142,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			bool isFake = false)
 		{
 			using (new SessionScope()) {
-				if(!String.IsNullOrEmpty(fileName))
+				if (!String.IsNullOrEmpty(fileName))
 					fileName = CleanupFilename(fileName);
 				var localFile = fileName;
 				fileName = Path.GetFileName(fileName);
@@ -212,7 +212,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
 			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
-			if(File.Exists(destinationFileName))
+			if (File.Exists(destinationFileName))
 				File.SetLastAccessTime(destinationFileName, DateTime.Now);
 
 			if (_logger.IsDebugEnabled)
@@ -223,11 +223,16 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			return ids.Select(id => Find(id)).ToList();
 		}
+
 		/// <summary>
 		/// Причина отказа доставки накладных
 		/// </summary>
 		public virtual RejectReasonType RejectReason { get; set; }
 
+		/// <summary>
+		/// Проверка валидности лога
+		/// </summary>
+		/// <param name="session">Сессия Nhibernate</param>
 		public virtual void Check(ISession session)
 		{
 			if ((Address.Client.MaskRegion & Supplier.RegionMask) == 0) {
@@ -236,27 +241,28 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					String.Format("Адрес доставки {0} не доступен поставщику {1}", Address.Id, Supplier.Id),
 					"Ваше Сообщение не доставлено одной или нескольким аптекам",
 					"Добрый день.\r\n\r\n"
-						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
-						+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
-						+ "С уважением, АК \"Инфорум\".");
+					+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не соответствует ни одной из работающих аптек в регионе(-ах) Вашей работы.\r\n\r\n"
+					+ "Пожалуйста, проверьте корректность указания адреса аптеки и, после исправления, отправьте документы вновь.\r\n\r\n"
+					+ "С уважением, АК \"Инфорум\".");
 			}
-
-			var lastUpdate = session.CreateSQLQuery(@"
-select cast(max(if(ifnull(AFNetTime, '1901-01-01') > ifnull(AFTime, '1901-01-01'), AFNetTime, AFTime)) as datetime)
-from logs.AuthorizationDates d
-join Customers.UserAddresses ua on ua.UserId = d.UserId
-where ua.AddressId = :addressId")
-				.SetParameter("addressId", Address.Id)
-				.UniqueResult<DateTime?>();
-			//if (lastUpdate == null || lastUpdate.Value < DateTime.Now.AddMonths(-1)) {
-			//	RejectReason = RejectReasonType.UserNotUpdate;
-			//	throw new EMailSourceHandlerException(
-			//		String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
-			//		"Ваше Сообщение не доставлено одной или нескольким аптекам",
-			//		"Добрый день.\r\n\r\n"
-			//			+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
-			//			+ "С уважением, АК \"Инфорум\".");
-			//}
+			// Закомментировано в связи с задачей http://redmine.analit.net/issues/32741
+			// Возможно когда-нибудь придется вернуть проверку на то, что клиент не обнровлялся
+			//			var lastUpdate = session.CreateSQLQuery(@"
+			//select cast(max(if(ifnull(AFNetTime, '1901-01-01') > ifnull(AFTime, '1901-01-01'), AFNetTime, AFTime)) as datetime)
+			//from logs.AuthorizationDates d
+			//join Customers.UserAddresses ua on ua.UserId = d.UserId
+			//where ua.AddressId = :addressId")
+			//				.SetParameter("addressId", Address.Id)
+			//				.UniqueResult<DateTime?>();
+			//			if (lastUpdate == null || lastUpdate.Value < DateTime.Now.AddMonths(-1)) {
+			//				RejectReason = RejectReasonType.UserNotUpdate;
+			//				throw new EMailSourceHandlerException(
+			//					String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
+			//					"Ваше Сообщение не доставлено одной или нескольким аптекам",
+			//					"Добрый день.\r\n\r\n"
+			//						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
+			//						+ "С уважением, АК \"Инфорум\".");
+			//			}
 			RejectReason = RejectReasonType.NoReason;
 		}
 	}
