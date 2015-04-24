@@ -23,12 +23,12 @@ namespace PriceProcessor.Test.Waybills
 		[SetUp]
 		public void SetUp()
 		{
-			var priceParent = TestSupplier.Create().Prices[0];
-			var price = TestSupplier.Create().Prices[0];
+			var priceParent = TestSupplier.CreateNaked(session).Prices[0];
+			var price = TestSupplier.CreateNaked(session).Prices[0];
 			price.ParentSynonym = priceParent.Id;
 			Save(price);
 			_supplier = price.Supplier;
-			var client = TestClient.CreateNaked();
+			var client = TestClient.CreateNaked(session);
 			var testAddress = client.Addresses[0];
 
 			var order = new TestOrder();
@@ -43,12 +43,9 @@ namespace PriceProcessor.Test.Waybills
 
 			session.Save(new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)_producer.Id, PriceCode = (int?)price.Id });
 
-			TestAssortment.CheckAndCreate(_product, _producer);
+			TestAssortment.CheckAndCreate(session, _product, _producer);
 
-			var log = new DocumentReceiveLog() {
-				Supplier = session.Load<Supplier>(_supplier.Id),
-				ClientCode = client.Id,
-				Address = session.Load<Address>(testAddress.Id),
+			var log = new DocumentReceiveLog(session.Load<Supplier>(_supplier.Id), session.Load<Address>(testAddress.Id)) {
 				MessageUid = 123,
 				DocumentSize = 100
 			};
@@ -79,9 +76,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void DocumentSetIdWithParentSynonymTest()
 		{
-			Reopen();
-
-			_doc.SetProductId();
+			_doc.SetProductId(session);
 
 			Assert.That(_doc.Lines[0].ProductEntity, Is.Not.Null);
 			Assert.That(_doc.Lines[0].ProductEntity.Id, Is.EqualTo(_product.Id));
@@ -94,9 +89,7 @@ namespace PriceProcessor.Test.Waybills
 			_supplierCode.CodeCr = "123456";
 			Save(_supplierCode);
 
-			Reopen();
-
-			_doc.SetProductId();
+			_doc.SetProductId(session);
 
 			Assert.That(_doc.Lines[0].ProductEntity, Is.Null);
 			Assert.That(_doc.Lines[0].ProducerId, Is.Null);
@@ -109,13 +102,22 @@ namespace PriceProcessor.Test.Waybills
 			Save(_supplierCode);
 			_documentLine.CodeCr = "123456";
 
-			Reopen();
-
-			_doc.SetProductId();
+			_doc.SetProductId(session);
 
 			Assert.That(_doc.Lines[0].ProductEntity, Is.Not.Null);
 			Assert.That(_doc.Lines[0].ProductEntity.Id, Is.EqualTo(_product.Id));
 			Assert.That(_doc.Lines[0].ProducerId, Is.EqualTo(_producer.Id));
+		}
+
+		[Test]
+		public void Ignore_producer_if_product_unmatched()
+		{
+			_documentLine.Product += "1";
+			_documentLine.Code += "1";
+			session.Flush();
+			_doc.SetProductId(session);
+			Assert.IsNull(_doc.Lines[0].ProductEntity);
+			Assert.IsNull(_doc.Lines[0].ProducerId);
 		}
 	}
 }

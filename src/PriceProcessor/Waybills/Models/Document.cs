@@ -96,12 +96,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			return (batchSize + index) <= Lines.Count ? batchSize : Lines.Count - index;
 		}
 
-		protected List<SupplierCode> GetSupplierCodesFromDb(List<string> codes, uint supplierId)
+		protected List<SupplierCode> GetSupplierCodesFromDb(ISession session, List<string> codes, uint supplierId)
 		{
 			var criteriaSynonym = DetachedCriteria.For<SupplierCode>();
 			criteriaSynonym.Add(Restrictions.In("Code", codes));
 			criteriaSynonym.Add(Restrictions.Eq("Supplier.Id", supplierId));
-			return SessionHelper.WithSession(c => criteriaSynonym.GetExecutableCriteria(c).List<SupplierCode>()).ToList();
+			return criteriaSynonym.GetExecutableCriteria(session).List<SupplierCode>().ToList();
 		}
 
 		protected IList<T> GetListSynonymFromDb<T>(ISession session, List<string> synonyms, List<uint> priceCodes, string colName = "Synonym")
@@ -148,100 +148,102 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		///<summary>
 		/// сопоставление в накладной названию продуктов ProductId.
 		/// </summary>
-		///
 		public void SetProductId()
 		{
 			try {
-				SessionHelper.StartSession(s => {
-					// получаем Id прайсов, из которых мы будем брать синонимы.
-					var priceCodes = s.Query<Price>().Where(p => (p.Supplier.Id == FirmCode))
-						.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
-					if (priceCodes.Count <= 0)
-						return;
-
-					// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
-					// Если накладная большая, то будем выбирать из неё продукты блоками.
-					int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
-					int index = 0;
-					int count = GetCount(realBatchSize, index);
-
-					while ((count + index <= Lines.Count) && (count > 0)) {
-						// выбираем из накладной часть названия продуктов.
-						var selectedLines = Lines.ToList().GetRange(index, count);
-						//получаем из базы данные для выбранной части продуктов из накладной.
-						var productNames = selectedLines.Select(l => Normilize(l.Product))
-							.Where(x => !String.IsNullOrEmpty(x))
-							.Distinct()
-							.ToList();
-						var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(s, productNames, priceCodes);
-						//получаем из базы данные для выбранной части производителей из накладной.
-						var producerNames = selectedLines.Select(l => Normilize(l.Producer))
-							.Where(x => !String.IsNullOrEmpty(x))
-							.Distinct()
-							.ToList();
-						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(s, producerNames, priceCodes);
-
-						//выбираем из накладной коды
-						var сodes =
-							selectedLines.Where(line => !String.IsNullOrEmpty(line.Code)).Select(
-								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
-
-						// получаем данные по кодам из базы
-						var dbSupplierCodes = GetSupplierCodesFromDb(сodes, FirmCode);
-
-						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
-						foreach (var line in Lines) {
-							var code = Normilize(line.Code);
-							var codeCr = Normilize(line.CodeCr);
-							var listSupplierCode = dbSupplierCodes.Where(syn =>
-								!String.IsNullOrEmpty(code)
-									&& syn.Code.Trim().ToUpper() == code
-									&& syn.CodeCr.Trim().ToUpper() == codeCr
-									&& syn.Product != null)
-								.ToList();
-							if(listSupplierCode.Count > 0) {
-								// если нашли код, то сопоставляем и по продукту и по производителю
-								var firstSupplierCode = listSupplierCode.First();
-								line.ProductEntity = firstSupplierCode.Product;
-								line.ProducerId = firstSupplierCode.ProducerId;
-							}
-							else {
-								// если не удалось сопоставить по коду, то сопоставляем по наименованию
-								var productName = Normilize(line.Product);
-								line.ProductEntity = dbListSynonym
-									.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null)
-									.Select(x => x.Product)
-									.FirstOrDefault();
-								if (line.ProductEntity == null)
-									continue;
-								// если сопоставили позицию по продукту, сопоставляем по производителю
-								var producerName = Normilize(line.Producer);
-								var listSynonymFirmCr =
-									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.Producer != null).ToList();
-								if (listSynonymFirmCr.Count == 0)
-									continue;
-
-								if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
-									line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.Producer.Id).FirstOrDefault();
-									// если фармацевтика, то производителя ищем с учетом ассортимента
-								else {
-									var assortment = s.Query<Assortment>().Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
-									foreach (var producerSynonym in listSynonymFirmCr) {
-										if (assortment.Any(a => a.ProducerId == producerSynonym.Producer.Id)) {
-											line.ProducerId = producerSynonym.Producer.Id;
-											break;
-										}
-									}
-								}
-							}
-						}
-						index += count;
-						count = GetCount(realBatchSize, index);
-					}
-				});
+				SessionHelper.StartSession(SetProductId);
 			}
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);
+			}
+		}
+
+		public void SetProductId(ISession session)
+		{
+			// получаем Id прайсов, из которых мы будем брать синонимы.
+			var priceCodes = session.Query<Price>().Where(p => (p.Supplier.Id == FirmCode))
+				.Select(p => (p.ParentSynonym ?? p.Id)).Distinct().ToList();
+			if (priceCodes.Count <= 0)
+				return;
+
+			// задаем количество строк, которое мы будем выбирать из списка продуктов в накладной.
+			// Если накладная большая, то будем выбирать из неё продукты блоками.
+			int realBatchSize = Lines.Count > _batchSize ? _batchSize : Lines.Count;
+			int index = 0;
+			int count = GetCount(realBatchSize, index);
+
+			while ((count + index <= Lines.Count) && (count > 0)) {
+				// выбираем из накладной часть названия продуктов.
+				var selectedLines = Lines.ToList().GetRange(index, count);
+				//получаем из базы данные для выбранной части продуктов из накладной.
+				var productNames = selectedLines.Select(l => Normilize(l.Product))
+					.Where(x => !String.IsNullOrEmpty(x))
+					.Distinct()
+					.ToList();
+				var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(session, productNames, priceCodes);
+				//получаем из базы данные для выбранной части производителей из накладной.
+				var producerNames = selectedLines.Select(l => Normilize(l.Producer))
+					.Where(x => !String.IsNullOrEmpty(x))
+					.Distinct()
+					.ToList();
+				var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(session, producerNames, priceCodes);
+
+				//выбираем из накладной коды
+				var сodes =
+					selectedLines.Where(line => !String.IsNullOrEmpty(line.Code)).Select(
+						line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
+
+				// получаем данные по кодам из базы
+				var dbSupplierCodes = GetSupplierCodesFromDb(session, сodes, FirmCode);
+
+				//заполняем ProductId для продуктов в накладной по данным полученным из базы.
+				foreach (var line in Lines) {
+					var code = Normilize(line.Code);
+					var codeCr = Normilize(line.CodeCr);
+					var listSupplierCode = dbSupplierCodes.Where(syn =>
+						!String.IsNullOrEmpty(code)
+							&& syn.Code.Trim().ToUpper() == code
+							&& syn.CodeCr.Trim().ToUpper() == codeCr
+							&& syn.Product != null)
+						.ToList();
+					if (listSupplierCode.Count > 0) {
+						// если нашли код, то сопоставляем и по продукту и по производителю
+						var firstSupplierCode = listSupplierCode.First();
+						line.ProductEntity = firstSupplierCode.Product;
+						line.ProducerId = firstSupplierCode.ProducerId;
+					}
+					else {
+						// если не удалось сопоставить по коду, то сопоставляем по наименованию
+						var productName = Normilize(line.Product);
+						line.ProductEntity = dbListSynonym
+							.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null)
+							.Select(x => x.Product)
+							.FirstOrDefault();
+						if (line.ProductEntity == null)
+							continue;
+						// если сопоставили позицию по продукту, сопоставляем по производителю
+						var producerName = Normilize(line.Producer);
+						var listSynonymFirmCr =
+							dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.Producer != null).ToList();
+						if (listSynonymFirmCr.Count == 0)
+							continue;
+
+						if (!line.ProductEntity.CatalogProduct.Pharmacie) // не фармацевтика
+							line.ProducerId = listSynonymFirmCr.Select(firmSyn => firmSyn.Producer.Id).FirstOrDefault();
+						// если фармацевтика, то производителя ищем с учетом ассортимента
+						else {
+							var assortment = session.Query<Assortment>().Where(a => a.Catalog.Id == line.ProductEntity.CatalogProduct.Id).ToList();
+							foreach (var producerSynonym in listSynonymFirmCr) {
+								if (assortment.Any(a => a.ProducerId == producerSynonym.Producer.Id)) {
+									line.ProducerId = producerSynonym.Producer.Id;
+									break;
+								}
+							}
+						}
+					}
+				}
+				index += count;
+				count = GetCount(realBatchSize, index);
 			}
 		}
 
