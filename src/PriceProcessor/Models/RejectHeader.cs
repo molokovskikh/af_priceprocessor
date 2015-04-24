@@ -95,13 +95,13 @@ namespace Inforoom.PriceProcessor.Models
 			var productSynonyms = session.Query<ProductSynonym>()
 				.Where(s => productNames.Contains(s.Canonical) && s.Product != null && priceIds.Contains(s.Price.Id))
 				.ToArray();
-			var productLookup = productSynonyms.ToLookup(s => s.Canonical, s => s.Product);
+			var productLookup = productSynonyms.ToLookup(s => s.Canonical, s => s.Product, StringComparer.CurrentCultureIgnoreCase);
 
 			var producerNames = Lines.Select(l => ProductSynonym.MakeCanonical(l.Producer)).ToArray();
 			var producerSynonyms = session.Query<ProducerSynonym>()
 				.Where(s => producerNames.Contains(s.Canonical) && s.Producer != null && priceIds.Contains(s.Price.Id))
 				.ToArray();
-			var producerLookup = producerSynonyms.ToLookup(s => s.Canonical, s => s.Producer);
+			var producerLookup = producerSynonyms.ToLookup(s => s.Canonical, s => s.Producer, StringComparer.CurrentCultureIgnoreCase);
 
 			foreach (var line in Lines) {
 				line.ProductEntity = productLookup[ProductSynonym.MakeCanonical(line.Product)].FirstOrDefault();

@@ -167,20 +167,23 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 					while ((count + index <= Lines.Count) && (count > 0)) {
 						// выбираем из накладной часть названия продуктов.
-						var productNames =
-							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Product)).Select(
-								line => line.Product.Trim().RemoveDoubleSpaces()).ToList();
-						//выбираем из накладной часть названия производителей.
-						var firmNames =
-							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Producer)).Select(
-								line => line.Producer.Trim().RemoveDoubleSpaces()).ToList();
+						var selectedLines = Lines.ToList().GetRange(index, count);
 						//получаем из базы данные для выбранной части продуктов из накладной.
+						var productNames = selectedLines.Select(l => Normilize(l.Product))
+							.Where(x => !String.IsNullOrEmpty(x))
+							.Distinct()
+							.ToList();
 						var dbListSynonym = GetListSynonymFromDb<ProductSynonym>(s, productNames, priceCodes);
 						//получаем из базы данные для выбранной части производителей из накладной.
-						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(s, firmNames, priceCodes);
+						var producerNames = selectedLines.Select(l => Normilize(l.Producer))
+							.Where(x => !String.IsNullOrEmpty(x))
+							.Distinct()
+							.ToList();
+						var dbListSynonymFirm = GetListSynonymFromDb<ProducerSynonym>(s, producerNames, priceCodes);
+
 						//выбираем из накладной коды
 						var сodes =
-							Lines.ToList().GetRange(index, count).Where(line => !String.IsNullOrEmpty(line.Code)).Select(
+							selectedLines.Where(line => !String.IsNullOrEmpty(line.Code)).Select(
 								line => line.Code.Trim().RemoveDoubleSpaces()).ToList();
 
 						// получаем данные по кодам из базы
@@ -188,8 +191,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 						//заполняем ProductId для продуктов в накладной по данным полученным из базы.
 						foreach (var line in Lines) {
-							var code = (String.IsNullOrEmpty(line.Code) == false ? line.Code.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
-							var codeCr = (String.IsNullOrEmpty(line.CodeCr) == false ? line.CodeCr.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+							var code = Normilize(line.Code);
+							var codeCr = Normilize(line.CodeCr);
 							var listSupplierCode = dbSupplierCodes.Where(syn =>
 								!String.IsNullOrEmpty(code)
 									&& syn.Code.Trim().ToUpper() == code
@@ -204,8 +207,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 							}
 							else {
 								// если не удалось сопоставить по коду, то сопоставляем по наименованию
-								var productName =
-									(String.IsNullOrEmpty(line.Product) == false ? line.Product.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+								var productName = Normilize(line.Product);
 								line.ProductEntity = dbListSynonym
 									.Where(syn => !String.IsNullOrEmpty(productName) && syn.Synonym.Trim().ToUpper() == productName && syn.Product != null)
 									.Select(x => x.Product)
@@ -213,7 +215,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 								if (line.ProductEntity == null)
 									continue;
 								// если сопоставили позицию по продукту, сопоставляем по производителю
-								var producerName = (String.IsNullOrEmpty(line.Producer) == false ? line.Producer.Trim().ToUpper() : String.Empty).RemoveDoubleSpaces();
+								var producerName = Normilize(line.Producer);
 								var listSynonymFirmCr =
 									dbListSynonymFirm.Where(syn => !String.IsNullOrEmpty(producerName) && syn.Synonym.Trim().ToUpper() == producerName && syn.Producer != null).ToList();
 								if (listSynonymFirmCr.Count == 0)
@@ -241,6 +243,11 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			catch (Exception e) {
 				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);
 			}
+		}
+
+		private static string Normilize(string value)
+		{
+			return (value ?? "").Trim().ToUpper().RemoveDoubleSpaces();
 		}
 
 		public void CalculateValues()
