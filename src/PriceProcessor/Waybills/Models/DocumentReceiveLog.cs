@@ -248,15 +248,15 @@ join Customers.UserAddresses ua on ua.UserId = d.UserId
 where ua.AddressId = :addressId")
 				.SetParameter("addressId", Address.Id)
 				.UniqueResult<DateTime?>();
-			if (lastUpdate == null || lastUpdate.Value < DateTime.Now.AddMonths(-1)) {
-				RejectReason = RejectReasonType.UserNotUpdate;
-				throw new EMailSourceHandlerException(
-					String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
-					"Ваше Сообщение не доставлено одной или нескольким аптекам",
-					"Добрый день.\r\n\r\n"
-						+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
-						+ "С уважением, АК \"Инфорум\".");
-			}
+			//if (lastUpdate == null || lastUpdate.Value < DateTime.Now.AddMonths(-1)) {
+			//	RejectReason = RejectReasonType.UserNotUpdate;
+			//	throw new EMailSourceHandlerException(
+			//		String.Format("Адрес доставки {0} не принимает накладные тк ни один пользователь этого адреса не обновляется более месяца", Address.Id),
+			//		"Ваше Сообщение не доставлено одной или нескольким аптекам",
+			//		"Добрый день.\r\n\r\n"
+			//			+ "Документы (накладные, отказы) в Вашем Сообщении с темой: \"{0}\" не были доставлены аптеке, т.к. указанный адрес получателя не принимает документы.\r\n\r\n"
+			//			+ "С уважением, АК \"Инфорум\".");
+			//}
 			RejectReason = RejectReasonType.NoReason;
 		}
 	}
