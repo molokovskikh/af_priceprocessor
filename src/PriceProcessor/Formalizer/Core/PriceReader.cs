@@ -311,7 +311,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			var ansi = Encoding.GetEncoding(1251);
 			var unicodeBytes = Encoding.Unicode.GetBytes(value);
 			var ansiBytes = Encoding.Convert(Encoding.Unicode, ansi, unicodeBytes);
-			return ansi.GetString(ansiBytes);
+			//творческие личности пихают мусор, чистим его тк в последующем когда мы захотим сохранить наименование в xml
+			//xml откажется принимать этот символ
+			return ansi.GetString(ansiBytes).Replace('\x1C', ' ');
 		}
 
 		/// <summary>
