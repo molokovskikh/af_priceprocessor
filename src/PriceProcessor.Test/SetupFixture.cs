@@ -24,6 +24,8 @@ namespace PriceProcessor.Test
 			//мы не должны обращаться к настроящему ftp, вместо этого нужно использовать директорию для эмуляции
 			FtpDownloader.UseStub = true;
 			var inboundPath = Path.GetFullPath(@"..\..\..\PriceProcessor.Test\Data\Inbound\");
+			if (!Directory.Exists(inboundPath))
+				Directory.CreateDirectory(inboundPath);
 			Settings.Default["InboundPath"] = inboundPath;
 			Program.InitActiveRecord(new[] { typeof(TestClient).Assembly, typeof(Document).Assembly });
 		}
