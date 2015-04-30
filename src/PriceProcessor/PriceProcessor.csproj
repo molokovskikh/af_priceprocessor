@@ -320,6 +320,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\OriolaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RiaPandaVolgogradParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\RynkovParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaMoscowParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\SiaSamaraParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Medif_11357_Parser.cs" />
