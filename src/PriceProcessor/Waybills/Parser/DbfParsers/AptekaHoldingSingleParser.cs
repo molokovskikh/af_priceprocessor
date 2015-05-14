@@ -146,7 +146,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("TZENANDS") &&
 				data.Columns.Contains("GODEN") &&
 				data.Columns.Contains("KOL") &&
-				data.Columns.Contains("DOCDAT");
+				data.Columns.Contains("DOCDAT") &&
+				!data.Columns.Contains("SUMMANAKL");
 		}
 	}
 }
