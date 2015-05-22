@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Linq;
 using System.Messaging;
 using System.ServiceModel.Channels;
@@ -339,6 +340,17 @@ namespace RemotePriceProcessor
 				AbortClientProxy();
 			}
 			return historyFile;
+		}
+
+		/// <summary>
+		/// Ищет файл в архиве прайс листов не используя wcf а обращаясь через dfs, если не найдет вернет null
+		/// использует переменную PricesHistoryDir из AppSettings в качестве корня
+		/// </summary>
+		public string GetFileFromHistoryFS(ulong id)
+		{
+			return Directory
+				.GetFiles(ConfigurationManager.AppSettings["PricesHistoryDir"], id + "*")
+				.FirstOrDefault();
 		}
 
 		public bool PutFileToInbound(uint priceItemId, Stream stream)
