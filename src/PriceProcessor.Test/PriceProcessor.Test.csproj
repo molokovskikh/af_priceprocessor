@@ -214,8 +214,9 @@
     <Compile Include="Waybills\Parser\DbfParsers\MatveevFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\OriolaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ProfitmedParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\RiaPandaVolgogradParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\RynkovParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PulsFKMskParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\RiaPandaVolgogradParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VolgofarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\YarFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\DetectWrongXmlFixture.cs" />

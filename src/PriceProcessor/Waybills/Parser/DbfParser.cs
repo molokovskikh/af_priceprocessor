@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
@@ -99,7 +100,28 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					var value = dataRow[name];
 					if (value is DBNull)
 						continue;
-					propertyInfo.SetValue(line, ConvertIfNeeded(value, propertyInfo.PropertyType), new object[0]);
+
+					var docline = line as DocumentLine;
+					object newvalue;
+					try {
+						newvalue = ConvertIfNeeded(value, propertyInfo.PropertyType);
+					}
+					catch (OverflowException e) {
+						//Логируем ошибку переполнения поля
+						var typename = propertyInfo.PropertyType.FullName;
+						var clientcode = docline.Document.ClientCode.ToString();
+						var err = string.Format("Клиент: {2} Ошибка переполнения типа {0} для значения {1}", typename, value, clientcode);
+						var logger = log4net.LogManager.GetLogger(GetType());
+						logger.Error(err);
+
+						//Если тип данных Nullable, то мы считаем, что значение по умолчанию будет null
+						if (propertyInfo.PropertyType.IsNullable())
+							newvalue = null;
+						else
+							throw;
+					}
+					propertyInfo.SetValue(line, newvalue, new object[0]);
+					
 					break;
 				}
 			});
@@ -137,6 +159,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			if (type == typeof(decimal) || type == typeof(decimal?))
 				return ParseHelper.GetDecimal(value.ToString());
+
 			if (type == typeof(string)) {
 				DateTime res;
 				if (DateTime.TryParseExact(value.ToString(),
