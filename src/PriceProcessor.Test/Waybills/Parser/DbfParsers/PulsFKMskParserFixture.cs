@@ -12,6 +12,9 @@ namespace PriceProcessor.Test.Waybills.Parser
 	[TestFixture]
 	public class PulsFKMskParserFixture
 	{
+		/// <summary>
+		/// Тест для задачи http://redmine.analit.net/issues/34299
+		/// </summary>
 		[Test]
 		public void Parse()
 		{
