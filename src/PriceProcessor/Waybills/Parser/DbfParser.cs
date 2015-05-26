@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 						var clientcode = docline.Document.ClientCode.ToString();
 						var err = string.Format("Клиент: {2} Ошибка переполнения типа {0} для значения {1}", typename, value, clientcode);
 						var logger = log4net.LogManager.GetLogger(GetType());
-						logger.Error(err);
+						logger.Warn(err, e);
 
 						//Если тип данных Nullable, то мы считаем, что значение по умолчанию будет null
 						if (propertyInfo.PropertyType.IsNullable())
