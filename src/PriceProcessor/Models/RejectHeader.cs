@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,10 @@ using NHibernate.Type;
 
 namespace Inforoom.PriceProcessor.Models
 {
+	/// <summary>
+	/// Заголовок документа отказа. Содержит строки отказа.
+	/// В целом, представляет собой не только заголовок, но и сам документ отказа.
+	/// </summary>
 	[ActiveRecord(Schema = "Documents")]
 	public class RejectHeader
 	{
@@ -48,43 +53,10 @@ namespace Inforoom.PriceProcessor.Models
 		[HasMany(Cascade = ManyRelationCascadeEnum.AllDeleteOrphan)]
 		public virtual IList<RejectLine> Lines { get; set; }
 
-		public static RejectHeader ReadReject(DocumentReceiveLog log, string fileName)
-		{
-			var reject = new RejectHeader(log);
-			using (var reader = new StreamReader(File.OpenRead(fileName), Encoding.GetEncoding(1251))) {
-				string line;
-				var rejectFound = false;
-				while ((line = reader.ReadLine()) != null) {
-					if (line.Trim() == "О Т К А З Ы") {
-						rejectFound = true;
-						continue;
-					}
-					if (line.Trim() == "СФОРМИРОВАННЫЙ ЗАКАЗ") {
-						break;
-					}
-					if (!rejectFound)
-						continue;
-					if (line.Length == 0)
-						continue;
-					//пропускаем заголовок
-					if (line[0] == '¦')
-						continue;
-					//пропускаем разделители строк
-					if (line.All(c => c == '-'))
-						continue;
-					var rejectLine = new RejectLine();
-					reject.Lines.Add(rejectLine);
-					rejectLine.Product = line.Substring(0, 35).Trim();
-					rejectLine.Producer = line.Substring(35, 13).Trim();
-					rejectLine.Cost = NullableConvert.ToDecimal(line.Substring(48, 9).Trim(), CultureInfo.InvariantCulture);
-					rejectLine.Ordered = (uint?)NullableConvert.ToFloatInvariant(line.Substring(57, 9).Trim());
-					var rejectedCount = (rejectLine.Ordered - (uint?)NullableConvert.ToFloatInvariant(line.Substring(66, 9).Trim()));
-					rejectLine.Rejected = rejectedCount.GetValueOrDefault();
-				}
-			}
-			return reject;
-		}
-
+		/// <summary>
+		/// Функция, которая пытается связать текстовые данные в строках отказа в реальные связи с моделями.
+		/// </summary>
+		/// <param name="session">Сессия БД</param>
 		public void Normalize(ISession session)
 		{
 			var priceIds = session.Query<Price>().Where(p => p.Supplier == Supplier)
@@ -110,34 +82,40 @@ namespace Inforoom.PriceProcessor.Models
 		}
 	}
 
+	/// <summary>
+	/// Строка документа отказа.
+	/// </summary>
 	[ActiveRecord(Schema = "Documents")]
 	public class RejectLine
 	{
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
 
+		[Property, Description("Код товара")]
+		public virtual string Code { get; set; }
+
+		[Property, Description("Наименование товара")]
+		public virtual string Product { get; set; }
+
+		[Property, Description("Производитель товара")]
+		public virtual string Producer { get; set; }
+
+		[Property, Description("Количество заказанных товаров")]
+		public virtual uint? Ordered { get; set; }
+
+		[Property, Description("Количество отказов по товару")]
+		public virtual uint Rejected { get; set; }
+
+		[Property, Description("Общая стоимость товаров")]
+		public virtual decimal? Cost { get; set; }
+
 		[BelongsTo("HeaderId")]
 		public virtual RejectHeader Header { get; set; }
-
-		[Property]
-		public virtual string Product { get; set; }
 
 		[BelongsTo("ProductId")]
 		public virtual Product ProductEntity { get; set; }
 
-		[Property]
-		public virtual string Producer { get; set; }
-
 		[BelongsTo("ProducerId")]
 		public virtual Producer ProducerEntity { get; set; }
-
-		[Property]
-		public virtual decimal? Cost { get; set; }
-
-		[Property]
-		public virtual uint? Ordered { get; set; }
-
-		[Property]
-		public virtual uint Rejected { get; set; }
 	}
 }
