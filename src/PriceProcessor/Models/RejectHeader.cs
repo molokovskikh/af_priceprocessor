@@ -109,6 +109,7 @@ namespace Inforoom.PriceProcessor.Models
 		public virtual uint Rejected { get; set; }
 
 		[Property, Description("Стоимость товара")]
+
 		public virtual decimal? Cost { get; set; }
 
 		[BelongsTo("HeaderId")]
