@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.ServiceModel;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,6 +15,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
 using Inforoom.PriceProcessor.Waybills.Parser;
+using Inforoom.PriceProcessor.Waybills.Rejects;
 using log4net;
 using NHibernate;
 
@@ -176,20 +178,50 @@ namespace Inforoom.PriceProcessor.Waybills
 			return doc;
 		}
 
+		/// <summary>
+		/// Создание отказов для логов.
+		/// </summary>
+		/// <param name="session">Сессия Nhibernate</param>
+		/// <param name="log">Лог, о получении документа</param>
 		private static void ProcessReject(ISession session, DocumentReceiveLog log)
 		{
-			if (log.Supplier.RejectParser == "NadezhdaFarm") {
-				var reject = RejectHeader.ReadReject(log, log.GetFileName());
-				if (reject.Lines.Count > 0) {
-					try {
-						reject.Normalize(session);
-					}
-					catch(Exception e) {
-						_log.Error(String.Format("Не удалось идентифицировать товары отказа {0}", log.GetFileName()), e);
-					}
-					session.Save(reject);
+			var parser = GetRejectParser(log);
+			if (parser == null)
+				return;
+			var reject = parser.CreateReject(log); 
+			if (reject.Lines.Count > 0) {
+				try {
+					reject.Normalize(session);
 				}
+				catch(Exception e) {
+					_log.Error(String.Format("Не удалось идентифицировать товары отказа {0}", log.GetFileName()), e);
+				}
+				session.Save(reject);
 			}
+		}
+
+		/// <summary>
+		/// Находит парсер отказов для отказа
+		/// </summary>
+		/// <param name="log">Лог, о получении документа</param>
+		/// <returns>Парсер для отказа или null</returns>
+		private static RejectParser GetRejectParser(DocumentReceiveLog log)
+		{
+			var parsername = log.Supplier.RejectParser;
+			if (string.IsNullOrEmpty(parsername))
+				return null;
+			var assembly = Assembly.GetAssembly(typeof(DocumentReceiveLog));
+			var parser = assembly.GetTypes().FirstOrDefault(i => i.Name == parsername);
+
+			if(parser == null)
+				throw new Exception(string.Format("Парсер {0} не был найден в сборке {1}", parsername, assembly.FullName));
+
+			var obj = Activator.CreateInstance(parser);
+			var rjparser = obj as RejectParser;
+			if (rjparser == null)
+				throw new Exception(string.Format("Не удалось привести тип. Скорее всего {0} не является наследником класса RejectParser", parsername));
+
+			return rjparser;
 		}
 
 		public static void SaveWaybill(string filename)

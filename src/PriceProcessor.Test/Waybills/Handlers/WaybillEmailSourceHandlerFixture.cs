@@ -478,7 +478,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var email = String.Format("edata{0}@msk.katren.ru", supplier.Id);
 			supplier.WaybillSource.EMailFrom = email;
 			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
-			supplier.RejectParser = "NadezhdaFarm";
+			supplier.RejectParser = "NadezhdaFarm7579RejectParser";
 			session.Save(supplier);
 			session.Save(client);
 
