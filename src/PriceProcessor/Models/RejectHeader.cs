@@ -91,6 +91,7 @@ namespace Inforoom.PriceProcessor.Models
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
 
+		//Обязательное поле
 		[Property, Description("Код товара")]
 		public virtual string Code { get; set; }
 
@@ -103,10 +104,12 @@ namespace Inforoom.PriceProcessor.Models
 		[Property, Description("Количество заказанных товаров")]
 		public virtual uint? Ordered { get; set; }
 
+		//Обязательное поле
 		[Property, Description("Количество отказов по товару")]
 		public virtual uint Rejected { get; set; }
 
-		[Property, Description("Общая стоимость товаров")]
+		[Property, Description("Стоимость товара")]
+
 		public virtual decimal? Cost { get; set; }
 
 		[BelongsTo("HeaderId")]

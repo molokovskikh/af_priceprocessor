@@ -407,6 +407,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\UkonDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\UkonParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\BaseRejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Infrastructure\BaseRejectFixture.cs" />
     <Compile Include="Waybills\Rejects\SiaInternational174RejectParserFixture .cs" />
     <Compile Include="Waybills\Rejects\NadezhdaFarm7579RejectParserFixture.cs" />

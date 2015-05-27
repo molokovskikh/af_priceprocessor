@@ -44,7 +44,11 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					rejectLine.Producer = fields[3];
 					rejectLine.Cost = NullableConvert.ToDecimal(fields[4].Trim());
 					rejectLine.Ordered = NullableConvert.ToUInt32(fields[5].Trim());
-					rejectLine.Rejected = Convert.ToUInt32(fields[7].Trim());
+					//тонкий момент - это поле является обязательным, но теоретически может отсутствовать в файле
+					//в случае отсутствия мы записываем 0, тогда далее другие классы разберут этот случай
+					//и сделают необходимые действия по урегулированию ситуации
+					var rejected = NullableConvert.ToUInt32(fields[7].Trim());
+					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
 				}
 			}
 		}
