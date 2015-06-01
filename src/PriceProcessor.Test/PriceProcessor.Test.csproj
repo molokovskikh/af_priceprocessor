@@ -409,6 +409,7 @@
     <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\Rejects\BaseRejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Infrastructure\BaseRejectFixture.cs" />
+    <Compile Include="Waybills\Rejects\AlianceHelskea3027RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\SiaInternational174RejectParserFixture .cs" />
     <Compile Include="Waybills\Rejects\NadezhdaFarm7579RejectParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
