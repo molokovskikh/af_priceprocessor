@@ -29,8 +29,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 						//В итоге надо пропустить 2 строчки и проставить флаг, что дальше пора считывать отказы
 						//Отказы идут прямо до конца файла, так что в условии остановки считывания нужды нет
 						reader.ReadLine();
-						fields = reader.ReadLine().Split(';');
 						rejectFound = true;
+						continue;
 					}
 					//Если мы еще не дошли до места с которого начинаются отказы, то продолжаем
 					if (!rejectFound)
