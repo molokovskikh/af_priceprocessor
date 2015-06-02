@@ -44,6 +44,26 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Cost, Is.EqualTo(135.01m));
 			Assert.That(line.Ordered, Is.EqualTo(3));
 			Assert.That(line.Rejected, Is.EqualTo(3));
+		}	
+
+		/// <summary>
+		/// Тест к задаче http://redmine.analit.net/issues/35297
+		/// Парсер отказа в котором нет отказов
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("39120212_Сиа Интернейшнл - Екатеринбург(1006002427_UVED-2858687).csv");
+			var parser = new SiaInternational174RejectParser();
+			var reject = parser.CreateReject(log);
+			
+			//Проверяем правильность парсинга
+
+			//В файле 3 строки - одна неправильная, соответственно в отказе должно быть 2 строки
+			Assert.That(reject.Lines.Count, Is.EqualTo(0));
+			//Ну и проверим, что та плохих строк нет
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
 		}
 	}
 }
