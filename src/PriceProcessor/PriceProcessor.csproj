@@ -257,6 +257,8 @@
     <Compile Include="Queries\AddressIdQuery.cs" />
     <Compile Include="Waybills\Rejects\Parser\AllianceHelskea3027RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm196RejectParser.cs" />
+    <Compile Include="Queries\AddressIdQuery.cs" />
+    <Compile Include="Waybills\Rejects\Parser\AstiPlus12714RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\SiaInternational174RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm7579RejectParser.cs" />
     <Compile Include="Waybills\Rejects\RejectParser.cs" />
