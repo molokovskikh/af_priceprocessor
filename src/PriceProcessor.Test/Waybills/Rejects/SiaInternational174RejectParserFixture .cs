@@ -28,7 +28,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			var log = CreateRejectLog("36688086_Сиа Интернейшнл - Екатеринбург(1009020771_UVED-2741825).csv");
 			var parser = new SiaInternational174RejectParser();
 			var reject = parser.CreateReject(log);
-			
+
 			//Проверяем правильность парсинга
 
 			//В файле 3 строки - одна неправильная, соответственно в отказе должно быть 2 строки
@@ -44,7 +44,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Cost, Is.EqualTo(135.01m));
 			Assert.That(line.Ordered, Is.EqualTo(3));
 			Assert.That(line.Rejected, Is.EqualTo(3));
-		}	
+		}
 
 		/// <summary>
 		/// Тест к задаче http://redmine.analit.net/issues/35297
