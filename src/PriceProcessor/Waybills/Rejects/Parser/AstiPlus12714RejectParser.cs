@@ -6,7 +6,9 @@ using System.Text;
 using Castle.Components.DictionaryAdapter.Xml;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
+using NPOI.HSSF.UserModel;
 using NPOI.POIFS.FileSystem;
+using NPOI.SS.UserModel;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
@@ -14,17 +16,76 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
+			if (filename.Contains(".dbf")) {
+				ParseDBF(reject, filename);
+			}
+			else if (filename.Contains(".xls"))
+				ParseXLS(reject, filename);
+		}
+
+		protected void ParseDBF(RejectHeader reject, string filename)
+		{
 			var data = Dbf.Load(filename);
-				for (var i = 1; i <= data.Rows.Count; i++) {
+			for (var i = 0; i < data.Rows.Count; i++)
+			{
+				var rejectLine = new RejectLine();
+				reject.Lines.Add(rejectLine);
+					rejectLine.Product = data.Rows[i][1].ToString();
+					rejectLine.Producer = data.Rows[i][2].ToString();
+					rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[i][3].ToString());
+					var rejected = NullableConvert.ToUInt32(data.Rows[i][4].ToString());
+					rejectLine.Cost = NullableConvert.ToDecimal(data.Rows[i][5].ToString());
+					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+			}		
+		}
+
+		protected void ParseXLS(RejectHeader reject, string filename)
+		{
+			HSSFWorkbook hssfwb;
+			using (FileStream file = new FileStream(filename, FileMode.Open, FileAccess.Read))
+			{
+				try {
+					hssfwb = new HSSFWorkbook(file);
+				}
+				catch (Exception e)
+				{
+					Logger.WarnFormat("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+					return;
+				}
+			}
+
+			ISheet sheet = hssfwb.GetSheetAt(0);
+			//запускаем цикл по строкам
+			var rejectFound = false;
+			for (var i = 0; i <= sheet.LastRowNum; i++)
+			{
+				var row = sheet.GetRow(i);
+				if (row != null)
+				{
+					var cell = row.GetCell(0);
+					if (cell != null && cell.ToString() == "Товар")
+					{
+						rejectFound = true;
+						continue;
+					}
+
+					//проверяем ячейку на null и остальные невидимые значения	
+					if (cell == null || string.IsNullOrWhiteSpace(cell.StringCellValue))
+						rejectFound = false;
+
+					if (!rejectFound)
+						continue;
+
 					var rejectLine = new RejectLine();
 					reject.Lines.Add(rejectLine);
-					rejectLine.Product = data.Rows[0][1].ToString();
-					rejectLine.Producer = data.Rows[0][2].ToString();
-					rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[0][3].ToString());
-					var rejected = NullableConvert.ToUInt32(data.Rows[0][4].ToString());
-					rejectLine.Cost = NullableConvert.ToDecimal(data.Rows[0][5].ToString());
+					rejectLine.Product = row.GetCell(0).StringCellValue;
+					rejectLine.Producer = row.GetCell(4).StringCellValue;
+					rejectLine.Ordered = NullableConvert.ToUInt32(row.GetCell(7).NumericCellValue.ToString());
+					rejectLine.Cost = NullableConvert.ToDecimal(row.GetCell(12).NumericCellValue.ToString());
+					var rejected = NullableConvert.ToUInt32(row.GetCell(10).NumericCellValue.ToString());
 					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
 				}
+			}
 		}
 	}
 }
