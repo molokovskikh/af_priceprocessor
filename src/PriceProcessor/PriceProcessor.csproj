@@ -255,6 +255,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\AddressIdQuery.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BellaDonParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\AllianceHelskea3027RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm196RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\AstiPlus12714RejectParser.cs" />
