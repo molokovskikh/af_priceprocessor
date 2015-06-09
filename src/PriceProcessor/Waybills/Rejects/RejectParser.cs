@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects
 		/// <summary>
 		/// Журнал для ошибок
 		/// </summary>
-		private ILog Logger;
+		protected ILog Logger;
 
 		/// <summary>
 		/// Неправильные строки, обнаруженные при проверке документа
@@ -46,7 +46,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects
 		/// Проверяет отказ и удаляет невалидные строки
 		/// </summary>
 		/// <param name="rejectheader">Заголовок отказа</param>
-		private void CheckRejectHeader(RejectHeader rejectheader)
+		protected void CheckRejectHeader(RejectHeader rejectheader)
 		{
 			var skipLines = new List<RejectLine>();
 			foreach (var line in rejectheader.Lines) {
