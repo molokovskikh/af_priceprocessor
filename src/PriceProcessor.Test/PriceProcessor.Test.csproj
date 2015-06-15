@@ -412,9 +412,10 @@
     <Compile Include="Waybills\Rejects\Infrastructure\BaseRejectFixture.cs" />
     <Compile Include="Waybills\Rejects\AlianceHelskea3027RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\NadezhdaFarm196RejectParserFixture.cs" />
-    <Compile Include="Waybills\Rejects\AstiPlus12714RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\ZdravServis1581RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren149RejectParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\AstiPlus12714RejectParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\Katren4138RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\SiaInternational174RejectParserFixture .cs" />
     <Compile Include="Waybills\Rejects\NadezhdaFarm7579RejectParserFixture.cs" />
     <Compile Include="Waybills\RemoteWaybillsInterfaceFixture.cs" />
