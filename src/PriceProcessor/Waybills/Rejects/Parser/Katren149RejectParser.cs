@@ -9,25 +9,24 @@ using NPOI.POIFS.FileSystem;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 149. На 15.06.2015 Типы отказов: xls(3035) и txt(587).
+	/// </summary>
 	public class Katren149RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
 			if (filename.Contains(".xls"))
-			{
 				ParseXLS(reject, filename);
-			}
-			else if (filename.Contains(".txt")) 
-			{
+			else if (filename.Contains(".txt"))
 				ParseTXT(reject, filename);
+			else {
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
 			}
-			else
-			{
-				Logger.WarnFormat("Парсер не умеет парсить  файл с отказами '{0}' с расширением {1}", filename, GetType().Name);
-			}	
 		}
 
 		/// <summary>
+		/// Парсер для формата файла XLS
 		/// Но на самом деле это файлы dbf
 		/// </summary>
 		protected void ParseXLS(RejectHeader reject, string filename)
@@ -45,6 +44,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			}
 		}
 
+		/// <summary>
+		/// Парсер для формата файла TXT
+		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
 			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251)))

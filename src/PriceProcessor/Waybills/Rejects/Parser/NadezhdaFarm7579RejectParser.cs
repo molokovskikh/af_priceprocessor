@@ -7,19 +7,39 @@ using Inforoom.PriceProcessor.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 7579. На 15.06.2015 Типы отказов: DBF(189) и txt(18482).
+	/// </summary>
 	public class NadezhdaFarm7579RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
-			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
+			if (filename.Contains(".txt"))
+				ParseTXT(reject, filename);
+			else
+			{
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
+			}
+		}
+
+		/// <summary>
+		/// Парсер для формата файла TXT
+		/// </summary>
+		protected void ParseTXT(RejectHeader reject, string filename)
+		{
+			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251)))
+			{
 				string line;
 				var rejectFound = false;
-				while ((line = reader.ReadLine()) != null) {
-					if (line.Trim() == "О Т К А З Ы") {
+				while ((line = reader.ReadLine()) != null)
+				{
+					if (line.Trim() == "О Т К А З Ы")
+					{
 						rejectFound = true;
 						continue;
 					}
-					if (line.Trim() == "СФОРМИРОВАННЫЙ ЗАКАЗ") {
+					if (line.Trim() == "СФОРМИРОВАННЫЙ ЗАКАЗ")
+					{
 						break;
 					}
 					if (!rejectFound)

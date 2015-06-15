@@ -12,17 +12,26 @@ using NPOI.SS.UserModel;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 12714. На 15.06.2015 Типы отказов: xls(1195) и dbf(21599).
+	/// </summary>
 	public class AstiPlus12714RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
-			if (filename.Contains(".dbf")) {
+			if (filename.Contains(".dbf"))
 				ParseDBF(reject, filename);
-			}
 			else if (filename.Contains(".xls"))
 				ParseXLS(reject, filename);
+			else
+			{
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
+			}
 		}
 
+		/// <summary>
+		/// Парсер для формата файла DBF
+		/// </summary>
 		protected void ParseDBF(RejectHeader reject, string filename)
 		{
 			var data = Dbf.Load(filename);
@@ -39,6 +48,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			}		
 		}
 
+		/// <summary>
+		/// Парсер для формата файла XLS
+		/// </summary>
 		protected void ParseXLS(RejectHeader reject, string filename)
 		{
 			HSSFWorkbook hssfwb;
