@@ -253,15 +253,16 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queries\AddressIdQuery.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParser.cs" />
-    <Compile Include="Waybills\Rejects\Parser\AllianceHelskea3027RejectParser.cs" />
-    <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm196RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\ZdravServis1581RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren149RejectParser.cs" />
-    <Compile Include="Waybills\Rejects\Parser\AstiPlus12714RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren4138RejectParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queries\AddressIdQuery.cs" />
+    <Compile Include="Waybills\Rejects\Parser\AllianceHelskea3027RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm196RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\AstiPlus12714RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\PulsBryansk7975RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\SiaInternational174RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm7579RejectParser.cs" />
     <Compile Include="Waybills\Rejects\RejectParser.cs" />
