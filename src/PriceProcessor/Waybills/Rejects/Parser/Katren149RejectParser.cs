@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -32,17 +33,25 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 		/// </summary>
 		protected void ParseXLS(RejectHeader reject, string filename)
 		{
-			var data = Dbf.Load(filename);
-			for (var i = 0; i < data.Rows.Count; i++)
-			{
-				var rejectLine = new RejectLine();
-				reject.Lines.Add(rejectLine);
-				rejectLine.Code = data.Rows[i][0].ToString();
-				rejectLine.Product = data.Rows[i][1].ToString();
-				rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[i][2].ToString());
-				var rejected = NullableConvert.ToUInt32(data.Rows[i][2].ToString());
-				rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+			DataTable data;
+			try {
+				data = Dbf.Load(filename);
 			}
+			catch(Exception e)
+			{
+				Logger.WarnFormat("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+				return;
+			}
+
+			for (var i = 0; i < data.Rows.Count; i++) {
+					var rejectLine = new RejectLine();
+					reject.Lines.Add(rejectLine);
+					rejectLine.Code = data.Rows[i][0].ToString();
+					rejectLine.Product = data.Rows[i][1].ToString();
+					rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[i][2].ToString());
+					var rejected = NullableConvert.ToUInt32(data.Rows[i][2].ToString());
+					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+				}
 		}
 
 		protected void ParseTXT(RejectHeader reject, string filename)
