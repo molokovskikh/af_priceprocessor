@@ -10,17 +10,26 @@ using NPOI.POIFS.FileSystem;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 7975. На 15.06.2015 Типы отказов: csv(508), txt(2284) и dbf(4)
+	/// </summary>
 	public class PulsBryansk7975RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
-			if (filename.Contains(".csv")) {
+			if (filename.Contains(".csv"))
 				ParseCSV(reject, filename);
-			}
 			else if (filename.Contains(".txt"))
 			ParseTXT(reject, filename);
+			else
+			{
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
+			}
 		}
 
+		/// <summary>
+		/// Парсер для формата файла CSV
+		/// </summary>
 		protected void ParseCSV(RejectHeader reject, string filename)
 		{
 			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
@@ -53,6 +62,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			}
 		}
 
+		/// <summary>
+		/// Парсер для формата файла TXT
+		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
 			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {

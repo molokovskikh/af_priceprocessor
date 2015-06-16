@@ -9,21 +9,40 @@ using NPOI.POIFS.FileSystem;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 174. На 15.06.2015 Типы отказов: csv(3987).
+	/// </summary>
 	public class SiaInternational174RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
+			if (filename.Contains(".csv"))
+				ParseCSV(reject, filename);
+			else
+			{
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
+			}
+		}
+
+		/// <summary>
+		/// Парсер для формата файла CSV
+		/// </summary>
+		protected void ParseCSV(RejectHeader reject, string filename)
+		{
 			//Открываем файл, при помощи unsing, чтобы вконце си шарп отпустил занятые ресурсы. Подробнее гугли IDisposable.
-			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
+			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251)))
+			{
 				string line;
 				var rejectFound = false;
 				//Читаем, пока не кончатся строки в файле
-				while ((line = reader.ReadLine()) != null) {
+				while ((line = reader.ReadLine()) != null)
+				{
 					//Делим строку на части по разделителю.
 					//CSV файл, который ожидает данный парсер - это эксел таблица, строки которой разделены переносом строки, а ячейки символом ";"
 					var fields = line.Split(';');
 					//Ищем в ячейке место, с которого начинаются отказы в таблице
-					if (fields[1].Trim() == "ОТКАЗАНО") {
+					if (fields[1].Trim() == "ОТКАЗАНО")
+					{
 						//После строчки с этой надписью, будет еще одна строка с наименованием таблицы, ее мы пропустим
 						//И со следующей строчки будут уже идти отказы
 						//В итоге надо пропустить 2 строчки и проставить флаг, что дальше пора считывать отказы

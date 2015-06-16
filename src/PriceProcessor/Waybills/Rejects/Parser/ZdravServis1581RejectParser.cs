@@ -9,18 +9,24 @@ using NPOI.POIFS.FileSystem;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 1581. На 15.06.2015 Типы отказов: txt(2351), sst(3) и dbf(1).
+	/// </summary>
 	public class ZdravServis1581RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
 			if (filename.Contains(".txt"))
-			{
 				ParseTXT(reject, filename);
+			else
+			{
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
 			}
-			else if (filename.Contains(".dbf"))
-				ParseDBF(reject, filename);
 		}
 
+		/// <summary>
+		/// Парсер для формата файла TXT
+		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
 			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
@@ -56,11 +62,6 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
 				}
 			}
-		}
-
-		protected void ParseDBF(RejectHeader reject, string filename)
-		{
-			Logger.WarnFormat("Не удалось получить файл с отказами '{0}' для лога документа {1}, так как для формата dbf парсера нет", filename, reject.Log.Id);	
 		}
 	}
 }

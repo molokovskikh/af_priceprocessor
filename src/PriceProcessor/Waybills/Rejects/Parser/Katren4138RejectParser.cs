@@ -12,19 +12,22 @@ using NPOI.SS.UserModel;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
+	/// <summary>
+	/// Парсер для поставщика 4138. На 15.06.2015 Типы отказов: xls(9546), txt(4976), dbf(210) и zip(1)
+	/// </summary>
 	public class Katren4138RejectParser : RejectParser
 	{
 		public override void Parse(RejectHeader reject, string filename)
 		{
-			if (filename.Contains(".xls")) {
+			if (filename.Contains(".xls"))
 				ParseXLS(reject, filename);
-			}
 			else {
-				Logger.WarnFormat("Парсер не умеет парсить  файл с отказами '{0}' с расширением {1}", filename, GetType().Name);
+				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
 			}
 		}
 
 		/// <summary>
+		/// Парсер для формата файла XLS
 		/// Но на самом деле это файлы dbf
 		/// </summary>
 		protected void ParseXLS(RejectHeader reject, string filename)
