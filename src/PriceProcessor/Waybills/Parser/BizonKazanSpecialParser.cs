@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
@@ -46,8 +47,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var parts = line.Split(';');
 			document.ProviderDocumentId = GetString(parts[ProviderDocumentIdIndex]);
-			if (!String.IsNullOrEmpty(parts[DocumentDateIndex]))
-				document.DocumentDate = ParseHelper.GetDateTime(parts[DocumentDateIndex]);
+			if (!String.IsNullOrEmpty(parts[DocumentDateIndex])) {
+				document.DocumentDate = NullableConvert.ToDateTime(parts[DocumentDateIndex]);
+			}
 
 			var docLine = document.NewLine();
 

@@ -34,6 +34,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.VitallyImportant, "GV")
 				.Line(l => l.NdsAmount, "NDSSUM")
 				.Line(l => l.Amount, "SUM")
+				.Line(l => l.Certificate, "SERT")
+				.Line(l => l.CertificatesEndDate, "DATES")
+				.Line(l => l.CertificateAuthority, "SERTWHO")
 				.ToDocument(document, data);
 			return document;
 		}

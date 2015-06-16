@@ -113,9 +113,11 @@ namespace PriceProcessor.Test.Waybills
 		{
 			document.Lines[0].AssortimentPriceInfo = new AssortimentPriceInfo { CodeCr = 55555 };
 			document.Lines[0].CodeCr = "123456";
+			document.Lines[0].CertificatesEndDate = new DateTime(2015, 5, 15);
 			var data = ExportFile();
 			Assert.That(data.Rows[0]["idproducer"], Is.EqualTo(55555));
 			Assert.That(data.Rows[0]["sp_prdr_id"], Is.EqualTo("123456"));
+			Assert.AreEqual(new DateTime(2015, 5, 15), data.Rows[0]["sert_edn"]);
 		}
 
 		private DataTable ExportFile()
@@ -123,7 +125,7 @@ namespace PriceProcessor.Test.Waybills
 			var file = "Export_universal_dbf.dbf";
 			if (File.Exists(file))
 				File.Delete(file);
-			DbfExporter.SaveUniversalDbf(document, file);
+			DbfExporter.SaveUniversalV2(document, file);
 			Assert.That(File.Exists(file));
 			var data = Dbf.Load(file);
 			return data;

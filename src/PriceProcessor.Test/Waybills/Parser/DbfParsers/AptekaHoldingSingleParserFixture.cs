@@ -245,7 +245,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				var log = new DocumentReceiveLog { Supplier = new Supplier() };
 				document.Log = log;
 				document.Address = new Address();
-				DbfExporter.SaveUniversalDbf(document, fileName);
+				DbfExporter.SaveUniversalV2(document, fileName);
 				var table = Dbf.Load(fileName);
 				var amnt = table.Rows[0]["AMNT"];
 				Assert.AreEqual(amnt.ToString(), "5182,45");

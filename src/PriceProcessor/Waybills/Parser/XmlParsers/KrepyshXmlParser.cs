@@ -35,10 +35,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Code = (string)position.XPathSelectElement("КодТовара");
 				line.Quantity = ParseHelper.GetUInt((string)position.XPathSelectElement("Количество"));
 				line.SupplierCostWithoutNDS = ParseHelper.GetDecimal((string)position.XPathSelectElement("ЦенаОпт"));
-				line.Certificates = (string)position.XPathSelectElement("Серии/Серия/НомерСертиф");
 				line.SupplierPriceMarkup = ParseHelper.GetDecimal((string)position.XPathSelectElement("НаценОпт"));
+				line.Certificates = (string)position.XPathSelectElement("Серии/Серия/НомерСертиф");
 				line.CertificatesDate = (string)position.XPathSelectElement("Серии/Серия/ДатаВыдачиСертиф");
 				line.CertificateAuthority = (string)position.XPathSelectElement("Серии/Серия/ОрганСертиф");
+				line.CertificatesEndDate = NullableConvert.ToDateTime((string)position.XPathSelectElement("Серии/Серия/СрокДействияСертиф"));
 				line.ProducerCostWithoutNDS = ParseHelper.GetDecimal((string)position.XPathSelectElement("ЦенаИзг"));
 				line.Nds = ParseHelper.GetUInt((string)position.XPathSelectElement("СтавкаНДС"));
 
