@@ -1,4 +1,5 @@
 ﻿using System;
+using Common.Tools;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 
@@ -23,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(25.97));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС CN.АВ57.В05475"));
-			Assert.AreEqual("09.08.2010", line.CertificatesEndDate);
+			Assert.AreEqual("09.08.2010", line.CertificatesEndDate.Value.ToString("d"));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(null));
 			Assert.That(line.Period, Is.EqualTo(null));
 			Assert.That(line.CertificatesDate, Is.EqualTo("10.08.2009"));

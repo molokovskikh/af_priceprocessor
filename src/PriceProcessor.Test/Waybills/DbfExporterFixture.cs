@@ -117,7 +117,7 @@ namespace PriceProcessor.Test.Waybills
 			var data = ExportFile();
 			Assert.That(data.Rows[0]["idproducer"], Is.EqualTo(55555));
 			Assert.That(data.Rows[0]["sp_prdr_id"], Is.EqualTo("123456"));
-			Assert.AreEqual(new DateTime(2015, 5, 15), data.Rows[0]["sert_edn"]);
+			Assert.AreEqual(new DateTime(2015, 5, 15), data.Rows[0]["sert_end"]);
 		}
 
 		private DataTable ExportFile()
