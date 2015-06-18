@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Castle.ActiveRecord;
 using Castle.ActiveRecord.Framework;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Downloader;
 using Inforoom.PriceProcessor.Helpers;
@@ -130,7 +131,7 @@ namespace Inforoom.PriceProcessor.Models
 			var dtSuppliers = new DataTable();
 			var mails = mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode();
 
-			using (var connection = new MySqlConnection(Literals.ConnectionString())) {
+			using (var connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
 				connection.Open();
 				var adapter = new MySqlDataAdapter(@"
 select

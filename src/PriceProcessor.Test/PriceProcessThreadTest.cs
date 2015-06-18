@@ -14,6 +14,7 @@ using MySql.Data.MySqlClient;
 using log4net;
 using System.Data;
 using System.Reflection;
+using Common.MySql;
 using Test.Support.Suppliers;
 using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
@@ -107,7 +108,7 @@ namespace PriceProcessor.Test
 
 			private MySqlConnection GetConnection()
 			{
-				return new MySqlConnection(Literals.ConnectionString());
+				return new MySqlConnection(ConnectionHelper.DefaultConnectionStringName);
 			}
 
 			public CorruptDBThread()
@@ -147,7 +148,7 @@ namespace PriceProcessor.Test
 							InnoDBByConnection = true;
 						}
 						if (!InnoDBByConnection) {
-							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(), "show engine innodb status");
+							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConnectionHelper.DefaultConnectionStringName, "show engine innodb status");
 							if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
 								InnoDBStatus = drInnoDBStatus["Status"].ToString();
 						}

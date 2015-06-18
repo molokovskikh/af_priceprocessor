@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
@@ -10,6 +11,7 @@ using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
 using log4net;
 using MySql.Data.MySqlClient;
+using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 
 namespace Inforoom.PriceProcessor
 {
@@ -69,7 +71,7 @@ namespace Inforoom.PriceProcessor
 				return null;
 
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
-				Literals.ConnectionString(),
+				ConnectionHelper.DefaultConnectionStringName,
 				@"select distinct
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,

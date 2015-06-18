@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using Common.MySql;
 using Inforoom.Downloader;
 using log4net;
 using MySql.Data.MySqlClient;
@@ -13,7 +14,7 @@ namespace Inforoom.PriceProcessor.Downloader
 		private static MySqlCommand CreateLogCommand()
 		{
 			var command = new MySqlCommand(@"
-insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ShortErrorMessage, SourceTypeId, ResultCode, ArchFileName, ExtrFileName) 
+insert into logs.downlogs (LogTime, Host, PriceItemId, Addition, ShortErrorMessage, SourceTypeId, ResultCode, ArchFileName, ExtrFileName)
 VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId, ?ResultCode, ?ArchFileName, ?ExtrFileName); select last_insert_id()");
 			command.Parameters.AddWithValue("?Host", Environment.MachineName);
 			command.Parameters.Add("?PriceItemId", MySqlDbType.UInt64);
@@ -85,7 +86,7 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 				var owneConnection = false;
 				if (connection == null) {
 					owneConnection = true;
-					connection = new MySqlConnection(Literals.ConnectionString());
+					connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName);
 				}
 				try {
 					if (connection.State == ConnectionState.Closed)

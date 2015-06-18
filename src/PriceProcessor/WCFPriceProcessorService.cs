@@ -37,7 +37,7 @@ namespace Inforoom.PriceProcessor
 		public void ResendPrice(WcfCallParameter paramDownlogId)
 		{
 			var downlogId = Convert.ToUInt64(paramDownlogId.Value);
-			var drFocused = MySqlHelper.ExecuteDataRow(Literals.ConnectionString(),
+			var drFocused = MySqlHelper.ExecuteDataRow(ConnectionHelper.DefaultConnectionStringName,
 				@"
 SELECT distinct
   logs.RowID as DRowID,
@@ -412,7 +412,7 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 ",
 				Environment.MachineName, priceItemId, addition, resultCode, archiveFileName, extractFileName);
 
-			using (var connectionLog = new MySqlConnection(Literals.ConnectionString())) {
+			using (var connectionLog = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
 				try {
 					connectionLog.Open();
 					var commandLog = new MySqlCommand(query, connectionLog);

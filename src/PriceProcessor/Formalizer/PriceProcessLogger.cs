@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Common.MySql;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
@@ -230,7 +231,7 @@ namespace Inforoom.Formalizer
 		private void LogToDb(Action<MySqlCommand> action)
 		{
 			try {
-				using (var connection = new MySqlConnection(Literals.ConnectionString())) {
+				using (var connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
 					connection.Open();
 					var command = new MySqlCommand("", connection);
 					action(command);

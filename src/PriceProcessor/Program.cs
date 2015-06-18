@@ -36,7 +36,8 @@ namespace Inforoom.PriceProcessor
 					return 0;
 				}
 
-				With.DefaultConnectionStringName = Literals.GetConnectionName();
+				ConnectionHelper.DefaultConnectionStringName = "db";
+				With.DefaultConnectionStringName = "db";
 				InitActiveRecord(new[] { typeof(Document).Assembly });
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG
@@ -77,7 +78,7 @@ namespace Inforoom.PriceProcessor
 					{ Environment.Dialect, "NHibernate.Dialect.MySQLDialect" },
 					{ Environment.ConnectionDriver, "NHibernate.Driver.MySqlDataDriver" },
 					{ Environment.ConnectionProvider, "NHibernate.Connection.DriverConnectionProvider" },
-					{ Environment.ConnectionStringName, Literals.GetConnectionName() },
+					{ Environment.ConnectionStringName, ConnectionHelper.DefaultConnectionStringName },
 					{ Environment.Hbm2ddlKeyWords, "none" }
 				});
 			ActiveRecordStarter.Initialize(assemblies, config);

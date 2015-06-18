@@ -230,7 +230,6 @@
     <Compile Include="Formalizer\Core\Exceptions.cs" />
     <Compile Include="Formalizer\Core\ToughDate.cs" />
     <Compile Include="Formalizer\Core\ToughMask.cs" />
-    <Compile Include="Literals.cs" />
     <Compile Include="Logging\MessageFilter.cs" />
     <Compile Include="Mailer.cs" />
     <Compile Include="Models\SupplierCode.cs" />

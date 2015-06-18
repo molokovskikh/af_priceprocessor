@@ -20,7 +20,7 @@ namespace PriceProcessor.Test
 		{
 			XmlConfigurator.Configure();
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
-			With.DefaultConnectionStringName = Literals.GetConnectionName();
+			With.DefaultConnectionStringName = ConnectionHelper.DefaultConnectionStringName;
 			//мы не должны обращаться к настроящему ftp, вместо этого нужно использовать директорию для эмуляции
 			FtpDownloader.UseStub = true;
 			var inboundPath = Path.GetFullPath(@"..\..\..\PriceProcessor.Test\Data\Inbound\");
