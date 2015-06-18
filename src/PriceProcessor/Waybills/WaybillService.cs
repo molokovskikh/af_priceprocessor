@@ -41,7 +41,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		{
 			try {
 				using (var scope = new TransactionScope(OnDispose.Rollback)) {
-					var result = ParseWaybills(DocumentReceiveLog.LoadByIds(ids), false)
+					var result = ParseWaybills(DocumentReceiveLog.LoadByIds(ids))
 						.Select(d => d.Id)
 						.ToArray();
 
@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 			}
 			catch (Exception e) {
-				_log.Error("Ошибка при разборе накладных", e);
+				_log.Error(String.Format("Ошибка при разборе накладных {0}", ids.Implode()), e);
 			}
 			return new uint[0];
 		}
@@ -58,22 +58,27 @@ namespace Inforoom.PriceProcessor.Waybills
 		public void Process(List<DocumentReceiveLog> logs)
 		{
 			try {
+				//проверка документов должна производиться в отдельной транзакции тк если разбор
+				//сломается логи должны быть записаны в базу
 				using (var scope = new TransactionScope(OnDispose.Rollback)) {
-					ParseWaybills(logs, true);
+					logs = CheckDocs(logs);
+
+					scope.VoteCommit();
+				}
+
+				using (var scope = new TransactionScope(OnDispose.Rollback)) {
+					ParseWaybills(logs);
 
 					scope.VoteCommit();
 				}
 			}
 			catch (Exception e) {
-				_log.Error("Ошибка при разборе накладных", e);
+				_log.Error(String.Format("Ошибка при разборе накладных {0}", logs.Implode(x => x.Id)), e);
 			}
 		}
 
-		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs, bool shouldCheckClientSettings)
+		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs)
 		{
-			if (shouldCheckClientSettings)
-				logs = CheckDocs(logs);
-
 			var rejects = logs.Where(l => l.DocumentType == DocType.Reject).ToArray();
 			foreach (var reject in rejects) {
 				try {
@@ -188,7 +193,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			var parser = GetRejectParser(log);
 			if (parser == null)
 				return;
-			var reject = parser.CreateReject(log); 
+			var reject = parser.CreateReject(log);
 			if (reject.Lines.Count > 0) {
 				try {
 					reject.Normalize(session);
