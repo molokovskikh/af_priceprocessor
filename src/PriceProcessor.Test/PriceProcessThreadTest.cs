@@ -108,7 +108,7 @@ namespace PriceProcessor.Test
 
 			private MySqlConnection GetConnection()
 			{
-				return new MySqlConnection(ConnectionHelper.DefaultConnectionStringName);
+				return new MySqlConnection(ConnectionHelper.GetConnectionString());
 			}
 
 			public CorruptDBThread()
@@ -148,7 +148,7 @@ namespace PriceProcessor.Test
 							InnoDBByConnection = true;
 						}
 						if (!InnoDBByConnection) {
-							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConnectionHelper.DefaultConnectionStringName, "show engine innodb status");
+							var drInnoDBStatus = MySqlHelper.ExecuteDataRow(ConnectionHelper.GetConnectionString(), "show engine innodb status");
 							if ((drInnoDBStatus != null) && (drInnoDBStatus.Table.Columns.Contains("Status")))
 								InnoDBStatus = drInnoDBStatus["Status"].ToString();
 						}

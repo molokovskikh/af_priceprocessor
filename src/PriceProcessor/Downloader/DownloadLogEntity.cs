@@ -86,7 +86,7 @@ VALUES (now(), ?Host, ?PriceItemId, ?Addition, ?ShortErrorMessage, ?SourceTypeId
 				var owneConnection = false;
 				if (connection == null) {
 					owneConnection = true;
-					connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName);
+					connection = new MySqlConnection(ConnectionHelper.GetConnectionString());
 				}
 				try {
 					if (connection.State == ConnectionState.Closed)

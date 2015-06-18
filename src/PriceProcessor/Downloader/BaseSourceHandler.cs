@@ -196,7 +196,7 @@ and pd.AgencyEnabled= 1",
 
 		public void FillSourcesTable()
 		{
-			using (var connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
+			using (var connection = new MySqlConnection(ConnectionHelper.GetConnectionString())) {
 				dtSources.Clear();
 				connection.Open();
 				var adapter = new MySqlDataAdapter(GetSQLSources(), connection);

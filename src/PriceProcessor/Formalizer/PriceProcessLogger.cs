@@ -231,7 +231,7 @@ namespace Inforoom.Formalizer
 		private void LogToDb(Action<MySqlCommand> action)
 		{
 			try {
-				using (var connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
+				using (var connection = new MySqlConnection(ConnectionHelper.GetConnectionString())) {
 					connection.Open();
 					var command = new MySqlCommand("", connection);
 					action(command);

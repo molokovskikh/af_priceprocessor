@@ -131,7 +131,7 @@ namespace Inforoom.PriceProcessor.Models
 			var dtSuppliers = new DataTable();
 			var mails = mailboxes.Select(m => "'" + m.EmailAddress + "'").Implode();
 
-			using (var connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName)) {
+			using (var connection = new MySqlConnection(ConnectionHelper.GetConnectionString())) {
 				connection.Open();
 				var adapter = new MySqlDataAdapter(@"
 select

@@ -71,7 +71,7 @@ namespace Inforoom.PriceProcessor
 				return null;
 
 			var drPriceItem = MySqlHelper.ExecuteDataRow(
-				ConnectionHelper.DefaultConnectionStringName,
+				ConnectionHelper.GetConnectionString(),
 				@"select distinct
   pc.PriceCode as PriceCode,
   if(pd.CostType = 1, pc.CostCode, null) CostCode,

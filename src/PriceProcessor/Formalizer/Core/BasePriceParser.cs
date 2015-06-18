@@ -96,7 +96,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			_priceInfo = priceInfo;
 			_loggingStat = new FormLog(priceInfo);
 
-			_connection = new MySqlConnection(ConnectionHelper.DefaultConnectionStringName);
+			_connection = new MySqlConnection(ConnectionHelper.GetConnectionString());
 			dsMyDB = new DataSet();
 
 			priceItemId = _priceInfo.PriceItemId;
