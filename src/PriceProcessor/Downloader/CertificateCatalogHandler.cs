@@ -59,12 +59,13 @@ namespace Inforoom.PriceProcessor.Downloader
 							Ping();
 							ImportCatalogFile(catalogFile, source, ftpSource);
 							Ping();
-							doNotSmapLogger.Forget();
+							doNotSmapLogger.Forget(source.Id);
 						}
 					}
 					catch(Exception e) {
-						_logger.Error(String.Format("Не удалось загрузить перекодировочную таблица сертификатов {0}",
-							source.DecodeTableUrl), e);
+						doNotSmapLogger.Error(
+							String.Format("Не удалось загрузить перекодировочную таблица сертификатов {0}", source.DecodeTableUrl),
+							e, source.Id);
 					}
 				}
 			}
