@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
-		//получить последний скаченный прайс
+		//получить последний скачанный прайс
 		public static PriceProcessItem GetLastestDownloaded(ulong PriceItemId)
 		{
 			var downloadedList = list.FindAll(item => item.Downloaded && (item.PriceItemId == PriceItemId));

@@ -211,7 +211,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				File.Copy(LocalFileName, destinationFileName, true);
 
 			//вроде бы это не нужно и все происходит автоматически но на всякий случай
-			//нужно что бы последнее обращение было актуальныс что бы удалять на сервере старые файлы
+			//нужно что бы последнее обращение было актуальный что бы удалять на сервере старые файлы
 			if (File.Exists(destinationFileName))
 				File.SetLastAccessTime(destinationFileName, DateTime.Now);
 

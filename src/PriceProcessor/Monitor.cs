@@ -161,7 +161,7 @@ namespace Inforoom.PriceProcessor
 			return string.Empty;
 		}
 
-		//Остановливаем монитор
+		//Останавливаем монитор
 		public void Stop()
 		{
 			try {

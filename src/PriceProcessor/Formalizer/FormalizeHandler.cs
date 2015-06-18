@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		//Запуск обработчика
 		public override void StartWork()
 		{
-			//Получили список файлов и добавил его на обраобтку
+			//Получили список файлов и добавил его на обработку
 			foreach (var priceFile in Directory.GetFiles(Settings.Default.InboundPath)) {
 				_logger.InfoFormat("Загрузил файл {0} из очереди", priceFile);
 				AddPriceFileToList(priceFile, false);
@@ -111,7 +111,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					_logger.InfoFormat("Нитка формализации {0} не остановилась за {1} миллисекунд.", pt[i].TID, JoinTimeout);
 			}
 
-			//удяляем пулл временных папок
+			//удяляем пул временных папок
 			var _poolDirectories = Directory.GetDirectories(Path.GetTempPath(), "PPT*");
 			foreach (var _deletingDirectory in _poolDirectories)
 				if (Directory.Exists(_deletingDirectory))

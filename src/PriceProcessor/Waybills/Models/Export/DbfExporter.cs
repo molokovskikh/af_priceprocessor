@@ -99,7 +99,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("sgodn", typeof(DateTime)),
 				new DataColumn("sert") { MaxLength = 150 },
 				new DataColumn("sert_date", typeof(DateTime)),
-				new DataColumn("sert_end", typeof(DateTime)),
 				new DataColumn("prcenabnds", typeof(decimal)) {
 					ExtendedProperties = {
 						{ "presision", 12 },
@@ -180,6 +179,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("otp_cena", typeof(decimal)),
 				new DataColumn("rcena", typeof(decimal)),
 				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
+				//поле должно быть в конце из соображений обратной совместимости
+				new DataColumn("sert_end", typeof(DateTime)),
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
