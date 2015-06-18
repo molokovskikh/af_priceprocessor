@@ -35,15 +35,15 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 		protected void ParseDBF(RejectHeader reject, string filename)
 		{
 			var data = Dbf.Load(filename);
-			for (var i = 1; i <= data.Rows.Count; i++)
+			for (var i = 0; i < data.Rows.Count; i++)
 			{
 				var rejectLine = new RejectLine();
 				reject.Lines.Add(rejectLine);
-				rejectLine.Product = data.Rows[0][10].ToString();
-				rejectLine.Code = data.Rows[0][9].ToString();
-				rejectLine.Cost = NullableConvert.ToDecimal(data.Rows[0][13].ToString());
-				rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[0][14].ToString());
-				var rejected = NullableConvert.ToUInt32(data.Rows[0][15].ToString());
+				rejectLine.Product = data.Rows[i][10].ToString();
+				rejectLine.Code = data.Rows[i][9].ToString();
+				rejectLine.Cost = NullableConvert.ToDecimal(data.Rows[i][13].ToString());
+				rejectLine.Ordered = NullableConvert.ToUInt32(data.Rows[i][14].ToString());
+				var rejected = NullableConvert.ToUInt32(data.Rows[i][15].ToString());
 				rejectLine.Rejected = rejected != null ? rejected.Value : 0;
 			}
 		}
