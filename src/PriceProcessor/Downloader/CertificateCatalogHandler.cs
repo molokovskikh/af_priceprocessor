@@ -32,6 +32,13 @@ namespace Inforoom.PriceProcessor.Downloader
 
 	public class CertificateCatalogHandler : AbstractHandler
 	{
+		private MemorableLogger doNotSmapLogger;
+
+		public CertificateCatalogHandler()
+		{
+			doNotSmapLogger = new MemorableLogger(_logger);
+		}
+
 		public override void ProcessData()
 		{
 			using (new SessionScope()) {
@@ -42,28 +49,24 @@ namespace Inforoom.PriceProcessor.Downloader
 						continue;
 
 					try {
-						DownloadFile(source, ftpSource);
+						using(var cleaner = new FileCleaner()) {
+							Cleanup();
+							Ping();
+							var catalogFile = GetCatalogFile(source, cleaner);
+							if (catalogFile == null)
+								continue;
+							cleaner.Watch(catalogFile.LocalFileName);
+							Ping();
+							ImportCatalogFile(catalogFile, source, ftpSource);
+							Ping();
+							doNotSmapLogger.Forget();
+						}
 					}
 					catch(Exception e) {
 						_logger.Error(String.Format("Не удалось загрузить перекодировочную таблица сертификатов {0}",
 							source.DecodeTableUrl), e);
 					}
 				}
-			}
-		}
-
-		private void DownloadFile(CertificateSource source, IRemoteFtpSource ftpSource)
-		{
-			using(var cleaner = new FileCleaner()) {
-				Cleanup();
-				Ping();
-				var catalogFile = GetCatalogFile(source, cleaner);
-				if (catalogFile == null)
-					return;
-				cleaner.Watch(catalogFile.LocalFileName);
-				Ping();
-				ImportCatalogFile(catalogFile, source, ftpSource);
-				Ping();
 			}
 		}
 
