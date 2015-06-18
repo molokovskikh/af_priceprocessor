@@ -19,6 +19,8 @@ namespace PriceProcessor.Test
 		public void Setup()
 		{
 			XmlConfigurator.Configure();
+			ConnectionHelper.DefaultConnectionStringName = "db";
+			With.DefaultConnectionStringName = "db";
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			With.DefaultConnectionStringName = ConnectionHelper.DefaultConnectionStringName;
 			//мы не должны обращаться к настроящему ftp, вместо этого нужно использовать директорию для эмуляции
