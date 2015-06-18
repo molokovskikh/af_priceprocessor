@@ -81,6 +81,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string CertificatesDate { get; set; }
 
 		/// <summary>
+		/// Срок действия сертификата, дата окончания
+		/// </summary>
+		[Property]
+		public DateTime? CertificatesEndDate { get; set; }
+
+		/// <summary>
 		/// Орган, выдавший документа качества
 		/// </summary>
 		[Property]

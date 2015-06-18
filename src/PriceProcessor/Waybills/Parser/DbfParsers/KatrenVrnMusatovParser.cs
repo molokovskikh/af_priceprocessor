@@ -27,13 +27,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierPriceMarkup, "MARGIN")
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.RegistryCost, "REESTR")
-				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.Country, "COUNTRY")
 				.Line(l => l.Producer, "PRODUSER")
 				.Line(l => l.ProducerCostWithoutNDS, "PPRICEWT")
 				.Line(l => l.VitallyImportant, "GV")
 				.Line(l => l.NdsAmount, "NDSSUM")
 				.Line(l => l.Amount, "SUM")
+				.Line(l => l.Certificates, "SERT")
+				.Line(l => l.CertificatesEndDate, "DATES")
+				.Line(l => l.CertificateAuthority, "SERTWHO")
 				.ToDocument(document, data);
 			return document;
 		}

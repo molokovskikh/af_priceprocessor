@@ -53,10 +53,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				DbfExporter.SaveProtek(document, filename);
 			}
 			else if (type == WaybillFormat.LessUniversalDbf) {
-				DbfExporter.SaveLessUniversal(document, filename);
+				DbfExporter.SaveUniversalV1(document, filename);
 			}
 			else if (type == WaybillFormat.UniversalDbf) {
-				DbfExporter.SaveUniversalDbf(document, filename);
+				DbfExporter.SaveUniversalV2(document, filename);
 			}
 			else if (type == WaybillFormat.LipetskFarmacia) {
 				document.Log.IsFake = false;

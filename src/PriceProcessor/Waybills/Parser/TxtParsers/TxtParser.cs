@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
@@ -68,7 +69,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 		public DateTime? DocumentDate
 		{
-			get { return ParseHelper.GetDateTime(GetValue(DocumentDateHeaders)); }
+			get { return NullableConvert.ToDateTime(GetValue(DocumentDateHeaders)); }
 		}
 
 		public string ProviderDocumentId

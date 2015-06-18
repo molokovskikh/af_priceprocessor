@@ -24,6 +24,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.Period, "GOD_TO")
 				.Line(l => l.Certificates, "SERT_VS")
+				.Line(l => l.CertificateAuthority, "SERT_FIRM")
+				.Line(l => l.CertificatesDate, "SERT_DATE")
 				.Line(l => l.RegistryCost, "PRICE_GR")
 				.Line(l => l.VitallyImportant, "GVLS")
 				.Line(l => l.SerialNumber, "SER");

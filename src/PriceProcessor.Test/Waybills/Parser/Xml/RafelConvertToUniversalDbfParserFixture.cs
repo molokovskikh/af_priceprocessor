@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				Name = "Тестовый Адрес",
 				Id = 2321321
 			};
-			DbfExporter.SaveUniversalDbf(doc, "ПР-Д-КЗ043809.dbf");
+			DbfExporter.SaveUniversalV2(doc, "ПР-Д-КЗ043809.dbf");
 			var data = Dbf.Load("ПР-Д-КЗ043809.dbf");
 			Assert.That(data.Rows[0]["sgodn"], Is.EqualTo(DBNull.Value));
 			Assert.That(data.Rows[0]["przv_post"], Is.EqualTo("ООО \"Медполимерторг\""));

@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(DbfExporter));
 
-		public static void SaveLessUniversal(Document document, string filename)
+		public static void SaveUniversalV1(Document document, string filename)
 		{
 			var table = new DataTable();
 
@@ -78,7 +78,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			Dbf.Save(table, filename);
 		}
 
-		public static void SaveUniversalDbf(Document document, string file)
+		public static void SaveUniversalV2(Document document, string file)
 		{
 			var table = new DataTable();
 			table.Columns.AddRange(new[] {
@@ -99,6 +99,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("sgodn", typeof(DateTime)),
 				new DataColumn("sert") { MaxLength = 150 },
 				new DataColumn("sert_date", typeof(DateTime)),
+				new DataColumn("sert_end", typeof(DateTime)),
 				new DataColumn("prcenabnds", typeof(decimal)) {
 					ExtendedProperties = {
 						{ "presision", 12 },
@@ -231,6 +232,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					nullPeriod = period;
 				}
 				row.SetField("sert_date", nullPeriod);
+				row.SetField("sert_end", line.CertificatesEndDate);
 
 				row.SetField("prcenabnds", line.ProducerCostWithoutNDS);
 				row.SetField("gr_cena", line.RegistryCost);

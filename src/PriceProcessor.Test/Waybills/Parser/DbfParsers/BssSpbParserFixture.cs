@@ -33,6 +33,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(141.88));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(7.55));
 			Assert.That(line.VitallyImportant, Is.True);
+			Assert.AreEqual("ФМ08 ОЦКК Москва", line.CertificateAuthority);
+			Assert.AreEqual("28.12.2009", line.CertificatesDate);
 		}
 	}
 }

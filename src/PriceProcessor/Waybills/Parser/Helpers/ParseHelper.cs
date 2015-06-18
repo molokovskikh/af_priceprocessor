@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.Helpers
 {
@@ -49,14 +50,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.Helpers
 			int value;
 			if (!String.IsNullOrEmpty(val) && int.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
 				return (value != 0);
-			return null;
-		}
-
-		public static DateTime? GetDateTime(string val)
-		{
-			DateTime value;
-			if (!String.IsNullOrEmpty(val) && DateTime.TryParse(val, out value))
-				return value;
 			return null;
 		}
 
