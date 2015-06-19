@@ -38,7 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			}
 			catch(Exception e)
 			{
-				Logger.WarnFormat("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+				var err = string.Format("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+				Logger.Warn(err, e);
 				return;
 			}
 
