@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -34,7 +35,17 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 		/// </summary>
 		protected void ParseDBF(RejectHeader reject, string filename)
 		{
-			var data = Dbf.Load(filename);
+			DataTable data;
+			try
+			{
+				data = Dbf.Load(filename);
+			}
+			catch (Exception e)
+			{
+				var err = string.Format("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+				Logger.Warn(err, e);
+				return;
+			}
 			for (var i = 0; i < data.Rows.Count; i++)
 			{
 				var rejectLine = new RejectLine();

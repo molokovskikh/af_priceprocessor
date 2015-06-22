@@ -37,7 +37,16 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			HSSFWorkbook hssfwb;
 			using (FileStream file = new FileStream(filename, FileMode.Open, FileAccess.Read))
 			{
-				hssfwb = new HSSFWorkbook(file);
+				try
+				{
+					hssfwb = new HSSFWorkbook(file);
+				}
+				catch (Exception e)
+				{
+					var err = string.Format("Не удалось получить файл с отказами '{0}' для лога документа {1}", filename, reject.Log.Id);
+					Logger.Warn(err, e);
+					return;
+				}
 			}
 
 			ISheet sheet = hssfwb.GetSheetAt(0);
