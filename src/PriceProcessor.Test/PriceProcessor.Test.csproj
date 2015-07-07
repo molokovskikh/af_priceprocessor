@@ -407,9 +407,10 @@
     <Compile Include="Waybills\Parser\Txt\Shafiev_KalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UkonDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\UkonParserFixture.cs" />
-    <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
     <Compile Include="Waybills\Rejects\PulsVoronezh15365RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Yarfarma14960RejectParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Xls\VectorXlsParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\ProtekRTP3287RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\ZdravServis1581RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren149RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren4138RejectParserFixture.cs" />
