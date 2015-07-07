@@ -254,6 +254,7 @@
     </Compile>
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\PulsVoronezh15365RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\Yarfarma14960RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\ZdravServis1581RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren149RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren4138RejectParser.cs" />
