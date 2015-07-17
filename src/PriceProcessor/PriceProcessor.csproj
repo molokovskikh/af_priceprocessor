@@ -253,6 +253,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Waybills\Rejects\Parser\Profitmed1962RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\Katren3492RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\SiaInternationalTula5946RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Protek2777RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\PulsVoronezh15365RejectParser.cs" />

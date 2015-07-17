@@ -39,9 +39,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 				reject.Lines.Add(rejectLine);
 				rejectLine.Product = data.Rows[i][1].ToString();
 				rejectLine.Code = data.Rows[i][0].ToString();
-				var kolvo = data.Rows[i][4].ToString();
-				rejectLine.Ordered = NullableConvert.ToUInt32(kolvo.Replace(",", "").Replace("0", ""));
-				var rejected = NullableConvert.ToUInt32(kolvo.Replace(",", "").Replace("0", ""));
+				var kolvo = data.Rows[i][4].ToString().Split(',');
+				rejectLine.Ordered = NullableConvert.ToUInt32(kolvo[0]);
+				var rejected = NullableConvert.ToUInt32(kolvo[0]);
 				rejectLine.Rejected = rejected != null ? rejected.Value : 0;
 			}	
 		}
