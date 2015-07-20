@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 
 			//Выбираем строку и проверяем правильно ли все распарсилось
 			var line = reject.Lines[0];
-			Assert.That(line.Product, Is.EqualTo("Цианокобаламин, 500 мкг амп.№10"));
+			Assert.That(line.Product, Is.EqualTo("Цианокобаламин, 500 мкг амп.№10*"));
 			Assert.That(line.Ordered, Is.EqualTo(5));
 			Assert.That(line.Rejected, Is.EqualTo(5));
 		}

@@ -1,9 +1,11 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
+using NHibernate.Mapping;
 
 namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 {
@@ -34,9 +36,13 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 				{
 					var rejectLine = new RejectLine();
 					reject.Lines.Add(rejectLine);
-					var splat = line.Split('*');
-					rejectLine.Product = splat[0];
-					var ordered = splat[1].Split('>');
+					var splat = line.Trim().Split(' ');
+					var splatCountLast = splat.Count() - 1;
+					var splatLast = splat[splatCountLast];
+					splat[splatCountLast] = "";
+					var product = String.Join(" ", splat, 0, splat.Count());
+					rejectLine.Product = product.Trim();
+					var ordered = splatLast.Split('>');
 					rejectLine.Ordered = NullableConvert.ToUInt32(ordered[0].Replace("-", ""));
 					var received = NullableConvert.ToUInt32(ordered[1]);
 					var rejected = rejectLine.Ordered - received;
