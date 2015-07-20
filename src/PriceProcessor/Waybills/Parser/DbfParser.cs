@@ -10,6 +10,7 @@ using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using Inforoom.PriceProcessor.Waybills.Parser.Helpers;
+using NPOI.HSSF.Model;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
@@ -101,7 +102,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					if (value is DBNull)
 						continue;
 
-					var docline = line as DocumentLine;
+					
 					object newvalue;
 					try {
 						newvalue = ConvertIfNeeded(value, propertyInfo.PropertyType);
@@ -109,7 +110,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					catch (OverflowException e) {
 						//Логируем ошибку переполнения поля
 						var typename = propertyInfo.PropertyType.FullName;
-						var clientcode = docline.Document.ClientCode.ToString();
+						var docline = line as DocumentLine;
+						var invoice = line as Invoice;
+						var clientcode = docline != null ? docline.Document.ClientCode.ToString() : invoice.Document.ClientCode.ToString();
 						var err = string.Format("Клиент: {2} Ошибка переполнения типа {0} для значения {1}", typename, value, clientcode);
 						var logger = log4net.LogManager.GetLogger(GetType());
 						logger.Warn(err, e);
