@@ -253,6 +253,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Waybills\Rejects\Parser\AralPlus44RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\Parser\GodovalovPerm7497RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Norman163RejectParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Profitmed1962RejectParser.cs" />
