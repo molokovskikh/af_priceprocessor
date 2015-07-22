@@ -29,11 +29,14 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 
 		/// <summary>
 		/// Парсер для формата файла TXT
+		/// Типов отказов формата txt два 
 		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
 			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
 				string file = reader.ReadToEnd();
+				//если в файле содержится слово HEAD, то это первый тип файла формата txt
+				//если в файле содержится слово Ваша заявка, то это второй тип файла формата txt
 				if (file.Contains("HEAD")) {
 					var parts = file.Split(new[] { "\r\n" }, StringSplitOptions.None);
 					var rejectFound = false;
