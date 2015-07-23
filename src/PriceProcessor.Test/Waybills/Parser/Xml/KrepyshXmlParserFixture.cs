@@ -92,5 +92,25 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].CertificatesDate, Is.EqualTo("07.05.2013"));
 			Assert.That(document.Lines[0].Period, Is.EqualTo("01.03.2015"));
 		}
+
+		/// <summary>
+		/// Для задачи http://redmine.analit.net/issues/36853
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00003044799_36_1.xml");
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("00003044799/36"));
+			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("23.07.2015")));
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("2341"));
+			Assert.That(line.Product, Is.EqualTo("Пояс послеоперационн  разм 2 Латвия"));
+			Assert.That(line.Producer, Is.EqualTo("Tonus Elast ООО"));
+			Assert.That(line.Quantity, Is.EqualTo(1));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ИМ32.Д00281"));
+			Assert.That(line.Period, Is.EqualTo("01.02.2019"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("31.07.2012"));
+			Assert.That(line.EAN13, Is.EqualTo("4750283035089"));
+		}
 	}
 }
