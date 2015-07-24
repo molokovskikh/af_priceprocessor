@@ -34,19 +34,21 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 				string line;
 				while ((line = reader.ReadLine()) != null)
 				{
-					var rejectLine = new RejectLine();
-					reject.Lines.Add(rejectLine);
-					var splat = line.Trim().Split(' ');
-					var splatCountLast = splat.Count() - 1;
-					var splatLast = splat[splatCountLast];
-					splat[splatCountLast] = "";
-					var product = String.Join(" ", splat, 0, splat.Count());
-					rejectLine.Product = product.Trim();
-					var ordered = splatLast.Split('>');
-					rejectLine.Ordered = NullableConvert.ToUInt32(ordered[0].Replace("-", ""));
-					var received = NullableConvert.ToUInt32(ordered[1]);
-					var rejected = rejectLine.Ordered - received;
-					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					if (line != "") {
+						var rejectLine = new RejectLine();
+						reject.Lines.Add(rejectLine);
+						var splat = line.Trim().Split(' ');
+						var splatCountLast = splat.Count() - 1;
+						var splatLast = splat[splatCountLast];
+						splat[splatCountLast] = "";
+						var product = String.Join(" ", splat, 0, splat.Count());
+						rejectLine.Product = product.Trim();
+						var ordered = splatLast.Split('>');
+						rejectLine.Ordered = NullableConvert.ToUInt32(ordered[0].Replace("-", ""));
+						var received = NullableConvert.ToUInt32(ordered[1]);
+						var rejected = rejectLine.Ordered - received;
+						rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					}
 				}
 			}
 		}
