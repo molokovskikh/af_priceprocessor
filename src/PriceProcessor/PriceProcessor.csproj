@@ -252,6 +252,7 @@
     <Compile Include="ProjectInstaller.Designer.cs">
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
+    <Compile Include="Waybills\Rejects\Parser\Astika12799RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\AralPlus44RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\SiaAstrakhan12423RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\GodovalovPerm7497RejectParser.cs" />
