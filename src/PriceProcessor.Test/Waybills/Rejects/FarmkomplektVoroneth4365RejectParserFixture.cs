@@ -39,5 +39,27 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Ordered, Is.EqualTo(2));
 			Assert.That(line.Rejected, Is.EqualTo(2));
 		}
+
+		/// <summary>
+		/// Для другого вида файла
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("40287816_Фармкомплект-Воронеж(Отказ по заявке Аптека 3 ул. Садовая).txt");
+			var parser = new FarmkomplektVoronezh4365RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(1));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+
+			//Выбираем строку и проверяем правильно ли все распарсилось
+			var line = reject.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Фромилид уно 500мг №14 таб.пролонг.д-я п/о  KRKA"));
+			Assert.That(line.Ordered, Is.EqualTo(1));
+			Assert.That(line.Rejected, Is.EqualTo(1));
+		}
 	}
 }

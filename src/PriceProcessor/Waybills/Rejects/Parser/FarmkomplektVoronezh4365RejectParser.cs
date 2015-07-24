@@ -39,9 +39,13 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не может парсить данный файл из-за проблемы с кодировкой", filename, GetType().Name);
 				else {
 					var parts = file.Split(new[] { "\r\n" }, StringSplitOptions.None);
-					var rejectFound = true;
 					for(var i = 1; i < parts.Count(); i++)
 					{
+						var rejectFound = true;
+
+						if (parts[i] == "Спасибо")
+							rejectFound = false;
+
 						if (parts[i] == "")
 							rejectFound = false;
 

@@ -39,5 +39,27 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Ordered, Is.EqualTo(5));
 			Assert.That(line.Rejected, Is.EqualTo(5));
 		}
+
+		/// <summary>
+		/// Для файла,который начинается с пустой строки
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("40281484_Арал-Плюс(19711_Терешкина Любовь Михайловна_ г. Калуга (дп _51410)9081432df).txt");
+			var parser = new AralPlus44RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(1));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+
+			//Выбираем строку и проверяем правильно ли все распарсилось
+			var line = reject.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Фуросемид, 40 мг тб.№50*"));
+			Assert.That(line.Ordered, Is.EqualTo(10));
+			Assert.That(line.Rejected, Is.EqualTo(10));
+		}
 	}
 }
