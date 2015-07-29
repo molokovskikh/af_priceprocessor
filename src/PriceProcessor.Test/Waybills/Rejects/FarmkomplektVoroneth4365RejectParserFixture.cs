@@ -20,6 +20,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 	{
 		/// <summary>
 		/// Тест к задаче http://redmine.analit.net/issues/33351
+		/// Для формата txt
 		/// </summary>
 		[Test]
 		public void Parse()
@@ -41,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 		}
 
 		/// <summary>
-		/// Для другого вида файла
+		/// Для другого вида файла txt
 		/// </summary>
 		[Test]
 		public void Parse2()
@@ -60,6 +61,50 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Product, Is.EqualTo("Фромилид уно 500мг №14 таб.пролонг.д-я п/о  KRKA"));
 			Assert.That(line.Ordered, Is.EqualTo(1));
 			Assert.That(line.Rejected, Is.EqualTo(1));
+		}
+
+		/// <summary>
+		/// Для другого вида файла txt
+		/// </summary>
+		[Test]
+		public void Parse3()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("38390094_Фармкомплект-Воронеж(Отказ по заявке Фармакор).txt");
+			var parser = new FarmkomplektVoronezh4365RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(1));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+
+			//Выбираем строку и проверяем правильно ли все распарсилось
+			var line = reject.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Виферон-1 150тыс. МЕ №10 супп.рект.  Ферон"));
+			Assert.That(line.Ordered, Is.EqualTo(3));
+			Assert.That(line.Rejected, Is.EqualTo(3));
+		}
+
+		/// <summary>
+		/// Для другого вида файла txt
+		/// </summary>
+		[Test]
+		public void Parse4()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("38458654_Фармкомплект-Воронеж(Отказ по заявке Аптека).txt");
+			var parser = new FarmkomplektVoronezh4365RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(1));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+
+			//Выбираем строку и проверяем правильно ли все распарсилось
+			var line = reject.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("Цефотаксим 1г пор. д/ин в/в и в/м фл.  Красфарма"));
+			Assert.That(line.Ordered, Is.EqualTo(20));
+			Assert.That(line.Rejected, Is.EqualTo(20));
 		}
 	}
 }

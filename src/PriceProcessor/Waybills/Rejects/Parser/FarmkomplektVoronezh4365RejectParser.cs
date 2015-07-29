@@ -26,6 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 
 		/// <summary>
 		/// Парсер для формата файла TXT
+		/// для формата txt много различных типов файлов
 		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
@@ -46,11 +47,18 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 						if (parts[i] == "Спасибо")
 							rejectFound = false;
 
+						if(parts[i].Contains("\r"))
+							rejectFound = false;
+
 						if (parts[i] == "")
+							rejectFound = false;
+
+						if (parts[i].Contains("аптека"))
 							rejectFound = false;
 
 						if (!rejectFound)
 							continue;
+
 
 						var rejectLine = new RejectLine();
 						reject.Lines.Add(rejectLine);
@@ -59,7 +67,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 						rejectLine.Product = product;
 						var splat2 = splat[1].Split(new[] { " отпущено " }, StringSplitOptions.None);
 						var overed = NullableConvert.ToUInt32(splat2[0]);
-						var released = NullableConvert.ToUInt32(splat2[1]);
+						var released = NullableConvert.ToUInt32(splat2[1].Replace(";", ""));
 						rejectLine.Ordered = overed;
 						var rejected = overed - released;
 						rejectLine.Rejected = rejected != null ? rejected.Value : 0;
