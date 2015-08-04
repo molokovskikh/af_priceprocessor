@@ -41,5 +41,21 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Ordered, Is.EqualTo(2));
 			Assert.That(line.Rejected, Is.EqualTo(2));
 		}
+
+		/// <summary>
+		/// Для формата OTK, в котором нет отказов
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("38373822_Катрен(katren_1094343).otk");
+			var parser = new Katren3772RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(0));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+		}
 	}
 }

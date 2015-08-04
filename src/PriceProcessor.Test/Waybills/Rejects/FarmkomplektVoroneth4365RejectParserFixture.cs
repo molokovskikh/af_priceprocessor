@@ -106,5 +106,21 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Ordered, Is.EqualTo(20));
 			Assert.That(line.Rejected, Is.EqualTo(20));
 		}
+
+		/// <summary>
+		/// Для формата TXT с опечаткой в строке отказа
+		/// </summary>
+		[Test]
+		public void Parse5()
+		{
+			//Создаем лог, а затем отказ
+			var log = CreateRejectLog("38407196_Фармкомплект-Воронеж(Отказ по заявке Фармакор 179 Курск_пр-т Дружбы 7).txt");
+			var parser = new FarmkomplektVoronezh4365RejectParser();
+			var reject = parser.CreateReject(log);
+
+			//Проверяем правильность парсинга			
+			Assert.That(reject.Lines.Count, Is.EqualTo(0));
+			Assert.That(parser.BadLines.Count, Is.EqualTo(1));
+		}
 	}
 }

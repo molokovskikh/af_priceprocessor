@@ -30,49 +30,54 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 		/// </summary>
 		protected void ParseTXT(RejectHeader reject, string filename)
 		{
-			using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251)))
-			{
-				//считываем весь текст из файла и проверяем на наличие слова Отказы
-				//из-за проблемы с кодировкой в некоторых файлах
-				//это сделано на случай страховки,если вдруг текст в файле все же не будет считываться правильно
-				string file = reader.ReadToEnd();
-				if (!file.Contains("Отказы"))
-					Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не может парсить данный файл из-за проблемы с кодировкой", filename, GetType().Name);
-				else {
-					var parts = file.Split(new[] { "\r\n" }, StringSplitOptions.None);
-					for(var i = 1; i < parts.Count(); i++)
-					{
-						var rejectFound = true;
+			try {
+				using (var reader = new StreamReader(File.OpenRead(filename), Encoding.GetEncoding(1251))) {
+					//считываем весь текст из файла и проверяем на наличие слова Отказы
+					//из-за проблемы с кодировкой в некоторых файлах
+					//это сделано на случай страховки,если вдруг текст в файле все же не будет считываться правильно
+					string file = reader.ReadToEnd();
+					if (!file.Contains("Отказы"))
+						Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не может парсить данный файл из-за проблемы с кодировкой", filename, GetType().Name);
+					else {
+						var parts = file.Split(new[] { "\r\n" }, StringSplitOptions.None);
+						for (var i = 1; i < parts.Count(); i++) {
+							var rejectFound = true;
 
-						if (parts[i] == "Спасибо")
-							rejectFound = false;
+							if (parts[i] == "Спасибо")
+								rejectFound = false;
 
-						if(parts[i].Contains("\r"))
-							rejectFound = false;
+							if (parts[i].Contains("\r"))
+								rejectFound = false;
 
-						if (parts[i] == "")
-							rejectFound = false;
+							if (parts[i] == "")
+								rejectFound = false;
 
-						if (parts[i].Contains("аптека"))
-							rejectFound = false;
+							if (parts[i].Contains("аптека"))
+								rejectFound = false;
 
-						if (!rejectFound)
-							continue;
+							if (!rejectFound)
+								continue;
 
 
-						var rejectLine = new RejectLine();
-						reject.Lines.Add(rejectLine);
-						var splat = parts[i].Split(new[] { "; заказано " }, StringSplitOptions.None);
-						var product = splat[0];
-						rejectLine.Product = product;
-						var splat2 = splat[1].Split(new[] { " отпущено " }, StringSplitOptions.None);
-						var overed = NullableConvert.ToUInt32(splat2[0]);
-						var released = NullableConvert.ToUInt32(splat2[1].Replace(";", ""));
-						rejectLine.Ordered = overed;
-						var rejected = overed - released;
-						rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+							var rejectLine = new RejectLine();
+							reject.Lines.Add(rejectLine);
+							var splat = parts[i].Split(new[] { "; заказано " }, StringSplitOptions.None);
+							var product = splat[0];
+							rejectLine.Product = product;
+							var splat2 = splat[1].Split(new[] { " отпущено " }, StringSplitOptions.None);
+							var overed = NullableConvert.ToUInt32(splat2[0]);
+							var released = NullableConvert.ToUInt32(splat2[1].Replace(";", ""));
+							rejectLine.Ordered = overed;
+							var rejected = overed - released;
+							rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+						}
 					}
 				}
+			}
+			catch (Exception e)
+			{
+				var err = string.Format("Файл '{0}' не может быть распарсен, так как парсер {1} не может парсить данный файл так как он либо иного типа,либо с опечаткой", filename, GetType().Name);
+				Logger.Warn(err, e);
 			}
 		}
 	}
