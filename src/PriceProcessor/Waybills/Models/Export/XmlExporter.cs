@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -64,6 +65,50 @@ group by ai.SupplierDeliveryId")
 				writer.WriteEndElement(); //SUPPLY
 
 				writer.WriteEndElement(); //PACKET
+			}
+		}
+
+		//формат для импорта в ИНПРО-Аптека
+		public static void SaveInpro(Document doc, string filename)
+		{
+			var xmlsettings = new XmlWriterSettings { Encoding = Encoding.GetEncoding(1251) };
+			using (var writer = XmlWriter.Create(filename, xmlsettings)) {
+				writer.WriteStartElement("DOCUMENTS");
+				writer.WriteStartElement("DOCUMENT");
+				writer.WriteAttributeString("type", "АПТЕКА_ПРИХОД");
+				writer.WriteStartElement("HEADER");
+				writer.WriteAttributeString("firm_name", doc.Log.Supplier.FullName);
+				writer.WriteAttributeString("client_name", doc.Address.Client.FullName);
+				writer.WriteAttributeString("doc_number", doc.ProviderDocumentId);
+				writer.WriteAttributeString("factura_number", doc.Invoice?.InvoiceNumber ?? doc.ProviderDocumentId);
+				writer.WriteAttributeString("doc_date", doc.DocumentDate?.ToString("dd.MM.yyyy"));
+				writer.WriteAttributeString("pay_date", doc.DocumentDate?.ToString("dd.MM.yyyy"));
+				writer.WriteAttributeString("doc_sum",
+					(doc?.Invoice?.Amount ?? doc.Lines.Sum(x => x.Amount))?.ToString(CultureInfo.InvariantCulture));
+				writer.WriteEndElement();
+				foreach (var line in doc.Lines) {
+					writer.WriteStartElement("DETAIL");
+					writer.WriteAttributeString("ean13_code", line.EAN13);
+					writer.WriteAttributeString("tov_code", line.Code);
+					writer.WriteAttributeString("tov_name", line.Product);
+					writer.WriteAttributeString("maker_name", line.Producer);
+					writer.WriteAttributeString("tov_godn", line.Period);
+					writer.WriteAttributeString("tov_seria", line.SerialNumber);
+					writer.WriteAttributeString("kolvo", line.Quantity?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteAttributeString("maker_price", line.ProducerCost?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteAttributeString("firm_price", line.SupplierCostWithoutNDS?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteAttributeString("firm_nds", line.NdsAmount?.ToString());
+					writer.WriteAttributeString("firm_sum", line.Amount?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteAttributeString("firm_nac", line.SupplierPriceMarkup?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteAttributeString("gtd_country", line.Country);
+					writer.WriteAttributeString("gtd_number", line.BillOfEntryNumber);
+					writer.WriteAttributeString("sert_number", line.Certificates);
+					writer.WriteAttributeString("sert_godn", line.CertificatesEndDate?.ToString("dd.MM.yyyy"));
+					writer.WriteAttributeString("firm_nds_orig", line.NdsAmount?.ToString(CultureInfo.InvariantCulture));
+					writer.WriteEndElement();
+				}
+				writer.WriteEndElement();//DOCUMENT
+				writer.WriteEndElement();//DOCUMENTS
 			}
 		}
 	}

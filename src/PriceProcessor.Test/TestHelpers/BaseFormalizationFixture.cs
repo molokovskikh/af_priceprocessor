@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.TestHelpers
 		protected bool Downloaded;
 
 		[SetUp]
-		public void Setup()
+		public void BaseSetup()
 		{
 			Downloaded = false;
 			formalizer = null;

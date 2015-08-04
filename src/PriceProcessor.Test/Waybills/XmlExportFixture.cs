@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -18,8 +19,8 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Export_xml()
 		{
-			var supplier = TestSupplier.CreateNaked();
-			var client = TestClient.CreateNaked();
+			var supplier = TestSupplier.CreateNaked(session);
+			var client = TestClient.CreateNaked(session);
 			var settings = session.Load<WaybillSettings>(client.Id);
 			settings.AssortimentPriceId = supplier.Prices[0].Id;
 			settings.WaybillConvertFormat = WaybillFormat.InfoDrugstoreXml;
@@ -58,6 +59,41 @@ namespace PriceProcessor.Test.Waybills
   </SUPPLY>
 </PACKET>";
 			Assert.AreEqual(xml, doc.ToString());
+		}
+
+		[Test]
+		public void Export_inpro()
+		{
+			var doc = new Document(new DocumentReceiveLog(new Supplier { FullName = "ООО \"Органика\"" }, new Address(new Client {
+				FullName = "ИП Бокова А.Б."
+			}))) {
+				ProviderDocumentId = "О-341720",
+				DocumentDate = new DateTime(2015, 07, 14)
+			};
+			doc.Lines.Add(new DocumentLine {
+				Product = "Ибуклин(таб. 400 мг+325 мг №10) Др.Реддис Лабораториес Лтд-Индия",
+				Producer = "Др.Реддис Лабораториес Лтд",
+				Period = "01.01.2020",
+				SerialNumber = "A500178",
+				Quantity = 10,
+				ProducerCost = 78.84m,
+				SupplierCostWithoutNDS = 80.35m,
+				NdsAmount = 80.30m,
+				Amount = 883.80m,
+				SupplierPriceMarkup = 1.915m,
+				Country = "Индия",
+				BillOfEntryNumber = "10002010/310315/0015516/1",
+				Certificates = "РОСС IN.ФМ08.Д57196",
+				CertificatesEndDate = new DateTime(2016, 02, 01),
+				Code = "607298",
+				EAN13 = "8901148232037",
+			});
+			XmlExporter.SaveInpro(doc, "test.xml");
+			var text = File.ReadAllText("test.xml", Encoding.GetEncoding(1251));
+			Assert.AreEqual("<?xml version=\"1.0\" encoding=\"windows-1251\"?><DOCUMENTS><DOCUMENT type=\"АПТЕКА_ПРИХОД\">" +
+				"<HEADER firm_name=\"ООО &quot;Органика&quot;\" client_name=\"ИП Бокова А.Б.\" doc_number=\"О-341720\" factura_number=\"О-341720\" doc_date=\"14.07.2015\" pay_date=\"14.07.2015\" doc_sum=\"883.80\" />" +
+				"<DETAIL ean13_code=\"8901148232037\" tov_code=\"607298\" tov_name=\"Ибуклин(таб. 400 мг+325 мг №10) Др.Реддис Лабораториес Лтд-Индия\" maker_name=\"Др.Реддис Лабораториес Лтд\" tov_godn=\"01.01.2020\" tov_seria=\"A500178\" kolvo=\"10\" maker_price=\"78.84\" firm_price=\"80.35\" firm_nds=\"80,30\" firm_sum=\"883.80\" firm_nac=\"1.915\" gtd_country=\"Индия\" gtd_number=\"10002010/310315/0015516/1\" sert_number=\"РОСС IN.ФМ08.Д57196\" sert_godn=\"01.02.2016\" firm_nds_orig=\"80.30\" />" +
+				"</DOCUMENT></DOCUMENTS>", text);
 		}
 	}
 }
