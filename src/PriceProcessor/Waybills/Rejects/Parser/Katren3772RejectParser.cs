@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Castle.Core.Internal;
 using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using NHibernate.Mapping;
@@ -38,14 +39,17 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 				string line;
 				while ((line = reader.ReadLine()) != null)
 				{
-					var rejectLine = new RejectLine();
-					reject.Lines.Add(rejectLine);
-					var splat = line.Trim().Split(new[] { "\t" }, StringSplitOptions.None);
-					rejectLine.Product = splat[1];
-					rejectLine.Code = splat[0];
-					rejectLine.Ordered = NullableConvert.ToUInt32(splat[2]);
-					var rejected = NullableConvert.ToUInt32(splat[2]);
-					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					//для файлов в которых нет отказов и присутствует пустая строка
+					if (!line.IsNullOrEmpty()) {
+						var rejectLine = new RejectLine();
+						reject.Lines.Add(rejectLine);
+						var splat = line.Trim().Split(new[] { "\t" }, StringSplitOptions.None);
+						rejectLine.Product = splat[1];
+						rejectLine.Code = splat[0];
+						rejectLine.Ordered = NullableConvert.ToUInt32(splat[2]);
+						var rejected = NullableConvert.ToUInt32(splat[2]);
+						rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					}
 				}
 				}
 			}
