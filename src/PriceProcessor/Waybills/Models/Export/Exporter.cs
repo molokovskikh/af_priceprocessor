@@ -14,7 +14,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		LessUniversalDbf = 3,
 		UniversalDbf = 4,
 		InfoDrugstoreXml = 5,
-		LipetskFarmacia = 6
+		LipetskFarmacia = 6,
+		InproXml = 7,
 	}
 
 	public class Exporter
@@ -66,6 +67,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				using(var session = SessionHelper.GetSessionFactory().OpenSession())
 					XmlExporter.SaveInfoDrugstore(session, settings, document, filename);
 			}
+			else if (type == WaybillFormat.InproXml)
+				XmlExporter.SaveInpro(document, filename);
 			else {
 				using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
 					using (var sw = new StreamWriter(fs, Encoding.GetEncoding(1251))) {
