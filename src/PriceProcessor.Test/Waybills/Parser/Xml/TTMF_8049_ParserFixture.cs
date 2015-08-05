@@ -16,7 +16,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var doc = WaybillParser.Parse(@"..\..\Data\Waybills\TTMF_3987_20121212113400376.xml");
 
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("3987"));
-			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("2012-12-10")));
+			Assert.That(doc.DocumentDate.Value.Date, Is.EqualTo(DateTime.Parse("2012-12-10")));
 
 			Assert.That(doc.Invoice.BuyerName, Is.EqualTo("060 МУСЛЮМОВО"));
 			Assert.That(doc.Invoice.BuyerId, Is.EqualTo(60));
