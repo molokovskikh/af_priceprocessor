@@ -256,5 +256,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 				File.Delete(fileName);
 			}
 		}
-	}
+
+        /// <summary>
+        /// Для задачи http://redmine.analit.net/issues/37439
+        /// </summary>
+        [Test]
+        public void Parse9()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\4193_2803785.dbf");
+
+            Assert.That(document.Lines[0].Product, Is.EqualTo("Амбробене табл. 30мг N20 Германия"));
+            Assert.That(document.Lines[0].OrderId, Is.EqualTo(74101766));
+        }
+    }
 }
