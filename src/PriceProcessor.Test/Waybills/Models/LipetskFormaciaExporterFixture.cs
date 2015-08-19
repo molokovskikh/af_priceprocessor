@@ -20,8 +20,8 @@ namespace PriceProcessor.Test.Waybills.Models
 		[Test]
 		public void LipetskFormaciaExporter()
 		{
-			var supplier = TestSupplier.CreateNaked();
-			var client = TestClient.CreateNaked();
+			var supplier = TestSupplier.CreateNaked(session);
+			var client = TestClient.CreateNaked(session);
 			var settings = session.Load<WaybillSettings>(client.Id);
 			settings.AssortimentPriceId = supplier.Prices[0].Id;
 			settings.WaybillConvertFormat = WaybillFormat.LipetskFarmacia;
@@ -41,7 +41,7 @@ namespace PriceProcessor.Test.Waybills.Models
 
 
 			//test
-			var log = Exporter.Convert(document, WaybillFormat.LipetskFarmacia, settings);
+			var log = Exporter.ConvertAndSave(document, WaybillFormat.LipetskFarmacia, settings);
 			Assert.That(log.FileName.Substring(log.FileName.Length - 4), Is.EqualTo(".xls"));
 			Assert.That(document.Log.IsFake, Is.EqualTo(false));
 		}
@@ -49,8 +49,8 @@ namespace PriceProcessor.Test.Waybills.Models
 		[Test]
 		public void LipetskFormaciaProtekExport()
 		{
-			var supplier = TestSupplier.CreateNaked();
-			var client = TestClient.CreateNaked();
+			var supplier = TestSupplier.CreateNaked(session);
+			var client = TestClient.CreateNaked(session);
 			var settings = session.Load<WaybillSettings>(client.Id);
 			settings.AssortimentPriceId = supplier.Prices[0].Id;
 			settings.WaybillConvertFormat = WaybillFormat.LipetskFarmacia;

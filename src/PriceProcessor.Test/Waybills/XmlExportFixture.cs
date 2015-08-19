@@ -41,8 +41,8 @@ namespace PriceProcessor.Test.Waybills
 			line.Producer = "Polfa/Polpharma";
 			line.Quantity = 13;
 
-			var log = Exporter.Convert(document, settings.WaybillConvertFormat, settings);
-			var filename = log.GetRemoteFileNameExt();
+			Exporter.Convert(document, document.Log, settings.WaybillConvertFormat, settings);
+			var filename = document.Log.GetRemoteFileNameExt();
 			var doc = XDocument.Load(filename);
 			Assert.AreEqual("0_Тестовый поставщик(0).xml", Path.GetFileName(filename));
 			var xml = @"<PACKET NAME=""Электронная накладная"" ID="""" FROM=""Тестовый поставщик"" TYPE=""12"">

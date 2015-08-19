@@ -60,7 +60,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void ExportProtekSstFile()
 		{
-			Exporter.Convert(document, WaybillFormat.Sst, new WaybillSettings());
+			Exporter.Convert(document, log, WaybillFormat.Sst, new WaybillSettings());
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(001-01).sst");
 			Assert.That(log.DocumentSize, Is.GreaterThan(0));
 			Assert.That(log.FileName, Is.EqualTo("001-01.sst"));
@@ -122,7 +122,7 @@ namespace PriceProcessor.Test.Waybills
 			line.Nds = 10;
 			document.CalculateValues();
 
-			Exporter.Convert(document, WaybillFormat.SstLong, new WaybillSettings());
+			Exporter.Convert(document, log, WaybillFormat.SstLong, new WaybillSettings());
 			document.Lines[0].CertificateAuthority = "Test";
 			var resultFile = Path.GetFullPath(@"DocumentPath\501\waybills\100_Тестовый поставщик(24681251-001).sst");
 			var content = File.ReadLines(resultFile, Encoding.GetEncoding(1251)).ToArray();

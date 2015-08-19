@@ -22,25 +22,35 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 	public class Exporter
 	{
-		public static DocumentReceiveLog Convert(Document document, WaybillFormat type, WaybillSettings settings)
+		public static DocumentReceiveLog ConvertAndSave(Document document, WaybillFormat type, WaybillSettings settings)
 		{
 			var extention = settings.GetExportExtension(type);
 			var log = document.Log;
-			//если нет файла значит документ из сервиса протека
-			if (String.IsNullOrEmpty(document.Log.FileName)) {
-				log.IsFake = false;
-
-				var id = (document.ProviderDocumentId ?? document.Log.Id.ToString()).Replace('/', '_');
-				log.FileName = id + extention;
-			}
-			else {
+			//если нет файла значит документ из сервиса протека и ему можно просто назначить файл
+			//если мы конвертируем существующий файл то нужно создать новую запись а стурую отметить флагом
+			//что бы избежать загрузки ее клиентом
+			if (!String.IsNullOrEmpty(document.Log.FileName)) {
 				log.IsFake = true;
+				ActiveRecordMediator.SaveAndFlush(log);
 				log = new DocumentReceiveLog(log, extention);
 				ActiveRecordMediator.SaveAndFlush(log);
 			}
+			Convert(document, log, type, settings);
+			ActiveRecordMediator.Save(document.Log);
+			ActiveRecordMediator.Save(log);
+			return log;
+		}
+
+		public static void Convert(Document document, DocumentReceiveLog log, WaybillFormat type, WaybillSettings settings)
+		{
+			if (String.IsNullOrEmpty(document.Log.FileName)) {
+				var extention = settings.GetExportExtension(type);
+				log.IsFake = false;
+				var id = (document.ProviderDocumentId ?? document.Log.Id.ToString()).Replace('/', '_');
+				log.FileName = id + extention;
+			}
 
 			var filename = log.GetRemoteFileNameExt();
-
 			if (type == WaybillFormat.ProtekDbf) {
 				DbfExporter.SaveProtek(document, filename);
 			}
@@ -75,9 +85,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			}
 
 			log.DocumentSize = new FileInfo(filename).Length;
-			ActiveRecordMediator.Save(document.Log);
-			ActiveRecordMediator.Save(log);
-			return log;
 		}
 
 		public static void SaveProtek(Document document)
@@ -87,7 +94,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			var converted = ConvertIfNeeded(document, settings);
 			var lipetskFarmaciaFlag = settings.IsConvertFormat && settings.WaybillConvertFormat == WaybillFormat.LipetskFarmacia;
 			if (!converted || lipetskFarmaciaFlag) {
-				Convert(document, settings.ProtekWaybillSavingType, settings);
+				ConvertAndSave(document, settings.ProtekWaybillSavingType, settings);
 				//липецкфармации мы даем 2 файла, но экспорт - делает фейковым изначальный лог файла и заменяет его, поэтому надо ручками сделать его не фейковым
 				if (lipetskFarmaciaFlag)
 					log.IsFake = false;
@@ -98,7 +105,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		{
 			if (settings.IsConvertFormat
 				&& document.SetAssortimentInfo(settings)) {
-				Convert(document, settings.WaybillConvertFormat, settings);
+				ConvertAndSave(document, settings.WaybillConvertFormat, settings);
 				return true;
 			}
 			return false;
