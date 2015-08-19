@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -69,20 +70,25 @@ group by ai.SupplierDeliveryId")
 		}
 
 		//формат для импорта в ИНПРО-Аптека
-		public static void SaveInpro(Document doc, string filename)
+		public static void SaveInpro(Document doc, string filename, List<SupplierMap> supplierMaps)
 		{
+			doc.Log.FileName = $"interdoc_{Guid.NewGuid().ToString().Replace("-", "")}.xml";
+			doc.Log.PreserveFilename = true;
+			//не верь решарперу Null можно
 			var xmlsettings = new XmlWriterSettings { Encoding = Encoding.GetEncoding(1251) };
 			using (var writer = XmlWriter.Create(filename, xmlsettings)) {
 				writer.WriteStartElement("DOCUMENTS");
 				writer.WriteStartElement("DOCUMENT");
 				writer.WriteAttributeString("type", "АПТЕКА_ПРИХОД");
 				writer.WriteStartElement("HEADER");
-				writer.WriteAttributeString("firm_name", doc.Log.Supplier.FullName);
+				var supplierName = supplierMaps.FirstOrDefault(x => x.Supplier.Id == doc.Log.Supplier.Id)?.Name
+					?? doc.Log.Supplier.FullName;
+				writer.WriteAttributeString("firm_name", supplierName);
 				writer.WriteAttributeString("client_name", doc.Address.Client.FullName);
 				writer.WriteAttributeString("doc_number", doc.ProviderDocumentId);
 				writer.WriteAttributeString("factura_number", doc.Invoice?.InvoiceNumber ?? doc.ProviderDocumentId);
-				writer.WriteAttributeString("doc_date", doc.DocumentDate?.ToString("dd.MM.yyyy"));
-				writer.WriteAttributeString("pay_date", doc.DocumentDate?.ToString("dd.MM.yyyy"));
+				writer.WriteAttributeString("doc_date", doc.DocumentDate?.ToString("dd.MM.yy"));
+				writer.WriteAttributeString("pay_date", doc.DocumentDate?.ToString("dd.MM.yy"));
 				writer.WriteAttributeString("doc_sum",
 					(doc?.Invoice?.Amount ?? doc.Lines.Sum(x => x.Amount))?.ToString(CultureInfo.InvariantCulture));
 				writer.WriteEndElement();
@@ -103,7 +109,7 @@ group by ai.SupplierDeliveryId")
 					writer.WriteAttributeString("gtd_country", line.Country);
 					writer.WriteAttributeString("gtd_number", line.BillOfEntryNumber);
 					writer.WriteAttributeString("sert_number", line.Certificates);
-					writer.WriteAttributeString("sert_godn", line.CertificatesEndDate?.ToString("dd.MM.yyyy"));
+					writer.WriteAttributeString("sert_godn", line.CertificatesEndDate?.ToString("dd.MM.yy"));
 					writer.WriteAttributeString("firm_nds_orig", line.NdsAmount?.ToString(CultureInfo.InvariantCulture));
 					writer.WriteEndElement();
 				}

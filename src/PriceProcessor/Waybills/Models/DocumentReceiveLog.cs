@@ -50,6 +50,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public bool IsFake { get; set; }
 
 		/// <summary>
+		/// При экспорте в клиентское приложение назначать имя файла из поля FileName
+		/// FileName - должен обеспечивать достаточную уникальность что бы избежать колизици
+		/// </summary>
+		[Property]
+		public bool PreserveFilename { get; set; }
+
+		/// <summary>
 		/// Для тестов
 		/// </summary>
 		public string LocalFileName { get; set; }

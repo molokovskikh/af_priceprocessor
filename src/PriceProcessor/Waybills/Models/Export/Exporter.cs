@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Helpers;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills.Models.Export
 {
@@ -20,17 +22,6 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 	public class Exporter
 	{
-		/// <summary>
-		/// Сохраняет данные в файл.
-		/// </summary>
-		public static void Save(Document document, WaybillFormat type, WaybillSettings settings)
-		{
-			var log = Convert(document, type, settings);
-
-			ActiveRecordMediator.Save(document.Log);
-			ActiveRecordMediator.Save(log);
-		}
-
 		public static DocumentReceiveLog Convert(Document document, WaybillFormat type, WaybillSettings settings)
 		{
 			var extention = settings.GetExportExtension(type);
@@ -68,7 +59,10 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					XmlExporter.SaveInfoDrugstore(session, settings, document, filename);
 			}
 			else if (type == WaybillFormat.InproXml)
-				XmlExporter.SaveInpro(document, filename);
+				using(var session = SessionHelper.GetSessionFactory().OpenSession()) {
+					var map = session.Query<SupplierMap>().ToList();
+					XmlExporter.SaveInpro(document, filename, map);
+				}
 			else {
 				using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
 					using (var sw = new StreamWriter(fs, Encoding.GetEncoding(1251))) {
@@ -81,6 +75,8 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			}
 
 			log.DocumentSize = new FileInfo(filename).Length;
+			ActiveRecordMediator.Save(document.Log);
+			ActiveRecordMediator.Save(log);
 			return log;
 		}
 
@@ -91,7 +87,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			var converted = ConvertIfNeeded(document, settings);
 			var lipetskFarmaciaFlag = settings.IsConvertFormat && settings.WaybillConvertFormat == WaybillFormat.LipetskFarmacia;
 			if (!converted || lipetskFarmaciaFlag) {
-				Save(document, settings.ProtekWaybillSavingType, settings);
+				Convert(document, settings.ProtekWaybillSavingType, settings);
 				//липецкфармации мы даем 2 файла, но экспорт - делает фейковым изначальный лог файла и заменяет его, поэтому надо ручками сделать его не фейковым
 				if (lipetskFarmaciaFlag)
 					log.IsFake = false;
@@ -102,7 +98,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 		{
 			if (settings.IsConvertFormat
 				&& document.SetAssortimentInfo(settings)) {
-				Save(document, settings.WaybillConvertFormat, settings);
+				Convert(document, settings.WaybillConvertFormat, settings);
 				return true;
 			}
 			return false;

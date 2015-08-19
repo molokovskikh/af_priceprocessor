@@ -16,6 +16,7 @@ using Inforoom.PriceProcessor;
 using System.IO;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Waybills.Models.Export;
 using log4net;
 using log4net.Config;
 using log4net.Util;
