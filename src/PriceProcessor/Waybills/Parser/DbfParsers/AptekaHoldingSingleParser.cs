@@ -88,7 +88,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				line.SupplierCost = ParseHelper.GetDecimal(r["TZENANDS"].ToString());
 				line.Quantity = Convert.ToUInt32(r["KOL"]);
                 if (data.Columns.Contains("AFORDER"))
-                    line.OrderId = Convert.ToUInt32(r["AFORDER"]);
+                    line.OrderId = Convert.IsDBNull(r["AFORDER"]) ? (uint?) null : Convert.ToUInt32(r["AFORDER"]);
+
                 line.Period = Convert.IsDBNull(r["GODEN"]) ? null : Convert.ToDateTime(r["GODEN"]).ToShortDateString();
 
 				if(!String.IsNullOrEmpty(billOfEntryNumberColumn))

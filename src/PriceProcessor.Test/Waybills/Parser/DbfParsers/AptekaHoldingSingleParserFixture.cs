@@ -268,5 +268,20 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(document.Lines[0].Product, Is.EqualTo("Амбробене табл. 30мг N20 Германия"));
             Assert.That(document.Lines[0].OrderId, Is.EqualTo(74101766));
         }
+
+        /// <summary>
+        /// К задаче http://redmine.analit.net/issues/37655
+        /// </summary>
+        [Test]
+        public void Parse10()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\6626_2811983.dbf");
+            Assert.That(document.ProviderDocumentId, Is.EqualTo("АХ1-2811983/35"));
+            Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("20.08.2015")));
+            Assert.That(document.Lines[0].Code, Is.EqualTo("31853"));
+            Assert.That(document.Lines[0].Product, Is.EqualTo("Аллапинин табл. 0.025г N30 Россия"));
+            Assert.That(document.Lines[0].Producer, Is.EqualTo("Фармцентр Вилар ЗАО"));
+            Assert.That(document.Lines[0].OrderId, Is.Null);
+        }
     }
 }
