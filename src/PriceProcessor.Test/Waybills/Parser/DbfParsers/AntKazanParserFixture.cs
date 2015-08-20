@@ -53,5 +53,16 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse("Та003539.dbf");
 			Assert.IsTrue(doc.Lines[1].VitallyImportant.Value);
 		}
-	}
+
+        /// <summary>
+        /// Тест для задачи http://redmine.analit.net/issues/37613
+        /// </summary>
+        [Test]
+        public void Parse3()
+        {
+            var doc = WaybillParser.Parse("Та031324.dbf");
+            var line = doc.Lines[0];
+            Assert.That(line.CertificatesEndDate.Value.ToShortDateString(), Is.EqualTo("26.02.2017"));
+        }
+    }
 }
