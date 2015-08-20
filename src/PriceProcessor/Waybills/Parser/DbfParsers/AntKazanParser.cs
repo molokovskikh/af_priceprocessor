@@ -26,8 +26,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.NdsAmount, "NDS_SUM")
 				.Line(l => l.Amount, "SUMMA")
 				.Line(l => l.BillOfEntryNumber, "GTD")
-				.Line(l => l.VitallyImportant, "TYPET");
-		}
+				.Line(l => l.VitallyImportant, "TYPET")
+                .Line(l => l.CertificatesEndDate, "DATE2");
+        }
 
 		public static bool CheckFileFormat(DataTable data)
 		{
