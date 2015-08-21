@@ -31,6 +31,12 @@ task @ready:
 	unless Configuration.IsDefined(@notInteractive):
 		Engine.Execute("LoadProject")
 
+desc """
+вызывает удаленный сервис priceprocessor для разбора накладных
+параметры
+	dataFile - иммя файла где каждая строка идентификатор из logs.document_logs
+	id - идентификатор из  logs.document_logs
+"""
 task @ParseWaybills:
 	binding = NetTcpBinding()
 	binding.SendTimeout = TimeSpan.FromMinutes(30)
