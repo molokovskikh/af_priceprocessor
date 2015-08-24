@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("12/02/2010")));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(15.62));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(8));
-			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.24));
+			Assert.That(document.Lines[0].Amount, Is.EqualTo(1374.21));
 		}
 
 		[Test]
@@ -425,5 +425,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/070711/0013819/1"));
 			Assert.That(line.EAN13, Is.EqualTo("4013054003923"));
 		}
-	}
+
+        /// <summary>
+		/// К задаче http://redmine.analit.net/issues/37665
+		/// </summary>
+		[Test]
+        public void Parse2()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2606051.dbf");
+            var line = document.Lines[0];
+            Assert.That(line.Amount, Is.EqualTo(182.4900));           
+        }
+    }
 }

@@ -36,7 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SupplierCostWithoutNDS, supplierCostWithoutNdsColumn)
 				.Line(l => l.SupplierPriceMarkup, "NACENKA")
 				.Line(l => l.Quantity, "VOLUME")
-				.Line(l => l.Amount, "SUM_B_NDS")
+				.Line(l => l.Amount, "SUMMA")
 				.Line(l => l.Period, "SROK")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Nds, "PCT_NDS")
