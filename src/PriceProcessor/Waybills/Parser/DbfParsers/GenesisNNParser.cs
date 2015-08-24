@@ -28,8 +28,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Amount, "SUM")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "SCANCOD")
-				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN");
-		}
+				.Line(l => l.SupplierPriceMarkup, "SUM_MARGIN")
+                .Line(l => l.CertificatesDate, "DATAVSERT")
+                .Line(l => l.CertificatesEndDate, "SROKSF")
+                .Line(l => l.CertificateAuthority, "SERTKEM");
+        }
 
 		public static bool CheckFileFormat(DataTable table)
 		{

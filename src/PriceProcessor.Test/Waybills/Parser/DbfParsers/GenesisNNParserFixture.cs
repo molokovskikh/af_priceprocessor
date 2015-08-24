@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
@@ -143,5 +144,19 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var billLine = doc.Lines[1];
 			Assert.That(billLine.BillOfEntryNumber, Is.EqualTo("10130020/280213/0002622/6"));
 		}
-	}
+
+        /// <summary>
+        /// Для задачи http://redmine.analit.net/issues/37885
+        /// </summary>
+        [Test]
+        public void Parse2()
+        {
+            var doc = WaybillParser.Parse("20150819_1115482_13692.DBF");
+
+            var line = doc.Lines[0];
+            Assert.That(line.CertificatesDate, Is.EqualTo("16.08.2010"));
+            Assert.That(line.CertificatesEndDate, Is.EqualTo(Convert.ToDateTime("16.08.2015")));
+            Assert.That(line.CertificateAuthority, Is.EqualTo("ООО\"Импорт энд Логистикс\""));
+        }
+    }
 }
