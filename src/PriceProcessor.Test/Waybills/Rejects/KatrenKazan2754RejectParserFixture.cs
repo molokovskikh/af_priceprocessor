@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 		}
 
 		/// <summary>
-		/// Для формата OTK
+		/// Для формата OTK с полем кода товара
 		/// </summary>
 		[Test]
 		public void Parse2()
@@ -64,5 +64,27 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Ordered, Is.EqualTo(1));
 			Assert.That(line.Rejected, Is.EqualTo(1));
 		}
-	}
+
+        /// <summary>
+		/// Для формата OTK без поля кода товара
+		/// </summary>
+		[Test]
+        public void Parse3()
+        {
+            //Создаем лог, а затем отказ
+            var log = CreateRejectLog("3510714.otk");
+            var parser = new KatrenKazan2754RejectParser();
+            var reject = parser.CreateReject(log);
+
+            //Проверяем правильность парсинга			
+            Assert.That(reject.Lines.Count, Is.EqualTo(2));
+            Assert.That(parser.BadLines.Count, Is.EqualTo(0));
+
+            //Выбираем строку и проверяем правильно ли все распарсилось
+            var line = reject.Lines[0];
+            Assert.That(line.Product, Is.EqualTo("SILKOFIX ЛЕЙКОПЛАСТЫРЬ НА ТКАН ОСНОВЕ 2Х500СМ"));
+            Assert.That(line.Ordered, Is.EqualTo(6));
+            Assert.That(line.Rejected, Is.EqualTo(6));
+        }
+    }
 }
