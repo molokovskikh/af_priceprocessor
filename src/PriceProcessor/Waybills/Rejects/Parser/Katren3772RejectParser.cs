@@ -44,11 +44,23 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 						var rejectLine = new RejectLine();
 						reject.Lines.Add(rejectLine);
 						var splat = line.Trim().Split(new[] { "\t" }, StringSplitOptions.None);
-						rejectLine.Product = splat[1];
-						rejectLine.Code = splat[0];
-						rejectLine.Ordered = NullableConvert.ToUInt32(splat[2]);
-						var rejected = NullableConvert.ToUInt32(splat[2]);
-						rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+
+                        // проверяем на файл в котором нет кода товара
+					    if (splat.Count() <= 2)
+					    {
+					        rejectLine.Product = splat[0].Replace("|", "");
+					        rejectLine.Ordered = NullableConvert.ToUInt32(splat[1]);
+					        var splatRejected = NullableConvert.ToUInt32(splat[1]);
+					        rejectLine.Rejected = splatRejected != null ? splatRejected.Value : 0;
+					    }
+					    else
+					    {
+					        rejectLine.Product = splat[1];
+					        rejectLine.Code = splat[0];
+					        rejectLine.Ordered = NullableConvert.ToUInt32(splat[2]);
+					        var rejected = NullableConvert.ToUInt32(splat[2]);
+					        rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					    }
 					}
 				}
 				}
