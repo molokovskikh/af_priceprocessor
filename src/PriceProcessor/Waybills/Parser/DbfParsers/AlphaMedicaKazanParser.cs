@@ -26,8 +26,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "NDS_TAX")
 				.Line(l => l.NdsAmount, "SUM_NDS")
 				.Line(l => l.SerialNumber, "SERIA")
-				.Line(l => l.Country, "COUNTRY");
-		}
+				.Line(l => l.Country, "COUNTRY")
+                .Line(l => l.CertificatesDate, "SERTDATE0")
+                .Line(l => l.CertificatesEndDate, "SERTDATE1")
+                .Line(l => l.CertificateAuthority, "SERTORG");
+        }
 
 		public static bool CheckFileFormat(DataTable data)
 		{

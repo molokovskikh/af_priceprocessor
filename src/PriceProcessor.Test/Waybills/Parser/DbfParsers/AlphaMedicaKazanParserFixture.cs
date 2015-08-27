@@ -1,4 +1,5 @@
-﻿using Common.Tools;
+﻿using System;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
@@ -36,5 +37,19 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			Assert.IsTrue(AlphaMedicaKazanParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\2710_368.dbf")));
 		}
-	}
+
+        /// <summary>
+        /// Для задачи http://redmine.analit.net/issues/38057
+        /// </summary>
+        [Test]
+        public void Parse2()
+        {
+            var doc = WaybillParser.Parse("6350_371.dbf");
+            Assert.That(doc.Lines.Count, Is.EqualTo(4));
+            var line = doc.Lines[0];
+            Assert.That(line.CertificatesDate, Is.Null);
+            Assert.That(line.CertificatesEndDate, Is.Null);
+            Assert.That(line.CertificateAuthority, Is.EqualTo("ООО \"Центр сертификации медицинских изделий ВНИИМП\""));
+        }
+    }
 }
