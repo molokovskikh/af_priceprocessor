@@ -365,6 +365,9 @@ namespace Inforoom.PriceProcessor.Downloader
 						.Select(c => c.regOrg)
 						.DefaultIfEmpty()
 						.FirstOrDefault();
+
+					line.CertificatesDate = certificates.FirstOrDefault()?.dateExpire?.ToString();
+					line.CertificatesEndDate = certificates.FirstOrDefault()?.regd;
 				}
 			}
 
