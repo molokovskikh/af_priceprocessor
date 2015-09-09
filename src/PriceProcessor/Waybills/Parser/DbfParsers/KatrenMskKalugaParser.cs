@@ -25,8 +25,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "Sertif")
 				.Line(l => l.RegistryCost, "ReestrPr")
 				.Line(l => l.VitallyImportant, "VitImport")
-				.Line(l => l.SerialNumber, "Series");
-		}
+				.Line(l => l.SerialNumber, "Series")
+                .Line(l => l.EAN13, "BarCode");
+        }
 
 		public static bool CheckFileFormat(DataTable data)
 		{
