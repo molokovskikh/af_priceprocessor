@@ -36,5 +36,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 
 			Assert.That(document.Lines[1].VitallyImportant, Is.False);
 		}
-	}
+
+        /// <summary>
+        /// Для задачи http://redmine.analit.net/issues/38525
+        /// </summary>
+        [Test]
+        public void Parse2()
+        {
+            var document = WaybillParser.Parse(@"1360036-2.dbf");
+            Assert.That(document.Lines[0].EAN13, Is.EqualTo("4607008131321"));
+        }
+    }
 }
