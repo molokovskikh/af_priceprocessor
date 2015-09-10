@@ -70,10 +70,10 @@ group by ai.SupplierDeliveryId")
 		}
 
 		//формат для импорта в ИНПРО-Аптека
-		public static void SaveInpro(Document doc, string filename, List<SupplierMap> supplierMaps)
+		public static void SaveInpro(Document doc, DocumentReceiveLog log, string filename, List<SupplierMap> supplierMaps)
 		{
-			doc.Log.FileName = $"interdoc_{Guid.NewGuid().ToString().Replace("-", "")}.xml";
-			doc.Log.PreserveFilename = true;
+			log.FileName = $"interdoc_{Guid.NewGuid().ToString().Replace("-", "")}.xml";
+			log.PreserveFilename = true;
 			//не верь решарперу Null можно
 			var xmlsettings = new XmlWriterSettings { Encoding = Encoding.GetEncoding(1251) };
 			using (var writer = XmlWriter.Create(filename, xmlsettings)) {

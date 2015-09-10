@@ -71,7 +71,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 			else if (type == WaybillFormat.InproXml)
 				using(var session = SessionHelper.GetSessionFactory().OpenSession()) {
 					var map = session.Query<SupplierMap>().ToList();
-					XmlExporter.SaveInpro(document, filename, map);
+					XmlExporter.SaveInpro(document, log, filename, map);
 				}
 			else {
 				using (var fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {

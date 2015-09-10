@@ -89,13 +89,16 @@ namespace PriceProcessor.Test.Waybills
 				Code = "607298",
 				EAN13 = "8901148232037",
 			});
-			XmlExporter.SaveInpro(doc, "test.xml", new List<SupplierMap> {
+			var log = new DocumentReceiveLog(doc.Log, ".xml");
+			XmlExporter.SaveInpro(doc, log, "test.xml", new List<SupplierMap> {
 				new SupplierMap {
 					Supplier = doc.Log.Supplier,
 					Name = "ООО \"Органика\"",
 				}
 			});
-			Assert.That(doc.Log.FileName, Is.StringStarting("interdoc_"));
+			Assert.That(doc.Log.FileName, Is.Not.StringStarting("interdoc_"));
+			Assert.That(log.FileName, Is.StringStarting("interdoc_"));
+			Assert.IsTrue(log.PreserveFilename);
 			var text = File.ReadAllText("test.xml", Encoding.GetEncoding(1251));
 			Assert.AreEqual("<?xml version=\"1.0\" encoding=\"windows-1251\"?><DOCUMENTS><DOCUMENT type=\"АПТЕКА_ПРИХОД\">" +
 				"<HEADER firm_name=\"ООО &quot;Органика&quot;\" client_name=\"ИП Бокова А.Б.\" doc_number=\"О-341720\" factura_number=\"О-341720\" doc_date=\"14.07.15\" pay_date=\"14.07.15\" doc_sum=\"883.80\" />" +

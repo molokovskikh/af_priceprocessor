@@ -18,7 +18,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 				var row = sheet1.CreateRow(1);
 				row.CreateCell(5).SetCellValue("Наименование организации: Представитель АК \"Инфорум\", г.Воронеж, Ленинский пр-т.160, офис 415");
-				
+
 				row = sheet1.CreateRow(2);
 				row.CreateCell(2).SetCellValue("Отдел:");
 				row.CreateCell(3).SetCellValue("_______________________________________");
@@ -75,12 +75,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.CreateCell(2).SetCellValue(line.Certificates);
 					row.CreateCell(3).SetCellValue(line.Period);
 					row.CreateCell(4).SetCellValue(line.Producer);
-					row.CreateCell(5).SetCellValue(line.ProducerCostWithoutNDS.ToString()); 
+					row.CreateCell(5).SetCellValue(line.ProducerCostWithoutNDS.ToString());
 					row.CreateCell(6).SetCellValue(line.Quantity.ToString()); //сложно вычисляется с ордерами
 					row.CreateCell(7).SetCellValue(line.SupplierPriceMarkup.ToString());
-					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString()); 
+					row.CreateCell(8).SetCellValue(line.SupplierCostWithoutNDS.ToString());
 					row.CreateCell(9).SetCellValue(line.Nds.ToString());
-					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString()); 
+					row.CreateCell(10).SetCellValue(line.SupplierCost.ToString());
 					row.CreateCell(11).SetCellValue(""); //нельзя вычислить на клиенте
 					row.CreateCell(12).SetCellValue(line.RetailCost.ToString());
 					row.CreateCell(13).SetCellValue(line.Quantity.ToString());
