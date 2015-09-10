@@ -19,8 +19,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Invoice(i => i.AmountWithoutNDS10, "SUM10")
 				.Invoice(i => i.AmountWithoutNDS18, "SUM20")
 				.Invoice(i => i.AmountWithoutNDS0, "SUM0")
+                .Invoice(i => i.Amount, "SUMPAY")
 
-				.Line(l => l.Code, "CODEPST")
+                .Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
 				.Line(l => l.Country, "CNTR")
