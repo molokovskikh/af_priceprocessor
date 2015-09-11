@@ -36,5 +36,13 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.AreEqual("ФМ08 ОЦКК Москва", line.CertificateAuthority);
 			Assert.AreEqual("28.12.2009", line.CertificatesDate);
 		}
-	}
+
+        [Test]
+        public void Parse2()
+        {
+            var doc = WaybillParser.Parse("БСС-16093_195769.dbf");
+            var line = doc.Lines[0];
+            Assert.That(line.CertificatesEndDate, Is.EqualTo(DateTime.Parse("01/01/2018")));
+        }
+    }
 }
