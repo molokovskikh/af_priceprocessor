@@ -436,5 +436,15 @@ namespace PriceProcessor.Test.Waybills.Parser
             var line = document.Lines[0];
             Assert.That(line.Amount, Is.EqualTo(182.4900));           
         }
+
+        /// <summary>
+        /// К задаче http://redmine.analit.net/issues/38625
+        /// </summary>
+        [Test]
+        public void Parse3()
+        {
+            var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2620497.DBF");
+            Assert.That(document.Invoice.Amount, Is.EqualTo(55593.5600));
+        }
     }
 }
