@@ -283,5 +283,13 @@ namespace PriceProcessor.Test.Waybills.Parser
             Assert.That(document.Lines[0].Producer, Is.EqualTo("Фармцентр Вилар ЗАО"));
             Assert.That(document.Lines[0].OrderId, Is.Null);
         }
-    }
+
+		[Test]
+		public void Parse11()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\16695644.dbf");
+			Assert.That(document.Lines.Count, Is.EqualTo(14));
+			Assert.That(document.Lines[0].SupplierCostWithoutNDS, Is.Null);
+		}
+	}
 }
