@@ -31,5 +31,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС.AT.ФМ08.Д72155"));
 			Assert.That(line.SerialNumber, Is.EqualTo("930917"));
 		}
+
+		/// <summary>
+		/// Для задачи http://redmine.analit.net/issues/38895
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			var document = WaybillParser.Parse("n7013030.dbf");
+			var line = document.Lines[0];
+			Assert.That(line.EAN13, Is.EqualTo("4931140010870"));
+		}
 	}
 }
