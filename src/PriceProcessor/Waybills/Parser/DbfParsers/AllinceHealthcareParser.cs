@@ -31,7 +31,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Amount, "SUM_SNDS")
 				.Line(l => l.NdsAmount, "SUM_NDS")
-				.Line(l => l.CertificatesDate, "SER_DATE");
+				.Line(l => l.CertificatesDate, "SER_DATE")
+				.Line(l => l.EAN13, "PRV_CODE");
 
 			if (data.Columns.Contains("VID")) {
 				data.Rows.Cast<DataRow>().Each(r => {
