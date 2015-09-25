@@ -38,7 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("NAME") &&
 				data.Columns.Contains("DATE_END") &&
 				data.Columns.Contains("SERTIFICAT") &&
-				!data.Columns.Contains("CODE");
+				!data.Columns.Contains("CODE") &&
+				!data.Columns.Contains("SERTDATEST");
 		}
 	}
 }

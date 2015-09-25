@@ -203,6 +203,7 @@
     <Compile Include="Waybills\Parser\CalculateValuesFixture.cs" />
     <Compile Include="Waybills\Parser\ConvertDateInDbfFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ABGroupParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\EuropeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />

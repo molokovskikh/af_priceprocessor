@@ -253,6 +253,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Waybills\Models\Export\SupplierMap.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\EuropeParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PulsBryanskParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren3772RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\KatrenKazan2754RejectParser.cs" />
