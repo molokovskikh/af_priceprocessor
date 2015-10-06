@@ -33,6 +33,7 @@
 				.Line(l => l.NdsAmount, "SUMNDS")
 				.Line(l => l.RetailCost, "RPRICE")
 				.Line(l => l.EAN13, "BARCODE")
+				.Line(l => l.RegistryCost, "RPRICE")
 				.Line(l => l.VitallyImportant, "JV");
 		}
 	}
