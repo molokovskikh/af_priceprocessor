@@ -61,7 +61,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 	}
 
 	[TestFixture]
-	public class DocSourceHandlerFixture
+	public class DocSourceHandlerFixture : IntegrationFixture
 	{
 		private DocSourceHandlerTestInfo _info;
 		private string _responseSubject = "Ваше Сообщение не доставлено одной или нескольким аптекам";
@@ -84,40 +84,37 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		private void SetDefaultValues()
 		{
-			using (new TransactionScope()) {
-				var values = TemplateHolder.Values;
+			var values = TemplateHolder.Values;
 
-				values.AllowedMiniMailExtensions = "doc, xls, gif, tiff, tif, jpg, pdf, txt";
+			values.AllowedMiniMailExtensions = "doc, xls, gif, tiff, tif, jpg, pdf, txt";
 
-				values.ResponseSubjectMiniMailOnUnknownProvider = _responseSubject;
-				values.ResponseSubjectMiniMailOnEmptyRecipients = _responseSubject;
-				values.ResponseSubjectMiniMailOnMaxAttachment = _responseSubject;
-				values.ResponseSubjectMiniMailOnAllowedExtensions = _responseSubject;
-				values.ResponseSubjectMiniMailOnEmptyLetter = _responseSubject;
+			values.ResponseSubjectMiniMailOnUnknownProvider = _responseSubject;
+			values.ResponseSubjectMiniMailOnEmptyRecipients = _responseSubject;
+			values.ResponseSubjectMiniMailOnMaxAttachment = _responseSubject;
+			values.ResponseSubjectMiniMailOnAllowedExtensions = _responseSubject;
+			values.ResponseSubjectMiniMailOnEmptyLetter = _responseSubject;
 
-				values.ResponseBodyMiniMailOnUnknownProvider = "Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением";
-				values.ResponseBodyMiniMailOnEmptyRecipients = "Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением";
-				values.ResponseBodyMiniMailOnMaxAttachment = "Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением";
-				values.ResponseBodyMiniMailOnAllowedExtensions = "Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением";
-				values.ResponseBodyMiniMailOnEmptyLetter = "Здравствуйте! Ваше письмо не содержит тему, тело и вложения С уважением";
-				values.Save();
-			}
+			values.ResponseBodyMiniMailOnUnknownProvider = "Здравствуйте! Ваше письмо с темой {0} неизвестный адрес {1} С уважением";
+			values.ResponseBodyMiniMailOnEmptyRecipients = "Здравствуйте! Ваше письмо с темой {0} не будет доставлено по причинам {1} С уважением";
+			values.ResponseBodyMiniMailOnMaxAttachment = "Здравствуйте! Ваше письмо с темой {0} имеет размер {1} а должно не более {2} С уважением";
+			values.ResponseBodyMiniMailOnAllowedExtensions = "Здравствуйте! Ваше письмо с темой {0} имеет расширение {1} а должно {2} С уважением";
+			values.ResponseBodyMiniMailOnEmptyLetter = "Здравствуйте! Ваше письмо не содержит тему, тело и вложения С уважением";
+			session.Update(values);
 		}
 
 		private void PrepareSupplier(TestSupplier supplier, string from)
 		{
-			using (new TransactionScope()) {
-				var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
-				group.AddContact(ContactType.Email, from);
-				group.Save();
-				supplier.Save();
-			}
+			var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
+			group.AddContact(ContactType.Email, from);
+			session.Save(group);
+			session.Save(supplier);
+			FlushAndCommit();
 		}
 
 		private void SetUp(IList<TestUser> users, TestRegion region, string subject, string body, IList<string> fileNames)
 		{
 			var info = new DocSourceHandlerTestInfo();
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
@@ -155,7 +152,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "Простой разбор письма")]
 		public void SimpleParseMails()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -167,29 +164,27 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.UpdateLogEntry, Is.Null);
-				Assert.That(mailLog.Committed, Is.False);
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
-				Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id)));
-				Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
-				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
-				Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
-				Assert.That(mailLog.Mail.IsVIPMail, Is.False);
-				Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(0));
-				Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.UpdateLogEntry, Is.Null);
+			Assert.That(mailLog.Committed, Is.False);
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
+			Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id)));
+			Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
+			Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
+			Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
+			Assert.That(mailLog.Mail.IsVIPMail, Is.False);
+			Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(0));
+			Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
 		}
 
 		[Test(Description = "разбор письма с вложениями")]
 		public void ParseMailsWithAttachs()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -201,40 +196,38 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.UpdateLogEntry, Is.Null);
-				Assert.That(mailLog.Committed, Is.False);
-				var mail = mailLog.Mail;
-				Assert.That(mailLog.Recipient, Is.EqualTo(mail.MailRecipients[0]));
-				Assert.That(mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.IsNotNullOrEmpty(mail.SupplierEmail);
-				Assert.That(mail.MailRecipients.Count, Is.GreaterThan(0));
-				Assert.That(mail.Subject, Is.EqualTo("Это письмо пользователю"));
-				Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
-				Assert.That(mail.IsVIPMail, Is.False);
-				Assert.That(mail.Attachments.Count, Is.EqualTo(1));
-				Assert.That(mail.Size, Is.EqualTo(2453));
-				Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
+			var mailLog = mails[0];
+			Assert.That(mailLog.UpdateLogEntry, Is.Null);
+			Assert.That(mailLog.Committed, Is.False);
+			var mail = mailLog.Mail;
+			Assert.That(mailLog.Recipient, Is.EqualTo(mail.MailRecipients[0]));
+			Assert.That(mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			Assert.IsNotNullOrEmpty(mail.SupplierEmail);
+			Assert.That(mail.MailRecipients.Count, Is.GreaterThan(0));
+			Assert.That(mail.Subject, Is.EqualTo("Это письмо пользователю"));
+			Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
+			Assert.That(mail.IsVIPMail, Is.False);
+			Assert.That(mail.Attachments.Count, Is.EqualTo(1));
+			Assert.That(mail.Size, Is.EqualTo(2453));
+			Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
 
-				var attachment = mail.Attachments[0];
-				Assert.That(attachment.FileName, Is.EqualTo("moron.txt"));
-				Assert.That(attachment.Extension, Is.EqualTo(".txt"));
-				Assert.That(attachment.Size, Is.EqualTo(new FileInfo(@"..\..\Data\Waybills\moron.txt").Length));
+			var attachment = mail.Attachments[0];
+			Assert.That(attachment.FileName, Is.EqualTo("moron.txt"));
+			Assert.That(attachment.Extension, Is.EqualTo(".txt"));
+			Assert.That(attachment.Size, Is.EqualTo(new FileInfo(@"..\..\Data\Waybills\moron.txt").Length));
 
-				var attachLogs = TestAttachmentSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(attachLogs.Count, Is.EqualTo(1));
+			var attachLogs = TestAttachmentSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(attachLogs.Count, Is.EqualTo(1));
 
-				var attachLog = attachLogs[0];
-				Assert.That(attachLog.UpdateLogEntry, Is.Null);
-				Assert.That(attachLog.Committed, Is.False);
-				Assert.That(attachLog.Attachment.Id, Is.EqualTo(attachment.Id));
+			var attachLog = attachLogs[0];
+			Assert.That(attachLog.UpdateLogEntry, Is.Null);
+			Assert.That(attachLog.Committed, Is.False);
+			Assert.That(attachLog.Attachment.Id, Is.EqualTo(attachment.Id));
 
-				Assert.That(File.Exists(Path.Combine(Settings.Default.AttachmentPath, attachment.GetSaveFileName())), Is.True);
-			}
+			Assert.That(File.Exists(Path.Combine(Settings.Default.AttachmentPath, attachment.GetSaveFileName())), Is.True);
 		}
 
 		[Test]
@@ -342,7 +335,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "отправляем письмо со статусом VIP")]
 		public void SendVIPMail()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -356,16 +349,14 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			TemplateHolder.Values.VIPMailPayerId = _info.Supplier.Payer.Id;
 			handler.TestProcessMime(_info.Mime);
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.UpdateLogEntry, Is.Null);
-				Assert.That(mailLog.Committed, Is.False);
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.That(mailLog.Mail.IsVIPMail, Is.True);
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.UpdateLogEntry, Is.Null);
+			Assert.That(mailLog.Committed, Is.False);
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			Assert.That(mailLog.Mail.IsVIPMail, Is.True);
 		}
 
 		private void SendErrorToProvider(DocSourceHandlerForTesting handler, MiniMailException exception, Mime sourceLetter)
@@ -397,7 +388,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон для неизвестного адреса поставщика'")]
 		public void NotFoundSupplierError()
 		{
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 
 			var message = ImapHelper.BuildMessageWithAttachments(
@@ -423,7 +414,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон для пустого списка получателей'")]
 		public void NotFoundError()
 		{
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
@@ -450,10 +441,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при недопустимом типе файла вложения'")]
 		public void ErrorOnAllowedExtensions()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
@@ -481,10 +472,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при превышении размера вложения'")]
 		public void ErrorOnMaxAttachment()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
@@ -510,7 +501,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "отправляем письмо два раза, второй раз оно не должно доставляться")]
 		public void SendDuplicateMessage()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -523,28 +514,23 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			//Обрабатываем письмо один раз
 			Process();
 
-			TestMailSendLog firstLog;
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				firstLog = mailLog;
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			var firstLog = mailLog;
 
 			//Обрабатываем письмо повторно
 			Process();
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			mailLog = mails[0];
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 
-				Assert.That(mailLog.Id, Is.EqualTo(firstLog.Id));
-			}
+			Assert.That(mailLog.Id, Is.EqualTo(firstLog.Id));
 		}
 
 		//Создаем обработчик и пытаемся обработать два одинаковых письма
@@ -554,7 +540,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			string subject = "Тест на дубликаты";
 			string body = "Дублирующее сообщение";
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 			SetUp(
 				new List<TestUser> { user },
@@ -580,7 +566,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "письмо обработывается, но не по всем адресам, т.к. указывается недоступный для поставщика регион")]
 		public void SendWithExclusion()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			var inforoomRegion = TestRegion.Find(TestRegion.Inforoom);
@@ -599,22 +585,20 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(_responseSubject, StringComparison.CurrentCultureIgnoreCase));
 			Assert.That(responseCount, Is.EqualTo(1), "Не найдено письмо с загловком '{0}'", _responseSubject);
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
 		}
 
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при превышении размера вложения'")]
 		public void ErrorOnMaxSizeLetter()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.CreateNaked(session);
 			var from = String.Format("{0}@supplier.test", supplier.Id);
 			PrepareSupplier(supplier, from);
 
@@ -675,11 +659,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "при проверке письма должно возникнуть исключение по шаблону 'Шаблон при пустом письме'")]
 		public void ErrorOnEmptyLetter()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
-			var supplier = TestSupplier.Create();
-			var from = String.Format("{0}@supplier.test", supplier.Id);
+			var supplier = TestSupplier.CreateNaked(session);
+			var from = $"{supplier.Id}@supplier.test";
 			PrepareSupplier(supplier, from);
 
 			var message = ImapHelper.BuildMessageWithAttachments(
@@ -727,7 +711,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test(Description = "отправляем письмо, которого нет текстовой части, но есть html-body")]
 		public void SendWithHtmlBody()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -744,21 +728,19 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.That(mailLog.Mail.Subject, Is.EqualTo("натура сиберика"));
-				Assert.That(mailLog.Mail.Body, Is.StringStarting("\r\nДОБРЫЙ ДЕНЬ!\r\nНаша фирма является поставщиком и официальным представителем органической косметики Натура Сиберика. Мы уже поставляем эту косметику в вашу аптеку по ул.Советская."));
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			Assert.That(mailLog.Mail.Subject, Is.EqualTo("натура сиберика"));
+			Assert.That(mailLog.Mail.Body, Is.StringStarting("\r\nДОБРЫЙ ДЕНЬ!\r\nНаша фирма является поставщиком и официальным представителем органической косметики Натура Сиберика. Мы уже поставляем эту косметику в вашу аптеку по ул.Советская."));
 		}
 
 		[Test(Description = "отправляем письмо, которого нет текстовой части, но есть вложение")]
 		public void SendWithEmptyBody()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.CreateNaked(session);
 			var user = client.Users[0];
 
 			SetUp(
@@ -779,17 +761,15 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Process();
 
-			using (new SessionScope()) {
-				var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
-				Assert.That(mails.Count, Is.EqualTo(1));
+			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
+			Assert.That(mails.Count, Is.EqualTo(1));
 
-				var mailLog = mails[0];
-				Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-				Assert.That(mailLog.Mail.Subject, Is.EqualTo("Отказы по заявке № АХ1-1131222"));
-				Assert.That(mailLog.Mail.Body, Is.Null);
-				Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(1));
-				Assert.That(mailLog.Mail.Attachments[0].FileName, Is.EqualTo("K1795MZАХ1-1131222D120305.xls"));
-			}
+			var mailLog = mails[0];
+			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
+			Assert.That(mailLog.Mail.Subject, Is.EqualTo("Отказы по заявке № АХ1-1131222"));
+			Assert.That(mailLog.Mail.Body, Is.Null);
+			Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(1));
+			Assert.That(mailLog.Mail.Attachments[0].FileName, Is.EqualTo("K1795MZАХ1-1131222D120305.xls"));
 		}
 	}
 }

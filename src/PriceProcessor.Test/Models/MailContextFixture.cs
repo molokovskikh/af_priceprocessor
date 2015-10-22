@@ -13,7 +13,7 @@ using Test.Support.Suppliers;
 namespace PriceProcessor.Test.Models
 {
 	[TestFixture]
-	public class MailContextFixture
+	public class MailContextFixture : IntegrationFixture
 	{
 		[Test]
 		public void Accept_html_extension_for_vip_sender()
@@ -50,18 +50,17 @@ namespace PriceProcessor.Test.Models
 			var fromList = new AddressList();
 			fromList.Add(new MailboxAddress(email));
 
-			using (new SessionScope()) {
-				var supplier = TestSupplier.CreateNaked();
-				supplier.Name = name;
-				supplier.Save();
-				var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
-				group.Save();
-				group.AddPerson("Tестовая персона");
-				group.Persons[0].Save();
-				var contact = group.Persons[0].AddContact(ContactType.Email, email);
-				contact.Save();
-			}
+			var supplier = TestSupplier.CreateNaked(session);
+			supplier.Name = name;
+			supplier.Save();
+			var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
+			session.Save(group);
+			group.AddPerson("Tестовая персона");
+			session.Save(group.Persons[0]);
+			var contact = group.Persons[0].AddContact(ContactType.Email, email);
+			session.Save(contact);
 
+			FlushAndCommit();
 			context.ParseMime(message, fromList);
 
 			Assert.AreEqual(context.Suppliers.Count, 1);
