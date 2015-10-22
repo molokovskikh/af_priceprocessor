@@ -17,7 +17,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				ISheet sheet1 = workbook.CreateSheet("Sheet1");
 
 				var row = sheet1.CreateRow(1);
-				row.CreateCell(5).SetCellValue("Наименование организации: Представитель АК \"Инфорум\", г.Воронеж, Ленинский пр-т.160, офис 415");
+				row.CreateCell(5).SetCellValue("Наименование организации: Представитель АналитФармация");
 
 				row = sheet1.CreateRow(2);
 				row.CreateCell(2).SetCellValue("Отдел:");

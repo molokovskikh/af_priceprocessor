@@ -42,7 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 					});
 				}
 				else {
-					task.DocumentLine.CertificateError = String.Format("Файл сертификата '{0}' не найден на ftp Инфорум", file);
+					task.DocumentLine.CertificateError = String.Format("Файл сертификата '{0}' не найден на ftp АналитФармация", file);
 				}
 			}
 		}

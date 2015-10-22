@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.CertificateSources
 
 			foundFiles.Each(files.Add);
 			if (files.Count == 0)
-				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp Инфорум";
+				task.DocumentLine.CertificateError = "Файл сертификата не найден на ftp АналитФармация";
 		}
 
 		protected string CopyToTemp(string filename)

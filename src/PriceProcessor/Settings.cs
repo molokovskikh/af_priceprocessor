@@ -454,17 +454,7 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
-
-Документы (накладные, отказы) не были доставлены аптеке, т.к. в Вашем письме отсутствуют вложения.
-К обработке принимаются только сообщения, содержащие документы во вложении.
-
-Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
-
-Во вложении этого письма находится оригинал Вашего сообщения.
-
-С уважением,
-АК ""Инфорум"".")]
+		[global::System.Configuration.DefaultSettingValueAttribute(@"")]
 		public string ResponseDocBodyTemplateOnNothingAttachs
 		{
 			get
@@ -486,17 +476,7 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
-
-Документы (накладные, отказы) не были доставлены аптеке, т.к.
-в адресе получателя указано несколько клиентов (вероятно, указаны адреса разных аптек), допускается только один.
-
-Пожалуйста, внесите необходимые изменения и отправьте документы вновь.
-
-Во вложении этого письма находится оригинал Вашего сообщения.
-
-С уважением,
-АК ""Инфорум"".")]
+		[global::System.Configuration.DefaultSettingValueAttribute(@"")]
 		public string ResponseDocBodyTemplateOnMultiDomen
 		{
 			get
@@ -507,17 +487,7 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
-
-Документы (накладные, отказы) не были доставлены аптеке, т.к.
-указанный адрес получателя не соответствует ни одной из аптек.
-
-Пожалуйста, проверьте корректность указания адреса аптеки и отправьте документы вновь.
-
-Во вложении этого письма находится оригинал Вашего сообщения.
-
-С уважением,
-АК ""Инфорум"".")]
+		[global::System.Configuration.DefaultSettingValueAttribute(@"")]
 		public string ResponseDocBodyTemplateOnNonExistentClient
 		{
 			get
@@ -528,18 +498,7 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
-
-Документы (накладные, отказы) не были доставлены аптеке, т.к.
-адрес, с которого отправлено сообщение с документами, не зарегистрирован в системе, как разрешенный адрес для приема документов от Вашей организации .
-Пожалуйста, для отправки документов используйте согласованные ранее адреса. Либо если Вы в дальнейшем предполагаете отправлять документы с этого адреса, добавьте его в список разрешенных, используя интерфейс поставщика.
-
-Пожалуйста, изменив адрес отправителя или выполнив настройки, отправьте документы вновь.
-
-Во вложении этого письма находится оригинал Вашего сообщения.
-
-С уважением,
-АК ""Инфорум"".")]
+		[global::System.Configuration.DefaultSettingValueAttribute(@"")]
 		public string ResponseDocBodyTemplateOnUnknownProvider
 		{
 			get
@@ -572,16 +531,7 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"Добрый день.
-
-Документы (накладные, отказы) не были доставлены аптеке, т.к. одно из вложений имеет размер больше маскимально допустимого значения в {0} Кб.
-
-Пожалуйста, изменив содержимое вложения, отправьте документы вновь.
-
-Во вложении этого письма находится оригинал Вашего сообщения.
-
-С уважением,
-АК ""Инфорум"".
+		[global::System.Configuration.DefaultSettingValueAttribute(@"
 ")]
 		public string ResponseDocBodyTemplateOnMaxWaybillAttachment
 		{
@@ -610,31 +560,6 @@ namespace Inforoom.PriceProcessor
 			get
 			{
 				return ((string)(this["RemotingServiceName"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
-<ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-  <string>ProductId</string>
-  <string>PriceCode</string>
-  <string>CodeFirmCr</string>
-  <string>SynonymCode</string>
-  <string>SynonymFirmCrCode</string>
-  <string>Code</string>
-  <string>Junk</string>
-  <string>Period</string>
-  <string>RequestRatio</string>
-  <string>OrderCost</string>
-  <string>MinOrderCount</string>
-  <string>ProducerCost</string>
-</ArrayOfString>")]
-		public global::System.Collections.Specialized.StringCollection CorePrimaryFields
-		{
-			get
-			{
-				return ((global::System.Collections.Specialized.StringCollection)(this["CorePrimaryFields"]));
 			}
 		}
 

@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Waybills
 {
 	public enum WaybillSourceType
 	{
-		[Description("FTP АК 'Инфорум'")] FtpInforoom = 4,
+		[Description("FTP АналитФармация")] FtpInforoom = 4,
 		[Description("FTP Поставщика")] FtpSupplier = 5,
 		[Description("Email")] Email = 1,
 	}
