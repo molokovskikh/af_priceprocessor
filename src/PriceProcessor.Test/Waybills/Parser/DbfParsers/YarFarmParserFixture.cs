@@ -40,6 +40,25 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual(1, line.Quantity);
 		}
 
+		[Test]
+		public void Parse_GrantB()
+		{
+			var doc = WaybillParser.Parse(@"1939.dbf");
+			var invoice = doc.Invoice;
+
+			Assert.AreEqual(invoice.BuyerId, null);
+			Assert.AreEqual(invoice.BuyerName, "ИП Бергалиева Гульнара Сапаргалиевна , 404621, Вол");
+			Assert.AreEqual(invoice.SellerName.StartsWith("Общество с ограниченной ответственностью"), true);
+			Assert.AreEqual(invoice.SellerINN, "3442087187");
+
+			Assert.AreEqual(64, doc.Lines.Count);
+			var line = doc.Lines[0];
+			Assert.AreEqual(26.16, line.ProducerCost);
+			Assert.AreEqual(43.01, line.RegistryCost);
+
+		}
+
+
 		/// <summary>
 		/// Для задачи http://redmine.analit.net/issues/39453
 		/// </summary>
