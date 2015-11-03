@@ -103,12 +103,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 
 		public static bool ConvertIfNeeded(Document document, WaybillSettings settings)
 		{
-			if (settings.IsConvertFormat
-				&& document.SetAssortimentInfo(settings)) {
-				ConvertAndSave(document, settings.WaybillConvertFormat, settings);
-				return true;
-			}
-			return false;
+			return SessionHelper.WithSession(x => {
+				if (document.SetAssortimentInfo(x, settings)) {
+					ConvertAndSave(document, settings.WaybillConvertFormat, settings);
+					return true;
+				}
+				return false;
+			});
 		}
 	}
 }

@@ -90,35 +90,36 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public List<CertificateTask> Tasks = new List<CertificateTask>();
 
-		public bool SetAssortimentInfo(WaybillSettings settings)
+		public bool SetAssortimentInfo(ISession session, WaybillSettings settings)
 		{
+			if (!settings.IsConvertFormat)
+				return false;
+
 			if (settings.AssortimentPriceId == null) {
 				_log.InfoFormat("Не задан ассортиментный прайс-лист: ClientCode = {0}, Log.FileName = {1}, Log.Id = {2}", ClientCode, Log.FileName, Log.Id);
 				return true;
 			}
 
 			// список id товаров из накладной
-			var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => l.ProductEntity.Id).ToList();
-
-			var criteria = DetachedCriteria.For<Core>();
-			criteria.Add(Restrictions.Eq("Price.Id", settings.AssortimentPriceId.Value));
-			criteria.Add(Restrictions.In("ProductId", productIds));
-
-			var cores = SessionHelper.WithSession(c => criteria.GetExecutableCriteria(c).List<Core>()).ToList();
+			var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => (uint?)l.ProductEntity.Id).ToArray();
+			var cores = session.Query<Core>()
+				.Where(x => x.Price.Id == settings.AssortimentPriceId.Value && productIds.Contains(x.ProductId))
+				.ToList();
 			foreach (var line in Lines) {
-				var ls = cores.Where(c => line.ProductEntity != null && c.ProductId == line.ProductEntity.Id && c.CodeFirmCr == line.ProducerId).ToList();
-				if (ls.Any()) {
-					//Сортируем по Code, чтобы каждый раз при сопоставлении выбирать одну и ту же позицию из позиций с одинаковыми ProductId и ProducerId
-					var core = ls.OrderBy(c => c.Code).FirstOrDefault();
-					var info = new AssortimentPriceInfo();
-					uint res;
-					int codeCr;
-					info.Code = UInt32.TryParse(core.Code, out res) ? (uint?)res : null;
-					info.CodeCr = int.TryParse(core.CodeCr, out codeCr) ? (int?)codeCr : null;
-					info.Synonym = core.ProductSynonym != null ? core.ProductSynonym.Synonym : null;
-					info.SynonymFirmCr = core.ProducerSynonym != null ? core.ProducerSynonym.Synonym : null;
-					line.AssortimentPriceInfo = info;
-				}
+				//Сортируем по Code, чтобы каждый раз при сопоставлении выбирать одну и ту же позицию из позиций с одинаковыми ProductId и ProducerId
+				//Предпочитаем предложения у которых совпадает цена реестра тк в прайсе могут быть позиции с разным кодом
+				var core = cores.Where(c => line.ProductEntity != null && c.ProductId == line.ProductEntity.Id && c.CodeFirmCr == line.ProducerId)
+					.OrderByDescending(x => x.RegistryCost == line.RegistryCost)
+					.ThenBy(x => x.Code)
+					.FirstOrDefault();
+				if (core == null)
+					continue;
+				line.AssortimentPriceInfo = new AssortimentPriceInfo {
+					Code = NullableConvert.ToUInt32(core.Code),
+					CodeCr = NullableConvert.ToInt32(core.CodeCr),
+					Synonym = core.ProductSynonym?.Synonym,
+					SynonymFirmCr = core.ProducerSynonym?.Synonym
+				};
 			}
 			return true;
 		}
@@ -132,7 +133,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 				SessionHelper.StartSession(SetProductId);
 			}
 			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при сопоставлении id синонимам в накладной {0}", Log.FileName), e);
+				_log.Error($"Ошибка при сопоставлении id синонимам в накладной {Log.FileName}", e);
 			}
 		}
 

@@ -24,18 +24,21 @@ namespace Inforoom.PriceProcessor.Models
 		public ProducerSynonym ProducerSynonym { get; set; }
 
 		[Property]
-		public int? ProductId { get; set; }
+		public uint? ProductId { get; set; }
 
 		[BelongsTo("ProductId")]
 		public Product Product { get; set; }
 
 		[Property]
-		public int? CodeFirmCr { get; set; }
+		public uint? CodeFirmCr { get; set; }
 
 		[Property]
 		public string Code { get; set; }
 
 		[Property]
 		public string CodeCr { get; set; }
+
+		[Property]
+		public decimal? RegistryCost { get; set; }
 	}
 }

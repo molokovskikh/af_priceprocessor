@@ -57,7 +57,6 @@ namespace PriceProcessor.Test.Waybills
 				Product = "123",
 				Document = document
 			};
-			document.Lines = new List<DocumentLine>();
 			document.Lines.Add(_line);
 			session.Save(document);
 			client.Settings.IsConvertFormat = true;
@@ -68,6 +67,40 @@ namespace PriceProcessor.Test.Waybills
 
 		[Test(Description = "Проверяет конвертацию при заданном ассортиментном ПЛ")]
 		public void ConvertToUniversalWithAssortimentPriceTest()
+		{
+			CreateAssortmentPrice();
+			var result = ExportFile();
+			Assert.That(result.Rows[0]["name_artis"], Is.EqualTo("Тестовый синоним товара"));
+			Assert.That(result.Rows[0]["przv_artis"], Is.EqualTo("Тестовый синоним производителя"));
+		}
+
+		[Test(Description = @"Проверяет заполнение продукта и производителя из каталога
+вместо ассортиментного Пл, если ассортиментный Пл не задан")]
+		public void ConvertToUniversalWithoutAssortimentPriceTest()
+		{
+			var result = ExportFile();
+			Assert.That(result.Rows[0]["name_artis"], Is.EqualTo("testCatalog"));
+			Assert.That(result.Rows[0]["przv_artis"], Is.EqualTo("testProducer"));
+		}
+
+		[Test]
+		public void Respect_producer_cost()
+		{
+			var price = CreateAssortmentPrice();
+			price.Core[0].RegistryCost = 150.53m;
+			var core = new TestCore(price.Core[0].ProductSynonym, price.Core[0].ProducerSynonym) {
+				Code = "0001",
+				Quantity = "1",
+				Period = "01.01.2100",
+				RegistryCost = 215.26m,
+			};
+			price.Core.Add(core);
+			document.Lines[0].RegistryCost = 215.26m;
+			document.SetAssortimentInfo(session, session.Load<WaybillSettings>(client.Settings.Id));
+			Assert.AreEqual(1, document.Lines[0].AssortimentPriceInfo.Code);
+		}
+
+		private TestPrice CreateAssortmentPrice()
 		{
 			var assortPrice = new TestPrice {
 				AgencyEnabled = true,
@@ -86,28 +119,16 @@ namespace PriceProcessor.Test.Waybills
 				session.Load<TestProducer>(_producer.Id),
 				assortPrice);
 			session.Save(prSynonym);
-			session.Flush();
 			var core = new TestCore(synonym, prSynonym) {
 				Code = "0000",
-				Price = assortPrice,
 				Quantity = "1",
 				Period = "01.01.2100"
 			};
+			assortPrice.Core.Add(core);
 
 			session.Save(core);
 			session.Flush();
-			var result = ExportFile();
-			Assert.That(result.Rows[0]["name_artis"], Is.EqualTo("Тестовый синоним товара"));
-			Assert.That(result.Rows[0]["przv_artis"], Is.EqualTo("Тестовый синоним производителя"));
-		}
-
-		[Test(Description = @"Проверяет заполнение продукта и производителя из каталога
-вместо ассортиментного Пл, если ассортиментный Пл не задан")]
-		public void ConvertToUniversalWithoutAssortimentPriceTest()
-		{
-			var result = ExportFile();
-			Assert.That(result.Rows[0]["name_artis"], Is.EqualTo("testCatalog"));
-			Assert.That(result.Rows[0]["przv_artis"], Is.EqualTo("testProducer"));
+			return assortPrice;
 		}
 
 		private DataTable ExportFile()
