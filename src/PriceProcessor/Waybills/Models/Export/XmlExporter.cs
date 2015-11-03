@@ -89,8 +89,7 @@ group by ai.SupplierDeliveryId")
 				writer.WriteAttributeString("factura_number", doc.Invoice?.InvoiceNumber ?? doc.ProviderDocumentId);
 				writer.WriteAttributeString("doc_date", doc.DocumentDate?.ToString("dd.MM.yy"));
 				writer.WriteAttributeString("pay_date", doc.DocumentDate?.ToString("dd.MM.yy"));
-				writer.WriteAttributeString("doc_sum",
-					(doc?.Invoice?.Amount ?? doc.Lines.Sum(x => x.Amount))?.ToString(CultureInfo.InvariantCulture));
+				writer.WriteAttributeString("doc_sum", doc.Lines.Sum(x => x.Amount)?.ToString(CultureInfo.InvariantCulture));
 				writer.WriteEndElement();
 				foreach (var line in doc.Lines) {
 					writer.WriteStartElement("DETAIL");
