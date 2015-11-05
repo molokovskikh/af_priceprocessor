@@ -13,15 +13,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Invoice(i => i.InvoiceNumber, "BILLNUM")
 				.Invoice(i => i.InvoiceDate, "BILLDT")
 				.Invoice(i => i.AmountWithoutNDS, "SUMPAY")
-
 				.Invoice(i => i.NDSAmount10, "SUMNDS10")
 				.Invoice(i => i.NDSAmount18, "SUMNDS20")
 				.Invoice(i => i.AmountWithoutNDS10, "SUM10")
 				.Invoice(i => i.AmountWithoutNDS18, "SUM20")
 				.Invoice(i => i.AmountWithoutNDS0, "SUM0")
-                .Invoice(i => i.Amount, "SUMPAY")
-
-                .Line(l => l.Code, "CODEPST")
+				.Invoice(i => i.Amount, "SUMPAY")
+				.Line(l => l.Code, "CODEPST")
 				.Line(l => l.Product, "NAME")
 				.Line(l => l.Producer, "FIRM")
 				.Line(l => l.Country, "CNTR")
@@ -80,7 +78,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			if(data.Columns.Contains("NDOC")
+			if (data.Columns.Contains("NDOC")
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("GDATE")
@@ -89,7 +87,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& !data.Columns.Contains("NAMEAPT")
 				&& !data.Columns.Contains("SUMITEM")
 				&& !data.Columns.Contains("UNITNAME")) {
-				if(data.Columns.Contains("SELLERID")) {
+				if (data.Columns.Contains("SELLERID")) {
 					foreach (DataRow row in data.Rows) {
 						if (row["SELLERID"].ToString() != "1111")
 							return true;

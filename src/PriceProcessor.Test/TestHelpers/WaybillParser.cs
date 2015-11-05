@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.TestHelpers
 			var parser = detector.DetectParser(filePath, log);
 			var parsers = detector.GetSuitableParsers(filePath, log).ToList();
 			if (parsers.Count > 1)
-				throw new Exception(String.Format("Для разбора данного формата подходит более одного парсера, {0}", parsers.Implode()));
+				throw new Exception($"Для разбора данного формата подходит более одного парсера, {parsers.Implode()}");
 			if (parser == null)
 				return null;
 			log = log ??

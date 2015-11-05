@@ -171,19 +171,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\3901847_Роста(300882R).dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\13093.dbf")));
 			Assert.IsTrue(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\16810 (1).dbf")));
-			Assert.IsFalse(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\5066_5014C.dbf")), 
-					"Накладная 'Волгофарм' по-прежнему удовлетворяет парсеру PulsFKParser");
+			Assert.IsFalse(PulsFKParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\5066_5014C.dbf")),
+				"Накладная 'Волгофарм' по-прежнему удовлетворяет парсеру PulsFKParser");
 		}
 
-        /// <summary>
-        /// Для задачи http://redmine.analit.net/issues/38523
-        /// </summary>
-        [Test]
-        public void Parse2()
-        {
-            var doc = WaybillParser.Parse("633304.dbf");
-            var invoice = doc.Invoice;
-            Assert.That(invoice.Amount, Is.EqualTo(58279.01));
-        }
-    }
+		/// <summary>
+		/// Для задачи http://redmine.analit.net/issues/38523
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			var doc = WaybillParser.Parse("633304.dbf");
+			var invoice = doc.Invoice;
+			Assert.That(invoice.Amount, Is.EqualTo(58279.01));
+		}
+	}
 }

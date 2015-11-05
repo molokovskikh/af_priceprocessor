@@ -51,6 +51,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
 			{ 2109, new List<Type> { typeof(BelaLtdParser) } }, // БЕЛА ЛТД, Код 2109
 			{ 7524, new List<Type> { typeof(KronikaLtdParser) } }, //Кроника-Фарм, Код 7524
+			{ 13717, new List<Type> { typeof(UgFarmParser) } }//Юг-Фарм идентичен PulsFKParser но в SUMPAY передается сумма по строке SUMPAY
 		};
 
 		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
@@ -67,7 +68,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			foreach (var parserType in parsersTypes) {
 				var checkMethod = parserType.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (checkMethod == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", parserType));
+					throw new Exception($"У типа {parserType} нет метода для проверки формата, реализуй метод CheckFileFormat");
 
 				var paramClass = checkMethod.GetParameters()[0].ParameterType.FullName;
 				object[] args;
@@ -144,7 +145,7 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private IEnumerable<Type> GetSuitableParsers(string file, string group)
 		{
-			var @namespace = String.Format("Waybills.Parser.{0}Parsers", group);
+			var @namespace = $"Waybills.Parser.{@group}Parsers";
 			var types = typeof(WaybillFormatDetector)
 				.Assembly
 				.GetTypes()
@@ -173,7 +174,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			foreach (var type in normal) {
 				var detectFormat = type.GetMethod("CheckFileFormat", BindingFlags.Static | BindingFlags.Public);
 				if (detectFormat == null)
-					throw new Exception(String.Format("У типа {0} нет метода для проверки формата, реализуй метод CheckFileFormat", type));
+					throw new Exception($"У типа {type} нет метода для проверки формата, реализуй метод CheckFileFormat");
 
 				var result = (bool)detectFormat.Invoke(null, args);
 				if (result) {
