@@ -48,7 +48,9 @@ namespace PriceProcessor.Test.TestHelpers
 
 				//производим фильтрацию, если параметр subject установлен
 				if (!String.IsNullOrEmpty(subject) && items != null && items.Length > 0)
-					items = items.Where(i => i.Envelope.Subject.Equals(subject, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+					items = items
+						.Where(i => i.Envelope.Subject?.Equals(subject, StringComparison.CurrentCultureIgnoreCase) == false)
+						.ToArray();
 
 				if ((items != null) && (items.Length > 0)) {
 					var sequenceMessages = new IMAP_SequenceSet();
