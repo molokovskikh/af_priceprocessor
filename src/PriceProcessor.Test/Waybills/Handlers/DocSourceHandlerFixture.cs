@@ -582,7 +582,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			handler.TestProcessMime(_info.Mime);
 			var existsMessages = ImapHelper.CheckImapFolder(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass, ImapHelper.INBOXFolder);
 			Assert.That(existsMessages.Count, Is.GreaterThanOrEqualTo(1), "Не найдены письма в IMAP-папке");
-			var responseCount = existsMessages.Count(m => m.Envelope.Subject.Equals(_responseSubject, StringComparison.CurrentCultureIgnoreCase));
+			var responseCount = existsMessages
+				.Count(m => m.Envelope?.Subject.Equals(_responseSubject, StringComparison.CurrentCultureIgnoreCase) == true);
 			Assert.That(responseCount, Is.EqualTo(1), "Не найдено письмо с загловком '{0}'", _responseSubject);
 
 			var mails = TestMailSendLog.Queryable.Where(l => l.User.Id == user.Id).ToList();
