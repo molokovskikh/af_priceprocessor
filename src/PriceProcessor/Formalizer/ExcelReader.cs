@@ -32,7 +32,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public DataTable Parse(string file)
 		{
-			var workbook = Workbook.Load(file);
+			Workbook workbook;
+			try {
+				workbook = Workbook.Load(file);
+			} catch(Exception e) {
+				throw new Exception("Формат прайс-листа не соответствует формату excel 97-2003", e);
+			}
 			var worksheet = workbook.Worksheets.FirstOrDefault(w => String.Compare(w.Name, _sheetName, true) == 0);
 			if (worksheet == null)
 				worksheet = workbook.Worksheets[0];
