@@ -290,7 +290,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			};
 
 			var document = new Document(log, "ProtekHandler") {
-				OrderId = order == null ? (uint?)null : order.Id,
+				OrderId = order?.Id,
 				ProviderDocumentId = blading.baseId,
 				DocumentDate = blading.date0,
 			};
@@ -326,11 +326,9 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.Producer = bladingItem.manufacturerName;
 				line.Quantity = (uint?)bladingItem.bitemQty;
 				line.Country = bladingItem.country;
-				line.Certificates = bladingItem.seria;
-				line.CertificateAuthority = "";
 
 				line.ExpireInMonths = bladingItem.expiry;
-				line.Period = bladingItem.prodexpiry != null ? bladingItem.prodexpiry.Value.ToShortDateString() : null;
+				line.Period = bladingItem.prodexpiry?.ToShortDateString();
 				line.DateOfManufacture = bladingItem.proddt;
 
 				line.RegistryCost = (decimal?)bladingItem.reestrPrice;
@@ -361,13 +359,10 @@ namespace Inforoom.PriceProcessor.Downloader
 						.Select(id => new ProtekDoc(line, id.Value))
 						.ToList();
 
-					line.CertificateAuthority = certificates
-						.Select(c => c.regOrg)
-						.DefaultIfEmpty()
-						.FirstOrDefault();
-
-					line.CertificatesDate = certificates.FirstOrDefault()?.dateExpire?.ToString();
-					line.CertificatesEndDate = certificates.FirstOrDefault()?.regd;
+					line.Certificates = certificates.FirstOrDefault()?.regNo;
+					line.CertificateAuthority = certificates.FirstOrDefault()?.regOrg;
+					line.CertificatesDate = certificates.FirstOrDefault()?.regd?.ToString();
+					line.CertificatesEndDate = certificates.FirstOrDefault()?.dateExpire;
 				}
 			}
 
