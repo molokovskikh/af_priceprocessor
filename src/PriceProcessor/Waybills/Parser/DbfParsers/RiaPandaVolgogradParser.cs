@@ -26,8 +26,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERTIF")
 				.Line(l => l.CertificateSerialNumber, "SERN")
 				.Line(l => l.CertificatesDate, "SERTDATE")
-				.Line(l => l.CertificateAuthority, "SERTORG")
-				.Line(l => l.Amount, "SUMPAY");
+				.Line(l => l.CertificateAuthority, "SERTORG");
 		}
 
 		public static bool CheckFileFormat(DataTable table)
