@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 	internal class RiaPandaVolgogradParserFixture
 	{
 		/// <summary>
-		/// К задаче 
+		/// К задаче
 		/// http://redmine.analit.net/issues/29237
 		/// </summary>
 		[Test]
@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ61.Н12103"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("16.12.2016"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("Таможенный Союз"));
-			Assert.That(line.Amount.ToString(), Is.EqualTo("8070,20"));
+			Assert.That(line.Amount, Is.EqualTo(233.37));
 		}
 	}
 }
