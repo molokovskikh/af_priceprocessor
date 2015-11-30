@@ -900,14 +900,6 @@ drop temporary table Farm.MaxCosts;
 
 		private void PostProcessPosition(FormalizationPosition position)
 		{
-			DataRow row = null;
-			var reader = _reader as PriceReader;
-			if (reader != null)
-				row = reader.CurrentRow;
-
-			if (row == null)
-				return;
-
 			if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations) {
 				_rejectUpdater.Process(position);
 			}
