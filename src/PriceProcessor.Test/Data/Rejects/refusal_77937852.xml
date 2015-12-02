@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="windows-1251" standalone="yes" ?>
+<Reject>
+    <Line>
+      <Code>8748518</Code>
+      <CodeCr>5841</CodeCr>
+      <Product>Церебролизин 2мл №10 амп.</Product>
+      <Producer>EVER Neuro Pharma, GmbH</Producer>
+      <Rejected>1</Rejected>
+      <Ordered>10</Ordered>
+      <OrderId>894954</OrderId>
+    </Line>
+    <Line>
+      <Code>33772120</Code>
+      <Product>Фарингосепт табл. лимон 10мг N20 Румыния</Product>
+      <Producer>terapia s.c. sa</Producer>
+      <Rejected>2</Rejected>
+      <Ordered>2</Ordered>
+      <OrderId>10357377</OrderId>
+    </Line>
+    <Line>
+		<Code>33111</Code>
+		<Product>Фарингосепт табл. лимон 10мг N20 Румыния</Product>
+		<Producer>terapia s.c. sa</Producer>
+		<Rejected>2</Rejected>
+		<Ordered>2</Ordered>
+    </Line>
+  </Reject>
