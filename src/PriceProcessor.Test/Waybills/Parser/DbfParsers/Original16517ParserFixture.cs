@@ -46,10 +46,8 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SupplierCost * line.Quantity, Is.EqualTo(line.Amount));
 			var s = doc.Lines.Sum(x => x.Amount.GetValueOrDefault());
 			Assert.That(s, Is.EqualTo(invoice.Amount));
-			var nds = Decimal.Round(100 * line.Amount.Value*line.Nds.Value/(100 + line.Nds.Value));
+			var nds = Decimal.Round(100 * line.Amount.Value * line.Nds.Value / (100 + line.Nds.Value));
 			Assert.That(nds, Is.EqualTo(100 * line.NdsAmount));
-
 		}
-
 	}
 }
