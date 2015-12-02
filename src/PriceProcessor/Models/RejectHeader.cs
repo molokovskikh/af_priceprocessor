@@ -109,8 +109,13 @@ namespace Inforoom.PriceProcessor.Models
 		public virtual uint Rejected { get; set; }
 
 		[Property, Description("Стоимость товара")]
-
 		public virtual decimal? Cost { get; set; }
+
+		[Property, Description("Код производителя, строка макс 255 символов")]
+		public virtual string CodeCr { get; set; }
+		
+		[Property, Description("Номер заявки АналитФАРМАЦИЯ")]
+		public virtual uint OrderId { get; set; }
 
 		[BelongsTo("HeaderId")]
 		public virtual RejectHeader Header { get; set; }
