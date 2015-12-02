@@ -78,7 +78,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			if (data.Columns.Contains("SUMDOC"))
+			if (data.Columns.Contains("ANL"))
 				return false;
 
 			if (data.Columns.Contains("NDOC")

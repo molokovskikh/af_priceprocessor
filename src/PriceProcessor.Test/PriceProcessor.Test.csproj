@@ -412,6 +412,7 @@
     <Compile Include="Waybills\Parser\Txt\ShafievParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Shafiev_KalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UkonDbfParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\UniversalRejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren3492RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren3772RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\KatrenKazan2754RejectParserFixture.cs" />
