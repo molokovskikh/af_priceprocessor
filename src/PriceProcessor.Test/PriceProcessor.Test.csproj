@@ -207,6 +207,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParserFixture.cs" />
@@ -508,6 +509,7 @@
     <None Include="Data\Waybills\00000049080.sst" />
     <None Include="Data\Waybills\00013666.dbf" />
     <None Include="Data\Waybills\00841624.dbf" />
+    <None Include="Data\Waybills\1772.DBF" />
     <None Include="Data\Waybills\369151.dbf" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
     <None Include="Data\Waybills\Р-143129.dbf" />
