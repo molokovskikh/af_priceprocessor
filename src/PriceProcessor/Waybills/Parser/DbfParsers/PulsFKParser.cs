@@ -78,6 +78,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
+			if (data.Columns.Contains("SUMDOC"))
+				return false;
+
 			if (data.Columns.Contains("NDOC")
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
