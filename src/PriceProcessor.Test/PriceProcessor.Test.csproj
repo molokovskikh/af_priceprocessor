@@ -513,6 +513,7 @@
     <None Include="Data\Waybills\1772.DBF" />
     <None Include="Data\Waybills\369151.dbf" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
+    <None Include="Data\Waybills\pulse1.dbf" />
     <None Include="Data\Waybills\Р-143129.dbf" />
     <None Include="packages.config" />
     <None Include="Rosta\611.dbf">

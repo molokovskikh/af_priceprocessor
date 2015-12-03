@@ -6,6 +6,8 @@ using NUnit.Framework;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using PriceProcessor.Test.TestHelpers;
+using Inforoom.PriceProcessor.Waybills;
+using System.IO;
 
 namespace PriceProcessor.Test.Waybills.Parser
 {
@@ -49,5 +51,19 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var nds = Decimal.Round(100 * line.Amount.Value * line.Nds.Value / (100 + line.Nds.Value));
 			Assert.That(nds, Is.EqualTo(100 * line.NdsAmount));
 		}
+
+		// для задачи #41265
+		[Test]
+		public void ChechForPulsFK3996Parser()
+		{
+			var detector = new WaybillFormatDetector();
+			var filePath = "pulse1.dbf";
+			if (!File.Exists(filePath))
+				filePath = Path.Combine(@"..\..\Data\Waybills\", filePath);
+			var parsers = detector.GetSuitableParsers(filePath, null).ToList();
+			Assert.That(parsers.Count, Is.EqualTo(1));
+			Assert.That(parsers[0].Name, Is.EqualTo("PulsFK3996Parser"));
+		}
+
 	}
 }
