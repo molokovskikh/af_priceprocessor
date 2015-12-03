@@ -42,9 +42,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
-			if (data.Columns.Contains("ANL"))
-				return true;
-			return false;
+			var result = false;
+			if (data.Columns.Contains("SUMDOC")
+					&& !data.Columns.Contains("VENDOR")
+					&& !data.Columns.Contains("PRICE_MAN"))
+				result = true;
+			return result;
 		}
 	}
 }
