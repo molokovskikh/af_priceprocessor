@@ -255,6 +255,7 @@
     <Compile Include="Waybills\Models\Export\SupplierMap.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\EuropeParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Original16517Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UgFarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PulsBryanskParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\UniversalRejectParser.cs" />
