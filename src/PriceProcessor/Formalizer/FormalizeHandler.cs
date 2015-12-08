@@ -9,6 +9,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using NHibernate;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Formalizer
 {
@@ -219,8 +220,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 				_lastFormalizationDate = null;
 
 			if (!_formalizationFail && (PriceItemList.list.Count > 0)
-				&& _lastFormalizationDate.HasValue
-				&& (DateTime.UtcNow.Subtract(_lastFormalizationDate.Value).TotalMinutes > Settings.Default.MaxLiveTime)) {
+					&& _lastFormalizationDate.HasValue
+					&& (DateTime.UtcNow.Subtract(_lastFormalizationDate.Value).TotalMinutes > Settings.Default.MaxLiveTime)) {
 				var logMessage = String.Format(
 					"Время последней удачной формализации = {0}\r\nОчередь на формализацию = {1}",
 					_lastFormalizationDate.Value.ToLocalTime(),
@@ -308,13 +309,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public IEnumerable<PriceProcessItem> GetReadyForStart(IList<PriceProcessItem> processList)
 		{
 			var notExist = processList.Where(i => !File.Exists(i.FilePath)).ToList();
-			notExist.ForEach(i =>
-			{
-					//удаляем элемент из списка
-					processList.Remove(i);
-					//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
-					if (processList != PriceItemList.list)
-						PriceItemList.list.Remove(i);
+			notExist.ForEach(i => {
+				//удаляем элемент из списка
+				processList.Remove(i);
+				//Если список, переданный в процедуру, не является PriceItemList.list, то надо удалить и из глобального списка
+				if (processList != PriceItemList.list)
+					PriceItemList.list.Remove(i);
 			});
 
 			var ready = processList
@@ -333,18 +333,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 				var statisticMessage = String.Empty;
 				for (var i = pt.Count - 1; i >= 0; i--) {
 					var p = pt[i];
-					//Если формализация выполняется более X минут, то создаем ошибку в логе, чтобы она отразилась в приложении статистике
-					if (DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes >= Settings.Default.LongFormalizationWarningTimeout)
-					{
-						var log = new FormLog();
-						log.Host = Environment.MachineName;
-						log.PriceItemId = (uint?)p.ProcessItem.PriceItemId;
-						log.LogTime = DateTime.Now;
-						log.ResultId = 15;
-						log.Addition = "Прайс формализовался более " + Settings.Default.LongFormalizationWarningTimeout + " минут";
-						Session.Save(log);
-						Session.Flush();
-					}
 
 					//Если нитка не работает, то удаляем ее
 					if (p.FormalizeEnd || !p.ThreadIsAlive || ((p.ThreadState & ThreadState.Stopped) > 0)) {
@@ -384,6 +372,19 @@ namespace Inforoom.PriceProcessor.Formalizer
 							p.ThreadState,
 							p.FormalizeEnd,
 							p.ProcessState);
+
+
+						//Если формализация выполняется более X минут, то создаем ошибку в логе, чтобы она отразилась в приложении статистике
+						if (!p.FormalizeEnd && DateTime.UtcNow.Subtract(p.StartDate).TotalMinutes >= Settings.Default.LongFormalizationWarningTimeout) {
+							var log = new FormLog();
+							log.Host = Environment.MachineName;
+							log.PriceItemId = (uint?)p.ProcessItem.PriceItemId;
+							log.LogTime = DateTime.Now;
+							log.ResultId = 15;
+							log.Addition = "Прайс формализовался более " + Settings.Default.LongFormalizationWarningTimeout + " минут";
+							Session.Save(log);
+							Session.Flush();
+						}
 					}
 				}
 
