@@ -42,7 +42,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public FormalizeHandler()
 		{
 			//Время паузы обработчика - 5 секунд
-			SleepTime = 30;
+			SleepTime = 5;
 
 			//Создали наблюдателя за файлами
 			FSW = new FileSystemWatcher(Settings.Default.InboundPath, "*.*");
