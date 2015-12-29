@@ -52,27 +52,6 @@ namespace PriceProcessor.Test.Handlers
 			Assert.IsTrue(handler.IsReadyForDownload(source));
 		}
 
-		[Test, Ignore]
-		public void TestAddFailedSourceToList()
-		{
-			handler.FailedSources.Clear();
-			handler.FillSourcesTable();
-
-			var listSources = new ArrayList();
-			while (handler.dtSources.Rows.Count > 0) {
-				var priceSource = new PriceSource(handler.dtSources.Rows[0]);
-				var likeRows = handler.GetLikeSources(priceSource);
-				foreach (var likeRow in likeRows)
-					likeRow.Delete();
-				handler.dtSources.AcceptChanges();
-				listSources.Add(priceSource);
-			}
-			handler.ProcessData();
-
-			foreach (PriceSource item in listSources)
-				Assert.IsTrue(handler.FailedSources.Contains(item.PriceItemId));
-		}
-
 		[Test, Ignore("Починить")]
 		public void DownloadFileFromHttp()
 		{
