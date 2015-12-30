@@ -209,12 +209,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].CertificateFilename, Is.EqualTo("sLA9S"));
 			Assert.That(document.Lines[1].CertificateFilename, Is.EqualTo("sM9TM"));
 			Assert.That(document.Lines[8].CertificateFilename, Is.EqualTo("sFR06"));
-			Assert.IsNullOrEmpty(document.Lines[0].ProtocolFilemame);
-			Assert.IsNullOrEmpty(document.Lines[1].ProtocolFilemame);
+			Assert.That(document.Lines[0].ProtocolFilemame, Is.Null.Or.Empty);
+			Assert.That(document.Lines[1].ProtocolFilemame, Is.Null.Or.Empty);
 			Assert.That(document.Lines[8].ProtocolFilemame, Is.EqualTo("rFR06"));
 			Assert.That(document.Lines[0].PassportFilename, Is.EqualTo("pMAJO"));
 			Assert.That(document.Lines[1].PassportFilename, Is.EqualTo("pM9TM"));
-			Assert.IsNullOrEmpty(document.Lines[8].PassportFilename);
+			Assert.That(document.Lines[8].PassportFilename, Is.Null.Or.Empty);
 		}
 
 		/// <summary>

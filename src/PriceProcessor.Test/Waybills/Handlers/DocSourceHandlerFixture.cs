@@ -690,7 +690,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		public void CheckHtmlToText()
 		{
 			var mime = Mime.Parse(@"..\..\Data\UnparseWithHtml.eml");
-			Assert.IsNullOrEmpty(mime.BodyText);
+			Assert.That(mime.BodyText, Is.Null.Or.Empty);
 			Assert.IsNotEmpty(mime.BodyHtml);
 
 			var convertedText = mime.HtmlToText();

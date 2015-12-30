@@ -4,18 +4,21 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Models;
+using MySql.Data.MySqlClient;
 using NHibernate.Linq;
 using NUnit.Framework;
 using Test.Support;
+using Test.Support.log4net;
 using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Formalization
 {
 	[TestFixture]
-	public class RejectsFixture : IntegrationFixture
+	public class RejectsFixture : IntegrationFixture2
 	{
 		private DataTable data;
 		private TestPrice price;
@@ -67,13 +70,15 @@ namespace PriceProcessor.Test.Formalization
 			format.FCodeCr = "LETTERSNR";
 			format.FNote = "LETTERSDT";
 			format.FDoc = "QUALNMR";
-			Save(price, format);
+			session.Save(price);
+			session.Save(format);
 
 			realPrice = session.Load<Price>(price.Id);
 			realPrice.IsRejects = true;
-			Save(realPrice);
+			session.Save(realPrice);
 
-			price.CreateAssortmentBoundSynonyms("Диклофенак р-р для в/м введ 25 мг/мл (ампулы) 3 мл №10", "Биохимик ОАО");
+			price.CreateAssortmentBoundSynonyms(session,
+				"Диклофенак р-р для в/м введ 25 мг/мл (ампулы) 3 мл №10", "Биохимик ОАО");
 		}
 
 		[Test]
@@ -108,7 +113,7 @@ namespace PriceProcessor.Test.Formalization
 			realPrice = session.Load<Price>(realPrice.Id);
 			realPrice.IsRejects = false;
 			realPrice.IsRejectCancellations = true;
-			Save(realPrice);
+			session.Save(realPrice);
 
 			data.Rows.Clear();
 			data.Rows.Add(null, null,
@@ -125,6 +130,14 @@ namespace PriceProcessor.Test.Formalization
 			Assert.That(reject.CancelDate, Is.EqualTo(new DateTime(2010, 09, 03)));
 		}
 
+		[Test]
+		public void Process_forbidden()
+		{
+			session.Save(new TestForbidden(price, "Мукалтин табл. 50мг (упак. ячейковые контурные) № 10"));
+			Formalize();
+			Assert.That(Rejects().Count, Is.EqualTo(2));
+		}
+
 		private List<Reject> Rejects()
 		{
 			return session.Query<Reject>().ToList();
@@ -132,7 +145,7 @@ namespace PriceProcessor.Test.Formalization
 
 		private void Formalize()
 		{
-			Reopen();
+			FlushAndCommit();
 			var file = Path.GetTempFileName();
 			Dbf.Save(data, file);
 			var formalizer = PricesValidator.Validate(file, Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),

@@ -856,6 +856,8 @@ drop temporary table Farm.MaxCosts;
 
 				if (IsForbidden(position.PositionName)) {
 					InsertIntoForb(position);
+					//если это забраковка публиковать нужно даже запрешенные позиции
+					PostProcessPosition(position);
 					continue;
 				}
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Castle.ActiveRecord;
 using Common.MySql;
 using Inforoom.Common;
 using Inforoom.Downloader.Ftp;
@@ -29,6 +30,7 @@ namespace PriceProcessor.Test
 				Directory.CreateDirectory(inboundPath);
 			Settings.Default["InboundPath"] = inboundPath;
 			Program.InitActiveRecord(new[] { typeof(TestClient).Assembly, typeof(Document).Assembly });
+			IntegrationFixture2.Factory = ActiveRecordMediator.GetSessionFactoryHolder().GetSessionFactory(typeof(ActiveRecordBase));
 		}
 	}
 }

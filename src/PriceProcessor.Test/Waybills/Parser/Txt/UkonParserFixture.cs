@@ -174,7 +174,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				Assert.Fail("Должны были выбросить исключение");
 			}
 			catch (Exception e) {
-				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
+				Assert.That(e.Message, Is.StringContaining("Не найден заголовок накладной"));
 			}
 		}
 
@@ -189,7 +189,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				Assert.Fail("Должны были выбросить исключение");
 			}
 			catch (Exception e) {
-				Assert.That(e.Message, Text.Contains("Не найден заголовок накладной"));
+				Assert.That(e.Message, Is.StringContaining("Не найден заголовок накладной"));
 			}
 		}
 
@@ -203,7 +203,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 				Assert.Fail("Должны были выбросить исключение");
 			}
 			catch (Exception e) {
-				Assert.That(e.Message, Text.Contains("Не найдено тело накладной"));
+				Assert.That(e.Message, Is.StringContaining("Не найдено тело накладной"));
 			}
 		}
 
