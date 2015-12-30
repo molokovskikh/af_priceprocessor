@@ -88,40 +88,6 @@ namespace PriceProcessor.Test.Handlers
 			handler.ProcessData();
 		}
 
-		[Test, Ignore]
-		public void Delete_broken_message()
-		{
-			using (new TransactionScope()) {
-				TestPriceSource.Queryable
-					.Where(s => s.EmailFrom == "naturpr@kursknet.ru" && s.EmailTo == "prices@kursk.analit.net")
-					.Each(s => s.Delete());
-			}
-
-			var begin = DateTime.Now;
-
-			source.EmailFrom = "naturpr@kursknet.ru";
-			source.EmailTo = "prices@kursk.analit.net";
-			source.PriceMask = "Прайс-лист.rar";
-			source.ExtrMask = "Прайс-лист.xls";
-			source.Save();
-
-			Send(@"..\..\Data\EmailSourceHandlerTest\Bad.eml");
-			Send(@"..\..\Data\EmailSourceHandlerTest\Good.eml");
-
-			handler.ProcessData();
-
-			using (new SessionScope()) {
-				var logs = PriceDownloadLog.Queryable.Where(l => l.LogTime > begin).ToList();
-
-				Assert.That(logs.Count, Is.EqualTo(1));
-
-				var log = logs[0];
-				Assert.That(log.PriceItemId, Is.EqualTo(priceItem.Id));
-				Assert.That(log.ResultCode, Is.EqualTo(2));
-				Assert.That(log.Addition, Is.Null);
-			}
-		}
-
 		public void Send(string email)
 		{
 			SmtpClientEx.QuickSendSmartHost("box.analit.net",
