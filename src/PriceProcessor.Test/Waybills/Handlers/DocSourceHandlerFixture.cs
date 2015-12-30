@@ -171,14 +171,14 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.That(mailLog.UpdateLogEntry, Is.Null);
 			Assert.That(mailLog.Committed, Is.False);
 			Assert.That(mailLog.Mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-			Assert.IsNotNullOrEmpty(mailLog.Mail.SupplierEmail);
+			Assert.That(mailLog.Mail.SupplierEmail, Is.Not.Null.Or.Empty);
 			Assert.That(mailLog.Mail.SupplierEmail, Is.EqualTo("{0}@supplier.test".Format(_info.Supplier.Id)));
 			Assert.That(mailLog.Mail.MailRecipients.Count, Is.GreaterThan(0));
 			Assert.That(mailLog.Mail.Subject, Is.EqualTo("Это письмо пользователю"));
 			Assert.That(mailLog.Mail.Body, Is.EqualTo("Это текст письма пользователю"));
 			Assert.That(mailLog.Mail.IsVIPMail, Is.False);
 			Assert.That(mailLog.Mail.Attachments.Count, Is.EqualTo(0));
-			Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
+			Assert.That(mailLog.Mail.SHA256Hash, Is.Not.Null.Or.Empty);
 		}
 
 		[Test(Description = "разбор письма с вложениями")]
@@ -205,14 +205,14 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var mail = mailLog.Mail;
 			Assert.That(mailLog.Recipient, Is.EqualTo(mail.MailRecipients[0]));
 			Assert.That(mail.Supplier.Id, Is.EqualTo(_info.Supplier.Id));
-			Assert.IsNotNullOrEmpty(mail.SupplierEmail);
+			Assert.That(mail.SupplierEmail, Is.Not.Null.Or.Empty);
 			Assert.That(mail.MailRecipients.Count, Is.GreaterThan(0));
 			Assert.That(mail.Subject, Is.EqualTo("Это письмо пользователю"));
 			Assert.That(mail.Body, Is.EqualTo("Это текст письма пользователю"));
 			Assert.That(mail.IsVIPMail, Is.False);
 			Assert.That(mail.Attachments.Count, Is.EqualTo(1));
 			Assert.That(mail.Size, Is.EqualTo(2453));
-			Assert.IsNotNullOrEmpty(mailLog.Mail.SHA256Hash);
+			Assert.That(mailLog.Mail.SHA256Hash, Is.Not.Null.Or.Empty);
 
 			var attachment = mail.Attachments[0];
 			Assert.That(attachment.FileName, Is.EqualTo("moron.txt"));

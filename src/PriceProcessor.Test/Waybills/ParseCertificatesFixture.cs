@@ -356,7 +356,7 @@ delete from documents.Certificates where Id = :certificateId;
 			Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "Не были добавлены файлы сертификата");
 			Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "Не совпадает оригинальное имя файла сертификата");
 			Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(task.CertificateSource.Id), "Не совпадает источник файла сертификата");
-			Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "Не установлено поле ExternalFileId");
+			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.Not.Null.Or.Empty, "Не установлено поле ExternalFileId");
 			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "Поле ExternalFileId не совпадает с OriginFilename (только для AptekaHoldingVoronezhCertificateSource)");
 
 			var file = Path.Combine(Settings.Default.CertificatePath, certificate.CertificateFiles[0].Id + ".tif");
@@ -457,7 +457,7 @@ delete from documents.Certificates where Id = :certificateId;
 			Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "Не были добавлены файлы сертификата");
 			Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "Не совпадает оригинальное имя файла сертификата");
 			Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "Не совпадает источник файла сертификата");
-			Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "Не установлено поле ExternalFileId");
+			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.Not.Null.Or.Empty, "Не установлено поле ExternalFileId");
 			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "Поле ExternalFileId не совпадает с OriginFilename (только для AptekaHoldingVoronezhCertificateSource)");
 
 			Assert.That(File.Exists(Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif")), "Не скопирован файл сертификата");
@@ -499,11 +499,11 @@ delete from documents.Certificates where Id = :certificateId;
 			Assert.That(task.Id, Is.GreaterThan(0));
 			Assert.That(task.CertificateSource, Is.Not.Null);
 			Assert.That(task.CatalogProduct, Is.Not.Null);
-			Assert.IsNotNullOrEmpty(task.SerialNumber);
+			Assert.That(task.SerialNumber, Is.Not.Null.Or.Empty);
 
 			var deletedTask = CertificateTask.Queryable.FirstOrDefault(t => t.Id == task.Id);
 			Assert.That(deletedTask, Is.Null);
-			Assert.IsNotNullOrEmpty(task.SerialNumber);
+			Assert.That(task.SerialNumber, Is.Not.Null.Or.Empty);
 		}
 
 
@@ -813,7 +813,7 @@ delete from documents.Certificates where Id = :certificateId;
 			Assert.That(certificate.CertificateFiles.Count, Is.EqualTo(1), "Не были добавлены файлы сертификата");
 			Assert.That(certificate.CertificateFiles[0].OriginFilename, Is.EqualTo(certificateFile), "Не совпадает оригинальное имя файла сертификата");
 			Assert.That(certificate.CertificateFiles[0].CertificateSource.Id, Is.EqualTo(certificateSource.Id), "Не совпадает источник файла сертификата");
-			Assert.IsNotNullOrEmpty(certificate.CertificateFiles[0].ExternalFileId, "Не установлено поле ExternalFileId");
+			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.Not.Null.Or.Empty, "Не установлено поле ExternalFileId");
 			Assert.That(certificate.CertificateFiles[0].ExternalFileId, Is.EqualTo(certificate.CertificateFiles[0].OriginFilename), "Поле ExternalFileId не совпадает с OriginFilename (только для AptekaHoldingVoronezhCertificateSource)");
 
 			var file = Path.Combine(destinationDir, certificate.CertificateFiles[0].Id + ".tif");
