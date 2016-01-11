@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NHibernate.Criterion;
+using Inforoom.PriceProcessor.Waybills.Parser.XmlParsers;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -51,7 +52,8 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 2754, new List<Type> { typeof(KatrenKazanSpecialParser) } }, // Катрен (Казань)
 			{ 2109, new List<Type> { typeof(BelaLtdParser) } }, // БЕЛА ЛТД, Код 2109
 			{ 7524, new List<Type> { typeof(KronikaLtdParser) } }, //Кроника-Фарм, Код 7524
-			{ 13717, new List<Type> { typeof(UgFarmParser) } }//Юг-Фарм идентичен PulsFKParser но в SUMPAY передается сумма по строке SUMPAY
+			{ 13717, new List<Type> { typeof(UgFarmParser) } },//Юг-Фарм идентичен PulsFKParser но в SUMPAY передается сумма по строке SUMPAY
+			{ 15617, new List<Type> { typeof(KatrenStavropolSpecialParser) } }//Катрен-Ставрополь, код 15617
 		};
 
 		public Type GetSpecialParser(string file, DocumentReceiveLog documentLog)
@@ -86,7 +88,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					args = new[] { table };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
-				else if ((extention == ".sst" || extention == ".txt") && paramClass.Contains("String")) {
+				else if ((extention == ".sst" || extention == ".txt" || extention == ".pld") && paramClass.Contains("String")) {
 					args = new[] { file };
 					check = (bool)checkMethod.Invoke(null, args);
 				}

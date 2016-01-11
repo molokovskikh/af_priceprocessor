@@ -259,6 +259,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\Original16517Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UgFarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PulsBryanskParser.cs" />
+    <Compile Include="Waybills\Parser\KatrenStavropolSpecialParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\UniversalRejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\Katren3772RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\KatrenKazan2754RejectParser.cs" />
