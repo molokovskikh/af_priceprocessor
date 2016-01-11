@@ -44,12 +44,13 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					if (!rejectFound)
 						continue;
 
-					var rejectLine = new RejectLine();
-					reject.Lines.Add(rejectLine);
 					var index = line.IndexOf("Добавлено:");
+					if (index <= 0)
+						continue;
 
 					var first = line.Substring(0, index).Trim();
 					var product = first.Remove(0, 2);
+					var rejectLine = new RejectLine();
 					rejectLine.Product = product;
 
 					var second = line.Substring(index).Trim().Replace(",", " ");
@@ -60,6 +61,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					rejectLine.Ordered = ordered;
 					var rejected = ordered - delivered;
 					rejectLine.Rejected = rejected != null ? rejected.Value : 0;
+					reject.Lines.Add(rejectLine);
 				}
 			}
 		}
