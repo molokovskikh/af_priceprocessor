@@ -16,7 +16,7 @@ namespace PriceProcessor.Test
 	[SetUpFixture]
 	public class SetupFixture
 	{
-		[SetUp]
+		[OneTimeSetUp]
 		public void Setup()
 		{
 			XmlConfigurator.Configure();
