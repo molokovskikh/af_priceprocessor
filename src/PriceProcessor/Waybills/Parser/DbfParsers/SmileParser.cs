@@ -28,7 +28,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Invoice(i => i.BuyerName, "BUYERNAME")
 				.Invoice(i => i.BuyerId, "BUYERCODE")
 				.Invoice(i => i.SellerName, "SUPNAME")
-				.Invoice(i => i.RecipientAddress, "CARGERNAME", "COMMENT");
+				.Invoice(i => i.RecipientAddress, "CARGERNAME", "COMMENT")
+
+				// Требование 42661 для Поставщика Фарматика-МК, Код 18481
+				.Line(l => l.RegistryCost, "PRICEREE")
+				.Line(l => l.VitallyImportant, "ISLIFE");
+
 		}
 
 		public static bool CheckFileFormat(DataTable data)
