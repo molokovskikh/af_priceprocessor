@@ -39,23 +39,23 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				//.Line(l => l.ProducerCost, "CENASNDS")//CENASNDS – Цена за штуку с НДС
 				.ToDocument(document, data);
 
-			CheckAndFixSerialFormat(document.Lines);
+			//CheckAndFixSerialFormat(document.Lines);
 
 			return document;
 		}
 
-		private void CheckAndFixSerialFormat(IList<DocumentLine> lines)
-		{
-			foreach (var documentLine in lines) {
-				DateTime tmp;
+		//private void CheckAndFixSerialFormat(IList<DocumentLine> lines)
+		//{
+		//	foreach (var documentLine in lines) {
+		//		DateTime tmp;
 
-				var serialNumber = documentLine.SerialNumber;
+		//		var serialNumber = documentLine.SerialNumber;
 
-				if (DateTime.TryParse(serialNumber, out tmp)) {
-					documentLine.SerialNumber = serialNumber.Substring(3);
-				}
-			}
-		}
+		//		if (DateTime.TryParse(serialNumber, out tmp)) {
+		//			documentLine.SerialNumber = serialNumber.Substring(3);
+		//		}
+		//	}
+		//}
 
 		public static bool CheckFileFormat(DataTable data)
 		{

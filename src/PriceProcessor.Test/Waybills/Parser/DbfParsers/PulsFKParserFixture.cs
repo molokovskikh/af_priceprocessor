@@ -152,6 +152,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_GrandCapital_7752()
+		{
+			var doc = WaybillParser.Parse("002339_02989.dbf");
+			var line = doc.Lines[1];
+			Assert.That(line.Code, Is.EqualTo("2-000163"));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("16-1-02989"));
+		}
+
+		[Test]
 		public void Uralbiofarm_dop_fields()
 		{
 			var doc = WaybillParser.Parse("16810 (1).dbf");

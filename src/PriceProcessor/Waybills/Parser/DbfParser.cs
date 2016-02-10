@@ -102,7 +102,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					if (value is DBNull)
 						continue;
 
-					
+
 					object newvalue;
 					try {
 						newvalue = ConvertIfNeeded(value, propertyInfo.PropertyType);
@@ -124,7 +124,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 							throw;
 					}
 					propertyInfo.SetValue(line, newvalue, new object[0]);
-					
+
 					break;
 				}
 			});
@@ -165,11 +165,16 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			if (type == typeof(string)) {
 				DateTime res;
+				//if (DateTime.TryParseExact(value.ToString(),
+				//	"dd.MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+				//	return Convert.ToString(value);
+				// ошибка #47069 - парсится как дата всё, что может быть распаршено как дата
+				//if (DateTime.TryParse(value.ToString(), out res))
+				//	return Convert.ToDateTime(value).ToShortDateString();
+				var dtFormats = new string[] { "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy H:mm:ss", "dd.MM.yy", "dd/MM/yy" };
 				if (DateTime.TryParseExact(value.ToString(),
-					"dd.MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
-					return Convert.ToString(value);
-				if (DateTime.TryParse(value.ToString(), out res))
-					return Convert.ToDateTime(value).ToShortDateString();
+					dtFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
+					return res.ToShortDateString();
 				return Convert.ToString(value);
 			}
 

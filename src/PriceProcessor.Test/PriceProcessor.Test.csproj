@@ -509,6 +509,7 @@
     <None Include="Data\EmailSourceHandlerTest\Good.eml" />
     <None Include="Data\Waybills\00000049080.sst" />
     <None Include="Data\Waybills\00013666.dbf" />
+    <None Include="Data\Waybills\002339_02989.dbf" />
     <None Include="Data\Waybills\00841624.dbf" />
     <None Include="Data\Waybills\15105008.dbf" />
     <None Include="Data\Waybills\1772.DBF" />
