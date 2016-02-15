@@ -34,6 +34,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.NdsAmount, "SUMMNDS")
 				.Line(l => l.VitallyImportant, "PV")
 				.Line(l => l.OrderId, "orderID")
+				.Line(l => l.EAN13, "BARCODE")
 					.Invoice(i => i.AmountWithoutNDS, "SUMM")
 					.Invoice(i => i.RecipientId, "customerCD")
 					.Invoice(i => i.RecipientAddress, "customerNM");
