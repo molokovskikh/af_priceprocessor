@@ -823,6 +823,12 @@ delete c from Farm.Core0 c
 where not exists(select * from Farm.UniqIds i where c.Id = i.Id)
 	and c.PriceCode = :priceId;
 
+update Farm.Core0 c
+	join Catalogs.Products p on p.Id = c.ProductId
+		join Catalogs.Catalog ca on ca.Id = p.CatalogId
+set c.VitallyImportant = 1
+where c.PriceCode = :priceId;
+
 drop temporary table Farm.UniqIds;
 drop temporary table Farm.MaxCosts;
 ";
