@@ -19,6 +19,7 @@ namespace PriceProcessor.Test
 		[OneTimeSetUp]
 		public void Setup()
 		{
+			Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
 			XmlConfigurator.Configure();
 			ConnectionHelper.DefaultConnectionStringName = "db";
 			With.DefaultConnectionStringName = "db";
