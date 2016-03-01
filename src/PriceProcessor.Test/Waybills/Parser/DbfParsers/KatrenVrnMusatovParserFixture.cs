@@ -98,6 +98,15 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var document = WaybillParser.Parse("407734.dbf");
 		}
 
+		//http://redmine.analit.net/issues/47625
+		[Test]
+		public void ParseCertificatesDate()
+		{
+			var doc = WaybillParser.Parse("111044-06.dbf");
+			var line = doc.Lines[0];
+			Assert.That(line.CertificatesDate, Is.EqualTo("11.12.2015"));
+		}
+
 		[Test]
 		public void Check_file_format()
 		{

@@ -93,5 +93,36 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var doc = WaybillParser.Parse(@"Р-1390032.DBF");
 			Assert.IsTrue(doc.Lines[4].VitallyImportant.Value);
 		}
+
+		[Test]
+		public void Parse_sia_tula()
+		{
+			var doc = WaybillParser.Parse(@"Р-2737366.DBF");
+			Assert.That(doc.Lines.Count, Is.EqualTo(12));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("Р-2737366"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("01.03.2016"));
+			var line = doc.Lines[0];
+			Assert.That(line.Amount, Is.EqualTo(307.01));
+			Assert.That(line.BillOfEntryNumber, Is.Null);
+			Assert.That(line.Certificates, Is.EqualTo("POCC RU.ФМ05.Д91472"));
+			Assert.That(line.Code, Is.EqualTo("18772"));
+			Assert.That(line.CodeCr, Is.EqualTo("1323"));
+			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
+			Assert.That(line.EAN13, Is.EqualTo("4607004430473"));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.NdsAmount, Is.EqualTo(27.91));
+			Assert.That(line.Period, Is.EqualTo("01.07.2017"));
+			Assert.That(line.Producer, Is.EqualTo("Люми ООО"));
+			Assert.That(line.ProducerCost, Is.EqualTo(30.085));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(27.35));
+			Assert.That(line.Product, Is.EqualTo("Аевит 0.2 Капс. Х10"));
+			Assert.That(line.Quantity, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.RegistryDate, Is.Null);
+			Assert.That(line.SerialNumber, Is.EqualTo("100615"));
+			Assert.That(line.SupplierCost, Is.EqualTo(30.7));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(27.91));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(2.0475));
+		}
 	}
 }

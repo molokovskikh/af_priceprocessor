@@ -32,8 +32,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.DocumentHeader(h => h.DocumentDate, "DATE_DOC")
 				.Line(l => l.Code, "CODE")
 				.Line(l => l.Product, "PRODUCT")
-				.Line(l => l.Producer, "PRODUCER2", "PRODUCER")
-				.Line(l => l.Country, "COUNTRY")
+				.Line(l => l.Producer, "PRODUCER2", "PRODUCER", "PROIZ")
+				.Line(l => l.Country, "COUNTRY", "STRANA")
 				.Line(l => l.ProducerCostWithoutNDS, "PRO_NNDS")
 				.Line(l => l.ProducerCost, "PRO")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE_BASE")
@@ -51,8 +51,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.EAN13, "EAN13", "BARCOD")
 				.Line(l => l.Nds, "NDS_PR")
 				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV", "GNVLS")
-				.Line(l => l.CodeCr, "VCODE")
+				.Line(l => l.CodeCr, "VCODE", "PROIZCODE")
 				.Line(l => l.OrderId, "idorder")
+				.Line(l => l.RegistryDate, "DATE_REES")
 				.ToDocument(document, data);
 
 			return document;
@@ -66,7 +67,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				data.Columns.Contains("PRO_NNDS") &&
 				data.Columns.Contains("SUM_OPL")
 				&& data.Columns.Contains("PRODUCT")
-				&& (data.Columns.Contains("PRODUCER") || data.Columns.Contains("PRODUCER2"));
+				&& (data.Columns.Contains("PRODUCER") || data.Columns.Contains("PRODUCER2") || data.Columns.Contains("PROIZ"));
 		}
 	}
 }

@@ -36,6 +36,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesEndDate, "DATES")
 				.Line(l => l.CertificateAuthority, "SERTWHO")
+				.Line(l => l.CertificatesDate, "SERT_DATE")
 				.ToDocument(document, data);
 			return document;
 		}
