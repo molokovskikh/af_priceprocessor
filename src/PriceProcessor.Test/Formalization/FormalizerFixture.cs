@@ -565,10 +565,14 @@ namespace PriceProcessor.Test.Formalization
 		{
 			price.PostProcessing = "UniqMaxCost";
 			CreateDefaultSynonym();
+			var synonym = price.ProductSynonyms.First(x => x.Name.StartsWith("9 МЕСЯЦЕВ"));
+			synonym.Product.CatalogProduct.VitallyImportant = false;
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;10.12.2014;
 9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;10.12.2014;");
 			session.Refresh(price);
 			Assert.AreEqual(1, price.Core.Count);
+			session.Refresh(synonym.Product.CatalogProduct);
+			Assert.IsTrue(synonym.Product.CatalogProduct.VitallyImportant);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
