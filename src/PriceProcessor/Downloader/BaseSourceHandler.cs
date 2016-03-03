@@ -34,9 +34,6 @@ namespace Inforoom.Downloader
 
 		public static string colPricePath = "PricePath";
 
-		public static string colEMailTo = "EMailTo";
-		public static string colEMailFrom = "EMailFrom";
-
 		public static string colFTPDir = "FTPDir";
 		public static string colFTPLogin = "FTPLogin";
 		public static string colFTPPassword = "FTPPassword";

@@ -128,9 +128,9 @@ namespace Inforoom.Downloader
 			foreach (var mbFrom in FromList.Mailboxes) {
 				//Раньше не проверялся весь список TO, теперь это делается
 				foreach (var mba in m.MainEntity.To.Mailboxes) {
-					var drLS = dtSources.Select(String.Format("({0} = '{1}') and ({2} like '*{3}*')",
-						SourcesTableColumns.colEMailTo, MimeEntityExtentions.GetCorrectEmailAddress(mba.EmailAddress),
-						SourcesTableColumns.colEMailFrom, mbFrom.EmailAddress));
+					var drLS = dtSources.Select(String.Format("(EMailTo = '{0}') and (EMailFrom like '*{1}*')",
+						MimeEntityExtentions.GetCorrectEmailAddress(mba.EmailAddress),
+						mbFrom.EmailAddress));
 					foreach (DataRow drS in drLS) {
 						if ((drS[SourcesTableColumns.colPriceMask] is String) &&
 							!String.IsNullOrEmpty(drS[SourcesTableColumns.colPriceMask].ToString())) {
