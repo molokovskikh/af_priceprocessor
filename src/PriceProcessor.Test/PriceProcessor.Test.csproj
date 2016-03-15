@@ -332,6 +332,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\KatrenVrnSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VegaParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenStavropolSpecialParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Xls\PharmChemComplect11261ParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\PureProfitParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\RafelConvertToUniversalDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\TTMF_8049_ParserFixture.cs" />
@@ -511,6 +512,7 @@
     <None Include="Data\Waybills\00013666.dbf" />
     <None Include="Data\Waybills\002339_02989.dbf" />
     <None Include="Data\Waybills\00841624.dbf" />
+    <None Include="Data\Waybills\11261.xls" />
     <None Include="Data\Waybills\15105008.dbf" />
     <None Include="Data\Waybills\1772.DBF" />
     <None Include="Data\Waybills\369151.dbf" />
