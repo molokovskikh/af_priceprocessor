@@ -201,6 +201,7 @@
     <Compile Include="Waybills\Parser\CalculateValuesFixture.cs" />
     <Compile Include="Waybills\Parser\ConvertDateInDbfFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ABGroupParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\BeautyLife18663ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\EuropeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
@@ -515,6 +516,7 @@
     <None Include="Data\Waybills\11261.xls" />
     <None Include="Data\Waybills\15105008.dbf" />
     <None Include="Data\Waybills\1772.DBF" />
+    <None Include="Data\Waybills\2178.DBF" />
     <None Include="Data\Waybills\369151.dbf" />
     <None Include="Data\Waybills\457244-14.pld" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
