@@ -21,11 +21,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 			if (filename.Contains(".csv"))
 				ParseCSV(reject, filename);
 			else if (filename.Contains(".txt"))
-			ParseTXT(reject, filename);
+				ParseTXT(reject, filename);
 			else
-			{
 				Logger.WarnFormat("Файл '{0}' не может быть распарсен, так как парсер {1} не умеет парсить данный формат файла", filename, GetType().Name);
-			}
 		}
 
 		/// <summary>
@@ -86,9 +84,9 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 							continue;
 
 						//Если мы дошли до этого места, значит все что осталось в файле - это строки с отказами
+						fields = line.Trim().Split('\t');
 						if (fields.Length < 6)
 							continue;
-						fields = line.Trim().Split('\t');
 						var rejectLine = new RejectLine();
 						reject.Lines.Add(rejectLine);
 						rejectLine.Code = fields[0].Trim();
