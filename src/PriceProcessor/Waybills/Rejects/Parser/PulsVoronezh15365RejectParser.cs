@@ -42,7 +42,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					//CSV файл, который ожидает данный парсер - это эксел таблица, строки которой разделены переносом строки, а ячейки символом ";"
 					var fields = line.Split(';');
 					//Ищем в ячейке место, с которого начинаются отказы в таблице
-					if (fields[0].Trim() == "Номер заказа ПОСТАВЩИКу") {
+					if (fields[0].Length > 0 && fields[0].Trim() == "Номер заказа ПОСТАВЩИКу") {
 						rejectFound = true;
 						continue;
 					}
@@ -51,6 +51,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 						continue;
 
 					//Если мы дошли до этого места, значит все что осталось в файле - это строки с отказами
+						if (fields.Length < 11)
+							continue;
 					var rejectLine = new RejectLine();
 					reject.Lines.Add(rejectLine);
 					rejectLine.Code = fields[5];
@@ -74,7 +76,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 				//Читаем, пока не кончатся строки в файле
 				while ((line = reader.ReadLine()) != null) {
 						var fields = line.Split(';');
-						if (fields[0].Trim() == "Код") {
+						if (fields.Length > 0 && fields[0].Trim() == "Код") {
 							rejectFound = true;
 							continue;
 						}
@@ -84,6 +86,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 							continue;
 
 						//Если мы дошли до этого места, значит все что осталось в файле - это строки с отказами
+						if (fields.Length < 6)
+							continue;
 						fields = line.Trim().Split('\t');
 						var rejectLine = new RejectLine();
 						reject.Lines.Add(rejectLine);
