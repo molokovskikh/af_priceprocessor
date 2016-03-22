@@ -38,6 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.SerialNumber, "SERIAL")
 				.Line(l => l.Period, "DATEB", "DETEB")
 				.Line(l => l.SupplierCost, "PRICE")
+				.Line(l => l.EAN13, "BAR_CODE")
 				.Line(l => l.Quantity, "QUANT")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.SupplierPriceMarkup, "MARGIN")

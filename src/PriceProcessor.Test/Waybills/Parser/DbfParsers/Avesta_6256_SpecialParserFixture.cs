@@ -31,6 +31,12 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			var doc = WaybillParser.Parse("761517.dbf");
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("761517"));
+
+			// #48463 Доработка формата накладной для Поставщика Авеста-Фармацевтика, Код 6256
+			var doc2 = WaybillParser.Parse("90444.dbf");
+			var line = doc2.Lines[0];
+			Assert.That(line.EAN13, Is.EqualTo("4602156000024"));
+
 		}
 	}
 }
