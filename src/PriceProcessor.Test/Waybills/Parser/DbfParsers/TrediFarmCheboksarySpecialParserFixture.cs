@@ -45,5 +45,33 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			Assert.IsTrue(TrediFarmCheboksarySpecialParser.CheckFileFormat(TrediFarmCheboksarySpecialParser.Load(@"..\..\Data\Waybills\TrediFarmCheboksary.dbf")));
 		}
+
+		// #48515 Поставщик Ультрамалыш, Код 7815: Формат накладной
+		[Test]
+		public void Parse2()
+		{
+			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 7815u } };
+			var doc = WaybillParser.Parse("М0003927.dbf", documentLog);
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(9));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("3927"));
+			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("23.03.2016"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("00000005090"));
+			Assert.That(line.Product, Is.EqualTo("Бутылочка БУСИНКА пластик 125мл соска силикон"));
+			Assert.That(line.Producer, Is.EqualTo("Бусинка"));
+			Assert.That(line.Country, Is.EqualTo("КИТАЙ"));
+			Assert.That(line.Quantity, Is.EqualTo(10));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(72.7970));
+			Assert.That(line.Nds, Is.EqualTo(18));
+			Assert.That(line.SupplierCost, Is.EqualTo(85.9000));
+			Assert.That(line.NdsAmount, Is.EqualTo(131.0300));
+			Assert.That(line.Amount, Is.EqualTo(859.0000));
+			Assert.That(line.Certificates, Is.EqualTo("RU.77.01.34.019.E.007822.10.12"));
+			Assert.That(line.CertificatesEndDate.Value.ToShortDateString(), Is.EqualTo("01.01.2999"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("08.10.2012"));
+			Assert.That(line.CertificateAuthority, Is.EqualTo("Таможенный союз от 08.10.2012"));
+			Assert.That(line.Period, Is.EqualTo("30.12.2021"));
+		}
 	}
 }

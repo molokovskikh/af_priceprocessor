@@ -40,6 +40,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 				.Line(l => l.Amount, "SUMMA")
 				.Line(l => l.SerialNumber, "SERII")
 				.Line(l => l.Certificates, "SERTIF")
+				.Line(l => l.CertificatesEndDate, "SERTDATE")
+				.Line(l => l.CertificatesDate, "SERTGIVE")
+				.Line(l => l.CertificateAuthority, "SERTORG")
 				.Line(l => l.Period, "SROK_GODN", "DATAEND")
 				.ToDocument(document, data);
 			return document;
