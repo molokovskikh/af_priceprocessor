@@ -426,7 +426,21 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.EAN13, Is.EqualTo("4013054003923"));
 		}
 
-        /// <summary>
+		/// <summary>
+		/// http://redmine.analit.net/issues/50187
+		/// </summary>
+		[Test]
+		public void Parse_SIAInternationalKazan()
+		{
+			var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-1900577.DBF");
+
+			var line = document.Lines[0];
+			Assert.That(line.CertificatesDate, Is.EqualTo("08.12.2015"));
+			Assert.That(line.CertificatesEndDate, Is.EqualTo(Convert.ToDateTime("01.08.2018")));
+			Assert.That(line.CertificateAuthority, Is.EqualTo("РОСС.RU.0001.11ФМ08 ООО \"Окружной центр контроля качества\", г. Москва"));
+		}
+
+		/// <summary>
 		/// К задаче http://redmine.analit.net/issues/37665
 		/// </summary>
 		[Test]
@@ -434,7 +448,7 @@ namespace PriceProcessor.Test.Waybills.Parser
         {
             var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2606051.dbf");
             var line = document.Lines[0];
-            Assert.That(line.Amount, Is.EqualTo(182.4900));           
+            Assert.That(line.Amount, Is.EqualTo(182.4900));
         }
 
         /// <summary>

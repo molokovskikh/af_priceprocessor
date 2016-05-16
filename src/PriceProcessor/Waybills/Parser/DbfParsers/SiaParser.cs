@@ -48,7 +48,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					"ZHNVLS", "ISZHVP", "ISZNVP", "JNVLS", "GZWL", "Priznak_pr", "VITAL", "GVLS", "GNVLS", "GV")
 				.Line(l => l.Certificates, "DOCUMENT", "CER_NUMBER")
 				.Line(l => l.CertificatesDate, "REG_DATE")
-				.Line(l => l.CertificateAuthority, "SERT_ORG")
+				.Line(l => l.CertificatesEndDate, "SROK")
+				.Line(l => l.CertificateAuthority, "SERT_ORG", "REG_NUM")
 				.Line(l => l.EAN13, "EAN13", "BARCODE");
 		}
 
