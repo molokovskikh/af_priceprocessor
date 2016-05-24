@@ -444,21 +444,33 @@ namespace PriceProcessor.Test.Waybills.Parser
 		/// К задаче http://redmine.analit.net/issues/37665
 		/// </summary>
 		[Test]
-        public void Parse2()
-        {
-            var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2606051.dbf");
-            var line = document.Lines[0];
-            Assert.That(line.Amount, Is.EqualTo(182.4900));
-        }
+      public void Parse2()
+      {
+          var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2606051.dbf");
+          var line = document.Lines[0];
+          Assert.That(line.Amount, Is.EqualTo(182.4900));
+      }
 
-        /// <summary>
-        /// К задаче http://redmine.analit.net/issues/38625
-        /// </summary>
-        [Test]
-        public void Parse3()
-        {
-            var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2620497.DBF");
-            Assert.That(document.Invoice.Amount, Is.EqualTo(55593.5600));
-        }
-    }
+      /// <summary>
+      /// К задаче http://redmine.analit.net/issues/38625
+      /// </summary>
+      [Test]
+      public void Parse3()
+      {
+          var document = WaybillParser.Parse(@"..\..\Data\Waybills\Р-2620497.DBF");
+          Assert.That(document.Invoice.Amount, Is.EqualTo(55593.5600));
+      }
+
+		/// <summary>
+		/// К задаче http://redmine.analit.net/issues/50445
+		/// </summary>
+		[Test]
+		public void Parse_by_code()
+		{
+			var document = WaybillParser.Parse("269636.dbf");
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("76791885"));
+			Assert.That(line.CodeCr, Is.EqualTo("13488742"));
+		}
+	}
 }
