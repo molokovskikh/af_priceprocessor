@@ -13,7 +13,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		[Test]
 		public void Parse()
 		{
-			var doc = WaybillParser.Parse("294393-03_22052016.dbf");
+			var doc = WaybillParser.Parse("294393-03_22052016.kbf");
 			Assert.That(doc.DocumentDate, Is.EqualTo(new DateTime(2016, 05, 22)));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("294393-03"));
 			Assert.AreEqual(doc.Lines.Count, 32);

@@ -519,7 +519,7 @@
     <None Include="Data\Waybills\1772.DBF" />
     <None Include="Data\Waybills\2178.DBF" />
     <None Include="Data\Waybills\269636.dbf" />
-    <None Include="Data\Waybills\294393-03_22052016.dbf" />
+    <None Include="Data\Waybills\294393-03_22052016.kbf" />
     <None Include="Data\Waybills\369151.dbf" />
     <None Include="Data\Waybills\457244-14.pld" />
     <None Include="Data\Waybills\6562_2488183.dbf" />

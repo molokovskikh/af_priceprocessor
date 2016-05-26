@@ -125,7 +125,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (type != null)
 				return new[] { type };
 
-			if (extention == ".dbf") {
+			if ((extention == ".dbf") || (extention == ".kbf")) {
 				return GetSuitableParsers(file, "Dbf");
 			}
 			else if (extention == ".sst") {
