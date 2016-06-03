@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Product, Is.EqualTo("Бифидумбактерин сухой фл. 5 доз х10"));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.Quantity, Is.EqualTo(3));
-			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(36.53));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(40.18));
 			Assert.That(line.SupplierCost, Is.EqualTo(47.18));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(42.89));
 			Assert.That(line.RegistryCost, Is.EqualTo(36.53));
@@ -49,18 +49,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.EAN13, Is.EqualTo("4603149000106"));
 			Assert.That(line.CountryCode, Is.EqualTo("756"));
 			Assert.That(line.UnitCode, Is.EqualTo("796"));
-		}
-
-		/// <summary>
-		/// http://redmine.analit.net/issues/50936
-		/// </summary>
-		[Test]
-		public void Parse3()
-		{
-			var document = WaybillParser.Parse(@"P_235011.dbf");
-			var line = document.Lines[0];
-			Assert.That(line.ProducerCost, Is.EqualTo(114.07));
-			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(103.7));
 		}
 	}
 }
