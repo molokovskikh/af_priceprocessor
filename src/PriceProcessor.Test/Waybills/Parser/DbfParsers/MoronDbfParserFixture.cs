@@ -55,6 +55,39 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void VectorGroup_16777_dbf()
+		{
+			var doc = WaybillParser.Parse("вар13-A7623.DBF");
+
+			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("03.06.2016")));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("7623"));
+
+			Assert.That(doc.Lines.Count, Is.EqualTo(3));
+			var line = doc.Lines[0];
+			Assert.That(line.Product, Is.EqualTo("СЕНИ АКТИВ впит.трусики д/взрослых M нор"));
+			Assert.That(line.Producer, Is.EqualTo("БЕЛЛА"));
+			Assert.That(line.Period, Is.EqualTo("01.05.2019"));
+			Assert.That(line.SerialNumber, Is.Null);
+			Assert.That(line.Quantity, Is.EqualTo(1));
+			Assert.That(line.SupplierCost, Is.EqualTo(329.07));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(299.15));
+			Assert.That(line.Country, Is.EqualTo("Польша"));
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.VitallyImportant, Is.Null);
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.PL46.Д65783"));
+			Assert.That(line.Code, Is.EqualTo("715808"));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(299.15));
+			Assert.That(line.EAN13, Is.EqualTo("5900516693046"));
+			Assert.That(line.CertificateAuthority, Is.EqualTo("\"РОСТЕСТ-МОСКВА\" ЗАО,Москва,Нахимовский проспект,31,тел.(499) 129-26-00"));
+			Assert.That(line.CertificatesEndDate, Is.EqualTo(DateTime.Parse("26.02.2017")));
+			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130060/130912/0022841/2"));
+			Assert.That(line.Amount, Is.EqualTo(329.07));
+			Assert.That(line.Unit, Is.EqualTo("шт."));
+			Assert.That(doc.Invoice.SellerName, Is.EqualTo("ООО \"Вектор Групп\""));
+		}
+
+		[Test]
 		public void Check_file_format()
 		{
 			Assert.IsFalse(MoronDbfParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\1016416.dbf")));
