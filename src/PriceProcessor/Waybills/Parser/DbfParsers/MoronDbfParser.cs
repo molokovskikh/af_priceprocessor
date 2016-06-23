@@ -10,7 +10,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		public Document Parse(string file, Document document)
 		{
 			var data = Dbf.Load(file, null, true, false);
-			//var data = Dbf.Load(file, Encoding.GetEncoding(866), false, false);
 			new DbfParser()
 				.DocumentHeader(d => d.ProviderDocumentId, "NUMNAK")
 				.DocumentHeader(d => d.DocumentDate, "DATAGOT")
@@ -35,7 +34,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Amount, "SUMPROD")
 				.Line(l => l.Unit, "VID")
 				.Invoice(i => i.SellerName, "SENDER")
-				//.Invoice(i => i.BuyerId, "KODAPTEK") // Код точки доставки, предоставляемый покупателем
 				.ToDocument(document, data);
 			return document;
 		}
@@ -45,7 +43,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return data.Columns.Contains("NUMNAK") &&
 				data.Columns.Contains("DATAGOT") &&
 				data.Columns.Contains("KODAPTEK") &&
-				//data.Columns.Contains("KODPOSTAV") && // no
+				// http://redmine.analit.net/issues/51353
+				//data.Columns.Contains("KODPOSTAV") && 
 				data.Columns.Contains("CENAPROD") &&
 				data.Columns.Contains("PRCNDS");
 		}
