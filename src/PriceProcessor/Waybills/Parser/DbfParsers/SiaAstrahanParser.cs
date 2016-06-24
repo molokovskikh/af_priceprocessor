@@ -50,7 +50,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.EAN13, "EAN13", "BARCOD")
 				.Line(l => l.Nds, "NDS_PR")
-				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV", "GNVLS")
+				.Line(l => l.VitallyImportant, "ZNVLS", "VitImport", "PV", "GNVLS", "ISZHVP")
 				.Line(l => l.CodeCr, "VCODE", "PROIZCODE")
 				.Line(l => l.OrderId, "idorder")
 				.Line(l => l.RegistryDate, "DATE_REES")

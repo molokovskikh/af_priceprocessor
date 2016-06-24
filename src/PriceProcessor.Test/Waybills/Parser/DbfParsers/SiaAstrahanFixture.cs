@@ -95,6 +95,13 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		}
 
 		[Test]
+		public void Parse_sia_smolensk_vitally_important()
+		{
+			var doc = WaybillParser.Parse(@"v1R1106787.DBF");
+			Assert.IsTrue(doc.Lines[3].VitallyImportant.Value);
+		}
+
+		[Test]
 		public void Parse_sia_tula()
 		{
 			var doc = WaybillParser.Parse(@"Р-2737366.DBF");
