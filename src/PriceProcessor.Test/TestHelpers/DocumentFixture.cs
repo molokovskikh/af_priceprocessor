@@ -11,7 +11,7 @@ using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.TestHelpers
 {
-	public class DocumentFixture
+	public class DocumentFixture : IntegrationFixture
 	{
 		protected TestClient client;
 		protected TestSupplier supplier;
@@ -28,13 +28,13 @@ namespace PriceProcessor.Test.TestHelpers
 		[SetUp]
 		public void Setup()
 		{
-			client = TestClient.Create();
+			client = TestClient.Create(session);
 			testAddress = client.Addresses[0];
 			using (new SessionScope()) {
 				address = Address.Find(testAddress.Id);
 				settings = WaybillSettings.Find(client.Id);
-				price = TestSupplier.CreateTestSupplierWithPrice();
-				supplier = price.Supplier;
+				supplier = TestSupplier.CreateNaked(session);
+				price = supplier.Prices[0];
 				appSupplier = Supplier.Find(supplier.Id);
 			}
 			docRoot = Path.Combine(Settings.Default.DocumentPath, address.Id.ToString());
@@ -45,8 +45,7 @@ namespace PriceProcessor.Test.TestHelpers
 		public TestDocumentLog CreateTestLog(string file)
 		{
 			var log = new TestDocumentLog(supplier, testAddress, file);
-			using (new TransactionScope())
-				log.SaveAndFlush();
+			session.Save(log);
 
 			File.Copy(@"..\..\Data\Waybills\" + file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
 				log.Id,

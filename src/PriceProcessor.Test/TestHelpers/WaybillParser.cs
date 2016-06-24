@@ -8,6 +8,7 @@ using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using NHibernate;
 using Test.Support;
 using Test.Support.Suppliers;
 
@@ -40,10 +41,10 @@ namespace PriceProcessor.Test.TestHelpers
 			return doc;
 		}
 
-		public static List<DocumentReceiveLog> GetFilesForParsing(params string[] filePaths)
+		public static List<DocumentReceiveLog> GetFilesForParsing(ISession session, params string[] filePaths)
 		{
-			var client = TestClient.Create();
-			var supplier = TestSupplier.Create();
+			var client = TestClient.Create(session);
+			var supplier = TestSupplier.Create(session);
 			var resultList = new List<uint>();
 			foreach (var filePath in filePaths) {
 				var file = filePath;
@@ -51,9 +52,7 @@ namespace PriceProcessor.Test.TestHelpers
 					file = Path.Combine(@"..\..\Data\Waybills\multifile", filePath);
 
 				var log = new TestDocumentLog(supplier, client, Path.GetFileName(filePath));
-				using (new SessionScope()) {
-					log.SaveAndFlush();
-				}
+				session.Save(log);
 				resultList.Add(log.Id);
 				var clientDir = Path.Combine(Settings.Default.DocumentPath, log.Address.Id.ToString().PadLeft(3, '0'));
 				var documentDir = Path.Combine(clientDir, DocumentType.Waybill + "s");

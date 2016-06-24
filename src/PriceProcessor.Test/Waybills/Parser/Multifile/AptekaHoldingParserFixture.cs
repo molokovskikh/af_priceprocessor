@@ -5,11 +5,12 @@ using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
+using Test.Support;
 
 namespace PriceProcessor.Test.Waybills.Parser.Multifile
 {
 	[TestFixture]
-	public class AptekaHoldingParserFixture
+	public class AptekaHoldingParserFixture : IntegrationFixture
 	{
 		private AptekaHoldingParser parser;
 		private Document document;
@@ -25,7 +26,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Parse()
 		{
-			var files = WaybillParser.GetFilesForParsing(
+			var files = WaybillParser.GetFilesForParsing(session,
 				@"..\..\Data\Waybills\multifile\h271433.dbf",
 				@"..\..\Data\Waybills\multifile\b271433.dbf");
 			var mergedFiles = MultifileDocument.Merge(files);
@@ -53,7 +54,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Check_file_format()
 		{
-			var files = WaybillParser.GetFilesForParsing(
+			var files = WaybillParser.GetFilesForParsing(session,
 				@"..\..\Data\Waybills\multifile\h271433.dbf",
 				@"..\..\Data\Waybills\multifile\b271433.dbf");
 
@@ -72,7 +73,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Parse_with_znvls()
 		{
-			var files = WaybillParser.GetFilesForParsing(
+			var files = WaybillParser.GetFilesForParsing(session,
 				@"..\..\Data\Waybills\multifile\h150410_46902_.dbf",
 				@"..\..\Data\Waybills\multifile\b150410_46902_.dbf");
 
@@ -101,7 +102,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Multifile
 		[Test]
 		public void Parse_Schipakin()
 		{
-			var files = WaybillParser.GetFilesForParsing(@"..\..\Data\Waybills\multifile\h160410.dbf", @"..\..\Data\Waybills\multifile\b160410.dbf");
+			var files = WaybillParser.GetFilesForParsing(session, @"..\..\Data\Waybills\multifile\h160410.dbf", @"..\..\Data\Waybills\multifile\b160410.dbf");
 
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));

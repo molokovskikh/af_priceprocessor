@@ -72,6 +72,11 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 		}
 
+		public CostDescription(string name)
+		{
+			Name = ToName(name);
+		}
+
 		public CostDescription(DataRow row)
 		{
 			Id = Convert.ToUInt32(row["CostCode"]);
@@ -91,6 +96,11 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public int UndefinedCostCount;
 		public int ZeroCostCount;
+
+		public static string ToName(string name)
+		{
+			return name.Substring(0, Math.Min(50, name.Length));
+		}
 	}
 
 	public class NewCore : Core

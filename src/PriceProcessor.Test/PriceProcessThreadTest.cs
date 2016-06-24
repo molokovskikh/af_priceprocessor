@@ -22,7 +22,7 @@ using MySqlHelper = MySql.Data.MySqlClient.MySqlHelper;
 namespace PriceProcessor.Test
 {
 	[TestFixture]
-	public class PriceProcessThreadTest
+	public class PriceProcessThreadTest : IntegrationFixture
 	{
 		[Test(Description = "проверка корректности логирования при возникновении WarningFormalizeException")]
 		public void CatchWarningFormalizeExceptionTest()
@@ -60,7 +60,7 @@ namespace PriceProcessor.Test
 			var format = price.Costs.Single().PriceItem.Format;
 			format.PriceFormat = priceFormatId;
 
-			supplier.Save();
+			session.Save(supplier);
 			price.Save();
 			return item.Id;
 		}

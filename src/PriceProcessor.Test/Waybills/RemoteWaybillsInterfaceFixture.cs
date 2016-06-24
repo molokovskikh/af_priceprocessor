@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
+using NHibernate.Linq;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
@@ -83,12 +84,10 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(new[] { document.Id });
 
-			using (new SessionScope()) {
-				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
-				Assert.That(waybills.Count, Is.EqualTo(1));
-				var waybill = waybills.Single();
-				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-			}
+			var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
+			Assert.That(waybills.Count, Is.EqualTo(1));
+			var waybill = waybills.Single();
+			Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -97,41 +96,37 @@ namespace PriceProcessor.Test.Waybills
 			var file = "1008fo.pd";
 			var document = CreateTestLog(file);
 
-			using (new TransactionScope()) {
-				settings.AssortimentPriceId = price.Id;
-				settings.IsConvertFormat = true;
-				settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
-				settings.SaveAndFlush();
-			}
+			settings.AssortimentPriceId = price.Id;
+			settings.IsConvertFormat = true;
+			settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
+			settings.SaveAndFlush();
 
 			service.ParseWaybill(new[] { document.Id });
 
-			using (new SessionScope()) {
-				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
-				Assert.That(waybills.Count, Is.EqualTo(1));
-				var waybill = waybills.Single();
-				Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+			var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
+			Assert.That(waybills.Count, Is.EqualTo(1));
+			var waybill = waybills.Single();
+			Assert.That(waybill.Lines.Count, Is.EqualTo(1));
 
-				var logs = TestDocumentLog.Queryable.Where(l => l.Supplier.Id == supplier.Id && l.Client.Id == client.Id).ToList();
-				var count = logs.Count;
-				Assert.That(count, Is.EqualTo(2));
+			var logs = session.Query<TestDocumentLog>().Where(l => l.Supplier.Id == supplier.Id && l.Client.Id == client.Id).ToList();
+			var count = logs.Count;
+			Assert.That(count, Is.EqualTo(2));
 
-				var log_fake = logs.Where(l => l.IsFake).ToList();
-				Assert.That(log_fake.Count, Is.EqualTo(1));
-				Assert.That(log_fake[0].FileName, Is.EqualTo(file));
-				Assert.That(waybill.Log.Id, Is.EqualTo(log_fake[0].Id));
+			var log_fake = logs.Where(l => l.IsFake).ToList();
+			Assert.That(log_fake.Count, Is.EqualTo(1));
+			Assert.That(log_fake[0].FileName, Is.EqualTo(file));
+			Assert.That(waybill.Log.Id, Is.EqualTo(log_fake[0].Id));
 
-				var log = logs.Where(l => !l.IsFake).ToList();
-				Assert.That(log.Count, Is.EqualTo(1));
+			var log = logs.Where(l => !l.IsFake).ToList();
+			Assert.That(log.Count, Is.EqualTo(1));
 
-				Assert.That(log[0].FileName, Is.EqualTo(Path.ChangeExtension(file, ".dbf")));
+			Assert.That(log[0].FileName, Is.EqualTo(Path.ChangeExtension(file, ".dbf")));
 
-				var resultFile = Path.ChangeExtension(GetRemoteFileName(file, log[0].Id, supplier.Name, address.Id, client.Id), ".dbf");
-				var data = Dbf.Load(resultFile, Encoding.GetEncoding(866));
-				Assert.IsTrue(data.Columns.Contains("postid_af"));
-				Assert.IsTrue(data.Columns.Contains("ttn"));
-				Assert.IsTrue(data.Columns.Contains("przv_post"));
-			}
+			var resultFile = Path.ChangeExtension(GetRemoteFileName(file, log[0].Id, supplier.Name, address.Id, client.Id), ".dbf");
+			var data = Dbf.Load(resultFile, Encoding.GetEncoding(866));
+			Assert.IsTrue(data.Columns.Contains("postid_af"));
+			Assert.IsTrue(data.Columns.Contains("ttn"));
+			Assert.IsTrue(data.Columns.Contains("przv_post"));
 		}
 
 		[Test]
@@ -140,14 +135,12 @@ namespace PriceProcessor.Test.Waybills
 			var file = "1008fo.pd";
 			var document = CreateTestLog(file);
 			document.DocumentType = DocumentType.Reject;
-			document.Save();
+			session.Save(document);
 
 			service.ParseWaybill(new[] { document.Id });
 
-			using (new SessionScope()) {
-				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
-				Assert.That(waybills.Count, Is.EqualTo(0));
-			}
+			var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= document.LogTime).ToList();
+			Assert.That(waybills.Count, Is.EqualTo(0));
 		}
 
 		[Test]
@@ -158,14 +151,12 @@ namespace PriceProcessor.Test.Waybills
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 
-			using (new SessionScope()) {
-				foreach (var documentLog in documentLogs) {
-					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
-					Assert.That(waybills.Count, Is.EqualTo(1));
+			foreach (var documentLog in documentLogs) {
+				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
+				Assert.That(waybills.Count, Is.EqualTo(1));
 
-					var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
-					Assert.That(documents.Count, Is.EqualTo(1));
-				}
+				var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
 			}
 		}
 
@@ -174,39 +165,35 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var files = new[] { @"..\..\Data\Waybills\multifile\b271433.dbf", @"..\..\Data\Waybills\multifile\h271433.dbf" };
 			var documentLogs = CreateTestLogs(files);
-			using (new TransactionScope()) {
-				settings.AssortimentPriceId = price.Id;
-				settings.IsConvertFormat = true;
-				settings.SaveAndFlush();
-			}
+			settings.AssortimentPriceId = price.Id;
+			settings.IsConvertFormat = true;
+			settings.SaveAndFlush();
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 
-			using (new SessionScope()) {
-				foreach (var documentLog in documentLogs) {
-					var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
-					Assert.That(waybills.Count, Is.EqualTo(1));
+			foreach (var documentLog in documentLogs) {
+				var waybills = TestWaybill.Queryable.Where(w => w.WriteTime >= documentLog.LogTime).ToList();
+				Assert.That(waybills.Count, Is.EqualTo(1));
 
-					var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
-					Assert.That(documents.Count, Is.EqualTo(1));
-				}
-
-				// Проверяем наличие записей в document_logs
-				var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.ClientCode == client.Id);
-				Assert.That(logs.Count(), Is.EqualTo(3));
-
-				// Проверяем наличие записей в documentheaders
-
-				var count = 0;
-				foreach (var documentLog in logs) {
-					count += Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id).Count();
-				}
-				Assert.That(count, Is.EqualTo(1));
-
-				// Проверяем наличие файлов в папках клиентов
-				var resultFiles = Directory.GetFiles(waybillsPath);
-				Assert.That(resultFiles.Count(), Is.GreaterThan(0));
+				var documents = TestWaybill.Queryable.Where(doc => doc.Client == documentLog.Client).ToList();
+				Assert.That(documents.Count, Is.EqualTo(1));
 			}
+
+			// Проверяем наличие записей в document_logs
+			var logs = DocumentReceiveLog.Queryable.Where(log => log.Supplier.Id == supplier.Id && log.ClientCode == client.Id);
+			Assert.That(logs.Count(), Is.EqualTo(3));
+
+			// Проверяем наличие записей в documentheaders
+
+			var count = 0;
+			foreach (var documentLog in logs) {
+				count += Document.Queryable.Where(doc => doc.Log.Id == documentLog.Id).Count();
+			}
+			Assert.That(count, Is.EqualTo(1));
+
+			// Проверяем наличие файлов в папках клиентов
+			var resultFiles = Directory.GetFiles(waybillsPath);
+			Assert.That(resultFiles.Count(), Is.GreaterThan(0));
 		}
 	}
 }

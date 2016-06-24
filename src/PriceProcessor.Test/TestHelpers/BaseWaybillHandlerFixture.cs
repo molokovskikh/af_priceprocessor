@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.TestHelpers
 			if (address == null)
 				address = client.Addresses[0];
 
-			var logs = TestDocumentLog.Queryable.Where(log =>
+			var logs = session.Query<TestDocumentLog>().Where(log =>
 				log.Client.Id == client.Id &&
 					log.Supplier.Id == supplier.Id &&
 					log.Address == address);
