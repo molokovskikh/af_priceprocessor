@@ -160,6 +160,7 @@ namespace PriceProcessor.Test.Loader
 
 			Formalize();
 
+			session.Refresh(price);
 			Assert.That(price.Core.Count, Is.GreaterThan(0));
 			var firstCoreCount = price.Core.Count;
 			var core = price.Core[0];

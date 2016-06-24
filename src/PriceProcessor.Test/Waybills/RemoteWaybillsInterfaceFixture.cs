@@ -102,6 +102,7 @@ namespace PriceProcessor.Test.Waybills
 			settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
 			settings.SaveAndFlush();
 			FlushAndCommit();
+			session.Clear();
 
 			service.ParseWaybill(new[] { document.Id });
 
@@ -115,7 +116,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(count, Is.EqualTo(2));
 
 			var log_fake = logs.Where(l => l.IsFake).ToList();
-			Assert.That(log_fake.Count, Is.EqualTo(1));
+			Assert.That(log_fake.Count, Is.EqualTo(1), $"должна быть запись для клиента {client.Id}");
 			Assert.That(log_fake[0].FileName, Is.EqualTo(file));
 			Assert.That(waybill.Log.Id, Is.EqualTo(log_fake[0].Id));
 

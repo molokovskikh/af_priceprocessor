@@ -111,6 +111,7 @@ namespace PriceProcessor.Test.Waybills
 				Producer = producer2
 			};
 			producerSynonym.SaveAndFlush();
+			FlushAndCommit();
 
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
@@ -188,6 +189,7 @@ namespace PriceProcessor.Test.Waybills
 			settings.IsConvertFormat = true;
 			settings.AssortimentPriceId = price.Id;
 			settings.SaveAndFlush();
+			FlushAndCommit();
 
 			var service = new WaybillService();
 			var ids = service.ParseWaybill(new[] { log.Id });
@@ -373,93 +375,87 @@ namespace PriceProcessor.Test.Waybills
 		[Test(Description = "Тестирует сопоставление продукта и производителя позиции в накладной в случае, если позиция фармацевтика и в качестве производителя указан сторонний производитель")]
 		public void resolve_product_and_producer_for_farmacie()
 		{
-			Document doc;
-			TestProduct product1, product2, product3, product4, product5;
-			TestProducer producer1, producer2, producer3;
+			var order = new TestOrder();
 
-			using (new SessionScope()) {
-				var order = new TestOrder();
+			var product1 = new TestProduct("Активированный уголь (табл.)");
+			product1.CatalogProduct.Pharmacie = true;
+			product1.CreateAndFlush();
+			Thread.Sleep(100);
+			var product2 = new TestProduct("Виагра (табл.)");
+			product2.CatalogProduct.Pharmacie = true;
+			product2.CreateAndFlush();
+			Thread.Sleep(100);
+			var product3 = new TestProduct("Крем для кожи (гель.)");
+			product3.CatalogProduct.Pharmacie = false;
+			product3.CreateAndFlush();
+			Thread.Sleep(100);
+			var product4 = new TestProduct("Эластичный бинт");
+			product4.CatalogProduct.Pharmacie = false;
+			product4.CreateAndFlush();
+			Thread.Sleep(100);
+			var product5 = new TestProduct("Стерильные салфетки");
+			product5.CatalogProduct.Pharmacie = false;
+			product5.CreateAndFlush();
 
-				product1 = new TestProduct("Активированный уголь (табл.)");
-				product1.CatalogProduct.Pharmacie = true;
-				product1.CreateAndFlush();
-				Thread.Sleep(100);
-				product2 = new TestProduct("Виагра (табл.)");
-				product2.CatalogProduct.Pharmacie = true;
-				product2.CreateAndFlush();
-				Thread.Sleep(100);
-				product3 = new TestProduct("Крем для кожи (гель.)");
-				product3.CatalogProduct.Pharmacie = false;
-				product3.CreateAndFlush();
-				Thread.Sleep(100);
-				product4 = new TestProduct("Эластичный бинт");
-				product4.CatalogProduct.Pharmacie = false;
-				product4.CreateAndFlush();
-				Thread.Sleep(100);
-				product5 = new TestProduct("Стерильные салфетки");
-				product5.CatalogProduct.Pharmacie = false;
-				product5.CreateAndFlush();
+			var producer1 = new TestProducer("ВероФарм");
+			producer1.CreateAndFlush();
+			var producer2 = new TestProducer("Пфайзер");
+			producer2.CreateAndFlush();
+			var producer3 = new TestProducer("Воронежская Фармацевтическая компания");
+			producer3.CreateAndFlush();
 
-				producer1 = new TestProducer("ВероФарм");
-				producer1.CreateAndFlush();
-				producer2 = new TestProducer("Пфайзер");
-				producer2.CreateAndFlush();
-				producer3 = new TestProducer("Воронежская Фармацевтическая компания");
-				producer3.CreateAndFlush();
+			new TestSynonym() { Synonym = "Активированный уголь", ProductId = product1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonym() { Synonym = "Виагра", ProductId = product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonym() { Synonym = "Крем для кожи", ProductId = product3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonym() { Synonym = "Эластичный бинт", ProductId = product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonym() { Synonym = "Тестовый", ProductId = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+			new TestSynonym() { Synonym = "Тестовый2", ProductId = product5.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
 
-				new TestSynonym() { Synonym = "Активированный уголь", ProductId = product1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Виагра", ProductId = product2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Крем для кожи", ProductId = product3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Эластичный бинт", ProductId = product4.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Тестовый", ProductId = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
-				new TestSynonym() { Synonym = "Тестовый2", ProductId = product5.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "ВероФарм", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "ВоронежФарм", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "Тестовый", CodeFirmCr = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+			new TestSynonymFirm() { Synonym = "Тестовый2", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
 
-				new TestSynonymFirm() { Synonym = "ВероФарм", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer1.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Пфайзер", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Верофарм", CodeFirmCr = (int?)producer2.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "ВоронежФарм", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Тестовый", CodeFirmCr = null, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
-				new TestSynonymFirm() { Synonym = "Тестовый2", CodeFirmCr = (int?)producer3.Id, PriceCode = (int?)price.Id, SupplierCode = "12345" }.CreateAndFlush();
+			TestAssortment.CheckAndCreate(session, product1, producer1);
+			TestAssortment.CheckAndCreate(session, product2, producer2);
 
-				TestAssortment.CheckAndCreate(session, product1, producer1);
-				TestAssortment.CheckAndCreate(session, product2, producer2);
+			var log = new DocumentReceiveLog() {
+				Supplier = appSupplier,
+				ClientCode = client.Id,
+				Address = address,
+				MessageUid = 123,
+				DocumentSize = 100
+			};
 
-				var log = new DocumentReceiveLog() {
-					Supplier = appSupplier,
-					ClientCode = client.Id,
-					Address = address,
-					MessageUid = 123,
-					DocumentSize = 100
-				};
+			var doc = new Document(log) {
+				OrderId = order.Id,
+				Address = log.Address,
+				DocumentDate = DateTime.Now
+			};
 
-				doc = new Document(log) {
-					OrderId = order.Id,
-					Address = log.Address,
-					DocumentDate = DateTime.Now
-				};
+			var line = doc.NewLine();
+			line.Product = "Активированный уголь";
+			line.Producer = "ВероФарм";
 
-				var line = doc.NewLine();
-				line.Product = "Активированный уголь";
-				line.Producer = "ВероФарм";
+			line = doc.NewLine();
+			line.Product = "Виагра";
+			line.Producer = " Верофарм  ";
 
-				line = doc.NewLine();
-				line.Product = "Виагра";
-				line.Producer = " Верофарм  ";
+			line = doc.NewLine();
+			line.Product = " КРЕМ ДЛЯ КОЖИ  ";
+			line.Producer = "Тестовый производитель";
 
-				line = doc.NewLine();
-				line.Product = " КРЕМ ДЛЯ КОЖИ  ";
-				line.Producer = "Тестовый производитель";
+			line = doc.NewLine();
+			line.Product = "эластичный бинт";
+			line.Producer = "Воронежфарм";
 
-				line = doc.NewLine();
-				line.Product = "эластичный бинт";
-				line.Producer = "Воронежфарм";
-
-				line = doc.NewLine();
-				line.Product = "Салфетки";
-				line.Producer = "Воронежфарм";
-				line.Code = "12345";
-			}
+			line = doc.NewLine();
+			line.Product = "Салфетки";
+			line.Producer = "Воронежфарм";
+			line.Code = "12345";
 
 			doc.SetProductId();
 
