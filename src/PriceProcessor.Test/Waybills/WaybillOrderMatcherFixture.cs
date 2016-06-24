@@ -33,11 +33,11 @@ namespace PriceProcessor.Test.Waybills
 		public void SetUp()
 		{
 			orders = new List<OrderHead>();
-			client = TestClient.Create();
+			client = TestClient.Create(session);
 			var testAddress = client.Addresses[0];
 			address = Address.Find(testAddress.Id);
-			price = TestSupplier.CreateTestSupplierWithPrice();
-			var supplier = price.Supplier;
+			var supplier = TestSupplier.Create(session);
+			price = supplier.Prices[0];
 			appSupplier = Supplier.Find(supplier.Id);
 		}
 
@@ -45,24 +45,36 @@ namespace PriceProcessor.Test.Waybills
 		public void ComparisonWithOrdersIfOrderIdInOrderHeadTest()
 		{
 			order1 = BuildOrder();
-			order1.Save();
+			session.Save(order1);
 			var item = new OrderItem { Code = "Code1", Order = order1, Quantity = 20 };
-			item.Save();
+			session.Save(item);
+			order1.Items.Add(item);
+
 			item = new OrderItem { Code = "Code2", Order = order1, Quantity = 25 };
-			item.Save();
+			session.Save(item);
+			order1.Items.Add(item);
+
 			item = new OrderItem { Code = "Code3", Order = order1, Quantity = 50 };
-			item.Save();
+			session.Save(item);
+			order1.Items.Add(item);
+
 			item = new OrderItem { Code = "Code4", Order = order1, Quantity = 100 };
-			item.Save();
+			session.Save(item);
+			order1.Items.Add(item);
 
 			order2 = BuildOrder();
 			order2.Save();
 			item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 };
-			item.Save();
+			session.Save(item);
+			order2.Items.Add(item);
+
 			item = new OrderItem { Code = "Code3", Order = order2, Quantity = 10 };
-			item.Save();
+			session.Save(item);
+			order2.Items.Add(item);
+
 			item = new OrderItem { Code = "Code5", Order = order2, Quantity = 15 };
-			item.Save();
+			session.Save(item);
+			order2.Items.Add(item);
 
 			var log = new DocumentReceiveLog(appSupplier, address) { MessageUid = 123, DocumentSize = 100 };
 			var document = new Document(log) { OrderId = order1.Id, DocumentDate = DateTime.Now };
@@ -82,8 +94,6 @@ namespace PriceProcessor.Test.Waybills
 			log.Save();
 			document.Save();
 
-			order1 = OrderHead.Find(order1.Id);
-			order2 = OrderHead.Find(order2.Id);
 			orders.Add(order1);
 			orders.Add(order2);
 
