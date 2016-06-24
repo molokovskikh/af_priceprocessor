@@ -30,13 +30,11 @@ namespace PriceProcessor.Test.TestHelpers
 		{
 			client = TestClient.Create(session);
 			testAddress = client.Addresses[0];
-			using (new SessionScope()) {
-				address = Address.Find(testAddress.Id);
-				settings = WaybillSettings.Find(client.Id);
-				supplier = TestSupplier.CreateNaked(session);
-				price = supplier.Prices[0];
-				appSupplier = Supplier.Find(supplier.Id);
-			}
+			address = Address.Find(testAddress.Id);
+			settings = WaybillSettings.Find(client.Id);
+			supplier = TestSupplier.CreateNaked(session);
+			price = supplier.Prices[0];
+			appSupplier = Supplier.Find(supplier.Id);
 			docRoot = Path.Combine(Settings.Default.DocumentPath, address.Id.ToString());
 			waybillsPath = Path.Combine(docRoot, "Waybills");
 			Directory.CreateDirectory(waybillsPath);
