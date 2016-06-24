@@ -81,6 +81,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var file = "1008fo.pd";
 			var document = CreateTestLog(file);
+			FlushAndCommit();
 
 			service.ParseWaybill(new[] { document.Id });
 
@@ -100,6 +101,7 @@ namespace PriceProcessor.Test.Waybills
 			settings.IsConvertFormat = true;
 			settings.WaybillConvertFormat = WaybillFormat.LessUniversalDbf;
 			settings.SaveAndFlush();
+			FlushAndCommit();
 
 			service.ParseWaybill(new[] { document.Id });
 
@@ -148,6 +150,7 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var files = new[] { @"..\..\Data\Waybills\multifile\b271433.dbf", @"..\..\Data\Waybills\multifile\h271433.dbf" };
 			var documentLogs = CreateTestLogs(files);
+			FlushAndCommit();
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 
@@ -168,6 +171,7 @@ namespace PriceProcessor.Test.Waybills
 			settings.AssortimentPriceId = price.Id;
 			settings.IsConvertFormat = true;
 			settings.SaveAndFlush();
+			FlushAndCommit();
 
 			service.ParseWaybill(documentLogs.Select(doc => doc.Id).ToArray());
 

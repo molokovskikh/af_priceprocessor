@@ -26,6 +26,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			session.Save(supplier);
 
 			supplierId = supplier.Id;
+			FlushAndCommit();
 		}
 
 		[Test]
