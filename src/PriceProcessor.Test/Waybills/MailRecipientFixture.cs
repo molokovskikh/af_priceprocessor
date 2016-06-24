@@ -2,6 +2,7 @@
 using System.Linq;
 using Castle.ActiveRecord;
 using Inforoom.PriceProcessor.Waybills.Models;
+using NHibernate.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Test.Support;
@@ -40,7 +41,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void CheckNonExistsClient()
 		{
-			var client = TestClient.Queryable.OrderByDescending(c => c.Id).First();
+			var client = session.Query<TestClient>().OrderByDescending(c => c.Id).First();
 			var recipient = MailRecipient.Parse((client.Id + 10) + "@client.docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
 			Assert.That(recipient.Email, Is.EqualTo((client.Id + 10) + "@client.docs.analit.net"));
@@ -50,7 +51,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void CheckExistsAddress()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.Create(session);
 			var address = client.Addresses[0];
 			var recipient = MailRecipient.Parse(address.Id + "@docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
@@ -81,7 +82,7 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void CheckExistsClient()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.Create(session);
 			var recipient = MailRecipient.Parse(client.Id + "@client.docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
 			Assert.That(recipient.Email, Is.EqualTo(client.Id + "@client.docs.analit.net"));
@@ -96,13 +97,11 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void CheckDisabledAddress()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.Create(session);
 			var address = client.Addresses[0];
 
-			using (new TransactionScope()) {
-				address.Enabled = false;
-				address.Save();
-			}
+			address.Enabled = false;
+			address.Save();
 
 			var recipient = MailRecipient.Parse(address.Id + "@docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);
@@ -118,12 +117,10 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void CheckDisabledClient()
 		{
-			var client = TestClient.Create();
+			var client = TestClient.Create(session);
 
-			using (new TransactionScope()) {
-				client.Status = ClientStatus.Off;
-				client.Save();
-			}
+			client.Status = ClientStatus.Off;
+			session.Save(client);
 
 			var recipient = MailRecipient.Parse(client.Id + "@client.docs.analit.net");
 			Assert.That(recipient, Is.Not.Null);

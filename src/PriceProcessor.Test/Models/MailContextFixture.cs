@@ -52,7 +52,7 @@ namespace PriceProcessor.Test.Models
 
 			var supplier = TestSupplier.CreateNaked(session);
 			supplier.Name = name;
-			supplier.Save();
+			session.Save(supplier);
 			var group = supplier.ContactGroupOwner.AddContactGroup(ContactGroupType.MiniMails);
 			session.Save(group);
 			group.AddPerson("Tестовая персона");

@@ -38,7 +38,6 @@ namespace Inforoom.PriceProcessor
 				}
 
 				ConnectionHelper.DefaultConnectionStringName = "db";
-				With.DefaultConnectionStringName = "db";
 				InitActiveRecord(new[] { typeof(Document).Assembly });
 				//устанавливаем значение NullText для параметра %ndc и других
 #if DEBUG

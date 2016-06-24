@@ -22,7 +22,6 @@ namespace PriceProcessor.Test
 			Environment.CurrentDirectory = TestContext.CurrentContext.TestDirectory;
 			XmlConfigurator.Configure();
 			ConnectionHelper.DefaultConnectionStringName = "db";
-			With.DefaultConnectionStringName = "db";
 			ArchiveHelper.SevenZipExePath = @".\7zip\7z.exe";
 			//мы не должны обращаться к настроящему ftp, вместо этого нужно использовать директорию для эмуляции
 			FtpDownloader.UseStub = true;

@@ -44,13 +44,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			TestHelper.RecreateDirectories();
 
-			using (new SessionScope()) {
-				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
-					source.SourceType == TestWaybillSourceType.FtpSupplier);
-				foreach (var source in supplierFtpSources) {
-					source.SourceType = TestWaybillSourceType.ForTesting;
-					source.Update();
-				}
+			var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
+				source.SourceType == TestWaybillSourceType.FtpSupplier);
+			foreach (var source in supplierFtpSources) {
+				source.SourceType = TestWaybillSourceType.ForTesting;
+				source.Update();
 			}
 
 			handler = new WaybillFtpSourceHandler();
@@ -64,8 +62,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			supplierDeliveryId = 1234u;
 			supplier = CreateAndSetupSupplier(ftpHost, ftpPort, ftpWaybillDirectory, ftpRejectDirectory, user, password);
 
-			client = TestClient.CreateNaked();
-			client.Save();
+			client = TestClient.Create(session);
+			session.Save(client);
 
 			address = client.Addresses[0];
 
@@ -75,13 +73,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[TearDown]
 		public void Stop()
 		{
-			using (new SessionScope()) {
-				var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
-					source.SourceType == TestWaybillSourceType.ForTesting);
-				foreach (var source in supplierFtpSources) {
-					source.SourceType = TestWaybillSourceType.FtpSupplier;
-					source.Update();
-				}
+			var supplierFtpSources = TestWaybillSource.Queryable.Where(source =>
+				source.SourceType == TestWaybillSourceType.ForTesting);
+			foreach (var source in supplierFtpSources) {
+				source.SourceType = TestWaybillSourceType.FtpSupplier;
+				source.Update();
 			}
 		}
 
@@ -210,7 +206,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 		private TestSupplier CreateAndSetupSupplier(string ftpHost, int ftpPort, string ftpWaybillDirectory, string ftpRejectDirectory, string user, string password)
 		{
-			var supplier = TestSupplier.CreateNaked();
+			var supplier = TestSupplier.Create(session);
 			var source = supplier.WaybillSource;
 			source.SourceType = TestWaybillSourceType.FtpSupplier;
 			source.UserName = user;
@@ -219,7 +215,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var rejectUri = new UriBuilder("ftp", ftpHost, ftpPort, ftpRejectDirectory);
 			source.WaybillUrl = waybillUri.Uri.AbsoluteUri;
 			source.RejectUrl = rejectUri.Uri.AbsoluteUri;
-			supplier.Save();
+			session.Save(supplier);
 
 			return supplier;
 		}

@@ -276,8 +276,9 @@ namespace Inforoom.PriceProcessor.Formalizer
 				if (String.IsNullOrEmpty(value))
 					return;
 
-				if (!lookup.TryGetValue(value, out _cost.Description)) {
-					var costDescription = new CostDescription { Name = value };
+				var name = CostDescription.ToName(value);
+				if (!lookup.TryGetValue(name, out _cost.Description)) {
+					var costDescription = new CostDescription(name);
 					_cost.Description = costDescription;
 					_descriptions.Add(costDescription);
 					lookup = _descriptions.ToDictionary(h => h.Name, h => h);

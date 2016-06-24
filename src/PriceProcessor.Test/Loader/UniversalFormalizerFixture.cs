@@ -53,7 +53,7 @@ namespace PriceProcessor.Test.Loader
 </Price>
 ";
 
-			var supplier = TestSupplier.Create();
+			var supplier = TestSupplier.Create(session);
 			price = supplier.Prices[0];
 			priceItem = price.Costs[0].PriceItem;
 			var format = priceItem.Format;
@@ -67,8 +67,7 @@ namespace PriceProcessor.Test.Loader
 		[TearDown]
 		public void TearDown()
 		{
-			if (File.Exists(file))
-				File.Delete(file);
+			File.Delete(file);
 		}
 
 		[Test]
@@ -123,7 +122,7 @@ namespace PriceProcessor.Test.Loader
 		</Item>
 	</Price>
 </PriceAndSettings>";
-			var client = TestClient.Create();
+			var client = TestClient.Create(session);
 
 			var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
 			Assert.That(intersections.Count, Is.EqualTo(1));
@@ -176,7 +175,7 @@ namespace PriceProcessor.Test.Loader
 		[Test(Description = "UniversalFormalizer всегда обновляет позиции в Core")]
 		public void DoubleFormalize()
 		{
-			//если строка "_priceInfo.IsUpdating = true;" в UniversalFormalizer будет удалена, 
+			//если строка "_priceInfo.IsUpdating = true;" в UniversalFormalizer будет удалена,
 			//а BasePriceParser2 не будет починен, то этот тест должен поломаться.
 			Formalize();
 
@@ -363,9 +362,9 @@ namespace PriceProcessor.Test.Loader
 	</Price>
 </PriceAndSettings>";
 
-			var client = TestClient.CreateNaked();
-			client.CreateLegalEntity();
-			client.MaintainIntersection();
+			var client = TestClient.CreateNaked(session);
+			client.CreateLegalEntity(session);
+			client.MaintainIntersection(session);
 
 			var intersections = TestIntersection.Queryable.Where(i => i.Client == client && i.Price == price).ToList();
 			Assert.That(intersections.Count, Is.EqualTo(2));
@@ -477,11 +476,39 @@ namespace PriceProcessor.Test.Loader
 			Assert.AreEqual(5, price.Core[0].Costs[0].MinOrderCount);
 		}
 
+		[Test]
+		public void Formalize_long_cost_name()
+		{
+			xml = @"<Price>
+	<Item>
+		<Code>109054</Code>
+		<Product>Маска трехслойная на резинках медицинская Х3 Инд. уп. И/м</Product>
+		<Producer>Вухан Лифарма Кемикалз Ко</Producer>
+		<Volume>400</Volume>
+		<Quantity>296</Quantity>
+		<Period>01.01.2013</Period>
+		<VitallyImportant>0</VitallyImportant>
+		<NDS>10</NDS>
+		<RequestRatio>20</RequestRatio>
+		<Cost>
+			<Id>Основная цена продажи Алан ООО (Красноармейская ул, дом № 20 А)</Id>
+			<Value>10.0</Value>
+			<MinOrderCount>20</MinOrderCount>
+		</Cost>
+	</Item>
+</Price>
+";
+			//создали колонку
+			Formalize();
+			//создали еще колонку, тк не проверили длину
+			Formalize();
+			//сломались из-за дублирующей
+			Formalize();
+		}
+
 		private void Formalize()
 		{
-			session.Flush();
-			if (session.Transaction.IsActive)
-				session.Transaction.Commit();
+			FlushAndCommit();
 
 			file = Path.GetTempFileName();
 			File.WriteAllText(file, xml);

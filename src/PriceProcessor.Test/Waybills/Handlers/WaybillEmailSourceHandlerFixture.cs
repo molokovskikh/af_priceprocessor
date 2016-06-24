@@ -371,7 +371,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			supplier = TestSupplier.CreateNaked(session);
 			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
 			supplier.WaybillSource.EMailFrom = String.Format("{0}@sup.com", supplier.Id);
-			supplier.Save();
+			session.Save(supplier);
 
 			handler = new WaybillEmailSourceHandlerForTesting("", "");
 			handler.CreateDirectoryPath();

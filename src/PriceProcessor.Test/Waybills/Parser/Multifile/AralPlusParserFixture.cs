@@ -3,16 +3,17 @@ using System.Linq;
 using Inforoom.PriceProcessor.Waybills;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
+using Test.Support;
 
 namespace PriceProcessor.Test.Waybills.Parser.Multifile
 {
 	[TestFixture]
-	public class AralPlusParserFixture
+	public class AralPlusParserFixture : IntegrationFixture
 	{
 		[Test]
 		public void Parse()
 		{
-			var files = WaybillParser.GetFilesForParsing("b2921.dbf", "h2921.dbf");
+			var files = WaybillParser.GetFilesForParsing(session, "b2921.dbf", "h2921.dbf");
 
 			var mergedFiles = MultifileDocument.Merge(files);
 			Assert.That(mergedFiles.Count, Is.EqualTo(1));
