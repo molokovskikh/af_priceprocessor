@@ -59,7 +59,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "D_SERTIF")
 				.Line(l => l.VitallyImportant, "GV")
 				.Line(l => l.EAN13, "EAN13")
-				.Line(l => l.OrderId, "QueryNum");
+				.Line(l => l.OrderId, "QueryNum")
+				.Line(l => l.RetailCost, "CLIPRICE")
+				.Line(l => l.RetailCostMarkup, "CLIPERC");
 		}
 
 		public override void PostParsing(Document doc)

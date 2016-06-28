@@ -293,6 +293,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public decimal? RetailCost { get; set; }
 
 		/// <summary>
+		/// Процент розничной наценки
+		/// </summary>
+		[Property]
+		public decimal? RetailCostMarkup { get; set; }
+
+		/// <summary>
 		/// Шифр
 		/// </summary>
 		[Property]
