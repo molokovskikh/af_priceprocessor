@@ -21,8 +21,8 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			Assert.AreEqual(document.Lines[0].EAN13, "4013054007792");
 			Assert.AreEqual(document.Lines[0].CodeCr, "18585155");
-		}	
-		
+		}
+
 		/// <summary>
 		/// Для задачи
 		/// http://redmine.analit.net/issues/28711
@@ -37,5 +37,17 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].Code, Is.EqualTo("58069217"));
 			Assert.That(document.Lines[0].OrderId, Is.EqualTo(63116419));
 		}
+
+		/// <summary>
+		/// Для задачи
+		/// http://redmine.analit.net/issues/52098
+		/// </summary>
+		[Test]
+		public void Parse2()
+		{
+			var document = WaybillParser.Parse(@"397173.dbf");
+			Assert.AreEqual(document.Lines[0].EAN13, "9006968004006");
+		}
+
 	}
 }
