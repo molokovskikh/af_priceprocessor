@@ -257,6 +257,7 @@
     <Compile Include="Waybills\Models\Export\SupplierMap.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BeautyLife18663Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOneMoreParser.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PharmImex18795Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\EuropeParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947Parser.cs" />

@@ -206,6 +206,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOneMoreParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PharmImex18795ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
@@ -512,6 +513,7 @@
     <None Include="Data\EmailSourceHandlerTest\Good.eml" />
     <None Include="Data\Waybills\00000049080.sst" />
     <None Include="Data\Waybills\00013666.dbf" />
+    <None Include="Data\Waybills\0004174.DBF" />
     <None Include="Data\Waybills\002339_02989.dbf" />
     <None Include="Data\Waybills\00841624.dbf" />
     <None Include="Data\Waybills\11261.xls" />

@@ -21,6 +21,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			{ 6256, new List<Type> { typeof(Avesta_6256_SpecialParser) } }, // Если это накладная в формате DBF от Авеста-Фармацевтика, обрабатываем ее специальным парсером
 			{ 2747, new List<Type> { typeof(KazanFarmDbfParser) } }, //Накладная в формате dbf от Казань-Фарм.
 			{ 257, new List<Type> { typeof(MedServiceParser) } }, //Накладная в формате dbf от МедСервис
+			{ 18795, new List<Type> { typeof(PharmImex18795Parser) } }, //Накладная в формате dbf от Фармимэкс
 
 			{
 				8063, new List<Type> {
