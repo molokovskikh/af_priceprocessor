@@ -90,9 +90,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int ProducerCostIndex = -1;
 		protected int ProducerCostWithoutNdsIndex = -1;
 		protected int SupplierCostIndex = -1;
+		protected int RegistryDateIndex = -1;
 		protected int NdsIndex = -1;
 		protected int SupplierPriceMarkupIndex = -1;
 		protected int SerialNumberIndex = -1;
+		protected int DateOfManufactureIndex = -1;
+		protected int ExpireInMonthsIndex = -1;
 		protected int PeriodIndex = -1;
 		protected int CertificatesIndex = -1;
 		protected int CertificateAuthorityIndex = -1;
@@ -132,6 +135,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int InvoiceAmountIndex = -1;
 		protected int UnitCodeIndex = -1;
 		protected int CountryCodeIndex = -1;
+		protected int CommissionFeeIndex = -1;
+		protected int CommissionFeeContractIdIndex = -1;
+		protected int SupplierNameIndex = -1;
+		protected int BuyerIdIndex = -1;
+		protected int RecipientIdIndex = -1;
+		protected int RecipientNameIndex = -1;
+		protected int DelayOfPaymentInBankDaysIndex = -1;
+		protected int DelayOfPaymentInDaysIndex = -1;
 
 		protected string separator = ";";
 
@@ -334,6 +345,28 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 
 			if ((InvoiceAmountIndex >= 0) && header.Length > InvoiceAmountIndex)
 				document.SetInvoice().Amount = GetDecimal(header[InvoiceAmountIndex]);
+
+			if ((CommissionFeeIndex >= 0) && header.Length > CommissionFeeIndex)
+				document.SetInvoice().CommissionFee = GetDecimal(header[CommissionFeeIndex]);
+
+			if ((CommissionFeeContractIdIndex >= 0) && header.Length > CommissionFeeContractIdIndex)
+				document.SetInvoice().CommissionFeeContractId = GetString(header[CommissionFeeContractIdIndex]);
+
+			if ((BuyerIdIndex >= 0) && header.Length > BuyerIdIndex)
+				document.SetInvoice().BuyerId = GetInteger(header[BuyerIdIndex]);
+
+			if ((RecipientIdIndex >= 0) && header.Length > RecipientIdIndex)
+				document.SetInvoice().RecipientId = GetInteger(header[RecipientIdIndex]);
+
+			if ((RecipientNameIndex >= 0) && header.Length > RecipientNameIndex)
+				document.SetInvoice().RecipientName = GetString(header[RecipientNameIndex]);
+
+			if ((DelayOfPaymentInBankDaysIndex >= 0) && header.Length > DelayOfPaymentInBankDaysIndex)
+				document.SetInvoice().DelayOfPaymentInBankDays = GetInteger(header[DelayOfPaymentInBankDaysIndex]);
+
+ 			if ((DelayOfPaymentInDaysIndex >= 0) && header.Length > DelayOfPaymentInDaysIndex)
+				document.SetInvoice().DelayOfPaymentInDays = GetInteger(header[DelayOfPaymentInDaysIndex]);
+
 		}
 
 		protected virtual void ReadBody(Document document, string line)
@@ -350,11 +383,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			docLine.Unit = GetString(parts, UnitIndex);
 			docLine.ProducerCostWithoutNDS = GetDecimal(parts, ProducerCostWithoutNdsIndex);
 			docLine.SupplierCost = GetDecimal(parts, SupplierCostIndex);
+			docLine.RegistryDate = GetDateTime(GetString(parts, RegistryDateIndex));
 			docLine.Nds = (uint?)GetDecimal(parts, NdsIndex);
 			docLine.SupplierPriceMarkup = GetDecimal(parts, SupplierPriceMarkupIndex);
 			docLine.SupplierCostWithoutNDS = GetDecimal(parts, SupplierCostWithoutNdsIndex);
 			docLine.ExciseTax = GetDecimal(parts, ExciseTaxIndex);
 			docLine.SerialNumber = GetString(parts, SerialNumberIndex);
+			docLine.DateOfManufacture = GetDateTime(GetString(parts, DateOfManufactureIndex));
+			docLine.ExpireInMonths = GetInteger(GetString(parts, ExpireInMonthsIndex));
 			docLine.Period = GetString(parts, PeriodIndex);
 			docLine.Certificates = GetString(parts, CertificatesIndex);
 			docLine.CertificateAuthority = GetString(parts, CertificateAuthorityIndex);
