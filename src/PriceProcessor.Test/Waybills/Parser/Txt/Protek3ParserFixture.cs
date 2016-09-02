@@ -11,7 +11,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 		[Test]
 		public void Parse()
 		{
-			var doc = WaybillParser.Parse("66909869-001.txt");
+			var doc = WaybillParser.Parse("66909869-001.sst");
 			Assert.That(doc.Lines.Count, Is.EqualTo(18));
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("66909869-001"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("25.08.2016")));

@@ -600,6 +600,7 @@
     </Content>
     <Content Include="Data\Waybills\3633111_2_3632591_1_1748104.xml" />
     <Content Include="Data\Waybills\3633567_0_17202011.xml" />
+    <None Include="Data\Waybills\66909869-001.sst" />
     <Content Include="Data\Waybills\8041496-001.xml" />
     <Content Include="Data\Waybills\ПР-ЧЛН05419.xml" />
     <Content Include="Rosta\GetRostaDataset.xml">
