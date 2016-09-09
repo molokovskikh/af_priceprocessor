@@ -203,6 +203,15 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				var body = bodyLine.Split(';');
 				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26 && body.Length != 21 && body.Length != 31 && body.Length != 20 && body.Length != 32 && body.Length != 25)
 					return false;
+				// http://redmine.analit.net/issues/53074
+				if (header.Length == 9 && body.Length == 22)
+				{
+					var s = "";
+					for (int i = 3; i < 9; i++)
+						s += header[i];
+					if (s.Length == 0)
+						return false;
+				}
 			}
 			return true;
 		}

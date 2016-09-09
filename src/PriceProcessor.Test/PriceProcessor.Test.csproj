@@ -297,6 +297,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Vazakor_144_Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VitaLineKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\LekFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Protek3ParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\PulsBryanskParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\AmarilisParser.cs" />
@@ -529,6 +530,7 @@
     <None Include="Data\Waybills\6562_2488183.dbf" />
     <None Include="Data\Waybills\pulse1.dbf" />
     <None Include="Data\Waybills\v1R1106787.DBF" />
+    <None Include="Data\Waybills\B094192.sst" />
     <None Include="Data\Waybills\вар13-A7623.DBF" />
     <None Include="Data\Waybills\Р-143129.dbf" />
     <None Include="Data\Waybills\Р-1900577.DBF" />

@@ -103,6 +103,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 		protected int VitallyImportantIndex = -1;
 		protected int SupplierCostWithoutNdsIndex = -1;
 		protected int CertificatesDateIndex = -1;
+		protected int CertificatesEndDateIndex = -1;
 		protected int AmountIndex = -1;
 		protected int NdsAmountIndex = -1;
 		protected int UnitIndex = -1;
@@ -395,6 +396,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			docLine.Certificates = GetString(parts, CertificatesIndex);
 			docLine.CertificateAuthority = GetString(parts, CertificateAuthorityIndex);
 			docLine.CertificatesDate = GetString(parts, CertificatesDateIndex);
+			docLine.CertificatesEndDate = GetDateTime(GetString(parts, CertificatesEndDateIndex));
 			docLine.RegistryCost = GetDecimal(parts, RegistryCostIndex);
 			docLine.BillOfEntryNumber = GetString(parts, BillOfEntryNumberIndex);
 
