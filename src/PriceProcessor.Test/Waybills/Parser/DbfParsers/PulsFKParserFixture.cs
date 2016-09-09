@@ -161,6 +161,16 @@ namespace PriceProcessor.Test.Waybills.Parser
 		}
 
 		[Test]
+		public void Parse_GrandCapital_19513()
+		{
+			var doc = WaybillParser.Parse("4-000004_00006.DBF");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("16-0-00006"));
+			Assert.That(doc.Invoice.Amount, Is.EqualTo(180.03));
+			var line = doc.Lines[0];
+			Assert.That(line.Amount, Is.EqualTo(50.33));
+		}
+
+		[Test]
 		public void Uralbiofarm_dop_fields()
 		{
 			var doc = WaybillParser.Parse("16810 (1).dbf");

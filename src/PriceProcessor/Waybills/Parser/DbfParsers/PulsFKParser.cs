@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 		{
 			var parcer = new DbfParser()
 				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
-				.DocumentHeader(d => d.ProviderDocumentId, "NDOC")
+				.DocumentHeader(d => d.ProviderDocumentId, "NDOC", "DOCNUMBER")
 				.Invoice(i => i.InvoiceNumber, "BILLNUM")
 				.Invoice(i => i.InvoiceDate, "BILLDT")
 				.Invoice(i => i.AmountWithoutNDS, "SUMPAY")
@@ -73,6 +73,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				parcer = parcer.Invoice(i => i.RecipientAddress, "ADRPOL");
 			}
 
+			// http://redmine.analit.net/issues/53523
+			if (Data.Columns.Contains("DOCNUMBER") && Data.Columns.Contains("TSUMPAY"))
+			{
+				parcer = parcer.Invoice(i => i.Amount, "TSUMPAY");
+			}
+
 			return parcer;
 		}
 
@@ -81,7 +87,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			if (data.Columns.Contains("ANL"))
 				return false;
 
-			if (data.Columns.Contains("NDOC")
+			if (data.Columns.Contains("DATEDOC")
 				&& data.Columns.Contains("CNTR")
 				&& data.Columns.Contains("SERTIF")
 				&& data.Columns.Contains("GDATE")
