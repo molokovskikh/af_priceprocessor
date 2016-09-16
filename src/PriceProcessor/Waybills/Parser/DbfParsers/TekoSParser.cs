@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Nds, "NDS")
 				.Line(l => l.SupplierCost, "PCENA_NDS")
 				.Line(l => l.Quantity, "KOL_TOV")
-				.Line(l => l.CodeCr, "SP_PRDR_ID")
+				.Line(l => l.CodeCr, "SP_PRDR_ID", "SP_PRD_ID")
 				.Line(l => l.VitallyImportant, "VT")
 				.Line(l => l.NdsAmount, "P_NDS_AMNT")
 				.Line(l => l.Amount, "P_AMNT")
@@ -28,6 +28,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.BillOfEntryNumber, "BLL_NTR_ID")
 				.Line(l => l.EAN13, "BAR_CODE")
 				.Line(l => l.CertificatesEndDate, "SERT_END")
+				.Line(l => l.RegistryCost, "GR_CENA")
+				.Line(l => l.DateOfManufacture, "MAN_DATE")
+				.Line(l => l.Country, "PRZV_CNTR")
+				.Line(l => l.RegistryDate, "REG_DATE")
+				.Line(l => l.CertificateAuthority, "SERT_AUTH")
+				.Line(l => l.CertificatesDate, "SERT_DATE")
 
 				.Invoice(i => i.InvoiceNumber, "I_NUM")
 				.Invoice(i => i.InvoiceDate, "I_DATE")
@@ -41,7 +47,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Invoice(i => i.BuyerName, "I_BU_NAME")
 				.Invoice(i => i.BuyerAddress, "I_BU_ADR")
 				.Invoice(i => i.BuyerINN, "I_BU_INN")
-				.Invoice(i => i.BuyerKPP, "I_BU_KPP");
+				.Invoice(i => i.BuyerKPP, "I_BU_KPP")
+				.Invoice(i => i.SellerName, "I_SEL_NAME")
+				.Invoice(i => i.Amount, "AMNT")
+				.Invoice(i => i.NDSAmount, "AMNT_N_ALL")
+				.Invoice(i => i.DelayOfPaymentInDays, "I_DEL_D");
 		}
 
 		public static bool CheckFileFormat(DataTable data)

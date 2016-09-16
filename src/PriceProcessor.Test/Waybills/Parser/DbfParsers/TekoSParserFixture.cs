@@ -64,5 +64,33 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(invoice.BuyerKPP, Is.EqualTo("362301001"));
 			Assert.That(line0.CertificatesEndDate, Is.EqualTo(new DateTime(2019, 05, 01)));
 		}
+
+		// http://redmine.analit.net/issues/53845
+		[Test]
+		public void Parse_GrandCapitalVrn()
+		{
+			var document = WaybillParser.Parse("6-000486_00660.dbf");
+
+			var invoice = document.Invoice;
+			Assert.That(invoice.SellerName, Is.EqualTo("\"ФК Гранд Капитал ВОРОНЕЖ\""));
+			Assert.That(invoice.Amount, Is.EqualTo(14236.3));
+			Assert.That(invoice.AmountWithoutNDS0, Is.EqualTo(0));
+			Assert.That(invoice.AmountWithoutNDS10, Is.EqualTo(12867));
+			Assert.That(invoice.AmountWithoutNDS18, Is.EqualTo(70));
+			Assert.That(invoice.AmountWithoutNDS, Is.EqualTo(12937));
+			Assert.That(invoice.NDSAmount10, Is.EqualTo(1286.7));
+			Assert.That(invoice.NDSAmount18, Is.EqualTo(12.6));
+			Assert.That(invoice.NDSAmount, Is.EqualTo(1299.3));
+			Assert.That(invoice.DelayOfPaymentInDays, Is.EqualTo(7));
+
+			var line = document.Lines[0];
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.DateOfManufacture, Is.EqualTo(new DateTime(2015, 08, 01)));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.RegistryDate, Is.Null);
+			Assert.That(line.CertificateAuthority, Is.EqualTo("Формат качества"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("16.09.2015"));
+			Assert.That(line.CodeCr, Is.EqualTo("2-001200"));
+		}
 	}
 }
