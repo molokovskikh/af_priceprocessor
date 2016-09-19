@@ -40,6 +40,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					//Делим строку на части по разделителю.
 					//CSV файл, который ожидает данный парсер - это эксел таблица, строки которой разделены переносом строки, а ячейки символом ";"
 					var fields = line.Split(';');
+					if (fields.Length == 0)
+						continue;
 					//Ищем в ячейке место, с которого начинаются отказы в таблице
 					if (fields[0].Trim() == "Номер заказа ПОСТАВЩИКу") {
 						rejectFound = true;
@@ -47,6 +49,8 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects.Parser
 					}
 					//Если мы еще не дошли до места с которого начинаются отказы, то продолжаем
 					if (!rejectFound)
+						continue;
+					if (fields.Length < 11)
 						continue;
 
 					//Если мы дошли до этого места, значит все что осталось в файле - это строки с отказами
