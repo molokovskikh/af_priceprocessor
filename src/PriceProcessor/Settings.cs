@@ -938,9 +938,62 @@ namespace Inforoom.PriceProcessor
 			{
 				return ((string)(this["AttachmentPath"]));
 			}
-		}
-
+        }
+         
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineAssignedTo
+        {
+            get
+            {
+                return ((string)(this["RedmineAssignedTo"]));
+            }
+        }
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineUrl
+        {
+            get
+            {
+                return ((string)(this["RedmineUrl"]));
+            }
+        }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineProjectForWaybillIssue
+        {
+            get
+            {
+                return ((string)(this["RedmineProjectForWaybillIssue"]));
+            }
+        }
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineKeyForWaybillIssue
+        {
+            get
+            {
+                return ((string)(this["RedmineKeyForWaybillIssue"]));
+            }
+        }
+
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineUrlFileUpload
+        {
+            get
+            {
+                return ((string)(this["RedmineUrlFileUpload"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("2")]
 		public int MaxMiniMailSize

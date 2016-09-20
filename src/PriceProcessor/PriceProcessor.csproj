@@ -78,6 +78,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Castle.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="ExcelLibrary">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ExcelLibrary.dll</HintPath>
@@ -103,6 +107,9 @@
     <Reference Include="MySql.Data">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NHibernate">
       <SpecificVersion>False</SpecificVersion>
@@ -130,6 +137,11 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Data" />
     <Reference Include="System.Messaging" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System.Net.Http.Formatting">
+      <HintPath>..\..\packages\System.Net.Http.Formatting.Extension.5.2.3.0\lib\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -194,6 +206,7 @@
     <Compile Include="Helpers\ShareFileHelper.cs" />
     <Compile Include="Models\PriceItem.cs" />
     <Compile Include="Models\Producer.cs" />
+    <Compile Include="Models\Redmine.cs" />
     <Compile Include="Models\Reject.cs" />
     <Compile Include="IndexerHandler.cs" />
     <Compile Include="MimeExtension.cs" />
@@ -540,7 +553,9 @@
     <None Include="app.release.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Common.Tools\Common.Tools\7zip\7z.dll">

@@ -29,5 +29,8 @@ namespace Inforoom.PriceProcessor.Models
 
 		[HasMany(ColumnKey = "ClientId", Inverse = true, Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<User> Users { get; set; }
-	}
+        
+        [Property]
+        public virtual bool RedmineNotificationForUnresolved{ get; set; }
+    }
 }
