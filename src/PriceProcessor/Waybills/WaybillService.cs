@@ -55,27 +55,26 @@ namespace Inforoom.PriceProcessor.Waybills
 			return new uint[0];
 		}
 
-		public void Process(List<DocumentReceiveLog> logs)
-		{
-			try {
-				//проверка документов должна производиться в отдельной транзакции тк если разбор
-				//сломается логи должны быть записаны в базу
-				using (var scope = new TransactionScope(OnDispose.Rollback)) {
-					logs = CheckDocs(logs);
+	    public void Process(List<DocumentReceiveLog> logs)
+	    {
+	        try {
+	            //проверка документов должна производиться в отдельной транзакции тк если разбор
+	            //сломается логи должны быть записаны в базу
+	            using (var scope = new TransactionScope(OnDispose.Rollback)) {
+	                logs = CheckDocs(logs);
 
-					scope.VoteCommit();
-				}
+	                scope.VoteCommit();
+	            }
 
-				using (var scope = new TransactionScope(OnDispose.Rollback)) {
-					ParseWaybills(logs);
+	            using (var scope = new TransactionScope(OnDispose.Rollback)) {
+	                ParseWaybills(logs);
 
-					scope.VoteCommit();
-				}
-			}
-			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при разборе накладных {0}", logs.Implode(x => x.Id)), e);
-			}
-		}
+	                scope.VoteCommit();
+	            }
+	        } catch (Exception e) {
+	            _log.Error(String.Format("Ошибка при разборе накладных {0}", logs.Implode(x => x.Id)), e); 
+	        }
+	    }
 
 		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs)
 		{
@@ -86,20 +85,26 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				catch(Exception e) {
 					_log.Error(String.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
+
 				}
 			}
 
 			var docsForParsing = MultifileDocument.Merge(logs);
-			var docs = docsForParsing.Select(d => {
+		    var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
+            var docs = docsForParsing.Select(d => {
 				try {
 					return ProcessWaybill(d.DocumentLog, d.FileName);
 				}
 				catch (Exception e) {
 					var filename = d.FileName;
-					_log.Error(String.Format("Не удалось разобрать накладную {0}", filename), e);
+				    var errorTitle = String.Format("Не удалось разобрать накладную {0}", filename);
+                    _log.Error(errorTitle, e);
 					SaveWaybill(filename);
-					return null;
-				}
+
+				    //создаем задачу на Redmine, прикрепляя файлы
+				    Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+				    return null;
+                }
 			}).Where(d => d != null).ToList();
 			MultifileDocument.DeleteMergedFiles(docsForParsing);
 
@@ -113,23 +118,28 @@ namespace Inforoom.PriceProcessor.Waybills
 		}
 
 		private List<DocumentReceiveLog> CheckDocs(List<DocumentReceiveLog> logs)
-		{
-			return logs.Select(l => {
+        {
+            var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
+            return logs.Select(l => {
 				try {
 					SessionHelper.WithSession(s => l.Check(s));
 					l.SaveAndFlush();
 					l.CopyDocumentToClientDirectory();
 					return l;
 				}
-				catch (EMailSourceHandlerException e) {
-					_infoLog.Info(String.Format("Не удалось разобрать накладную {0}", l.FileName), e);
+				catch (EMailSourceHandlerException e)
+                {
+                    var errorTitle = String.Format("Не удалось разобрать накладную {0}", l.FileName);
+                    _infoLog.Info(errorTitle, e);
 					Exceptions.Add(e);
 					var rejectLog = new RejectWaybillLog(l);
 					SessionHelper.WithSession(s => {
 						s.Save(rejectLog);
 						s.Flush();
 					});
-					return null;
+                    //создаем задачу на Redmine, прикрепляя файлы
+				    Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l); 
+                    return null;
 				}
 			}).Where(l => l != null).ToList();
 		}

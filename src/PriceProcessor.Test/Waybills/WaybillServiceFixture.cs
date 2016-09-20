@@ -4,50 +4,171 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Castle.ActiveRecord;
+using Castle.Components.DictionaryAdapter;
+using Common.MySql;
 using Common.Tools;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
+using MySql.Data.MySqlClient;
+using NHibernate.Linq;
+using NHibernate.Proxy;
 using NUnit.Framework;
 using PriceProcessor.Test.TestHelpers;
 using PriceProcessor.Test.Waybills.Parser;
 using Test.Support;
 using Test.Support.log4net;
+using Test.Support.Suppliers;
 
 namespace PriceProcessor.Test.Waybills
 {
-	[TestFixture]
-	public class WaybillServiceFixture : DocumentFixture
-	{
-		private uint[] ParseFile(string filename)
-		{
-			var file = filename;
-			var log = CreateTestLog(file);
+    [TestFixture]
+    public class WaybillServiceFixture : DocumentFixture
+    {
+        private uint[] ParseFile(string filename)
+        {
+            var file = filename;
+            var log = CreateTestLog(file);
 
-			var service = new WaybillService();
-			var ids = service.ParseWaybill(new[] { log.Id });
-			return ids;
-		}
+            var service = new WaybillService();
+            var ids = service.ParseWaybill(new[] {log.Id});
+            return ids;
+        }
 
-		[Test]
-		public void Parse_waybill()
-		{
-			var ids = ParseFile("1008fo.pd");
+        [Test]
+        public void Parse_waybill()
+        {
+            var ids = ParseFile("1008fo.pd");
+            var waybill = TestWaybill.Find(ids.Single());
+            Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+        }
 
-			var waybill = TestWaybill.Find(ids.Single());
-			Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-		}
+        private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
+            bool changeValues = true)
+        {
+            var addressRed =
+                session.Query<Address>()
+                    .FirstOrDefault(
+                        s => (changeValues && s.Id != testAddress.Id) || (!changeValues && s.Id == testAddress.Id));
+            var supplierRed =
+                session.Query<Supplier>()
+                    .FirstOrDefault(s => (changeValues && s.Id != supplier.Id) || (!changeValues && s.Id == supplier.Id));
+            if (addressRed.Id != 0) {
+                testAddress = new TestAddress() {Id = addressRed.Id};
+            }
+            if (supplier.Id != 0) {
+                supplier = new TestSupplier() {Id = supplierRed.Id};
+            }
 
-		[Test(Description = "тест разбора накладной с ShortName поставщика в имени файла")]
-		public void Parse_waybill_with_ShortName_in_fileName()
-		{
-			var ids = ParseFile("1008fo.pd");
+            if (createIssue) {
+                addressRed.Client.RedmineNotificationForUnresolved = true;
+                session.Save(addressRed.Client);
+            } else {
+                addressRed.Client.RedmineNotificationForUnresolved = false;
+                session.Save(addressRed.Client);
+            }
 
-			var waybill = TestWaybill.Find(ids.Single());
-			Assert.That(waybill.Lines.Count, Is.EqualTo(1));
-		}
+            var log = new DocumentReceiveLog(supplierRed, addressRed) {
+                FileName = filename
+            };
+            session.Save(log);
+            var fi = new FileInfo(log.GetFileName());
+            var str = fi.DirectoryName;
+            if (!Directory.Exists(str)) {
+                Directory.CreateDirectory(str);
+            }
+            File.Delete(fi.FullName);
+            File.Copy(@"..\..\Data\Waybills\" + log.FileName, fi.FullName);
+
+            var w = new WaybillService();
+            var waybill = DocumentReceiveLog.Find(log.Id);
+            w.Process(new EditableList<DocumentReceiveLog>() {waybill});
+            session.Flush();
+            return log;
+        }
+
+        private void Parse_waybillCleanRedmineIssueTable()
+        {
+            using (var sqlConnection =
+                new MySqlConnection(ConnectionHelper.GetConnectionString())) {
+                if (sqlConnection.ConnectionString.IndexOf("localhost") != -1) {
+                    sqlConnection.Open();
+                    var com = sqlConnection.CreateCommand();
+                    com.CommandText = $"DELETE FROM redmine.issues ";
+                    com.ExecuteScalar();
+                    sqlConnection.Close();
+                }
+            }
+        }
+
+        [Test]
+        public void Parse_waybillIssueForRedmine_NoIssueForSuccess()
+        {
+            Parse_waybillCleanRedmineIssueTable();
+            var fileName = "1008fo.pd";
+            var log = ParseFileForRedmine(fileName);
+            var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+            Assert.That(res, Is.EqualTo(0)); 
+        }
+
+        [Test]
+        public void Parse_waybillIssueForRedmine_IssueFromOne()
+        {
+            Parse_waybillCleanRedmineIssueTable();
+            string doubleTest = "";
+            for (int i = 0; i < 2; i++) {
+                var fileName = "1008foBroken.pd";
+                var log = ParseFileForRedmine(fileName, changeValues: false);
+                var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+                //должен создаваться только один
+                Assert.That(res, Is.EqualTo(1));
+                //для одного и того же хэша
+                if (doubleTest != string.Empty) {
+                    Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
+                }
+                doubleTest = new MetadataOfLog(log).Hash;
+            }
+        }
+
+        [Test]
+        public void Parse_waybillIssueForRedmine_IssueFromMany()
+        {
+            Parse_waybillCleanRedmineIssueTable();
+            var doubleTest = "";
+            for (int i = 0; i < 2; i++) {
+                var fileName = "1008foBroken.pd";
+                var log = ParseFileForRedmine(fileName);
+                var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+                //для разных хэшей создается по одной задаче
+                Assert.That(res, Is.EqualTo(1));
+                if (doubleTest != string.Empty) {
+                    Assert.That(doubleTest, Is.Not.EqualTo(new MetadataOfLog(log).Hash));
+                }
+                doubleTest = new MetadataOfLog(log).Hash;
+            }
+        }
+
+        [Test]
+        public void Parse_waybillIssueForRedmine_NoIssueNoClientFlag()
+        {
+            Parse_waybillCleanRedmineIssueTable();
+            //если не клиент не промаркерован, по его накладной задачу не создаем
+            var nofileName = "1008foBroken.pd";
+            var nolog = ParseFileForRedmine(nofileName, false);
+            var nores = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(nolog).Hash);
+            Assert.That(nores, Is.EqualTo(0));
+        }
+
+        [Test(Description = "тест разбора накладной с ShortName поставщика в имени файла")]
+        public void Parse_waybill_with_ShortName_in_fileName()
+        {
+            var ids = ParseFile("1008fo.pd");
+
+            var waybill = TestWaybill.Find(ids.Single());
+            Assert.That(waybill.Lines.Count, Is.EqualTo(1));
+        }
 
 		[Test]
 		public void Parse_waybill_without_header()
