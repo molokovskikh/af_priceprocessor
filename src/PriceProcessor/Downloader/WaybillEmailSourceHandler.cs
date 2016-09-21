@@ -90,8 +90,9 @@ namespace Inforoom.Downloader
 
 			// Получаем кол-во корректных адресов, т.е. отправленных
 			// на @waybills.analit.net или на @refused.analit.net
-			var emailList = CorrectClientAddress(m.GetRecipients())
-				.ConvertAll(s => s.ToUpper())
+			var emailList = m.GetRecipients()
+				.Where(x => GetClientCode(x) != null)
+				.Select(s => s.ToUpper())
 				.Distinct()
 				.ToList();
 
@@ -156,46 +157,31 @@ WHERE Addr.Id = {0}",
 		{
 			emailAddress = emailAddress.ToLower();
 			InboundDocumentType testType = null;
-			uint? testClientCode = null;
+			uint? addressId = null;
 
 			foreach (var documentType in _documentTypes) {
 				uint clientCode;
 
 				// Пытаемся извлечь код клиента из email адреса
 				if (documentType.ParseEmail(emailAddress, out clientCode)) {
-					testClientCode = clientCode;
+					addressId = clientCode;
 					testType = documentType;
 					break;
 				}
 			}
 
 			if (testType != null) {
-				if (ClientExists(testClientCode.Value)) {
+				if (ClientExists(addressId.Value)) {
 					if (_currentDocumentType == null) {
 						_currentDocumentType = testType;
-						_addressId = testClientCode;
+						_addressId = addressId;
 					}
 				}
 				else
-					testClientCode = null;
+					addressId = null;
 			}
 
-			return testClientCode;
-		}
-
-		private List<string> CorrectClientAddress(string[] emails)
-		{
-			var result = new List<string>();
-			// Пробегаемся по всем адресам TO и ищем адрес вида
-			// <\d+@waybills.analit.net> или <\d+@refused.analit.net>
-			// Если таких адресов несколько, то считаем, что письмо ошибочное и не разбираем его дальше
-			foreach (var email in emails) {
-				var currentClientCode = GetClientCode(email);
-				if (currentClientCode.HasValue) {
-					result.Add(email);
-				}
-			}
-			return result;
+			return addressId;
 		}
 
 		/// <summary>
@@ -238,22 +224,17 @@ WHERE
 						m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, body);
 				}
 
-				var comment = String.Format(@"{0}
-Отправители     : {1}
-Получатели      : {2}
+				var comment = $@"{message}
+Отправители     : {@from.ToAddressListString()}
+Получатели      : {m.MainEntity.To.ToAddressListString()}
 Список вложений :
-{3}
-Тема письма поставщику : {4}
+{attachments}
+Тема письма поставщику : {subject}
 Тело письма поставщику :
-{5}",
-					message,
-					from.ToAddressListString(),
-					m.MainEntity.To.ToAddressListString(),
-					attachments,
-					subject,
-					body);
-				_logger.Warn(String.Format("Не удалось разобрать письмо с адреса {0}", from.ToAddressListString()), e);
-				DocumentReceiveLog.Log(GetFirmCodeByFromList(@from), _addressId, null, _currentDocumentType.DocType, comment, IMAPHandler.CurrentUID);
+{body}";
+				_logger.Warn($"Не удалось разобрать письмо с адреса {@from.ToAddressListString()}", e);
+				if (_currentDocumentType != null)
+					DocumentReceiveLog.Log(GetFirmCodeByFromList(@from), _addressId, null, _currentDocumentType.DocType, comment, IMAPHandler.CurrentUID);
 			}
 			catch (Exception exMatch) {
 				_logger.Error("Не удалось отправить нераспознанное письмо", exMatch);
@@ -470,12 +451,11 @@ WHERE w.EMailFrom LIKE '%{0}%' AND w.SourceID = 1",
 		protected DocumentReceiveLog GetLog(string file, DataRow source)
 		{
 			_logger.InfoFormat("WaybillEmailSourceHandler: обработка файла {0}", file);
-			var addressId = _addressId;
 			var supplierId = Convert.ToUInt32(source[WaybillSourcesTable.colFirmCode]);
 
 			return DocumentReceiveLog.LogNoCommit(
 				supplierId,
-				addressId,
+				_addressId,
 				file,
 				_currentDocumentType.DocType,
 				"Получен по Email",
