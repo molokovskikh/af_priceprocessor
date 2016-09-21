@@ -85,7 +85,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				}
 				catch(Exception e) {
 					_log.Error(String.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
-
 				}
 			}
 
@@ -93,7 +92,13 @@ namespace Inforoom.PriceProcessor.Waybills
 		    var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
             var docs = docsForParsing.Select(d => {
 				try {
-					return ProcessWaybill(d.DocumentLog, d.FileName);
+                    var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
+                    //если не получилось распарсить документ 
+				    if (docToReturn == null) {
+				        //создаем задачу на Redmine, прикрепляя файлы
+				        Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+				    }
+				    return docToReturn;
 				}
 				catch (Exception e) {
 					var filename = d.FileName;
