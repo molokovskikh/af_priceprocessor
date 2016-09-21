@@ -127,14 +127,12 @@ namespace Inforoom.PriceProcessor.Models
         public static string UploadFileToRedmine(string url, byte[] file)
         {
             using (var client = new HttpClient()) {
-                using (var content = new MultipartFormDataContent()) {
-                    content.Add(new StreamContent(new MemoryStream(file)), "Files");
-                    content.Headers.ContentType.MediaType = "application/octet-stream";
-                    using (var result = client.PostAsync(url, content).Result) {
-                        if (result.StatusCode == HttpStatusCode.Created) {
-                            var xres = XElement.Parse(result.Content.ReadAsStringAsync().Result);
-                            return xres.Value;
-                        }
+                var bt = new ByteArrayContent(file);
+                bt.Headers.Add("Content-Type", "application/octet-stream");
+                using (var result = client.PostAsync(url, bt).Result) {
+                    if (result.StatusCode == HttpStatusCode.Created) {
+                        var xres = XElement.Parse(result.Content.ReadAsStringAsync().Result);
+                        return xres.Value;
                     }
                 }
             }
