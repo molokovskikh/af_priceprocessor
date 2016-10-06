@@ -90,7 +90,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.RegistryDate, Is.Null);
 			Assert.That(line.CertificateAuthority, Is.EqualTo("Формат качества"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("16.09.2015"));
-			Assert.That(line.CodeCr, Is.EqualTo("2-001200"));
+			Assert.That(line.ExportCode, Is.EqualTo("2-001200"));
 		}
 	}
 }
