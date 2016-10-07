@@ -13,6 +13,7 @@ using LumiSoft.Net.IMAP.Client;
 using LumiSoft.Net.Mime;
 using MySql.Data.MySqlClient;
 using System.IO;
+using Castle.ActiveRecord;
 using Inforoom.Downloader.Documents;
 using Inforoom.Common;
 using FileHelper = Inforoom.PriceProcessor.FileHelper;
@@ -219,9 +220,9 @@ WHERE
 				SendErrorLetterToSupplier(e, m);
 
 				if (e is EmailFromUnregistredMail) {
-					var ms = new MemoryStream(m.ToByteData());
-					FailMailSend(m.MainEntity.Subject, from.ToAddressListString(),
-						m.MainEntity.To.ToAddressListString(), m.MainEntity.Date, ms, attachments, body);
+					var mail1 = new RejectedEmail { Comment = message, LogTime = DateTime.Now, From = @from.Mailboxes.First().EmailAddress, Subject = subject };
+					var session = ActiveRecordMediator.GetSessionFactoryHolder().CreateSession(typeof(ActiveRecordBase));
+					session.Save(mail1);
 				}
 
 				var comment = $@"{message}
