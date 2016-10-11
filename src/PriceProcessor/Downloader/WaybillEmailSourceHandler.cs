@@ -221,10 +221,11 @@ WHERE
 
 				if (e is EmailFromUnregistredMail) {
 					var mail1 = new RejectedEmail { Comment = message, LogTime = DateTime.Now, From = @from.Mailboxes.First().EmailAddress, Subject = subject };
-					var session = ActiveRecordMediator.GetSessionFactoryHolder().GetSessionFactory(typeof(ActiveRecordBase)).OpenSession();
-					var transaction = session.BeginTransaction();
-					session.Save(mail1);
-					transaction.Commit();
+					using (var session = ActiveRecordMediator.GetSessionFactoryHolder().GetSessionFactory(typeof(ActiveRecordBase)).OpenSession())
+						using (var transaction = session.BeginTransaction()) {
+							session.Save(mail1);
+							transaction.Commit();
+						}
 				}
 
 				var comment = $@"{message}
