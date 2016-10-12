@@ -504,6 +504,41 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.AreEqual(producerSynonym.Producer.Id, reject.Lines[0].ProducerEntity.Id);
 		}
 
+		[Test(Description = "создаем незарегистрированный адрес отправителя и логируем ошибку, без отправления в tech")]
+		public void MiniMailOnUnknownProvider()
+		{
+			var files = new List<string> { @"..\..\Data\Waybills\bi055540.DBF", };
+
+			//SetUp без регистрации тестовой почты --begin--
+			client = TestClient.CreateNaked(session);
+			supplier = TestSupplier.CreateNaked(session);
+
+			var from = String.Format("{0}@test.test", client.Id);
+			session.Save(supplier);
+
+			byte[] bytes;
+			if (IsEmlFile)
+				bytes = File.ReadAllBytes(files[0]);
+			else {
+				var message = ImapHelper.BuildMessageWithAttachments(
+					String.Format("{0}@waybills.analit.net", client.Addresses[0].Id),
+					from, files.ToArray());
+				bytes = message.ToByteData();
+			}
+
+			ImapHelper.StoreMessage(
+				Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder, bytes);
+			//--EndSetUp--
+
+			Process();
+
+			var logs = session.Query<RejectedEmail>().Where(log =>
+				log.From == from);
+			Assert.That(logs.Count(), Is.Not.Null);
+		}
+
 		private void PrepareSupplier(TestSupplier supplier, string from)
 		{
 			supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;

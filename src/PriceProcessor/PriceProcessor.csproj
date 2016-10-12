@@ -218,6 +218,7 @@
     <Compile Include="Models\DocType.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\Region.cs" />
+    <Compile Include="Models\RejectedEmail.cs" />
     <Compile Include="Models\RejectHeader.cs" />
     <Compile Include="Models\RejectWaybillLog.cs" />
     <Compile Include="Models\Supplier.cs" />
