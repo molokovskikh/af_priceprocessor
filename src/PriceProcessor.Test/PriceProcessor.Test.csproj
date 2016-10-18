@@ -206,6 +206,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOneMoreParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\PandaKazan19267ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PharmImex18795ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
@@ -526,6 +527,7 @@
     <None Include="Data\Waybills\269636.dbf" />
     <None Include="Data\Waybills\294393-03_22052016.kbf" />
     <None Include="Data\Waybills\369151.dbf" />
+    <None Include="Data\Waybills\39.DBF" />
     <None Include="Data\Waybills\397173.dbf" />
     <None Include="Data\Waybills\4-000004_00006.DBF" />
     <None Include="Data\Waybills\457244-14.pld" />
