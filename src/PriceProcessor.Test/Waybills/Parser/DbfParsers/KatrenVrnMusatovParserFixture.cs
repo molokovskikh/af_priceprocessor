@@ -112,5 +112,31 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			Assert.IsTrue(KatrenVrnMusatovParser.CheckFileFormat(Dbf.Load(@"..\..\Data\Waybills\50232.dbf")));
 		}
+
+		[Test]
+		public void ParseWithEan13()
+		{
+			/*
+			 * http://redmine.analit.net/issues/55907
+			 */
+			var doc = WaybillParser.Parse("589339-06.dbf");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("589339-06"));
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("3372697"));
+			Assert.That(line.Product, Is.EqualTo("АБАКТАЛ 0,4 N10 ТАБЛ П/О"));
+			Assert.That(line.Quantity, Is.EqualTo(1));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС SI.ФМ08.Д19098"));
+			Assert.That(line.Country, Is.EqualTo("Словения"));
+			Assert.That(line.Producer, Is.EqualTo("Лек Д.Д."));
+			Assert.That(line.Period, Is.EqualTo("01.12.2018"));
+			Assert.That(line.SerialNumber, Is.EqualTo("GA5633"));
+			Assert.That(line.SupplierCost, Is.EqualTo(209.99));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(196.65));
+			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-2.92));
+			Assert.That(line.EAN13, Is.EqualTo("3838957492800"));
+		}
+
 	}
 }
