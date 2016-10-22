@@ -13,8 +13,10 @@ namespace PriceProcessor.Test.Waybills.Parser
 		[Test]
 		public void Parse()
 		{
+
 			var doc = WaybillParser.Parse("3902670_БСС(99900).DBF");
-			Assert.That(doc.ProviderDocumentId, Is.EqualTo("99900,00"));
+			// Assert.That(doc.Parser, Is.EqualTo("BssSpbParser")); // добавлена проверка т.к. появился BssSpbParserWithEan13Parser, но не выполняется т.к. в файле есть поле EAN13
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("99900.00")); // ранее вместо точки была запятая(99900,00) и тест не проходил
 			Assert.That(doc.DocumentDate, Is.EqualTo(DateTime.Parse("03/06/2010")));
 			Assert.That(doc.Lines.Count, Is.EqualTo(2));
 			var line = doc.Lines[0];

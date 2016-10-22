@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Data;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class BssSpbParser : BaseDbfParser
+	/*
+	 * Класс-парсер для http://redmine.analit.net/issues/55953
+	*/
+	public class BssSpbWithEan13Parser : BaseDbfParser
 	{
 		public override DbfParser GetParser()
 		{
@@ -28,18 +27,19 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "SERT_DATE")
 				.Line(l => l.RegistryCost, "PRICE_GR")
 				.Line(l => l.VitallyImportant, "GVLS")
-                .Line(l => l.CertificatesEndDate, "GOD_SERT")
-                .Line(l => l.SerialNumber, "SER");
+				.Line(l => l.CertificatesEndDate, "GOD_SERT")
+				.Line(l => l.EAN13, "EAN13")
+				.Line(l => l.SerialNumber, "SER");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NAKLDATA")
-				&& data.Columns.Contains("DOK_NAM")
-				&& data.Columns.Contains("PRICE_M2")
-				&& data.Columns.Contains("GOD_TO")
-				&& data.Columns.Contains("KOL")
-				&& !data.Columns.Contains("EAN13"); // добавлено условие т.к. появился парсер BssSpbWithEan13Parser
+			       && data.Columns.Contains("DOK_NAM")
+			       && data.Columns.Contains("PRICE_M2")
+			       && data.Columns.Contains("GOD_TO")
+			       && data.Columns.Contains("KOL")
+			       && data.Columns.Contains("EAN13");
 		}
 	}
 }
