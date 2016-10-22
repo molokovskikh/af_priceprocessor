@@ -203,7 +203,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\ABGroupParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BeautyLife18663ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaVostokParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\BssSpbWithEan13ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\EuropeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
