@@ -40,7 +40,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				&& data.Columns.Contains("PRICE_M2")
 				&& data.Columns.Contains("GOD_TO")
 				&& data.Columns.Contains("KOL")
+<<<<<<< HEAD
 				&& data.Columns.Contains("EAN13"); // добавлено условие т.к. появился парсер BssSpbWithEan13Parser
+=======
+				&& !data.Columns.Contains("EAN13"); // добавлено условие т.к. появился парсер BssSpbWithEan13Parser
+>>>>>>> ce852ede0b7b4d16bf6771467247072cc9ff1cee
 		}
 	}
 }
