@@ -36,14 +36,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var supplierCostIndex = data.Columns.Contains("PR_MAK_NDS");
 			var supplierCostWithoutNdsIndex = data.Columns.Contains("PR_MAK");
 			var quantity = data.Columns.Contains("KOL_VO");
+			var gtd = data.Columns.Contains("GTD");
+			var zv = data.Columns.Contains("ZV");
 
-			if (codeIndex && productIndex &&
-			    supplierCostIndex && supplierCostWithoutNdsIndex &&
-			    quantity)
-			{
+			if (!codeIndex || !productIndex || !gtd)
+				return false;
+
+			if (supplierCostIndex && supplierCostWithoutNdsIndex)
 				return true;
-			}
-
+			if (supplierCostIndex && quantity)
+				return true;
+			if (supplierCostWithoutNdsIndex && zv)
+				return true;
 			return false;
 		}
 	}
