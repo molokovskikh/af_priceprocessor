@@ -28,17 +28,20 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificatesDate, "SERT_DATE")
 				.Line(l => l.RegistryCost, "PRICE_GR")
 				.Line(l => l.VitallyImportant, "GVLS")
-                .Line(l => l.CertificatesEndDate, "GOD_SERT")
-                .Line(l => l.SerialNumber, "SER");
+				.Line(l => l.CertificatesEndDate, "GOD_SERT")
+				.Line(l => l.SerialNumber, "SER")
+				.Line(l => l.EAN13, "EAN13");
 		}
 
 		public static bool CheckFileFormat(DataTable data)
 		{
 			return data.Columns.Contains("NAKLDATA")
-				&& data.Columns.Contains("DOK_NAM")
-				&& data.Columns.Contains("PRICE_M2")
-				&& data.Columns.Contains("GOD_TO")
-				&& data.Columns.Contains("KOL");
+			       && data.Columns.Contains("DOK_NAM")
+			       && data.Columns.Contains("PRICE_M2")
+			       && data.Columns.Contains("GOD_TO")
+			       && data.Columns.Contains("KOL")
+			       && data.Columns.Contains("EAN13");
+
 		}
 	}
 }
