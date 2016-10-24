@@ -1,12 +1,18 @@
 ﻿using System.Data;
+using System.Text;
+using Common.Tools;
+using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
-	public class MedSnabKchrParser : BaseDbfParser
+	public class MedSnabKchrParser : IDocumentParser
 	{
-		public override DbfParser GetParser()
+		protected Encoding Encoding = Encoding.GetEncoding(1251);
+
+		public Document Parse(string file, Document document)
 		{
-			return new DbfParser()
+			var data = Dbf.Load(file, Encoding);
+			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "TTN")
 				.DocumentHeader(h => h.DocumentDate, "TTN_DATE")
 				.Line(l => l.Code, "SP_PRD_IDV")
@@ -25,9 +31,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.SerialNumber, "SERIA")
 
 				.Invoice(i => i.InvoiceNumber, "head_id")
-				.Invoice(i => i.RecipientName, "apt_af");
-			//.Invoice(i => i.InvoiceDate, "BILLDT");
+				.Invoice(i => i.RecipientName, "apt_af")
+				.ToDocument(document, data);
+			return document;
 		}
+
 
 		public static bool CheckFileFormat(DataTable data)
 		{
