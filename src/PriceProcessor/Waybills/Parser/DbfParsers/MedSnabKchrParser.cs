@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿ using System.Data;
 using System.Text;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -21,9 +21,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "KOL_VO")
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Period, "SGODN")
-				.Line(l => l.SupplierCost, "PR_MAK_NDS")
-				.Line(l => l.SupplierCostWithoutNDS, "PR_MAK")
+				.Line(l => l.ProducerCost, "PR_MAK_NDS")
+				.Line(l => l.ProducerCostWithoutNDS, "PR_MAK")
 				.Line(l => l.VitallyImportant, "ZV")
+				.Line(l => l.RegistryCost, "PR_REE")
+				.Line(l => l.RegistryDate, "DATE_REG")
 				.Line(l => l.BillOfEntryNumber, "GTD")
 				.Line(l => l.Certificates, "SERT")
 				.Line(l => l.CertificatesEndDate, "SERT_DATE")
