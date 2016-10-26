@@ -31,8 +31,6 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line0.Product, Is.EqualTo("Зодак капли 10мг/мл 20мл"));
 			Assert.That(line0.EAN13, Is.EqualTo("8594739055209"));
 			Assert.That(line0.Quantity, Is.EqualTo(2.0000));
-			Assert.That(line0.SupplierCost, Is.EqualTo(183.1000));
-			Assert.That(line0.SupplierCostWithoutNDS, Is.EqualTo(183.1000));
 			Assert.That(line0.Producer, Is.EqualTo("Зентива/Лечива"));
 			Assert.That(line0.ProducerCost, Is.EqualTo(171.1700));
 			Assert.That(line0.ProducerCostWithoutNDS, Is.EqualTo(155.6100));

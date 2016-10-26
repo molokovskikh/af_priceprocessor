@@ -21,8 +21,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Quantity, "KOL_VO")
 				.Line(l => l.Producer, "PRZV_POST")
 				.Line(l => l.Period, "SGODN")
-				.Line(l => l.SupplierCost, "PR_W_NDS")
-				.Line(l => l.SupplierCostWithoutNDS, "PR_WO_NDS")
 				.Line(l => l.ProducerCost, "PR_MAK_NDS")
 				.Line(l => l.ProducerCostWithoutNDS, "PR_MAK")
 				.Line(l => l.VitallyImportant, "ZV")
