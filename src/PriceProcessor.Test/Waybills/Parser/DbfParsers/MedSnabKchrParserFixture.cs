@@ -25,12 +25,14 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(parsers.ToList().Count, Is.EqualTo(1));
 
 			var line0 = document.Lines[0];
-			Assert.That(line0.Code, Is.EqualTo("18036,0000"));
+			Assert.That(line0.Code, Is.EqualTo("18036.0000"));
 			Assert.That(line0.RegistryCost, Is.EqualTo(155));
 			Assert.That(line0.RegistryDate, Is.EqualTo(new DateTime(2016, 04, 04)));
 			Assert.That(line0.Product, Is.EqualTo("Зодак капли 10мг/мл 20мл"));
 			Assert.That(line0.EAN13, Is.EqualTo("8594739055209"));
 			Assert.That(line0.Quantity, Is.EqualTo(2.0000));
+			Assert.That(line0.SupplierCost, Is.EqualTo(183.1000));
+			Assert.That(line0.SupplierCostWithoutNDS, Is.EqualTo(183.1000));
 			Assert.That(line0.Producer, Is.EqualTo("Зентива/Лечива"));
 			Assert.That(line0.ProducerCost, Is.EqualTo(171.1700));
 			Assert.That(line0.ProducerCostWithoutNDS, Is.EqualTo(155.6100));
@@ -41,7 +43,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line0.SerialNumber, Is.EqualTo("3130316"));
 
 			var invoice = document.Invoice;
-			Assert.That(invoice.InvoiceNumber, Is.EqualTo("170560,0000"));
+			Assert.That(invoice.InvoiceNumber, Is.EqualTo("170560.0000"));
 			Assert.That(invoice.RecipientName, Is.Null);
 			Assert.That(invoice.InvoiceDate, Is.Null);
 		}
