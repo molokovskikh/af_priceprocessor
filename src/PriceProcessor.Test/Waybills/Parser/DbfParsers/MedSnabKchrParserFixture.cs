@@ -25,7 +25,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(parsers.ToList().Count, Is.EqualTo(1));
 
 			var line0 = document.Lines[0];
-			Assert.That(line0.Code, Is.EqualTo("18036.0000"));
+			Assert.That(line0.Code, Is.EqualTo("18036,0000"));
 			Assert.That(line0.RegistryCost, Is.EqualTo(155));
 			Assert.That(line0.RegistryDate, Is.EqualTo(new DateTime(2016, 04, 04)));
 			Assert.That(line0.Product, Is.EqualTo("Зодак капли 10мг/мл 20мл"));
@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line0.SerialNumber, Is.EqualTo("3130316"));
 
 			var invoice = document.Invoice;
-			Assert.That(invoice.InvoiceNumber, Is.EqualTo("170560.0000"));
+			Assert.That(invoice.InvoiceNumber, Is.EqualTo("170560,0000"));
 			Assert.That(invoice.RecipientName, Is.Null);
 			Assert.That(invoice.InvoiceDate, Is.Null);
 		}
