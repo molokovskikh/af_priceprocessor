@@ -138,5 +138,37 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.EAN13, Is.EqualTo("3838957492800"));
 		}
 
+		[Test]
+		public void ParseWithInvoiceSum()
+		{
+			/*
+			 * http://redmine.analit.net/issues/56429
+			 */
+			var doc = WaybillParser.Parse("620980-06.dbf");
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("620980-06"));
+
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("4857"));
+			Assert.That(line.Product, Is.EqualTo("АНАФЕРОН N20 ТАБЛ Д/РАССАС"));
+			Assert.That(line.Quantity, Is.EqualTo(8));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ05.Д37754"));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.Producer, Is.EqualTo("Материа Медика Холдинг НПФ ООО"));
+			Assert.That(line.Period, Is.EqualTo("01.05.2019"));
+			Assert.That(line.SerialNumber, Is.EqualTo("4930516"));
+			Assert.That(line.SupplierCost, Is.EqualTo(171.93));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(161.6));
+			Assert.That(line.RegistryCost, Is.Null);
+			Assert.That(line.Nds, Is.EqualTo(10));
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-3.28));
+			Assert.That(line.EAN13, Is.EqualTo("4607009582245"));
+
+			var invoice = doc.Invoice;
+			Assert.That(invoice.Amount, Is.EqualTo(28545.82));
+
+
+
+		}
+
 	}
 }
