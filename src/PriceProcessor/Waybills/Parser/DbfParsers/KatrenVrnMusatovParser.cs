@@ -38,6 +38,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CertificateAuthority, "SERTWHO")
 				.Line(l => l.CertificatesDate, "SERT_DATE")
 				.Line(l => l.EAN13, "BARCODE")
+
+				.Invoice(i => i.Amount, "InvoiceSum")
 				.ToDocument(document, data);
 			return document;
 		}
