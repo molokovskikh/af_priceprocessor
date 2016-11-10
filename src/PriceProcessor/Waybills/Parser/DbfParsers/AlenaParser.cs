@@ -11,12 +11,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
 	public class AlenaParser : IDocumentParser
 	{
-		protected Encoding Encoding = Encoding.GetEncoding(1251);
-		//protected Encoding Encoding = Encoding.GetEncoding(866);
+		protected Encoding Encoding = Encoding.GetEncoding(866);
 
 		public Document Parse(string file, Document document)
 		{
-			var data = Dbf.Load(file, Encoding);
+			var data = Dbf.Load(file, Encoding, false);
 
 			new DbfParser()
 				.DocumentHeader(h => h.ProviderDocumentId, "N_NACL") 
