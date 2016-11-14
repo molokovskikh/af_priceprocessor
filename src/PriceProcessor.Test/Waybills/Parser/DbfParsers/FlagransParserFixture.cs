@@ -40,11 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line0.VitallyImportant, Is.Null);
 			Assert.That(line0.Period, Is.Null);
 			Assert.That(line0.Nds, Is.EqualTo(0));
-			Assert.That(line0.SerialNumber, Is.EqualTo("RU.Д-RU.ПК08.В.00726"));
-
-			var invoice = document.Invoice;
-			Assert.That(invoice.Amount, Is.EqualTo(385.00));
-			Assert.That(invoice.NDSAmount, Is.EqualTo(385.00));
+			Assert.That(line0.Certificates, Is.EqualTo("RU.Д-RU.ПК08.В.00726"));
 		}
 	}
 }

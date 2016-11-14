@@ -20,7 +20,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.ProducerCostWithoutNDS, "PRICE_PRO")
 				.Line(l => l.SupplierCostWithoutNDS, "PRICE_SUP")
 				.Line(l => l.VitallyImportant, "GNVLS")
-				.Line(l => l.SerialNumber, "SERIAL")
+				.Line(l => l.Certificates, "SERIAL")
 				.Line(l => l.RegistryCost, "PRICE_REE")
 
 				.Invoice(i => i.Amount, "SUMMA_N")
@@ -29,6 +29,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 		public static bool CheckFileFormat(DataTable data)
 		{
+			var numNacl = data.Columns.Contains("N_NACL");
+			var dateNacl = data.Columns.Contains("D_NACL");
 			var codeIndex = data.Columns.Contains("CODE");
 			var productIndex = data.Columns.Contains("GOOD");
 			var supplierCostIndex = data.Columns.Contains("PR_SUPWN");
@@ -36,18 +38,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			var ndsIndex = data.Columns.Contains("NDS");
 			var lifeDate = data.Columns.Contains("DATEB");
 
-
-
-			if (!codeIndex || !productIndex || !lifeDate)
-				return false;
-
-			if (supplierCostIndex && supplierCostWithoutNdsIndex)
-				return true;
-			if (supplierCostIndex && ndsIndex)
-				return true;
-			if (supplierCostWithoutNdsIndex && ndsIndex)
-				return true;
-			return false;
+			return numNacl && dateNacl &&
+				codeIndex && productIndex &&
+				supplierCostIndex && supplierCostWithoutNdsIndex &&
+				ndsIndex && lifeDate;
 		}
 	}
 }
