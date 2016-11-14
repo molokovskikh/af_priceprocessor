@@ -50,6 +50,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(invoice.AmountWithoutNDS, Is.EqualTo(12987.26));
 			Assert.That(invoice.NDSAmount, Is.EqualTo(1298.76));
 			Assert.That(invoice.Amount, Is.EqualTo(14286.02));
+			Assert.IsTrue(invoice.IsSupplierAmount);
 
 			var line = document.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("Алфлутоп амп 10мг/мл 1мл N10 Румыния"));
