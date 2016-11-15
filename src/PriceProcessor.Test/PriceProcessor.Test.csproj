@@ -214,6 +214,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Flagrans19777ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParserFixture.cs" />
@@ -526,6 +527,7 @@
     <None Include="Data\Waybills\11261.xls" />
     <None Include="Data\Waybills\15105008.dbf" />
     <None Include="Data\Waybills\1772.DBF" />
+    <None Include="Data\Waybills\19777.DBF" />
     <None Include="Data\Waybills\2178.DBF" />
     <None Include="Data\Waybills\269636.dbf" />
     <None Include="Data\Waybills\294393-03_22052016.kbf" />
@@ -536,6 +538,7 @@
     <None Include="Data\Waybills\457244-14.pld" />
     <None Include="Data\Waybills\6-000486_00660.dbf" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
+    <None Include="Data\Waybills\7768.DBF" />
     <None Include="Data\Waybills\pulse1.dbf" />
     <None Include="Data\Waybills\v1R1106787.DBF" />
     <None Include="Data\Waybills\B094192.sst" />
