@@ -272,7 +272,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\AlenaParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BeautyLife18663Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaVostokParser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\FlagransParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOneMoreParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedSnabKchrParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PandaKazan19267Parser.cs" />

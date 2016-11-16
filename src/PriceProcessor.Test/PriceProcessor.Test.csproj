@@ -207,7 +207,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\EuropeParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\ASMParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BelaLtdParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\FlagransParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\KatrenOneMoreParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\MedSnabKchrParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\PandaKazan19267ParserFixture.cs" />
