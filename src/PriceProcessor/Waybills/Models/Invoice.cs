@@ -172,6 +172,12 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public decimal? Amount { get; set; }
 
 		/// <summary>
+		/// Общая стоимость товаров с налогом указана поставщиком
+		/// </summary>
+		[Property]
+		public bool IsSupplierAmount { get; set; }
+
+		/// <summary>
 		/// Отсрочка платежа (календарные дни)
 		/// </summary>
 		[Property]
@@ -297,6 +303,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					Amount = Document.Lines.Sum(l => l.Amount);
 					}
 			}
+			// сумма по накладной указана поставщиком
+			else
+				IsSupplierAmount = true;
 
 			if (!String.IsNullOrEmpty(DateOfPaymentDelay) && !DelayOfPaymentInDays.HasValue && InvoiceDate.HasValue) {
 				DateTime res;
