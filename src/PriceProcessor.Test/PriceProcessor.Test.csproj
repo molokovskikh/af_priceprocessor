@@ -214,6 +214,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\MedServiceParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\Flagrans19777ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParserFixture.cs" />
@@ -301,6 +302,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\UralBioFarmKurskParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Vazakor_144_Fixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\VitaLineKazanParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\BushmanovParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\LekFarmParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Protek3ParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\PulsBryanskParserFixture.cs" />
@@ -526,6 +528,7 @@
     <None Include="Data\Waybills\11261.xls" />
     <None Include="Data\Waybills\15105008.dbf" />
     <None Include="Data\Waybills\1772.DBF" />
+    <None Include="Data\Waybills\19777.DBF" />
     <None Include="Data\Waybills\2178.DBF" />
     <None Include="Data\Waybills\269636.dbf" />
     <None Include="Data\Waybills\294393-03_22052016.kbf" />
@@ -536,10 +539,12 @@
     <None Include="Data\Waybills\457244-14.pld" />
     <None Include="Data\Waybills\6-000486_00660.dbf" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
+    <None Include="Data\Waybills\7768.DBF" />
     <None Include="Data\Waybills\pulse1.dbf" />
     <None Include="Data\Waybills\v1R1106787.DBF" />
     <None Include="Data\Waybills\B094192.sst" />
     <None Include="Data\Waybills\вар13-A7623.DBF" />
+    <None Include="Data\Waybills\Мечта-2 %28Слободской, Советская 99%29 - 604-А.tdf" />
     <None Include="Data\Waybills\Р-143129.dbf" />
     <None Include="Data\Waybills\Р-1900577.DBF" />
     <None Include="packages.config" />

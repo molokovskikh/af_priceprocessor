@@ -90,7 +90,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					args = new[] { table };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
-				else if ((extention == ".sst" || extention == ".txt" || extention == ".pld") && paramClass.Contains("String")) {
+				else if ((extention == ".sst" || extention == ".txt" || extention == ".pld" || extention == ".tdf") && paramClass.Contains("String")) {
 					args = new[] { file };
 					check = (bool)checkMethod.Invoke(null, args);
 				}
@@ -141,7 +141,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			else if (extention == ".pd") {
 				return GetSuitableParsers(file, "Pd");
 			}
-			else if (extention == ".txt") {
+			else if (extention == ".txt" || extention == ".tdf") {
 				return GetSuitableParsers(file, "Txt");
 			}
 			return Enumerable.Empty<Type>();
