@@ -215,7 +215,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Flagrans19777ParserFixture.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\PustolyakovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParserFixture.cs" />

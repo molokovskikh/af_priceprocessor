@@ -281,7 +281,6 @@
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517Parser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Flagrans19777Parser.cs" />
-    <Compile Include="Waybills\Parser\DbfParsers\PustolyakovParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UgFarmParser.cs" />
     <Compile Include="Waybills\Parser\LekFarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BushmanovParser.cs" />
