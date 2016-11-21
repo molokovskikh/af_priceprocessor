@@ -20,16 +20,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.Amount, "SUMMA_N")
 				.Line(l => l.VitallyImportant, "GNVLS")
 				.Line(l => l.RegistryCost, "PRICE_REE")
-				.Line(l => l.Certificates, "SERIAL")
+				.Line(l => l.Certificates, "SERT", "SERIAL")
 				.Line(l => l.Period, "DATEB")
 				.Line(l => l.Producer, "PRODUCER")
+				.Line(l => l.EAN13, "BARCODE")
 				.Line(l => l.Country, "COUNTRY");
 		}
 
 		public static bool CheckFileFormat(DataTable table)
 		{
 			return table.Columns.Contains("N_NACL") && table.Columns.Contains("D_NACL")
-				&& (table.Columns.Contains("PRICE_S_N") || table.Columns.Contains("PR_SUPWN"));
+			       && (table.Columns.Contains("PRICE_S_N") || table.Columns.Contains("PR_SUPWN"));
 		}
 	}
 }
