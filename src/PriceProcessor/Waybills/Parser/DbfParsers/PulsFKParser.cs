@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using NPOI.SS.Formula.Functions;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -79,6 +80,38 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				parcer = parcer.Invoice(i => i.Amount, "TSUMPAY");
 			}
 
+			if (Data.Columns.Contains("SUMNDS10") && Data.Columns.Contains("SUMNDS20"))
+			{
+				string sumNds10 = "SUMNDS10";
+				string sumNds20 = "SUMNDS20";
+
+				string firstSumNds10 = Data.Rows[0][sumNds10]?.ToString();
+				bool isInvoiceSumNds10 = true;
+
+				string firstSumNds20 = Data.Rows[0][sumNds20]?.ToString();
+				bool isInvoiceSumNds20 = true;
+
+				foreach (DataRow dr in Data.Rows)
+				{
+					string valueSumNds10 = dr[sumNds10].ToString();
+					if (valueSumNds10.Equals(firstSumNds10))
+					{
+						continue;
+					}
+					else
+					{
+						isInvoiceSumNds10 = false;
+						break;
+					}
+						string valueSumNds20 = dr[sumNds20].ToString();
+
+				}
+
+				if (!isInvoiceSumNds10)
+				{
+					parcer.Invoice(i => i.NDSAmount10 ,   null);
+				}
+			}
 			return parcer;
 		}
 
