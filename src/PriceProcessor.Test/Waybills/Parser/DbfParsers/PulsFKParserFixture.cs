@@ -214,6 +214,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var doc = WaybillParser.Parse("Kat453643-14 (1).dbf");
 			var invoice = doc.Invoice;
 			Assert.That(invoice.NDSAmount, Is.EqualTo(1912.2));
+
 		}
 	}
 }
