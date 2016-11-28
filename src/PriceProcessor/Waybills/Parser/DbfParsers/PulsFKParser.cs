@@ -93,54 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 			return parcer;
 		}
 
-		private DbfParser constructParser(bool containsTSumNdsColumn)
-		{
-			var parser = new DbfParser()
-				.DocumentHeader(d => d.DocumentDate, "DATEDOC")
-				.DocumentHeader(d => d.ProviderDocumentId, "NDOC", "DOCNUMBER")
-				.Invoice(i => i.InvoiceNumber, "BILLNUM")
-				.Invoice(i => i.InvoiceDate, "BILLDT")
-				.Invoice(i => i.AmountWithoutNDS, "SUMPAY")
-				.Invoice(i => i.AmountWithoutNDS10, "SUM10")
-				.Invoice(i => i.AmountWithoutNDS18, "SUM20")
-				.Invoice(i => i.AmountWithoutNDS0, "SUM0")
-				.Invoice(i => i.Amount, "SUMPAY")
-				.Line(l => l.Code, "CODEPST")
-				.Line(l => l.Product, "NAME")
-				.Line(l => l.Producer, "FIRM")
-				.Line(l => l.Country, "CNTR")
-				.Line(l => l.SupplierCostWithoutNDS, "PRICE2N")
-				.Line(l => l.SupplierCost, "PRICE2")
-				.Line(l => l.Quantity, "QNT")
-				.Line(l => l.Nds, "NDS")
-				.Line(l => l.Period, "GDATE")
-				.Line(l => l.Certificates, "SERTIF")
-				.Line(l => l.RegistryCost, "REGPRC")
-				.Line(l => l.VitallyImportant, "GNVLS")
-				.Line(l => l.SerialNumber, "SER")
-				.Line(l => l.SupplierPriceMarkup, "PROCNDB")
-				.Line(l => l.EAN13, "EAN13")
-				.Line(l => l.CertificateAuthority, "SERTORG")
-				.Line(l => l.CertificatesDate, "SERTGIVE", "SERTDATE")
-				.Line(l => l.OrderId, "NUMZ")
-				.Line(l => l.CountryCode, "cntrcode")
-				.Line(l => l.UnitCode, "unitcode")
-				.Line(l => l.BillOfEntryNumber, "NUMGTD");
 
-			if (containsTSumNdsColumn)
-			{
-				parser = parser.Invoice(i => i.NDSAmount, "TSUMNDS")
-					.Invoice(i => i.NDSAmount10, "TSUMNDS10")
-					.Invoice(i => i.NDSAmount18, "TSUMNDS20");
-			}
-			else
-			{
-				parser = parser.Invoice(i => i.NDSAmount10, "SUMNDS10")
-					.Invoice(i => i.NDSAmount18, "SUMNDS20");
-			}
-
-			return parser;
-		}
 
 		public static bool CheckFileFormat(DataTable data)
 		{
