@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using NPOI.SS.Formula.Functions;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 {
@@ -13,8 +14,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Invoice(i => i.InvoiceNumber, "BILLNUM")
 				.Invoice(i => i.InvoiceDate, "BILLDT")
 				.Invoice(i => i.AmountWithoutNDS, "SUMPAY")
-				.Invoice(i => i.NDSAmount10, "SUMNDS10")
-				.Invoice(i => i.NDSAmount18, "SUMNDS20")
 				.Invoice(i => i.AmountWithoutNDS10, "SUM10")
 				.Invoice(i => i.AmountWithoutNDS18, "SUM20")
 				.Invoice(i => i.AmountWithoutNDS0, "SUM0")
@@ -40,6 +39,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				.Line(l => l.CountryCode, "cntrcode")
 				.Line(l => l.UnitCode, "unitcode")
 				.Line(l => l.BillOfEntryNumber, "NUMGTD");
+
+			if (Data.Columns.Contains("TSUMNDS"))
+			{
+				parcer = parcer.Invoice(i => i.NDSAmount, "TSUMNDS")
+					.Invoice(i => i.NDSAmount10, "TSUMNDS10")
+					.Invoice(i => i.NDSAmount18, "TSUMNDS20");
+			}
+			else
+			{
+				parcer = parcer.Invoice(i => i.NDSAmount10, "SUMNDS10")
+					.Invoice(i => i.NDSAmount18, "SUMNDS20");
+			}
 
 			if (!Data.Columns.Contains("ADRPOL")) {
 				if (!Data.Columns.Contains("PRICE1N") && !Data.Columns.Contains("PRICEMAN")) {
@@ -81,6 +92,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 
 			return parcer;
 		}
+
+
 
 		public static bool CheckFileFormat(DataTable data)
 		{

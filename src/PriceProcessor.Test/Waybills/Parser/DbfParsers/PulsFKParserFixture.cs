@@ -204,5 +204,17 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var invoice = doc.Invoice;
 			Assert.That(invoice.Amount, Is.EqualTo(58279.01));
 		}
+
+		/// <summary>
+		/// Для задачи http://redmine.analit.net/issues/57273
+		/// </summary>
+		[Test]
+		public void ParseKat()
+		{
+			var doc = WaybillParser.Parse("Kat453643-14 (1).dbf");
+			var invoice = doc.Invoice;
+			Assert.That(invoice.NDSAmount, Is.EqualTo(1912.2));
+
+		}
 	}
 }

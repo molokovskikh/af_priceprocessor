@@ -462,7 +462,7 @@ namespace PriceProcessor.Test.Waybills
 			Assert.That(data.Rows[1]["NAME_ARTIS"], Is.Not.EqualTo("МилдронатR р-р д/ин., 10 % 5 мл № 10"));
 		}
 
-		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой")]
+		[Test(Description = "Тестирует ситуацию, когда файл накладной может появиться в директории с задержкой"), Ignore("Нестабильный")]
 		public void check_parse_waybill_if_file_is_not_local()
 		{
 			var file = "9229370.dbf";
