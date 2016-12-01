@@ -216,5 +216,29 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(invoice.NDSAmount, Is.EqualTo(1912.2));
 
 		}
+
+		[Test]
+		public void ParseKomfort()
+		{
+			var document = WaybillParser.Parse("796.dbf");
+			Assert.That(document.Parser, Is.EqualTo("PulsFKParser"));
+			Assert.That(document.ProviderDocumentId, Is.EqualTo("796"));
+			Assert.That(document.DocumentDate, Is.EqualTo(new DateTime(2016, 11, 24)));
+
+			var line0 = document.Lines[0];
+			Assert.That(line0.EAN13, Is.Null);
+			Assert.That(line0.SupplierCost, Is.EqualTo(19.12));
+			Assert.That(line0.SupplierCostWithoutNDS, Is.EqualTo(17.38));
+			Assert.That(line0.Quantity, Is.EqualTo(27));
+			Assert.That(line0.Product, Is.EqualTo("0,2л\"Сады Придонья\"сок ябл-виноградный восст.осв."));
+			Assert.That(line0.Country, Is.EqualTo("Россия"));
+			Assert.That(line0.Nds, Is.EqualTo(10));
+			Assert.That(line0.Certificates, Is.EqualTo("RU.77.99.19.005.E.000648.02.14"));
+			Assert.That(line0.CertificateAuthority.Trim(), Is.EqualTo("ФГБУ \"НИИ питания\" РАМН"));
+			Assert.That(line0.Amount, Is.EqualTo(516.24));
+			Assert.That(line0.NdsAmount, Is.EqualTo(46.93));
+
+
+		}
 	}
 }
