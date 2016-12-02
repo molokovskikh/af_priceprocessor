@@ -64,9 +64,17 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 					parcer = parcer.Line(l => l.ProducerCost, "PRICE1")
 						.Line(l => l.ProducerCostWithoutNDS, "PRICEMAN");
 				}
-				parcer
-					.Line(l => l.NdsAmount, "SUMSNDS")
-					.Line(l => l.Amount, "SUMS0");
+				if (Data.Columns.Contains("SUMMANDS"))
+				{
+					parcer
+						.Line(l => l.NdsAmount, "SUMMANDS");
+				}
+				else
+				{
+					parcer
+						.Line(l => l.NdsAmount, "SUMSNDS")
+						.Line(l => l.Amount, "SUMS0");
+				}
 			}
 			else {
 				parcer = parcer.Line(l => l.ProducerCost, "PRICE1N")
