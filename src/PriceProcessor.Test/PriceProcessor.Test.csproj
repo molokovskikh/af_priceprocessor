@@ -344,6 +344,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\VegaParserFixture.cs" />
     <Compile Include="Waybills\Parser\KatrenStavropolSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xls\PharmChemComplect11261ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Xml\LipetskFarmaciyaParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\PureProfitParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\RafelConvertToUniversalDbfParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xml\TTMF_8049_ParserFixture.cs" />
