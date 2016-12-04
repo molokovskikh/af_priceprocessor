@@ -23,7 +23,8 @@ namespace PriceProcessor.Test.Waybills.Parser.Xml
 			Assert.That(line0.Producer, Is.EqualTo("ГАЛИЧФАРМ ПАО"));
 			Assert.That(line0.Country, Is.EqualTo("УКРАИНА"));
 			Assert.That(line0.SerialNumber,  Is.EqualTo("810815"));
-
+			Assert.That(line0.SupplierCost, Is.EqualTo(1590));
+			Assert.That(line0.ProducerCostWithoutNDS, Is.EqualTo(1155.6));
 			Assert.That(line0.Quantity, Is.EqualTo(2));
 			Assert.That(line0.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line0.Nds, Is.EqualTo(10));
