@@ -27,9 +27,18 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Producer = (string) element.Attribute("Производитель");
 				line.Country = (string) element.Attribute("Страна");
 
-				//var culture = CultureInfo.CreateSpecificCulture("fr-FR");
+				line.Period = (string) element.Attribute("СрокГодностиДата");
+				line.RegistryCost = decimal.Parse((string)element.Attribute("ЦенаЗарегистрированная"));
+				line.Certificates = (string) element.Attribute("Сертификат");
+				line.CertificateAuthority = (string) element.Attribute("СертификатОрган");
+				line.CertificatesDate = (string)element.Attribute("СертификатДатаНачала");
+				line.CertificatesEndDate = Convert.ToDateTime((string)element.Attribute("СертификатДатаОкончания"));
+				line.EAN13 = (string)element.Attribute("Штрихкод");
+
+
 				line.SupplierCost = decimal.Parse((string)element.Attribute("ЦенаРозничная"));
 				line.ProducerCostWithoutNDS = decimal.Parse((string)element.Attribute("ЦенаПроизводителяБезНДС"));
+
 
 				line.SerialNumber = (string)element.Attribute("Серия");
 				line.Quantity = (uint?) element.Attribute("Количество");
