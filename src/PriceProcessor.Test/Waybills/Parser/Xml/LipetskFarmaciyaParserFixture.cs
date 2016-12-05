@@ -23,6 +23,14 @@ namespace PriceProcessor.Test.Waybills.Parser.Xml
 			Assert.That(line0.Producer, Is.EqualTo("ГАЛИЧФАРМ ПАО"));
 			Assert.That(line0.Country, Is.EqualTo("УКРАИНА"));
 			Assert.That(line0.SerialNumber,  Is.EqualTo("810815"));
+			Assert.That(line0.Period, Is.EqualTo("2017-08-01"));
+			Assert.That(line0.RegistryCost, Is.EqualTo(0));
+			Assert.That(line0.Certificates, Is.EqualTo("РОССUAФМ08Д98874"));
+			Assert.That(line0.CertificateAuthority, Is.EqualTo("ООО ОЦКК МОСКВА"));
+			Assert.That(line0.CertificatesDate, Is.EqualTo("2015-11-19"));
+			Assert.That(line0.CertificatesEndDate, Is.EqualTo(new DateTime(2017, 08, 01)));
+			Assert.That(line0.EAN13, Is.EqualTo("4823000800724"));
+
 			Assert.That(line0.SupplierCost, Is.EqualTo(1590));
 			Assert.That(line0.ProducerCostWithoutNDS, Is.EqualTo(1155.6));
 			Assert.That(line0.Quantity, Is.EqualTo(2));
