@@ -27,9 +27,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Producer = (string) element.Attribute("Производитель");
 				line.Country = (string) element.Attribute("Страна");
 
-				var culture = CultureInfo.CreateSpecificCulture("fr-FR");
-				line.SupplierCost = Decimal.Parse((string)element.Attribute("ЦенаРозничная"), culture);
-				line.ProducerCostWithoutNDS = Decimal.Parse((string)element.Attribute("ЦенаПроизводителяБезНДС"), culture);
+				//var culture = CultureInfo.CreateSpecificCulture("fr-FR");
+				line.SupplierCost = decimal.Parse((string)element.Attribute("ЦенаРозничная"));
+				line.ProducerCostWithoutNDS = decimal.Parse((string)element.Attribute("ЦенаПроизводителяБезНДС"));
 
 				line.SerialNumber = (string)element.Attribute("Серия");
 				line.Quantity = (uint?) element.Attribute("Количество");
