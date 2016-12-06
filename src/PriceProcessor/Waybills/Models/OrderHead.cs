@@ -7,7 +7,7 @@ using Inforoom.PriceProcessor.Models;
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
 	[ActiveRecord("OrdersHead", Schema = "Orders")]
-	public class OrderHead : ActiveRecordLinqBase<OrderHead>
+	public class OrderHead
 	{
 		public OrderHead()
 		{

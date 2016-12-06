@@ -149,7 +149,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return this;
 		}
 
-		protected static object ConvertIfNeeded(object value, Type type)
+		public static object ConvertIfNeeded(object value, Type type)
 		{
 			if (Convert.IsDBNull(value))
 				return null;
@@ -165,12 +165,6 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			if (type == typeof(string)) {
 				DateTime res;
-				//if (DateTime.TryParseExact(value.ToString(),
-				//	"dd.MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
-				//	return Convert.ToString(value);
-				// ошибка #47069 - парсится как дата всё, что может быть распаршено как дата
-				//if (DateTime.TryParse(value.ToString(), out res))
-				//	return Convert.ToDateTime(value).ToShortDateString();
 				var dtFormats = new string[] { "dd.MM.yyyy HH:mm:ss", "dd.MM.yyyy H:mm:ss", "dd.MM.yy", "dd/MM/yy" };
 				if (DateTime.TryParseExact(value.ToString(),
 					dtFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out res))
@@ -201,7 +195,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 					return true;
 				return ParseHelper.GetBoolean(value.ToString());
 			}
-			throw new Exception(String.Format("Преобразование для {0} не реализовано", type));
+			throw new Exception($"Преобразование для {type} не реализовано");
 		}
 
 		public void ToDocument(Document document, DataTable table)

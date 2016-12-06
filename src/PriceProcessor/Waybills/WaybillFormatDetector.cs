@@ -11,6 +11,8 @@ using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NHibernate.Criterion;
 using Inforoom.PriceProcessor.Waybills.Parser.XmlParsers;
+using NHibernate;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -203,21 +205,28 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public Document DetectAndParse(string file, DocumentReceiveLog log)
+		public Document DetectAndParse(ISession session, string file, DocumentReceiveLog log)
 		{
-			var parser = DetectParser(file, log);
-			if (parser == null)
-				return null;
-			var document = new Document(log, parser.GetType().Name);
-			var doc = parser.Parse(file, document);
-			if (doc == null)
-				return null;
+			var parsers = session.Query<PriceProcessor.Models.Parser>().Where(x => x.Supplier == log.Supplier).ToList();
+			var doc = PriceProcessor.Models.Parser.Parse(log, file, parsers);
+			if (doc == null) {
+				var parser = DetectParser(file, log);
+				if (parser == null)
+					return null;
+				var document = new Document(log, parser.GetType().Name);
+				doc = parser.Parse(file, document);
+				if (doc == null)
+					return null;
+			}
 
-			var orders = doc.Lines.Where(l => l.OrderId != null)
-				.Select(l => OrderHead.TryFind(l.OrderId.Value))
-				.Where(o => o != null)
+			var ids = doc.Lines
+				.Where(l => l.OrderId != null)
+				.Select(x => x.OrderId.Value)
 				.Distinct()
 				.ToList();
+			var orders = new List<OrderHead>();
+			if (ids.Count > 0)
+				orders = session.Query<OrderHead>().Where(x => ids.Contains(x.Id)).ToList();
 			return ProcessDocument(doc, orders);
 		}
 

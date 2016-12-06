@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
-using System.Text;
 using System.Text.RegularExpressions;
 using Castle.ActiveRecord;
 using Common.Tools;
@@ -14,7 +12,6 @@ using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
-using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Rejects;
 using log4net;
 using NHibernate;
@@ -32,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		InstanceContextMode = InstanceContextMode.PerCall)]
 	public class WaybillService : IWaybillService
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
+		private static readonly ILog _log = LogManager.GetLogger(typeof (WaybillService));
 		private static readonly ILog _infoLog = LogManager.GetLogger("InfoLog");
 
 		public List<EMailSourceHandlerException> Exceptions = new List<EMailSourceHandlerException>();
@@ -48,33 +45,32 @@ namespace Inforoom.PriceProcessor.Waybills
 					scope.VoteCommit();
 					return result;
 				}
-			}
-			catch (Exception e) {
-				_log.Error(String.Format("Ошибка при разборе накладных {0}", ids.Implode()), e);
+			} catch (Exception e) {
+				_log.Error(string.Format("Ошибка при разборе накладных {0}", ids.Implode()), e);
 			}
 			return new uint[0];
 		}
 
-	    public void Process(List<DocumentReceiveLog> logs)
-	    {
-	        try {
-	            //проверка документов должна производиться в отдельной транзакции тк если разбор
-	            //сломается логи должны быть записаны в базу
-	            using (var scope = new TransactionScope(OnDispose.Rollback)) {
-	                logs = CheckDocs(logs);
+		public void Process(List<DocumentReceiveLog> logs)
+		{
+			try {
+				//проверка документов должна производиться в отдельной транзакции тк если разбор
+				//сломается логи должны быть записаны в базу
+				using (var scope = new TransactionScope(OnDispose.Rollback)) {
+					logs = CheckDocs(logs);
 
-	                scope.VoteCommit();
-	            }
+					scope.VoteCommit();
+				}
 
-	            using (var scope = new TransactionScope(OnDispose.Rollback)) {
-	                ParseWaybills(logs);
+				using (var scope = new TransactionScope(OnDispose.Rollback)) {
+					ParseWaybills(logs);
 
-	                scope.VoteCommit();
-	            }
-	        } catch (Exception e) {
-	            _log.Error(String.Format("Ошибка при разборе накладных {0}", logs.Implode(x => x.Id)), e); 
-	        }
-	    }
+					scope.VoteCommit();
+				}
+			} catch (Exception e) {
+				_log.Error(string.Format("Ошибка при разборе накладных {0}", logs.Implode(x => x.Id)), e);
+			}
+		}
 
 		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs)
 		{
@@ -82,34 +78,32 @@ namespace Inforoom.PriceProcessor.Waybills
 			foreach (var reject in rejects) {
 				try {
 					SessionHelper.WithSession(s => ProcessReject(s, reject));
-				}
-				catch(Exception e) {
-					_log.Error(String.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
+				} catch (Exception e) {
+					_log.Error(string.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
 				}
 			}
 
 			var docsForParsing = MultifileDocument.Merge(logs);
-		    var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
-            var docs = docsForParsing.Select(d => {
+			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
+			var docs = docsForParsing.Select(d => {
 				try {
-                    var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
-                    //если не получилось распарсить документ 
-				    if (docToReturn == null) {
-				        //создаем задачу на Redmine, прикрепляя файлы
-				        Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
-				    }
-				    return docToReturn;
-				}
-				catch (Exception e) {
+					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
+					//если не получилось распарсить документ
+					if (docToReturn == null) {
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+					}
+					return docToReturn;
+				} catch (Exception e) {
 					var filename = d.FileName;
-				    var errorTitle = String.Format("Не удалось разобрать накладную {0}", filename);
-                    _log.Error(errorTitle, e);
+					var errorTitle = string.Format("Не удалось разобрать накладную {0}", filename);
+					_log.Error(errorTitle, e);
 					SaveWaybill(filename);
 
-				    //создаем задачу на Redmine, прикрепляя файлы
-				    Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
-				    return null;
-                }
+					//создаем задачу на Redmine, прикрепляя файлы
+					Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+					return null;
+				}
 			}).Where(d => d != null).ToList();
 			MultifileDocument.DeleteMergedFiles(docsForParsing);
 
@@ -123,28 +117,26 @@ namespace Inforoom.PriceProcessor.Waybills
 		}
 
 		private List<DocumentReceiveLog> CheckDocs(List<DocumentReceiveLog> logs)
-        {
-            var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
-            return logs.Select(l => {
+		{
+			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
+			return logs.Select(l => {
 				try {
 					SessionHelper.WithSession(s => l.Check(s));
 					l.SaveAndFlush();
 					l.CopyDocumentToClientDirectory();
 					return l;
-				}
-				catch (EMailSourceHandlerException e)
-                {
-                    var errorTitle = String.Format("Не удалось разобрать накладную {0}", l.FileName);
-                    _infoLog.Info(errorTitle, e);
+				} catch (EMailSourceHandlerException e) {
+					var errorTitle = string.Format("Не удалось разобрать накладную {0}", l.FileName);
+					_infoLog.Info(errorTitle, e);
 					Exceptions.Add(e);
 					var rejectLog = new RejectWaybillLog(l);
 					SessionHelper.WithSession(s => {
 						s.Save(rejectLog);
 						s.Flush();
 					});
-                    //создаем задачу на Redmine, прикрепляя файлы
-				    Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l); 
-                    return null;
+					//создаем задачу на Redmine, прикрепляя файлы
+					Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l);
+					return null;
 				}
 			}).Where(l => l != null).ToList();
 		}
@@ -164,7 +156,9 @@ namespace Inforoom.PriceProcessor.Waybills
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
 					if (FitsMask(log.FileName, waybillExcludeFile.Mask)) {
 						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
-						log.Comment += string.Format("Разбор накладной не произведен по причине несоответствия маски файла ({0}) для Поставщика", waybillExcludeFile.Mask);
+						log.Comment +=
+							string.Format("Разбор накладной не произведен по причине несоответствия маски файла ({0}) для Поставщика",
+								waybillExcludeFile.Mask);
 						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
 						return true;
 					}
@@ -189,7 +183,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!log.FileIsLocal())
 				ShareFileHelper.WaitFile(filename, 5000);
 
-			var doc = new WaybillFormatDetector().DetectAndParse(filename, log);
+			var doc = SessionHelper.WithSession(s => new WaybillFormatDetector().DetectAndParse(s, filename, log));
 			// для мульти файла, мы сохраняем в источнике все файлы,
 			// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 			if (doc != null)
@@ -199,7 +193,7 @@ namespace Inforoom.PriceProcessor.Waybills
 		}
 
 		/// <summary>
-		/// Создание отказов для логов.
+		///   Создание отказов для логов.
 		/// </summary>
 		/// <param name="session">Сессия Nhibernate</param>
 		/// <param name="log">Лог, о получении документа</param>
@@ -212,16 +206,15 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (reject.Lines.Count > 0) {
 				try {
 					reject.Normalize(session);
-				}
-				catch(Exception e) {
-					_log.Error(String.Format("Не удалось идентифицировать товары отказа {0}", log.GetFileName()), e);
+				} catch (Exception e) {
+					_log.Error(string.Format("Не удалось идентифицировать товары отказа {0}", log.GetFileName()), e);
 				}
 				session.Save(reject);
 			}
 		}
 
 		/// <summary>
-		/// Находит парсер отказов для отказа
+		///   Находит парсер отказов для отказа
 		/// </summary>
 		/// <param name="log">Лог, о получении документа</param>
 		/// <returns>Парсер для отказа или null</returns>
@@ -230,16 +223,17 @@ namespace Inforoom.PriceProcessor.Waybills
 			var parsername = log.Supplier.RejectParser;
 			if (string.IsNullOrEmpty(parsername))
 				return null;
-			var assembly = Assembly.GetAssembly(typeof(DocumentReceiveLog));
+			var assembly = Assembly.GetAssembly(typeof (DocumentReceiveLog));
 			var parser = assembly.GetTypes().FirstOrDefault(i => i.Name == parsername);
 
-			if(parser == null)
+			if (parser == null)
 				throw new Exception(string.Format("Парсер {0} не был найден в сборке {1}", parsername, assembly.FullName));
 
 			var obj = Activator.CreateInstance(parser);
 			var rjparser = obj as RejectParser;
 			if (rjparser == null)
-				throw new Exception(string.Format("Не удалось привести тип. Скорее всего {0} не является наследником класса RejectParser", parsername));
+				throw new Exception(
+					string.Format("Не удалось привести тип. Скорее всего {0} не является наследником класса RejectParser", parsername));
 
 			return rjparser;
 		}

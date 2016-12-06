@@ -45,7 +45,10 @@ namespace PriceProcessor.Test.TestHelpers
 			var log = new TestDocumentLog(supplier, testAddress, file);
 			session.Save(log);
 
-			File.Copy(@"..\..\Data\Waybills\" + file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
+			if (!File.Exists(file))
+				file = @"..\..\Data\Waybills\" + file;
+
+			File.Copy(file, Path.Combine(waybillsPath, String.Format("{0}_{1}({2}){3}",
 				log.Id,
 				supplier.Name,
 				Path.GetFileNameWithoutExtension(file),

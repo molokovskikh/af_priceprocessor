@@ -63,7 +63,7 @@ namespace PriceProcessor.Test.Waybills
 			order1.Items.Add(item);
 
 			order2 = BuildOrder();
-			order2.Save();
+			session.Save(order2);
 			item = new OrderItem { Code = "Code3", Order = order2, Quantity = 15 };
 			session.Save(item);
 			order2.Items.Add(item);
@@ -156,8 +156,8 @@ namespace PriceProcessor.Test.Waybills
 			session.Save(document);
 			session.Flush();
 
-			order1 = OrderHead.Find(order1.Id);
-			order2 = OrderHead.Find(order2.Id);
+			order1 = session.Load<OrderHead>(order1.Id);
+			order2 = session.Load<OrderHead>(order2.Id);
 			orders.Add(order1);
 			orders.Add(order2);
 
@@ -188,7 +188,7 @@ namespace PriceProcessor.Test.Waybills
 			TestHelper.Execute(String.Format("delete from documents.waybillorders where DocumentLineId in ({0});", document.Lines.Implode(l => l.Id)));
 
 			var detector = new WaybillFormatDetectorFake(document); // проверяем вызов функции ComparisonWithOrders из детектора
-			detector.DetectAndParse(null, log);
+			detector.DetectAndParse(session, null, log);
 			document.SaveAndFlush();
 
 			var table = GetMatches(document);

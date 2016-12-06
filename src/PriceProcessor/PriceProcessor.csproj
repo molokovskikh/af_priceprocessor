@@ -200,6 +200,7 @@
     <Compile Include="Models\ForbiddenProducerNames.cs" />
     <Compile Include="Models\FormLog.cs" />
     <Compile Include="Models\MailContext.cs" />
+    <Compile Include="Models\Parser.cs" />
     <Compile Include="Models\Price.cs" />
     <Compile Include="Models\PriceCost.cs" />
     <Compile Include="Helpers\SessionHelper.cs" />

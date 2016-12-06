@@ -390,7 +390,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			//игнорируем потеряные заказы
 			orders = orderIds
 				.Where(id => id < IgnoreOrderFromId || id > IgnoreOrderToId)
-				.Select(id => OrderHead.TryFind(id))
+				.Select(id => ActiveRecordMediator<OrderHead>.FindByPrimaryKey(id, false))
 				.Where(o => o != null)
 				.ToList();
 			return orders.FirstOrDefault();
