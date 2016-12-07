@@ -82,7 +82,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string PaymentDocumentInfo { get; set; }
 
 		/// <summary>
-		/// Код полупателя в кодировки поставщика
+		/// Код покупателя в кодировки поставщика
 		/// </summary>
 		[Property]
 		public int? BuyerId { get; set; }
@@ -190,13 +190,13 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public int? DelayOfPaymentInBankDays { get; set; }
 
 		/// <summary>
-		/// Номер договора (коммисии)
+		/// Номер договора (комиссии)
 		/// </summary>
 		[Property]
 		public string CommissionFeeContractId { get; set; }
 
 		/// <summary>
-		/// Ставка коммисионного вознаграждения
+		/// Ставка комиссионного вознаграждения
 		/// </summary>
 		[Property]
 		public decimal? CommissionFee { get; set; }

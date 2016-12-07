@@ -63,16 +63,20 @@ namespace Inforoom.PriceProcessor.Models
 					var docLine = document.NewLine();
 					foreach (var parserLine in parser.Lines) {
 
+						var propertyName = parserLine.Dst;
+						if (String.IsNullOrEmpty(propertyName) || String.IsNullOrEmpty(parserLine.Src))
+							continue;
 						object target = docLine;
-						if (parserLine.DstType == ParserLine.DestinationType.Header) {
+						if (propertyName.StartsWith("Header_")) {
 							target = document;
-						} else if (parserLine.DstType == ParserLine.DestinationType.Invoice) {
+							propertyName = propertyName.Replace("Header_", "");
+						} else if (propertyName.StartsWith("Invoice_")) {
 							if (document.Invoice == null)
 								document.SetInvoice();
 							target = document.Invoice;
+							propertyName = propertyName.Replace("Invoice_", "");
 						}
-						var property = target.GetType().GetProperty(parserLine.Dst);
-
+						var property = target.GetType().GetProperty(propertyName);
 						var value = DbfParser.ConvertIfNeeded(dataRow[parserLine.Src], property.PropertyType);
 						property.SetValue(target, value);
 					}
@@ -91,13 +95,6 @@ namespace Inforoom.PriceProcessor.Models
 	[ActiveRecord(Schema = "Customers")]
 	public class ParserLine
 	{
-		public enum DestinationType
-		{
-			Line,
-			Header,
-			Invoice
-		}
-
 		public ParserLine()
 		{
 		}
@@ -117,9 +114,6 @@ namespace Inforoom.PriceProcessor.Models
 
 		[Property]
 		public virtual string Dst { get; set; }
-
-		[Property]
-		public virtual DestinationType DstType { get; set; }
 
 		[BelongsTo]
 		public virtual Parser Parser { get; set; }
