@@ -215,6 +215,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\Farmacia16947ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Original16517ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\Flagrans19777ParserFixture.cs" />
+    <Compile Include="Waybills\Parser\DbfParsers\GrandCapitalVlg19513ParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\TekoSParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BortsovParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BellaDonParserFixture.cs" />
@@ -535,7 +536,7 @@
     <None Include="Data\Waybills\369151.dbf" />
     <None Include="Data\Waybills\39.DBF" />
     <None Include="Data\Waybills\397173.dbf" />
-    <None Include="Data\Waybills\4-000004_00006.DBF" />
+    <None Include="Data\Waybills\4-002126_38015.dbf" />
     <None Include="Data\Waybills\457244-14.pld" />
     <None Include="Data\Waybills\6-000486_00660.dbf" />
     <None Include="Data\Waybills\6562_2488183.dbf" />
