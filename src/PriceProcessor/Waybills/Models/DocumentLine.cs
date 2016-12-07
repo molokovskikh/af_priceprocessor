@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		public string Certificates { get; set; }
 
 		/// <summary>
-		/// Дата выдачи сертификата сертификата
+		/// Дата выдачи сертификата
 		/// </summary>
 		[Property]
 		public string CertificatesDate { get; set; }
