@@ -190,8 +190,8 @@ namespace Inforoom.PriceProcessor.Models
                     }
                 };
             }
-           
-            using (var client = new HttpClient()) { 
+
+            using (var client = new HttpClient()) {
                 var result = client.PostAsJsonAsync(url, data).Result;
                 if (result.StatusCode == HttpStatusCode.Created) {
                     return true;
@@ -203,7 +203,7 @@ namespace Inforoom.PriceProcessor.Models
 
     /// <summary>
     /// Метаданные о логах по обрабатываемым файлам
-    /// </summary> 
+    /// </summary>
     [Serializable()]
     public class MetadataOfLog
     {
