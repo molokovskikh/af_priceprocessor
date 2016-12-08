@@ -31,13 +31,10 @@ namespace PriceProcessor.Test.Waybills.Parser.Xml
 			Assert.That(line0.CertificatesEndDate, Is.EqualTo(new DateTime(2017, 08, 01)));
 			Assert.That(line0.EAN13, Is.EqualTo("4823000800724"));
 
-			Assert.That(line0.SupplierCost, Is.EqualTo(1590));
 			Assert.That(line0.ProducerCostWithoutNDS, Is.EqualTo(1155.6));
 			Assert.That(line0.Quantity, Is.EqualTo(2));
 			Assert.That(line0.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line0.Nds, Is.EqualTo(10));
-
 		}
 	}
 }
-	
