@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
@@ -15,11 +16,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 		public Document Parse(string file, Document document)
 		{
 			var xdocument = XDocument.Load(file);
-			var xdocHeader = xdocument.XPathSelectElement("Документы/Документ");
 			document.ProviderDocumentId = xdocument.XPathSelectElement("Документы/Документ").Attribute("НомерДокумента")?.Value;
-			var docDate = xdocument.XPathSelectElement("Документы/Документ").Attribute("ДатаДокумента")?.Value;
-			if (!String.IsNullOrEmpty(docDate))
-				document.DocumentDate = Convert.ToDateTime(docDate);
+			document.DocumentDate = NullableConvert.ToDateTime(xdocument.XPathSelectElement("Документы/Документ").Attribute("ДатаДокумента")?.Value);
 			foreach (var element in xdocument.XPathSelectElements("Документы/Документ/СтрокаДокумента"))
 			{
 				var line = document.NewLine();
@@ -28,23 +26,20 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Country = (string) element.Attribute("Страна");
 
 				line.Period = (string) element.Attribute("СрокГодностиДата");
-				line.RegistryCost = decimal.Parse((string)element.Attribute("ЦенаЗарегистрированная"));
+				line.RegistryCost = NullableConvert.ToDecimal(element.Attribute("ЦенаЗарегистрированная")?.Value);
 				line.Certificates = (string) element.Attribute("Сертификат");
 				line.CertificateAuthority = (string) element.Attribute("СертификатОрган");
 				line.CertificatesDate = (string)element.Attribute("СертификатДатаНачала");
-				line.CertificatesEndDate = Convert.ToDateTime((string)element.Attribute("СертификатДатаОкончания"));
+				line.CertificatesEndDate = NullableConvert.ToDateTime(element.Attribute("СертификатДатаОкончания")?.Value);
 				line.EAN13 = (string)element.Attribute("Штрихкод");
 
-
-				line.SupplierCost = decimal.Parse((string)element.Attribute("ЦенаРозничная"));
 				line.ProducerCostWithoutNDS = decimal.Parse((string)element.Attribute("ЦенаПроизводителяБезНДС"));
-
+				line.RetailCost = NullableConvert.ToDecimal(element.Attribute("ЦенаРозничная")?.Value);
 
 				line.SerialNumber = (string)element.Attribute("Серия");
 				line.Quantity = (uint?) element.Attribute("Количество");
-				line.VitallyImportant = (element.Attribute("ЖНВП")?.Value == "Да");
-				var nds = element.Attribute("СтавкаНДС")?.Value.Replace("%", "");
-				line.Nds = uint.Parse(nds);
+				line.VitallyImportant = element.Attribute("ЖНВП")?.Value == "Да";
+				line.Nds = NullableConvert.ToUInt32(element.Attribute("СтавкаНДС")?.Value.Replace("%", ""));
 				document.Lines.Add(line);
 			}
 			return document;
