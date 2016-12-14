@@ -295,7 +295,16 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			if (!Amount18.HasValue)
 				Amount18 = NDSAmount18 + AmountWithoutNDS18;
 
-			if (Amount != null)
+			if (!Amount.HasValue) {
+				if (NDSAmount.HasValue && AmountWithoutNDS.HasValue)
+					Amount = NDSAmount + AmountWithoutNDS;
+				else
+					if (Document != null && Document.Lines.All(l => l.Amount.HasValue)) {
+					Amount = Document.Lines.Sum(l => l.Amount);
+					}
+			}
+			// сумма по накладной указана поставщиком
+			else
 				IsSupplierAmount = true;
 
 			if (!String.IsNullOrEmpty(DateOfPaymentDelay) && !DelayOfPaymentInDays.HasValue && InvoiceDate.HasValue) {
