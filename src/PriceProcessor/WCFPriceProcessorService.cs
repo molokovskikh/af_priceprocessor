@@ -456,21 +456,21 @@ VALUES (now(), ""{0}"", {1}, ""{2}"", {3}, ""{4}"", ""{5}""); SELECT last_insert
 			return new[] { "Success", taskId.ToString() }; // задача успешно создана
 		}
 
-		public string[] FindSynonymsResult(string taskId)
+		public WcfSynonymBox FindSynonymsResult(string taskId)
 		{
-			var handler = (IndexerHandler)Monitor.GetInstance().GetHandler(typeof(IndexerHandler));
+			var handler = (IndexerHandler) Monitor.GetInstance().GetHandler(typeof (IndexerHandler));
 			var task = handler.GetTask(Convert.ToInt64(taskId));
 			if (task == null)
-				return new[] { "Error", String.Format("Задача {0} не найдена", taskId) };
+				return new WcfSynonymBox {Status = TaskState.Error, Message = String.Format("Задача {0} не найдена", taskId)};
 			if (task.State == TaskState.Error)
-				return new[] { "Error", task.Error };
+				return new WcfSynonymBox {Status = TaskState.Error, Message = task.Error};
 			if (task.State == TaskState.Success)
-				return IndexerHandler.TransformToStringArray(task.Matches);
+				return IndexerHandler.TransformToSynonymBox(task.Matches);
 			if (task.State == TaskState.Running)
-				return new[] { "Running", task.Rate.ToString() };
+				return new WcfSynonymBox {Status = TaskState.Running, Message = task.Rate.ToString()};
 			if (task.State == TaskState.Canceled)
-				return new[] { "Canceled", task.Rate.ToString() };
-			return new[] { task.State.ToString() };
+				return new WcfSynonymBox {Status = TaskState.Canceled, Message = task.Rate.ToString()};
+			return new WcfSynonymBox {Status = task.State};
 		}
 
 		public void StopFindSynonyms(string taskId)

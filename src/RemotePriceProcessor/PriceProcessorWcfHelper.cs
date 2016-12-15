@@ -454,9 +454,9 @@ namespace RemotePriceProcessor
 			return result;
 		}
 
-		public string[] FindSynonymsResult(string taskId)
+		public WcfSynonymBox FindSynonymsResult(string taskId)
 		{
-			string[] result;
+			WcfSynonymBox result;
 			try {
 				_clientProxy = _channelFactory.CreateChannel();
 				result = _clientProxy.FindSynonymsResult(taskId);
