@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.ServiceModel;
@@ -83,7 +84,7 @@ namespace RemotePriceProcessor
 
 	/// <summary>
 	/// Класс, содержащий данные для логирования действий пользователя
-	/// </summary>	
+	/// </summary>
 	public class LogInformation
 	{
 		public string ComputerName { get; set; }
@@ -162,6 +163,22 @@ namespace RemotePriceProcessor
 	}
 
 
+	[DataContract]
+	public enum TaskState
+	{
+		[EnumMember]
+		None,
+		[EnumMember]
+		Running,
+		[EnumMember]
+		Success,
+		[EnumMember]
+		Error,
+		[EnumMember]
+		Canceled
+	}
+
+
 	/// <summary>
 	/// интерфейс для удаленного взаимодействия через MSMQ
 	/// </summary>
@@ -173,6 +190,56 @@ namespace RemotePriceProcessor
 
 		[OperationContract(IsOneWay = true)]
 		void RetransPriceSmart(uint priceId);
+	}
+
+
+	[DataContract]
+	public class WcfSynonymItem
+	{
+		[DataMember]
+		public uint FirmCode { get; set; }
+
+		[DataMember]
+		public string FirmName { get; set; }
+
+		[DataMember]
+		public uint ProductId { get; set; }
+
+		[DataMember]
+		public bool Junk { get; set; }
+	}
+
+	[DataContract]
+	public class WcfSynonymList
+	{
+		public WcfSynonymList()
+		{
+			SynonymList = new List<WcfSynonymItem>();
+		}
+
+		[DataMember]
+		public string OriginalName { get; set; }
+
+		[DataMember]
+		public List<WcfSynonymItem> SynonymList { get; set; }
+	}
+
+	[DataContract]
+	public class WcfSynonymBox
+	{
+		public WcfSynonymBox()
+		{
+			SynonymBox = new List<WcfSynonymList>();
+		}
+
+		[DataMember]
+		public TaskState Status { get; set; }
+
+		[DataMember]
+		public string Message { get; set; }
+
+		[DataMember]
+		public List<WcfSynonymList> SynonymBox { get; set; }
 	}
 
 	/// <summary>
@@ -228,7 +295,7 @@ namespace RemotePriceProcessor
 		string[] FindSynonyms(uint priceItemId);
 
 		[OperationContract]
-		string[] FindSynonymsResult(string taskId);
+		WcfSynonymBox FindSynonymsResult(string taskId);
 
 		[OperationContract]
 		void StopFindSynonyms(string taskId);

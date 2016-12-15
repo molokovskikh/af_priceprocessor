@@ -16,6 +16,7 @@ using Lucene.Net.Documents;
 using Lucene.Net.QueryParsers;
 using Lucene.Net.Store;
 using NHibernate.Linq;
+using RemotePriceProcessor;
 using Directory = System.IO.Directory;
 using Document = Lucene.Net.Documents.Document;
 
@@ -60,14 +61,6 @@ namespace Inforoom.PriceProcessor
 		private readonly IList<SynonymInfo> _summary;
 	}
 
-	public enum TaskState
-	{
-		None,
-		Running,
-		Success,
-		Error,
-		Canceled
-	}
 
 	public class SynonymTask
 	{
@@ -458,29 +451,24 @@ namespace Inforoom.PriceProcessor
 				_logger.Info("Ошибка при добавлении");
 		}
 
-		public static string[] TransformToStringArray(Dictionary<string, SynonymSummary> matches)
+		public static WcfSynonymBox TransformToSynonymBox(Dictionary<string, SynonymSummary> matches)
 		{
-			var result = new string[matches.Count + 1];
-			result[0] = "Success";
-			var i = 1;
+			var result = new WcfSynonymBox();
+
+			result.Status = TaskState.Success;
 			foreach (var key in matches) {
-				var res = String.Empty;
+				var listItem = new WcfSynonymList();
+				listItem.OriginalName = key.Value.OriginalName();
 				var summary = key.Value.Summary();
-				res += summary.Count.ToString();
-				res += ";";
 				foreach (var synonymInfo in summary) {
-					res += synonymInfo.FirmCode.ToString();
-					res += ";";
-					res += synonymInfo.FirmName;
-					res += ";";
-					res += synonymInfo.ProductId.ToString();
-					res += ";";
-					res += synonymInfo.Junk.ToString();
-					res += ";";
+					listItem.SynonymList.Add(new WcfSynonymItem() {
+						FirmCode = synonymInfo.FirmCode,
+						FirmName = synonymInfo.FirmName,
+						ProductId = synonymInfo.ProductId,
+						Junk = synonymInfo.Junk
+					});
 				}
-				res += key.Value.OriginalName();
-				result[i] = res;
-				i++;
+				result.SynonymBox.Add(listItem);
 			}
 			return result;
 		}

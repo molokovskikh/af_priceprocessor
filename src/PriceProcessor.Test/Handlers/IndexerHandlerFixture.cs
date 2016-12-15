@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using NHibernate.Linq;
 using NUnit.Framework;
+using RemotePriceProcessor;
 using Test.Support;
 
 namespace PriceProcessor.Test.Handlers
@@ -151,12 +152,12 @@ namespace PriceProcessor.Test.Handlers
 			}
 			var matches = _handler.GetTask(taskId).Matches;
 			var rate = _handler.GetTask(taskId).Rate;
-			var str_res = IndexerHandler.TransformToStringArray(matches);
+			var str_res = IndexerHandler.TransformToSynonymBox(matches);
 
 			Assert.That(rate, Is.EqualTo(100));
 			Assert.That(matches.Count, Is.EqualTo(5));
 			for (int i = 1; i <= 5; i++)
-				Assert.That(matches.ContainsKey(String.Format("Тестовое наименование {0} ({1})", i, now.ToString()).ToUpper()));
+			Assert.That(matches.ContainsKey(String.Format("Тестовое наименование {0} ({1})", i, now.ToString()).ToUpper()));
 			Assert.That(matches[names[0].Trim().ToUpper()].Summary().Count, Is.EqualTo(1));
 			Assert.That(matches[names[1].Trim().ToUpper()].Summary().Count, Is.EqualTo(1));
 			Assert.That(matches[names[2].Trim().ToUpper()].Summary().Count, Is.EqualTo(1));
@@ -168,9 +169,17 @@ namespace PriceProcessor.Test.Handlers
 			Assert.That(matches[names[3].Trim().ToUpper()].Summary()[0].FirmCode, Is.EqualTo(price2.Supplier.Id));
 			Assert.That(matches[names[4].Trim().ToUpper()].Summary()[0].FirmCode, Is.EqualTo(price2.Supplier.Id));
 			Assert.That(matches[names[4].Trim().ToUpper()].Summary()[1].FirmCode, Is.EqualTo(price1.Supplier.Id));
-			Assert.That(str_res.Length, Is.EqualTo(6));
-			Assert.That(str_res[5], Is.EqualTo(String.Format("2;{0};{1};{2};{3};{4};{5};{6};{7};{8}",
-				price2.Supplier.Id, price2.Supplier.Name + " (" + price2.Supplier.FullName + ")", product.Id, "False", price1.Supplier.Id, price1.Supplier.Name + " (" + price1.Supplier.FullName + ")", product.Id, "False", names[4])));
+			Assert.That(str_res.SynonymBox.SelectMany(s=>s.SynonymList.Select(l=>l)).ToList().Count, Is.EqualTo(6));
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList.Count == 2);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[0].FirmCode == price2.Supplier.Id);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[0].FirmName == price2.Supplier.Name + " (" + price1.Supplier.FullName + ")");
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[0].ProductId == product.Id);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[0].Junk == false);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[1].FirmCode == price1.Supplier.Id);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[1].FirmName == price1.Supplier.Name + " (" + price1.Supplier.FullName + ")");
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[1].ProductId == product.Id);
+			Assert.IsTrue(str_res.SynonymBox[4].SynonymList[1].Junk == false);
+			Assert.IsTrue(str_res.SynonymBox[4].OriginalName == names[4]);
 
 			names.Add(String.Format("Тестовое наименование 6 ({0})", now));
 			synonyms.Clear();
