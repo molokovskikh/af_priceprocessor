@@ -193,6 +193,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 			if (dtUnrecExp.Columns.Contains("HandMade"))
 				drUnrecExp["HandMade"] = 0;
+			drUnrecExp["ManualDel"] = false;
 
 			dtUnrecExp.Rows.Add(drUnrecExp);
 		}
@@ -598,7 +599,7 @@ and CoreCosts.PC_CostCode = {1};",
 			daBlockedPrice.Fill(dtBlockedPrice);
 
 			if (dtBlockedPrice.Rows.Count == 0) {
-				cleanUpCommand.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0}", priceItemId);
+				cleanUpCommand.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0} and ManualDel=0", priceItemId);
 				logMessage.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
 			}
 
@@ -694,6 +695,7 @@ and a.FirmCode = p.FirmCode;",
 
 					//Если не получилось, что позиция из-за вновь созданных синонимов была полностью распознана, то обновляем ее в базе
 					if ((((UnrecExpStatus)((byte)drUnrecExp["Status"]) & UnrecExpStatus.FullForm) != UnrecExpStatus.FullForm)) {
+						drUnrecExp["ManualDel"] = false;
 						adapter.Update(new[] { drUnrecExp });
 						applyCount++;
 					}
