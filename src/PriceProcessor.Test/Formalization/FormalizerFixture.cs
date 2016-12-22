@@ -570,6 +570,26 @@ namespace PriceProcessor.Test.Formalization
 			Assert.IsTrue(synonym.Product.CatalogProduct.VitallyImportant);
 		}
 
+		[Test]
+		public void Remove_unrecexp_from_price_only()
+		{
+			session.CreateSQLQuery($"insert into farm.unrecexp (PriceItemId, ManualDel) values ({priceItem.Id}, 0);")
+				.ExecuteUpdate();
+			session.CreateSQLQuery($"insert into farm.unrecexp (PriceItemId, ManualDel) values ({priceItem.Id}, 1);")
+				.ExecuteUpdate();
+			Formalize(priceItem.Format.ToString());
+			var cnt =
+				session.CreateSQLQuery($"select PriceItemId from farm.unrecexp where PriceItemId={priceItem.Id} and ManualDel=1;")
+					.List()
+					.Count;
+			Assert.AreEqual(1, cnt);
+			cnt =
+				session.CreateSQLQuery($"select PriceItemId from farm.unrecexp where PriceItemId={priceItem.Id} and ManualDel=0;")
+					.List()
+					.Count;
+			Assert.AreEqual(0, cnt);
+		}
+
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
 		{
 			Clean(connection);
