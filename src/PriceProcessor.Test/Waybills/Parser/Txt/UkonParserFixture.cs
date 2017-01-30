@@ -388,5 +388,45 @@ namespace PriceProcessor.Test.Waybills.Parser
 			//накладная без заголовка. не парсится.
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\00019418.sst");
 		}
+
+		// http://redmine.analit.net/issues/59617
+		[Test]
+		public void Parse_59617()
+		{
+			var doc = WaybillParser.Parse("72490703_001.sst");
+			Assert.That(doc.Lines.Count, Is.EqualTo(43));
+			Assert.That(doc.ProviderDocumentId, Is.EqualTo("72490703-001"));
+			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("27.01.2017")));
+			Assert.That(doc.Invoice.Amount, Is.EqualTo(67812.02m));
+			//Тип поставки
+			Assert.That(doc.Invoice.NDSAmount10, Is.EqualTo(5446.25m));
+			Assert.That(doc.Invoice.NDSAmount18, Is.EqualTo(1205.62m));
+			//Тип валюты
+			//Курс валюты
+			Assert.That(doc.Invoice.RecipientId, Is.EqualTo(167039));
+
+			var line = doc.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("33566"));
+			Assert.That(line.Product, Is.EqualTo("А-ЦЕРУМЕН СР-ВО МНОГОФУНКЦ. ОТОЛАРИНГОЛОГ. Д/ПРОМЫВ. УШНОГО ПРОХОДА ФЛ-КАП. 2МЛ №5"));
+			Assert.That(line.Producer, Is.EqualTo("Laboratoires Gilbert"));
+			Assert.That(line.Country, Is.EqualTo("ФРАНЦИЯ"));
+			Assert.That(line.Quantity, Is.EqualTo(2.00m));
+			Assert.That(line.SupplierCost, Is.EqualTo(269.19m));
+			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(239.92m));
+			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(244.72m));
+			//Цена поставщика с НДС
+			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(2.00m));
+			Assert.That(line.ExpireInMonths, Is.Null);
+			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130110/130716/0001976/2"));
+			Assert.That(line.Certificates, Is.EqualTo("182735^POCC FR.AГ58.Д00025^25.10.2011,ФГУ \"НИИ ФХМБА\" России  182735^POCC FR.AГ58.H00184^13.12.2013,РОСС RU.0001.11АГ58  182735^№ ФCЗ 2011/10222^19.07.2011,ФСН в СЗиСР"));
+			Assert.That(line.SerialNumber, Is.EqualTo("182735"));
+			Assert.That(line.DateOfManufacture, Is.Null);
+			Assert.That(line.Period, Is.EqualTo("01.05.2019"));
+			Assert.That(line.EAN13, Is.EqualTo("3518646057342"));
+			Assert.That(line.RegistryDate, Is.Null);
+			Assert.That(line.RegistryCost, Is.Null);
+			//Торговая наценка организации-импортера
+			Assert.That(line.VitallyImportant, Is.EqualTo(false));
+		}
 	}
 }

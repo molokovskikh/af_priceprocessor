@@ -8,23 +8,32 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	internal class ProtekDocumentHeader
 	{
-		public string[] DocumentDateHeaders = { "Дата", "DATE0", "Дата документа" };
-		public string[] ProviderDocumentIdHeaders = { "CD_A", "Номер документа", "Номер" };
-		public string[] CodeHeaders = { "CD_M", "Код товара" };
-		public string[] ProductHeaders = { "NM_M", "Наименование товара" };
-		public string[] ProducerHeaders = { "NM_PROD", "Производитель" };
-		public string[] CountryHeaders = { "COUNTRY", "Страна производителя" };
+		public string[] DocumentDateHeaders = { "Дата", "DATE0", "Дата документа", "Дата оформления" };
+		public string[] ProviderDocumentIdHeaders = { "CD_A", "Номер документа", "Номер", "Код накладной" };
+		public string[] CodeHeaders = { "CD_M", "Код товара", "Код препарата в ЦВ Протек" };
+		public string[] ProductHeaders = { "NM_M", "Наименование товара", "Название препарата в верхнем регистре" };
+		public string[] ProducerHeaders = { "NM_PROD", "Производитель", "Название производителя препарата" };
+		public string[] CountryHeaders = { "COUNTRY", "Страна производителя", "Название страны производителя" };
 		public string[] QuantityHeaders = { "QTY", "Количество" };
-		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС" };
+		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС", "Итоговая цена" };
 		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS", "Цена Протека без НДС", "Цена поставщика без НДС", "Цена АХ без НДС" };
-		public string[] CertificatesHeaders = { "SSERIA", "SERIA", "Серии сертификатов", "Сертификаты" };
+		public string[] CertificatesHeaders = { "SSERIA", "SERIA", "Серии сертификатов", "Сертификаты", "Сертификаты (Серия^Регистрационный номер^Дата и орган, выдавший сертификат)" };
 		public string[] SerialNumberHeaders = { "PRODSERIA", "Серия производителя" };
 		public string[] ProducerCostHeaders = { "PROD_PRICE_WONDS", "Цена производителя без НДС", "Цена производителя" };
 		public string[] RegistryCostHeaders = { "PRICERUB", "Реестровая цена в рублях", "Реестровая цена" };
+		public string[] RegistryDateHeaders = { "Дата регистрации препарата в реестре" };
 		public string[] NdsHeaders = { "PROC_NDS" };
 		public string[] PeriodHeaders = { "EXPIRY", "Дата истекания срока годности данной серии", "Дата окончания срока годности серии" };
 		public string[] SupplierPriceMarkupHeaders = { "Наценка посредника", "Торговая надбавка оптового звена" };
-		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС", "ЖНВЛС" };
+		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС", "ЖНВЛС", "Признак ЖВЛС" };
+		public string[] EAN13Headers = { "Штрих-код производителя" };
+		public string[] BillOfEntryNumberHeaders = { "ГТД" };
+		public string[] DateOfManufactureHeaders = { "Дата выпуска препарата" };
+		public string[] ExpireInMonthsHeaders = { "Заводской срок годности" };
+		public string[] AmountHeaders = { "Суммарная стоимость" };
+		public string[] NDSAmount10Headers = { "Сумма НДС 10%" };
+		public string[] NDSAmount18Headers = { "Сумма НДС 20%" };
+		public string[] RecipientIdHeaders = { "Код получателя" };
 
 		private IList<string> _headerParts;
 
@@ -186,6 +195,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			return GetDecimal(index, body);
 		}
 
+		public DateTime? GetRegistryDate(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, RegistryDateHeaders);
+			return GetDateTime(index, body);
+		}
+
 		public decimal? GetSupplierPriceMarkup(string[] body)
 		{
 			var index = GetIndexOfAnyElement(_headerParts, SupplierPriceMarkupHeaders);
@@ -217,6 +232,60 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		{
 			var index = GetIndexOfAnyElement(_headerParts, SerialNumberHeaders);
 			return GetString(index, body);
+		}
+
+		public string GetEAN13(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, EAN13Headers);
+			return GetString(index, body);
+		}
+
+		public string GetBillOfEntryNumber(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, BillOfEntryNumberHeaders);
+			return GetString(index, body);
+		}
+
+		public DateTime? GetDateOfManufacture(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, DateOfManufactureHeaders);
+			return GetDateTime(index, body);
+		}
+
+		public int? GetExpireInMonths(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, ExpireInMonthsHeaders);
+			var value = GetUInt(index, body);
+			if (value.HasValue)
+				return (int)value;
+			return null;
+		}
+
+		public int? GetRecipientId(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, RecipientIdHeaders);
+			var value = GetUInt(index, body);
+			if (value.HasValue)
+				return (int)value;
+			return null;
+		}
+
+		public decimal? GetAmount(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, AmountHeaders);
+			return GetDecimal(index, body);
+		}
+
+		public decimal? GetNDSAmount10(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, NDSAmount10Headers);
+			return GetDecimal(index, body);
+		}
+
+		public decimal? GetNDSAmount18(string[] body)
+		{
+			var index = GetIndexOfAnyElement(_headerParts, NDSAmount18Headers);
+			return GetDecimal(index, body);
 		}
 
 		private int GetIndexOfAnyElement(IList<string> list, IEnumerable<string> elements)

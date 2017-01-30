@@ -152,6 +152,11 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				document.ProviderDocumentId = headerDescription.GetProviderDocumentId(header);
 				document.DocumentDate = headerDescription.GetDocumentDate(header);
 
+				document.SetInvoice().Amount = headerDescription.GetAmount(header);
+				document.SetInvoice().NDSAmount10 = headerDescription.GetNDSAmount10(header);
+				document.SetInvoice().NDSAmount18 = headerDescription.GetNDSAmount18(header);
+				document.SetInvoice().RecipientId = headerDescription.GetRecipientId(header);
+
 				var bodyDescription = ReadHeader(reader, BodyCaption);
 				if (!isCorrectBody)
 					return null;
@@ -172,6 +177,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 					docLine.Certificates = bodyDescription.GetCertificates(parts);
 					docLine.SerialNumber = bodyDescription.GetSerialNumber(parts);
 					docLine.RegistryCost = bodyDescription.GetRegistryCost(parts);
+					docLine.RegistryDate = bodyDescription.GetRegistryDate(parts);
 					docLine.SupplierCost = bodyDescription.GetSupplierCost(parts);
 					if (bodyDescription.GetSupplierCostWithoutNds(parts) != null)
 						docLine.SetSupplierCostWithoutNds(bodyDescription.GetSupplierCostWithoutNds(parts).Value);
@@ -179,6 +185,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 					docLine.Period = bodyDescription.GetPeriod(parts);
 					docLine.ProducerCostWithoutNDS = bodyDescription.GetProducerCost(parts);
 					docLine.VitallyImportant = bodyDescription.GetVitallyImportant(parts);
+					docLine.EAN13 = bodyDescription.GetEAN13(parts);
+					docLine.BillOfEntryNumber = bodyDescription.GetBillOfEntryNumber(parts);
+					docLine.DateOfManufacture = bodyDescription.GetDateOfManufacture(parts);
+					docLine.ExpireInMonths = bodyDescription.GetExpireInMonths(parts);
 				}
 			}
 			return document;
@@ -204,8 +214,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				if (body.Length != 22 && body.Length != 24 && body.Length != 27 && body.Length != 26 && body.Length != 21 && body.Length != 31 && body.Length != 20 && body.Length != 32 && body.Length != 25)
 					return false;
 				// http://redmine.analit.net/issues/53074
-				if (header.Length == 9 && body.Length == 22)
-				{
+				if (header.Length == 9 && body.Length == 22) {
 					var s = "";
 					for (int i = 3; i < 9; i++)
 						s += header[i];
