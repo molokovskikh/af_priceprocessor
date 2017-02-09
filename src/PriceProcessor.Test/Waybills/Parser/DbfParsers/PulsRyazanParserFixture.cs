@@ -49,8 +49,6 @@ namespace PriceProcessor.Test.Waybills.Parser
 		public void Parse_settings()
 		{
 			var parser = new Inforoom.PriceProcessor.Models.Parser("PulsRyazanParser", appSupplier);
-			//parser.Add("", "DocumentDate");
-			//parser.Add("", "ProvideDocumentId");
 			parser.Add("CODE", "Code");
 			parser.Add("GOODE", "Product");
 			parser.Add("PRODUCER", "Producer");
@@ -63,13 +61,12 @@ namespace PriceProcessor.Test.Waybills.Parser
 			parser.Add("NDS", "Nds");
 			parser.Add("REESTR", "RegistryCost");
 			parser.Add("JVLS", "VitallyImportant");
-			parser.Add("SERIAL", "SerialNumber"); 
+			parser.Add("SERIAL", "SerialNumber");
+			//parser.Add("I_SERT", "CertificateFilename"); В файлах Норман такого поля нет. 
 			session.Save(parser);
 
 			var ids = new WaybillService().ParseWaybill(new[] { CreateTestLog("0020790.dbf").Id });
 			var doc = session.Load<Document>(ids[0]);
-			//var now = DateTime.Now;
-			//Assert.That(doc.ProviderDocumentId, !Is.Empty);
 			Assert.That(doc.Lines.Count, Is.EqualTo(15));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("174"));
