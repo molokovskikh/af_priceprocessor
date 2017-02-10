@@ -1,5 +1,6 @@
 ﻿using System;
 using Common.Tools;
+using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NUnit.Framework;
@@ -8,7 +9,7 @@ using PriceProcessor.Test.TestHelpers;
 namespace PriceProcessor.Test.Waybills.Parser
 {
 	[TestFixture]
-	public class SiaParserFixture
+	public class SiaParserFixture : DocumentFixture
 	{
 		[Test]
 		public void Parse_with_incorrect_reg_date()
@@ -471,6 +472,46 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var line = document.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("76791885"));
 			Assert.That(line.CodeCr, Is.EqualTo("13488742"));
+		}
+
+		[Test]
+		public void Parse_Roton_settings()
+		{
+			var parser = new Inforoom.PriceProcessor.Models.Parser("PulsRyazanParser", appSupplier);
+			parser.Add("NUM_DOC", "Header_ProviderDocumentId");
+			parser.Add("DATE_DOC", "Header_DocumentDate");
+			parser.Add("NUM_SF", "Invoice_InvoiceNumber");
+			parser.Add("DATE_SF", "Invoice_InvoiceDate");
+			parser.Add("ORG", "Invoice_ShipperInfo");
+			parser.Add("POLUCH", "Invoice_BuyerName");
+			parser.Add("CODE_TOVAR", "Code");
+			parser.Add("NAME_TOVAR", "Product");
+			parser.Add("PROIZ", "Producer");
+			parser.Add("COUNTRY", "Country");
+			parser.Add("PR_PROIZ", "ProducerCostWithoutNDS");
+			parser.Add("PRICE_NDS", "SupplierCost");
+			parser.Add("PRICE", "SupplierCostWithoutNDS");
+			parser.Add("VOLUME", "Quantity");
+			parser.Add("SUMMA", "Amount");
+			parser.Add("SROK", "Period");
+			parser.Add("GTD", "BillOfEntryNumber");
+			parser.Add("PCT_NDS", "Nds");
+			parser.Add("SUMMA_NDS", "NdsAmount");
+			parser.Add("SERIA", "SerialNumber");
+			parser.Add("PRICE_RR", "RegistryCost");
+			parser.Add("JNVLS", "VitallyImportant");
+			parser.Add("CER_NUMBER", "Certificates");
+			parser.Add("SERT_ORG", "CertificateAuthority");
+			parser.Add("EAN13", "EAN13");
+			session.Save(parser);
+
+			var ids = new WaybillService().ParseWaybill(new[] { CreateTestLog("40308608_Ротон(9687).DBF").Id });
+			var document = session.Load<Document>(ids[0]);
+			var line = document.Lines[0];
+			Assert.That(line.Code, Is.EqualTo("986"));
+			Assert.That(line.Amount, Is.EqualTo(801));
+			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ46Д70664"));
+			Assert.That(line.Product, Is.EqualTo("Т-1442  Бандаж противогрыжевый при вентральных грыжах р. 7-ХXL (Тривес)"));
 		}
 	}
 }

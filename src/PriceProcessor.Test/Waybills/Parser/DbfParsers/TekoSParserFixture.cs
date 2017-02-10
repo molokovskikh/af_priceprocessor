@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills;
+using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NHibernate.Util;
 using NUnit.Framework;
@@ -11,7 +12,7 @@ using PriceProcessor.Test.TestHelpers;
 namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 {
 	[TestFixture]
-	internal class TekoSParserFixture
+	internal class TekoSParserFixture : DocumentFixture
 	{
 		/// <summary>
 		/// Тест для задачи http://redmine.analit.net/issues/36689
@@ -71,6 +72,75 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		{
 			var document = WaybillParser.Parse("6-000486_00660.dbf");
 
+			var invoice = document.Invoice;
+			Assert.That(invoice.SellerName, Is.EqualTo("\"ФК Гранд Капитал ВОРОНЕЖ\""));
+			Assert.That(invoice.Amount, Is.EqualTo(14236.3));
+			Assert.That(invoice.AmountWithoutNDS0, Is.EqualTo(0));
+			Assert.That(invoice.AmountWithoutNDS10, Is.EqualTo(12867));
+			Assert.That(invoice.AmountWithoutNDS18, Is.EqualTo(70));
+			Assert.That(invoice.AmountWithoutNDS, Is.EqualTo(12937));
+			Assert.That(invoice.NDSAmount10, Is.EqualTo(1286.7));
+			Assert.That(invoice.NDSAmount18, Is.EqualTo(12.6));
+			Assert.That(invoice.NDSAmount, Is.EqualTo(1299.3));
+			Assert.That(invoice.DelayOfPaymentInDays, Is.EqualTo(7));
+
+			var line = document.Lines[0];
+			Assert.That(line.RegistryCost, Is.EqualTo(0));
+			Assert.That(line.DateOfManufacture, Is.EqualTo(new DateTime(2015, 08, 01)));
+			Assert.That(line.Country, Is.EqualTo("Россия"));
+			Assert.That(line.RegistryDate, Is.Null);
+			Assert.That(line.CertificateAuthority, Is.EqualTo("Формат качества"));
+			Assert.That(line.CertificatesDate, Is.EqualTo("16.09.2015"));
+			Assert.That(line.ExportCode, Is.EqualTo("2-001200"));
+		}
+
+		[Test]
+		public void Parse_GrandCapitalVrn_settings()
+		{
+			var parser = new Inforoom.PriceProcessor.Models.Parser("TekoSParser", appSupplier);
+			parser.Add("TTN", "Header_ProviderDocumentId");
+			parser.Add("TTN_DATE", "Header_DocumentDate");
+			parser.Add("NAME_POST", "Product");
+			parser.Add("PRZV_POST", "Producer");
+			parser.Add("SERIA", "SerialNumber");
+			parser.Add("SGODN", "Period");
+			parser.Add("SERT", "Certificates");
+			parser.Add("PRCENABNDS", "ProducerCostWithoutNDS");
+			parser.Add("PCENA_BNDS", "SupplierCostWithoutNDS");
+			parser.Add("NDS", "Nds");
+			parser.Add("PCENA_NDS", "SupplierCost");
+			parser.Add("KOL_TOV", "Quantity");
+			parser.Add("SP_PRD_ID", "Code");
+			parser.Add("VT", "VitallyImportant");
+			parser.Add("P_NDS_AMNT", "NdsAmount");
+			parser.Add("P_AMNT", "Amount");
+			parser.Add("UNIT", "Unit");
+			parser.Add("BLL_NTR_ID", "BillOfEntryNumber");
+			parser.Add("BAR_CODE", "EAN13");
+			parser.Add("SERT_END", "CertificatesEndDate");
+			parser.Add("GR_CENA", "RegistryCost");
+			parser.Add("MAN_DATE", "DateOfManufacture");
+			parser.Add("PRZV_CNTR", "Country");
+			parser.Add("REG_DATE", "RegistryDate");
+			parser.Add("SERT_AUTH", "CertificateAuthority");
+			parser.Add("SERT_DATE", "CertificatesDate");
+
+			parser.Add("I_SEL_ADR", "Invoice_SellerAddress");
+			parser.Add("I_SEL_INN", "Invoice_SellerINN");
+			parser.Add("I_SEL_KPP", "Invoice_SellerKPP");
+			parser.Add("I_RES_NAME", "Invoice_RecipientName");
+			parser.Add("I_RES_ID", "Invoice_RecipientId");
+			parser.Add("I_BU_ID", "Invoice_BuyerId");
+			parser.Add("I_BU_NAME", "Invoice_BuyerName");
+			parser.Add("I_BU_INN", "Invoice_BuyerINN");
+			parser.Add("I_SEL_NAME", "Invoice_SellerName");
+			parser.Add("AMNT", "Invoice_Amount");
+			parser.Add("AMNT_N_ALL", "Invoice_NDSAmount");
+			parser.Add("I_DEL_D", "Invoice_DelayOfPaymentInDays");
+			session.Save(parser);
+
+			var ids = new WaybillService().ParseWaybill(new[] { CreateTestLog("6-000486_00660.dbf").Id });
+			var document = session.Load<Document>(ids[0]);
 			var invoice = document.Invoice;
 			Assert.That(invoice.SellerName, Is.EqualTo("\"ФК Гранд Капитал ВОРОНЕЖ\""));
 			Assert.That(invoice.Amount, Is.EqualTo(14236.3));
