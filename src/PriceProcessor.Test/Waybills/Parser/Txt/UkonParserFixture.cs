@@ -428,5 +428,14 @@ namespace PriceProcessor.Test.Waybills.Parser
 			//Торговая наценка организации-импортера
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 		}
+
+		[Test]
+		public void Parse_60333()
+		{
+			var doc = WaybillParser.Parse("96599.sst");
+			var line = doc.Lines[0];
+			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.EAN13, Is.EqualTo("4603933004785"));
+		}
 	}
 }

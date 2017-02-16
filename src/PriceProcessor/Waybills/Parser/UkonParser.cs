@@ -132,9 +132,14 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				docLine.ProducerCostWithoutNDS = ToDecimal(parts[6]);
 				if (parts.Length >= 26 && !String.IsNullOrEmpty(parts[25]) && (ToDecimal(parts[25]) <= 1))
 					docLine.VitallyImportant = (ToDecimal(parts[25]) == 1);
-					//авеста хранит в колонке 11 хранит признак жизненно важный
+				//авеста хранит в колонке 11 хранит признак жизненно важный
 				else if (parts[10] == "0" || parts[10] == "1")
 					docLine.VitallyImportant = (ToDecimal(parts[10]) == 1);
+				// http://redmine.analit.net/issues/60333
+				else if (parts[19] == "0" || parts[19] == "1")
+					docLine.VitallyImportant = (ToDecimal(parts[19]) == 1);
+				if (parts[16].Length == 13)
+					docLine.EAN13 = parts[16];
 			}
 			return document;
 		}
