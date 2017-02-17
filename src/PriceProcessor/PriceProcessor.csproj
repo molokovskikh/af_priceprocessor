@@ -101,8 +101,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
     </Reference>
+    <Reference Include="MailKit">
+      <HintPath>..\..\packages\MailKit.1.2.21\lib\net45\MailKit.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Exchange.Data.Common">
       <HintPath>..\..\lib\Microsoft.Exchange.Data.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit">
+      <HintPath>..\..\packages\MimeKit.1.2.22\lib\net45\MimeKit.dll</HintPath>
     </Reference>
     <Reference Include="MySql.Data">
       <SpecificVersion>False</SpecificVersion>
@@ -170,6 +176,9 @@
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EmailByMiniMailsException.cs" />
+    <Compile Include="Downloader\MailHandler\AttachmentHandler.cs" />
+    <Compile Include="Downloader\MailHandler\MailKitClient.cs" />
+    <Compile Include="Downloader\MailHandler\MimeMessageHandler.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />
