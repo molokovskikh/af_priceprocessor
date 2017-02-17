@@ -775,27 +775,6 @@ namespace Inforoom.PriceProcessor
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
-		public string WaybillImapMessageUser
-		{
-			get
-			{
-				return ((string)(this["WaybillImapMessageUser"]));
-			}
-		}
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("12345678")]
-		public string WaybillImapMessagePass
-		{
-			get
-			{
-				return ((string)(this["WaybillImapMessagePass"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
 		public string WaybillIMAPUser
 		{
 			get
@@ -812,6 +791,28 @@ namespace Inforoom.PriceProcessor
 			get
 			{
 				return ((string)(this["WaybillIMAPPass"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
+		public string MailKitClientUser
+		{
+			get
+			{
+				return ((string)(this["MailKitClientUser"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("12345678")]
+		public string MailKitClientPass
+		{
+			get
+			{
+				return ((string)(this["MailKitClientPass"]));
 			}
 		}
 
