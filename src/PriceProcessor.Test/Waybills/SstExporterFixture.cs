@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills
 				ClientCode = 1001,
 				Address = new Address {
 					Id = 501,
-					Org = new Org {
+					Org = new Inforoom.PriceProcessor.Waybills.Models.Org {
 						FullName = "Тестовое юр.лицо"
 					}
 				}
