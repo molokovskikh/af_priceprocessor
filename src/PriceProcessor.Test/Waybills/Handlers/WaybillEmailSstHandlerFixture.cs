@@ -232,7 +232,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			//запуск обработчика
 			session.Transaction.Commit();
 
+#if DEBUG
 			handler.SetSessionForTest(session);
+#endif
 			handler.ProcessData();
 			session.Flush();
 			//проверка на наличие документов после запуска обработчика
