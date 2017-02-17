@@ -47,13 +47,13 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 		public override void ProcessData()
 		{
 			try {
-				if (string.IsNullOrEmpty(Settings.Default.IMAPUrl)
-					|| string.IsNullOrEmpty(Settings.Default.IMAPSourceFolder)
-					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPUser)
-					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPPass)
-					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessageUser)
-					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessagePass)
-					|| string.IsNullOrEmpty(Settings.Default.IMAPHandlerErrorMessageTo)) {
+				if (string.IsNullOrEmpty(Settings.Default.IMAPUrl.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.IMAPSourceFolder.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPUser.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPPass.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessageUser.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessagePass.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.IMAPHandlerErrorMessageTo.Trim())) {
 					_log.Error(
 						$"Для корректной работы обработчика {nameof(MailKitClient)} в файлах конфигурации необходимо задать слебудющие параметры: IMAPUrl, IMAPSourceFolder, WaybillIMAPUser, WaybillIMAPPass, WaybillImapMessageUser, WaybillImapMessagePass, IMAPHandlerErrorMessageTo.");
 					return;

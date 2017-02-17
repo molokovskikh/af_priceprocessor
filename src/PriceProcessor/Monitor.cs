@@ -62,7 +62,8 @@ namespace Inforoom.PriceProcessor
 				new WaybillProtekHandler(),
 				new CertificateSourceHandler(),
 				new CertificateCatalogHandler(),
-				new DocSourceHandler()
+				new DocSourceHandler(),
+				new MailKitClient()
 #endif
 			};
 		}
