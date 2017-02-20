@@ -27,7 +27,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 
 			var attachments = GetValidAttachements(message);
 			if (!attachments.Any()) {
-				_log.Info(String.Format($"{nameof(MailKitClient)}: Отсутствуют вложения в письме от адреса {0}", emailAuthor));
+				_logger.Info(String.Format($"{nameof(MailKitClient)}: Отсутствуют вложения в письме от адреса {0}", emailAuthor));
 				SendPublicErrorMessage(String.Format($"Отсутствуют вложения в письме от адреса {0}", emailAuthor), message);
 			}
 
@@ -151,7 +151,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 			}
 
 
-			_logger.InfoFormat($"{nameof(MailKitClient)}: обработка файла {0}", file);
+			_logger.InfoFormat($"{nameof(MailKitClient)}: обработка файла {file}");
 			return DocumentReceiveLog.LogNoCommit(supplierId, addressId, file, DocType.Waybill, "Получен по Email",
 				Convert.ToInt32(CurrentMesdsageId.Id));
 		}

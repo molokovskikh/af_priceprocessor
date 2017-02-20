@@ -23,7 +23,6 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 {
 	public partial class MailKitClient : AbstractHandler
 	{
-		private static ILog _log = LogManager.GetLogger(typeof (MailKitClient));
 
 		private const string ExtrDirSuffix = "Extr";
 		private const string ErrorLetterFrom = "tech@analit.net";
@@ -52,7 +51,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 					|| string.IsNullOrEmpty(Settings.Default.MailKitClientUser.Trim())
 					|| string.IsNullOrEmpty(Settings.Default.MailKitClientPass.Trim())
 					|| string.IsNullOrEmpty(Settings.Default.IMAPHandlerErrorMessageTo.Trim())) {
-					_log.Error(
+					_logger.Error(
 						$"Для корректной работы обработчика {nameof(MailKitClient)} в файлах конфигурации необходимо задать слебудющие параметры: IMAPUrl, IMAPSourceFolder, MailKitClientUser, MailKitClientPass, IMAPHandlerErrorMessageTo.");
 					return;
 				}
@@ -64,9 +63,9 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 				var waybillImapPass = Settings.Default.MailKitClientPass;
 
 				GlobalContext.Properties["Version"] = Assembly.GetExecutingAssembly().GetName().Version;
-				if (_log.IsDebugEnabled)
-					_log.DebugFormat("Приложение запущено, конфигурация {0}", nameof(MailKitClient));
-				var innerLogger = new MemorableLogger(_log) {
+				if (_logger.IsDebugEnabled)
+					_logger.DebugFormat("Приложение запущено, конфигурация {0}", nameof(MailKitClient));
+				var innerLogger = new MemorableLogger(_logger) {
 					ErrorMessage = $"Ошибка при обработке почтового ящика, конфигурация  {nameof(MailKitClient)}"
 				};
 				try {
@@ -97,7 +96,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 										imapFolder.SetFlags(id, MessageFlags.Deleted, true, cancellation);
 									} catch (Exception e) {
 										SendPublicErrorMessage($"Не удалось обработать письмо: при обработке письма возникла ошибка.", message);
-										_log.Error($"Не удалось обработать письмо {message}", e);
+								_logger.Error($"Не удалось обработать письмо {message}", e);
 									}
 								}
 #if !DEBUG
@@ -112,7 +111,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 					innerLogger.Log(e);
 				}
 			} catch (Exception e) {
-				_log.Error($"Ошибка при запуске приложения, конфигурация {nameof(MailKitClient)}", e);
+				_logger.Error($"Ошибка при запуске приложения, конфигурация {nameof(MailKitClient)}", e);
 			}
 		}
 
@@ -172,7 +171,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 					client.Disconnect(true, cancellation);
 				}
 			} catch (Exception e) {
-				_log.Error($"Не удалось отправить письмо {message}", e);
+				_logger.Error($"Не удалось отправить письмо {message}", e);
 			}
 #endif
 		}
