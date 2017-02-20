@@ -23,7 +23,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 
 		public void ProcessMessage(ISession session, MimeMessage message)
 		{
-			var emails = message.From.OfType<MailboxAddress>().Select(a => a.Address).ToArray();
+			var emails = message.From.OfType<MailboxAddress>().Where(s=>!string.IsNullOrEmpty(s.Address)).Select(a => a.Address).ToArray();
 			if (emails.Length == 0) {
 				SendPublicErrorMessage($"У сообщения не указано ни одного отправителя.", message);
 				_log.WarnFormat($"У сообщения не указано ни одного отправителя {message}");
@@ -44,10 +44,13 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 				_log.Info($"{nameof(MailKitClient)}: При загрузке источников получили пустую таблицу");
 			}
 
-
 			foreach (var emailAuthor in emails) {
 				uint supplierId = 0;
-				var sources = dtSources.Where(s => s.EMailFrom.ToLower() == emailAuthor.ToLower()).ToList();
+				var sources =
+					dtSources.Where(s => {
+						var lower = s.EMailFrom?.ToLower();
+						return emailAuthor != null && (lower != null && lower.IndexOf(emailAuthor.ToLower(), StringComparison.Ordinal) != -1);
+					}).ToList();
 
 				SupplierSelector source;
 

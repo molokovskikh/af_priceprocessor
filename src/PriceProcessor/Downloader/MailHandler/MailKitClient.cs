@@ -49,21 +49,19 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 			try {
 				if (string.IsNullOrEmpty(Settings.Default.IMAPUrl.Trim())
 					|| string.IsNullOrEmpty(Settings.Default.IMAPSourceFolder.Trim())
-					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPUser.Trim())
-					|| string.IsNullOrEmpty(Settings.Default.WaybillIMAPPass.Trim())
-					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessageUser.Trim())
-					|| string.IsNullOrEmpty(Settings.Default.WaybillImapMessagePass.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.MailKitClientUser.Trim())
+					|| string.IsNullOrEmpty(Settings.Default.MailKitClientPass.Trim())
 					|| string.IsNullOrEmpty(Settings.Default.IMAPHandlerErrorMessageTo.Trim())) {
 					_log.Error(
-						$"Для корректной работы обработчика {nameof(MailKitClient)} в файлах конфигурации необходимо задать слебудющие параметры: IMAPUrl, IMAPSourceFolder, WaybillIMAPUser, WaybillIMAPPass, WaybillImapMessageUser, WaybillImapMessagePass, IMAPHandlerErrorMessageTo.");
+						$"Для корректной работы обработчика {nameof(MailKitClient)} в файлах конфигурации необходимо задать слебудющие параметры: IMAPUrl, IMAPSourceFolder, MailKitClientUser, MailKitClientPass, IMAPHandlerErrorMessageTo.");
 					return;
 				}
 
 				var imapFolderStr = Settings.Default.IMAPSourceFolder;
 				var imapUrl = Settings.Default.IMAPUrl;
 
-				var waybillImapUser = Settings.Default.WaybillIMAPUser;
-				var waybillImapPass = Settings.Default.WaybillIMAPPass;
+				var waybillImapUser = Settings.Default.MailKitClientUser;
+				var waybillImapPass = Settings.Default.MailKitClientPass;
 
 				GlobalContext.Properties["Version"] = Assembly.GetExecutingAssembly().GetName().Version;
 				if (_log.IsDebugEnabled)
@@ -165,20 +163,11 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 		protected virtual void SendMessage(MimeMessage message)
 		{
 			var imapUrl = Settings.Default.SMTPHost;
-			var waybillImapUser = Settings.Default.WaybillImapMessageUser;
-			var waybillImapPass = Settings.Default.WaybillImapMessagePass;
-
 #if !DEBUG
 			try {
 				using (var client = new SmtpClient()) {
-					var credential = new NetworkCredential(waybillImapUser, waybillImapPass);
 					var cancellation = default(CancellationToken);
-					client.Connect(imapUrl, 25, SecureSocketOptions.None); // EMAILSourceHandler -> SmtpClientEx.QuickSendSmartHost
-					//что бы не спамить логи почтового сервера
-					client.AuthenticationMechanisms.Clear();
-					client.AuthenticationMechanisms.Add("PLAIN");
-					client.Authenticate(credential, cancellation);
-
+					client.Connect(imapUrl, 25, SecureSocketOptions.None);
 					client.Send(message);
 					client.Disconnect(true, cancellation);
 				}
