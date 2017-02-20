@@ -26,7 +26,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 			var emails = message.From.OfType<MailboxAddress>().Where(s=>!string.IsNullOrEmpty(s.Address)).Select(a => a.Address).ToArray();
 			if (emails.Length == 0) {
 				SendPublicErrorMessage($"У сообщения не указано ни одного отправителя.", message);
-				_log.WarnFormat($"У сообщения не указано ни одного отправителя {message}");
+				_logger.WarnFormat($"У сообщения не указано ни одного отправителя {message}");
 				return;
 			}
 
@@ -41,7 +41,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 																													st.SourceID = 1").ToList();
 
 			if (dtSources.Count == 0) {
-				_log.Info($"{nameof(MailKitClient)}: При загрузке источников получили пустую таблицу");
+				_logger.Info($"{nameof(MailKitClient)}: При загрузке источников получили пустую таблицу");
 			}
 
 			foreach (var emailAuthor in emails) {
@@ -60,7 +60,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 
 					SendPublicErrorMessage(String.Format("На адрес \"{0}\"" +
 								"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", emailAuthor), message);
-					_log.Info(
+					_logger.Info(
 						String.Format(
 							$"{nameof(MailKitClient)}: На адрес \"{0}\"" +
 								"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", emailAuthor));
@@ -71,7 +71,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 				} else if (sources.Count == 0)
 				{
 					var addition = String.Format("Количество записей в источниках - {0}", dtSources.Count);
-					_log.Info(
+					_logger.Info(
 						String.Format($"{nameof(MailKitClient)}: Не найдено записи в источниках, соответствующей адресу {0}. {1}",
 							emailAuthor, addition));
 
