@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,9 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 
 		public void ProcessMessage(ISession session, MimeMessage message)
 		{
-			var emails = message.From.OfType<MailboxAddress>().Where(s=>!string.IsNullOrEmpty(s.Address)).Select(a => a.Address).ToArray();
+			var notMatched = new List<string>();
+			var emails =
+				message.From.OfType<MailboxAddress>().Where(s => !string.IsNullOrEmpty(s.Address)).Select(a => a.Address).ToArray();
 			if (emails.Length == 0) {
 				SendPublicErrorMessage($"У сообщения не указано ни одного отправителя.", message);
 				_logger.WarnFormat($"У сообщения не указано ни одного отправителя {message}");
@@ -49,17 +52,17 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 				var sources =
 					dtSources.Where(s => {
 						var lower = s.EMailFrom?.ToLower();
-						return emailAuthor != null && (lower != null && lower.IndexOf(emailAuthor.ToLower(), StringComparison.Ordinal) != -1);
+						return emailAuthor != null &&
+							(lower != null && lower.IndexOf(emailAuthor.ToLower(), StringComparison.Ordinal) != -1);
 					}).ToList();
 
 				SupplierSelector source;
 
 				if (sources.Count > 1) {
-
 					// Нет адреса, клиента или другой информации об адресе доставки на этом этапе	//	SelectWaybillSourceForClient(sources, _addressId);
 
 					SendPublicErrorMessage(String.Format("На адрес \"{0}\"" +
-								"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", emailAuthor), message);
+						"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", emailAuthor), message);
 					_logger.Info(
 						String.Format(
 							$"{nameof(MailKitClient)}: На адрес \"{0}\"" +
@@ -68,8 +71,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 						String.Format(
 							"На адрес \"{0}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось",
 							emailAuthor));
-				} else if (sources.Count == 0)
-				{
+				} else if (sources.Count == 0) {
 					var addition = String.Format("Количество записей в источниках - {0}", dtSources.Count);
 					_logger.Info(
 						String.Format($"{nameof(MailKitClient)}: Не найдено записи в источниках, соответствующей адресу {0}. {1}",
@@ -86,14 +88,16 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 				supplierId = Convert.ToUInt32(source.FirmCode);
 
 				//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-				bool matched = ProcessAttachments(session, message, supplierId, emailAuthor);
+				var matched = ProcessAttachments(session, message, supplierId, emailAuthor);
 
 				sources.ForEach(s => { dtSources.Remove(s); });
-
 				if (!matched) {
-					SendPublicErrorMessage($"Письмо не распознано.", message);
-					throw new Exception($"Письмо не распознано.");
+					notMatched.Add($"Для отправителя {emailAuthor} (поставщика {supplierId}) не найден соответствующий адрес доставки.");
 				}
+			}
+			foreach (var item in notMatched) {
+				_logger.Info(item);
+				SendPublicErrorMessage(item, message);
 			}
 		}
 	}

@@ -65,7 +65,7 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 						cleaner.Watch(currentFileName);
 					}
 					var logs = ProcessWaybillFile(session, savedFiles, supplierId, message);
-					//если логи есть, значит файл распознан
+					//если логи есть, значит файл распознан и найден соответствующий адрес доставки
 					if (logs.Count > 0) {
 						matched = true;
 						var service = new WaybillService();
