@@ -93,10 +93,11 @@ namespace Inforoom.PriceProcessor.Downloader.MailHandler
 									var message = imapFolder.GetMessage(id, cancellation);
 									try {
 										ProcessMessage(session, message);
-										imapFolder.SetFlags(id, MessageFlags.Deleted, true, cancellation);
 									} catch (Exception e) {
 										SendPublicErrorMessage($"Не удалось обработать письмо: при обработке письма возникла ошибка.", message);
-								_logger.Error($"Не удалось обработать письмо {message}", e);
+										_logger.Error($"Не удалось обработать письмо {message}", e);
+									} finally {
+										imapFolder.SetFlags(id, MessageFlags.Deleted, true, cancellation);
 									}
 								}
 #if !DEBUG
