@@ -89,7 +89,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				try {
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
-					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf") {
+					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill) {
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
 					}
@@ -100,7 +100,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					_log.Error(errorTitle, e);
 					SaveWaybill(filename);
 
-					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf")
+					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill)
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
 					return null;
@@ -136,7 +136,7 @@ namespace Inforoom.PriceProcessor.Waybills
 						s.Flush();
 					});
 
-					if(new FileInfo(l.FileName).Extension.ToLower() == ".dbf")
+					if(new FileInfo(l.FileName).Extension.ToLower() == ".dbf" && l.DocumentType == DocType.Waybill)
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l);
 

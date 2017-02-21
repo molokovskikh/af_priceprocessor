@@ -64,7 +64,8 @@ namespace PriceProcessor.Test.Waybills
 			}
 
 			var log = new DocumentReceiveLog(supplierRed, addressRed) {
-				FileName = filename
+				FileName = filename,
+				DocumentType = DocType.Waybill
 			};
 			session.Save(log);
 			var fi = new FileInfo(log.GetFileName());
