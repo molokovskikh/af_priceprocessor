@@ -80,7 +80,9 @@ namespace PriceProcessor.Test.Waybills
 		{
 			var data = ExportFile();
 			Assert.That(data.Rows.Count, Is.EqualTo(1));
-			Assert.That(data.Rows[0]["name_post"], Is.EqualTo("Алька-прим шип.таб. Х10"));
+			var row = data.Rows[0];
+			Assert.That(row["name_post"], Is.EqualTo("Алька-прим шип.таб. Х10"));
+			Assert.That(row["country"], Is.EqualTo("Польша"));
 		}
 
 		[Test]

@@ -181,6 +181,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				new DataColumn("storename", typeof(string)) { MaxLength = 255 },
 				//поле должно быть в конце из соображений обратной совместимости
 				new DataColumn("sert_end", typeof(DateTime)),
+				new DataColumn("country", typeof(string)) { MaxLength = 60 },
 			});
 
 			var fixColumns = table.Columns.Cast<DataColumn>().Where(c => c.DataType == typeof(decimal) && !c.ExtendedProperties.ContainsKey("presision"));
@@ -214,6 +215,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 				row.SetField("sp_prd_id", line.Code);
 				row.SetField("name_post", line.Product);
 				row.SetField("przv_post", line.Producer);
+				row.SetField("country", line.Country);
 				row.SetField("seria", line.SerialNumber);
 
 				DateTime period;
