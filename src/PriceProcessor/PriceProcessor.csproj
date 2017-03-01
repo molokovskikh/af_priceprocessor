@@ -176,9 +176,7 @@
     <Compile Include="Downloader\DocumentTypes.cs" />
     <Compile Include="Downloader\DownloadLogEntity.cs" />
     <Compile Include="Downloader\EmailByMiniMailsException.cs" />
-    <Compile Include="Downloader\MailHandler\AttachmentHandler.cs" />
-    <Compile Include="Downloader\MailHandler\MailKitClient.cs" />
-    <Compile Include="Downloader\MailHandler\MimeMessageHandler.cs" />
+    <Compile Include="Downloader\WaybillEmailProtekHandler.cs" />
     <Compile Include="Downloader\EMAILSourceHandler.cs" />
     <Compile Include="Downloader\IMAPHandler.cs" />
     <Compile Include="Downloader\PriceSource.cs" />

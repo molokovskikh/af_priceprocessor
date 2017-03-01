@@ -12,7 +12,6 @@ using Inforoom.PriceProcessor;
 using System.ServiceModel;
 using System.Net;
 using System.Text;
-using Inforoom.PriceProcessor.Downloader.MailHandler;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Wcf;
 using log4net;
@@ -64,7 +63,7 @@ namespace Inforoom.PriceProcessor
 				new CertificateSourceHandler(),
 				new CertificateCatalogHandler(),
 				new DocSourceHandler(),
-				new MailKitClient()
+				new WaybillEmailProtekHandler()
 #endif
 			};
 		}

@@ -10,11 +10,12 @@ using NUnit.Framework;
 using System.IO;
 using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
+using Inforoom.PriceProcessor.Downloader;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
-using Inforoom.PriceProcessor.Downloader.MailHandler;
 using Inforoom.PriceProcessor.Waybills.Models.Export;
+using log4net.Config;
 using MimeKit;
 using NHibernate;
 using NHibernate.Linq;
@@ -22,7 +23,7 @@ using MailboxAddress = LumiSoft.Net.Mime.MailboxAddress;
 
 namespace PriceProcessor.Test.Waybills.Handlers
 {
-	public class WaybillEmailSstHandlerForTesting : MailKitClient
+	public class WaybillEmailSstHandlerForTesting : WaybillEmailProtekHandler
 	{
 		/// <summary>
 		/// директория для сохранения файлов для истории
@@ -66,6 +67,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			TestHelper.RecreateDirectories();
 			filter = new EventFilter<WaybillService>();
 			handler = new WaybillEmailSstHandlerForTesting();
+			handler.CreateDirectoryPath();
 		}
 
 		[TearDown]
@@ -153,8 +155,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 				//новый поставщик
 				supplier = TestSupplier.CreateNaked(session);
 				//настройка для отправки почты
-				supplier.WaybillSource.SourceType = TestWaybillSourceType.Email;
-				supplier.WaybillSource.EMailFrom = String.Format("{0}@sup.com", supplier.Id);
+				var source = supplier.Prices[0].Costs[0].PriceItem.Source;
+				source.SourceType = PriceSourceType.Email;
+				source.EmailTo = $"to_{supplier.Id}@sup.com";
+				source.EmailFrom = $"from_{supplier.Id}@sup.com";
 
 				//связь с клиентом ->>
 				if (sameRegion) {
@@ -212,17 +216,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler = new WaybillEmailSstHandlerForTesting();
-			handler.CreateDirectoryPath();
-
 			//новая накладная
 			var document = GetDocument(recipientId);
 			//прикрепление накладной к письму
 			var msData = GetMemoryStreamForDocument(document);
 
-			var message = BuildMessageWithAttachments(String.Format("{0}@waybills.analit.net", "anyaddress"),
-				String.Format("{0}@sup.com", supplier.Id), "text.sst", msData.ToArray());
+			var message = BuildMessageWithAttachments($"to_{supplier.Id}@sup.com",
+				$"from_{supplier.Id}@sup.com", "text.sst", msData.ToArray());
 
 			ImapHelper.StoreMessage(
 				Settings.Default.TestIMAPUser,
@@ -260,10 +260,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			handler.CreateDirectoryPath();
 
 			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
+			var mime = TestMessage();
 
 			//новая накладная
 			var document = GetDocument(recipientId);
@@ -285,6 +282,13 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
 		}
 
+		private MimeMessage TestMessage()
+		{
+			var mime = new MimeMessage {Subject = "Тестовое сообщение"};
+			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", $"to_{supplier.Id}@sup.com"));
+			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), $"from_{supplier.Id}@sup.com"));
+			return mime;
+		}
 
 		[Test]
 		public void SendAMessageInArchive()
@@ -294,14 +298,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler.CreateDirectoryPath();
-
-			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
+			var mime = TestMessage();
 
 			//новая накладная
 			var document = GetDocument(recipientId);
@@ -346,15 +343,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler = new WaybillEmailSstHandlerForTesting();
-			handler.CreateDirectoryPath();
-
-			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
+			var mime = TestMessage();
 
 			//запуск обработчика
 			session.Transaction.Commit();
@@ -376,16 +365,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler = new WaybillEmailSstHandlerForTesting();
-			handler.CreateDirectoryPath();
-
-			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
-
+			var mime = TestMessage();
 			//новая накладная
 			var document = GetDocument(recipientId);
 			//прикрепление накладной к письму
@@ -415,15 +395,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler = new WaybillEmailSstHandlerForTesting();
-			handler.CreateDirectoryPath();
-
-			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
+			var mime = TestMessage();
 
 			//новая накладная
 			var msData = new MemoryStream();
@@ -440,7 +412,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			}
 		}
 
-
 		[Test]
 		public void SendAMessageWithManySuppliers()
 		{
@@ -456,16 +427,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			}
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler = new WaybillEmailSstHandlerForTesting();
-			handler.CreateDirectoryPath();
 
 			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
+			var mime = TestMessage();
 			foreach (var item in supplierList) {
-				mime.From.Add(new MimeKit.MailboxAddress(item.Key.Id.ToString(), String.Format("{0}@sup.com", item.Key.Id)));
+				mime.To.Add(new MimeKit.MailboxAddress(item.Key.Id.ToString(), $"to_{item.Key.Id}@sup.com"));
 
 				//новая накладная
 				var document = GetDocument(item.Value);
@@ -504,14 +470,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler.CreateDirectoryPath();
-
 			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), String.Format("{0}@sup.com", supplier.Id)));
+			var mime = TestMessage();
 
 			//накладная из задачи
 			var document = File.ReadAllText(@"..\..\Data\Waybills\WaybillEmailSstHandlerFixture.sst", Encoding.GetEncoding(1251));
@@ -544,15 +504,10 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(!currentDocuments.Any());
 
-			//подготовка обработчика
-			handler.CreateDirectoryPath();
+			var mime = new MimeMessage {Subject = "Тестовое сообщение"};
+			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", "to_nope@sup.com"));
+			mime.From.Add(new MimeKit.MailboxAddress(supplier.Id.ToString(), "from_nope@sup.com"));
 
-			//новое сообщение
-			var mime = new MimeMessage();
-			mime.Subject = "Тестовое сообщение";
-			mime.To.Add(new MimeKit.MailboxAddress("SomeAddress", String.Format("{0}@waybills.analit.net", "anyaddress")));
-			mime.From.Add(new MimeKit.MailboxAddress("messagewithoutsupplier",
-				String.Format("{0}@sup.com", "messagewithoutsupplier")));
 
 			//новая накладная
 			var document = GetDocument(recipientId);
@@ -566,9 +521,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			handler.ProcessMessage(session, mime);
 
 			Assert.IsTrue(handler.SendedMessages.Count == 1);
-			Assert.IsTrue(
-				handler.SendedMessages.First()
-					.TextBody.IndexOf("Не найдено записи в источниках, соответствующей адресу messagewithoutsupplier@sup.com") != -1);
+			Assert.That(handler.SendedMessages.First().TextBody,
+				Does.Contain("Не найдено записи в источниках, соответствующей адресу to_nope@sup.com"));
 
 			//проверка на наличие документов после запуска обработчика
 			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
