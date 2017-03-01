@@ -9,9 +9,13 @@ using Inforoom.Common;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
+using Inforoom.PriceProcessor.Helpers;
+using NHibernate;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using MailKit.Security;
+using MailKit.Net.Smtp;
 using MimeKit;
 using NHibernate;
 
@@ -77,7 +81,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				imapFolder.Open(FolderAccess.ReadWrite, Cancellation);
 				var ids = imapFolder.Search(SearchQuery.All, Cancellation);
 #if !DEBUG
-				using (var session = SessionHelper.GetSessionFactory()) {
+				using (var session = SessionHelper.GetSessionFactory().OpenSession()) {
 #endif
 					foreach (var id in ids) {
 						CurrentMesdsageId = id;
@@ -148,10 +152,9 @@ namespace Inforoom.PriceProcessor.Downloader
 #if !DEBUG
 			try {
 				using (var client = new SmtpClient()) {
-					var cancellation = default(CancellationToken);
 					client.Connect(imapUrl, 25, SecureSocketOptions.None);
 					client.Send(message);
-					client.Disconnect(true, cancellation);
+					client.Disconnect(true, Cancellation);
 				}
 			} catch (Exception e) {
 				_logger.Error($"Не удалось отправить письмо {message}", e);
