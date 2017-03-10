@@ -15,6 +15,7 @@ using Inforoom.PriceProcessor.Waybills.Models.Export;
 using Inforoom.PriceProcessor.Waybills.Rejects;
 using log4net;
 using NHibernate;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -203,10 +204,15 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <param name="log">Лог, о получении документа</param>
 		private static void ProcessReject(ISession session, DocumentReceiveLog log)
 		{
-			var parser = GetRejectParser(log);
-			if (parser == null)
-				return;
-			var reject = parser.CreateReject(log);
+			RejectHeader reject;
+			 var parsers = session.Query<RejectDataParser>().Where(x => x.Supplier.Id == log.Supplier.Id).ToList();
+			reject = RejectDataParser.Parse(log, parsers);
+			if (reject == null) {
+				var parser = GetRejectParser(log);
+				if (parser == null)
+					return;
+				reject = parser.CreateReject(log);
+			}
 			if (reject.Lines.Count > 0) {
 				try {
 					reject.Normalize(session);
