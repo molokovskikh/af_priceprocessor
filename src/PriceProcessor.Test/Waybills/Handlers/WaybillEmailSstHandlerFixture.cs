@@ -528,5 +528,42 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
 			Assert.IsTrue(currentDocuments.Count() == 0);
 		}
+
+		/// <summary>
+		/// Ошибка в распознавании ЖВ. Задача i61995
+		/// </summary>
+		[Test]
+		public void SendAMessageFileFromTaskVitallyImportant()
+		{
+			SetSupplierAndClientConnection();
+			//проверка на отсутствие документов до запуска обработчика
+			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			Assert.IsTrue(!currentDocuments.Any());
+
+			//новое сообщение
+			var mime = TestMessage();
+
+			//накладная из задачи
+			var document = File.ReadAllText(@"..\..\Data\Waybills\i61995_vitallyImportant.sst", Encoding.GetEncoding(1251));
+			document = string.Format(document, recipientId);
+			byte[] byteArray = Encoding.GetEncoding(1251).GetBytes(document);
+			MemoryStream msData = new MemoryStream(byteArray);
+			AddAttachmentToMessage(mime, msData);
+
+			//запуск обработчика
+			session.Transaction.Commit();
+			handler.ProcessMessage(session, mime);
+
+			//проверка на наличие документов после запуска обработчика
+			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			//документ был один
+			var currentDocument = currentDocuments.FirstOrDefault();
+			Assert.IsTrue(currentDocuments.Count() == 1);
+			//проверки соответствия полей
+			Assert.IsTrue(currentDocument.Address.Id == aIntersection.Address.Id);
+			Assert.IsTrue(currentDocument.Lines.Any(s => s.VitallyImportant == true));
+			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
+		}
+
 	}
 }
