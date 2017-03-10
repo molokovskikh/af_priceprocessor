@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] NdsHeaders = { "PROC_NDS" };
 		public string[] PeriodHeaders = { "EXPIRY", "Дата истекания срока годности данной серии", "Дата окончания срока годности серии" };
 		public string[] SupplierPriceMarkupHeaders = { "Наценка посредника", "Торговая надбавка оптового звена" };
-		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС", "ЖНВЛС", "Признак ЖВЛС" };
+		public string[] VitallyImportantHeaders = { "Признак ЖВНЛС", "Признак ЖНВЛС", "ЖНВЛС", "Признак ЖВЛС" };
 		public string[] EAN13Headers = { "Штрих-код производителя" };
 		public string[] BillOfEntryNumberHeaders = { "ГТД" };
 		public string[] DateOfManufactureHeaders = { "Дата выпуска препарата" };
