@@ -58,13 +58,13 @@ namespace Inforoom.PriceProcessor.Models
         public static void CreateIssueForLog(ref List<MetadataOfLog> metaList, string filename,
             DocumentReceiveLog documentLog)
         {
-            if (documentLog?.Address?.Client?.RedmineNotificationForUnresolved == false) {
+            if (documentLog?.Address?.Client?.RedmineNotificationForUnresolved != true) {
                 return;
             }
             //создаем задачу на Redmine, прикрепляя файлы
             if (metaList.All(s => s.Hash != new MetadataOfLog(documentLog).Hash)) {
                 var redmineText =
-                    $"Не разобрана накладная. клиент: {documentLog?.ClientCode?.ToString() ?? ""}, поставщик: {documentLog?.Supplier?.Name} ({documentLog?.Supplier?.Id})";
+                    $"Не {(documentLog.DocumentType == DocType.Waybill ? "разобрана накладная" : "разобран отказ")}. клиент: {documentLog?.ClientCode?.ToString() ?? ""}, поставщик: {documentLog?.Supplier?.Name} ({documentLog?.Supplier?.Id})";
                 var newMeta = Redmine.CreateIssueWithAFile(redmineText, filename, documentLog);
                 if (newMeta != null) {
                     metaList.Add(newMeta);
@@ -101,7 +101,8 @@ namespace Inforoom.PriceProcessor.Models
                         Token = token,
                         Content_type = "application/binary",
                         Filename = fi.Name,
-                        Json = $"Служебная информация: {currentMeta.Hash}"
+	                    Json =
+		                    $"Служебная информация по {(log.DocumentType == DocType.Waybill ? "накладной" : "отказу")}: {currentMeta.Hash}"
                     };
                     //возвращаем метаданные только, если задача создана
                     return

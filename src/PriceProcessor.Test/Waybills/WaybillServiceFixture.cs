@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
-			bool changeValues = true)
+			bool changeValues = true, DocType documentType = DocType.Waybill)
 		{
 			var addressRed =
 				session.Query<Address>()
@@ -65,7 +65,7 @@ namespace PriceProcessor.Test.Waybills
 
 			var log = new DocumentReceiveLog(supplierRed, addressRed) {
 				FileName = filename,
-				DocumentType = DocType.Waybill
+				DocumentType = documentType
 			};
 			session.Save(log);
 			var fi = new FileInfo(log.GetFileName());
@@ -153,6 +153,27 @@ namespace PriceProcessor.Test.Waybills
 				Assert.That(res, Is.EqualTo(1));
 				if (doubleTest != string.Empty) {
 					Assert.That(doubleTest, Is.Not.EqualTo(new MetadataOfLog(log).Hash));
+				}
+				doubleTest = new MetadataOfLog(log).Hash;
+			}
+		}
+
+		[Test]
+		public void Parse_waybillIssueForRedmine_IssueForReject()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++)
+			{
+				var fileName = "1008foBroken.DBF";
+				var log = ParseFileForRedmine(fileName, changeValues: false, documentType:DocType.Reject);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(1));
+				//для одного и того же хэша
+				if (doubleTest != string.Empty)
+				{
+					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
 				}
 				doubleTest = new MetadataOfLog(log).Hash;
 			}
