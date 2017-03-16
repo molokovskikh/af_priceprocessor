@@ -64,6 +64,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BouncyCastle, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Castle.ActiveRecord">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Castle.ActiveRecord.dll</HintPath>
@@ -86,6 +89,10 @@
     <Reference Include="LumiSoft.Net">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
     </Reference>
     <Reference Include="MySql.Data">
       <SpecificVersion>False</SpecificVersion>
@@ -123,6 +130,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -195,6 +203,7 @@
     <Compile Include="Waybills\DbfExporterIntegrationFixture.cs" />
     <Compile Include="Waybills\Handlers\HttpPriceSourceHandlerFixture.cs" />
     <Compile Include="Waybills\Handlers\DocSourceHandlerFixture.cs" />
+    <Compile Include="Waybills\Handlers\WaybillEmailSstHandlerFixture.cs" />
     <Compile Include="Waybills\MailRecipientFixture.cs" />
     <Compile Include="Waybills\Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Waybills\Models\LipetskFormaciaExporterFixture.cs" />
@@ -427,6 +436,7 @@
     <Compile Include="Waybills\Parser\Txt\ShafievParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\Shafiev_KalugaParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\UkonDbfParserFixture.cs" />
+    <Compile Include="Waybills\Rejects\_RuleRejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\UniversalRejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren3492RejectParserFixture.cs" />
     <Compile Include="Waybills\Rejects\Katren3772RejectParserFixture.cs" />
@@ -543,6 +553,7 @@
     <None Include="Data\Waybills\6562_2488183.dbf" />
     <None Include="Data\Waybills\72490703_001.sst" />
     <None Include="Data\Waybills\7768.DBF" />
+    <None Include="Data\Waybills\96599.sst" />
     <None Include="Data\Waybills\pulse1.dbf" />
     <None Include="Data\Waybills\v1R1106787.DBF" />
     <None Include="Data\Waybills\B094192.sst" />

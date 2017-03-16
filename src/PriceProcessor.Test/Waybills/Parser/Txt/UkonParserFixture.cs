@@ -341,7 +341,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[2].SupplierCostWithoutNDS, Is.EqualTo(27.40));
 			Assert.That(doc.Lines[2].Nds, Is.EqualTo(10));
 
-			Assert.That(doc.Lines[0].VitallyImportant, Is.Null);
+			Assert.That(doc.Lines[0].VitallyImportant, Is.False);
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
 		}
 
@@ -427,6 +427,15 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.Null);
 			//Торговая наценка организации-импортера
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
+		}
+
+		[Test]
+		public void Parse_60333()
+		{
+			var doc = WaybillParser.Parse("96599.sst");
+			var line = doc.Lines[0];
+			Assert.That(line.VitallyImportant, Is.False);
+			Assert.That(line.EAN13, Is.EqualTo("4603933004785"));
 		}
 	}
 }

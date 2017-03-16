@@ -797,6 +797,28 @@ namespace Inforoom.PriceProcessor
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
+		public string MailKitClientUser
+		{
+			get
+			{
+				return ((string)(this["MailKitClientUser"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("12345678")]
+		public string MailKitClientPass
+		{
+			get
+			{
+				return ((string)(this["MailKitClientPass"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("KvasovTest@analit.net")]
 		public string IMAPUser
 		{
 			get
@@ -887,6 +909,17 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
+		public string IMAPHandlerErrorMessageTo
+		{
+			get
+			{
+				return ((string)(this["IMAPHandlerErrorMessageTo"]));
+			}
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("INBOX")]
 		public string IMAPSourceFolder
 		{
@@ -939,7 +972,7 @@ namespace Inforoom.PriceProcessor
 				return ((string)(this["AttachmentPath"]));
 			}
         }
-         
+
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2")]
@@ -992,7 +1025,7 @@ namespace Inforoom.PriceProcessor
                 return ((string)(this["RedmineUrlFileUpload"]));
             }
         }
-        
+
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("2")]
@@ -1026,6 +1059,17 @@ namespace Inforoom.PriceProcessor
 		{
 			get { return (int)this["MaxRetransThread"]; }
 			set { this["MaxRetransThread"] = value; }
+		}
+
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
+		public string IMAPUrl
+		{
+			get
+			{
+				return ((string)(this["IMAPUrl"]));
+			}
 		}
 	}
 }

@@ -120,6 +120,21 @@ namespace Inforoom.PriceProcessor.Waybills
 			return (IDocumentParser)constructor.Invoke(new object[0]);
 		}
 
+		public enum SuitableParserGroups
+		{
+			Dbf,
+			Sst,
+			Xls,
+			Xml,
+			Pd,
+			Txt
+		}
+
+		public IEnumerable<Type> GetSuitableParserByGroup(string file, SuitableParserGroups group)
+		{
+			return GetSuitableParsers(file, group.ToString());
+		}
+
 		public IEnumerable<Type> GetSuitableParsers(string file, DocumentReceiveLog documentLog)
 		{
 			var extention = Path.GetExtension(file.ToLower());
@@ -148,6 +163,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			return Enumerable.Empty<Type>();
 		}
+
 
 		private IEnumerable<Type> GetSuitableParsers(string file, string group)
 		{
@@ -182,7 +198,12 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (detectFormat == null)
 					throw new Exception($"У типа {type} нет метода для проверки формата, реализуй метод CheckFileFormat");
 
-				var result = (bool)detectFormat.Invoke(null, args);
+				var result = false;
+				try {
+					result = (bool) detectFormat.Invoke(null, args);
+				} catch (Exception e) {
+					throw new Exception($"У типа {type} при определении формата файла в методе CheckFileFormat возникла ошибка", e);
+				}
 				if (result) {
 					found = true;
 					yield return type;

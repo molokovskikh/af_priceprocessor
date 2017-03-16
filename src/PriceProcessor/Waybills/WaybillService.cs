@@ -15,6 +15,7 @@ using Inforoom.PriceProcessor.Waybills.Models.Export;
 using Inforoom.PriceProcessor.Waybills.Rejects;
 using log4net;
 using NHibernate;
+using NHibernate.Linq;
 
 namespace Inforoom.PriceProcessor.Waybills
 {
@@ -89,7 +90,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				try {
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
-					if (docToReturn == null) {
+					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf") {
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
 					}
@@ -100,8 +101,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					_log.Error(errorTitle, e);
 					SaveWaybill(filename);
 
-					//создаем задачу на Redmine, прикрепляя файлы
-					Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf")
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
 					return null;
 				}
 			}).Where(d => d != null).ToList();
@@ -134,8 +136,11 @@ namespace Inforoom.PriceProcessor.Waybills
 						s.Save(rejectLog);
 						s.Flush();
 					});
-					//создаем задачу на Redmine, прикрепляя файлы
-					Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l);
+
+					if(new FileInfo(l.FileName).Extension.ToLower() == ".dbf")
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l);
+
 					return null;
 				}
 			}).Where(l => l != null).ToList();
@@ -199,10 +204,15 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// <param name="log">Лог, о получении документа</param>
 		private static void ProcessReject(ISession session, DocumentReceiveLog log)
 		{
-			var parser = GetRejectParser(log);
-			if (parser == null)
-				return;
-			var reject = parser.CreateReject(log);
+			RejectHeader reject;
+			 var parsers = session.Query<RejectDataParser>().Where(x => x.Supplier.Id == log.Supplier.Id).ToList();
+			reject = RejectDataParser.Parse(log, parsers);
+			if (reject == null) {
+				var parser = GetRejectParser(log);
+				if (parser == null)
+					return;
+				reject = parser.CreateReject(log);
+			}
 			if (reject.Lines.Count > 0) {
 				try {
 					reject.Normalize(session);
