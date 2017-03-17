@@ -75,24 +75,29 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs)
 		{
+			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
 			var rejects = logs.Where(l => l.DocumentType == DocType.Reject).ToArray();
 			foreach (var reject in rejects) {
 				try {
-					SessionHelper.WithSession(s => ProcessReject(s, reject));
+					SessionHelper.WithSession(s => ProcessReject(s, reject, metaForRedmineErrorIssueList));
 				} catch (Exception e) {
+
 					_log.Error(string.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
+
+					if (new FileInfo(reject.FileName).Extension.ToLower() == ".dbf")
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, reject);
 				}
 			}
 
 			var docsForParsing = MultifileDocument.Merge(logs);
-			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
 			var docs = docsForParsing.Select(d => {
 				try {
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
-					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf") {
+					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill) {
 						//создаем задачу на Redmine, прикрепляя файлы
-						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.DocumentLog);
 					}
 					return docToReturn;
 				} catch (Exception e) {
@@ -101,9 +106,9 @@ namespace Inforoom.PriceProcessor.Waybills
 					_log.Error(errorTitle, e);
 					SaveWaybill(filename);
 
-					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf")
+					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill)
 						//создаем задачу на Redmine, прикрепляя файлы
-						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.FileName, d.DocumentLog);
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.DocumentLog);
 					return null;
 				}
 			}).Where(d => d != null).ToList();
@@ -120,7 +125,6 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private List<DocumentReceiveLog> CheckDocs(List<DocumentReceiveLog> logs)
 		{
-			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
 			return logs.Select(l => {
 				try {
 					SessionHelper.WithSession(s => l.Check(s));
@@ -136,10 +140,6 @@ namespace Inforoom.PriceProcessor.Waybills
 						s.Save(rejectLog);
 						s.Flush();
 					});
-
-					if(new FileInfo(l.FileName).Extension.ToLower() == ".dbf")
-						//создаем задачу на Redmine, прикрепляя файлы
-						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, l.FileName, l);
 
 					return null;
 				}
@@ -202,15 +202,20 @@ namespace Inforoom.PriceProcessor.Waybills
 		/// </summary>
 		/// <param name="session">Сессия Nhibernate</param>
 		/// <param name="log">Лог, о получении документа</param>
-		private static void ProcessReject(ISession session, DocumentReceiveLog log)
+		/// <param name="metaForRedmineErrorIssueList"></param>
+		private static void ProcessReject(ISession session, DocumentReceiveLog log, List<MetadataOfLog> metaForRedmineErrorIssueList)
 		{
 			RejectHeader reject;
 			 var parsers = session.Query<RejectDataParser>().Where(x => x.Supplier.Id == log.Supplier.Id).ToList();
 			reject = RejectDataParser.Parse(log, parsers);
 			if (reject == null) {
 				var parser = GetRejectParser(log);
-				if (parser == null)
+				if (parser == null) {
+					if (new FileInfo(log.FileName).Extension.ToLower() == ".dbf" && log.DocumentType == DocType.Reject)
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, log);
 					return;
+				}
 				reject = parser.CreateReject(log);
 			}
 			if (reject.Lines.Count > 0) {

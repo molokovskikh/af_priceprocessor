@@ -55,26 +55,24 @@ namespace Inforoom.PriceProcessor.Models
         }
 
         //Создание задачи с файлом для Redmine (в сообщении задачи метаданные логов по документа в формате json)
-        public static void CreateIssueForLog(ref List<MetadataOfLog> metaList, string filename,
-            DocumentReceiveLog documentLog)
-        {
-            if (documentLog?.Address?.Client?.RedmineNotificationForUnresolved != true) {
-                return;
-            }
-            //создаем задачу на Redmine, прикрепляя файлы
-            if (metaList.All(s => s.Hash != new MetadataOfLog(documentLog).Hash)) {
-                var redmineText =
-                    $"Не {(documentLog.DocumentType == DocType.Waybill ? "разобрана накладная" : "разобран отказ")}. клиент: {documentLog?.ClientCode?.ToString() ?? ""}, поставщик: {documentLog?.Supplier?.Name} ({documentLog?.Supplier?.Id})";
-                var newMeta = Redmine.CreateIssueWithAFile(redmineText, filename, documentLog);
-                if (newMeta != null) {
-                    metaList.Add(newMeta);
-                }
+	    public static void CreateIssueForLog(ref List<MetadataOfLog> metaList, DocumentReceiveLog documentLog)
+	    {
+		    if (documentLog?.Address?.Client?.RedmineNotificationForUnresolved != true) {
+			    return;
+		    }
+		    //создаем задачу на Redmine, прикрепляя файлы
+		    if (metaList.All(s => s.Hash != new MetadataOfLog(documentLog).Hash)) {
+			    var redmineText =
+				    $"Не {(documentLog.DocumentType == DocType.Waybill ? "разобрана накладная" : "разобран отказ")}. клиент: {documentLog?.ClientCode?.ToString() ?? ""}, поставщик: {documentLog?.Supplier?.Name} ({documentLog?.Supplier?.Id})";
+			    var newMeta = Redmine.CreateIssueWithAFile(redmineText, documentLog);
+			    if (newMeta != null) {
+				    metaList.Add(newMeta);
+			    }
             }
         }
 
         //Создание задачи с файлом для Redmine (в сообщении задачи метаданные логов по документа в формате json)
-        public static MetadataOfLog CreateIssueWithAFile(string subject, string fileName,
-            DocumentReceiveLog log = null)
+        public static MetadataOfLog CreateIssueWithAFile(string subject, DocumentReceiveLog log)
         {
             RedmineFile fileOnRedmine = null;
 
@@ -85,7 +83,7 @@ namespace Inforoom.PriceProcessor.Models
             //для тестов
             if (!FileAlreadyInIssue(currentMeta.Hash))
             {
-                var debugHash = fileName.GetHashCode().ToString().Replace("-", "");
+                var debugHash = log.FileName.GetHashCode().ToString().Replace("-", "");
                 var token = debugHash;
 #else
             if (!FileAlreadyInIssue(currentMeta.Hash))
