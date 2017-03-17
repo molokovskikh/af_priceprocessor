@@ -46,13 +46,15 @@ namespace Inforoom.PriceProcessor.Models
 
 		public static RejectHeader Parse(DocumentReceiveLog log, List<RejectDataParser> parsers)
 		{
-			if (!Path.GetExtension(log.GetFileName()).Match(".dbf"))
+			var filePath = log.GetFileName();
+
+			if (!Path.GetExtension(filePath).Match(".dbf"))
 				return null;
 			DataTable table;
 			try {
-				table = Dbf.Load(log.GetFileName());
+				table = Dbf.Load(filePath);
 			} catch (Exception e) {
-				Log.Warn($"Не удалось разобрать документ {log.GetFileName()} номер входящего документа {log.Id}", e);
+				Log.Warn($"Не удалось разобрать документ {filePath} номер входящего документа {log.Id}", e);
 				return null;
 			}
 

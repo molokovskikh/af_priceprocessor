@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
-			bool changeValues = true, DocType documentType = DocType.Waybill)
+			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true)
 		{
 			var addressRed =
 				session.Query<Address>()
@@ -48,6 +48,13 @@ namespace PriceProcessor.Test.Waybills
 			var supplierRed =
 				session.Query<Supplier>()
 					.FirstOrDefault(s => (changeValues && s.Id != supplier.Id) || (!changeValues && s.Id == supplier.Id));
+
+			supplierRed.RegionMask = addressRed.Client.MaskRegion;
+			session.Save(supplierRed);
+			var curretnClient = addressRed.Client;
+			curretnClient.RedmineNotificationForUnresolved = true;
+			session.Save(curretnClient);
+
 			if (addressRed.Id != 0) {
 				testAddress = new TestAddress {Id = addressRed.Id};
 			}
@@ -68,6 +75,7 @@ namespace PriceProcessor.Test.Waybills
 				DocumentType = documentType
 			};
 			session.Save(log);
+			session.Flush();
 			var fi = new FileInfo(log.GetFileName());
 			var str = fi.DirectoryName;
 			if (!Directory.Exists(str)) {
@@ -80,6 +88,11 @@ namespace PriceProcessor.Test.Waybills
 			var waybill = DocumentReceiveLog.Find(log.Id);
 			w.Process(new EditableList<DocumentReceiveLog> {waybill});
 			session.Flush();
+
+			if (deleteCreatedDirectory && Directory.GetParent(str).Exists) {
+				Directory.GetParent(str).Delete(true);
+			}
+
 			return log;
 		}
 
@@ -150,7 +163,7 @@ namespace PriceProcessor.Test.Waybills
 				var log = ParseFileForRedmine(fileName);
 				var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
 				//для разных хэшей создается по одной задаче
-				Assert.That(res, Is.EqualTo(1));
+				Assert.That(res, Is.EqualTo(1),$"Вместо 1 эл., в списке {res}. Шаг {i}.");
 				if (doubleTest != string.Empty) {
 					Assert.That(doubleTest, Is.Not.EqualTo(new MetadataOfLog(log).Hash));
 				}

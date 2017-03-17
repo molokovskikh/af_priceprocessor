@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Inforoom.PriceProcessor.Models;
@@ -40,6 +41,18 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			TestRawSupplierId = testRawSupplier.Id;
 		}
 
+		private string CopyToRightDirrectory(DocumentReceiveLog log)
+		{
+			var fi = new FileInfo(log.GetFileName());
+			var str = fi.DirectoryName;
+			if (!Directory.Exists(str)) {
+				Directory.CreateDirectory(str);
+			}
+			File.Delete(fi.FullName);
+			File.Copy(log.FileName, fi.FullName);
+			return Directory.GetParent(str).FullName;
+		}
+
 		private void CreateRules(Supplier supplier, bool wrongRules = false)
 		{
 			var rejectDataParser = new RejectDataParser("TestRule", supplier);
@@ -60,7 +73,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 		{
 			session.Transaction.Begin();
 			var testAddress = session.Query<Address>().FirstOrDefault(s => s.Client.Id == TestRawClientId);
-			var testSupplier = session.Query<Supplier>().FirstOrDefault(s=>s.Id == TestRawSupplierId);
+			var testSupplier = session.Query<Supplier>().FirstOrDefault(s => s.Id == TestRawSupplierId);
 			CreateRules(testSupplier);
 			//Создаем лог, а затем отказ
 			var log = new DocumentReceiveLog(testSupplier, testAddress);
@@ -70,7 +83,11 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			session.Save(log);
 			session.Transaction.Commit();
 			session.Transaction.Begin();
-			new WaybillService().ParseWaybill(new []{ log.Id });
+
+			//дирректория для удаления
+			var pathToRemove = CopyToRightDirrectory(log);
+
+			new WaybillService().ParseWaybill(new[] {log.Id});
 			var reject = session.Query<RejectHeader>().FirstOrDefault(s => s.Log.Id == log.Id);
 
 			//Проверяем правильность парсинга
@@ -83,6 +100,10 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			Assert.That(line.Cost, Is.EqualTo(305.10));
 			Assert.That(line.Ordered, Is.EqualTo(1));
 			Assert.That(line.Rejected, Is.EqualTo(1));
+
+			if (Directory.Exists(pathToRemove)) {
+				Directory.Delete(pathToRemove, true);
+			}
 		}
 
 		[Test]
@@ -104,11 +125,18 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			session.Transaction.Commit();
 			session.Transaction.Begin();
 
+			//дирректория для удаления
+			var pathToRemove = CopyToRightDirrectory(log);
+
 			new WaybillService().ParseWaybill(new[] {log.Id});
 			var reject = session.Query<RejectHeader>().FirstOrDefault(s => s.Log.Id == log.Id);
 
 			//Проверяем отсутствие отказа
 			Assert.That(reject, Is.Null);
+
+			if (Directory.Exists(pathToRemove)) {
+				Directory.Delete(pathToRemove, true);
+			}
 		}
 
 		[Test]
@@ -128,11 +156,18 @@ namespace PriceProcessor.Test.Waybills.Rejects
 			session.Transaction.Commit();
 			session.Transaction.Begin();
 
-			new WaybillService().ParseWaybill(new[] { log.Id });
+			//дирректория для удаления
+			var pathToRemove = CopyToRightDirrectory(log);
+
+			new WaybillService().ParseWaybill(new[] {log.Id});
 			var reject = session.Query<RejectHeader>().FirstOrDefault(s => s.Log.Id == log.Id);
 
 			//Проверяем отсутствие отказа
 			Assert.That(reject, Is.Null);
+
+			if (Directory.Exists(pathToRemove)) {
+				Directory.Delete(pathToRemove, true);
+			}
 		}
 	}
 }
