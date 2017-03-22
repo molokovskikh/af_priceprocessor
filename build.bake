@@ -1,10 +1,6 @@
 ﻿import System
 import System.Linq.Enumerable
 import System.ServiceModel
-import LumiSoft.Net.IMAP from "LumiSoft.Net"
-import LumiSoft.Net.IMAP.Client
-import LumiSoft.Net.Mime
-import LumiSoft.Net.SMTP.Client
 import System.IO
 import System.Xml
 import System.Xml.Linq
@@ -63,80 +59,6 @@ task @default, [@Build]
 task @Build, [@BuildService]
 
 task @deploy, [@ServiceDeployPipeline]
-
-def IsDocument(mime as Mime):
-	for box in mime.MainEntity.To.Mailboxes:
-		domain = box.Domain.ToLower()
-		return true if domain.EndsWith("waybills.analit.net") \
-			or domain.EndsWith("refused.analit.net")
-	return false
-
-def IsMiniMail(mime as Mime):
-	return false if not mime.MainEntity.To
-	for box in mime.MainEntity.To.Mailboxes:
-		domain = box.Domain.ToLower()
-		return true if domain.EndsWith("docs.analit.net")
-	return false
-
-def Resend(attachment as MimeEntity, miniMails as bool):
-	attachedMime = Mime.Parse(attachment.Data)
-	letterDomain = "root@waybills.analit.net"
-	if miniMails:
-		letterDomain = "alldocs@docs.analit.net"
-	if not miniMails and not IsDocument(attachedMime):
-		print "Ignored ${attachedMime.MainEntity.Subject}"
-		return
-	if miniMails and not IsMiniMail(attachedMime):
-		print "Ignored ${attachedMime.MainEntity.Subject}"
-		return
-	print "Resend ${attachedMime.MainEntity.Subject}"
-	SmtpClientEx.QuickSendSmartHost("box.analit.net",
-		25,
-		Environment.MachineName,
-		"service@analit.net",
-		(letterDomain,),
-		MemoryStream(attachment.Data))
-
-def ResendLetters(miniMails as bool):
-	using client = IMAP_Client():
-		client.Connect("box.analit.net", 143)
-		client.Authenticate("kvasovtest@analit.net", "12345678")
-		client.SelectFolder("INBOX")
-		ProcessedUID = List of string()
-		sequence_set = IMAP_SequenceSet()
-		sequence_set.Parse("1:*", long.MaxValue)
-		items = client.FetchMessages(sequence_set, IMAP_FetchItem_Flags.UID, false, false)
-		for item in items:
-			sequence = IMAP_SequenceSet()
-			sequence.Parse(item.UID.ToString(), long.MaxValue)
-			message = client.FetchMessages(sequence, IMAP_FetchItem_Flags.Message, false, true)
-			mine = Mime.Parse(message[0].MessageData)
-			for attachment in mine.Attachments:
-				if attachment.ContentType_Name == "Unparse.eml":
-					Resend(attachment, miniMails)
-				else:
-					attachedMime = Mime.Parse(attachment.Data)
-					Resend(attachedMime.Attachments[0], miniMails)
-
-Desc """
-Переотправляет не обработанные накладные, берет письмо из kvasovtest и переотправляет его
-
-Полезна если что то поломалось а пришли накладные
-Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
-или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
-"""
-Task @ResendWaybills:
-	ResendLetters(false)
-
-Desc """
-Переотправляет не обработанные мини-письма, берет письмо из kvasovtest и переотправляет его
-
-Полезна если что-то поломалось, а пришли мини-письма, или
-Предполагается что письмо будет в виде <главное письмо> <вложения <письмо с uin не было обработано<вложения <письмо с накладной>>>>
-или в виде <письмо с uin не было обработано<вложения <письмо с накладной>>>
-"""
-Task @ResendMiniMails:
-	ResendLetters(true)
 
 desc """
 обновиляет интерфейс для сервиса протек
