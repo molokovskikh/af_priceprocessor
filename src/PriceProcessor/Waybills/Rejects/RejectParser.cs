@@ -38,6 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects
 			var rejectheader = new RejectHeader(log);
 			var filename = log.GetFileName();
 			Parse(rejectheader, filename);
+			rejectheader.Parser = this.GetType().Name;
 			CheckRejectHeader(rejectheader);
 			return rejectheader;
 		}

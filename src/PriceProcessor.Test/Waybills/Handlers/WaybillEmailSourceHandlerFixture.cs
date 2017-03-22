@@ -500,6 +500,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.AreEqual(DocumentType.Reject, log.DocumentType);
 			var reject = session.Query<RejectHeader>().FirstOrDefault(r => r.Supplier.Id == supplier.Id);
 			Assert.AreEqual(1, reject.Lines.Count);
+			Assert.AreEqual("NadezhdaFarm7579RejectParser", reject.Parser);
 			Assert.AreEqual(productSynonym.Product.Id, reject.Lines[0].ProductEntity.Id);
 			Assert.AreEqual(producerSynonym.Producer.Id, reject.Lines[0].ProducerEntity.Id);
 		}
