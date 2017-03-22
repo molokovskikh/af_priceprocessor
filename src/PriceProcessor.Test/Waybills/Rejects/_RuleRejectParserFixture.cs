@@ -92,6 +92,7 @@ namespace PriceProcessor.Test.Waybills.Rejects
 
 			//Проверяем правильность парсинга
 			Assert.That(reject.Lines.Count, Is.EqualTo(3));
+			Assert.That(reject.Parser, Is.EqualTo("TestRule"));
 
 			//Выбираем строку и проверяем правильно ли все распарсилось
 			var line = reject.Lines[0];

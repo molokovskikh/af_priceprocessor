@@ -41,6 +41,9 @@ namespace Inforoom.PriceProcessor.Models
 		[Property]
 		public virtual DateTime WriteTime { get; set; }
 
+		[Property]
+		public virtual string Parser { get; set; }
+
 		[BelongsTo("SupplierId")]
 		public virtual Supplier Supplier { get; set; }
 

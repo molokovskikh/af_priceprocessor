@@ -78,6 +78,7 @@ namespace Inforoom.PriceProcessor.Models
 					docLine.Header = reject;
 					reject.Lines.Add(docLine);
 				}
+				reject.Parser = parser.Name;
 				return reject;
 			}
 			return null;
