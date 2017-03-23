@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser
 {
-	internal class ProtekDocumentHeader
+	internal class SstDocumentHeader
 	{
 		public string[] DocumentDateHeaders = { "Дата", "DATE0", "Дата документа", "Дата оформления" };
 		public string[] ProviderDocumentIdHeaders = { "CD_A", "Номер документа", "Номер", "Код накладной" };
@@ -15,7 +15,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] ProducerHeaders = { "NM_PROD", "Производитель", "Название производителя препарата" };
 		public string[] CountryHeaders = { "COUNTRY", "Страна производителя", "Название страны производителя" };
 		public string[] QuantityHeaders = { "QTY", "Количество" };
-		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС", "Итоговая цена" };
+		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС", "Итоговая цена", "Резерв" };
 		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS", "Цена Протека без НДС", "Цена поставщика без НДС", "Цена АХ без НДС" };
 		public string[] CertificatesHeaders = { "SSERIA", "SERIA", "Серии сертификатов", "Сертификаты", "Сертификаты (Серия^Регистрационный номер^Дата и орган, выдавший сертификат)" };
 		public string[] SerialNumberHeaders = { "PRODSERIA", "Серия производителя" };
@@ -29,21 +29,21 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] EAN13Headers = { "Штрих-код производителя" };
 		public string[] BillOfEntryNumberHeaders = { "ГТД" };
 		public string[] DateOfManufactureHeaders = { "Дата выпуска препарата" };
-		public string[] ExpireInMonthsHeaders = { "Заводской срок годности" };
-		public string[] AmountHeaders = { "Суммарная стоимость" };
+		public string[] ExpireInMonthsHeaders = { "Заводской срок годности" , "Заводской срок годности в месяцах" };
+		public string[] AmountHeaders = { "Суммарная стоимость", "Стоимость позиции" };
 		public string[] NDSAmount10Headers = { "Сумма НДС 10%" };
 		public string[] NDSAmount18Headers = { "Сумма НДС 20%" };
 		public string[] RecipientIdHeaders = { "Код получателя" };
 
 		private IList<string> _headerParts;
 
-		public ProtekDocumentHeader(string headerLine, char separator)
+		public SstDocumentHeader(string headerLine, char separator)
 		{
 			_headerParts = headerLine.Split(separator);
 			UseSequencedIndexing = false;
 		}
 
-		public ProtekDocumentHeader(string[] headerParts)
+		public SstDocumentHeader(string[] headerParts)
 		{
 			_headerParts = headerParts;
 			UseSequencedIndexing = false;

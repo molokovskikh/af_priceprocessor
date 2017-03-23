@@ -29,7 +29,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.PdParsers
 				var headerParts = reader.ReadLine().Split(separator);
 
 				var bodyHeader = reader.ReadLine();
-				var header = new ProtekDocumentHeader(bodyHeader, separator);
+				var header = new SstDocumentHeader(bodyHeader, separator);
 
 				document.DocumentDate = header.GetDocumentDate(headerCaptions, headerParts);
 				document.ProviderDocumentId = header.GetProviderDocumentId(headerCaptions, headerParts);

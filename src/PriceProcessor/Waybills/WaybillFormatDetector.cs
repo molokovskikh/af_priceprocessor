@@ -11,6 +11,7 @@ using Inforoom.PriceProcessor.Waybills.Parser;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
 using NHibernate.Criterion;
 using Inforoom.PriceProcessor.Waybills.Parser.XmlParsers;
+using Inforoom.PriceProcessor.Waybills.Rejects;
 using NHibernate;
 using NHibernate.Linq;
 
@@ -228,8 +229,15 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		public Document DetectAndParse(ISession session, string file, DocumentReceiveLog log)
 		{
-			var parsers = session.Query<PriceProcessor.Models.Parser>().Where(x => x.Supplier == log.Supplier).ToList();
-			var doc = PriceProcessor.Models.Parser.Parse(log, file, parsers);
+			Document doc = null;
+			if (!string.IsNullOrEmpty(file) && new FileInfo(file).Extension.ToLower() == ".sst") {
+				var document = new Document(log, nameof(WaybillSstParser));
+				doc = new WaybillSstParser().Parse(file, document);
+			}
+			if (doc == null) {
+				var parsers = session.Query<PriceProcessor.Models.Parser>().Where(x => x.Supplier == log.Supplier).ToList();
+				doc = PriceProcessor.Models.Parser.Parse(log, file, parsers);
+			}
 			if (doc == null) {
 				var parser = DetectParser(file, log);
 				if (parser == null)

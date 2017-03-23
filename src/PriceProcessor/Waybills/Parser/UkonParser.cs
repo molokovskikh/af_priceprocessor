@@ -47,7 +47,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 			return line.ToLower().Contains(StartLineForHeaders.ToLower());
 		}
 
-		private static ProtekDocumentHeader ReadHeader(StreamReader reader, string headerName)
+		private static SstDocumentHeader ReadHeader(StreamReader reader, string headerName)
 		{
 			var line = reader.ReadLine();
 			while ((line != null) && IsCommentLine(line) && !IsStartLineForHeaders(line))
@@ -72,7 +72,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				}
 				headerParts[i] = headerParts[i].Trim('-', ' ');
 			}
-			return new ProtekDocumentHeader(headerParts.ToArray()) { UseSequencedIndexing = true };
+			return new SstDocumentHeader(headerParts.ToArray()) { UseSequencedIndexing = true };
 		}
 
 		private static string ReadSimpleHeader(StreamReader reader, string headerName)

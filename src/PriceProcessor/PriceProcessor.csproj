@@ -330,6 +330,7 @@
     <Compile Include="Waybills\Rejects\Parser\AllianceHelskea3027RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\SiaInternational174RejectParser.cs" />
     <Compile Include="Waybills\Rejects\Parser\NadezhdaFarm7579RejectParser.cs" />
+    <Compile Include="Waybills\Rejects\WaybillSstParser.cs" />
     <Compile Include="Waybills\Rejects\RejectParser.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="TemplateHolder.cs" />
@@ -540,7 +541,7 @@
     <Compile Include="Waybills\Parser\Moron_338_SpecialParser.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AptekaHoldingParser.cs" />
     <Compile Include="Waybills\Parser\XlsParsers\Protek9Parser.cs" />
-    <Compile Include="Waybills\Parser\ProtekDocumentHeader.cs" />
+    <Compile Include="Waybills\Parser\SstDocumentHeader.cs" />
     <Compile Include="Waybills\Parser\PdParsers\ProtekParser.cs" />
     <Compile Include="Waybills\Parser\XmlParsers\ProtekXmlParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\RostaMskParser.cs" />
