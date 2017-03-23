@@ -10,6 +10,7 @@ using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Helpers;
+using Inforoom.PriceProcessor.Waybills.Rejects;
 using NHibernate;
 using MailKit;
 using MailKit.Net.Imap;
@@ -248,20 +249,25 @@ namespace Inforoom.PriceProcessor.Downloader
 		private DocumentReceiveLog GetLog(ISession session, string file, uint supplierId, MimeMessage mimeMessage)
 		{
 			uint addressId = 0;
+			Document doc = null;
+			if (!string.IsNullOrEmpty(file) && new FileInfo(file)?.Extension?.ToLower() == ".sst") {
+				doc = new WaybillSstParser().Parse(file, new Document());
+			}
+			if (doc == null) {
+				//Распарсить, получить значение адреса, который связан с клиентом (необходимо для корректного проведения накладной)
+				var parserType =
+					new WaybillFormatDetector().GetSuitableParserByGroup(file, WaybillFormatDetector.SuitableParserGroups.Sst)
+						.FirstOrDefault();
+				if (parserType == null)
+					return null;
+				var constructor = parserType.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
+				if (constructor == null)
+					throw new Exception("Не найден парсер на этапе создание логов: у типа {0} нет конструктора без аргументов.");
+				var parser = (IDocumentParser) constructor.Invoke(new object[0]);
 
-			//Распарсить, получить значение адреса, который связан с клиентом (необходимо для корректного проведения накладной)
-			var parserType =
-				new WaybillFormatDetector().GetSuitableParserByGroup(file, WaybillFormatDetector.SuitableParserGroups.Sst)
-					.FirstOrDefault();
-			if (parserType == null)
-				return null;
-			var constructor = parserType.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
-			if (constructor == null)
-				throw new Exception("Не найден парсер на этапе создание логов: у типа {0} нет конструктора без аргументов.");
-			var parser = (IDocumentParser) constructor.Invoke(new object[0]);
-
-			var document = new Document();
-			var doc = parser.Parse(file, document);
+				var document = new Document();
+				doc = parser.Parse(file, document);
+			}
 
 			if (doc?.Invoice?.RecipientId == null) {
 				NotifyAdmin($"В разобранном документе {file} не заполнено поле RecipientId для поставщика {supplierId}.", mimeMessage);
