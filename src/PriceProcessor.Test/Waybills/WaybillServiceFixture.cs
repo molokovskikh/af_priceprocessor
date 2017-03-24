@@ -25,6 +25,12 @@ namespace PriceProcessor.Test.Waybills
 	[TestFixture]
 	public class WaybillServiceFixture : DocumentFixture
 	{
+		[SetUp]
+		public void TestSetup()
+		{
+			session.CreateSQLQuery("DELETE FROM farm.synonym").UniqueResult();
+		}
+
 		private uint[] ParseFile(string filename)
 		{
 			return new WaybillService().ParseWaybill(new[] {CreateTestLog(filename).Id});
