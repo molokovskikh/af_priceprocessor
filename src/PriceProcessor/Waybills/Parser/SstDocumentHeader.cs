@@ -15,8 +15,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] ProducerHeaders = { "NM_PROD", "Производитель", "Название производителя препарата" };
 		public string[] CountryHeaders = { "COUNTRY", "Страна производителя", "Название страны производителя" };
 		public string[] QuantityHeaders = { "QTY", "Количество" };
-		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС", "Итоговая цена", "Резерв" };
-		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS", "Цена Протека без НДС", "Цена поставщика без НДС", "Цена АХ без НДС" };
+		public string[] SupplierCostHeaders = { "RRPRICE", "Цена с НДС", "Цена Катрен с НДС", "Итоговая цена", "Резерв" };
+		public string[] SupplierCostWithoutNdsHeaders = { "DISTR_PRICE_WONDS", "Цена Протека без НДС", "Цена Катрен без НДС",  "Цена поставщика без НДС", "Цена АХ без НДС" };
 		public string[] CertificatesHeaders = { "SSERIA", "SERIA", "Серии сертификатов", "Сертификаты", "Сертификаты (Серия^Регистрационный номер^Дата и орган, выдавший сертификат)" };
 		public string[] SerialNumberHeaders = { "PRODSERIA", "Серия производителя" };
 		public string[] ProducerCostHeaders = { "PROD_PRICE_WONDS", "Цена производителя без НДС", "Цена производителя" };
