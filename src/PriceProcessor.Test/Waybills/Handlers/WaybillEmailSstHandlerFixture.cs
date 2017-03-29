@@ -497,6 +497,41 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 
 		[Test]
+		public void SendAMessageFileFromTaskKatren()
+		{
+			SetSupplierAndClientConnection();
+			//проверка на отсутствие документов до запуска обработчика
+			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			Assert.IsTrue(!currentDocuments.Any());
+
+			//новое сообщение
+			var mime = TestMessage();
+
+			//накладная из задачи
+			var document = File.ReadAllText(@"..\..\Data\Waybills\WaybillEmailSstHandlerFixture_288242231_katren.sst", Encoding.GetEncoding(1251));
+			document = string.Format(document, recipientId);
+			byte[] byteArray = Encoding.GetEncoding(1251).GetBytes(document);
+			MemoryStream msData = new MemoryStream(byteArray);
+			AddAttachmentToMessage(mime, msData);
+
+			//запуск обработчика
+			session.Transaction.Commit();
+			handler.ProcessMessage(session, mime);
+
+			//проверка на наличие документов после запуска обработчика
+			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			//документ был один
+			var currentDocument = currentDocuments.FirstOrDefault();
+			Assert.IsTrue(currentDocuments.Count() == 1);
+			//проверки соответствия полей
+			Assert.IsTrue(currentDocument.Address.Id == aIntersection.Address.Id);
+			Assert.IsTrue(currentDocument.ClientCode == client.Id);
+			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
+			Assert.IsTrue(currentDocument.Lines.Any(s => Math.Round(s.SupplierCost.Value, 2) == 476.19m));
+			Assert.IsTrue(currentDocument.Lines.Any(s => Math.Round(s.SupplierCostWithoutNDS.Value, 2) == 432.9m));
+		}
+
+		[Test]
 		public void SendAMessageFileFromTaskAnotherParser()
 		{
 			SetSupplierAndClientConnection();
