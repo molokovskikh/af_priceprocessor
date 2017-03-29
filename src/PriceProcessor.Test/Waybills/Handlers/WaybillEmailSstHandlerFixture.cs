@@ -444,22 +444,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			session.Transaction.Commit();
 			handler.ProcessMessage(session, mime);
 
-			//проверка на наличие документов после запуска обработчикаcurrentDocuments = new List<Document>();
-			foreach (var item in supplierList) {
-				uint? value = (uint?) item.Value;
-				//проверка на отсутствие документов до запуска обработчика
-				var currentDocumentsItem = session.Query<Document>().FirstOrDefault(s => s.Invoice.RecipientId == value);
-				if (currentDocumentsItem != null) {
-					currentDocuments.Add(currentDocumentsItem);
-					var aintersection =
-						session.Query<TestAddressIntersection>().FirstOrDefault(s => s.SupplierDeliveryId == value.ToString());
-					//проверки соответствия полей
-					Assert.IsTrue(currentDocumentsItem.Address.Id == aintersection.Address.Id);
-					Assert.IsTrue(currentDocumentsItem.ClientCode == client.Id);
-					Assert.IsTrue(currentDocumentsItem.FirmCode == item.Key.Id);
-				}
-			}
-			Assert.IsTrue(currentDocuments.Count() == 3);
+			Assert.That(handler.SendedMessages.First().TextBody,
+				Does.Contain("определено более одного поставщика"));
 		}
 
 		[Test]
@@ -556,7 +542,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 
 			Assert.IsTrue(handler.SendedMessages.Count == 1);
 			Assert.That(handler.SendedMessages.First().TextBody,
-				Does.Contain("Не найдено записи в источниках, соответствующей адресу to_nope@sup.com"));
+				Does.Contain("Не удалось идентифицировать ни одного поставщика по адресам получателя to_nope@sup.com"));
 
 			//проверка на наличие документов после запуска обработчика
 			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
