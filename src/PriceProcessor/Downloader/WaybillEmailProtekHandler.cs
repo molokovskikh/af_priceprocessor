@@ -107,7 +107,6 @@ namespace Inforoom.PriceProcessor.Downloader
 		protected void NotifyAdmin(string message, MimeMessage mimeMessage = null)
 		{
 			_logger.Warn(message);
-			var imapHandlerErrorMessageTo = settings.IMAPHandlerErrorMessageTo;
 			var messageAppending = "";
 			if (mimeMessage != null) {
 				messageAppending = string.Format(@"
@@ -127,7 +126,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			bodyBuilder.TextBody = message + messageAppending;
 			var responseMime = new MimeMessage();
 			responseMime.From.Add(new MailboxAddress(ErrorLetterFrom, ErrorLetterFrom));
-			responseMime.To.Add(new MailboxAddress(imapHandlerErrorMessageTo, imapHandlerErrorMessageTo));
+			responseMime.To.Add(new MailboxAddress(settings.IMAPHandlerErrorMessageTo, settings.IMAPHandlerErrorMessageTo));
 			responseMime.Subject = "Ошбика в IMAP обработчике sst файлов.";
 			responseMime.Body = bodyBuilder.ToMessageBody();
 
@@ -163,14 +162,14 @@ namespace Inforoom.PriceProcessor.Downloader
 #endif
 		}
 
-		public bool ProcessAttachments(ISession session, MimeMessage message, uint supplierId, string emailAuthor)
+		public bool ProcessAttachments(ISession session, MimeMessage message, uint supplierId)
 		{
 			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
 			var matched = false;
 
 			var attachments = message.Attachments.Where(m => !String.IsNullOrEmpty(GetFileName(m)) && m.IsAttachment);
 			if (!attachments.Any()) {
-				NotifyAdmin($"Отсутствуют вложения в письме от адреса {emailAuthor}", mimeMessage: message);
+				NotifyAdmin($"Отсутствуют вложения в письме от адреса {message.To.Implode()}", mimeMessage: message);
 			}
 
 			using (var cleaner = new FileCleaner()) {
@@ -329,35 +328,30 @@ WHERE
 	and s.Disabled = 0
 	and pd.AgencyEnabled = 1").ToList();
 
-			foreach (var toEmail in emails) {
-				var sources = dtSources
-					.Where(x => x.EmailTo?.IndexOf(toEmail, StringComparison.OrdinalIgnoreCase) >= 0)
-					.ToList();
+			var sources = emails
+				.SelectMany(x => dtSources.Where(y => y.EmailTo?.IndexOf(x, StringComparison.OrdinalIgnoreCase) >= 0))
+				.Distinct()
+				.ToList();
 
-				if (sources.Count > 1) {
-					// Нет адреса, клиента или другой информации об адресе доставки на этом этапе	//	SelectWaybillSourceForClient(sources, _addressId);
+			if (sources.Count > 1) {
+				// Нет адреса, клиента или другой информации об адресе доставки на этом этапе	//	SelectWaybillSourceForClient(sources, _addressId);
+				NotifyAdmin(
+					$"Для получателей {emails.Implode()} определено более одного поставщика." +
+					$" Определенные поставщики {sources.Select(x => x.FirmCode).Implode()}.", message);
+				return;
+			}
+			if (sources.Count == 0) {
+				NotifyAdmin(
+					$"Не удалось идентифицировать ни одного поставщика по адресам получателя {emails.Implode()}." +
+					$" Количество записей в источниках - {dtSources.Count}", message);
+				return;
+			}
 
-					NotifyAdmin(
-						$"На адрес \"{toEmail}\"" +
-						"назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось", message);
-					throw new Exception(
-						$"На адрес \"{toEmail}\" назначено несколько поставщиков. Определить какой из них работает с клиентом не удалось");
-				}
-
-				if (sources.Count == 0) {
-					NotifyAdmin(
-						$"Не найдено записи в источниках, соответствующей адресу {toEmail}. Количество записей в источниках - {dtSources.Count}", message);
-
-					continue;
-				}
-
-				var source = sources.First();
-				//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-				var matched = ProcessAttachments(session, message, source.FirmCode, toEmail);
-				dtSources.Remove(source);
-				if (!matched) {
-					NotifyAdmin($"Для отправителя {toEmail} (поставщика {source.FirmCode}) не найден соответствующий адрес доставки.", message);
-				}
+			var source = sources.First();
+			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
+			var matched = ProcessAttachments(session, message, source.FirmCode);
+			if (!matched) {
+				NotifyAdmin($"Для получателя {emails.Implode()} (поставщика {source.FirmCode}) не найден соответствующий адрес доставки.", message);
 			}
 		}
 	}
