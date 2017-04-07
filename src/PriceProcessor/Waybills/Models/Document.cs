@@ -14,12 +14,22 @@ using log4net;
 using NHibernate;
 using NHibernate.Criterion;
 using NHibernate.Linq;
+using Common.NHibernate;
+using Dapper;
 
 namespace Inforoom.PriceProcessor.Waybills.Models
 {
 	[ActiveRecord("DocumentHeaders", Schema = "documents")]
 	public class Document : ActiveRecordLinqBase<Document>
 	{
+
+		public class Barcode
+		{
+			public string Value { get; set; }
+			public uint ProductId { get; set; }
+			public uint ProducerId { get; set; }
+		}
+
 		private static readonly ILog _log = LogManager.GetLogger(typeof(WaybillService));
 
 		public Document()
@@ -215,7 +225,23 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 					}
 				}
 			}
+
+			var targets = Lines.Where(x => x.EAN13 != null && (x.ProductEntity == null || x.ProducerId == null)).ToArray();
+			if (targets.Length == 0)
+				return;
+			var barcodes = session.Connection.Query<Barcode>("select Barcode as Value, ProductId, ProducerId from Catalogs.BarcodeProducts where Barcode in @barcodes",
+				new { barcodes = targets.Select(x => x.EAN13).ToList() })
+				.ToList();
+			foreach (var barcode in barcodes) {
+				foreach (var line in targets.Where(x => x.EAN13 == barcode.Value)) {
+					if (line.ProductEntity == null)
+						line.ProductEntity = session.Load<Product>(barcode.ProductId);
+					if (line.ProducerId == null)
+						line.ProducerId = barcode.ProducerId;
+				}
+			}
 		}
+
 
 		private static string Normilize(string value)
 		{

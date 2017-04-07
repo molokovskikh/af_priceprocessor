@@ -112,12 +112,30 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Ignore_producer_if_product_unmatched()
 		{
+			_documentLine.EAN13 = Guid.NewGuid().ToString();
 			_documentLine.Product += "1";
 			_documentLine.Code += "1";
 			session.Flush();
 			_doc.SetProductId(session);
 			Assert.IsNull(_doc.Lines[0].ProductEntity);
 			Assert.IsNull(_doc.Lines[0].ProducerId);
+		}
+
+		[Test]
+		public void Use_barcode()
+		{
+			_documentLine.EAN13 = Guid.NewGuid().ToString();
+			_documentLine.Product = Guid.NewGuid().ToString();
+			_documentLine.Code = null;
+
+			session.CreateSQLQuery("insert into Catalogs.BarcodeProducts(Barcode, ProductId, ProducerId) values(:barcode, :productId, :producerId)")
+				.SetParameter("productId", _product.Id)
+				.SetParameter("producerId", _producer.Id)
+				.SetParameter("barcode", _documentLine.EAN13)
+				.ExecuteUpdate();
+			_doc.SetProductId(session);
+			Assert.AreEqual(_doc.Lines[0].ProductEntity.Id, _product.Id);
+			Assert.AreEqual(_doc.Lines[0].ProducerId, _producer.Id);
 		}
 	}
 }
