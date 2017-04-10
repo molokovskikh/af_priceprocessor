@@ -619,6 +619,41 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.IsTrue(currentDocument.Lines.Any(s => s.VitallyImportant == true));
 			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
 		}
+		/// <summary>
+		/// Ошибка в  Сумма с НДС по документу. Задача i65151
+		/// </summary>
+		[Test]
+		public void SendAMessageFileFromTaskSumWithNDS()
+		{
+			SetSupplierAndClientConnection();
+			//проверка на отсутствие документов до запуска обработчика
+			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			Assert.IsTrue(!currentDocuments.Any());
+
+			//новое сообщение
+			var mime = TestMessage();
+
+			//накладная из задачи
+			var document = File.ReadAllText(@"..\..\Data\Waybills\i65151_SumWithNds.sst", Encoding.GetEncoding(1251));
+			document = string.Format(document, recipientId);
+			byte[] byteArray = Encoding.GetEncoding(1251).GetBytes(document);
+			MemoryStream msData = new MemoryStream(byteArray);
+			AddAttachmentToMessage(mime, msData);
+
+			//запуск обработчика
+			session.Transaction.Commit();
+			handler.ProcessMessage(session, mime);
+
+			//проверка на наличие документов после запуска обработчика
+			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			//документ был один
+			var currentDocument = currentDocuments.FirstOrDefault();
+			Assert.IsTrue(currentDocuments.Count() == 1);
+			//проверки соответствия полей
+			Assert.IsTrue(currentDocument.Address.Id == aIntersection.Address.Id);
+			Assert.IsTrue(currentDocument.Invoice.Amount == 5012.34m);
+			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
+		}
 
 	}
 }
