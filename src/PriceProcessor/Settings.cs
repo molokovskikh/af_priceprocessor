@@ -983,6 +983,16 @@ namespace Inforoom.PriceProcessor
                 return ((string)(this["RedmineAssignedTo"]));
             }
         }
+		[global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineAssignedToWithPriority
+		{
+            get
+            {
+                return ((string)(this["RedmineAssignedToWithPriority"]));
+            }
+        }
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("2")]
@@ -1002,6 +1012,16 @@ namespace Inforoom.PriceProcessor
             get
             {
                 return ((string)(this["RedmineProjectForWaybillIssue"]));
+            }
+        }
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public string RedmineProjectForWaybillIssueWithPriority
+				{
+            get
+            {
+                return ((string)(this["RedmineProjectForWaybillIssueWithPriority"]));
             }
         }
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
