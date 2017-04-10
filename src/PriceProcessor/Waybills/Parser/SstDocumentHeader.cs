@@ -30,7 +30,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 		public string[] BillOfEntryNumberHeaders = { "ГТД" };
 		public string[] DateOfManufactureHeaders = { "Дата выпуска препарата" };
 		public string[] ExpireInMonthsHeaders = { "Заводской срок годности" , "Заводской срок годности в месяцах" };
-		public string[] AmountHeaders = { "Суммарная стоимость", "Стоимость позиции" };
+		public string[] AmountHeaders = { "Суммарная стоимость", "Стоимость позиции", "Сумма с НДС по документу" };
 		public string[] NDSAmount10Headers = { "Сумма НДС 10%" };
 		public string[] NDSAmount18Headers = { "Сумма НДС 20%" };
 		public string[] RecipientIdHeaders = { "Код получателя" };
