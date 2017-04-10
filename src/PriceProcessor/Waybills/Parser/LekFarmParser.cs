@@ -11,6 +11,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 			ProviderDocumentIdIndex = 0;
 			DocumentDateIndex = 1;
 			InvoiceAmountIndex = 2;
+			BuyerIdIndex = 3;
 
 			CodeIndex = 0;
 			ProductIndex = 1;
@@ -47,7 +48,8 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				if (body.Length != 22)
 					return false;
 				var s = "";
-				for (int i = 3; i < 9; i++)
+				var startIndexOfEmptyCells = 4; // индекс ячейки, скоторой и далее все ячейки пустые 
+				for (int i = startIndexOfEmptyCells; i < 9; i++)
 					s += header[i];
 				if (s.Length > 0)
 					return false;
