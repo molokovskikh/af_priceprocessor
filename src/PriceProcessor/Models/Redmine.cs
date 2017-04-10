@@ -107,7 +107,7 @@ AND rc.InvisibleOnFirm <> 2
 			    var debugHash = log.FileName.GetHashCode().ToString().Replace("-", "");
 			    var token = debugHash;
 #else
-            if (!FileAlreadyInIssue(currentMeta.Hash))
+            if (!FileAlreadyInIssue(redmineProject, currentMeta.Hash))
             {
                 var token =
                     UploadFileToRedmine(
