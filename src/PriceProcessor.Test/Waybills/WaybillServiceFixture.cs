@@ -45,7 +45,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
-			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true)
+			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true, bool priority = false)
 		{
 			var addressRed =
 				session.Query<Address>()
@@ -81,7 +81,23 @@ namespace PriceProcessor.Test.Waybills
 				DocumentType = documentType
 			};
 			session.Save(log);
+
+			if (priority) {
+				session.CreateSQLQuery($"INSERT INTO customers.Promoters (Name,Login) values('TestUser','{curretnClient.Id}')")
+					.ExecuteUpdate();
+				var newPromoterId = session.CreateSQLQuery($"SELECT Id FROM customers.Promoters WHERE Login = '{curretnClient.Id}'")
+					.UniqueResult<uint>();
+				session.CreateSQLQuery(
+					$"INSERT INTO customers.PromotionMembers (PromoterId,ClientId) values({newPromoterId},'{curretnClient.Id}')")
+					.ExecuteUpdate();
+				session.CreateSQLQuery(
+					$"Update usersettings.RetClientsSet SET IsStockEnabled = 1 , InvisibleOnFirm = 1 WHERE ClientCode = {curretnClient.Id} ")
+					.ExecuteUpdate();
+			}
+
 			session.Flush();
+
+
 			var fi = new FileInfo(log.GetFileName());
 			var str = fi.DirectoryName;
 			if (!Directory.Exists(str)) {
@@ -99,7 +115,10 @@ namespace PriceProcessor.Test.Waybills
 				Directory.GetParent(str).Delete(true);
 			}
 
-			return log;
+			if (priority)
+				session.CreateSQLQuery($"DELETE FROM customers.Promoters WHERE Login = '{curretnClient.Id}'").ExecuteUpdate();
+
+				return log;
 		}
 
 		private void Parse_waybillCleanRedmineIssueTable()
@@ -122,7 +141,7 @@ namespace PriceProcessor.Test.Waybills
 			Parse_waybillCleanRedmineIssueTable();
 			var fileName = "1008fo.pd";
 			var log = ParseFileForRedmine(fileName);
-			var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+			var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
 			Assert.That(res, Is.EqualTo(0));
 		}
 
@@ -133,7 +152,7 @@ namespace PriceProcessor.Test.Waybills
 			var doubleTest = "";
 			var fileName = "1008foBroken.pd";
 			var log = ParseFileForRedmine(fileName, changeValues: false);
-			var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+			var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
 			//не должно быть результата, т.к. файл не формата DBF
 			Assert.That(res, Is.EqualTo(0));
 		}
@@ -147,7 +166,29 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var fileName = "1008foBroken.DBF";
 				var log = ParseFileForRedmine(fileName, changeValues: false);
-				var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(1));
+				//для одного и того же хэша
+				if (doubleTest != string.Empty)
+				{
+					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
+				}
+				doubleTest = new MetadataOfLog(log).Hash;
+			}
+		}
+
+
+		[Test]
+		public void Parse_waybillIssueForRedmine_IssueForRejectPriority()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++)
+			{
+				var fileName = "1008foBroken.DBF";
+				var log = ParseFileForRedmine(fileName, changeValues: false, documentType: DocType.Reject, priority: true);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssueWithPriority, new MetadataOfLog(log).Hash);
 				//должен создаваться только один
 				Assert.That(res, Is.EqualTo(1));
 				//для одного и того же хэша
@@ -160,6 +201,38 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		[Test]
+		public void Parse_waybillIssueForRedmine_IssueFromOneNotDbfFormatPriority()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			var doubleTest = "";
+			var fileName = "1008foBroken.pd";
+			var log = ParseFileForRedmine(fileName, changeValues: false, priority: true);
+			var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssueWithPriority, new MetadataOfLog(log).Hash);
+			//должен создаваться один, т.к. файл не формата DBF, но обработкая приоритетна
+			Assert.That(res, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void Parse_waybillIssueForRedmine_IssueFromOnePriority()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++)
+			{
+				var fileName = "1008foBroken.DBF";
+				var log = ParseFileForRedmine(fileName, changeValues: false, priority: true);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssueWithPriority,new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(1));
+				//для одного и того же хэша
+				if (doubleTest != string.Empty)
+				{
+					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
+				}
+				doubleTest = new MetadataOfLog(log).Hash;
+			}
+		}
+		[Test]
 		public void Parse_waybillIssueForRedmine_IssueFromMany()
 		{
 			Parse_waybillCleanRedmineIssueTable();
@@ -167,7 +240,7 @@ namespace PriceProcessor.Test.Waybills
 			for (var i = 0; i < 2; i++) {
 				var fileName = "1008foBroken.DBF";
 				var log = ParseFileForRedmine(fileName);
-				var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
 				//для разных хэшей создается по одной задаче
 				Assert.That(res, Is.EqualTo(1),$"Вместо 1 эл., в списке {res}. Шаг {i}.");
 				if (doubleTest != string.Empty) {
@@ -186,7 +259,7 @@ namespace PriceProcessor.Test.Waybills
 			{
 				var fileName = "1008foBroken.DBF";
 				var log = ParseFileForRedmine(fileName, changeValues: false, documentType:DocType.Reject);
-				var res = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(log).Hash);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
 				//должен создаваться только один
 				Assert.That(res, Is.EqualTo(1));
 				//для одного и того же хэша
@@ -205,7 +278,7 @@ namespace PriceProcessor.Test.Waybills
 			//если не клиент не промаркерован, по его накладной задачу не создаем
 			var nofileName = "1008foBroken.DBF";
 			var nolog = ParseFileForRedmine(nofileName, false);
-			var nores = MetadataOfLog.GetMetaFromDataBaseCount(new MetadataOfLog(nolog).Hash);
+			var nores = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(nolog).Hash);
 			Assert.That(nores, Is.EqualTo(0));
 		}
 

@@ -83,8 +83,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				} catch (Exception e) {
 
 					_log.Error(string.Format("Не удалось разобрать отказ {0}", reject.FileName), e);
-
-					if (new FileInfo(reject.FileName).Extension.ToLower() == ".dbf")
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, reject);
 				}
@@ -95,7 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				try {
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
-					if (docToReturn == null && new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill) {
+					if (d.DocumentLog?.DocumentType == DocType.Waybill) {
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.DocumentLog);
 					}
@@ -106,7 +104,7 @@ namespace Inforoom.PriceProcessor.Waybills
 					_log.Error(errorTitle, e);
 					SaveWaybill(filename);
 
-					if (new FileInfo(d.FileName).Extension.ToLower() == ".dbf" && d.DocumentLog?.DocumentType == DocType.Waybill)
+					if (d.DocumentLog?.DocumentType == DocType.Waybill)
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.DocumentLog);
 					return null;
@@ -211,7 +209,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (reject == null) {
 				var parser = GetRejectParser(log);
 				if (parser == null) {
-					if (new FileInfo(log.FileName).Extension.ToLower() == ".dbf" && log.DocumentType == DocType.Reject)
+					if (log.DocumentType == DocType.Reject)
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, log);
 					return;
