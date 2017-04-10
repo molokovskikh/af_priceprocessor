@@ -93,7 +93,7 @@ namespace Inforoom.PriceProcessor.Waybills
 				try {
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
-					if (d.DocumentLog?.DocumentType == DocType.Waybill) {
+					if (docToReturn == null && d.DocumentLog?.DocumentType == DocType.Waybill) {
 						//создаем задачу на Redmine, прикрепляя файлы
 						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, d.DocumentLog);
 					}
