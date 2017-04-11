@@ -750,6 +750,8 @@ select @LastSynonymID as SynonymCode;";
 
 		private void InsertProducerSynonyms(MySqlTransaction finalizeTransaction)
 		{
+			if (!_stats.CanCreateProducerSynonyms())
+				return;
 			daSynonymFirmCr.InsertCommand.Connection = _connection;
 			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
 

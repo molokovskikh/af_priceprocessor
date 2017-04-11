@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Formalization
 		[SetUp]
 		public void Setup()
 		{
-			session.CreateSQLQuery("DELETE FROM farm.synonym").UniqueResult();
+			session.CreateSQLQuery("DELETE FROM farm.synonym; delete from farm.SynonymFirmCr").UniqueResult();
 			CreatePrice();
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 			Mailer.Testing = true;

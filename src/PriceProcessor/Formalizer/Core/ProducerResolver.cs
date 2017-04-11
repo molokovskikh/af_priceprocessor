@@ -155,7 +155,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			synonym["Synonym"] = position.FirmCr;
 			synonym["OriginalSynonym"] = position.FirmCr;
 			_producerSynonyms.Rows.Add(synonym);
-			_stats.ProducerSynonymCreatedCount++;
+			if (synonym["CodeFirmCr"] is DBNull)
+				_stats.ProducerSynonymCreatedCount++;
 			return synonym;
 		}
 
