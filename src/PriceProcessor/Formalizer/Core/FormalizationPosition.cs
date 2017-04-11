@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Data;
 using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class FormalizationPosition
 	{
+		private DataRow productSynonym;
+		private DataRow producerSynonym;
+
 		public NewCore Core;
 		public UnrecExpStatus Status { get; set; }
 
@@ -16,14 +20,73 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public long? ProductId { get; set; }
 		public long? CatalogId { get; set; }
 		public bool? Pharmacie { get; set; }
-		public long? SynonymCode { get; set; }
+
+		public long? SynonymCode
+		{
+			get
+			{
+				if (productSynonym == null)
+					return null;
+				if (productSynonym["SynonymCode"] is DBNull)
+					return null;
+				return Convert.ToInt64(productSynonym["SynonymCode"]);
+			}
+		}
+
 		public long? CodeFirmCr { get; set; }
-		public long? SynonymFirmCrCode { get; set; }
+		public long? SynonymFirmCrCode
+		{
+			get
+			{
+				if (producerSynonym == null)
+					return null;
+				if (producerSynonym["SynonymFirmCrCode"] is DBNull)
+					return null;
+				return Convert.ToInt64(producerSynonym["SynonymFirmCrCode"]);
+			}
+		}
+
+		public long? InternalProducerSynonymId
+		{
+			get
+			{
+				if (producerSynonym == null)
+					return null;
+				if (producerSynonym["InternalProducerSynonymId"] is DBNull)
+					return null;
+				return Convert.ToInt64(producerSynonym["InternalProducerSynonymId"]);
+			}
+		}
 
 		public bool IsAutomaticProducerSynonym { get; set; }
-		public long? InternalProducerSynonymId { get; set; }
 
 		public bool NotCreateUnrecExp { get; set; }
+
+		public void UpdateProductSynonym(DataRow row)
+		{
+			productSynonym = row;
+			ProductId = Convert.ToInt64(row["ProductId"]);
+			CatalogId = Convert.ToInt64(row["CatalogId"]);
+			Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
+			var isJunk = Convert.ToBoolean(row["Junk"]);
+			if (isJunk)
+				Core.Junk = true;
+			if (SynonymCode == null)
+				Core.CreatedProductSynonym = productSynonym;
+			AddStatus(UnrecExpStatus.NameForm);
+		}
+
+		public void UpdateProducerSynonym(DataRow row)
+		{
+			producerSynonym = row;
+			if (!Convert.IsDBNull(row["CodeFirmCr"]))
+				CodeFirmCr = Convert.ToInt64(row["CodeFirmCr"]);
+			IsAutomaticProducerSynonym = Convert.ToBoolean(row["IsAutomatic"]);
+			if (SynonymFirmCrCode == null)
+				Core.CreatedProducerSynonym = row;
+			if (!IsAutomaticProducerSynonym && !NotCreateUnrecExp)
+				AddStatus(UnrecExpStatus.FirmForm);
+		}
 
 		public void AddStatus(UnrecExpStatus status)
 		{

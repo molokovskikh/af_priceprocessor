@@ -107,6 +107,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 	{
 		private ExistsCore _existsCore;
 		public int QuantityAsInt = -1;
+		public DataRow CreatedProductSynonym;
 		public DataRow CreatedProducerSynonym;
 
 		public ExistsCore ExistsCore

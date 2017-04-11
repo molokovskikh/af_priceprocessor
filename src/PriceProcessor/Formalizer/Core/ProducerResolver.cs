@@ -41,31 +41,22 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 			if (!position.IsSet(UnrecExpStatus.NameForm))
 				return;
+			//если уже формализован по штрих коду
+			if (position.IsSet(UnrecExpStatus.FirmForm))
+				return;
 
 			if (String.IsNullOrEmpty(position.FirmCr)) {
 				position.AddStatus(UnrecExpStatus.FirmForm);
 				return;
 			}
 			position.NotCreateUnrecExp = CheckForbiddenProducerName(position);
-			var synonym = Resolve(position);
-			if (synonym == null)
-				synonym = CreateProducerSynonym(position);
+			var synonym = Resolve(position)
+				?? CreateProducerSynonym(position, GetAssortimentOne(position)?["ProducerId"]);
 
-			if (!Convert.IsDBNull(synonym["CodeFirmCr"]))
-				position.CodeFirmCr = Convert.ToInt64(synonym["CodeFirmCr"]);
-			position.IsAutomaticProducerSynonym = Convert.ToBoolean(synonym["IsAutomatic"]);
-			if (Convert.IsDBNull(synonym["InternalProducerSynonymId"])) {
+			position.UpdateProducerSynonym(synonym);
+			if (position.SynonymFirmCrCode != null) {
 				_stats.ProducerSynonymUsedExistCount++;
-				position.SynonymFirmCrCode = Convert.ToInt64(synonym["SynonymFirmCrCode"]);
 			}
-			else {
-				position.InternalProducerSynonymId = Convert.ToInt64(synonym["InternalProducerSynonymId"]);
-				if (position.Core != null)
-					position.Core.CreatedProducerSynonym = synonym;
-			}
-
-			if (!position.IsAutomaticProducerSynonym && !position.NotCreateUnrecExp)
-				position.AddStatus(UnrecExpStatus.FirmForm);
 
 			if (position.CodeFirmCr == null && !position.NotCreateUnrecExp)
 				CheckExclude(position);
@@ -145,15 +136,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				position.Status &= ~UnrecExpStatus.FirmForm;
 		}
 
-		private DataRow CreateProducerSynonym(FormalizationPosition position)
+		public DataRow CreateProducerSynonym(FormalizationPosition position, object producerId)
 		{
 			var synonym = _producerSynonyms.NewRow();
-			var assortiment = GetAssortimentOne(position);
-			if (assortiment != null) {
-				synonym["CodeFirmCr"] = assortiment["ProducerId"];
+			if (producerId != null && !(producerId is DBNull)) {
+				synonym["CodeFirmCr"] = producerId;
 				synonym["IsAutomatic"] = 0;
-			}
-			else {
+			} else {
 				synonym["CodeFirmCr"] = DBNull.Value;
 				if(position.NotCreateUnrecExp) {
 					synonym["IsAutomatic"] = 0;

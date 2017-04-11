@@ -7,9 +7,11 @@ using System.Text;
 using System.Threading;
 using Common.MySql;
 using Common.Tools;
+using Dapper;
 using Inforoom.PriceProcessor.Formalizer.Helpers;
 using Inforoom.PriceProcessor.Helpers;
 using Inforoom.PriceProcessor.Models;
+using Inforoom.PriceProcessor.Waybills.Models;
 using log4net;
 using MySql.Data.MySqlClient;
 using SqlBuilder = Inforoom.PriceProcessor.Formalizer.Helpers.SqlBuilder;
@@ -18,6 +20,15 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class BasePriceParser
 	{
+		public class Barcode
+		{
+			public uint CatalogId;
+			public uint ProductId;
+			public string Value;
+			public bool Pharmacie;
+			public uint ProducerId;
+		}
+
 		//Соедиение с базой данных
 		protected MySqlConnection _connection;
 
@@ -87,6 +98,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private ProducerResolver _producerResolver;
 		private bool _saveInCore;
 		private RejectUpdater _rejectUpdater = new RejectUpdater();
+		private Barcode[] barcodes = new Barcode[0];
 
 		public BasePriceParser(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{
@@ -316,6 +328,13 @@ WHERE SynonymFirmCr.PriceCode={0}
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса, {0}с", loadExistsWatch.Elapsed.TotalSeconds);
 			}
 
+			barcodes = _connection
+				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.Barcode as Value, c.Pharmacie
+from Catalogs.BarcodeProducts b
+	join Catalogs.Products p on b.ProductId = p.Id
+		join Catalogs.Catalog c on c.Id = p.CatalogId")
+				.ToArray();
+
 			_logger.Debug("конец Prepare");
 		}
 
@@ -494,8 +513,11 @@ order by c.Id",
 					Stat.Reset();
 					CleanupCore();
 
+					using (Profile("Вставка синонимов товаров"))
+						InsertProductSynonyms();
+
 					using (Profile("Вставка синонимов производителей"))
-						InsertNewProducerSynonyms(transaction);
+						InsertProducerSynonyms(transaction);
 
 					using (Profile("Вставка новых записей в Core"))
 						InsertNewCosts();
@@ -707,11 +729,27 @@ and a.FirmCode = p.FirmCode;",
 			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
-		private void InsertNewProducerSynonyms(MySqlTransaction finalizeTransaction)
+		private void InsertProductSynonyms()
 		{
-			if (!_stats.CanCreateProducerSynonyms())
-				return;
+				var sql = @"insert into Farm.Synonym(PriceCode, Synonym, ProductId) values (?priceCode, ?synonym, ?productId);
+set @LastSynonymID = last_insert_id();
+insert into farm.UsedSynonymLogs (SynonymCode) values (@LastSynonymID);
+insert into logs.synonymlogs (LogTime, OperatorName, OperatorHost, Operation, SynonymCode, PriceCode, Synonym, ProductId, ChildPriceCode)
+	values (now(), SUBSTRING_INDEX(USER(), '@', 1), SUBSTRING_INDEX(USER(), '@', -1), 0, @LastSynonymID, ?priceCode, ?synonym, ?productId, ?childPriceCode);
+select @LastSynonymID as SynonymCode;";
+			foreach (var row in dtSynonym.AsEnumerable().Where(x => x["SynonymCode"] is DBNull)) {
+				var parameters = new { priceCode = parentSynonym, synonym = row["Synonym"],
+					productId = row["ProductId"],
+					childPriceCode = PriceInfo.Price.Id,
+				};
+				row["SynonymCode"] = Convert.ToUInt64(_connection.ExecuteScalar(sql, parameters));
+			}
+			foreach (var core in _newCores.Where(c => c.CreatedProductSynonym != null))
+				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProductSynonym["SynonymCode"]);
+		}
 
+		private void InsertProducerSynonyms(MySqlTransaction finalizeTransaction)
+		{
 			daSynonymFirmCr.InsertCommand.Connection = _connection;
 			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
 
@@ -927,29 +965,37 @@ drop temporary table Farm.MaxCosts;
 		//Смогли ли мы распознать позицию по коду, имени и оригинальному названию?
 		public void GetProductId(FormalizationPosition position)
 		{
-			DataRow[] dr = null;
+			DataRow dr = null;
 			if (_priceInfo.FormByCode) {
 				if (!String.IsNullOrEmpty(position.Code))
-					dr = dtSynonym.Select(String.Format("Code = '{0}'", position.Code.Replace("'", "''")));
-			}
-			else {
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Code"]).Equals(position.Code, StringComparison.CurrentCultureIgnoreCase));
+			} else {
 				if (!String.IsNullOrEmpty(position.PositionName))
-					dr = dtSynonym.Select(String.Format("Synonym = '{0}'", position.PositionName.Replace("'", "''")));
-				if ((null == dr) || (0 == dr.Length))
-					if (!String.IsNullOrEmpty(position.OriginalName))
-						dr = dtSynonym.Select(String.Format("Synonym = '{0}'", position.OriginalName.Replace("'", "''")));
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.PositionName, StringComparison.CurrentCultureIgnoreCase))
+						?? dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.OriginalName, StringComparison.CurrentCultureIgnoreCase));
 			}
 
-			if ((null != dr) && (dr.Length > 0)) {
-				var row = dr[0];
-				position.ProductId = Convert.ToInt64(row["ProductId"]);
-				position.CatalogId = Convert.ToInt64(row["CatalogId"]);
-				position.SynonymCode = Convert.ToInt64(row["SynonymCode"]);
-				position.Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
-				var isJunk = Convert.ToBoolean(row["Junk"]);
-				if (isJunk)
-					position.Core.Junk = true;
-				position.AddStatus(UnrecExpStatus.NameForm);
+			if (dr != null) {
+				position.UpdateProductSynonym(dr);
+			} else if (!String.IsNullOrWhiteSpace(position.Core.EAN13) && !String.IsNullOrWhiteSpace(position.PositionName)) {
+				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Core.EAN13);
+				if (barcode == null)
+					return;
+				var productSynonym = dtSynonym.NewRow();
+				productSynonym["ProductId"] = barcode.ProductId;
+				productSynonym["CatalogId"] = barcode.CatalogId;
+				productSynonym["Synonym"] = position.PositionName.Trim();
+				productSynonym["Pharmacie"] = barcode.Pharmacie;
+				productSynonym["Junk"] = false;
+				dtSynonym.Rows.Add(productSynonym);
+				position.UpdateProductSynonym(productSynonym);
+
+				if (!String.IsNullOrWhiteSpace(position.FirmCr)) {
+					var producerSynonym =  dtSynonymFirmCr.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.FirmCr, StringComparison.CurrentCultureIgnoreCase)
+						&& !(x["CodeFirmCr"] is DBNull) && Convert.ToUInt32(x["CodeFirmCr"]) == barcode.ProducerId)
+						?? _producerResolver.CreateProducerSynonym(position, barcode.ProducerId);
+					position.UpdateProducerSynonym(producerSynonym);
+				}
 			}
 		}
 

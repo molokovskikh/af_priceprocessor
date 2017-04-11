@@ -75,6 +75,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Castle.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ExcelLibrary">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ExcelLibrary.dll</HintPath>

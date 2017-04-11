@@ -10,6 +10,7 @@ using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
+using Dapper;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
@@ -95,8 +96,8 @@ namespace PriceProcessor.Test.Formalization
 			price.NewPriceCost(priceItem, "F6");
 			var producer = TestProducer.Queryable.First();
 			price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
-			new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
-			price.Update();
+			session.Save(new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price));
+			session.Save(price);
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;0;;73.88;");
 
@@ -109,7 +110,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Do_not_create_producer_synonym_if_most_price_unknown()
 		{
 			price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
-			price.Update();
+			session.Save(price);
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
@@ -162,7 +163,7 @@ namespace PriceProcessor.Test.Formalization
 				"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
 				"Санкт-Петербургская ф.ф.");
 			session.Save(price);
-			TestAssortment.CheckAndCreate(product, producer);
+			TestAssortment.CheckAndCreate(session, product, producer);
 			Reopen();
 
 			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -589,6 +590,25 @@ namespace PriceProcessor.Test.Formalization
 					.List()
 					.Count;
 			Assert.AreEqual(0, cnt);
+		}
+
+		[Test]
+		public void Formalize_by_barcode()
+		{
+			var barcode = Guid.NewGuid().ToString();
+			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
+			session.Save(product);
+			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
+			session.Save(producer);
+
+			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, Barcode) values (?productId, ?producerId, ?barcode)",
+				new { productId = product.Id, producerId = producer.Id, barcode});
+
+			priceItem.Format.FEAN13 = "F5";
+			Formalize($@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;1;220.92;{barcode}
+9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}");
+			session.Refresh(price);
+			Assert.AreEqual(2, price.Core.Count);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
