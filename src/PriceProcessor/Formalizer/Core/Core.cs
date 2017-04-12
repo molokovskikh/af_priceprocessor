@@ -164,7 +164,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		/// <summary>
 		/// Код EAN-13 (штрих-код)
 		/// </summary>
-		public string EAN13;
+		public ulong EAN13;
 
 		public uint CodeOKP;
 		public string Series;

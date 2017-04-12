@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using ExcelLibrary.BinaryFileFormat;
 using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -32,7 +33,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 
 				var line = document.NewLine();
 				line.Code = row.GetCell(2).StringValue;
-				line.EAN13 = row.GetCell(3).StringValue;
+				line.EAN13 = NullableConvert.ToUInt64(row.GetCell(3).StringValue);
 				line.Product = row.GetCell(4).StringValue;
 				line.Unit = row.GetCell(5).StringValue;
 				line.Quantity = Convert.ToUInt32(row.GetCell(6).Value);

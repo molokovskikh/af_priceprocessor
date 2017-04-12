@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using log4net;
 
@@ -224,7 +225,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
 				Nds = GetUintOrDefault(PriceFields.Nds),
 				CodeOKP = GetUintOrDefault(PriceFields.CodeOKP),
-				EAN13 = GetFieldValue(PriceFields.EAN13),
+				EAN13 = SafeConvert.ToUInt64(GetFieldValue(PriceFields.EAN13)),
 				Series = GetFieldValue(PriceFields.Series),
 				ProducerCost = GetDecimalValue(PriceFields.ProducerCost),
 				OptimizationSkip = (bool)GetFieldValueObject(PriceFields.OptimizationSkip)

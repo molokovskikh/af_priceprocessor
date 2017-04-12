@@ -595,14 +595,14 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Formalize_by_barcode()
 		{
-			var barcode = Guid.NewGuid().ToString();
+			var barcode = new Random().Next();
 			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
 			session.Save(product);
 			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 			session.Save(producer);
 			var synonym = price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ 150МЛ", product);
 
-			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, Barcode) values (?productId, ?producerId, ?barcode)",
+			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, EAN13) values (?productId, ?producerId, ?barcode)",
 				new { productId = product.Id, producerId = producer.Id, barcode});
 
 			priceItem.Format.FEAN13 = "F5";

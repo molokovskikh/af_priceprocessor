@@ -108,7 +108,7 @@ namespace PriceProcessor.Test.Waybills
 			line.SerialNumber = "10749253";
 			line.DateOfManufacture = new DateTime(2011, 12, 1);
 			line.Period = "01.12.2014";
-			line.EAN13 = "5709932004838";
+			line.EAN13 = 5709932004838;
 			line.CertificateAuthority = "ООО\"ОЦКК\"  Москва^ООО\"ОЦКК\"  Москва";
 			line.Amount = 897.91m;
 			line.NdsAmount = 81.63m;

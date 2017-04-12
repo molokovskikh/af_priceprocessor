@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Castle.Components.DictionaryAdapter;
+using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser;
@@ -128,7 +129,7 @@ namespace Inforoom.PriceProcessor.Waybills.Rejects
 						docLine.Period = bodyDescription.GetPeriod(parts);
 						docLine.ProducerCostWithoutNDS = bodyDescription.GetProducerCost(parts);
 						docLine.VitallyImportant = bodyDescription.GetVitallyImportant(parts);
-						docLine.EAN13 = bodyDescription.GetEAN13(parts);
+						docLine.EAN13 = NullableConvert.ToUInt64(bodyDescription.GetEAN13(parts));
 						docLine.BillOfEntryNumber = bodyDescription.GetBillOfEntryNumber(parts);
 						docLine.DateOfManufacture = bodyDescription.GetDateOfManufacture(parts);
 						docLine.ExpireInMonths = bodyDescription.GetExpireInMonths(parts);

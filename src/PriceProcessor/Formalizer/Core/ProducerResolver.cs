@@ -55,7 +55,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			var synonym = Resolve(position);
 			if (synonym == null) {
 				var producerId = GetAssortimentOne(position)?["ProducerId"];
-				if (producerId == null && !String.IsNullOrWhiteSpace(position.Core.EAN13))
+				if (producerId == null && position.Core.EAN13 > 0)
 					producerId = barcodes.FirstOrDefault(x => x.Value == position.Core.EAN13)?.ProducerId;
 				synonym = CreateProducerSynonym(position, producerId);
 			}

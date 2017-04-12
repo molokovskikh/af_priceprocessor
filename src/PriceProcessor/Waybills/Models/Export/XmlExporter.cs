@@ -56,7 +56,7 @@ group by ai.SupplierDeliveryId")
 					writer.Element("VALID_DATE", line.Period);
 					writer.Element("GTD", line.BillOfEntryNumber);
 					writer.Element("SERT_NUM", line.Certificates);
-					writer.Element("VENDORBARCODE", line.EAN13.Slice(12));
+					writer.Element("VENDORBARCODE", line.EAN13.ToString().Slice(12));
 					writer.Element("REG_PRICE", line.RegistryCost);
 					writer.Element("ISGV", line.VitallyImportant);
 					writer.WriteEndElement();
@@ -93,7 +93,7 @@ group by ai.SupplierDeliveryId")
 				writer.WriteEndElement();
 				foreach (var line in doc.Lines) {
 					writer.WriteStartElement("DETAIL");
-					writer.WriteAttributeString("ean13_code", line.EAN13);
+					writer.WriteAttributeString("ean13_code", line.EAN13?.ToString(CultureInfo.InvariantCulture));
 					writer.WriteAttributeString("tov_code", line.Code);
 					writer.WriteAttributeString("tov_name", line.Product);
 					writer.WriteAttributeString("maker_name", line.Producer);

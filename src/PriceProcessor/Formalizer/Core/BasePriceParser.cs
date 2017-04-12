@@ -24,7 +24,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 			public uint CatalogId;
 			public uint ProductId;
-			public string Value;
+			public ulong Value;
 			public bool Pharmacie;
 			public uint ProducerId;
 		}
@@ -278,7 +278,7 @@ WHERE SynonymFirmCr.PriceCode={0}
 			_logger.Debug("загрузили SynonymFirmCr");
 
 			barcodes = _connection
-				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.Barcode as Value, c.Pharmacie
+				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.EAN13 as Value, c.Pharmacie
 from Catalogs.BarcodeProducts b
 	join Catalogs.Products p on b.ProductId = p.Id
 		join Catalogs.Catalog c on c.Id = p.CatalogId")
@@ -411,6 +411,8 @@ order by c.Id",
 		{
 			if (type == typeof(uint))
 				return GetUintOrDbNUll(reader, index);
+			if (type == typeof(ulong))
+				return GetUlongOrDbNUll(reader, index);
 			if (type == typeof(decimal))
 				return GetDecimalOrDbNull(reader, index);
 			if (type == typeof(string))
@@ -428,6 +430,13 @@ order by c.Id",
 			if (reader.IsDBNull(index))
 				return 0;
 			return reader.GetUInt32(index);
+		}
+
+		public ulong GetUlongOrDbNUll(MySqlDataReader reader, int index)
+		{
+			if (reader.IsDBNull(index))
+				return 0ul;
+			return reader.GetUInt64(index);
 		}
 
 		public decimal GetDecimalOrDbNull(MySqlDataReader reader, int index)
@@ -974,7 +983,7 @@ drop temporary table Farm.MaxCosts;
 
 			if (dr != null) {
 				position.UpdateProductSynonym(dr);
-			} else if (!String.IsNullOrWhiteSpace(position.Core.EAN13) && !String.IsNullOrWhiteSpace(position.PositionName)) {
+			} else if (position.Core.EAN13 > 0 && !String.IsNullOrWhiteSpace(position.PositionName)) {
 				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Core.EAN13);
 				if (barcode == null)
 					return;

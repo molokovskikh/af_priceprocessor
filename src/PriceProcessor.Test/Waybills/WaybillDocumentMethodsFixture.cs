@@ -112,7 +112,8 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Ignore_producer_if_product_unmatched()
 		{
-			_documentLine.EAN13 = Guid.NewGuid().ToString();
+			var random = new Random();
+			_documentLine.EAN13 = (ulong)random.Next();
 			_documentLine.Product += "1";
 			_documentLine.Code += "1";
 			session.Flush();
@@ -124,11 +125,12 @@ namespace PriceProcessor.Test.Waybills
 		[Test]
 		public void Use_barcode()
 		{
-			_documentLine.EAN13 = Guid.NewGuid().ToString();
+			var random = new Random();
+			_documentLine.EAN13 = (ulong)random.Next();
 			_documentLine.Product = Guid.NewGuid().ToString();
 			_documentLine.Code = null;
 
-			session.CreateSQLQuery("insert into Catalogs.BarcodeProducts(Barcode, ProductId, ProducerId) values(:barcode, :productId, :producerId)")
+			session.CreateSQLQuery("insert into Catalogs.BarcodeProducts(EAN13, ProductId, ProducerId) values(:barcode, :productId, :producerId)")
 				.SetParameter("productId", _product.Id)
 				.SetParameter("producerId", _producer.Id)
 				.SetParameter("barcode", _documentLine.EAN13)

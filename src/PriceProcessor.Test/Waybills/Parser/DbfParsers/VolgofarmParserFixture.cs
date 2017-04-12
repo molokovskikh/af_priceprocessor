@@ -41,7 +41,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.IsTrue(line0.RegistryCost == 68.36m);
 			Assert.IsTrue(line0.VitallyImportant == true);
 			Assert.IsTrue(line0.SerialNumber == "0570814");
-			Assert.IsTrue(line0.EAN13 == "8595026461338");
+			Assert.AreEqual(8595026461338, line0.EAN13);
 			Assert.IsTrue(line0.Certificates == "РОСС CZ.ФМ08.Д41976");
 			Assert.IsTrue(line0.CertificateAuthority == "ООО ОЦКК  г. Москва");
 			Assert.IsTrue(line0.CertificatesDate == "24.12.2014");

@@ -118,6 +118,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			if (value is uint)
 				return GetNullableValue((uint)value);
+			if (value is ulong)
+				return GetNullableValue((ulong)value);
 			if (value is bool)
 				return GetBoolValue((bool)value);
 			if (value is decimal)
@@ -149,6 +151,14 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		}
 
 		public static string GetNullableValue(uint value)
+		{
+			if (value == 0)
+				return "null";
+
+			return value.ToString(CultureInfo.InvariantCulture);
+		}
+
+		public static string GetNullableValue(ulong value)
 		{
 			if (value == 0)
 				return "null";

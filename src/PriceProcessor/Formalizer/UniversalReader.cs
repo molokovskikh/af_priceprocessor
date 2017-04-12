@@ -220,7 +220,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 
 			if (tag.Match("EAN13")) {
-				core.EAN13 = value;
+				core.EAN13 = SafeConvert.ToUInt64(value);
 				return;
 			}
 
