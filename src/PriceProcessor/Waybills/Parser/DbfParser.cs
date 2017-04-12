@@ -157,6 +157,9 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 			if (type == typeof(uint) || type == typeof(uint?))
 				return ParseHelper.GetUInt(value.ToString());
 
+			if (type == typeof(ulong?))
+				return NullableConvert.ToUInt64(value.ToString());
+
 			if (type == typeof(int) || type == typeof(int?))
 				return ParseHelper.GetInt(value.ToString());
 
