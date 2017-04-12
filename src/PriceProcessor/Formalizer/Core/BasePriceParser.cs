@@ -98,7 +98,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private ProducerResolver _producerResolver;
 		private bool _saveInCore;
 		private RejectUpdater _rejectUpdater = new RejectUpdater();
-		private Barcode[] barcodes = new Barcode[0];
+		private Barcode[] barcodes;
 
 		public BasePriceParser(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{
@@ -277,7 +277,14 @@ WHERE SynonymFirmCr.PriceCode={0}
 			dtSynonymFirmCr.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 			_logger.Debug("загрузили SynonymFirmCr");
 
-			_producerResolver = new ProducerResolver(_stats, dtExcludes, dtSynonymFirmCr);
+			barcodes = _connection
+				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.Barcode as Value, c.Pharmacie
+from Catalogs.BarcodeProducts b
+	join Catalogs.Products p on b.ProductId = p.Id
+		join Catalogs.Catalog c on c.Id = p.CatalogId")
+				.ToArray();
+
+			_producerResolver = new ProducerResolver(_stats, dtExcludes, dtSynonymFirmCr, barcodes);
 			_producerResolver.Load(_connection);
 
 			daUnrecExp = new MySqlDataAdapter(
@@ -327,13 +334,6 @@ WHERE SynonymFirmCr.PriceCode={0}
 				loadExistsWatch.Stop();
 				_logger.InfoFormat("Загрузка и подготовка существующего прайса, {0}с", loadExistsWatch.Elapsed.TotalSeconds);
 			}
-
-			barcodes = _connection
-				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.Barcode as Value, c.Pharmacie
-from Catalogs.BarcodeProducts b
-	join Catalogs.Products p on b.ProductId = p.Id
-		join Catalogs.Catalog c on c.Id = p.CatalogId")
-				.ToArray();
 
 			_logger.Debug("конец Prepare");
 		}
@@ -625,7 +625,6 @@ and CoreCosts.PC_CostCode = {1};",
 				logMessage.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
 			}
 
-			_producerResolver.Update(transaction.Connection);
 			logMessage.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), transaction));
 			logMessage.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), transaction));
 			logMessage.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(transaction));
@@ -745,7 +744,7 @@ select @LastSynonymID as SynonymCode;";
 				row["SynonymCode"] = Convert.ToUInt64(_connection.ExecuteScalar(sql, parameters));
 			}
 			foreach (var core in _newCores.Where(c => c.CreatedProductSynonym != null))
-				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProductSynonym["SynonymCode"]);
+				core.SynonymCode = Convert.ToUInt32(core.CreatedProductSynonym["SynonymCode"]);
 		}
 
 		private void InsertProducerSynonyms(MySqlTransaction finalizeTransaction)
@@ -931,14 +930,10 @@ drop temporary table Farm.MaxCosts;
 					InsertToUnrec(position);
 
 				if (position.IsSet(UnrecExpStatus.NameForm)) {
-					if(position.ProductId != null)
-						core.ProductId = (uint)position.ProductId;
-					if(position.SynonymCode != null)
-						core.SynonymCode = (uint)position.SynonymCode;
-					if (position.CodeFirmCr != null)
-						core.CodeFirmCr = (uint)position.CodeFirmCr;
-					if (position.SynonymFirmCrCode != null)
-						core.SynonymFirmCrCode = (uint)position.SynonymFirmCrCode;
+					core.ProductId = (uint)position.ProductId.GetValueOrDefault();
+					core.SynonymCode = (uint)position.SynonymCode.GetValueOrDefault();
+					core.CodeFirmCr = (uint)position.CodeFirmCr.GetValueOrDefault();
+					core.SynonymFirmCrCode = (uint)position.SynonymFirmCrCode.GetValueOrDefault();
 					if (_priceInfo.IsUpdating)
 						core.ExistsCore = _searcher.Find(core);
 					_newCores.Add(core);

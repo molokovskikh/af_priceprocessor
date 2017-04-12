@@ -17,12 +17,14 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public DataTable ForbiddenProdusers;
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
+		private BasePriceParser.Barcode[] barcodes;
 
-		public ProducerResolver(FormalizeStats stats, DataTable excludes, DataTable producerSynonyms)
+		public ProducerResolver(FormalizeStats stats, DataTable excludes, DataTable producerSynonyms, BasePriceParser.Barcode[] barcodes)
 		{
 			_stats = stats;
 			_excludes = excludes;
 			_producerSynonyms = producerSynonyms;
+			this.barcodes = barcodes;
 		}
 
 		/// <summary>
@@ -50,8 +52,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				return;
 			}
 			position.NotCreateUnrecExp = CheckForbiddenProducerName(position);
-			var synonym = Resolve(position)
-				?? CreateProducerSynonym(position, GetAssortimentOne(position)?["ProducerId"]);
+			var synonym = Resolve(position);
+			if (synonym == null) {
+				var producerId = GetAssortimentOne(position)?["ProducerId"];
+				if (producerId == null && !String.IsNullOrWhiteSpace(position.Core.EAN13))
+					producerId = barcodes.FirstOrDefault(x => x.Value == position.Core.EAN13)?.ProducerId;
+				synonym = CreateProducerSynonym(position, producerId);
+			}
 
 			position.UpdateProducerSynonym(synonym);
 			if (position.SynonymFirmCrCode != null) {
@@ -60,15 +67,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 			if (position.CodeFirmCr == null && !position.NotCreateUnrecExp)
 				CheckExclude(position);
-		}
-
-		public void Update(MySqlConnection connection)
-		{
-			var da = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", connection);
-			var excludesBuilder = new MySqlCommandBuilder(da);
-			da.InsertCommand = excludesBuilder.GetInsertCommand();
-			da.InsertCommand.CommandTimeout = 0;
-			da.Update(Assortment);
 		}
 
 		public DataRow Resolve(FormalizationPosition position)
@@ -108,11 +106,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
 		{
-			var assortmentIds = MonobrendAssortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+			var assortmentIds = MonobrendAssortment.Select($"CatalogId = {position.CatalogId}");
 			if (assortmentIds.Length != 0) {
-				var assortiments = Assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
-				if (assortiments.Length == 1)
-					return assortiments[0];
+				return Assortment.Select($"CatalogId = {position.CatalogId}").FirstOrDefault();
 			}
 			return null;
 		}

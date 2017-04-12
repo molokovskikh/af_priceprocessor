@@ -600,15 +600,21 @@ namespace PriceProcessor.Test.Formalization
 			session.Save(product);
 			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 			session.Save(producer);
+			var synonym = price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ 150МЛ", product);
 
 			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, Barcode) values (?productId, ?producerId, ?barcode)",
 				new { productId = product.Id, producerId = producer.Id, barcode});
 
 			priceItem.Format.FEAN13 = "F5";
 			Formalize($@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;1;220.92;{barcode}
-9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}");
+9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}
+9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента Фармацевтика;50;230.13;{barcode}");
 			session.Refresh(price);
-			Assert.AreEqual(2, price.Core.Count);
+			Assert.AreEqual(3, price.Core.Count);
+			var offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id);
+			Assert.AreEqual(product.Id, offer?.Product?.Id);
+			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
+			Assert.IsNotNull(offer?.ProducerSynonym);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
