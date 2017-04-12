@@ -49,7 +49,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 		public static bool CheckFileFormat(string file)
 		{
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
-			var workbook = Workbook.Load(file);
+			Workbook workbook;
+			try {
+				workbook = Workbook.Load(file);
+			} catch(ArgumentOutOfRangeException) {
+				return false;
+			}
 			var sheet = workbook.Worksheets[0];
 			return (sheet.Cells[11, 0].StringValue.ToLower().Equals("№ п/п")) &&
 				(sheet.Cells[11, 4].StringValue.ToLower().Equals("наименование")) &&
