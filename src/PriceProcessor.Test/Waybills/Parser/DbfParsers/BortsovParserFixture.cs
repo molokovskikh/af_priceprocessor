@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line.NdsAmount, Is.EqualTo(7.97));
 			Assert.That(line.Amount, Is.EqualTo(87.69));
-			Assert.That(line.EAN13, Is.EqualTo("4600338006185"));
+			Assert.That(line.EAN13, Is.EqualTo(4600338006185));
 
 			Assert.That(document.Invoice.BuyerName, Is.EqualTo("ООО  \"Медфарм \""));
 			Assert.That(document.Invoice.BuyerAddress, Is.EqualTo(",359050,Калмыкия Респ,,Городовиковск г,,Советская"));

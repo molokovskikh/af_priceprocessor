@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.Certificates, Is.EqualTo("РОСС GB.ФМ01.Д75373"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("12.07.2012"));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
-			Assert.That(line.EAN13, Is.EqualTo("4607008131321"));
+			Assert.That(line.EAN13, Is.EqualTo(4607008131321));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 			Assert.That(line.Amount, Is.EqualTo(462.58));
 		}

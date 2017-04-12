@@ -135,7 +135,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-2.92));
-			Assert.That(line.EAN13, Is.EqualTo("3838957492800"));
+			Assert.That(line.EAN13, Is.EqualTo(3838957492800));
 		}
 
 		[Test]
@@ -161,7 +161,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.RegistryCost, Is.Null);
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-3.28));
-			Assert.That(line.EAN13, Is.EqualTo("4607009582245"));
+			Assert.That(line.EAN13, Is.EqualTo(4607009582245));
 
 			var invoice = doc.Invoice;
 			Assert.That(invoice.Amount, Is.EqualTo(28545.82));

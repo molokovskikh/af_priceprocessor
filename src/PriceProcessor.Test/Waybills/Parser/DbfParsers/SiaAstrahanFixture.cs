@@ -41,7 +41,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС HR.ФМ01.Д23988"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("25.10.2011"));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
-			Assert.That(line.EAN13, Is.EqualTo("3858881054738"));
+			Assert.That(line.EAN13, Is.EqualTo(3858881054738));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130030/251011/0004515/1"));
 		}
 
@@ -115,7 +115,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Code, Is.EqualTo("18772"));
 			Assert.That(line.CodeCr, Is.EqualTo("1323"));
 			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
-			Assert.That(line.EAN13, Is.EqualTo("4607004430473"));
+			Assert.That(line.EAN13, Is.EqualTo(4607004430473));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.NdsAmount, Is.EqualTo(27.91));
 			Assert.That(line.Period, Is.EqualTo("01.07.2017"));

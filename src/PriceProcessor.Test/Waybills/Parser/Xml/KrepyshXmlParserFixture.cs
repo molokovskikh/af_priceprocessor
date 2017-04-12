@@ -110,7 +110,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС LV.ИМ32.Д00281"));
 			Assert.That(line.Period, Is.EqualTo("01.02.2019"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("31.07.2012"));
-			Assert.That(line.EAN13, Is.EqualTo("4750283035089"));
+			Assert.That(line.EAN13, Is.EqualTo(4750283035089));
 		}
 	}
 }

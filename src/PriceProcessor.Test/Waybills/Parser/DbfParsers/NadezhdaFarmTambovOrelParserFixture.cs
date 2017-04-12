@@ -62,7 +62,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var line = document.Lines[2];
 			Assert.That(line.Code, Is.EqualTo("10156"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130032/240314/0001852/2"));
-			Assert.That(line.EAN13, Is.EqualTo("4823004503669"));
+			Assert.That(line.EAN13, Is.EqualTo(4823004503669));
 			Assert.That(line.CountryCode, Is.EqualTo("80"));
 		}
 	

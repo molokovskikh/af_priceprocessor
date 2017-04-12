@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var documentLog = new DocumentReceiveLog { Supplier = new Supplier { Id = 6256u } };
 			var doc = WaybillParser.Parse("90444.dbf", documentLog);
 			var line = doc.Lines[0];
-			Assert.That(line.EAN13, Is.EqualTo("4602156000024"));
+			Assert.That(line.EAN13, Is.EqualTo(4602156000024));
 		}
 
 	}

@@ -139,7 +139,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			var line = document.Lines[1];
 			Assert.That(line.Code, Is.Null);
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10113083/030514/0006320/1"));
-			Assert.That(line.EAN13, Is.EqualTo("4607068626911"));
+			Assert.That(line.EAN13, Is.EqualTo(4607068626911));
 			Assert.That(line.CountryCode, Is.EqualTo("428"));
 			Assert.That(line.UnitCode, Is.EqualTo("796"));
 		}

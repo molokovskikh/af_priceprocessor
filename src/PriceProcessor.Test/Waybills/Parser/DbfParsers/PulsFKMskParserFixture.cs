@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(462.06));
 			Assert.That(line.SerialNumber, Is.EqualTo("10968672"));
 			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
-			Assert.That(line.EAN13, Is.EqualTo("9003638023831"));
+			Assert.That(line.EAN13, Is.EqualTo(9003638023831));
 		}
 	}
 }

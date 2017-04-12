@@ -73,7 +73,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10126110/271210/0023082/001"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("24.12.2010"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo("5944700100019"));
+			Assert.That(line.EAN13, Is.EqualTo(5944700100019));
 		}
 
 		[Test]

@@ -18,7 +18,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("604"));
 			var line = doc.Lines[0];
 			Assert.That(line.Code, Is.EqualTo("010102-021"));
-			Assert.That(line.EAN13, Is.EqualTo("4600697101576"));
+			Assert.That(line.EAN13, Is.EqualTo(4600697101576));
 			Assert.That(line.Product, Is.EqualTo("Мыло в спайке \"ДЕТСКОЕ\" [NEW Ромашка] {4 шт. по 100 г}"));
 			Assert.That(line.Producer, Is.EqualTo("Невская Косметика"));
 			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
