@@ -103,35 +103,35 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		}
 	}
 
-	public class NewCore : Core
+	public class NewOffer : Offer
 	{
-		private ExistsCore _existsCore;
+		private ExistsOffer _existsOffer;
 		public int QuantityAsInt = -1;
 		public DataRow CreatedProductSynonym;
 		public DataRow CreatedProducerSynonym;
 
-		public ExistsCore ExistsCore
+		public ExistsOffer ExistsOffer
 		{
-			get { return _existsCore; }
+			get { return _existsOffer; }
 			set
 			{
-				_existsCore = value;
-				if (_existsCore != null)
-					_existsCore.NewCore = this;
+				_existsOffer = value;
+				if (_existsOffer != null)
+					_existsOffer.NewOffer = this;
 			}
 		}
 	}
 
-	public class ExistsCore : Core
+	public class ExistsOffer : Offer
 	{
 		public ulong Id;
 
-		public NewCore NewCore;
+		public NewOffer NewOffer;
 	}
 
 	//Не использую nullable что бы экономить память
 	//для числовых полей 0 обозначает null
-	public abstract class Core
+	public abstract class Offer
 	{
 		public uint ProductId;
 		public uint CodeFirmCr;

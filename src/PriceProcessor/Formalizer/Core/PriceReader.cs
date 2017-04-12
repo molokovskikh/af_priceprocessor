@@ -206,7 +206,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public void InsertToCore(FormalizationPosition position, Cost[] costs)
 		{
 			var quantity = GetFieldValueObject(PriceFields.Quantity);
-			var core = new NewCore {
+			var core = new NewOffer {
 				Code = GetFieldValue(PriceFields.Code),
 				CodeCr = GetFieldValue(PriceFields.CodeCr),
 				Unit = GetFieldValue(PriceFields.Unit),
@@ -247,7 +247,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			}
 			core.Period = periodValue;
 			core.Costs = costs;
-			position.Core = core;
+			position.Offer = core;
 		}
 
 		private uint GetUintOrDefault(PriceFields field)

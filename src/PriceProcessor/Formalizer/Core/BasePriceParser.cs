@@ -45,16 +45,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		//Таблица с исключениями
 		protected MySqlDataAdapter daExcludes;
 		protected DataTable dtExcludes;
-		protected MySqlCommandBuilder cbExcludes;
 
 		protected MySqlDataAdapter daUnrecExp;
-		protected MySqlCommandBuilder cbUnrecExp;
 		protected DataTable dtUnrecExp;
 		protected MySqlDataAdapter daZero;
-		protected MySqlCommandBuilder cbZero;
 		protected DataTable dtZero;
 		protected MySqlDataAdapter daForb;
-		protected MySqlCommandBuilder cbForb;
 		protected DataTable dtForb;
 
 		protected DataSet dsMyDB;
@@ -80,8 +76,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		private Searcher _searcher;
 
-		private readonly List<NewCore> _newCores = new List<NewCore>();
-		private readonly List<ExistsCore> _existsCores = new List<ExistsCore>();
+		private readonly List<NewOffer> _newCores = new List<NewOffer>();
+		private readonly List<ExistsOffer> _existsCores = new List<ExistsOffer>();
 
 		private readonly IReader _reader;
 
@@ -149,7 +145,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public void InsertToZero(FormalizationPosition position)
 		{
 			var drZero = dtZero.NewRow();
-			var core = position.Core;
+			var core = position.Offer;
 
 			drZero["PriceItemId"] = priceItemId;
 			drZero["Name"] = position.PositionName;
@@ -176,16 +172,18 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			drUnrecExp["PriceItemId"] = priceItemId;
 			drUnrecExp["Name1"] = position.PositionName;
 			drUnrecExp["FirmCr"] = position.FirmCr;
-			drUnrecExp["Code"] = position.Core.Code;
-			drUnrecExp["CodeCr"] = position.Core.CodeCr;
-			drUnrecExp["Unit"] = position.Core.Unit;
-			drUnrecExp["Volume"] = position.Core.Volume;
-			drUnrecExp["Quantity"] = position.Core.Quantity;
-			drUnrecExp["Note"] = position.Core.Note;
-			drUnrecExp["Period"] = position.Core.Period;
-			drUnrecExp["Doc"] = position.Core.Doc;
+			drUnrecExp["Code"] = position.Offer.Code;
+			drUnrecExp["CodeCr"] = position.Offer.CodeCr;
+			drUnrecExp["Unit"] = position.Offer.Unit;
+			drUnrecExp["Volume"] = position.Offer.Volume;
+			drUnrecExp["Quantity"] = position.Offer.Quantity;
+			drUnrecExp["Note"] = position.Offer.Note;
+			drUnrecExp["Period"] = position.Offer.Period;
+			drUnrecExp["Doc"] = position.Offer.Doc;
+			if (position.Offer.EAN13 > 0)
+				drUnrecExp["EAN13"] = position.Offer.EAN13;
 
-			drUnrecExp["Junk"] = Convert.ToByte(position.Core.Junk);
+			drUnrecExp["Junk"] = Convert.ToByte(position.Offer.Junk);
 
 			drUnrecExp["AddDate"] = DateTime.Now;
 
@@ -241,7 +239,7 @@ WHERE  s.PriceCode = {0}",
 
 			daExcludes = new MySqlDataAdapter(
 				String.Format("SELECT Id, CatalogId, ProducerSynonym, PriceCode, OriginalSynonymId FROM farm.Excludes where PriceCode = {0}", parentSynonym), _connection);
-			cbExcludes = new MySqlCommandBuilder(daExcludes);
+			var cbExcludes = new MySqlCommandBuilder(daExcludes);
 			daExcludes.InsertCommand = cbExcludes.GetInsertCommand();
 			daExcludes.InsertCommand.CommandTimeout = 0;
 			daExcludes.Fill(dsMyDB, "Excludes");
@@ -289,7 +287,7 @@ from Catalogs.BarcodeProducts b
 
 			daUnrecExp = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.UnrecExp WHERE PriceItemId={0} LIMIT 0", priceItemId), _connection);
-			cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
+			var cbUnrecExp = new MySqlCommandBuilder(daUnrecExp);
 			daUnrecExp.AcceptChangesDuringUpdate = false;
 			daUnrecExp.InsertCommand = cbUnrecExp.GetInsertCommand();
 			daUnrecExp.InsertCommand.UpdatedRowSource = UpdateRowSource.None;
@@ -302,7 +300,7 @@ from Catalogs.BarcodeProducts b
 
 			daZero = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Zero WHERE PriceItemId={0} LIMIT 0", priceItemId), _connection);
-			cbZero = new MySqlCommandBuilder(daZero);
+			var cbZero = new MySqlCommandBuilder(daZero);
 			daZero.InsertCommand = cbZero.GetInsertCommand();
 			daZero.InsertCommand.CommandTimeout = 0;
 			daZero.Fill(dsMyDB, "Zero");
@@ -311,7 +309,7 @@ from Catalogs.BarcodeProducts b
 
 			daForb = new MySqlDataAdapter(
 				String.Format("SELECT * FROM farm.Forb WHERE PriceItemId={0} LIMIT 0", priceItemId), _connection);
-			cbForb = new MySqlCommandBuilder(daForb);
+			var cbForb = new MySqlCommandBuilder(daForb);
 			daForb.InsertCommand = cbForb.GetInsertCommand();
 			daForb.InsertCommand.CommandTimeout = 0;
 			daForb.Fill(dsMyDB, "Forb");
@@ -328,7 +326,7 @@ from Catalogs.BarcodeProducts b
 					_logger.Debug("Загрузили цены");
 				}
 				if(_saveInCore)
-					_searcher = new Searcher(_existsCores, new[] { typeof(Core).GetField("CodeOKP") });
+					_searcher = new Searcher(_existsCores, new[] { typeof(Offer).GetField("CodeOKP") });
 				else
 					_searcher = new Searcher(_existsCores);
 				loadExistsWatch.Stop();
@@ -349,7 +347,7 @@ from Catalogs.BarcodeProducts b
 			var command = new MySqlCommand(existsCoreSQL, _connection);
 			using (var reader = command.ExecuteReader()) {
 				while (reader.Read()) {
-					var existsCore = new ExistsCore {
+					var existsCore = new ExistsOffer {
 						Id = reader.GetUInt64("Id")
 					};
 					foreach (var map in Mapping.OfferMapping) {
@@ -466,7 +464,7 @@ order by c.Id",
 		private IEnumerable<string> BuildSql()
 		{
 			foreach (var core in _newCores) {
-				if (core.ExistsCore == null) {
+				if (core.ExistsOffer == null) {
 					Stat.InsertCoreCount++;
 					yield return SqlBuilder.InsertOfferSql(_priceInfo, core);
 					yield return SqlBuilder.InsertCostSql(core, Stat);
@@ -477,7 +475,7 @@ order by c.Id",
 				}
 			}
 
-			var forDelete = _existsCores.Where(c => c.NewCore == null).Select(c => c.Id.ToString()).ToArray();
+			var forDelete = _existsCores.Where(c => c.NewOffer == null).Select(c => c.Id.ToString()).ToArray();
 			if (forDelete.Length > 0) {
 				Stat.DeleteCoreCount += forDelete.Length;
 				yield return "delete from farm.Core0 where Core0.Id in (" + String.Join(", ", forDelete.ToArray()) + ");";
@@ -897,14 +895,6 @@ drop temporary table Farm.MaxCosts;
 			});
 		}
 
-		public IList<string> GetAllNames()
-		{
-			return _reader.Read()
-				.Where(p => !String.IsNullOrEmpty(p.PositionName))
-				.Select(p => p.PositionName)
-				.ToList();
-		}
-
 		private void InternalFormalize()
 		{
 			foreach (var position in _reader.Read()) {
@@ -917,7 +907,7 @@ drop temporary table Farm.MaxCosts;
 					continue;
 				}
 
-				var core = position.Core;
+				var core = position.Offer;
 				if (!_priceInfo.IsAssortmentPrice) {
 					//Если кол-во ненулевых цен = 0, то тогда производим вставку в Zero
 					//или если количество определенно и оно равно 0
@@ -944,7 +934,7 @@ drop temporary table Farm.MaxCosts;
 					core.CodeFirmCr = (uint)position.CodeFirmCr.GetValueOrDefault();
 					core.SynonymFirmCrCode = (uint)position.SynonymFirmCrCode.GetValueOrDefault();
 					if (_priceInfo.IsUpdating)
-						core.ExistsCore = _searcher.Find(core);
+						core.ExistsOffer = _searcher.Find(core);
 					_newCores.Add(core);
 				}
 
@@ -983,8 +973,8 @@ drop temporary table Farm.MaxCosts;
 
 			if (dr != null) {
 				position.UpdateProductSynonym(dr);
-			} else if (position.Core.EAN13 > 0 && !String.IsNullOrWhiteSpace(position.PositionName)) {
-				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Core.EAN13);
+			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrWhiteSpace(position.PositionName)) {
+				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13);
 				if (barcode == null)
 					return;
 				var productSynonym = dtSynonym.NewRow();

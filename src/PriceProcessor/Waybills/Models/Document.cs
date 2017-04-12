@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 			// список id товаров из накладной
 			var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => (uint?)l.ProductEntity.Id).ToArray();
-			var cores = session.Query<Core>()
+			var cores = session.Query<Offer>()
 				.Where(x => x.Price.Id == settings.AssortimentPriceId.Value && productIds.Contains(x.ProductId))
 				.ToList();
 			foreach (var line in Lines) {

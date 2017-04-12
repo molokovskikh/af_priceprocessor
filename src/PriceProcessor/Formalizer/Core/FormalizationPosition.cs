@@ -9,7 +9,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private DataRow productSynonym;
 		private DataRow producerSynonym;
 
-		public NewCore Core;
+		public NewOffer Offer;
 		public UnrecExpStatus Status { get; set; }
 
 		public string PositionName { get; set; }
@@ -70,9 +70,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			Pharmacie = Convert.ToBoolean(row["Pharmacie"]);
 			var isJunk = Convert.ToBoolean(row["Junk"]);
 			if (isJunk)
-				Core.Junk = true;
+				Offer.Junk = true;
 			if (SynonymCode == null)
-				Core.CreatedProductSynonym = productSynonym;
+				Offer.CreatedProductSynonym = productSynonym;
 			AddStatus(UnrecExpStatus.NameForm);
 		}
 
@@ -83,7 +83,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				CodeFirmCr = Convert.ToInt64(row["CodeFirmCr"]);
 			IsAutomaticProducerSynonym = Convert.ToBoolean(row["IsAutomatic"]);
 			if (SynonymFirmCrCode == null)
-				Core.CreatedProducerSynonym = row;
+				Offer.CreatedProducerSynonym = row;
 			if (!IsAutomaticProducerSynonym && !NotCreateUnrecExp)
 				AddStatus(UnrecExpStatus.FirmForm);
 		}
@@ -106,12 +106,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public void CalculateJunk()
 		{
 			DateTime periodAsDateTime;
-			if (DateTime.TryParse(Core.Period, out periodAsDateTime)) {
-				Core.Exp = periodAsDateTime;
+			if (DateTime.TryParse(Offer.Period, out periodAsDateTime)) {
+				Offer.Exp = periodAsDateTime;
 				var isJunk = SystemTime.Now() >= periodAsDateTime
 					|| periodAsDateTime.Subtract(SystemTime.Now()).TotalDays < 180;
 				if (isJunk)
-					Core.Junk = isJunk;
+					Offer.Junk = isJunk;
 			}
 		}
 	}

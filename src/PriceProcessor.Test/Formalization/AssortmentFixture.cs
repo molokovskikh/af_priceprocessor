@@ -82,7 +82,7 @@ namespace PriceProcessor.Test
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 
 			var row = _forbiddenProducers.NewRow();
@@ -93,9 +93,9 @@ namespace PriceProcessor.Test
 			resolver.Assortment = _assortiment;
 			resolver.MonobrendAssortment = _monobrendAssortiment;
 			resolver.ResolveProducer(position);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsFalse((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsFalse((bool)position.Offer.CreatedProducerSynonym["IsAutomatic"]);
 			Assert.IsTrue(position.NotCreateUnrecExp);
 		}
 
@@ -117,7 +117,7 @@ namespace PriceProcessor.Test
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 			var assortiment = new DataTable();
 			assortiment.Columns.Add("Id", typeof(uint));
@@ -137,9 +137,9 @@ namespace PriceProcessor.Test
 			resolver.MonobrendAssortment = monobrendAssortiment;
 			resolver.ResolveProducer(position);
 
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsTrue((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsTrue((bool)position.Offer.CreatedProducerSynonym["IsAutomatic"]);
 		}
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
@@ -159,7 +159,7 @@ namespace PriceProcessor.Test
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 			var assortiment = new DataTable();
 			assortiment.Columns.Add("Id", typeof(uint));
@@ -185,9 +185,9 @@ namespace PriceProcessor.Test
 
 			resolver.ResolveProducer(position);
 
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
-			Assert.IsFalse(Convert.ToBoolean(position.Core.CreatedProducerSynonym["IsAutomatic"]));
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
+			Assert.IsFalse(Convert.ToBoolean(position.Offer.CreatedProducerSynonym["IsAutomatic"]));
 		}
 	}
 }

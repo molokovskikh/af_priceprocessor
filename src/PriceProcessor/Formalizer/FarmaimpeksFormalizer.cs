@@ -66,14 +66,8 @@ namespace Inforoom.PriceProcessor.Formalizer
 						continue;
 					}
 
-					var info = new PriceFormalizationInfo(priceInfo, cost.Price);
-
-					var parser = new BasePriceParser(reader, info);
-					parser.Downloaded = Downloaded;
-
-					var ls = parser.GetAllNames();
-					if (ls != null)
-						names.AddRange(ls);
+					return reader.Read()
+						.Where(x => !String.IsNullOrWhiteSpace(x.PositionName)).Select(x => x.PositionName).ToList();
 				}
 			}
 			return names;
