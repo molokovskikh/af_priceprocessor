@@ -37,7 +37,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Unit, Is.EqualTo("шт."));
 			Assert.That(doc.Lines[0].ExciseTax, Is.Null);
 			Assert.That(doc.Lines[0].BillOfEntryNumber, Is.EqualTo("10127020/130808/0008596/01"));
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("9000100398237"));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(9000100398237));
 
 			var invoice = doc.Invoice;
 			Assert.That(invoice, Is.Not.Null);
@@ -95,7 +95,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Unit, Is.EqualTo("шт."));
 			Assert.That(doc.Lines[0].ExciseTax, Is.Null);
 			Assert.That(doc.Lines[0].BillOfEntryNumber, Is.EqualTo("-"));
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("4600697407807"));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(4600697407807));
 
 			var invoice = doc.Invoice;
 			Assert.That(invoice, Is.Not.Null);

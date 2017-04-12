@@ -56,7 +56,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual("ВАЛЬСАКОР 0,16 N28 ТАБЛ П/О", line.Product);
 			Assert.AreEqual("КРКА, д.д., Ново место", line.Producer);
 			Assert.AreEqual("22994749", line.CodeCr);
-			Assert.AreEqual("3838989551223", line.EAN13);
+			Assert.AreEqual(3838989551223, line.EAN13);
 		}
 	}
 }

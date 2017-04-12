@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(18));
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(129.42));
 			Assert.That(document.Lines[0].NdsAmount, Is.EqualTo(19.74));
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo("4607010242558"));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo(4607010242558));
 			Assert.That(document.Lines[0].BillOfEntryNumber, Is.EqualTo(null));
 			Assert.That(document.Lines[0].VitallyImportant, Is.EqualTo(false));
 			Assert.That(document.Lines[0].SerialNumber, Is.EqualTo("0612"));

@@ -72,7 +72,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(l.CertificatesDate, Is.Null);
 			Assert.That(l.SerialNumber, Is.EqualTo("273-21111"));
 			Assert.That(l.BillOfEntryNumber, Is.Null);
-			Assert.That(l.EAN13, Is.EqualTo("4600561020019"));
+			Assert.That(l.EAN13, Is.EqualTo(4600561020019));
 			Assert.That(l.Nds, Is.EqualTo(10));
 			Assert.That(l.VitallyImportant, Is.True);
 			Assert.That(doc.Lines[0].VitallyImportant, Is.False);

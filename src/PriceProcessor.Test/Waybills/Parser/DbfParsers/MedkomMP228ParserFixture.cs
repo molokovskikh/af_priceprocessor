@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(l.Period, Is.EqualTo("30.06.2017"));
 			Assert.That(l.OrderId, Is.EqualTo(0));
 			Assert.That(l.BillOfEntryNumber, Is.EqualTo("10129020/210812/0000708/1"));
-			Assert.That(l.EAN13, Is.EqualTo("5060040302552"));
+			Assert.That(l.EAN13, Is.EqualTo(5060040302552));
 			Assert.That(l.ProducerCostWithoutNDS, Is.EqualTo(172.73));
 			Assert.That(l.Country, Is.EqualTo("СОЕДИНЕННОЕ КОР"));
 			Assert.That(l.VitallyImportant, Is.EqualTo(false));
