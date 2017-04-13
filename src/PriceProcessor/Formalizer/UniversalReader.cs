@@ -351,7 +351,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				else if (_reader.NodeType == XmlNodeType.Text) {
 					if (currentState.IsConsumable)
-						currentState.Read(valueTag, _reader.Value);
+						currentState.Read(valueTag, _reader.Value?.Trim());
 				}
 				else if (_reader.NodeType == XmlNodeType.EndElement) {
 					if (IsTag(currentState.Tag)) {
@@ -415,7 +415,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				else if (_reader.NodeType == XmlNodeType.Text) {
 					if (_item != null)
-						ReadValue(_item, valueTag, _reader.Value);
+						ReadValue(_item, valueTag, _reader.Value?.Trim());
 				}
 				else if (_reader.NodeType == XmlNodeType.EndElement) {
 					if (_state == State.Group && IsTag("Group")) {

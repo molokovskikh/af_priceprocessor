@@ -962,25 +962,29 @@ drop temporary table Farm.MaxCosts;
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow dr = null;
+			var name = position.PositionName?.Trim();
 			if (_priceInfo.FormByCode) {
-				if (!String.IsNullOrEmpty(position.Code))
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Code"]).Equals(position.Code, StringComparison.CurrentCultureIgnoreCase));
+				var code = position.Code?.Trim();
+				if (!String.IsNullOrEmpty(code))
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Code"]).Equals(code, StringComparison.CurrentCultureIgnoreCase));
 			} else {
-				if (!String.IsNullOrEmpty(position.PositionName))
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.PositionName, StringComparison.CurrentCultureIgnoreCase))
-						?? dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.OriginalName, StringComparison.CurrentCultureIgnoreCase));
+				if (!String.IsNullOrEmpty(name)) {
+					var originalName = position.OriginalName?.Trim();
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(name, StringComparison.CurrentCultureIgnoreCase))
+						?? dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(originalName, StringComparison.CurrentCultureIgnoreCase));
+				}
 			}
 
 			if (dr != null) {
 				position.UpdateProductSynonym(dr);
-			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrWhiteSpace(position.PositionName)) {
+			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrWhiteSpace(name)) {
 				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13);
 				if (barcode == null)
 					return;
 				var productSynonym = dtSynonym.NewRow();
 				productSynonym["ProductId"] = barcode.ProductId;
 				productSynonym["CatalogId"] = barcode.CatalogId;
-				productSynonym["Synonym"] = position.PositionName.Trim();
+				productSynonym["Synonym"] = name;
 				productSynonym["Pharmacie"] = barcode.Pharmacie;
 				productSynonym["Junk"] = false;
 				dtSynonym.Rows.Add(productSynonym);

@@ -79,7 +79,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
 		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.Trim().ToLower().Replace("'", "''")));
 			//предпочитаем синонимы с производителем
 			var synonym = synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull));
 			if (synonym != null)
@@ -90,7 +90,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
 		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
+			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.Trim().ToLower().Replace("'", "''")));
 			var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 			foreach (var productSynonym in synonyms) {
 				if (productSynonym["CodeFirmCr"] is DBNull)
@@ -148,8 +148,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				}
 			}
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
-			synonym["Synonym"] = position.FirmCr;
-			synonym["OriginalSynonym"] = position.FirmCr;
+			synonym["Synonym"] = position.FirmCr.Trim();
+			synonym["OriginalSynonym"] = position.FirmCr.Trim();
 			_producerSynonyms.Rows.Add(synonym);
 			if (synonym["CodeFirmCr"] is DBNull)
 				_stats.ProducerSynonymCreatedCount++;
