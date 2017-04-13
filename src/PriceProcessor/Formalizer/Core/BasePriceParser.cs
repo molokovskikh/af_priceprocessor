@@ -4,6 +4,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Common.MySql;
 using Common.Tools;
@@ -20,6 +21,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 {
 	public class BasePriceParser
 	{
+		public static Regex SpaceReg = new Regex(@"\s", RegexOptions.Compiled);
+
 		public class Barcode
 		{
 			public uint CatalogId;
@@ -227,7 +230,8 @@ SELECT
 	s.ProductId,
 	s.Junk,
 	p.CatalogId,
-	c.Pharmacie
+	c.Pharmacie,
+	s.Canonical
 FROM farm.Synonym s
 	join catalogs.products p on p.Id = s.ProductId
 		join Catalogs.Catalog c on c.Id = p.CatalogId
@@ -254,7 +258,8 @@ SELECT
   SynonymFirmCrCode,
   CodeFirmCr,
   LOWER(Synonym) AS Synonym,
-  (aps.ProducerSynonymId is not null) as IsAutomatic
+  (aps.ProducerSynonymId is not null) as IsAutomatic,
+	Canonical
 FROM
   farm.SynonymFirmCr
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
@@ -969,15 +974,18 @@ drop temporary table Farm.MaxCosts;
 					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Code"]).Equals(code, StringComparison.CurrentCultureIgnoreCase));
 			} else {
 				if (!String.IsNullOrEmpty(name)) {
-					var originalName = position.OriginalName?.Trim();
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(name, StringComparison.CurrentCultureIgnoreCase))
-						?? dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(originalName, StringComparison.CurrentCultureIgnoreCase));
+					var canonical = SpaceReg.Replace(name, "");
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase));
+				}
+				if (dr == null && !String.IsNullOrWhiteSpace(position.OriginalName)) {
+					var originalName = SpaceReg.Replace(position.OriginalName, "");
+					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(originalName, StringComparison.CurrentCultureIgnoreCase));
 				}
 			}
 
 			if (dr != null) {
 				position.UpdateProductSynonym(dr);
-			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrWhiteSpace(name)) {
+			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrEmpty(name)) {
 				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13);
 				if (barcode == null)
 					return;
@@ -986,12 +994,14 @@ drop temporary table Farm.MaxCosts;
 				productSynonym["CatalogId"] = barcode.CatalogId;
 				productSynonym["Synonym"] = name;
 				productSynonym["Pharmacie"] = barcode.Pharmacie;
+				productSynonym["Canonical"] = SpaceReg.Replace(name, "");
 				productSynonym["Junk"] = false;
 				dtSynonym.Rows.Add(productSynonym);
 				position.UpdateProductSynonym(productSynonym);
 
 				if (!String.IsNullOrWhiteSpace(position.FirmCr)) {
-					var producerSynonym =  dtSynonymFirmCr.AsEnumerable().FirstOrDefault(x => ((string)x["Synonym"]).Equals(position.FirmCr, StringComparison.CurrentCultureIgnoreCase)
+					var canonical = SpaceReg.Replace(position.FirmCr, "");
+					var producerSynonym =  dtSynonymFirmCr.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase)
 						&& !(x["CodeFirmCr"] is DBNull) && Convert.ToUInt32(x["CodeFirmCr"]) == barcode.ProducerId)
 						?? _producerResolver.CreateProducerSynonym(position, barcode.ProducerId);
 					position.UpdateProducerSynonym(producerSynonym);

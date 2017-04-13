@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public long? ProductId { get; set; }
 		public long? CatalogId { get; set; }
-		public bool? Pharmacie { get; set; }
+		public bool Pharmacie { get; set; }
 
 		public long? SynonymCode
 		{

@@ -71,37 +71,26 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public DataRow Resolve(FormalizationPosition position)
 		{
-			if (position.Pharmacie.Value)
-				return ResolveWithAssortmentRespect(position);
-			else
-				return ResolveIgnoreAssortment(position);
-		}
+			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "");
+			var synonyms = _producerSynonyms.AsEnumerable()
+				.Where(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase))
+				.ToArray();
+			if (position.Pharmacie) {
+				var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
+				foreach (var productSynonym in synonyms) {
+					if (productSynonym["CodeFirmCr"] is DBNull)
+						continue;
 
-		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
-		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.Trim().ToLower().Replace("'", "''")));
-			//предпочитаем синонимы с производителем
-			var synonym = synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull));
-			if (synonym != null)
-				return synonym;
-
-			return synonyms.FirstOrDefault();
-		}
-
-		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
-		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.Trim().ToLower().Replace("'", "''")));
-			var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
-			foreach (var productSynonym in synonyms) {
-				if (productSynonym["CodeFirmCr"] is DBNull)
-					continue;
-
-				using (_stats.AssortmentSearch()) {
-					if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
-						return productSynonym;
+					using (_stats.AssortmentSearch()) {
+						if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
+							return productSynonym;
+					}
 				}
+				return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
+			} else {
+				//предпочитаем синонимы с производителем
+				return synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull)) ?? synonyms.FirstOrDefault();
 			}
-			return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
 		}
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
@@ -150,6 +139,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
 			synonym["Synonym"] = position.FirmCr.Trim();
 			synonym["OriginalSynonym"] = position.FirmCr.Trim();
+			synonym["Canonical"] = BasePriceParser.SpaceReg.Replace(position.FirmCr, "");
 			_producerSynonyms.Rows.Add(synonym);
 			if (synonym["CodeFirmCr"] is DBNull)
 				_stats.ProducerSynonymCreatedCount++;
