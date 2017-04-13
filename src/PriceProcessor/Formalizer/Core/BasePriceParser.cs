@@ -263,7 +263,7 @@ SELECT
 FROM
   farm.SynonymFirmCr
   left join farm.AutomaticProducerSynonyms aps on aps.ProducerSynonymId = SynonymFirmCr.SynonymFirmCrCode
-WHERE SynonymFirmCr.PriceCode={0}
+WHERE SynonymFirmCr.PriceCode={0} and Canonical is not null
 ",
 					parentSynonym),
 				_connection);
