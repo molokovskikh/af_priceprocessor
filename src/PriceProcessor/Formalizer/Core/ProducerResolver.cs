@@ -71,10 +71,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public DataRow Resolve(FormalizationPosition position)
 		{
-			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "");
-			var synonyms = _producerSynonyms.AsEnumerable()
-				.Where(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase))
-				.ToArray();
+			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
+			var synonyms = _producerSynonyms.Select($"Canonical = '{canonical}'").ToArray();
 			if (position.Pharmacie) {
 				var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 				foreach (var productSynonym in synonyms) {

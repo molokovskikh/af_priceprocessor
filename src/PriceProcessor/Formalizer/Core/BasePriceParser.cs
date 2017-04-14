@@ -38,9 +38,11 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		//Таблица со списком запрещенных названий
 		protected MySqlDataAdapter daForbidden;
 		protected DataTable dtForbidden;
-		//Таблица со списком синонимов товаров
+
+		//Таблица со списоком синонимов производителей
 		protected MySqlDataAdapter daSynonym;
 		protected DataTable dtSynonym;
+
 		//Таблица со списоком синонимов производителей
 		protected MySqlDataAdapter daSynonymFirmCr;
 		protected DataTable dtSynonymFirmCr;
@@ -223,19 +225,18 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			dtForbidden = dsMyDB.Tables["Forbidden"];
 			_logger.Debug("загрузили Forbidden");
 
-			daSynonym = new MySqlDataAdapter(String.Format(@"
-SELECT
+			daSynonym = new MySqlDataAdapter(String.Format(@"SELECT
 	s.SynonymCode,
 	LOWER(s.Synonym) AS Synonym,
 	s.ProductId,
 	s.Junk,
 	p.CatalogId,
 	c.Pharmacie,
-	s.Canonical
+	lower(s.Canonical) as Canonical
 FROM farm.Synonym s
 	join catalogs.products p on p.Id = s.ProductId
 		join Catalogs.Catalog c on c.Id = p.CatalogId
-WHERE  s.PriceCode = {0}",
+WHERE s.PriceCode = {0}",
 				parentSynonym), _connection);
 			daSynonym.Fill(dsMyDB, "Synonym");
 			dtSynonym = dsMyDB.Tables["Synonym"];
@@ -969,17 +970,18 @@ drop temporary table Farm.MaxCosts;
 			DataRow dr = null;
 			var name = position.PositionName?.Trim();
 			if (_priceInfo.FormByCode) {
-				var code = position.Code?.Trim();
-				if (!String.IsNullOrEmpty(code))
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Code"]).Equals(code, StringComparison.CurrentCultureIgnoreCase));
+				if (!String.IsNullOrWhiteSpace(position.Code)) {
+					var code = position.Code?.Trim().Replace("'", "''");
+					dr = dtSynonym.Select($"Code = {code}").FirstOrDefault();
+				}
 			} else {
 				if (!String.IsNullOrEmpty(name)) {
-					var canonical = SpaceReg.Replace(name, "");
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase));
+					var canonical = SpaceReg.Replace(name, "").ToLower().Replace("'", "''");
+					dr = dtSynonym.Select($"Canonical = '{canonical}'").FirstOrDefault();
 				}
 				if (dr == null && !String.IsNullOrWhiteSpace(position.OriginalName)) {
-					var originalName = SpaceReg.Replace(position.OriginalName, "");
-					dr = dtSynonym.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(originalName, StringComparison.CurrentCultureIgnoreCase));
+					var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
+					dr = dtSynonym.Select($"Canonical = '{originalName}'").FirstOrDefault();
 				}
 			}
 
