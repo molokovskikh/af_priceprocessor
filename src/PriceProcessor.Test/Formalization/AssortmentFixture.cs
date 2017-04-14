@@ -48,6 +48,7 @@ namespace PriceProcessor.Test
 			_producerSynonyms = new DataTable();
 			_producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
 			_producerSynonyms.Columns.Add("Synonym", typeof(string));
+			_producerSynonyms.Columns.Add("Canonical", typeof(string));
 			_producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
 			_producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
 			_producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
@@ -102,16 +103,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_not_in_monobrend()
 		{
-			var producerSynonyms = new DataTable();
-			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
-			producerSynonyms.Columns.Add("Synonym", typeof(string));
-			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
-			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
-			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
-			producerSynonyms.Columns.Add("InternalProducerSynonymId");
-			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
-
-			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms, new BasePriceParser.Barcode[0]);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms, new BasePriceParser.Barcode[0]);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
@@ -144,16 +136,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
 		{
-			var producerSynonyms = new DataTable();
-			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
-			producerSynonyms.Columns.Add("Synonym", typeof(string));
-			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
-			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
-			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
-			producerSynonyms.Columns.Add("InternalProducerSynonymId");
-			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
-
-			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms, new BasePriceParser.Barcode[0]);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms, new BasePriceParser.Barcode[0]);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
