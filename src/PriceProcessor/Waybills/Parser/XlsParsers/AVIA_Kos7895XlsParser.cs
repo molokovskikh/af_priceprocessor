@@ -52,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 			Workbook workbook;
 			try {
 				workbook = Workbook.Load(file);
-			} catch(ArgumentOutOfRangeException) {
+			} catch(Exception) {
 				return false;
 			}
 			var sheet = workbook.Worksheets[0];

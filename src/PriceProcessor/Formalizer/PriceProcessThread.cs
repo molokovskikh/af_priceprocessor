@@ -180,7 +180,7 @@ namespace Inforoom.Formalizer
 					Directory.CreateDirectory(tempPath);
 
 					var max = 4;
-					for (var i = 1; i < max; i++) {
+					for (var i = 1; i <= max; i++) {
 						try {
 							ProcessState = PriceProcessState.CallValidate;
 							_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
@@ -198,7 +198,7 @@ namespace Inforoom.Formalizer
 							//Duplicate entry '%s' for key %d
 							//всего скорее это значит что одновременно формализовался прайс-лист с такими же синонимами, нужно повторить попытку
 							if (e.Number == 1062) {
-								_logger.WarnFormat($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
+								_logger.Warn($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
 							}
 						}
 						catch (Exception e) {

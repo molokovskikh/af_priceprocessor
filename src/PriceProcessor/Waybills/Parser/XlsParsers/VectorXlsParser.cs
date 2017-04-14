@@ -42,7 +42,12 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 		public static bool CheckFileFormat(string file)
 		{
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
-			var workbook = Workbook.Load(file);
+			Workbook workbook;
+			try {
+				workbook = Workbook.Load(file);
+			} catch(Exception) {
+				return false;
+			}
 			var sheet = workbook.Worksheets[0];
 			return (sheet.Cells[5, 0].StringValue.ToLower().Equals("код")) &&
 				(sheet.Cells[5, 1].StringValue.ToLower().Equals("наименование товара")) &&
