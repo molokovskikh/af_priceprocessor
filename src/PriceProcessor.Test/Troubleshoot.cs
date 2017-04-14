@@ -11,20 +11,12 @@ using Test.Support;
 
 namespace PriceProcessor.Test
 {
-	//[TestFixture, Ignore("Тест что бы разбирать проблемные ситуации")]
-	[TestFixture]
+	[TestFixture, Ignore("Тест что бы разбирать проблемные ситуации")]
 	public class Troubleshoot
 	{
 		[Test]
 		public void t()
 		{
-			var session = IntegrationFixture2.Factory.OpenSession();
-			var table = PricesValidator.LoadFormRules(223);
-			var row = table.Rows[0];
-			var localPrice = session.Load<Price>(1864u);
-			var info = new PriceFormalizationInfo(row, localPrice);
-			var formalizer = new BufferFormalizer(@"C:\Users\kvasov\tmp\analit.txt", info);
-			formalizer.Formalize();
 		}
 	}
 }

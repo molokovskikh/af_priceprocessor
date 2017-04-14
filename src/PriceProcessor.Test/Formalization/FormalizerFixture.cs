@@ -572,6 +572,8 @@ namespace PriceProcessor.Test.Formalization
 			Assert.AreEqual(product.Id, offer?.Product?.Id);
 			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
 			Assert.IsNotNull(offer?.ProducerSynonym);
+			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
+			Assert.AreEqual(0, unrecExceptions.Count);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)
