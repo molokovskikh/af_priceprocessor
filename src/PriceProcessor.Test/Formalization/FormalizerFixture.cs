@@ -558,6 +558,7 @@ namespace PriceProcessor.Test.Formalization
 			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
 			session.Save(producer);
 			var synonym = price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ 150МЛ", product);
+			price.AddProducerSynonym("Валента", null);
 
 			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, EAN13) values (?productId, ?producerId, ?barcode)",
 				new { productId = product.Id, producerId = producer.Id, barcode});
@@ -565,13 +566,21 @@ namespace PriceProcessor.Test.Formalization
 			priceItem.Format.FEAN13 = "F5";
 			Formalize($@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;1;220.92;{barcode}
 9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}
-9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента Фармацевтика;50;230.13;{barcode}");
+9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента Фармацевтика;50;230.13;{barcode}
+9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента;10;240.13;{barcode}");
 			session.Refresh(price);
-			Assert.AreEqual(3, price.Core.Count);
-			var offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id);
+			Assert.AreEqual(4, price.Core.Count);
+			var offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "50");
 			Assert.AreEqual(product.Id, offer?.Product?.Id);
 			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
 			Assert.IsNotNull(offer?.ProducerSynonym);
+
+			offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "10");
+			Assert.AreEqual(product.Id, offer?.Product?.Id);
+			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
+			Assert.IsNotNull(offer?.ProducerSynonym);
+			Assert.IsNotNull(offer?.ProducerSynonym);
+
 			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
 			Assert.AreEqual(0, unrecExceptions.Count);
 		}

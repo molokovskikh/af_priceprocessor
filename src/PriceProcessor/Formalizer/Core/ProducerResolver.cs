@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using Common.MySql;
 using log4net;
 using MySql.Data.MySqlClient;
 
@@ -53,11 +54,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			}
 			position.NotCreateUnrecExp = CheckForbiddenProducerName(position);
 			var synonym = Resolve(position);
-			if (synonym == null) {
+			if (synonym == null || synonym["CodeFirmCr"] is DBNull) {
 				var producerId = GetAssortimentOne(position)?["ProducerId"];
 				if (producerId == null && position.Offer.EAN13 > 0)
 					producerId = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13)?.ProducerId;
-				synonym = CreateProducerSynonym(position, producerId);
+				if (synonym == null || producerId != null)
+					synonym = CreateProducerSynonym(position, producerId);
 			}
 
 			position.UpdateProducerSynonym(synonym);
