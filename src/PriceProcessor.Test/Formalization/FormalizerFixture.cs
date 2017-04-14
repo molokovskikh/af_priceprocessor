@@ -578,8 +578,9 @@ namespace PriceProcessor.Test.Formalization
 			offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "10");
 			Assert.AreEqual(product.Id, offer?.Product?.Id);
 			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
+			Assert.IsNotNull(offer?.ProductSynonym);
 			Assert.IsNotNull(offer?.ProducerSynonym);
-			Assert.IsNotNull(offer?.ProducerSynonym);
+			Assert.IsNull(offer.ProducerSynonym.Producer);
 
 			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
 			Assert.AreEqual(0, unrecExceptions.Count);

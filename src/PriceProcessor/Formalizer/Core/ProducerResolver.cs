@@ -124,7 +124,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				position.Status &= ~UnrecExpStatus.FirmForm;
 		}
 
-		public DataRow CreateProducerSynonym(FormalizationPosition position, object producerId)
+		public DataRow CreateProducerSynonym(FormalizationPosition position, object producerId, bool count = true)
 		{
 			var synonym = _producerSynonyms.NewRow();
 			if (producerId != null && !(producerId is DBNull)) {
@@ -144,7 +144,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			synonym["OriginalSynonym"] = position.FirmCr.Trim();
 			synonym["Canonical"] = BasePriceParser.SpaceReg.Replace(position.FirmCr, "");
 			_producerSynonyms.Rows.Add(synonym);
-			if (synonym["CodeFirmCr"] is DBNull)
+			if (synonym["CodeFirmCr"] is DBNull && count)
 				_stats.ProducerSynonymCreatedCount++;
 			return synonym;
 		}

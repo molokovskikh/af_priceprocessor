@@ -920,19 +920,24 @@ drop temporary table Farm.MaxCosts;
 					if (barcode != null) {
 						var productSynonyms = LookupProductSynonym(position);
 						if (productSynonyms != null) {
-							var productSynonym = productSynonyms
-								.FirstOrDefault(x => Convert.ToUInt32(x["ProductId"]) == Convert.ToUInt32(barcode["ProductId"]));
+							var productSynonym = productSynonyms.FirstOrDefault();
 							position.UpdateProductSynonym(productSynonym ?? CreateProductSynonym(barcode, position.PositionName ?? position.OriginalName));
+							//товары в синониме и штрих коде могут не совпасть, предпочитаем штрих код
+							position.ProductId = Convert.ToInt64(barcode["ProductId"]);
+							position.CatalogId = Convert.ToInt64(barcode["CatalogId"]);
+							position.Pharmacie = Convert.ToBoolean(barcode["Pharmacie"]);
 							var producerSynonyms = _producerResolver.LookupProducerSynonym(position);
 							if (producerSynonyms != null) {
-								var producerSynonym = producerSynonyms
-									.FirstOrDefault(x => !(x["CodeFirmCr"] is DBNull) && Convert.ToUInt32(x["CodeFirmCr"]) == Convert.ToUInt32(barcode["ProducerId"]));
+								//при привязке по штрих коду всегда используем синоним без производителя, что бы не создавать синонимы которые могут быть
+								//применены при сопоставлении по наименованию
+								//тк поставщики часто пишут в производителе только название страны
+								var producerSynonym = producerSynonyms.FirstOrDefault(x => x["CodeFirmCr"] is DBNull);
+								position.NotCreateUnrecExp = true;
 								position.UpdateProducerSynonym(producerSynonym
-									?? _producerResolver.CreateProducerSynonym(position, barcode["ProducerId"]));
-							} else {
-								position.CodeFirmCr = Convert.ToUInt32(barcode["ProducerId"]);
-								position.IsSet(UnrecExpStatus.FirmForm);
+									?? _producerResolver.CreateProducerSynonym(position, null, count: false));
 							}
+							position.CodeFirmCr = Convert.ToUInt32(barcode["ProducerId"]);
+							position.IsSet(UnrecExpStatus.FirmForm);
 						}
 					}
 				}
