@@ -23,15 +23,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 	{
 		public static Regex SpaceReg = new Regex(@"\s", RegexOptions.Compiled);
 
-		public class Barcode
-		{
-			public uint CatalogId;
-			public uint ProductId;
-			public ulong Value;
-			public bool Pharmacie;
-			public uint ProducerId;
-		}
-
 		//Соедиение с базой данных
 		protected MySqlConnection _connection;
 
@@ -99,7 +90,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private ProducerResolver _producerResolver;
 		private bool _saveInCore;
 		private RejectUpdater _rejectUpdater = new RejectUpdater();
-		private Barcode[] barcodes;
+		private DataTable barcodes;
 
 		public BasePriceParser(IReader reader, PriceFormalizationInfo priceInfo, bool saveInCore = false)
 		{
@@ -281,14 +272,15 @@ WHERE SynonymFirmCr.PriceCode={0} and Canonical is not null
 			dtSynonymFirmCr.Columns["InternalProducerSynonymId"].AutoIncrement = true;
 			_logger.Debug("загрузили SynonymFirmCr");
 
-			barcodes = _connection
-				.Query<Barcode>(@"select b.ProductId, p.CatalogId, b.ProducerId, b.EAN13 as Value, c.Pharmacie
+			var adapter = new MySqlDataAdapter(@"select
+b.ProductId, p.CatalogId, b.ProducerId, b.EAN13, c.Pharmacie
 from Catalogs.BarcodeProducts b
 	join Catalogs.Products p on b.ProductId = p.Id
-		join Catalogs.Catalog c on c.Id = p.CatalogId")
-				.ToArray();
+		join Catalogs.Catalog c on c.Id = p.CatalogId", _connection);
+			barcodes = new DataTable();
+			adapter.Fill(barcodes);
 
-			_producerResolver = new ProducerResolver(_stats, dtExcludes, dtSynonymFirmCr, barcodes);
+			_producerResolver = new ProducerResolver(_stats, dtExcludes, dtSynonymFirmCr);
 			_producerResolver.Load(_connection);
 
 			daUnrecExp = new MySqlDataAdapter(
@@ -923,8 +915,32 @@ drop temporary table Farm.MaxCosts;
 					}
 				}
 
-				GetProductId(position);
-				_producerResolver.ResolveProducer(position);
+				if (position.Offer.EAN13 > 0) {
+					var barcode = barcodes.Select($"EAN13 = {position.Offer.EAN13}").FirstOrDefault();
+					if (barcode != null) {
+						var productSynonyms = LookupProductSynonym(position);
+						if (productSynonyms != null) {
+							var productSynonym = productSynonyms
+								.FirstOrDefault(x => Convert.ToUInt32(x["ProductId"]) == Convert.ToUInt32(barcode["ProductId"]));
+							position.UpdateProductSynonym(productSynonym ?? CreateProductSynonym(barcode, position.PositionName ?? position.OriginalName));
+							var producerSynonyms = _producerResolver.LookupProducerSynonym(position);
+							if (producerSynonyms != null) {
+								var producerSynonym = producerSynonyms
+									.FirstOrDefault(x => !(x["CodeFirmCr"] is DBNull) && Convert.ToUInt32(x["CodeFirmCr"]) == Convert.ToUInt32(barcode["ProducerId"]));
+								position.UpdateProducerSynonym(producerSynonym
+									?? _producerResolver.CreateProducerSynonym(position, barcode["ProducerId"]));
+							} else {
+								position.CodeFirmCr = Convert.ToUInt32(barcode["ProducerId"]);
+								position.IsSet(UnrecExpStatus.FirmForm);
+							}
+						}
+					}
+				}
+
+				if (!position.IsSet(UnrecExpStatus.NameForm)) {
+					GetProductId(position);
+					_producerResolver.ResolveProducer(position);
+				}
 
 				if (!position.IsSet(UnrecExpStatus.NameForm))
 					_loggingStat.UnForm++;
@@ -968,47 +984,44 @@ drop temporary table Farm.MaxCosts;
 		public void GetProductId(FormalizationPosition position)
 		{
 			DataRow dr = null;
-			var name = position.PositionName?.Trim();
 			if (_priceInfo.FormByCode) {
 				if (!String.IsNullOrWhiteSpace(position.Code)) {
 					var code = position.Code?.Trim().Replace("'", "''");
 					dr = dtSynonym.Select($"Code = {code}").FirstOrDefault();
 				}
 			} else {
-				if (!String.IsNullOrEmpty(name)) {
-					var canonical = SpaceReg.Replace(name, "").ToLower().Replace("'", "''");
-					dr = dtSynonym.Select($"Canonical = '{canonical}'").FirstOrDefault();
-				}
-				if (dr == null && !String.IsNullOrWhiteSpace(position.OriginalName)) {
-					var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
-					dr = dtSynonym.Select($"Canonical = '{originalName}'").FirstOrDefault();
-				}
+				dr = LookupProductSynonym(position)?.FirstOrDefault();
 			}
 
-			if (dr != null) {
+			if (dr != null)
 				position.UpdateProductSynonym(dr);
-			} else if (position.Offer.EAN13 > 0 && !String.IsNullOrEmpty(name)) {
-				var barcode = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13);
-				if (barcode == null)
-					return;
-				var productSynonym = dtSynonym.NewRow();
-				productSynonym["ProductId"] = barcode.ProductId;
-				productSynonym["CatalogId"] = barcode.CatalogId;
-				productSynonym["Synonym"] = name;
-				productSynonym["Pharmacie"] = barcode.Pharmacie;
-				productSynonym["Canonical"] = SpaceReg.Replace(name, "");
-				productSynonym["Junk"] = false;
-				dtSynonym.Rows.Add(productSynonym);
-				position.UpdateProductSynonym(productSynonym);
+		}
 
-				if (!String.IsNullOrWhiteSpace(position.FirmCr)) {
-					var canonical = SpaceReg.Replace(position.FirmCr, "");
-					var producerSynonym =  dtSynonymFirmCr.AsEnumerable().FirstOrDefault(x => ((string)x["Canonical"]).Equals(canonical, StringComparison.CurrentCultureIgnoreCase)
-						&& !(x["CodeFirmCr"] is DBNull) && Convert.ToUInt32(x["CodeFirmCr"]) == barcode.ProducerId)
-						?? _producerResolver.CreateProducerSynonym(position, barcode.ProducerId);
-					position.UpdateProducerSynonym(producerSynonym);
-				}
+		private DataRow[] LookupProductSynonym(FormalizationPosition position)
+		{
+			DataRow[] result = null;
+			if (!String.IsNullOrWhiteSpace(position.PositionName)) {
+				var canonical = SpaceReg.Replace(position.PositionName, "").ToLower().Replace("'", "''");
+				result = dtSynonym.Select($"Canonical = '{canonical}'");
 			}
+			if ((result == null || result.Length == 0) && !String.IsNullOrWhiteSpace(position.OriginalName)) {
+				var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
+				result = dtSynonym.Select($"Canonical = '{originalName}'");
+			}
+			return result;
+		}
+
+		private DataRow CreateProductSynonym(DataRow barcode, string name)
+		{
+			var productSynonym = dtSynonym.NewRow();
+			productSynonym["ProductId"] = barcode["ProductId"];
+			productSynonym["CatalogId"] = barcode["CatalogId"];
+			productSynonym["Synonym"] = name.Trim();
+			productSynonym["Pharmacie"] = barcode["Pharmacie"];
+			productSynonym["Canonical"] = SpaceReg.Replace(name, "");
+			productSynonym["Junk"] = false;
+			dtSynonym.Rows.Add(productSynonym);
+			return productSynonym;
 		}
 
 		public void InsertNewCosts()

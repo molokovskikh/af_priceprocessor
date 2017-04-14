@@ -18,14 +18,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public DataTable ForbiddenProdusers;
 		private DataTable _excludes;
 		private DataTable _producerSynonyms;
-		private BasePriceParser.Barcode[] barcodes;
 
-		public ProducerResolver(FormalizeStats stats, DataTable excludes, DataTable producerSynonyms, BasePriceParser.Barcode[] barcodes)
+		public ProducerResolver(FormalizeStats stats, DataTable excludes, DataTable producerSynonyms)
 		{
 			_stats = stats;
 			_excludes = excludes;
 			_producerSynonyms = producerSynonyms;
-			this.barcodes = barcodes;
 		}
 
 		/// <summary>
@@ -56,8 +54,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			var synonym = Resolve(position);
 			if (synonym == null || synonym["CodeFirmCr"] is DBNull) {
 				var producerId = GetAssortimentOne(position)?["ProducerId"];
-				if (producerId == null && position.Offer.EAN13 > 0)
-					producerId = barcodes.FirstOrDefault(x => x.Value == position.Offer.EAN13)?.ProducerId;
 				if (synonym == null || producerId != null)
 					synonym = CreateProducerSynonym(position, producerId);
 			}
@@ -73,8 +69,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		public DataRow Resolve(FormalizationPosition position)
 		{
-			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
-			var synonyms = _producerSynonyms.Select($"Canonical = '{canonical}'").ToArray();
+			var synonyms = LookupProducerSynonym(position);
 			if (position.Pharmacie) {
 				var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
 				foreach (var productSynonym in synonyms) {
@@ -91,6 +86,14 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				//предпочитаем синонимы с производителем
 				return synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull)) ?? synonyms.FirstOrDefault();
 			}
+		}
+
+		public DataRow[] LookupProducerSynonym(FormalizationPosition position)
+		{
+			if (string.IsNullOrWhiteSpace(position.FirmCr))
+				return null;
+			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
+			return _producerSynonyms.Select($"Canonical = '{canonical}'");
 		}
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)

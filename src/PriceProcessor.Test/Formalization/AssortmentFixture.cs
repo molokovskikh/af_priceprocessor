@@ -89,7 +89,7 @@ namespace PriceProcessor.Test
 			var row = _forbiddenProducers.NewRow();
 			row["Name"] = "TestFirm";
 			_forbiddenProducers.Rows.Add(row);
-			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms, new BasePriceParser.Barcode[0]);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			resolver.ForbiddenProdusers = _forbiddenProducers;
 			resolver.Assortment = _assortiment;
 			resolver.MonobrendAssortment = _monobrendAssortiment;
@@ -103,7 +103,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_not_in_monobrend()
 		{
-			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms, new BasePriceParser.Barcode[0]);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
@@ -136,7 +136,7 @@ namespace PriceProcessor.Test
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
 		{
-			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms, new BasePriceParser.Barcode[0]);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
