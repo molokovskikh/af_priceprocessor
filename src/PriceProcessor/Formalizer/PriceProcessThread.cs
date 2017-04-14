@@ -197,9 +197,7 @@ namespace Inforoom.Formalizer
 						catch (MySqlException e) {
 							//Duplicate entry '%s' for key %d
 							//всего скорее это значит что одновременно формализовался прайс-лист с такими же синонимами, нужно повторить попытку
-							if (e.Number == 1062) {
-								_logger.Warn($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
-							}
+							_logger.Warn($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
 						}
 						catch (Exception e) {
 							var warning =
