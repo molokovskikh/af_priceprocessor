@@ -158,7 +158,6 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			ProcessState = PriceProcessState.Begin;
-			var allWorkTimeString = String.Empty;
 			using (var cleaner = new FileCleaner())
 				try {
 					//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
@@ -191,6 +190,7 @@ namespace Inforoom.Formalizer
 							ProcessState = PriceProcessState.CallFormalize;
 							_workPrice.Formalize();
 
+							_log.FormSecs = Convert.ToInt64(DateTime.UtcNow.Subtract(StartDate).TotalSeconds);
 							_log.SuccesLog(_workPrice);
 							break;
 						}
@@ -211,9 +211,7 @@ namespace Inforoom.Formalizer
 							}
 						}
 						finally {
-							var tsFormalize = DateTime.UtcNow.Subtract(StartDate);
-							_log.FormSecs = Convert.ToInt64(tsFormalize.TotalSeconds);
-							allWorkTimeString = tsFormalize.ToString();
+							_log.FormSecs = Convert.ToInt64(DateTime.UtcNow.Subtract(StartDate).TotalSeconds);
 						}
 					}
 
@@ -242,7 +240,7 @@ namespace Inforoom.Formalizer
 				}
 				finally {
 					ProcessState = PriceProcessState.FinalizeThread;
-					_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, allWorkTimeString);
+					_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, DateTime.UtcNow.Subtract(StartDate));
 					FormalizeEnd = true;
 				}
 		}

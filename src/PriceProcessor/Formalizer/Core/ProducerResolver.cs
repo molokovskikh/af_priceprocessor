@@ -93,8 +93,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			if (string.IsNullOrWhiteSpace(position.FirmCr))
 				return null;
 			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
-			var synonym = position.FirmCr.ToLower().Replace("'", "''");
-			return _producerSynonyms.Select($"Canonical = '{canonical}' or Synonym like '{synonym}'");
+			var result = _producerSynonyms.Select($"Canonical = '{canonical}'");
+			if (result.Length == 0) {
+				var synonym = position.FirmCr.ToLower().Replace("'", "''");
+				result = _producerSynonyms.Select($"Synonym = '{synonym}'");
+			}
+			return result;
 		}
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
