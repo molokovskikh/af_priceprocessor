@@ -13,6 +13,9 @@ namespace Inforoom.PriceProcessor.Models
 	[ActiveRecord("FormLogs", Schema = "Logs")]
 	public class FormLog : ActiveRecordLinqBase<FormLog>
 	{
+		public int InsertProducerSynonymCount;
+		public int InsertProductSynonymCount;
+
 		public FormLog()
 		{
 		}
@@ -90,17 +93,6 @@ namespace Inforoom.PriceProcessor.Models
 		public virtual int DeleteCostCount { get; set; }
 
 		public virtual int MaxLockCount { get; set; }
-
-		public virtual void Reset()
-		{
-			InsertCoreCount = 0;
-			UpdateCoreCount = 0;
-			DeleteCoreCount = 0;
-
-			InsertCoreCount = 0;
-			UpdateCoreCount = 0;
-			DeleteCostCount = 0;
-		}
 
 		public void Fix(string downloadId, int minRepeatTranCount)
 		{

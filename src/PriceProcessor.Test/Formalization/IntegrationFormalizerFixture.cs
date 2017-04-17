@@ -20,7 +20,6 @@ namespace PriceProcessor.Test.Formalization
 		public void Setup()
 		{
 			CreatePrice();
-			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 		}
 
 		[Test]

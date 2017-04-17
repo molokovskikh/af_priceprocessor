@@ -158,8 +158,9 @@ namespace Inforoom.Formalizer
 		public void ThreadWork()
 		{
 			ProcessState = PriceProcessState.Begin;
-			using (var cleaner = new FileCleaner())
-				try {
+			try {
+					using (var cleaner = new FileCleaner())
+					using (NDC.Push($"PriceItemId = {ProcessItem.PriceItemId}")) {
 					//имя файла для копирования в директорию Base выглядит как: <PriceItemID> + <оригинальное расширение файла>
 					var outPriceFileName = Path.Combine(Settings.Default.BasePath,
 						ProcessItem.PriceItemId + Path.GetExtension(ProcessItem.FilePath));
@@ -227,22 +228,23 @@ namespace Inforoom.Formalizer
 					File.SetLastWriteTimeUtc(outPriceFileName, ft);
 					File.SetLastAccessTimeUtc(outPriceFileName, ft);
 				}
-				catch (ThreadAbortException e) {
-					_logger.Warn(Settings.Default.ThreadAbortError, e);
-					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
-				}
-				catch (Exception e) {
-					if (e is DbfException)
-						_logger.Warn("Ошибка при формализации прайс листа", e);
-					else
-						_logger.Error("Ошибка при формализации прайс листа", e);
-					_log.ErrodLog(_workPrice, e);
-				}
-				finally {
-					ProcessState = PriceProcessState.FinalizeThread;
-					_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, DateTime.UtcNow.Subtract(StartDate));
-					FormalizeEnd = true;
-				}
+			}
+			catch (ThreadAbortException e) {
+				_logger.Warn(Settings.Default.ThreadAbortError, e);
+				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+			}
+			catch (Exception e) {
+				if (e is DbfException)
+					_logger.Warn("Ошибка при формализации прайс листа", e);
+				else
+					_logger.Error("Ошибка при формализации прайс листа", e);
+				_log.ErrodLog(_workPrice, e);
+			}
+			finally {
+				ProcessState = PriceProcessState.FinalizeThread;
+				_logger.InfoFormat("Нитка завершила работу с прайсом {0}: {1}.", ProcessItem.FilePath, DateTime.UtcNow.Subtract(StartDate));
+				FormalizeEnd = true;
+			}
 		}
 	}
 }

@@ -35,7 +35,6 @@ namespace PriceProcessor.Test.Formalization
 		{
 			session.CreateSQLQuery("DELETE FROM farm.synonym; delete from farm.SynonymFirmCr").UniqueResult();
 			CreatePrice();
-			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 			Mailer.Testing = true;
 		}
 
@@ -463,6 +462,7 @@ namespace PriceProcessor.Test.Formalization
 
 			CreateDefaultSynonym();
 			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00");
+			Formalize(@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;230.00");
 
 			session.Refresh(price);
 			var core = price.Core[0];
@@ -472,7 +472,6 @@ namespace PriceProcessor.Test.Formalization
 		[Test]
 		public void Formalize_price_with_delete_insert()
 		{
-			Settings.Default.SyncPriceCodes.Remove(price.Id.ToString());
 			price.IsUpdate = false;
 			FormalizeDefaultData();
 			Formalize(defaultContent);

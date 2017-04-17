@@ -69,7 +69,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		private static string BuildSetSql(object current, object old, Mapping[] mapping)
 		{
 			return mapping
-				.Where(m => !m.Equal(old, current))
+				.Where(m => !m.Equal(current, old))
 				.Select(m => String.Format("{0} = {1}", m.Name, ToSql(m.GetValue(current))))
 				.Implode();
 		}

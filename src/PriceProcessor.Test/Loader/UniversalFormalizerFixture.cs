@@ -156,8 +156,6 @@ namespace PriceProcessor.Test.Loader
 		[Test]
 		public void Check_core_loading()
 		{
-			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
-
 			Formalize();
 
 			session.Refresh(price);

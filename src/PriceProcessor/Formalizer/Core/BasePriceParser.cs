@@ -77,15 +77,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 
 		private readonly IReader _reader;
 
-		public PriceFormalizationInfo PriceInfo
-		{
-			get { return _priceInfo; }
-		}
+		public PriceFormalizationInfo PriceInfo => _priceInfo;
 
-		public FormLog Stat
-		{
-			get { return _loggingStat; }
-		}
+		public FormLog Stat => _loggingStat;
 
 		private ProducerResolver _producerResolver;
 		private bool _saveInCore;
@@ -506,65 +500,40 @@ order by c.Id",
 			if (_loggingStat.Form.GetValueOrDefault() * 4 < _priceInfo.PrevRowCount)
 				throw new RollbackFormalizeException(Settings.Default.PrevFormRollbackError, _priceInfo, _loggingStat);
 
-			var done = false;
-			var tryCount = 0;
-			do {
-				var logMessage = new StringBuilder();
+			var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
-				var transaction = _connection.BeginTransaction(IsolationLevel.ReadCommitted);
+			try {
+				CleanupCore();
 
-				try {
-					//на случай если повтор
-					Stat.Reset();
-					CleanupCore();
+				using (Profile("Вставка синонимов товаров"))
+					InsertProductSynonyms(transaction);
 
-					using (Profile("Вставка синонимов товаров"))
-						InsertProductSynonyms();
+				using (Profile("Вставка синонимов производителей"))
+					InsertProducerSynonyms(transaction);
 
-					using (Profile("Вставка синонимов производителей"))
-						InsertProducerSynonyms(transaction);
+				using (Profile("Создание ценовых колонок"))
+					InsertNewCosts();
 
-					using (Profile("Вставка новых записей в Core"))
-						InsertNewCosts();
-
-					var builder = new StringBuilder();
-					var command = new MySqlCommand(null, _connection);
-					foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
-						command.CommandText = builder.ToString();
+				var builder = new StringBuilder();
+				var command = new MySqlCommand(null, _connection);
+				foreach (var populatedBytes in PrepareData((c, l) => builder.Append(c))) {
+					command.CommandText = builder.ToString();
 #if DEBUG
-						if (_logger.IsDebugEnabled)
-							_logger.Debug(command.CommandText);
+					if (_logger.IsDebugEnabled)
+						_logger.Debug(command.CommandText);
 #endif
-						builder.Clear();
-						using (Profile("Обновление Core и CoreCosts"))
-							command.ExecuteNonQuery();
-					}
-					Maintain(transaction, logMessage);
-
-					transaction.Commit();
-					done = true;
+					builder.Clear();
+					using (Profile("Обновление Core и CoreCosts"))
+						command.ExecuteNonQuery();
 				}
-				catch (MySqlException ex) {
-					With.SafeRollback(transaction);
+				Maintain(transaction);
 
-					if (!(tryCount <= Settings.Default.MaxRepeatTranCount && ExceptionHelper.IsDeadLockOrSimilarExceptionInChain(ex)))
-						throw;
-
-					tryCount++;
-					_logger.InfoFormat("Try transaction: tryCount = {0}  ErrorNumber = {1}  ErrorMessage = {2}", tryCount, ex.Number, ex.Message);
-					if (_priceInfo.IsUpdating)
-						_stats.ResetCountersForUpdate();
-
-					Thread.Sleep(10000 + tryCount * 1000);
-				}
-				catch (Exception) {
-					With.SafeRollback(transaction);
-					throw;
-				}
-			} while (!done);
-
-			if (tryCount > _loggingStat.MaxLockCount)
-				_loggingStat.MaxLockCount = tryCount;
+				transaction.Commit();
+			}
+			catch (Exception) {
+				With.SafeRollback(transaction);
+				throw;
+			}
 		}
 
 		private void CleanupCore()
@@ -608,17 +577,17 @@ and CoreCosts.PC_CostCode = {1};",
 				yield return populatedBytes;
 		}
 
-		private void Maintain(MySqlTransaction transaction, StringBuilder logMessage)
+		private void Maintain(MySqlTransaction transaction)
 		{
 			var cleanUpCommand = new MySqlCommand {
 				Connection = _connection,
 				CommandTimeout = 0
 			};
 			cleanUpCommand.CommandText = String.Format("delete from farm.Zero where PriceItemId={0}", priceItemId);
-			logMessage.AppendFormat("DelFromZero={0}  ", StatCommand(cleanUpCommand));
+			_logger.DebugFormat("DelFromZero={0}  ", StatCommand(cleanUpCommand));
 
 			cleanUpCommand.CommandText = String.Format("delete from farm.Forb where PriceItemId={0}", priceItemId);
-			logMessage.AppendFormat("DelFromForb={0}  ", StatCommand(cleanUpCommand));
+			_logger.DebugFormat("DelFromForb={0}  ", StatCommand(cleanUpCommand));
 
 			var daBlockedPrice = new MySqlDataAdapter(String.Format("SELECT * FROM farm.blockedprice where PriceItemId={0} limit 1", priceItemId), _connection);
 			daBlockedPrice.SelectCommand.Transaction = transaction;
@@ -627,14 +596,14 @@ and CoreCosts.PC_CostCode = {1};",
 
 			if (dtBlockedPrice.Rows.Count == 0) {
 				cleanUpCommand.CommandText = String.Format("delete from farm.UnrecExp where PriceItemId={0} and ManualDel=0", priceItemId);
-				logMessage.AppendFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
+				_logger.DebugFormat("DelFromUnrecExp={0}  ", StatCommand(cleanUpCommand));
 			}
 
-			logMessage.AppendFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), transaction));
-			logMessage.AppendFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), transaction));
-			logMessage.AppendFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(transaction));
+			_logger.DebugFormat("UpdateForb={0}  ", TryUpdate(daForb, dtForb.Copy(), transaction));
+			_logger.DebugFormat("UpdateZero={0}  ", TryUpdate(daZero, dtZero.Copy(), transaction));
+			_logger.DebugFormat("UpdateUnrecExp={0}  ", UnrecExpUpdate(transaction));
 			//Исключения обновляем после нераспознанных, т.к. все может измениться
-			logMessage.AppendFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), transaction));
+			_logger.DebugFormat("UpdateExcludes={0}  ", TryUpdate(daExcludes, dtExcludes.Copy(), transaction));
 
 			//Производим обновление PriceDate и LastFormalization в информации о формализации
 			//Если прайс-лист загружен, то обновляем поле PriceDate, если нет, то обновляем данные в intersection_update_info
@@ -658,9 +627,8 @@ where
 and a.FirmCode = p.FirmCode;",
 				_priceInfo.PriceCode);
 
-			logMessage.AppendFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(cleanUpCommand));
+			_logger.DebugFormat("UpdatePriceItemsAndIntersections={0}  ", StatCommand(cleanUpCommand));
 
-			_logger.InfoFormat("Statistica: {0}", logMessage);
 			_stats.PrintSearchStats();
 		}
 
@@ -733,23 +701,29 @@ and a.FirmCode = p.FirmCode;",
 			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
-		private void InsertProductSynonyms()
+		private void InsertProductSynonyms(MySqlTransaction finalizeTransaction)
 		{
 				var sql = @"insert into Farm.Synonym(PriceCode, Synonym, ProductId) values (?priceCode, ?synonym, ?productId);
-set @LastSynonymID = last_insert_id();
-insert into farm.UsedSynonymLogs (SynonymCode) values (@LastSynonymID);
-insert into logs.synonymlogs (LogTime, OperatorName, OperatorHost, Operation, SynonymCode, PriceCode, Synonym, ProductId, ChildPriceCode)
-	values (now(), SUBSTRING_INDEX(USER(), '@', 1), SUBSTRING_INDEX(USER(), '@', -1), 0, @LastSynonymID, ?priceCode, ?synonym, ?productId, ?childPriceCode);
-select @LastSynonymID as SynonymCode;";
+select last_insert_id();";
+			var cmd = new MySqlCommand(sql, _connection);
+			cmd.Transaction = finalizeTransaction;
 			foreach (var row in dtSynonym.AsEnumerable().Where(x => x["SynonymCode"] is DBNull)) {
-				var parameters = new { priceCode = parentSynonym, synonym = row["Synonym"],
-					productId = row["ProductId"],
-					childPriceCode = PriceInfo.Price.Id,
-				};
-				row["SynonymCode"] = Convert.ToUInt64(_connection.ExecuteScalar(sql, parameters));
+				Stat.InsertProductSynonymCount++;
+				//var parameters = new { priceCode = parentSynonym, synonym = row["Synonym"],
+				//	productId = row["ProductId"],
+				//	childPriceCode = PriceInfo.Price.Id,
+				//};
+				cmd.Parameters.Clear();
+				cmd.Parameters.AddWithValue("?priceCode", parentSynonym);
+				cmd.Parameters.AddWithValue("?synonym", row["Synonym"]);
+				cmd.Parameters.AddWithValue("?productId", row["ProductId"]);
+				//cmd.Parameters.AddWithValue("?childPriceCode", PriceInfo.Price.Id);
+				row["SynonymCode"] = Convert.ToUInt64(cmd.ExecuteScalar());
 			}
 			foreach (var core in _newCores.Where(c => c.CreatedProductSynonym != null))
 				core.SynonymCode = Convert.ToUInt32(core.CreatedProductSynonym["SynonymCode"]);
+			if (Stat.InsertProductSynonymCount > 0)
+				_logger.Info($"Создано синонимов производителей {Stat.InsertProductSynonymCount}");
 		}
 
 		private void InsertProducerSynonyms(MySqlTransaction finalizeTransaction)
@@ -758,25 +732,19 @@ select @LastSynonymID as SynonymCode;";
 				return;
 			daSynonymFirmCr.InsertCommand.Connection = _connection;
 			daSynonymFirmCr.InsertCommand.Transaction = finalizeTransaction;
-
-			var createdProducerSynonyms = dtSynonymFirmCr.Select("InternalProducerSynonymId is not null");
-
-			foreach (var drNewProducerSynonym in createdProducerSynonyms) {
-				if (!Convert.IsDBNull(drNewProducerSynonym["SynonymFirmCrCode"]))
-					//Если код синонима производителя существует, то он был создан не PriceProcessor и
-					//получен из базы при сохранении прайса
-					drNewProducerSynonym.AcceptChanges();
-				else {
-					daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
-					daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
-					daSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = drNewProducerSynonym["CodeFirmCr"];
-					daSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = drNewProducerSynonym["IsAutomatic"];
-					drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
-				}
+			foreach (var drNewProducerSynonym in dtSynonymFirmCr.Select("SynonymFirmCrCode is null")) {
+				Stat.InsertProducerSynonymCount++;
+				daSynonymFirmCr.InsertCommand.Parameters["?PriceCode"].Value = parentSynonym;
+				daSynonymFirmCr.InsertCommand.Parameters["?OriginalSynonym"].Value = drNewProducerSynonym["OriginalSynonym"];
+				daSynonymFirmCr.InsertCommand.Parameters["?CodeFirmCr"].Value = drNewProducerSynonym["CodeFirmCr"];
+				daSynonymFirmCr.InsertCommand.Parameters["?IsAutomatic"].Value = drNewProducerSynonym["IsAutomatic"];
+				drNewProducerSynonym["SynonymFirmCrCode"] = Convert.ToInt64(daSynonymFirmCr.InsertCommand.ExecuteScalar());
 			}
 
 			foreach (var core in _newCores.Where(c => c.CreatedProducerSynonym != null))
 				core.SynonymFirmCrCode = Convert.ToUInt32(core.CreatedProducerSynonym["SynonymFirmCrCode"]);
+			if (Stat.InsertProducerSynonymCount > 0)
+				_logger.Info($"Создано синонимов производителей {Stat.InsertProducerSynonymCount}");
 		}
 
 		/// <summary>
@@ -816,33 +784,29 @@ select @LastSynonymID as SynonymCode;";
 		/// </summary>
 		public void Formalize()
 		{
-			using (NDC.Push(String.Format("{0}.{1}", _priceInfo.PriceCode, _priceInfo.CostCode))) {
-				_logger.Debug("начало Formalize");
-				try {
-					_connection.Open();
+			try {
+				_connection.Open();
 
-					using (Timer("Загрузка данных"))
-						Prepare();
+				using (Timer("Загрузка данных"))
+					Prepare();
 
-					using (Timer("Формализация"))
-						InternalFormalize();
+				using (Timer("Формализация"))
+					InternalFormalize();
 
-					using (Timer("Применение изменений в базу"))
-						FinalizePrice();
-				}
-				finally {
-					_connection.Close();
-				}
-
-				new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
-				if (PriceInfo.Price.PostProcessing.Match("UniqMaxCost")) {
-					UniqMaxCost();
-				}
-
-				if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations)
-					_rejectUpdater.Save(PriceInfo.Price.IsRejectCancellations);
-				_logger.Debug("конец Formalize");
+				using (Timer("Применение изменений в базу"))
+					FinalizePrice();
 			}
+			finally {
+				_connection.Close();
+			}
+
+			new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
+			if (PriceInfo.Price.PostProcessing.Match("UniqMaxCost")) {
+				UniqMaxCost();
+			}
+
+			if (PriceInfo.Price.IsRejects || PriceInfo.Price.IsRejectCancellations)
+				_rejectUpdater.Save(PriceInfo.Price.IsRejectCancellations);
 		}
 
 		private void UniqMaxCost()
@@ -920,8 +884,8 @@ drop temporary table Farm.MaxCosts;
 					if (barcode != null) {
 						var productSynonyms = LookupProductSynonym(position);
 						if (productSynonyms != null) {
-							var productSynonym = productSynonyms.FirstOrDefault();
-							position.UpdateProductSynonym(productSynonym ?? CreateProductSynonym(barcode, position.PositionName ?? position.OriginalName));
+							position.UpdateProductSynonym(productSynonyms.FirstOrDefault()
+								?? CreateProductSynonym(barcode, position.PositionName ?? position.OriginalName));
 							//товары в синониме и штрих коде могут не совпасть, предпочитаем штрих код
 							position.ProductId = Convert.ToInt64(barcode["ProductId"]);
 							position.CatalogId = Convert.ToInt64(barcode["CatalogId"]);
@@ -931,7 +895,8 @@ drop temporary table Farm.MaxCosts;
 								//при привязке по штрих коду всегда используем синоним без производителя, что бы не создавать синонимы которые могут быть
 								//применены при сопоставлении по наименованию
 								//тк поставщики часто пишут в производителе только название страны
-								var producerSynonym = producerSynonyms.FirstOrDefault(x => x["CodeFirmCr"] is DBNull);
+								var producerSynonym = producerSynonyms.FirstOrDefault(x => Convert.ToUInt32(x["CodeFirmCr"]) == Convert.ToUInt32(barcode["ProducerId"]))
+									?? producerSynonyms.FirstOrDefault(x => x["CodeFirmCr"] is DBNull);
 								position.NotCreateUnrecExp = true;
 								position.UpdateProducerSynonym(producerSynonym
 									?? _producerResolver.CreateProducerSynonym(position, null, count: false));
@@ -1006,20 +971,20 @@ drop temporary table Farm.MaxCosts;
 		{
 			DataRow[] result = null;
 			if (!String.IsNullOrWhiteSpace(position.PositionName)) {
-				var canonical = SpaceReg.Replace(position.PositionName, "").ToLower().Replace("'", "''");
-				result = dtSynonym.Select($"Canonical = '{canonical}'");
-				if (result.Length == 0) {
+				//var canonical = SpaceReg.Replace(position.PositionName, "").ToLower().Replace("'", "''");
+				//result = dtSynonym.Select($"Canonical = '{canonical}'");
+				//if (result.Length == 0) {
 					var name = position.PositionName.ToLower().Replace("'", "''");
 					result = dtSynonym.Select($"Synonym = '{name}'");
-				}
+				//}
 			}
 			if ((result == null || result.Length == 0) && !String.IsNullOrWhiteSpace(position.OriginalName)) {
-				var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
-				result = dtSynonym.Select($"Canonical = '{originalName}'");
-				if (result.Length == 0) {
+				//var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
+				//result = dtSynonym.Select($"Canonical = '{originalName}'");
+				//if (result.Length == 0) {
 					var name = position.OriginalName.ToLower().Replace("'", "''");
 					result = dtSynonym.Select($"Synonym = '{name}'");
-				}
+				//}
 			}
 			return result;
 		}
