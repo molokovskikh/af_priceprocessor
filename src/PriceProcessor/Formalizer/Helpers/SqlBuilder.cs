@@ -11,25 +11,25 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 {
 	public class SqlBuilder
 	{
-		public static string InsertOfferSql(PriceFormalizationInfo info, NewOffer offer)
+		public static string InsertOfferSql(PriceFormalizationInfo info, NewCore core)
 		{
 			var command = new StringBuilder();
 			command.Append("insert into farm.Core0(PriceCode,")
 				.Append(Mapping.OfferMapping.Select(m => m.Name).Implode())
 				.Append(") values (")
 				.Append(info.PriceCode + ",")
-				.Append(Mapping.OfferMapping.Select(m => ToSql(m.GetValue(offer))).Implode())
+				.Append(Mapping.OfferMapping.Select(m => ToSql(m.GetValue(core))).Implode())
 				.Append(");")
 				.Append("set @LastCoreID = last_insert_id();");
 			return command.ToString();
 		}
 
-		public static string InsertCostSql(NewOffer offer, FormLog stat)
+		public static string InsertCostSql(NewCore core, FormLog stat)
 		{
-			if (offer.Costs == null)
+			if (core.Costs == null)
 				return "";
 
-			var costs = offer.Costs.Where(c => c.Value > 0).ToArray();
+			var costs = core.Costs.Where(c => c.Value > 0).ToArray();
 			if (costs.Length == 0)
 				return "";
 
@@ -45,16 +45,16 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return command.ToString();
 		}
 
-		public static string UpdateOfferSql(NewOffer offer, FormLog stat)
+		public static string UpdateOfferSql(NewCore core, FormLog stat)
 		{
-			var fields = BuildSetSql(offer, offer.ExistsOffer, Mapping.OfferMapping);
+			var fields = BuildSetSql(core, core.ExistsCore, Mapping.OfferMapping);
 			if (fields.Length == 0)
 				return "";
 			stat.UpdateCoreCount++;
-			return String.Format("update farm.Core0 set {0} where Id = {1};\r\n", fields, offer.ExistsOffer.Id);
+			return String.Format("update farm.Core0 set {0} where Id = {1};\r\n", fields, core.ExistsCore.Id);
 		}
 
-		public static string UpdateCostSql(ExistsOffer offer, Cost current, Cost old)
+		public static string UpdateCostSql(ExistsCore offer, Cost current, Cost old)
 		{
 			var fields = BuildSetSql(current, old, Mapping.CostMapping);
 			if (fields.Length == 0)
@@ -74,26 +74,26 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				.Implode();
 		}
 
-		public static string UpdateCostsCommand(NewOffer offer, FormLog stat)
+		public static string UpdateCostsCommand(NewCore core, FormLog stat)
 		{
 			var command = new StringBuilder();
-			var costs = (offer.Costs ?? new Cost[0]).Where(c => c.Value > 0).ToArray();
+			var costs = (core.Costs ?? new Cost[0]).Where(c => c.Value > 0).ToArray();
 
 			foreach (var cost in costs) {
 				Cost existsCost = null;
-				if (offer.ExistsOffer.Costs != null)
-					existsCost = offer.ExistsOffer.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
+				if (core.ExistsCore.Costs != null)
+					existsCost = core.ExistsCore.Costs.FirstOrDefault(c => c.Description.Id == cost.Description.Id);
 				if (existsCost == null) {
 					stat.InsertCostCount++;
 					command.AppendFormat("insert into farm.CoreCosts (Core_ID, PC_CostCode, ")
 						.Append(Mapping.CostMapping.Select(m => m.Name).Implode())
 						.Append(") values (")
-						.AppendFormat("{0}, {1},", offer.ExistsOffer.Id, cost.Description.Id)
+						.AppendFormat("{0}, {1},", core.ExistsCore.Id, cost.Description.Id)
 						.Append(Mapping.CostMapping.Select(m => ToSql(m.GetValue(cost))).Implode())
 						.Append(");");
 				}
 				else {
-					var cmd = UpdateCostSql(offer.ExistsOffer, cost, existsCost);
+					var cmd = UpdateCostSql(core.ExistsCore, cost, existsCost);
 					if (!String.IsNullOrEmpty(cmd)) {
 						stat.UpdateCostCount++;
 						command.Append(cmd);
@@ -101,13 +101,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 				}
 			}
 
-			if (offer.ExistsOffer.Costs != null) {
-				var costsToDelete = offer.ExistsOffer.Costs
+			if (core.ExistsCore.Costs != null) {
+				var costsToDelete = core.ExistsCore.Costs
 					.Where(c => costs.All(nc => nc.Description.Id != c.Description.Id))
 					.Select(c => c.Description.Id.ToString()).ToArray();
 				if (costsToDelete.Length > 0) {
 					stat.DeleteCostCount += costsToDelete.Length;
-					command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", offer.ExistsOffer.Id, String.Join(", ", costsToDelete));
+					command.AppendFormat("delete from farm.CoreCosts where Core_Id = {0} and PC_CostCode in ({1});", core.ExistsCore.Id, String.Join(", ", costsToDelete));
 				}
 			}
 
@@ -118,8 +118,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		{
 			if (value is uint)
 				return GetNullableValue((uint)value);
-			if (value is ulong)
-				return GetNullableValue((ulong)value);
 			if (value is bool)
 				return GetBoolValue((bool)value);
 			if (value is decimal)
@@ -151,14 +149,6 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 		}
 
 		public static string GetNullableValue(uint value)
-		{
-			if (value == 0)
-				return "null";
-
-			return value.ToString(CultureInfo.InvariantCulture);
-		}
-
-		public static string GetNullableValue(ulong value)
 		{
 			if (value == 0)
 				return "null";

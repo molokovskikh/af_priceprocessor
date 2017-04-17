@@ -88,7 +88,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Quantity, Is.EqualTo(2));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО  ОЦКК"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo(8901043000472));
+			Assert.That(line.EAN13, Is.EqualTo("8901043000472"));
 			Assert.That(line.Producer, Is.EqualTo("Аджио Фармация Индия"));
 			Assert.That(line.Product, Is.EqualTo("Аджисепт паст. с мент. эвкалипт №24"));
 			Assert.That(line.Code, Is.EqualTo("16722"));

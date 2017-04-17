@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificateAuthority, Is.EqualTo("Сергиево-Посадский ЦСМС"));
 			Assert.That(line.Product, Is.EqualTo("Бальзам СПАСАТЕЛЬ от ран и ожогов 30г"));
 			Assert.That(line.Producer, Is.EqualTo("Люми ООО"));
-			Assert.That(line.EAN13, Is.EqualTo(4607004431050));
+			Assert.That(line.EAN13, Is.EqualTo("4607004431050"));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.RegistryCost, Is.Null);
 		}

@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var line0 = document.Lines[0];
 			Assert.That(line0.Code, Is.EqualTo("190450"));
 			Assert.That(line0.Product, Is.EqualTo("E.DEPIL Восков.полоски д/лица 20ш"));
-			Assert.That(line0.EAN13, Is.EqualTo(8030009040075));
+			Assert.That(line0.EAN13, Is.EqualTo("8030009040075"));
 			Assert.That(line0.Quantity, Is.EqualTo(1));
 			Assert.That(line0.Country, Is.EqualTo("Италия"));
 			Assert.That(line0.Producer, Is.Null);

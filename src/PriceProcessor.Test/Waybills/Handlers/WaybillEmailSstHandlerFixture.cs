@@ -107,6 +107,7 @@ namespace PriceProcessor.Test.Waybills.Handlers
 					SerialNumber = "", //13 Здесь должно быть : Серия производителя
 					DateOfManufacture = SystemTime.Now(), //14_ Здесь должно быть : Дата выпуска препарата;
 					Period = "", //15_ Здесь должно быть : Дата истекания срока годности данной серии;
+					EAN13 = "", //16_ Штрих-код производителя;
 					RegistryDate = SystemTime.Now(), //17_ Здесь должно быть : Дата регистрации цены  в реестре;
 					RegistryCost = 1 //18_  Реестровая цена  в рублях;
 				});

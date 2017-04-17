@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Common.Tools;
 using ExcelLibrary.BinaryFileFormat;
 using ExcelLibrary.SpreadSheet;
 using Inforoom.PriceProcessor.Waybills.Models;
@@ -33,7 +32,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 
 				var line = document.NewLine();
 				line.Code = row.GetCell(2).StringValue;
-				line.EAN13 = NullableConvert.ToUInt64(row.GetCell(3).StringValue);
+				line.EAN13 = row.GetCell(3).StringValue;
 				line.Product = row.GetCell(4).StringValue;
 				line.Unit = row.GetCell(5).StringValue;
 				line.Quantity = Convert.ToUInt32(row.GetCell(6).Value);
@@ -49,12 +48,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 		public static bool CheckFileFormat(string file)
 		{
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
-			Workbook workbook;
-			try {
-				workbook = Workbook.Load(file);
-			} catch(Exception) {
-				return false;
-			}
+			var workbook = Workbook.Load(file);
 			var sheet = workbook.Worksheets[0];
 			return (sheet.Cells[11, 0].StringValue.ToLower().Equals("№ п/п")) &&
 				(sheet.Cells[11, 4].StringValue.ToLower().Equals("наименование")) &&

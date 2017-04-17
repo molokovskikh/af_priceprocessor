@@ -39,7 +39,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					yield return new FormalizationPosition {
 						NotCreateUnrecExp = true,
 						Status = UnrecExpStatus.NameForm,
-						Offer = new NewOffer {
+						Core = new NewCore {
 							CodeOKP = codeOkp
 						}
 					};

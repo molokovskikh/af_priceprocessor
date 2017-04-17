@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.IsNull(line.Period);
 			Assert.AreEqual(line.Producer, "Л Ореаль");
 			Assert.AreEqual(line.Country, "РОССИЯ");
-			Assert.AreEqual(line.EAN13, 4690214107426);
+			Assert.AreEqual(line.EAN13, "4690214107426");
 		}
 	}
 }

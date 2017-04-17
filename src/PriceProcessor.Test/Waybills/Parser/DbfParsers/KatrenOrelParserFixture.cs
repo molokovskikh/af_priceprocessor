@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(invoice.RecipientId, Is.EqualTo(25160254));
 
 			var line = document.Lines[0];
-			Assert.That(line.EAN13, Is.EqualTo(4607018261599));
+			Assert.That(line.EAN13, Is.EqualTo("4607018261599"));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(137.87));
 			Assert.That(line.SupplierCost, Is.EqualTo(140.69));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(127.9));
@@ -56,7 +56,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual("ВАЛЬСАКОР 0,16 N28 ТАБЛ П/О", line.Product);
 			Assert.AreEqual("КРКА, д.д., Ново место", line.Producer);
 			Assert.AreEqual("22994749", line.CodeCr);
-			Assert.AreEqual(3838989551223, line.EAN13);
+			Assert.AreEqual("3838989551223", line.EAN13);
 		}
 	}
 }

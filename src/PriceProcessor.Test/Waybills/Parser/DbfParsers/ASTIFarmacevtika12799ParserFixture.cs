@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО\"Окружной центр контроля и качества\""));
 
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
-			Assert.That(line.EAN13, Is.EqualTo(9006968003115));
+			Assert.That(line.EAN13, Is.EqualTo("9006968003115"));
 
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-3.33));
 			Assert.That(line.RegistryCost, Is.EqualTo(283.27));
@@ -125,7 +125,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО\"Окружной центр контроля и качества\""));
 
 			Assert.That(line.VitallyImportant, Is.EqualTo(true));
-			Assert.That(line.EAN13, Is.EqualTo(9006968003115));
+			Assert.That(line.EAN13, Is.EqualTo("9006968003115"));
 
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-3.33));
 			Assert.That(line.RegistryCost, Is.EqualTo(283.27));

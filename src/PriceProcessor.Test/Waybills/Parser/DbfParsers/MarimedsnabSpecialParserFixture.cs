@@ -40,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Period, Is.EqualTo("01.07.2011"));
 			Assert.That(line.OrderId, Is.EqualTo(5513373));
 			Assert.That(line.BillOfEntryNumber, Is.Null);
-			Assert.That(line.EAN13, Is.EqualTo(4605059001624));
+			Assert.That(line.EAN13, Is.EqualTo("4605059001624"));
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(0.00));
 			Assert.That(line.Country, Is.Null);
 			Assert.That(line.VitallyImportant, Is.Null);

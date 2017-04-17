@@ -239,7 +239,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		/// Код EAN-13 (штрих-код)
 		/// </summary>
 		[Property]
-		public ulong? EAN13 { get; set; }
+		public string EAN13 { get; set; }
 
 		/// <summary>
 		/// Код ОКДП

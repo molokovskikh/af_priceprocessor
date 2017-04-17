@@ -52,7 +52,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
                         line.NdsAmount = (uint?)NullableConvert.ToFloatInvariant(sstParser[28]);
                         line.BillOfEntryNumber = sstParser[11];
                         line.Certificates = sstParser[12];
-                        line.EAN13 = NullableConvert.ToUInt64(sstParser[16]);
+                        line.EAN13 = sstParser[16];
                         line.Period = sstParser[15];
                         line.ProducerCost = NullableConvert.ToDecimal(sstParser[5], CultureInfo.InvariantCulture);
 

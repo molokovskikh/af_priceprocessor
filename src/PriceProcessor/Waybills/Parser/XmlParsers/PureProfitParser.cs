@@ -19,7 +19,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				var line = document.NewLine();
 				line.Product = (string)item.XPathSelectElement("GoodsName");
 				line.Code = (string)item.XPathSelectElement("ItemId");
-				line.EAN13 = NullableConvert.ToUInt64((string)item.XPathSelectElement("EAN13"));
+				line.EAN13 = (string)item.XPathSelectElement("EAN13");
 				line.Quantity = (uint?)item.XPathSelectElement("Quantity");
 				line.SupplierCostWithoutNDS = (decimal?)item.XPathSelectElement("CostClear");
 				line.SupplierCost = (decimal?)item.XPathSelectElement("Cost");

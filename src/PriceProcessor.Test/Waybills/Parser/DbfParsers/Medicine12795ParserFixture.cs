@@ -43,7 +43,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.RegistryCost, Is.EqualTo(0.00));
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.SerialNumber, Is.EqualTo("140812"));
-			Assert.That(line.EAN13, Is.EqualTo(0));
+			Assert.That(line.EAN13, Is.EqualTo("0"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("         0"));
 		}
 	}

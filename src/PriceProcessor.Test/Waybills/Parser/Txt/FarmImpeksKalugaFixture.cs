@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.Lines[0].BillOfEntryNumber, Is.EqualTo(null));
 			Assert.That(doc.Lines[0].Certificates, Is.EqualTo("60211^РОСС RU.ФМ10.Д97796^28.02.2011^ООО \"Сибирский центр декларирования и сертификации\"^01.09.2013"));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo(null));
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(4602824000745));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("4602824000745"));
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.EqualTo(false));
 		}

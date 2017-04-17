@@ -45,7 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		[Property]
 		public string Note { get; set; }
 
-		public Offer FindCore(IEnumerable<Offer> cores)
+		public Core FindCore(IEnumerable<Core> cores)
 		{
 			if (string.IsNullOrEmpty(SupplierProducerCode))
 				return cores.FirstOrDefault(c => c.Code == SupplierCode);

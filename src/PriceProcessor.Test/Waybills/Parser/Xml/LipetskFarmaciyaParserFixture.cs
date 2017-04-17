@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Xml
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ООО ОЦКК МОСКВА"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("2015-11-19"));
 			Assert.That(line.CertificatesEndDate, Is.EqualTo(new DateTime(2017, 08, 01)));
-			Assert.That(line.EAN13, Is.EqualTo(4823000800724));
+			Assert.That(line.EAN13, Is.EqualTo("4823000800724"));
 
 
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(1155.6));

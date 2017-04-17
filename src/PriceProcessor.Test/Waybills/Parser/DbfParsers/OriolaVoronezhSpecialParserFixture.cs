@@ -37,7 +37,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(73.04));
 			Assert.That(document.Lines[0].Nds, Is.EqualTo(10));
 			Assert.That(document.Lines[0].VitallyImportant, Is.False);
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo(3582910130062));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("3582910130062"));
 			Assert.That(document.Lines[0].BillOfEntryNumber, Is.EqualTo("10130032/080411/0001507/1"));
 			Assert.That(document.Lines[0].OrderId, Is.EqualTo(1));
 		}

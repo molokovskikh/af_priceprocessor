@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(43.73));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo(3800010650175));
+			Assert.That(line.EAN13, Is.EqualTo("3800010650175"));
 			Assert.That(line.CertificateFilename, Is.EqualTo(@"Б\БРОНХОЛИТИН_4010512.TIF"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10210190/030712/0011654"));
 			Assert.That(line.OrderId, Is.EqualTo(35302648));
@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var line = document.Lines[3];
 			Assert.That(line.Code, Is.EqualTo("12879"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/090714/0011201/3"));
-			Assert.That(line.EAN13, Is.EqualTo(4013054001264));
+			Assert.That(line.EAN13, Is.EqualTo("4013054001264"));
 			Assert.That(line.CountryCode, Is.EqualTo("276"));
 			Assert.That(line.UnitCode, Is.EqualTo("778"));
 		}
@@ -100,7 +100,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var line = document.Lines[3];
 			Assert.That(line.Code, Is.EqualTo("12879"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/090714/0011201/3"));
-			Assert.That(line.EAN13, Is.EqualTo(4013054001264));
+			Assert.That(line.EAN13, Is.EqualTo("4013054001264"));
 			Assert.That(line.CountryCode, Is.EqualTo("276"));
 			Assert.That(line.UnitCode, Is.EqualTo("778"));
 		}

@@ -10,7 +10,6 @@ using System.Threading;
 using Castle.ActiveRecord;
 using Common.MySql;
 using Common.Tools;
-using Dapper;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor.Formalizer;
 using Inforoom.PriceProcessor;
@@ -33,7 +32,7 @@ namespace PriceProcessor.Test.Formalization
 		[SetUp]
 		public void Setup()
 		{
-			session.CreateSQLQuery("DELETE FROM farm.synonym; delete from farm.SynonymFirmCr").UniqueResult();
+			session.CreateSQLQuery("DELETE FROM farm.synonym").UniqueResult();
 			CreatePrice();
 			Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 			Mailer.Testing = true;
@@ -46,6 +45,49 @@ namespace PriceProcessor.Test.Formalization
 			Mailer.Messages.Clear();
 		}
 
+		[Test(Description = "Проверка того, что прайс процессор оставляет лог, если формализация прайса занимает слишком долгое время")]
+		public void CheckForLongFormalization()
+		{
+			//Суть следующая - я создал файл priceExample.zip, содержащий прайс
+			//Так как прайсы исчезают - использовать его мы не будем, а просто скопируем несколько раз
+			//Далее мы запускаем прайс процессор. В настройках время, которое считается долгим уже выставленно на 0 минут
+			//Задача состоит в том, чтобы проверить, что лог, который оставит PriceProcessor имеет правильную форму
+
+			//путь должен начинаться с трех подъемов, так как тесты и приложение ведут отсчет из разных мест
+			var outerPath = @"..\..\..\PriceProcessor.Test\Data\HandlersTests\";
+			outerPath = Path.GetFullPath(outerPath);
+			var sourceFile = "priceExample";
+			var ext = ".zip";
+
+			for (var i = 1; i < 6; i++) {
+				var newPath = outerPath + i + ext;
+				if (File.Exists(newPath))
+					File.Delete(newPath);
+				File.Copy(outerPath + sourceFile + ext, newPath);
+
+				PriceItemList.list.Add(new PriceProcessItem(true, 1, 1, 1, newPath, null) { CreateTime = new DateTime(2012, 12, 3, 9, 10, 0) });
+			}
+			//Удаляем старые логи, для чистоты теста
+			session.Query<FormLog>().ToList().Each(i => session.Delete(i));
+			session.Flush();
+
+			var handler = new FormalizeHandler();
+			handler.StartWork();
+			handler.ProcessData();
+			handler.ProcessData();
+			handler.HardStop();
+
+			//Нужен коммит текущей транзакции, иначе чистого результата мы не увидим
+			if(session.Transaction != null && session.Transaction.IsActive)
+				session.Transaction.Commit();
+			session.Clear();
+
+			var list = session.Query<FormLog>().ToList();
+			var log = list.FirstOrDefault(i => i.Addition.Contains("Прайс формализовался более 0 минут"));
+			Assert.That(log, Is.Not.Null, "Должен был создаться лог о длительной формализации");
+			Assert.That(log.ResultId, Is.EqualTo(15), "У лога длительной формализации должен быть правильный тип, иначе StatViewer не поймет как его отображать");
+		}
+
 		[Test]
 		public void Do_not_insert_empty_or_zero_costs()
 		{
@@ -53,8 +95,8 @@ namespace PriceProcessor.Test.Formalization
 			price.NewPriceCost(priceItem, "F6");
 			var producer = TestProducer.Queryable.First();
 			price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
-			session.Save(new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price));
-			session.Save(price);
+			new TestProducerSynonym("Санкт-Петербургская ф.ф.", producer, price).Save();
+			price.Update();
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;0;;73.88;");
 
@@ -67,7 +109,7 @@ namespace PriceProcessor.Test.Formalization
 		public void Do_not_create_producer_synonym_if_most_price_unknown()
 		{
 			price.AddProductSynonym("5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г");
-			session.Save(price);
+			price.Update();
 
 			Formalize(@"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г;Санкт-Петербургская ф.ф.;24;73.88;");
 
@@ -120,7 +162,7 @@ namespace PriceProcessor.Test.Formalization
 				"5 ДНЕЙ ВАННА Д/НОГ СМЯГЧАЮЩАЯ №10 ПАК. 25Г",
 				"Санкт-Петербургская ф.ф.");
 			session.Save(price);
-			TestAssortment.CheckAndCreate(session, product, producer);
+			TestAssortment.CheckAndCreate(product, producer);
 			Reopen();
 
 			Price(@"9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;220.92;
@@ -547,43 +589,6 @@ namespace PriceProcessor.Test.Formalization
 					.List()
 					.Count;
 			Assert.AreEqual(0, cnt);
-		}
-
-		[Test]
-		public void Formalize_by_barcode()
-		{
-			var barcode = new Random().Next();
-			var product = new TestProduct("9 МЕСЯЦЕВ КРЕМ ДЛЯ ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ");
-			session.Save(product);
-			var producer = new TestProducer("Валента Фармацевтика/Королев Ф");
-			session.Save(producer);
-			var synonym = price.AddProductSynonym("9 МЕСЯЦЕВ КРЕМ 150МЛ", product);
-			price.AddProducerSynonym("Валента", null);
-
-			session.Connection.Execute("insert Catalogs.BarcodeProducts (ProductId, ProducerId, EAN13) values (?productId, ?producerId, ?barcode)",
-				new { productId = product.Id, producerId = producer.Id, barcode});
-
-			priceItem.Format.FEAN13 = "F5";
-			Formalize($@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;1;220.92;{barcode}
-9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}
-9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента Фармацевтика;50;230.13;{barcode}
-9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента;10;240.13;{barcode}");
-			session.Refresh(price);
-			Assert.AreEqual(4, price.Core.Count);
-			var offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "50");
-			Assert.AreEqual(product.Id, offer?.Product?.Id);
-			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
-			Assert.IsNotNull(offer?.ProducerSynonym);
-
-			offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "10");
-			Assert.AreEqual(product.Id, offer?.Product?.Id);
-			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
-			Assert.IsNotNull(offer?.ProductSynonym);
-			Assert.IsNotNull(offer?.ProducerSynonym);
-			Assert.IsNull(offer.ProducerSynonym.Producer);
-
-			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
-			Assert.AreEqual(0, unrecExceptions.Count);
 		}
 
 		private void FillDaSynonymFirmCr2(FakeParser parser, MySqlConnection connection, bool automatic)

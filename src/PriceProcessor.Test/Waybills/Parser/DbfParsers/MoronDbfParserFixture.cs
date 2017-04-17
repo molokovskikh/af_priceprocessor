@@ -78,7 +78,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.PL46.Д65783"));
 			Assert.That(line.Code, Is.EqualTo("715808"));
 			Assert.That(line.SupplierCostWithoutNDS, Is.EqualTo(299.15));
-			Assert.That(line.EAN13, Is.EqualTo(5900516693046));
+			Assert.That(line.EAN13, Is.EqualTo("5900516693046"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("\"РОСТЕСТ-МОСКВА\" ЗАО,Москва,Нахимовский проспект,31,тел.(499) 129-26-00"));
 			Assert.That(line.CertificatesEndDate, Is.EqualTo(DateTime.Parse("26.02.2017")));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130060/130912/0022841/2"));

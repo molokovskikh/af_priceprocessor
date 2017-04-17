@@ -44,7 +44,7 @@ namespace PriceProcessor.Test.Waybills.Parser
         public void Parse2()
         {
             var document = WaybillParser.Parse(@"1360036-2.dbf");
-            Assert.That(document.Lines[0].EAN13, Is.EqualTo(4607008131321));
+            Assert.That(document.Lines[0].EAN13, Is.EqualTo("4607008131321"));
         }
     }
 }

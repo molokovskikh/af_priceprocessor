@@ -103,14 +103,14 @@ namespace PriceProcessor.Test.Loader
 			var position = positions[0];
 			Assert.That(position.PositionName, Is.EqualTo("Таблетки От Кашля Х10"));
 			Assert.That(position.FirmCr, Is.EqualTo("Татхимфармпрепараты ОАО"));
-			Assert.That(position.Offer.Costs.Length, Is.EqualTo(2));
-			var cost = position.Offer.Costs[0];
+			Assert.That(position.Core.Costs.Length, Is.EqualTo(2));
+			var cost = position.Core.Costs[0];
 			Assert.That(cost.Value, Is.EqualTo(10.50));
-			cost = position.Offer.Costs[1];
+			cost = position.Core.Costs[1];
 			Assert.That(cost.Value, Is.EqualTo(10));
-			Assert.That(position.Offer.OptimizationSkip, Is.True);
-			Assert.That(positions[1].Offer.OptimizationSkip, Is.False);
-			Assert.That(positions[1].Offer.Costs.Length, Is.EqualTo(1));
+			Assert.That(position.Core.OptimizationSkip, Is.True);
+			Assert.That(positions[1].Core.OptimizationSkip, Is.False);
+			Assert.That(positions[1].Core.Costs.Length, Is.EqualTo(1));
 		}
 
 		[Test]
@@ -174,7 +174,7 @@ namespace PriceProcessor.Test.Loader
 </Price>";
 
 			Read(xml);
-			Assert.That(positions[0].Offer.Costs.Length, Is.EqualTo(2));
+			Assert.That(positions[0].Core.Costs.Length, Is.EqualTo(2));
 		}
 
 		private static void Read(string xml)

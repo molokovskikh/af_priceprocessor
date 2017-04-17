@@ -108,7 +108,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(65.2400));
 			Assert.That(document.Lines[0].BillOfEntryNumber, Is.Null);
 			Assert.That(document.Lines[1].BillOfEntryNumber, Is.EqualTo("10130060/120911/0025285/1"));
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo(5900516300920));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("5900516300920"));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 		}
 
@@ -139,7 +139,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(document.Lines[0].Amount, Is.EqualTo(65.2400));
 			Assert.That(document.Lines[0].BillOfEntryNumber, Is.Null);
 			Assert.That(document.Lines[1].BillOfEntryNumber, Is.EqualTo("10130060/120911/0025285/1"));
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo(5900516300920));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("5900516300920"));
 			Assert.That(document.Lines[0].SupplierPriceMarkup, Is.EqualTo(0));
 		}
 	}

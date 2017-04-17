@@ -46,8 +46,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.Amount = ParseHelper.GetDecimal((string)position.XPathSelectElement("СуммаОптВклНДС"));
 				line.NdsAmount = ParseHelper.GetDecimal((string)position.XPathSelectElement("СуммаНДС"));
 				line.RetailCost = ParseHelper.GetDecimal((string)position.XPathSelectElement("ЦенаРозн"));
-				line.EAN13 = NullableConvert.ToUInt64((string)position.XPathSelectElement("ЕАН13")
-					?? (string)position.XPathSelectElement("Штрихкод"));
+				line.EAN13 = (string)position.XPathSelectElement("ЕАН13");
+				//в некоторых накладных поле штрих-кода обозначается по иному
+				if (line.EAN13 == null)
+					line.EAN13 = (string)position.XPathSelectElement("Штрихкод");
 				line.BillOfEntryNumber = (string)position.XPathSelectElement("ГТД");
 				line.Period = (string)position.XPathSelectElement("Серии/Серия/СрокГодностиТовара");
 				line.SerialNumber = (string)position.XPathSelectElement("Серии/Серия/СерияТовара");

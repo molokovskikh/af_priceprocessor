@@ -72,7 +72,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.VitallyImportant, Is.True);
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ФВ14 ЗАО \"Техкачество\""));
 			Assert.That(line.CertificatesDate, Is.EqualTo("30.08.2016"));
-			Assert.That(line.EAN13, Is.EqualTo(4605469000743));
+			Assert.That(line.EAN13, Is.EqualTo("4605469000743"));
 		}
 	}
 }

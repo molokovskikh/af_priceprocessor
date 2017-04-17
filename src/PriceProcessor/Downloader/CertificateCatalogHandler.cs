@@ -96,9 +96,9 @@ from
 where
 	ss.CertificateSourceId = :sourceId
 " + filter)
-					.AddEntity("core", typeof(Offer))
+					.AddEntity("core", typeof(Core))
 					.SetParameter("sourceId", catalogFile.Source.Id)
-					.List<Offer>());
+					.List<Core>());
 
 			_logger.InfoFormat("Количество загруженных позиций из Core: {0}", cores.Count);
 

@@ -383,7 +383,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_and_Convert_to_Dbf()
 		{
 			settings.IsConvertFormat = true;
-			settings.AssortimentPriceId = Offer.Queryable.First().Price.Id;
+			settings.AssortimentPriceId = Core.Queryable.First().Price.Id;
 			settings.SaveAndFlush();
 
 			ParseFile("14326_4.dbf");

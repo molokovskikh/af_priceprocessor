@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Xls
 			var line = document.Lines[0];
 			Assert.That(line.Product, Is.EqualTo("Джонсон Салф б/отдушки 64шт"));
 			Assert.That(line.Code, Is.EqualTo("6296704/2/1"));
-			Assert.That(line.EAN13, Is.EqualTo(3574660505832));
+			Assert.That(line.EAN13, Is.EqualTo("3574660505832"));
 			Assert.That(line.Unit, Is.EqualTo("шт."));
 			Assert.That(line.Producer, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);

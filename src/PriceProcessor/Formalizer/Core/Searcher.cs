@@ -11,27 +11,27 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		private readonly Hashtable _searchHash = new Hashtable();
 		private readonly FieldInfo[] _indexFields;
 
-		public Searcher(IEnumerable<ExistsOffer> cores)
+		public Searcher(IEnumerable<ExistsCore> cores)
 		{
 			_indexFields = GetIndexFields();
 			foreach (var core in cores) {
 				var key = GetKey(core);
 				if (_searchHash.ContainsKey(key))
-					((List<Offer>)_searchHash[key]).Add(core);
+					((List<Core>)_searchHash[key]).Add(core);
 				else
-					_searchHash.Add(key, new List<Offer> { core });
+					_searchHash.Add(key, new List<Core> { core });
 			}
 		}
 
-		public Searcher(IEnumerable<ExistsOffer> cores, FieldInfo[] fields)
+		public Searcher(IEnumerable<ExistsCore> cores, FieldInfo[] fields)
 		{
 			_indexFields = fields;
 			foreach (var core in cores) {
 				var key = GetKey(core);
 				if (_searchHash.ContainsKey(key))
-					((List<Offer>)_searchHash[key]).Add(core);
+					((List<Core>)_searchHash[key]).Add(core);
 				else
-					_searchHash.Add(key, new List<Offer> { core });
+					_searchHash.Add(key, new List<Core> { core });
 			}
 		}
 
@@ -49,30 +49,30 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				"OrderCost",
 				"MinOrderCount"
 			};
-			var type = typeof(Offer);
+			var type = typeof(Core);
 			return indexFields.Select(f => type.GetField(f)).ToArray();
 		}
 
-		public ExistsOffer Find(NewOffer offer)
+		public ExistsCore Find(NewCore core)
 		{
-			var key = GetKey(offer);
+			var key = GetKey(core);
 			if (!_searchHash.ContainsKey(key))
 				return null;
-			return ((List<Offer>)_searchHash[key]).Cast<ExistsOffer>().FirstOrDefault(c => c.NewOffer == null);
+			return ((List<Core>)_searchHash[key]).Cast<ExistsCore>().FirstOrDefault(c => c.NewCore == null);
 		}
 
-		private string GetKey(Offer offer)
+		private string GetKey(Core core)
 		{
 			var key = "";
 			foreach (var field in _indexFields) {
-				key += field.GetValue(offer) + "-";
+				key += field.GetValue(core) + "-";
 			}
 			return key;
 		}
 
-		public DataRow[] Find(Offer offer)
+		public DataRow[] Find(Core core)
 		{
-			var result = (List<DataRow>)_searchHash[GetKey(offer)];
+			var result = (List<DataRow>)_searchHash[GetKey(core)];
 			if (result == null)
 				return new DataRow[0];
 			return result.ToArray();

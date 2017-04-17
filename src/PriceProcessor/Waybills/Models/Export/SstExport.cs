@@ -91,7 +91,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					//15_ Здесь должно быть : Дата истекания срока годности данной серии;
 					line.Period,
 					//16_ Штрих-код производителя;
-					line.EAN13.ToString().Slice(25),
+					line.EAN13.Slice(25),
 					//17_ Здесь должно быть : Дата регистрации цены  в реестре;
 					line.RegistryDate,
 					//18_  Реестровая цена  в рублях;

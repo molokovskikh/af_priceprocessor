@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(10));
 			Assert.That(doc.Lines[1].BillOfEntryNumber, Is.EqualTo("10113080/250213/0003055/1"));
 			Assert.That(line.Unit, Is.EqualTo("шт."));
-			Assert.That(line.EAN13, Is.EqualTo(4602565013509));
+			Assert.That(line.EAN13, Is.EqualTo("4602565013509"));
 			Assert.That(line.Nds, Is.EqualTo(11));
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("6_77277071"));
 			Assert.That(invoice.InvoiceDate.Value.ToShortDateString(), Is.EqualTo("07.06.2013"));

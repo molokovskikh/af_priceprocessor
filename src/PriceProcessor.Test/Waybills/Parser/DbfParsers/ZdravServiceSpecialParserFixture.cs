@@ -70,7 +70,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Country, Is.EqualTo("РОС"));
 			Assert.That(line.BillOfEntryNumber, Is.Null);
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo(4600488003393));
+			Assert.That(line.EAN13, Is.EqualTo("4600488003393"));
 		}
 	}
 }

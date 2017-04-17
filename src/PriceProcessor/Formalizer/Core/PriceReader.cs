@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Common.Tools;
 using Inforoom.PriceProcessor.Models;
 using log4net;
 
@@ -206,7 +205,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		public void InsertToCore(FormalizationPosition position, Cost[] costs)
 		{
 			var quantity = GetFieldValueObject(PriceFields.Quantity);
-			var core = new NewOffer {
+			var core = new NewCore {
 				Code = GetFieldValue(PriceFields.Code),
 				CodeCr = GetFieldValue(PriceFields.CodeCr),
 				Unit = GetFieldValue(PriceFields.Unit),
@@ -225,7 +224,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				RegistryCost = GetDecimalValue(PriceFields.RegistryCost),
 				Nds = GetUintOrDefault(PriceFields.Nds),
 				CodeOKP = GetUintOrDefault(PriceFields.CodeOKP),
-				EAN13 = SafeConvert.ToUInt64(GetFieldValue(PriceFields.EAN13)),
+				EAN13 = GetFieldValue(PriceFields.EAN13),
 				Series = GetFieldValue(PriceFields.Series),
 				ProducerCost = GetDecimalValue(PriceFields.ProducerCost),
 				OptimizationSkip = (bool)GetFieldValueObject(PriceFields.OptimizationSkip)
@@ -247,7 +246,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			}
 			core.Period = periodValue;
 			core.Costs = costs;
-			position.Offer = core;
+			position.Core = core;
 		}
 
 		private uint GetUintOrDefault(PriceFields field)

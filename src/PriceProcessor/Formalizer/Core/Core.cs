@@ -103,35 +103,34 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		}
 	}
 
-	public class NewOffer : Offer
+	public class NewCore : Core
 	{
-		private ExistsOffer _existsOffer;
+		private ExistsCore _existsCore;
 		public int QuantityAsInt = -1;
-		public DataRow CreatedProductSynonym;
 		public DataRow CreatedProducerSynonym;
 
-		public ExistsOffer ExistsOffer
+		public ExistsCore ExistsCore
 		{
-			get { return _existsOffer; }
+			get { return _existsCore; }
 			set
 			{
-				_existsOffer = value;
-				if (_existsOffer != null)
-					_existsOffer.NewOffer = this;
+				_existsCore = value;
+				if (_existsCore != null)
+					_existsCore.NewCore = this;
 			}
 		}
 	}
 
-	public class ExistsOffer : Offer
+	public class ExistsCore : Core
 	{
 		public ulong Id;
 
-		public NewOffer NewOffer;
+		public NewCore NewCore;
 	}
 
 	//Не использую nullable что бы экономить память
 	//для числовых полей 0 обозначает null
-	public abstract class Offer
+	public abstract class Core
 	{
 		public uint ProductId;
 		public uint CodeFirmCr;
@@ -164,7 +163,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		/// <summary>
 		/// Код EAN-13 (штрих-код)
 		/// </summary>
-		public ulong EAN13;
+		public string EAN13;
 
 		public uint CodeOKP;
 		public string Series;

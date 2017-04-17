@@ -408,7 +408,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					docLine.VitallyImportant = false;
 			}
 
-			docLine.EAN13 = NullableConvert.ToUInt64(GetString(parts, EAN13Index));
+			docLine.EAN13 = GetString(parts, EAN13Index);
 			docLine.CountryCode = GetString(parts, CountryCodeIndex);
 			docLine.UnitCode = GetString(parts, UnitCodeIndex);
 			docLine.Amount = GetDecimal(parts, AmountIndex);

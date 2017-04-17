@@ -39,7 +39,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].BillOfEntryNumber, Is.EqualTo("10130030/270411/0001571/2"));
 			Assert.That(doc.Lines[0].CertificatesDate, Is.EqualTo("24.10.2013"));
 			Assert.That(doc.Lines[0].VitallyImportant, Is.True);
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(3700039500430));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("3700039500430"));
 
 			var invoice = doc.Invoice;
 			Assert.That(invoice, Is.Not.Null);

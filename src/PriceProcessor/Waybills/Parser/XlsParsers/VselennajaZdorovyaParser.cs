@@ -45,12 +45,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XlsParsers
 		public static bool CheckFileFormat(string file)
 		{
 			StringDecoder.DefaultEncoding = Encoding.GetEncoding(1251);
-			Workbook workbook;
-			try {
-				workbook = Workbook.Load(file);
-			} catch(Exception) {
-				return false;
-			}
+			var workbook = Workbook.Load(file);
 			var sheet = workbook.Worksheets[0];
 			return (sheet.Cells[7, 0].StringValue.ToLower().Equals("№ п/п")) &&
 				(sheet.Cells[7, 1].StringValue.ToLower().Equals("наименование продукции")) &&

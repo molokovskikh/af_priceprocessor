@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
@@ -122,7 +121,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					docLine.BillOfEntryNumber = GetString(parts[BillOfEntryNumberIndex]);
 					docLine.CertificatesDate = GetString(parts[CertificatesDateIndex]);
 					docLine.VitallyImportant = GetBool(parts[VitallyImportantIndex]);
-					docLine.EAN13 = NullableConvert.ToUInt64(GetString(parts[EAN13Index]));
+					docLine.EAN13 = GetString(parts[EAN13Index]);
 				}
 			}
 			return document;

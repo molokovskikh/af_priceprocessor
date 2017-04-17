@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.ФМ05.Д09153"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("01.02.2015"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("ОЦС г.Екатеринбург"));
-			Assert.That(line.EAN13, Is.EqualTo(8717627103237));
+			Assert.That(line.EAN13, Is.EqualTo("8717627103237"));
 			Assert.That(line.Amount, Is.EqualTo(539.44));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(2.52));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));

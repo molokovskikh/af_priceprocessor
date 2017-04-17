@@ -259,7 +259,7 @@ namespace PriceProcessor.Test.Handlers
 		public void Test_Parse_and_Convert_to_Dbf()
 		{
 			client1.Settings.IsConvertFormat = true;
-			client1.Settings.AssortmentPriceId = Offer.Queryable.First().Price.Id;
+			client1.Settings.AssortmentPriceId = Core.Queryable.First().Price.Id;
 			session.Flush();
 
 			var docRoot = Path.Combine(Settings.Default.DocumentPath, order1.Address.Id.ToString());

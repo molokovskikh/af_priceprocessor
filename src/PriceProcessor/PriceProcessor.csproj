@@ -221,7 +221,7 @@
     <Compile Include="Models\Assortment.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Client.cs" />
-    <Compile Include="Models\Offer.cs" />
+    <Compile Include="Models\Core.cs" />
     <Compile Include="Models\DefaultValues.cs" />
     <Compile Include="Models\DocType.cs" />
     <Compile Include="Models\Product.cs" />
@@ -245,7 +245,7 @@
     <Compile Include="Formalizer\FormalizeHandler.cs" />
     <Compile Include="Formalizer\ExcelReader.cs" />
     <Compile Include="Formalizer\TextReader.cs" />
-    <Compile Include="Formalizer\Core\Offer.cs" />
+    <Compile Include="Formalizer\Core\Core.cs" />
     <Compile Include="Formalizer\Core\Searcher.cs" />
     <Compile Include="Formalizer\Core\PriceFormalizationInfo.cs" />
     <Compile Include="Formalizer\PriceProcessLogger.cs" />

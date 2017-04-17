@@ -34,9 +34,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 			return value;
 		}
 
-		public void SetValue(object value, Core.Offer offer)
+		public void SetValue(object value, Core.Core core)
 		{
-			field.SetValue(offer, value);
+			field.SetValue(core, value);
 		}
 
 		public Type Type
@@ -51,7 +51,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Helpers
 
 		private static Mapping[] GetOfferMapping()
 		{
-			return typeof(Core.Offer).GetFields().Where(f => f.Name != "Costs").Select(f => new Mapping(f)).ToArray();
+			return typeof(Core.Core).GetFields().Where(f => f.Name != "Costs").Select(f => new Mapping(f)).ToArray();
 		}
 
 		private static Mapping[] GetCostMapping()

@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.CertificateAuthority, Is.EqualTo("АЯ42"));
 			Assert.That(line.Code, Is.EqualTo("56334405"));
 			Assert.That(line.Country, Is.EqualTo("Россия"));
-			Assert.That(line.EAN13, Is.EqualTo(5029053543192));
+			Assert.That(line.EAN13, Is.EqualTo("5029053543192"));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.NdsAmount, Is.EqualTo(79.26));
 			Assert.That(line.OrderId, Is.EqualTo(304747));

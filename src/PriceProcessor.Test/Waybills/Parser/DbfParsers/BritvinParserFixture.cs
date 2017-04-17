@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.IsTrue(line0.SupplierCost == 37m);
 			Assert.IsTrue(line0.Amount == 186m);
 			Assert.IsTrue(line0.Nds == 18u);
-			Assert.AreEqual(7610196003544, line0.EAN13);
+			Assert.IsTrue(line0.EAN13 == "7610196003544");
 
 			var invoice = doc.Invoice;
 			Assert.IsTrue(invoice.Amount == 1159m);

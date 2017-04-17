@@ -15,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(document.DocumentDate, Is.EqualTo(Convert.ToDateTime("20.09.2011")));
 			Assert.That(document.Lines.Count, Is.EqualTo(6));
 
-			Assert.That(document.Lines[0].EAN13, Is.EqualTo(4601669000385));
+			Assert.That(document.Lines[0].EAN13, Is.EqualTo("4601669000385"));
 			Assert.That(document.Lines[0].Code, Is.EqualTo("8153"));
 			Assert.That(document.Lines[0].Product, Is.EqualTo("Аскофен-П (тбл №10) Фармстандарт Лексредства ОАО Россия"));
 			Assert.That(document.Lines[0].Quantity, Is.EqualTo(6));

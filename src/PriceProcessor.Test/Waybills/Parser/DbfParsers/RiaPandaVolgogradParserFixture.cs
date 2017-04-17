@@ -35,7 +35,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.SupplierCostWithoutNDS.ToString(), Is.EqualTo("65,92"));
 			Assert.That(line.Nds.ToString(), Is.EqualTo("18"));
 			Assert.That(line.Producer, Is.EqualTo("ООО ВИС"));
-			Assert.That(line.EAN13, Is.EqualTo(605));
+			Assert.That(line.EAN13, Is.EqualTo("605"));
 			Assert.That(line.Certificates, Is.EqualTo("РОСС RU.АЯ61.Н12103"));
 			Assert.That(line.CertificatesDate, Is.EqualTo("16.12.2016"));
 			Assert.That(line.CertificateAuthority, Is.EqualTo("Таможенный Союз"));

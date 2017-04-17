@@ -40,7 +40,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 		{
 			var document = WaybillParser.Parse("n7013030.dbf");
 			var line = document.Lines[0];
-			Assert.That(line.EAN13, Is.EqualTo(4931140010870));
+			Assert.That(line.EAN13, Is.EqualTo("4931140010870"));
 		}
 	}
 }

@@ -85,7 +85,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models.Export
 					row.CreateCell(12).SetCellValue(line.RetailCost.ToString());
 					row.CreateCell(13).SetCellValue(line.Quantity.ToString());
 					row.CreateCell(14).SetCellValue("");
-					row.CreateCell(15).SetCellValue(line.EAN13?.ToString());
+					row.CreateCell(15).SetCellValue(line.EAN13);
 					row.CreateCell(16).SetCellValue(line.CountryCode);
 					row.CreateCell(17).SetCellValue(line.UnitCode);
 					row.CreateCell(18).SetCellValue(line.BillOfEntryNumber);

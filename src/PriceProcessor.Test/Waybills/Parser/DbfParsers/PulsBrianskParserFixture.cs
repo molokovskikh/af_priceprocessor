@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("00004858"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("10.01.2013"));
 			var line = doc.Lines[0];
-			Assert.That(line.EAN13, Is.EqualTo(4607027762292));
+			Assert.That(line.EAN13, Is.EqualTo("4607027762292"));
 			Assert.That(line.Code, Is.EqualTo("14251"));
 			Assert.That(line.Product, Is.EqualTo("Амитриптилин табл. 25 мг х50"));
 			Assert.That(line.SerialNumber, Is.EqualTo("130912"));
@@ -93,7 +93,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("00004858"));
 			Assert.That(doc.DocumentDate.Value.ToShortDateString(), Is.EqualTo("10.01.2013"));
 			var line = doc.Lines[0];
-			Assert.That(line.EAN13, Is.EqualTo(4607027762292));
+			Assert.That(line.EAN13, Is.EqualTo("4607027762292"));
 			Assert.That(line.Code, Is.EqualTo("14251"));
 			Assert.That(line.Product, Is.EqualTo("Амитриптилин табл. 25 мг х50"));
 			Assert.That(line.SerialNumber, Is.EqualTo("130912"));

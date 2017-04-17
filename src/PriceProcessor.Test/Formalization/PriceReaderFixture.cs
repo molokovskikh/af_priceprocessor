@@ -42,7 +42,7 @@ namespace PriceProcessor.Test.Formalization
 
 			var positions = Read();
 			Assert.That(positions.Count, Is.EqualTo(1));
-			var costs = positions[0].Offer.Costs;
+			var costs = positions[0].Core.Costs;
 			Assert.That(costs.Length, Is.EqualTo(1));
 			Assert.That(costs[0].Value, Is.EqualTo(50));
 		}
@@ -55,7 +55,7 @@ namespace PriceProcessor.Test.Formalization
 			table.Rows[0]["ProducerCost"] = 15;
 
 			var positions = Read();
-			Assert.That(positions[0].Offer.ProducerCost, Is.EqualTo(15));
+			Assert.That(positions[0].Core.ProducerCost, Is.EqualTo(15));
 		}
 
 		private List<FormalizationPosition> Read()

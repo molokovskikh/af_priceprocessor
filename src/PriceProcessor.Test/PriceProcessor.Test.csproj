@@ -75,9 +75,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\Castle.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="ExcelLibrary">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\ExcelLibrary.dll</HintPath>
@@ -173,6 +170,7 @@
     <Compile Include="Loader\FarmaimpeksReaderFixture.cs" />
     <Compile Include="FileHelperTest.cs" />
     <Compile Include="Handlers\FTPSourceHandlerFixture.cs" />
+    <Compile Include="Handlers\LanSourceHandlerFixture.cs" />
     <Compile Include="Models\CertificateFixture.cs" />
     <Compile Include="Models\DocumentReceiveLogFixture.cs" />
     <Compile Include="Models\MailContextFixture.cs" />
@@ -609,6 +607,7 @@
     <Content Include="Data\688-wrong-column-for-producers.txt" />
     <Content Include="Data\688.txt" />
     <None Include="Data\EmailSourceHandlerTest\Bad.eml" />
+    <None Include="Data\HandlersTests\552.zip" />
     <None Include="Data\Rosta\price" />
     <None Include="Data\Rosta\producers" />
     <None Include="Data\StressTest\517.dbf" />

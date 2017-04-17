@@ -19,7 +19,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			var document = WaybillParser.Parse(@"..\..\Data\Waybills\172460.dbf");
 
-			Assert.AreEqual(document.Lines[0].EAN13, 4013054007792);
+			Assert.AreEqual(document.Lines[0].EAN13, "4013054007792");
 			Assert.AreEqual(document.Lines[0].CodeCr, "18585155");
 		}
 
@@ -46,7 +46,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 		public void Parse2()
 		{
 			var document = WaybillParser.Parse(@"397173.dbf");
-			Assert.AreEqual(document.Lines[0].EAN13, 9006968004006);
+			Assert.AreEqual(document.Lines[0].EAN13, "9006968004006");
 		}
 
 	}

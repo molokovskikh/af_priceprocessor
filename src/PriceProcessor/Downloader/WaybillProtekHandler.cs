@@ -343,7 +343,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.VitallyImportant = bladingItem.vitalMed != null && bladingItem.vitalMed.Value == 1;
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
-				line.EAN13 = NullableConvert.ToUInt64(bladingItem.prodsbar);
+				line.EAN13 = bladingItem.prodsbar;
 				line.CountryCode = bladingItem.countryCode;
 				line.BillOfEntryNumber = bladingItem.gtdn;
 				line.UnitCode = bladingItem.cvpItemOkei.ToString();

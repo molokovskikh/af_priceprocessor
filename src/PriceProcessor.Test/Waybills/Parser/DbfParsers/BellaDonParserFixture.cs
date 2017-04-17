@@ -32,7 +32,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			var line0 = document.Lines[0];
 			Assert.That(line0.Code, Is.EqualTo("SE-091-B010-J03"));
 			Assert.That(line0.Product, Is.EqualTo("Гигиенические пеленки Seni Soft Basic 90*60 10 шт."));
-			Assert.That(line0.EAN13, Is.EqualTo(5900516692469));
+			Assert.That(line0.EAN13, Is.EqualTo("5900516692469"));
 			Assert.That(line0.Quantity, Is.EqualTo(6));
 			Assert.That(line0.Country, Is.EqualTo("РОССИЯ"));
 			Assert.That(line0.Producer, Is.EqualTo("TZMO S.A."));

@@ -61,7 +61,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.RegistryCost, Is.EqualTo(311.22));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(-8.06));
 			Assert.That(line.VitallyImportant, Is.True);
-			Assert.That(line.EAN13, Is.EqualTo(3838989596446));
+			Assert.That(line.EAN13, Is.EqualTo("3838989596446"));
 		}
 
 		[Test]
@@ -93,7 +93,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Amount, Is.EqualTo(207.66));
 			Assert.That(line.NdsAmount, Is.EqualTo(18.88));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(14.00));
-			Assert.That(line.EAN13, Is.EqualTo(5997001393871));
+			Assert.That(line.EAN13, Is.EqualTo("5997001393871"));
 		}
 
 		[Test]
@@ -120,7 +120,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.Certificates, Is.EqualTo("POCC JP.ИM04.B05579"));
 			Assert.That(line.Amount, Is.EqualTo(154.00000));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
-			Assert.That(line.EAN13, Is.EqualTo(4606339000818));
+			Assert.That(line.EAN13, Is.EqualTo("4606339000818"));
 		}
 
 		[Test]
@@ -147,7 +147,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SerialNumber, Is.EqualTo(".."));
 			Assert.That(line.Amount, Is.EqualTo(301.26));
 			Assert.That(line.SupplierPriceMarkup, Is.EqualTo(0));
-			Assert.That(line.EAN13, Is.EqualTo(0));
+			Assert.That(line.EAN13, Is.EqualTo("0"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10124030/270905/0009093/2"));
 		}
 

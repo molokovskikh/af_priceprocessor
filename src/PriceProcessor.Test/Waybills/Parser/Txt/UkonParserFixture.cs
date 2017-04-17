@@ -422,7 +422,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.SerialNumber, Is.EqualTo("182735"));
 			Assert.That(line.DateOfManufacture, Is.Null);
 			Assert.That(line.Period, Is.EqualTo("01.05.2019"));
-			Assert.That(line.EAN13, Is.EqualTo(3518646057342));
+			Assert.That(line.EAN13, Is.EqualTo("3518646057342"));
 			Assert.That(line.RegistryDate, Is.Null);
 			Assert.That(line.RegistryCost, Is.Null);
 			//Торговая наценка организации-импортера
@@ -435,7 +435,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var doc = WaybillParser.Parse("96599.sst");
 			var line = doc.Lines[0];
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo(4603933004785));
+			Assert.That(line.EAN13, Is.EqualTo("4603933004785"));
 		}
 	}
 }

@@ -65,12 +65,12 @@ namespace Inforoom.PriceProcessor.Formalizer
 
 		public override void BeginConsume()
 		{
-			_position = new FormalizationPosition { Offer = new NewOffer() };
+			_position = new FormalizationPosition { Core = new NewCore() };
 		}
 
 		public override object EndConsume()
 		{
-			_position.Offer.Costs = Costs.GroupBy(c => c.Description).Select(g => g.First()).ToArray();
+			_position.Core.Costs = Costs.GroupBy(c => c.Description).Select(g => g.First()).ToArray();
 			Costs.Clear();
 			return _position;
 		}
@@ -78,7 +78,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 		public override void Read(string tag, string value)
 		{
 			var position = _position;
-			var core = position.Offer;
+			var core = position.Core;
 			if (tag.Match("Code")) {
 				core.Code = value;
 				return;
@@ -220,7 +220,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 			}
 
 			if (tag.Match("EAN13")) {
-				core.EAN13 = SafeConvert.ToUInt64(value);
+				core.EAN13 = value;
 				return;
 			}
 
@@ -351,7 +351,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				else if (_reader.NodeType == XmlNodeType.Text) {
 					if (currentState.IsConsumable)
-						currentState.Read(valueTag, _reader.Value?.Trim());
+						currentState.Read(valueTag, _reader.Value);
 				}
 				else if (_reader.NodeType == XmlNodeType.EndElement) {
 					if (IsTag(currentState.Tag)) {
@@ -415,7 +415,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 				}
 				else if (_reader.NodeType == XmlNodeType.Text) {
 					if (_item != null)
-						ReadValue(_item, valueTag, _reader.Value?.Trim());
+						ReadValue(_item, valueTag, _reader.Value);
 				}
 				else if (_reader.NodeType == XmlNodeType.EndElement) {
 					if (_state == State.Group && IsTag("Group")) {

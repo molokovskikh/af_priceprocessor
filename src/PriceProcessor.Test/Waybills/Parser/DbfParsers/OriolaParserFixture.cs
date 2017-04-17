@@ -17,7 +17,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual(6, doc.Lines.Count);
 			var line = doc.Lines[0];
 			Assert.AreEqual("30890", line.Code);
-			Assert.AreEqual(4606556000202, line.EAN13);
+			Assert.AreEqual("4606556000202", line.EAN13);
 			Assert.AreEqual("Де-Нол таб. п/о 120мг №112", line.Product);
 			Assert.AreEqual(4, line.Quantity);
 			Assert.AreEqual(10, line.Nds);
