@@ -93,7 +93,8 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			if (string.IsNullOrWhiteSpace(position.FirmCr))
 				return null;
 			var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
-			return _producerSynonyms.Select($"Canonical = '{canonical}'");
+			var synonym = position.FirmCr.ToLower().Replace("'", "''");
+			return _producerSynonyms.Select($"Canonical = '{canonical}' or Synonym like '{synonym}'");
 		}
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)

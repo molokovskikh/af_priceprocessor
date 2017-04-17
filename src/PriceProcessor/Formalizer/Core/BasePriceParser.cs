@@ -1007,11 +1007,13 @@ drop temporary table Farm.MaxCosts;
 			DataRow[] result = null;
 			if (!String.IsNullOrWhiteSpace(position.PositionName)) {
 				var canonical = SpaceReg.Replace(position.PositionName, "").ToLower().Replace("'", "''");
-				result = dtSynonym.Select($"Canonical = '{canonical}'");
+				var name = position.PositionName.ToLower().Replace("'", "''");
+				result = dtSynonym.Select($"Canonical = '{canonical}' or Synonym = '{name}'");
 			}
 			if ((result == null || result.Length == 0) && !String.IsNullOrWhiteSpace(position.OriginalName)) {
 				var originalName = SpaceReg.Replace(position.OriginalName, "").Replace("'", "''");
-				result = dtSynonym.Select($"Canonical = '{originalName}'");
+				var name = position.OriginalName.ToLower().Replace("'", "''");
+				result = dtSynonym.Select($"Canonical = '{originalName}' or Synonym = '{name}'");
 			}
 			return result;
 		}
