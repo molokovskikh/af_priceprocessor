@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(l.Product, Is.EqualTo("5-нок 50мг Таб. П/о Х50 Б"));
 			Assert.That(l.Producer, Is.EqualTo("Лек д.д., СЛОВЕНИЯ"));
 			Assert.That(l.Period, Is.EqualTo("01.01.2018"));
-			Assert.That(l.EAN13, Is.EqualTo("3838957090976"));
+			Assert.That(l.EAN13, Is.EqualTo(3838957090976));
 			Assert.That(l.VitallyImportant, Is.EqualTo(false));
 		}
 	}

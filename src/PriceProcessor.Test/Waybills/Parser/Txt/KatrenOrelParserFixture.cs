@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(line.Certificates, Is.EqualTo("РОСС GB.ИМ04.В07962"));
 			Assert.That(line.SerialNumber, Is.EqualTo("1кв2012"));
 			Assert.That(line.Period, Is.EqualTo("01.03.2014"));
-			Assert.That(line.EAN13, Is.EqualTo("6946159500098"));
+			Assert.That(line.EAN13, Is.EqualTo(6946159500098));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.Amount, Is.EqualTo(151.36));
 		}

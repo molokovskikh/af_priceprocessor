@@ -25,7 +25,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 		public class Barcode
 		{
-			public string Value { get; set; }
+			public ulong Value { get; set; }
 			public uint ProductId { get; set; }
 			public uint ProducerId { get; set; }
 		}
@@ -112,7 +112,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 
 			// список id товаров из накладной
 			var productIds = Lines.Where(l => l.ProductEntity != null).Select(l => (uint?)l.ProductEntity.Id).ToArray();
-			var cores = session.Query<Core>()
+			var cores = session.Query<Offer>()
 				.Where(x => x.Price.Id == settings.AssortimentPriceId.Value && productIds.Contains(x.ProductId))
 				.ToList();
 			foreach (var line in Lines) {
@@ -229,7 +229,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			var targets = Lines.Where(x => x.EAN13 != null && (x.ProductEntity == null || x.ProducerId == null)).ToArray();
 			if (targets.Length == 0)
 				return;
-			var barcodes = session.Connection.Query<Barcode>("select Barcode as Value, ProductId, ProducerId from Catalogs.BarcodeProducts where Barcode in @barcodes",
+			var barcodes = session.Connection.Query<Barcode>("select EAN13 as Value, ProductId, ProducerId from Catalogs.BarcodeProducts where EAN13 in @barcodes",
 				new { barcodes = targets.Select(x => x.EAN13).ToList() })
 				.ToList();
 			foreach (var barcode in barcodes) {

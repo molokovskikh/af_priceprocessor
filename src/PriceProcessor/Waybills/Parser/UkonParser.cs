@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.TxtParsers;
 
@@ -139,7 +140,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				else if (parts[19] == "0" || parts[19] == "1")
 					docLine.VitallyImportant = (ToDecimal(parts[19]) == 1);
 				if (parts[16].Length == 13)
-					docLine.EAN13 = parts[16];
+					docLine.EAN13 = NullableConvert.ToUInt64(parts[16]);
 			}
 			return document;
 		}
@@ -190,7 +191,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 					docLine.Period = bodyDescription.GetPeriod(parts);
 					docLine.ProducerCostWithoutNDS = bodyDescription.GetProducerCost(parts);
 					docLine.VitallyImportant = bodyDescription.GetVitallyImportant(parts);
-					docLine.EAN13 = bodyDescription.GetEAN13(parts);
+					docLine.EAN13 = NullableConvert.ToUInt64(bodyDescription.GetEAN13(parts));
 					docLine.BillOfEntryNumber = bodyDescription.GetBillOfEntryNumber(parts);
 					docLine.DateOfManufacture = bodyDescription.GetDateOfManufacture(parts);
 					docLine.ExpireInMonths = bodyDescription.GetExpireInMonths(parts);

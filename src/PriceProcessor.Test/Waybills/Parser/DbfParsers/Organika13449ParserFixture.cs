@@ -34,7 +34,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.Certificates, Is.EqualTo("ФГУ ЦЭиКМП РОСДРАВНАДЗОР №РОСС RU.ФМ01.Д46222 до 01.11.13"));
 			Assert.That(line.Period, Is.EqualTo("01.11.2013"));
 			Assert.That(line.BillOfEntryNumber, Is.Null);
-			Assert.That(line.EAN13, Is.EqualTo("4602930005214"));
+			Assert.That(line.EAN13, Is.EqualTo(4602930005214));
 			Assert.That(line.VitallyImportant, Is.EqualTo(false));
 		}
 	}

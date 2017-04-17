@@ -27,10 +27,10 @@ namespace Inforoom.PriceProcessor.Models
 			ProductId = (uint?)position.ProductId;
 			Producer = position.FirmCr;
 			ProducerId = (uint?)position.CodeFirmCr;
-			Series = position.Core.Code;
-			LetterNo = position.Core.CodeCr;
-			LetterDate = SafeConvert.ToDateTime(position.Core.Note);
-			CauseRejects = position.Core.Doc;
+			Series = position.Offer.Code;
+			LetterNo = position.Offer.CodeCr;
+			LetterDate = SafeConvert.ToDateTime(position.Offer.Note);
+			CauseRejects = position.Offer.Doc;
 		}
 
 		[PrimaryKey]

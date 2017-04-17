@@ -27,7 +27,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(206.82));
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.VitallyImportant, !Is.True);
-			Assert.That(line.EAN13, Is.EqualTo("3582910130031"));
+			Assert.That(line.EAN13, Is.EqualTo(3582910130031));
 			Assert.That(line.CertificateFilename, Is.EqualTo(@"КОСМЕТИКА\АКВАЛОР_СОФТ_11N_60В_125МЛ.TIF"));
 			Assert.That(line.OrderId, Is.EqualTo(25632871));
 		}

@@ -180,7 +180,7 @@ namespace Inforoom.Formalizer
 					Directory.CreateDirectory(tempPath);
 
 					var max = 4;
-					for (var i = 1; i < max; i++) {
+					for (var i = 1; i <= max; i++) {
 						try {
 							ProcessState = PriceProcessState.CallValidate;
 							_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
@@ -197,9 +197,7 @@ namespace Inforoom.Formalizer
 						catch (MySqlException e) {
 							//Duplicate entry '%s' for key %d
 							//всего скорее это значит что одновременно формализовался прайс-лист с такими же синонимами, нужно повторить попытку
-							if (e.Number == 1062) {
-								_logger.WarnFormat(String.Format("Повторяю формализацию прайс-листа попытка {0} из {1}", i, max), e);
-							}
+							_logger.Warn($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
 						}
 						catch (Exception e) {
 							var warning =
@@ -236,7 +234,10 @@ namespace Inforoom.Formalizer
 					_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
 				}
 				catch (Exception e) {
-					_logger.Error("Ошибка при формализации прайс листа", e);
+					if (e is DbfException)
+						_logger.Warn("Ошибка при формализации прайс листа", e);
+					else
+						_logger.Error("Ошибка при формализации прайс листа", e);
 					_log.ErrodLog(_workPrice, e);
 				}
 				finally {

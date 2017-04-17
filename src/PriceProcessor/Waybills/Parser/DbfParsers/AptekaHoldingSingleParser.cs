@@ -128,7 +128,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.DbfParsers
 				if (!String.IsNullOrEmpty(passportFilenameColumn))
 					line.PassportFilename = r[passportFilenameColumn].ToString();
 				if (!string.IsNullOrEmpty(ean13Collumn))
-					line.EAN13 = r[ean13Collumn].ToString();
+					line.EAN13 = NullableConvert.ToUInt64(r[ean13Collumn].ToString());
 
 				if(data.Columns.Contains("ED_CODE"))
 					line.UnitCode = r["ED_CODE"].ToString();

@@ -15,7 +15,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.AreEqual(12, doc.Lines.Count);
 			var line = doc.Lines[0];
 			Assert.AreEqual("Б0006843", line.Code);
-			Assert.AreEqual("4015400122807", line.EAN13);
+			Assert.AreEqual(4015400122807, line.EAN13);
 			Assert.AreEqual("P&G гиг.подгузники PAMPERS  (2) Mini 18 шт Слип энд Плей", line.Product);
 			Assert.AreEqual(10, line.Quantity);
 			Assert.AreEqual(118.21, line.SupplierCostWithoutNDS);

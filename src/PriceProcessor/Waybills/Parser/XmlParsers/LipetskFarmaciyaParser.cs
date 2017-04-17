@@ -31,7 +31,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 				line.CertificateAuthority = (string) element.Attribute("СертификатОрган");
 				line.CertificatesDate = (string)element.Attribute("СертификатДатаНачала");
 				line.CertificatesEndDate = NullableConvert.ToDateTime(element.Attribute("СертификатДатаОкончания")?.Value);
-				line.EAN13 = (string)element.Attribute("Штрихкод");
+				line.EAN13 = NullableConvert.ToUInt64((string)element.Attribute("Штрихкод"));
 
 				line.SupplierCostWithoutNDS = decimal.Parse((string)element.Attribute("ЦенаЗакупкиБезНДС"));
 				line.ProducerCostWithoutNDS = decimal.Parse((string)element.Attribute("ЦенаПроизводителяБезНДС"));

@@ -68,7 +68,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.BillOfEntryNumber, Is.Null);
 			Assert.That(line.CertificatesDate, Is.EqualTo("19.08.2013"));
 			Assert.That(line.VitallyImportant, Is.False);
-			Assert.That(line.EAN13, Is.EqualTo("4607015591071"));
+			Assert.That(line.EAN13, Is.EqualTo(4607015591071));
 		}
 
 		/// <summary>
@@ -85,7 +85,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 
 			var line = document.Lines[1];
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10216110/020210/0002263/01"));
-			Assert.That(line.EAN13, Is.EqualTo("4036534462201"));
+			Assert.That(line.EAN13, Is.EqualTo(4036534462201));
 		}
 
 		[Test]

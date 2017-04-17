@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(line.CertificatesEndDate, Is.EqualTo(DateTime.Parse("01/11/2019")));
 			Assert.That(line.Code, Is.EqualTo("1.0.02588.30092"));
 			Assert.That(line.Country, Is.EqualTo("РОССИЯ"));
-			Assert.That(line.EAN13, Is.EqualTo("4602565013851"));
+			Assert.That(line.EAN13, Is.EqualTo(4602565013851));
 			Assert.That(line.Nds, Is.EqualTo(10));
 			Assert.That(line.NdsAmount, Is.EqualTo(30.2045));
 			Assert.That(line.Period, Is.EqualTo("01.11.2019"));

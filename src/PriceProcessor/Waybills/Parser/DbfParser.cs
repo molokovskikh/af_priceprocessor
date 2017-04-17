@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Common.Tools;
 using Inforoom.PriceProcessor.Waybills.Models;
 using Inforoom.PriceProcessor.Waybills.Parser.DbfParsers;
@@ -16,6 +17,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 {
 	public class DbfParser
 	{
+		private static Regex spaceReg = new Regex(@"\s");
 		private List<Action<DocumentLine, DataRow>> _lineActions = new List<Action<DocumentLine, DataRow>>();
 		private List<Action<Document, DataRow>> _headerActions = new List<Action<Document, DataRow>>();
 		private List<Action<Invoice, DataRow>> _invoiceActions = new List<Action<Invoice, DataRow>>();
@@ -156,6 +158,10 @@ namespace Inforoom.PriceProcessor.Waybills.Parser
 
 			if (type == typeof(uint) || type == typeof(uint?))
 				return ParseHelper.GetUInt(value.ToString());
+
+			if (type == typeof(ulong?)) {
+				return NullableConvert.ToUInt64(spaceReg.Replace(value.ToString(), ""));
+			}
 
 			if (type == typeof(int) || type == typeof(int?))
 				return ParseHelper.GetInt(value.ToString());

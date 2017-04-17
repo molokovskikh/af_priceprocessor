@@ -6,7 +6,7 @@ using Inforoom.PriceProcessor.Waybills;
 namespace Inforoom.PriceProcessor.Models
 {
 	[ActiveRecord("Core0", Schema = "Farm")]
-	public class Core : ActiveRecordLinqBase<Core>
+	public class Offer : ActiveRecordLinqBase<Offer>
 	{
 		[PrimaryKey]
 		public ulong Id { get; set; }

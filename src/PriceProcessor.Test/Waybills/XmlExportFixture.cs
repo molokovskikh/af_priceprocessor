@@ -87,7 +87,7 @@ namespace PriceProcessor.Test.Waybills
 				Certificates = "РОСС IN.ФМ08.Д57196",
 				CertificatesEndDate = new DateTime(2016, 02, 01),
 				Code = "607298",
-				EAN13 = "8901148232037",
+				EAN13 = 8901148232037
 			});
 			var log = new DocumentReceiveLog(doc.Log, ".xml");
 			XmlExporter.SaveInpro(doc, log, "test.xml", new List<SupplierMap> {

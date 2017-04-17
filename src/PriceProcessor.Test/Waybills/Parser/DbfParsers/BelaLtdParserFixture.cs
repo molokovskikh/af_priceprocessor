@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual(613.81, line.SupplierCost);
 			Assert.AreEqual(55.80, line.NdsAmount);
 			Assert.AreEqual(10, line.Nds);
-			Assert.AreEqual("5900516691295", line.EAN13);
+			Assert.AreEqual(5900516691295, line.EAN13);
 		}
 	}
 }

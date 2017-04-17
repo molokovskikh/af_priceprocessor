@@ -29,7 +29,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			Assert.That(doc.ProviderDocumentId, Is.EqualTo("457244-14"));
 			Assert.That(doc.DocumentDate, Is.EqualTo(Convert.ToDateTime("2015-12-29")));
 
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("4601969005493"));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(4601969005493));
 			Assert.That(doc.Lines[0].Code, Is.EqualTo("4509761"));
 			Assert.That(doc.Lines[0].Product, Is.EqualTo("АКРИДЕРМ 0,05% 30,0 МАЗЬ"));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Акрихин ХФК ОАО"));

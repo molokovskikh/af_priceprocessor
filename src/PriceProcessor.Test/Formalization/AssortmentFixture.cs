@@ -48,6 +48,7 @@ namespace PriceProcessor.Test
 			_producerSynonyms = new DataTable();
 			_producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
 			_producerSynonyms.Columns.Add("Synonym", typeof(string));
+			_producerSynonyms.Columns.Add("Canonical", typeof(string));
 			_producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
 			_producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
 			_producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
@@ -82,7 +83,7 @@ namespace PriceProcessor.Test
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 
 			var row = _forbiddenProducers.NewRow();
@@ -93,31 +94,22 @@ namespace PriceProcessor.Test
 			resolver.Assortment = _assortiment;
 			resolver.MonobrendAssortment = _monobrendAssortiment;
 			resolver.ResolveProducer(position);
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsFalse((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsFalse((bool)position.Offer.CreatedProducerSynonym["IsAutomatic"]);
 			Assert.IsTrue(position.NotCreateUnrecExp);
 		}
 
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_not_in_monobrend()
 		{
-			var producerSynonyms = new DataTable();
-			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
-			producerSynonyms.Columns.Add("Synonym", typeof(string));
-			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
-			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
-			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
-			producerSynonyms.Columns.Add("InternalProducerSynonymId");
-			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
-
-			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 			var assortiment = new DataTable();
 			assortiment.Columns.Add("Id", typeof(uint));
@@ -137,29 +129,20 @@ namespace PriceProcessor.Test
 			resolver.MonobrendAssortment = monobrendAssortiment;
 			resolver.ResolveProducer(position);
 
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
-			Assert.IsTrue((bool)position.Core.CreatedProducerSynonym["IsAutomatic"]);
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(DBNull.Value));
+			Assert.IsTrue((bool)position.Offer.CreatedProducerSynonym["IsAutomatic"]);
 		}
 		[Test]
 		public void Create_synonym_whith_producer_if_this_position_in_monobrend()
 		{
-			var producerSynonyms = new DataTable();
-			producerSynonyms.Columns.Add("OriginalSynonym", typeof(string));
-			producerSynonyms.Columns.Add("Synonym", typeof(string));
-			producerSynonyms.Columns.Add("SynonymFirmCrCode", typeof(Int64));
-			producerSynonyms.Columns.Add("IsAutomatic", typeof(bool));
-			producerSynonyms.Columns.Add("CodeFirmCr", typeof(UInt32));
-			producerSynonyms.Columns.Add("InternalProducerSynonymId");
-			producerSynonyms.Columns["InternalProducerSynonymId"].AutoIncrement = true;
-
-			var resolver = new ProducerResolver(new FormalizeStats(), null, producerSynonyms);
+			var resolver = new ProducerResolver(new FormalizeStats(), null, _producerSynonyms);
 			var position = new FormalizationPosition {
 				Pharmacie = true,
 				FirmCr = "TestFirm",
 				CatalogId = 777,
 				Status = UnrecExpStatus.NameForm,
-				Core = new NewCore()
+				Offer = new NewOffer()
 			};
 			var assortiment = new DataTable();
 			assortiment.Columns.Add("Id", typeof(uint));
@@ -185,9 +168,9 @@ namespace PriceProcessor.Test
 
 			resolver.ResolveProducer(position);
 
-			Assert.IsNotNull(position.Core.CreatedProducerSynonym);
-			Assert.That(position.Core.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
-			Assert.IsFalse(Convert.ToBoolean(position.Core.CreatedProducerSynonym["IsAutomatic"]));
+			Assert.IsNotNull(position.Offer.CreatedProducerSynonym);
+			Assert.That(position.Offer.CreatedProducerSynonym["CodeFirmCr"], Is.EqualTo(111u));
+			Assert.IsFalse(Convert.ToBoolean(position.Offer.CreatedProducerSynonym["IsAutomatic"]));
 		}
 	}
 }

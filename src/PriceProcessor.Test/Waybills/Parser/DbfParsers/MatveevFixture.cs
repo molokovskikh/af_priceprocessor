@@ -21,7 +21,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual("ИП000000046", document.ProviderDocumentId);
 			var line = document.Lines[0];
 			Assert.AreEqual("00000000072", line.Code);
-			Assert.AreEqual("4607043181190", line.EAN13);
+			Assert.AreEqual(4607043181190, line.EAN13);
 			Assert.AreEqual(22.10, line.SupplierCostWithoutNDS);
 			Assert.AreEqual(1, line.Quantity);
 			Assert.AreEqual("Вафли \"ВЕРЕСК\" Какао-шоколадные на сорбите 105 гр. /30", line.Product);
