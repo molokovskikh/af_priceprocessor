@@ -566,20 +566,27 @@ namespace PriceProcessor.Test.Formalization
 			Formalize($@"9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;1;220.92;{barcode}
 9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;Валента Фармацевтика/Королев Ф;2864;250.36;{barcode}
 9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента Фармацевтика;50;230.13;{barcode}
-9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента;10;240.13;{barcode}");
+9 МЕСЯЦЕВ КРЕМ 150МЛ;Валента;10;240.13;{barcode}
+9 МЕСЯЦЕВ КРЕМ Д/ПРОФИЛАКТИКИ И КОРРЕКЦИИ РАСТЯЖЕК 150МЛ;;13;220.92;{barcode}");
 			session.Refresh(price);
-			Assert.AreEqual(4, price.Core.Count);
+			Assert.AreEqual(5, price.Core.Count);
 			var offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "50");
-			Assert.AreEqual(product.Id, offer?.Product?.Id);
-			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
+			Assert.AreEqual(product.Id, offer.Product?.Id);
+			Assert.AreEqual(producer.Id, offer.Producer?.Id);
 			Assert.IsNotNull(offer?.ProducerSynonym);
 
 			offer = price.Core.FirstOrDefault(x => x.ProductSynonym.Id == synonym.Id && x.Quantity == "10");
-			Assert.AreEqual(product.Id, offer?.Product?.Id);
-			Assert.AreEqual(producer.Id, offer?.Producer?.Id);
-			Assert.IsNotNull(offer?.ProductSynonym);
-			Assert.IsNotNull(offer?.ProducerSynonym);
+			Assert.AreEqual(product.Id, offer.Product?.Id);
+			Assert.AreEqual(producer.Id, offer.Producer?.Id);
+			Assert.IsNotNull(offer.ProductSynonym);
+			Assert.IsNotNull(offer.ProducerSynonym);
 			Assert.IsNull(offer.ProducerSynonym.Producer);
+
+			offer = price.Core.FirstOrDefault(x => x.Quantity == "13");
+			Assert.AreEqual(product.Id, offer.Product?.Id);
+			Assert.AreEqual(producer.Id, offer.Producer?.Id);
+			Assert.IsNotNull(offer.ProductSynonym);
+			Assert.IsNull(offer.ProducerSynonym);
 
 			var unrecExceptions = session.Query<TestUnrecExp>().Where(e => e.PriceItemId == priceItem.Id).ToList();
 			Assert.AreEqual(0, unrecExceptions.Count);

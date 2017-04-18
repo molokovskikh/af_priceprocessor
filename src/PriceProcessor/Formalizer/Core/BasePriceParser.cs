@@ -903,7 +903,7 @@ drop temporary table Farm.MaxCosts;
 									?? _producerResolver.CreateProducerSynonym(position, null, count: false));
 							}
 							position.CodeFirmCr = Convert.ToUInt32(barcode["ProducerId"]);
-							position.IsSet(UnrecExpStatus.FirmForm);
+							position.AddStatus(UnrecExpStatus.FirmForm);
 						}
 					}
 				}

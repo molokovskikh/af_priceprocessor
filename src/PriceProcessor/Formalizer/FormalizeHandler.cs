@@ -289,7 +289,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 		{
 			var ready = GetReadyForStart(processList);
 			foreach (var item in ready) {
-				_logger.InfoFormat("Adding PriceProcessThread = {0}", item.FilePath);
 				FileHashItem hashItem;
 				if (_errorMessages.Contains(item.FilePath))
 					hashItem = (FileHashItem)_errorMessages[item.FilePath];
@@ -302,7 +301,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 				//поэтому устанавливаем время последней удачной формализации как текущее время
 				if (!_lastFormalizationDate.HasValue)
 					_lastFormalizationDate = DateTime.UtcNow;
-				_logger.InfoFormat("Added PriceProcessThread = {0}", item.FilePath);
 			}
 		}
 
