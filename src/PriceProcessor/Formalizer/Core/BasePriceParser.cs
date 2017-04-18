@@ -506,7 +506,7 @@ order by c.Id",
 				CleanupCore();
 
 				using (Profile("Вставка синонимов товаров"))
-					InsertProductSynonyms(transaction);
+					InsertProductSynonyms();
 
 				using (Profile("Вставка синонимов производителей"))
 					InsertProducerSynonyms(transaction);
@@ -701,27 +701,27 @@ and a.FirmCode = p.FirmCode;",
 			return String.Format("{0};{1}", applyCount, workTime);
 		}
 
-		private void InsertProductSynonyms(MySqlTransaction finalizeTransaction)
+		private void InsertProductSynonyms()
 		{
 				var sql = @"insert into Farm.Synonym(PriceCode, Synonym, ProductId) values (?priceCode, ?synonym, ?productId);
-select last_insert_id();";
-			var cmd = new MySqlCommand(sql, _connection);
-			cmd.Transaction = finalizeTransaction;
+set @LastSynonymID = last_insert_id();
+insert into farm.UsedSynonymLogs (SynonymCode) values (@LastSynonymID);
+insert into logs.synonymlogs (LogTime, OperatorName, OperatorHost, Operation, SynonymCode, PriceCode, Synonym, ProductId, ChildPriceCode)
+values (now(), SUBSTRING_INDEX(USER(), '@', 1), SUBSTRING_INDEX(USER(), '@', -1), 0, @LastSynonymID, ?priceCode, ?synonym, ?productId, ?childPriceCode);
+select @LastSynonymID as SynonymCode;";
 			foreach (var row in dtSynonym.AsEnumerable().Where(x => x["SynonymCode"] is DBNull)) {
 				Stat.InsertProductSynonymCount++;
-				//var parameters = new { priceCode = parentSynonym, synonym = row["Synonym"],
-				//	productId = row["ProductId"],
-				//	childPriceCode = PriceInfo.Price.Id,
-				//};
-				cmd.Parameters.Clear();
-				cmd.Parameters.AddWithValue("?priceCode", parentSynonym);
-				cmd.Parameters.AddWithValue("?synonym", row["Synonym"]);
-				cmd.Parameters.AddWithValue("?productId", row["ProductId"]);
-				//cmd.Parameters.AddWithValue("?childPriceCode", PriceInfo.Price.Id);
-				row["SynonymCode"] = Convert.ToUInt64(cmd.ExecuteScalar());
+				var parameters = new {
+					priceCode = parentSynonym,
+					synonym = row["Synonym"],
+					productId = row["ProductId"],
+					childPriceCode = PriceInfo.Price.Id,
+				};
+				row["SynonymCode"] = Convert.ToUInt64(_connection.ExecuteScalar(sql, parameters));
 			}
 			foreach (var core in _newCores.Where(c => c.CreatedProductSynonym != null))
 				core.SynonymCode = Convert.ToUInt32(core.CreatedProductSynonym["SynonymCode"]);
+
 			if (Stat.InsertProductSynonymCount > 0)
 				_logger.Info($"Создано синонимов производителей {Stat.InsertProductSynonymCount}");
 		}
@@ -784,20 +784,14 @@ select last_insert_id();";
 		/// </summary>
 		public void Formalize()
 		{
-			try {
+			using (_connection) {
 				_connection.Open();
-
 				using (Timer("Загрузка данных"))
 					Prepare();
-
 				using (Timer("Формализация"))
 					InternalFormalize();
-
 				using (Timer("Применение изменений в базу"))
 					FinalizePrice();
-			}
-			finally {
-				_connection.Close();
 			}
 
 			new BuyingMatrixProcessor().UpdateBuyingMatrix(PriceInfo.Price);
@@ -853,7 +847,7 @@ drop temporary table Farm.MaxCosts;
 			var watch = Stopwatch.StartNew();
 			return new DisposibleAction(() => {
 				watch.Stop();
-				_logger.InfoFormat("{0}, {1}с", message, watch.Elapsed.TotalSeconds);
+				_logger.InfoFormat("{0}, {1:0.00}с", message, watch.Elapsed.TotalSeconds);
 			});
 		}
 
