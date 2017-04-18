@@ -611,7 +611,7 @@ namespace PriceProcessor.Test.Formalization
 
 			var table = PricesValidator.LoadFormRules(priceItem.Id);
 			var row = table.Rows[0];
-			var info = new PriceFormalizationInfo(row, null);
+			var info = new PriceFormalizationInfo(row, session.Load<Price>(price.Id));
 			var parser = new FakeParser(new FakeReader(), info);
 			if (parser.Connection.State != ConnectionState.Open)
 				parser.Connection.Open();

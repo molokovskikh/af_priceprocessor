@@ -895,7 +895,8 @@ drop temporary table Farm.MaxCosts;
 								//при привязке по штрих коду всегда используем синоним без производителя, что бы не создавать синонимы которые могут быть
 								//применены при сопоставлении по наименованию
 								//тк поставщики часто пишут в производителе только название страны
-								var producerSynonym = producerSynonyms.FirstOrDefault(x => Convert.ToUInt32(x["CodeFirmCr"]) == Convert.ToUInt32(barcode["ProducerId"]))
+								var producerSynonym = producerSynonyms.FirstOrDefault(x => !(x["CodeFirmCr"] is DBNull)
+										&& Convert.ToUInt32(x["CodeFirmCr"]) == Convert.ToUInt32(barcode["ProducerId"]))
 									?? producerSynonyms.FirstOrDefault(x => x["CodeFirmCr"] is DBNull);
 								position.NotCreateUnrecExp = true;
 								position.UpdateProducerSynonym(producerSynonym
