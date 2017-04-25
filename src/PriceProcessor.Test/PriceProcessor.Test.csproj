@@ -336,6 +336,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\AvestaFarmatsevtikaParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\BizonKazanSpecialParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\BssSpbParserFixture.cs" />
+    <Compile Include="Waybills\Parser\Txt\KatrenShustovParserFixture.cs" />
     <Compile Include="Waybills\Parser\Txt\SiaInternationalParserFixture.cs" />
     <Compile Include="Waybills\Parser\Xls\BssSpbXlsParserFixture.cs" />
     <Compile Include="Waybills\Parser\DbfParsers\AlphaMedicaKazanParserFixture.cs" />

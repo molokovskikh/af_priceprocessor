@@ -232,8 +232,13 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 			var decimalVal = GetString(value);
 			if (decimalVal == null)
 				return null;
+			var alternative = decimalVal.Length != 17
+				? ""
+				: $"{decimalVal.Substring(6, 2)}.{decimalVal.Substring(4, 2)}.{decimalVal.Substring(0, 4)} {decimalVal.Substring(9, 2)}:{decimalVal.Substring(12, 2)}:{decimalVal.Substring(15, 2)}";
+
 			DateTime intVal;
-			if (!DateTime.TryParse(decimalVal, out intVal))
+
+			if (!DateTime.TryParse(decimalVal, out intVal) && !DateTime.TryParse(alternative, out intVal))
 				return null;
 			if (intVal != Convert.ToDateTime("01.01.0001 00:00:00"))
 				return intVal;
