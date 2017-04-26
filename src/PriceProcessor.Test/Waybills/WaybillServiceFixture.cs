@@ -45,7 +45,7 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
-			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true, bool priority = false)
+			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true, bool priority = false, bool priorityFull = true)
 		{
 			var addressRed =
 				session.Query<Address>()
@@ -91,7 +91,7 @@ namespace PriceProcessor.Test.Waybills
 					$"INSERT INTO customers.PromotionMembers (PromoterId,ClientId) values({newPromoterId},'{curretnClient.Id}')")
 					.ExecuteUpdate();
 				session.CreateSQLQuery(
-					$"Update usersettings.RetClientsSet SET IsStockEnabled = 1 , InvisibleOnFirm = 1 WHERE ClientCode = {curretnClient.Id} ")
+					$"Update usersettings.RetClientsSet SET IsStockEnabled = {(priorityFull ? "1" : "0")} , InvisibleOnFirm = 1 WHERE ClientCode = {curretnClient.Id} ")
 					.ExecuteUpdate();
 			}
 
@@ -178,6 +178,26 @@ namespace PriceProcessor.Test.Waybills
 			}
 		}
 
+		[Test]
+		public void Parse_waybillIssueForRedmine_IssueForRejectHalfPriority()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++)
+			{
+				var fileName = "i79563_4003505.txt";
+				var log = ParseFileForRedmine(fileName, changeValues: false, documentType: DocType.Reject, priority: true,priorityFull:false);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssueWithPriority, new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(1));
+				//для одного и того же хэша
+				if (doubleTest != string.Empty)
+				{
+					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
+				}
+				doubleTest = new MetadataOfLog(log).Hash;
+			}
+		}
 
 		[Test]
 		public void Parse_waybillIssueForRedmine_IssueForRejectPriority()
@@ -249,28 +269,7 @@ namespace PriceProcessor.Test.Waybills
 				doubleTest = new MetadataOfLog(log).Hash;
 			}
 		}
-
-		[Test]
-		public void Parse_waybillIssueForRedmine_IssueForReject()
-		{
-			Parse_waybillCleanRedmineIssueTable();
-			var doubleTest = "";
-			for (var i = 0; i < 2; i++)
-			{
-				var fileName = "1008foBroken.DBF";
-				var log = ParseFileForRedmine(fileName, changeValues: false, documentType:DocType.Reject);
-				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue, new MetadataOfLog(log).Hash);
-				//должен создаваться только один
-				Assert.That(res, Is.EqualTo(1));
-				//для одного и того же хэша
-				if (doubleTest != string.Empty)
-				{
-					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
-				}
-				doubleTest = new MetadataOfLog(log).Hash;
-			}
-		}
-
+		
 		[Test]
 		public void Parse_waybillIssueForRedmine_NoIssueNoClientFlag()
 		{

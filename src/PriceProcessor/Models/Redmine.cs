@@ -65,10 +65,10 @@ namespace Inforoom.PriceProcessor.Models
 
 		    SessionHelper.WithSession(s => { priority = s.Connection.Query<int>(@"
 SELECT Count(*)  FROM usersettings.RetClientsSet as rc
-INNER JOIN customers.PromotionMembers as pm ON pm.ClientId = rc.ClientCode
+LEFT JOIN customers.PromotionMembers as pm ON pm.ClientId = rc.ClientCode
 WHERE
 rc.ClientCode = @clientId
-AND rc.IsStockEnabled = 1
+AND (pm.ClientId IS NOT NULL OR rc.IsStockEnabled = 1 )
 AND rc.InvisibleOnFirm <> 2
 ", new {@clientId = documentLog.Address.Client.Id}).FirstOrDefault() > 0; });
 

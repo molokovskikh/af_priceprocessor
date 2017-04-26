@@ -204,8 +204,11 @@ namespace Inforoom.PriceProcessor.Waybills
 		private static void ProcessReject(ISession session, DocumentReceiveLog log, List<MetadataOfLog> metaForRedmineErrorIssueList)
 		{
 			RejectHeader reject;
-			 var parsers = session.Query<RejectDataParser>().Where(x => x.Supplier.Id == log.Supplier.Id).ToList();
+			//если есть назначенные поставщику правила разбора
+			var parsers = session.Query<RejectDataParser>().Where(x => x.Supplier.Id == log.Supplier.Id).ToList();
+			//попытка распарсить ими
 			reject = RejectDataParser.Parse(log, parsers);
+			//иначе, выбор из имеющихся парсеров
 			if (reject == null) {
 				var parser = GetRejectParser(log);
 				if (parser == null) {
@@ -215,6 +218,12 @@ namespace Inforoom.PriceProcessor.Waybills
 					return;
 				}
 				reject = parser.CreateReject(log);
+				if (reject == null) {
+					if (log.DocumentType == DocType.Reject)
+						//создаем задачу на Redmine, прикрепляя файлы
+						Redmine.CreateIssueForLog(ref metaForRedmineErrorIssueList, log);
+					return;
+				}
 			}
 			if (reject.Lines.Count > 0) {
 				try {
