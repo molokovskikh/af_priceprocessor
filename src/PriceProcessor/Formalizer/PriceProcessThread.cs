@@ -69,9 +69,9 @@ namespace Inforoom.Formalizer
 			StartDate = DateTime.UtcNow;
 			ProcessItem = item;
 			ProcessState = PriceProcessState.None;
-
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
+			_thread.Name = $"PPT{_thread.ManagedThreadId}";
 			if (runThread)
 				_thread.Start();
 		}
