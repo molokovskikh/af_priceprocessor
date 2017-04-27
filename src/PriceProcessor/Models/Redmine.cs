@@ -43,9 +43,9 @@ namespace Inforoom.PriceProcessor.Models
         }
 
         //проверка существующей задачи на Redmine
-        private static bool FileAlreadyInIssue(string hash)
+        private static bool FileAlreadyInIssue(string project, string hash)
         {
-            var result = MetadataOfLog.GetMetaFromDataBase(hash);
+            var result = MetadataOfLog.GetMetaFromDataBase(project, hash);
             if (result.HasValue) {
                 _InfoLog.Info(
                     $"По неразобранной накладной уже была создана задача {result.Value}");
@@ -60,60 +60,80 @@ namespace Inforoom.PriceProcessor.Models
 		    if (documentLog?.Address?.Client?.RedmineNotificationForUnresolved != true) {
 			    return;
 		    }
+
+		    var priority = false;
+
+		    SessionHelper.WithSession(s => { priority = s.Connection.Query<int>(@"
+SELECT Count(*)  FROM usersettings.RetClientsSet as rc
+LEFT JOIN customers.PromotionMembers as pm ON pm.ClientId = rc.ClientCode
+WHERE
+rc.ClientCode = @clientId
+AND (pm.ClientId IS NOT NULL OR rc.IsStockEnabled = 1 )
+AND rc.InvisibleOnFirm <> 2
+", new {@clientId = documentLog.Address.Client.Id}).FirstOrDefault() > 0; });
+
 		    //создаем задачу на Redmine, прикрепляя файлы
 		    if (metaList.All(s => s.Hash != new MetadataOfLog(documentLog).Hash)) {
 			    var redmineText =
 				    $"Не {(documentLog.DocumentType == DocType.Waybill ? "разобрана накладная" : "разобран отказ")}. клиент: {documentLog?.ClientCode?.ToString() ?? ""}, поставщик: {documentLog?.Supplier?.Name} ({documentLog?.Supplier?.Id})";
-			    var newMeta = Redmine.CreateIssueWithAFile(redmineText, documentLog);
+			    var newMeta = CreateIssueWithAFile(redmineText, documentLog, priority);
 			    if (newMeta != null) {
 				    metaList.Add(newMeta);
 			    }
-            }
-        }
+		    }
+	    }
 
         //Создание задачи с файлом для Redmine (в сообщении задачи метаданные логов по документа в формате json)
-        public static MetadataOfLog CreateIssueWithAFile(string subject, DocumentReceiveLog log)
-        {
-            RedmineFile fileOnRedmine = null;
+	    public static MetadataOfLog CreateIssueWithAFile(string subject, DocumentReceiveLog log, bool hasPriority)
+	    {
+		    RedmineFile fileOnRedmine = null;
+		    var fi = new FileInfo(log.GetFileName());
+		    if (!hasPriority && fi.Extension.ToLower() != ".dbf") {
+			    return null;
+		    }
 
-            var fi = new FileInfo(log.GetFileName());
-            byte[] bufferF = File.ReadAllBytes(fi.FullName);
-            var currentMeta = new MetadataOfLog(log);
+		    var redmineProject = hasPriority
+			    ? Settings.Default.RedmineProjectForWaybillIssueWithPriority
+					: Settings.Default.RedmineProjectForWaybillIssue;
+		    var redmineUser = !hasPriority || fi.Extension.ToLower() == ".dbf"
+			    ? Settings.Default.RedmineAssignedTo
+			    : Settings.Default.RedmineAssignedToWithPriority;
+
+		    var bufferF = File.ReadAllBytes(fi.FullName);
+		    var currentMeta = new MetadataOfLog(log);
 #if DEBUG
-            //для тестов
-            if (!FileAlreadyInIssue(currentMeta.Hash))
-            {
-                var debugHash = log.FileName.GetHashCode().ToString().Replace("-", "");
-                var token = debugHash;
+		    //для тестов
+		    if (!FileAlreadyInIssue(redmineProject, currentMeta.Hash)) {
+			    var debugHash = log.FileName.GetHashCode().ToString().Replace("-", "");
+			    var token = debugHash;
 #else
-            if (!FileAlreadyInIssue(currentMeta.Hash))
+            if (!FileAlreadyInIssue(redmineProject, currentMeta.Hash))
             {
                 var token =
                     UploadFileToRedmine(
                         string.Format(Settings.Default.RedmineUrlFileUpload, Settings.Default.RedmineKeyForWaybillIssue),
                         bufferF);
-
 #endif
-                if (token != string.Empty) {
-                    fileOnRedmine = new RedmineFile() {
-                        Token = token,
-                        Content_type = "application/binary",
-                        Filename = fi.Name,
-	                    Json =
-		                    $"Служебная информация по {(log.DocumentType == DocType.Waybill ? "накладной" : "отказу")}: {currentMeta.Hash}"
-                    };
-                    //возвращаем метаданные только, если задача создана
-                    return
-                        CreateIssue(
-                            string.Format(Settings.Default.RedmineUrl, Settings.Default.RedmineProjectForWaybillIssue,
-                                Settings.Default.RedmineKeyForWaybillIssue), subject, fileOnRedmine.Json,
-                            Settings.Default.RedmineAssignedTo, new List<RedmineFile>() {fileOnRedmine})
-                            ? currentMeta
-                            : null;
-                }
-            }
-            return null;
-        }
+			    if (token != string.Empty) {
+				    fileOnRedmine = new RedmineFile {
+					    Token = token,
+					    Content_type = "application/binary",
+					    Filename = fi.Name,
+					    Json =
+						    $"Служебная информация по {(log.DocumentType == DocType.Waybill ? "накладной" : "отказу")}: {currentMeta.Hash}"
+				    };
+				    //возвращаем метаданные только, если задача создана
+				    return
+					    CreateIssue(
+						    string.Format(Settings.Default.RedmineUrl, redmineProject,
+							    Settings.Default.RedmineKeyForWaybillIssue), subject, fileOnRedmine.Json, redmineUser
+						    , new List<RedmineFile> {fileOnRedmine})
+						    ? currentMeta
+						    : null;
+			    }
+		    }
+		    return null;
+	    }
 
         /// <summary>
         /// Загрузка файла на Redmine
@@ -153,16 +173,18 @@ namespace Inforoom.PriceProcessor.Models
             List<RedmineFile> files = null)
         {
 #if DEBUG
-            //для тестов
-            using (var sqlConnection = new MySqlConnection(ConnectionHelper.GetConnectionString()))
-            {
-                var project = Settings.Default.RedmineProjectForWaybillIssue;
-                sqlConnection.Open();
-                sqlConnection.Query($"INSERT INTO  redmine.issues (description, project_id) VALUES(@ddata, '{project}')",
-                    new { ddata = body });
-                sqlConnection.Close();
-            }
-            return true;
+	        //для тестов
+	        using (var sqlConnection = new MySqlConnection(ConnectionHelper.GetConnectionString())) {
+		        var project = url.Split('/').Any(s => s.ToLower()
+			        .IndexOf(Settings.Default.RedmineProjectForWaybillIssue.ToLower(), StringComparison.Ordinal) != -1)
+			        ? Settings.Default.RedmineProjectForWaybillIssue
+			        : Settings.Default.RedmineProjectForWaybillIssueWithPriority;
+		        sqlConnection.Open();
+		        sqlConnection.Query($"INSERT INTO  redmine.issues (description, project_id) VALUES(@ddata, '{project}')",
+			        new {ddata = body});
+		        sqlConnection.Close();
+	        }
+	        return true;
 #endif
 
             if (String.IsNullOrEmpty(url))
@@ -249,11 +271,10 @@ namespace Inforoom.PriceProcessor.Models
         public string Hash { get; set; }
 
 
-        public static int? GetMetaFromDataBase(string hash)
+        public static int? GetMetaFromDataBase(string project, string hash)
         {
             using (var sqlConnection =
                 new MySqlConnection(ConnectionHelper.GetConnectionString())) {
-                var project = Settings.Default.RedmineProjectForWaybillIssue;
                 sqlConnection.Open();
                 var result =
                     sqlConnection.Query<int?>(
@@ -266,11 +287,10 @@ namespace Inforoom.PriceProcessor.Models
             return null;
         }
 
-        public static int GetMetaFromDataBaseCount(string hash)
+        public static int GetMetaFromDataBaseCount(string project, string hash)
         {
             using (var sqlConnection =
                 new MySqlConnection(ConnectionHelper.GetConnectionString())) {
-                var project = Settings.Default.RedmineProjectForWaybillIssue;
                 sqlConnection.Open();
                 var result =
                     sqlConnection.Query<int>(

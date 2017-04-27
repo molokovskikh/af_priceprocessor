@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.TestHelpers
 
 		protected void CreatePrice()
 		{
-			supplier = TestSupplier.CreateNaked();
+			supplier = TestSupplier.CreateNaked(session);
 			price = supplier.Prices[0];
 			priceItem = price.Costs.First().PriceItem;
 			Configure(price);

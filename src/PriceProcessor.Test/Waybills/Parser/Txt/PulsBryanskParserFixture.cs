@@ -33,7 +33,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
             Assert.That(line.Period, Is.EqualTo("01.10.2017"));
             Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130032/050515/0003256/1"));
             Assert.That(line.Certificates, Is.EqualTo("031519^01.10.2017^РОСС US.ФM08.Д61049, РОСС US.ФM08.Д53926^22.04.2015^01.10.2017^^^ООО \"Окружной центр контроля качества\" г. Москва"));
-            Assert.That(line.EAN13, Is.EqualTo("4250369500871"));
+            Assert.That(line.EAN13, Is.EqualTo(4250369500871));
             Assert.That(line.VitallyImportant, Is.EqualTo(false));
             Assert.That(line.ProducerCost, Is.EqualTo(125.9m));
         }

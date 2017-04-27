@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using Common.MySql;
 using log4net;
 using MySql.Data.MySqlClient;
 
@@ -41,6 +42,9 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 		{
 			if (!position.IsSet(UnrecExpStatus.NameForm))
 				return;
+			//если уже формализован по штрих коду
+			if (position.IsSet(UnrecExpStatus.FirmForm))
+				return;
 
 			if (String.IsNullOrEmpty(position.FirmCr)) {
 				position.AddStatus(UnrecExpStatus.FirmForm);
@@ -48,80 +52,60 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			}
 			position.NotCreateUnrecExp = CheckForbiddenProducerName(position);
 			var synonym = Resolve(position);
-			if (synonym == null)
-				synonym = CreateProducerSynonym(position);
+			if (synonym == null || synonym["CodeFirmCr"] is DBNull) {
+				var producerId = GetAssortimentOne(position)?["ProducerId"];
+				if (synonym == null || producerId != null)
+					synonym = CreateProducerSynonym(position, producerId);
+			}
 
-			if (!Convert.IsDBNull(synonym["CodeFirmCr"]))
-				position.CodeFirmCr = Convert.ToInt64(synonym["CodeFirmCr"]);
-			position.IsAutomaticProducerSynonym = Convert.ToBoolean(synonym["IsAutomatic"]);
-			if (Convert.IsDBNull(synonym["InternalProducerSynonymId"])) {
+			position.UpdateProducerSynonym(synonym);
+			if (position.SynonymFirmCrCode != null) {
 				_stats.ProducerSynonymUsedExistCount++;
-				position.SynonymFirmCrCode = Convert.ToInt64(synonym["SynonymFirmCrCode"]);
 			}
-			else {
-				position.InternalProducerSynonymId = Convert.ToInt64(synonym["InternalProducerSynonymId"]);
-				if (position.Core != null)
-					position.Core.CreatedProducerSynonym = synonym;
-			}
-
-			if (!position.IsAutomaticProducerSynonym && !position.NotCreateUnrecExp)
-				position.AddStatus(UnrecExpStatus.FirmForm);
 
 			if (position.CodeFirmCr == null && !position.NotCreateUnrecExp)
 				CheckExclude(position);
 		}
 
-		public void Update(MySqlConnection connection)
-		{
-			var da = new MySqlDataAdapter("SELECT Id, CatalogId, ProducerId, Checked FROM catalogs.Assortment ", connection);
-			var excludesBuilder = new MySqlCommandBuilder(da);
-			da.InsertCommand = excludesBuilder.GetInsertCommand();
-			da.InsertCommand.CommandTimeout = 0;
-			da.Update(Assortment);
-		}
-
 		public DataRow Resolve(FormalizationPosition position)
 		{
-			if (position.Pharmacie.Value)
-				return ResolveWithAssortmentRespect(position);
-			else
-				return ResolveIgnoreAssortment(position);
-		}
+			var synonyms = LookupProducerSynonym(position);
+			if (position.Pharmacie) {
+				var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
+				foreach (var productSynonym in synonyms) {
+					if (productSynonym["CodeFirmCr"] is DBNull)
+						continue;
 
-		private DataRow ResolveIgnoreAssortment(FormalizationPosition position)
-		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			//предпочитаем синонимы с производителем
-			var synonym = synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull));
-			if (synonym != null)
-				return synonym;
-
-			return synonyms.FirstOrDefault();
-		}
-
-		private DataRow ResolveWithAssortmentRespect(FormalizationPosition position)
-		{
-			var synonyms = _producerSynonyms.Select(String.Format("Synonym = '{0}'", position.FirmCr.ToLower().Replace("'", "''")));
-			var assortment = Assortment.Select(String.Format("CatalogId = {0} and Checked = 1", position.CatalogId));
-			foreach (var productSynonym in synonyms) {
-				if (productSynonym["CodeFirmCr"] is DBNull)
-					continue;
-
-				using (_stats.AssortmentSearch()) {
-					if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
-						return productSynonym;
+					using (_stats.AssortmentSearch()) {
+						if (assortment.Any(a => Convert.ToUInt32(a["ProducerId"]) == Convert.ToUInt32(productSynonym["CodeFirmCr"])))
+							return productSynonym;
+					}
 				}
+				return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
+			} else {
+				//предпочитаем синонимы с производителем
+				return synonyms.FirstOrDefault(s => !(s["CodeFirmCr"] is DBNull)) ?? synonyms.FirstOrDefault();
 			}
-			return synonyms.FirstOrDefault(s => s["CodeFirmCr"] is DBNull);
+		}
+
+		public DataRow[] LookupProducerSynonym(FormalizationPosition position)
+		{
+			if (string.IsNullOrWhiteSpace(position.FirmCr))
+				return null;
+			//var canonical = BasePriceParser.SpaceReg.Replace(position.FirmCr, "").ToLower().Replace("'", "''");
+			//var result = _producerSynonyms.Select($"Canonical = '{canonical}'");
+			//if (result.Length == 0) {
+				var synonym = position.FirmCr.ToLower().Replace("'", "''");
+					var result = _producerSynonyms.Select($"Synonym = '{synonym}'");
+			//}
+			return result;
 		}
 
 		private DataRow GetAssortimentOne(FormalizationPosition position)
 		{
-			var assortmentIds = MonobrendAssortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
+			var assortmentIds = MonobrendAssortment.Select($"CatalogId = {position.CatalogId}");
 			if (assortmentIds.Length != 0) {
-				var assortiments = Assortment.Select(String.Format("CatalogId = {0}", position.CatalogId));
-				if (assortiments.Length == 1)
-					return assortiments[0];
+				return Assortment.Select($"CatalogId = {position.CatalogId}").FirstOrDefault();
 			}
 			return null;
 		}
@@ -145,15 +129,13 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				position.Status &= ~UnrecExpStatus.FirmForm;
 		}
 
-		private DataRow CreateProducerSynonym(FormalizationPosition position)
+		public DataRow CreateProducerSynonym(FormalizationPosition position, object producerId, bool count = true)
 		{
 			var synonym = _producerSynonyms.NewRow();
-			var assortiment = GetAssortimentOne(position);
-			if (assortiment != null) {
-				synonym["CodeFirmCr"] = assortiment["ProducerId"];
+			if (producerId != null && !(producerId is DBNull)) {
+				synonym["CodeFirmCr"] = producerId;
 				synonym["IsAutomatic"] = 0;
-			}
-			else {
+			} else {
 				synonym["CodeFirmCr"] = DBNull.Value;
 				if(position.NotCreateUnrecExp) {
 					synonym["IsAutomatic"] = 0;
@@ -163,10 +145,12 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 				}
 			}
 			synonym["SynonymFirmCrCode"] = DBNull.Value;
-			synonym["Synonym"] = position.FirmCr;
-			synonym["OriginalSynonym"] = position.FirmCr;
+			synonym["Synonym"] = position.FirmCr.Trim();
+			synonym["OriginalSynonym"] = position.FirmCr.Trim();
+			synonym["Canonical"] = BasePriceParser.SpaceReg.Replace(position.FirmCr, "");
 			_producerSynonyms.Rows.Add(synonym);
-			_stats.ProducerSynonymCreatedCount++;
+			if (synonym["CodeFirmCr"] is DBNull && count)
+				_stats.ProducerSynonymCreatedCount++;
 			return synonym;
 		}
 

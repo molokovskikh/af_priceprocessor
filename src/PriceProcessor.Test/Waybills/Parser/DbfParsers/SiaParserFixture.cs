@@ -424,7 +424,7 @@ namespace PriceProcessor.Test.Waybills.Parser
 			var line = document.Lines[2];
 			Assert.That(line.Code, Is.EqualTo("155955"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10130130/070711/0013819/1"));
-			Assert.That(line.EAN13, Is.EqualTo("4013054003923"));
+			Assert.That(line.EAN13, Is.EqualTo(4013054003923));
 		}
 
 		/// <summary>

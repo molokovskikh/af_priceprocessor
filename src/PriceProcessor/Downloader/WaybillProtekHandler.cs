@@ -46,16 +46,16 @@ namespace Inforoom.PriceProcessor.Downloader
 				79888, 1024847, 3287),
 
 			//воронеж
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
-				123108, 1064974, 5),
+			//new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
+			//	123108, 1064974, 5),
 
 			//Курск/Белгород
 			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
 				118855, 1053374, 220),
 
 			//тамбов
-			new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
-				261544, 1072996, 2399),
+			//new ProtekServiceConfig("http://wjzakaz.protek.ru:20080/axis2/services/EzakazWebService/",
+			//	261544, 1072996, 2399),
 
 			//Москва
 			new ProtekServiceConfig("http://wezakaz.protek.ru:20080/axis2/services/EzakazWebService/",
@@ -343,7 +343,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				line.VitallyImportant = bladingItem.vitalMed != null && bladingItem.vitalMed.Value == 1;
 				line.Amount = (decimal?)bladingItem.positionsum;
 				line.SerialNumber = bladingItem.prodseria;
-				line.EAN13 = bladingItem.prodsbar;
+				line.EAN13 = NullableConvert.ToUInt64(bladingItem.prodsbar);
 				line.CountryCode = bladingItem.countryCode;
 				line.BillOfEntryNumber = bladingItem.gtdn;
 				line.UnitCode = bladingItem.cvpItemOkei.ToString();

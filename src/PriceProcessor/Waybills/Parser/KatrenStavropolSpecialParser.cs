@@ -6,6 +6,7 @@ using System.Xml.XPath;
 using Inforoom.PriceProcessor.Waybills.Models;
 using System.IO;
 using System.Text;
+using Common.Tools;
 
 namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 {
@@ -37,7 +38,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.XmlParsers
 			foreach (var element in xdocument.XPathSelectElements("DOCUMENTS/DOCUMENT/DETAIL")) {
 				var line = document.NewLine();
 
-				line.EAN13 = element.Attribute("ean13_code").Value;
+				line.EAN13 = NullableConvert.ToUInt64(element.Attribute("ean13_code").Value);
 				line.Code = element.Attribute("tov_code").Value;
 				line.Product = element.Attribute("tov_name").Value;
 				line.Producer = element.Attribute("maker_name").Value;

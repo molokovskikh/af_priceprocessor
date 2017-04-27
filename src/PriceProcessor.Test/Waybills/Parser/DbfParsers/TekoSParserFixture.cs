@@ -47,7 +47,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line0.Amount, Is.EqualTo(577.20));
 			Assert.That(line0.Unit, Is.EqualTo("уп"));
 			Assert.That(line0.BillOfEntryNumber, Is.Null);
-			Assert.That(line0.EAN13, Is.EqualTo("4680006520908"));
+			Assert.That(line0.EAN13, Is.EqualTo(4680006520908));
 			var invoice = document.Invoice;
 			Assert.That(invoice.InvoiceNumber, Is.EqualTo("55865"));
 			Assert.That(invoice.InvoiceDate, Is.EqualTo(new DateTime(2015, 07, 07)));

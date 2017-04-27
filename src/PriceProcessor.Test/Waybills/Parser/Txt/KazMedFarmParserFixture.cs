@@ -30,7 +30,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.06.2013"));
 			Assert.That(doc.Lines[0].BillOfEntryNumber, Is.Null);
 			Assert.That(doc.Lines[2].BillOfEntryNumber, Is.EqualTo("10130032/100211/0000358"));
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("04607004431395"));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(04607004431395));
 			Assert.That(doc.Lines[0].Producer, Is.EqualTo("Люми ООО"));
 			Assert.That(doc.Lines[0].Country, Is.EqualTo("Россия"));
 		}

@@ -24,7 +24,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.AreEqual("РОСС JP.МЕ20.Д00600", line.Certificates);
 			Assert.AreEqual(43861657, line.OrderId);
 			Assert.AreEqual("10115040/100413/0001437", line.BillOfEntryNumber);
-			Assert.AreEqual("4015672105652", line.EAN13);
+			Assert.AreEqual(4015672105652, line.EAN13);
 			Assert.AreEqual(1834.25, line.ProducerCostWithoutNDS);
 			Assert.AreEqual(1834.25, line.Amount);
 			Assert.AreEqual(1834.25, line.SupplierCostWithoutNDS);

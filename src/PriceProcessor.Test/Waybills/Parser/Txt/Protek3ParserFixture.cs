@@ -49,7 +49,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].SerialNumber, Is.EqualTo("0516"));
 			Assert.That(doc.Lines[0].DateOfManufacture, Is.EqualTo(Convert.ToDateTime("01.05.2016")));
 			Assert.That(doc.Lines[0].Period, Is.EqualTo("01.05.2018"));
-			Assert.That(doc.Lines[0].EAN13, Is.EqualTo("4607010242558"));
+			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(4607010242558));
 			Assert.That(doc.Lines[0].RegistryDate, Is.Null);
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0.00m));
 			//Торговая наценка организации-импортера
@@ -79,7 +79,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[7].SerialNumber, Is.EqualTo("WW7N"));
 			Assert.That(doc.Lines[7].DateOfManufacture, Is.EqualTo(Convert.ToDateTime("01.03.2016")));
 			Assert.That(doc.Lines[7].Period, Is.EqualTo("01.03.2018"));
-			Assert.That(doc.Lines[7].EAN13, Is.EqualTo("4607008131857"));
+			Assert.That(doc.Lines[7].EAN13, Is.EqualTo(4607008131857));
 			Assert.That(doc.Lines[7].RegistryDate, Is.Null);
 			Assert.That(doc.Lines[7].RegistryCost, Is.EqualTo(107.41m));
 			//Торговая наценка организации-импортера

@@ -71,7 +71,7 @@ namespace Inforoom.PriceProcessor.Formalizer
 					yield return new FormalizationPosition {
 						PositionName = _reader.GetAttribute("Наименование"),
 						FirmCr = _reader.GetAttribute("Производитель"),
-						Core = new NewCore {
+						Offer = new NewOffer {
 							Code = _reader.GetAttribute("КодТовара"),
 							CodeCr = _reader.GetAttribute("КодПроизводителя"),
 							MaxBoundCost = GetNullable<decimal>("МаксЦена"),

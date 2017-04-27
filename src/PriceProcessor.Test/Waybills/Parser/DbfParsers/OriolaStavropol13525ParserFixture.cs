@@ -38,7 +38,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.VitallyImportant, Is.False);
 			Assert.That(line.RegistryCost, Is.EqualTo(0));
 			Assert.That(line.Country, Is.EqualTo("Германия"));
-			Assert.That(line.EAN13, Is.EqualTo("3582910037767"));
+			Assert.That(line.EAN13, Is.EqualTo(3582910037767));
 		}
 	}
 }

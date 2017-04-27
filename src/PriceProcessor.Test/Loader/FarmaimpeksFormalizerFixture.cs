@@ -31,7 +31,6 @@ namespace PriceProcessor.Test.Loader
 				priceItem = cost.PriceItem;
 				priceItem.Format.PriceFormat = PriceFormatType.FarmaimpeksXml;
 				price.SaveAndFlush();
-				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 
 				price.CreateAssortmentBoundSynonyms("Аспирин-С №10 таб.шип.", "Bayer AG, Франция");
@@ -45,7 +44,6 @@ namespace PriceProcessor.Test.Loader
 				cost.Name = "2";
 				price.SaveAndFlush();
 				supplier.Maintain();
-				Settings.Default.SyncPriceCodes.Add(price.Id.ToString());
 				prices.Add(price);
 			}
 		}

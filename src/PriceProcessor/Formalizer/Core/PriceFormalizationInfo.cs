@@ -30,11 +30,7 @@ namespace Inforoom.PriceProcessor.Formalizer.Core
 			PriceCode = Convert.ToUInt32(row[FormRules.colPriceCode]);
 			FormByCode = Convert.ToBoolean(row[FormRules.colFormByCode]);
 			CostType = (CostTypes)Convert.ToInt32(row[FormRules.colCostType]);
-			IsUpdating = Settings.Default.SyncPriceCodes
-				.Cast<string>()
-				.Select(c => Convert.ToUInt32(c))
-				.Any(id => id == PriceCode)
-				|| price.IsUpdate;
+			IsUpdating = price.IsUpdate;
 			IsAssortmentPrice = Convert.ToInt32(row[FormRules.colPriceType]) == Settings.Default.ASSORT_FLG;
 			PriceItemId = Convert.ToInt64(row[FormRules.colPriceItemId]);
 			ParentSynonym = Convert.ToInt64(row[FormRules.colParentSynonym]);

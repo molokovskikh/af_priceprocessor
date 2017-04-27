@@ -31,7 +31,7 @@ namespace PriceProcessor.Test.Waybills.Parser.DbfParsers
 			Assert.That(line.ProducerCostWithoutNDS, Is.EqualTo(46.25));
 			Assert.That(line.Country, Is.EqualTo("Нидерланды"));
 			Assert.That(line.BillOfEntryNumber, Is.EqualTo("10404054/150612/0005121/1"));
-			Assert.That(line.EAN13, Is.EqualTo("4601372002973"));
+			Assert.That(line.EAN13, Is.EqualTo(4601372002973));
 
 			Assert.That(doc.Invoice.ShipperInfo, Is.EqualTo("РОСТА"));
 		}
