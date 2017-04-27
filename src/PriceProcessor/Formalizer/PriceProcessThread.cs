@@ -178,7 +178,7 @@ namespace Inforoom.Formalizer
 
 					Directory.CreateDirectory(tempPath);
 
-					var max = 4;
+					var max = 8;
 					for (var i = 1; i <= max; i++) {
 						try {
 							ProcessState = PriceProcessState.CallValidate;
