@@ -100,5 +100,13 @@ namespace Inforoom.PriceProcessor.Models
 			DownloadId = NullableConvert.ToUInt32(downloadId);
 			ResultId = (int)((MaxLockCount <= Settings.Default.MinRepeatTranCount) ? FormResults.OK : FormResults.Warrning);
 		}
+
+		public override string ToString()
+		{
+			return $"{base.ToString()}," +
+				$"{nameof(Form)}: {Form}, {nameof(UnForm)}: {UnForm}, {nameof(Zero)}: {Zero}, {nameof(Forb)}: {Forb}, {nameof(TotalSecs)}: {TotalSecs}, " +
+				$"{nameof(InsertCoreCount)}: {InsertCoreCount}, {nameof(UpdateCoreCount)}: {UpdateCoreCount}, {nameof(DeleteCoreCount)}: {DeleteCoreCount}, " +
+				$"{nameof(InsertCostCount)}: {InsertCostCount}, {nameof(UpdateCostCount)}: {UpdateCostCount}, {nameof(DeleteCostCount)}: {DeleteCostCount}";
+		}
 	}
 }

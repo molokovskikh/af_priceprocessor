@@ -143,7 +143,6 @@ group by pi.Id",
 				try {
 					var workPrice = PricesValidator.Validate(FilePath, tempFileName, (uint)PriceItemId);
 					workPrice.Downloaded = Downloaded;
-					workPrice.InputFileName = FilePath;
 					names = workPrice.GetAllNames();
 				}
 				catch (WarningFormalizeException) {

@@ -398,17 +398,6 @@ namespace Inforoom.PriceProcessor
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("100")]
-		public int MaxRepeatTranCount
-		{
-			get
-			{
-				return ((int)(this["MaxRepeatTranCount"]));
-			}
-		}
-
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[global::System.Configuration.DefaultSettingValueAttribute("20")]
 		public int MinRepeatTranCount
 		{
@@ -418,16 +407,6 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
-		[global::System.Configuration.ApplicationScopedSettingAttribute()]
-		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-		[global::System.Configuration.DefaultSettingValueAttribute("250")]
-		public int MaxPositionInsertToCore
-		{
-			get
-			{
-				return ((int)(this["MaxPositionInsertToCore"]));
-			}
-		}
 
 		[global::System.Configuration.ApplicationScopedSettingAttribute()]
 		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

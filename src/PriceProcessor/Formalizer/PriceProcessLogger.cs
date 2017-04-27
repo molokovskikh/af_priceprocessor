@@ -17,6 +17,7 @@ namespace Inforoom.Formalizer
 		private readonly PriceProcessItem _processItem;
 
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
+		private DateTime begin;
 
 		public string CurrentErrorMessage { get; private set; }
 		public long FormSecs { get; set; }
@@ -25,15 +26,17 @@ namespace Inforoom.Formalizer
 		{
 			_prevErrorMessage = prevErrorMessage;
 			_processItem = priceProcessItem;
+			begin = DateTime.Now;
 		}
 
-		public void SuccesLog(IPriceFormalizer p)
+		public void SuccesLog(IPriceFormalizer p, string filename)
 		{
+			FormSecs = Convert.ToInt64(DateTime.Now.Subtract(begin).TotalSeconds);
 			string messageBody = "", messageSubject = "";
 			//Формирование заголовков письма и
-			SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p != null ? p.Info : null);
+			SuccesGetBody("Прайс упешно формализован", ref messageSubject, ref messageBody, p?.Info);
 			string downloadId = null;
-			var fileName = Path.GetFileNameWithoutExtension(p.InputFileName);
+			var fileName = Path.GetFileNameWithoutExtension(filename);
 			if (fileName.IndexOf("_") > -1) {
 				downloadId = fileName.Substring(fileName.IndexOf("_") + 1, fileName.Length - fileName.IndexOf("_") - 1);
 				uint id;
@@ -55,6 +58,7 @@ namespace Inforoom.Formalizer
 
 		public void ErrodLog(IPriceFormalizer p, Exception ex)
 		{
+			FormSecs = Convert.ToInt64(DateTime.Now.Subtract(begin).TotalSeconds);
 			string messageBody = "", messageSubject = "";
 			if (ex is FormalizeException)
 				CurrentErrorMessage = ex.Message;
@@ -67,7 +71,7 @@ namespace Inforoom.Formalizer
 				return;
 
 			//Формирование заголовков письма и
-			GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, p != null ? p.Info : null);
+			GetBody("Ошибка формализации", ref addition, ref messageSubject, ref messageBody, p?.Info);
 			LogToDb(command => {
 				command.CommandText = "INSERT INTO logs.FormLogs (LogTime, Host, PriceItemId, Addition, ResultId, TotalSecs) VALUES (NOW(), ?Host, ?PriceItemId, ?Addition, ?ResultId, ?TotalSecs)";
 				command.Parameters.Clear();
@@ -95,18 +99,12 @@ namespace Inforoom.Formalizer
 
 			if (e is RollbackFormalizeException) {
 				var re = (RollbackFormalizeException)e;
-				messageBody = String.Format(
-					@"{0}
+				messageBody = $@"{messageBody}
 
-Формализованно : {1}
-Неформализованно : {2}
-Нулевых : {3}
-Запрещенных : {4}",
-					messageBody,
-					re.FormCount,
-					re.UnformCount,
-					re.ZeroCount,
-					re.ForbCount);
+Формализованно : {re.FormCount}
+Неформализованно : {re.UnformCount}
+Нулевых : {re.ZeroCount}
+Запрещенных : {re.ForbCount}";
 			}
 
 			LogToDb(command => {
@@ -146,24 +144,16 @@ namespace Inforoom.Formalizer
 		{
 			if (info == null) {
 				mSubj = mSubjPref;
-				mBody = String.Format(
-					@"Файл         : {0}
-Дата события : {1}",
-					Path.GetFileName(_processItem.FilePath),
-					DateTime.Now);
+				mBody = $@"Файл         : {Path.GetFileName(_processItem.FilePath)}
+Дата события : {DateTime.Now}";
 			}
 			else {
-				var name = String.Format("{0} ({1})", info.FirmShortName, info.PriceName);
-				mSubj = String.Format("{0} {1}", mSubjPref, info.PriceCode);
-				mBody = String.Format(
-					@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}",
-					info.FirmCode,
-					info.PriceCode,
-					name,
-					DateTime.Now);
+				var name = $"{info.FirmShortName} ({info.PriceName})";
+				mSubj = $"{mSubjPref} {info.PriceCode}";
+				mBody = $@"Код фирмы       : {info.FirmCode}
+Код прайса      : {info.PriceCode}
+Название прайса : {name}
+Дата события    : {DateTime.Now}";
 			}
 		}
 
@@ -171,29 +161,19 @@ namespace Inforoom.Formalizer
 		{
 			if (clientCode == -1) {
 				subj = mSubjPref;
-				body = String.Format(
-					@"Файл         : {0}
-Дата события : {1}
-Ошибка       : {2}",
-					Path.GetFileName(_processItem.FilePath),
-					DateTime.Now,
-					add);
+				body = $@"Файл         : {Path.GetFileName(_processItem.FilePath)}
+Дата события : {DateTime.Now}
+Ошибка       : {add}";
 				add = body;
 			}
 			else {
-				var name = String.Format("{0} ({1})", clientName, priceName);
-				subj = String.Format("{0} {1}", mSubjPref, priceCode);
-				body = String.Format(
-					@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}
-Ошибка          : {4}",
-					clientCode,
-					priceCode,
-					name,
-					DateTime.Now,
-					add);
+				var name = $"{clientName} ({priceName})";
+				subj = $"{mSubjPref} {priceCode}";
+				body = $@"Код фирмы       : {clientCode}
+Код прайса      : {priceCode}
+Название прайса : {name}
+Дата события    : {DateTime.Now}
+Ошибка          : {add}";
 			}
 		}
 
@@ -202,29 +182,19 @@ namespace Inforoom.Formalizer
 		{
 			if (info == null) {
 				subj = mSubjPref;
-				body = String.Format(
-					@"Файл         : {0}
-Дата события : {1}
-Ошибка       : {2}",
-					Path.GetFileName(_processItem.FilePath),
-					DateTime.Now,
-					add);
+				body = $@"Файл         : {Path.GetFileName(_processItem.FilePath)}
+Дата события : {DateTime.Now}
+Ошибка       : {add}";
 				add = body;
 			}
 			else {
-				var name = String.Format("{0} ({1})", info.FirmShortName, info.PriceName);
-				subj = String.Format("{0} {1}", mSubjPref, info.PriceCode);
-				body = String.Format(
-					@"Код фирмы       : {0}
-Код прайса      : {1}
-Название прайса : {2}
-Дата события    : {3}
-Ошибка          : {4}",
-					info.FirmCode,
-					info.PriceCode,
-					name,
-					DateTime.Now,
-					add);
+				var name = $"{info.FirmShortName} ({info.PriceName})";
+				subj = $"{mSubjPref} {info.PriceCode}";
+				body = $@"Код фирмы       : {info.FirmCode}
+Код прайса      : {info.PriceCode}
+Название прайса : {name}
+Дата события    : {DateTime.Now}
+Ошибка          : {add}";
 			}
 		}
 

@@ -23,7 +23,6 @@ namespace Inforoom.PriceProcessor.Formalizer
 		}
 
 		public bool Downloaded { get; set; }
-		public string InputFileName { get; set; }
 
 		public FormLog Stat { get; protected set; }
 		public PriceFormalizationInfo Info { get; protected set; }

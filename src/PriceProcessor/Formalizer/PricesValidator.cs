@@ -29,10 +29,9 @@ namespace Inforoom.Formalizer
 		/// </summary>
 		public static IPriceFormalizer Validate(string fileName, string tempFileName, uint priceItemId)
 		{
-			var shortFileName = Path.GetFileName(fileName);
 			var dtFormRules = LoadFormRules(priceItemId);
 			if (dtFormRules.Rows.Count == 0)
-				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, shortFileName));
+				throw new WarningFormalizeException(String.Format(Settings.Default.UnknownPriceError, Path.GetFileName(fileName)));
 
 			var dataRow = dtFormRules.Rows[0];
 			var currentParserClassName = dataRow[FormRules.colParserClassName].ToString();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Xml;
 using Common.Tools;
 using Inforoom.PriceProcessor.Formalizer.Core;
 using Inforoom.PriceProcessor.Helpers;
@@ -47,7 +48,6 @@ namespace Inforoom.Formalizer
 		void Formalize();
 		IList<string> GetAllNames();
 		bool Downloaded { get; set; }
-		string InputFileName { get; set; }
 
 		FormLog Stat { get; }
 		PriceFormalizationInfo Info { get; }
@@ -62,7 +62,7 @@ namespace Inforoom.Formalizer
 		private readonly PriceProcessLogger _log;
 		private readonly ILog _logger = LogManager.GetLogger(typeof(PriceProcessThread));
 
-		private IPriceFormalizer _workPrice;
+		private IPriceFormalizer formalizer;
 
 		public PriceProcessThread(PriceProcessItem item, string prevErrorMessage, bool runThread = true)
 		{
@@ -72,7 +72,6 @@ namespace Inforoom.Formalizer
 
 			_log = new PriceProcessLogger(prevErrorMessage, item);
 			_thread = new Thread(ThreadWork);
-			_thread.Name = String.Format("PPT{0}", _thread.ManagedThreadId);
 			if (runThread)
 				_thread.Start();
 		}
@@ -183,19 +182,16 @@ namespace Inforoom.Formalizer
 					for (var i = 1; i <= max; i++) {
 						try {
 							ProcessState = PriceProcessState.CallValidate;
-							_workPrice = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
-
-							_workPrice.Downloaded = ProcessItem.Downloaded;
-							_workPrice.InputFileName = ProcessItem.FilePath;
-
+							formalizer = PricesValidator.Validate(ProcessItem.FilePath, tempFileName, (uint)ProcessItem.PriceItemId);
+							formalizer.Downloaded = ProcessItem.Downloaded;
 							ProcessState = PriceProcessState.CallFormalize;
-							_workPrice.Formalize();
-
-							_log.FormSecs = Convert.ToInt64(DateTime.UtcNow.Subtract(StartDate).TotalSeconds);
-							_log.SuccesLog(_workPrice);
+							formalizer.Formalize();
+							_log.SuccesLog(formalizer, ProcessItem.FilePath);
 							break;
 						}
 						catch (MySqlException e) {
+							if (i == max)
+								throw;
 							//Duplicate entry '%s' for key %d
 							//всего скорее это значит что одновременно формализовался прайс-лист с такими же синонимами, нужно повторить попытку
 							_logger.Warn($"Повторяю формализацию прайс-листа попытка {i} из {max}", e);
@@ -207,12 +203,7 @@ namespace Inforoom.Formalizer
 								_log.WarningLog(warning, warning.Message);
 								break;
 							}
-							else {
-								throw;
-							}
-						}
-						finally {
-							_log.FormSecs = Convert.ToInt64(DateTime.UtcNow.Subtract(StartDate).TotalSeconds);
+							throw;
 						}
 					}
 
@@ -231,14 +222,14 @@ namespace Inforoom.Formalizer
 			}
 			catch (ThreadAbortException e) {
 				_logger.Warn(Settings.Default.ThreadAbortError, e);
-				_log.ErrodLog(_workPrice, new Exception(Settings.Default.ThreadAbortError));
+				_log.ErrodLog(formalizer, new Exception(Settings.Default.ThreadAbortError));
 			}
 			catch (Exception e) {
-				if (e is DbfException)
+				if (e is DbfException || e is XmlException)
 					_logger.Warn("Ошибка при формализации прайс листа", e);
 				else
 					_logger.Error("Ошибка при формализации прайс листа", e);
-				_log.ErrodLog(_workPrice, e);
+				_log.ErrodLog(formalizer, e);
 			}
 			finally {
 				ProcessState = PriceProcessState.FinalizeThread;
