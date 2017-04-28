@@ -27,9 +27,9 @@ namespace Inforoom.PriceProcessor.Helpers
 		public static string GetFilename(this MimeEntity entity)
 		{
 			if (!String.IsNullOrEmpty(entity.ContentDisposition_FileName))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentDisposition_FileName));
+				return Path.GetFileName(global::Common.Tools.FileHelper.StringToFileName(entity.ContentDisposition_FileName));
 			if (!String.IsNullOrEmpty(entity.ContentType_Name))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType_Name));
+				return Path.GetFileName(global::Common.Tools.FileHelper.StringToFileName(entity.ContentType_Name));
 			return null;
 		}
 

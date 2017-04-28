@@ -190,7 +190,12 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (!log.FileIsLocal())
 				ShareFileHelper.WaitFile(filename, 5000);
 
-			var doc = SessionHelper.WithSession(s => new WaybillFormatDetector().DetectAndParse(s, filename, log));
+			var doc = SessionHelper.WithSession(s => {
+				var detector = new WaybillFormatDetector();
+				var result = detector.Parse(s, filename, log);
+				WaybillFormatDetector.Process(s, result);
+				return result;
+			});
 			// для мульти файла, мы сохраняем в источнике все файлы,
 			// а здесь, если нужна накладная в dbf формате, то сохраняем merge-файл в dbf формате.
 			if (doc != null)

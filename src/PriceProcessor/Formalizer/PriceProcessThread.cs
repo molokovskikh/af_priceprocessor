@@ -171,12 +171,7 @@ namespace Inforoom.Formalizer
 					_logger.DebugFormat("Запущена нитка на обработку файла : {0}", ProcessItem.FilePath);
 
 					ProcessState = PriceProcessState.CreateTempDirectory;
-
-					//Создаем директорию для временного файла и копируем туда файл
-					if (Directory.Exists(tempPath))
-						FileHelper.DeleteDir(tempPath);
-
-					Directory.CreateDirectory(tempPath);
+					FileHelper.InitDir(tempPath);
 
 					var max = 8;
 					for (var i = 1; i <= max; i++) {

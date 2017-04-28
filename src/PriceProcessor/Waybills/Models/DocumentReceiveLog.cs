@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 			FileName = Path.GetFileNameWithoutExtension(log.FileName) + extention;
 		}
 
-		public DocumentReceiveLog(Supplier supplier, Address address)
+		public DocumentReceiveLog(Supplier supplier, Address address, DocType docType = DocType.Waybill)
 		{
 			Supplier = supplier;
 			Address = address;
@@ -167,10 +167,9 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 						NHibernateUtil.Initialize(address.Client);
 					}
 				}
-				var document = new DocumentReceiveLog(supplier, address) {
+				var document = new DocumentReceiveLog(supplier, address, documentType) {
 					FileName = fileName,
 					LocalFileName = localFile,
-					DocumentType = documentType,
 					Comment = comment,
 					MessageUid = messageId,
 					IsFake = isFake

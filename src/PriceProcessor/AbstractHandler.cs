@@ -85,7 +85,7 @@ namespace Inforoom.PriceProcessor
 						_logger.DebugFormat("Директория удалена : {0}", dir);
 				}
 				catch (Exception ex) {
-					_logger.ErrorFormat("Ошибка при удалении директории {0}:\r\n{1}", dir, ex);
+					_logger.Error($"Ошибка при удалении директории {dir}:", ex);
 				}
 
 			var cleanupFiles = Directory.GetFiles(DownHandlerPath);
@@ -99,7 +99,7 @@ namespace Inforoom.PriceProcessor
 						_logger.DebugFormat("Файл удален : {0}", cleanupFile);
 				}
 				catch (Exception ex) {
-					_logger.ErrorFormat("Ошибка при удалении файла {0}:\r\n{1}", cleanupFile, ex);
+					_logger.Error($"Ошибка при удалении файла {cleanupFile}", ex);
 				}
 		}
 

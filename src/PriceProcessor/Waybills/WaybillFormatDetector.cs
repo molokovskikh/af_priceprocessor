@@ -111,7 +111,7 @@ namespace Inforoom.PriceProcessor.Waybills
 #if !DEBUG
 				return null;
 #else
-				throw new Exception("Не удалось определить тип парсера");
+				throw new Exception($"Для файла {file} не удалось определить тип парсера");
 #endif
 			}
 
@@ -119,21 +119,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			if (constructor == null)
 				throw new Exception("У типа {0} нет конструктора без аргументов");
 			return (IDocumentParser)constructor.Invoke(new object[0]);
-		}
-
-		public enum SuitableParserGroups
-		{
-			Dbf,
-			Sst,
-			Xls,
-			Xml,
-			Pd,
-			Txt
-		}
-
-		public IEnumerable<Type> GetSuitableParserByGroup(string file, SuitableParserGroups group)
-		{
-			return GetSuitableParsers(file, group.ToString());
 		}
 
 		public IEnumerable<Type> GetSuitableParsers(string file, DocumentReceiveLog documentLog)
@@ -164,7 +149,6 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 			return Enumerable.Empty<Type>();
 		}
-
 
 		private IEnumerable<Type> GetSuitableParsers(string file, string group)
 		{
@@ -227,7 +211,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			}
 		}
 
-		public Document DetectAndParse(ISession session, string file, DocumentReceiveLog log)
+		public Document Parse(ISession session, string file, DocumentReceiveLog log)
 		{
 			Document doc = null;
 			if (!string.IsNullOrEmpty(file) && new FileInfo(file).Extension.ToLower() == ".sst") {
@@ -243,10 +227,15 @@ namespace Inforoom.PriceProcessor.Waybills
 				if (parser == null)
 					return null;
 				var document = new Document(log, parser.GetType().Name);
-				doc = parser.Parse(file, document);
-				if (doc == null)
-					return null;
+				return parser.Parse(file, document);
 			}
+			return doc;
+		}
+
+		public static void Process(ISession session, Document doc)
+		{
+			if (doc == null)
+				return;
 
 			var ids = doc.Lines
 				.Where(l => l.OrderId != null)
@@ -256,13 +245,13 @@ namespace Inforoom.PriceProcessor.Waybills
 			var orders = new List<OrderHead>();
 			if (ids.Count > 0)
 				orders = session.Query<OrderHead>().Where(x => ids.Contains(x.Id)).ToList();
-			return ProcessDocument(doc, orders);
+			Process(doc, orders);
 		}
 
-		public static Document ProcessDocument(Document doc, IList<OrderHead> orders)
+		public static void Process(Document doc, IList<OrderHead> orders)
 		{
 			if (doc == null)
-				return null;
+				return;
 
 			//сопоставляем идентификаторы названиям продуктов в накладной
 			doc.SetProductId();
@@ -295,8 +284,6 @@ namespace Inforoom.PriceProcessor.Waybills
 
 			//сопоставление сертификатов для позиций накладной
 			CertificateSourceDetector.DetectAndParse(doc);
-
-			return doc;
 		}
 	}
 }

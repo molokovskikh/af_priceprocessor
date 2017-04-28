@@ -18,16 +18,13 @@ using MailKit.Search;
 using MailKit.Security;
 using MailKit.Net.Smtp;
 using MimeKit;
-using NHibernate;
 
 namespace Inforoom.PriceProcessor.Downloader
 {
 	public class WaybillEmailProtekHandler : AbstractHandler
 	{
-		private const string ExtrDirSuffix = "Extr";
-		private const string ErrorLetterFrom = "tech@analit.net";
+		private bool configured;
 		private Settings settings;
-		public UniqueId CurrentMesdsageId { get; private set; }
 
 		public WaybillEmailProtekHandler()
 		{
@@ -38,7 +35,9 @@ namespace Inforoom.PriceProcessor.Downloader
 				|| string.IsNullOrWhiteSpace(settings.MailKitClientPass)
 				|| string.IsNullOrWhiteSpace(settings.IMAPHandlerErrorMessageTo)) {
 				_logger.Error(
-					$"Для корректной работы обработчика {nameof(WaybillEmailProtekHandler)} в файлах конфигурации необходимо задать слебудющие параметры: IMAPUrl, IMAPSourceFolder, MailKitClientUser, MailKitClientPass, IMAPHandlerErrorMessageTo.");
+					$"Для корректной работы обработчика {nameof(WaybillEmailProtekHandler)} в файлах конфигурации необходимо задать следующие параметры: IMAPUrl, IMAPSourceFolder, MailKitClientUser, MailKitClientPass, IMAPHandlerErrorMessageTo.");
+			} else {
+				configured = true;
 			}
 		}
 
@@ -59,13 +58,8 @@ namespace Inforoom.PriceProcessor.Downloader
 		/// </summary>
 		public override void ProcessData()
 		{
-			if (string.IsNullOrWhiteSpace(settings.IMAPUrl)
-				|| string.IsNullOrWhiteSpace(settings.IMAPSourceFolder)
-				|| string.IsNullOrWhiteSpace(settings.MailKitClientUser)
-				|| string.IsNullOrWhiteSpace(settings.MailKitClientPass)
-				|| string.IsNullOrWhiteSpace(settings.IMAPHandlerErrorMessageTo)) {
+			if (!configured)
 				return;
-			}
 
 			using (var client = new ImapClient()) {
 				var credential = new NetworkCredential(settings.MailKitClientUser, settings.MailKitClientPass);
@@ -85,16 +79,15 @@ namespace Inforoom.PriceProcessor.Downloader
 				using (var session = SessionHelper.GetSessionFactory().OpenSession()) {
 #endif
 					foreach (var id in ids) {
-						CurrentMesdsageId = id;
 						var message = imapFolder.GetMessage(id, Cancellation);
 						try {
-							ProcessMessage(session, message);
+							ProcessMessage(session, message, id);
 						} catch (Exception e) {
-							NotifyAdmin($"Не удалось обработать письмо: при обработке письма возникла ошибка.", message);
 							_logger.Error($"Не удалось обработать письмо {message}", e);
 						} finally {
 							imapFolder.SetFlags(id, MessageFlags.Deleted, true, Cancellation);
 						}
+						Cleanup();
 					}
 #if !DEBUG
 				}
@@ -104,30 +97,25 @@ namespace Inforoom.PriceProcessor.Downloader
 			}
 		}
 
-		protected void NotifyAdmin(string message, MimeMessage mimeMessage = null)
+		protected void NotifyAdmin(string message, MimeMessage mimeMessage, Supplier supplier = null)
 		{
 			_logger.Warn(message);
 			var messageAppending = "";
 			if (mimeMessage != null) {
-				messageAppending = string.Format(@"
-
-Отправитель:     {0};
-Получатель:      {1};
-Дата:            {2};
-Заголовок:       {3};
-Кол-во вложений: {4};
-", string.Join(",", mimeMessage.From.Select(s => s.Name).ToList()),
-					string.Join(",", mimeMessage.To.Mailboxes.Select(s => s.Address).ToList()),
-					mimeMessage.Date,
-					mimeMessage.Subject,
-					mimeMessage.BodyParts.Count(s => s.IsAttachment));
+				messageAppending = string.Format($@"
+Поставщик:       {supplier}
+Отправитель:     {mimeMessage.From.Implode()};
+Получатель:      {mimeMessage.To.Mailboxes.Implode()};
+Дата:            {mimeMessage.Date};
+Заголовок:       {mimeMessage.Subject};
+Кол-во вложений: {mimeMessage.BodyParts.Count(s => s.IsAttachment)};");
 			}
 			var bodyBuilder = new BodyBuilder();
 			bodyBuilder.TextBody = message + messageAppending;
 			var responseMime = new MimeMessage();
-			responseMime.From.Add(new MailboxAddress(ErrorLetterFrom, ErrorLetterFrom));
+			responseMime.From.Add(new MailboxAddress("tech@analit.net", "tech@analit.net"));
 			responseMime.To.Add(new MailboxAddress(settings.IMAPHandlerErrorMessageTo, settings.IMAPHandlerErrorMessageTo));
-			responseMime.Subject = "Ошбика в IMAP обработчике sst файлов.";
+			responseMime.Subject = "Ошибка обработки накладной от Протек.";
 			responseMime.Body = bodyBuilder.ToMessageBody();
 
 			var multipart = new Multipart("mixed");
@@ -162,138 +150,13 @@ namespace Inforoom.PriceProcessor.Downloader
 #endif
 		}
 
-		public bool ProcessAttachments(ISession session, MimeMessage message, uint supplierId)
-		{
-			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-			var matched = false;
-
-			var attachments = message.Attachments.Where(m => !String.IsNullOrEmpty(GetFileName(m)) && m.IsAttachment);
-			if (!attachments.Any()) {
-				NotifyAdmin($"Отсутствуют вложения в письме от адреса {message.To.Implode()}", mimeMessage: message);
-			}
-
-			using (var cleaner = new FileCleaner()) {
-				foreach (var mimeEntity in attachments) {
-					var savedFiles = new List<string>();
-					//получение текущей директории
-					var currentFileName = Path.Combine(DownHandlerPath, GetFileName(mimeEntity));
-
-					//сохранение содержимого в текущую директорию
-					using (var fs = new FileStream(currentFileName, FileMode.Create))
-						((MimePart) mimeEntity).ContentObject.DecodeTo(fs);
-
-					// нужно учесть, что файл может быть архивом
-					var correctArchive = FileHelper.ProcessArchiveIfNeeded(currentFileName, ExtrDirSuffix);
-
-					//если архив не распакован
-					if (!correctArchive) {
-						DocumentReceiveLog.Log(supplierId, null, Path.GetFileName(currentFileName), DocType.Waybill,
-							"Не удалось распаковать файл", Convert.ToInt32(CurrentMesdsageId.Id));
-						Cleanup();
-						continue;
-					}
-					//если содержимое является архивом и он был распакован нужно извлеченные файлы добавить в список обрабатываемых (savedFiles) и отправить в обработчик мусора (в cleaner)
-					if (ArchiveHelper.IsArchive(currentFileName)) {
-						var files = Directory.GetFiles(currentFileName + ExtrDirSuffix +
-							Path.DirectorySeparatorChar, "*.*", SearchOption.AllDirectories);
-						savedFiles.AddRange(files);
-						cleaner.Watch(files);
-					} else {
-						//только с расширения .sst
-						if (new FileInfo(currentFileName).Extension.ToLower() == ".sst") {
-							savedFiles.Add(currentFileName);
-						}
-						cleaner.Watch(currentFileName);
-					}
-					var logs = ProcessWaybillFile(session, savedFiles, supplierId, message);
-					//если логи есть, значит файл распознан и найден соответствующий адрес доставки
-					if (logs.Count > 0) {
-						matched = true;
-						var service = new WaybillService();
-						service.Process(logs);
-						if (service.Exceptions.Count > 0) {
-							NotifyAdmin(service.Exceptions.First().Message, message);
-						}
-					}
-				}
-			}
-			//удаление временных файлов
-			Cleanup();
-			return matched;
-		}
-
 		public static string GetFileName(MimeEntity entity)
 		{
 			if (!String.IsNullOrEmpty(entity.ContentDisposition.FileName))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentDisposition.FileName));
+				return Path.GetFileName(global::Common.Tools.FileHelper.StringToFileName(entity.ContentDisposition.FileName));
 			if (!String.IsNullOrEmpty(entity.ContentType.Name))
-				return Path.GetFileName(FileHelper.NormalizeFileName(entity.ContentType.Name));
+				return Path.GetFileName(global::Common.Tools.FileHelper.StringToFileName(entity.ContentType.Name));
 			return null;
-		}
-
-		private List<DocumentReceiveLog> ProcessWaybillFile(ISession session, IList<string> files, uint supplierId, MimeMessage mimeMessage)
-		{
-			var logs = new List<DocumentReceiveLog>();
-			foreach (var archiveFile in files) {
-				var extractedFiles = new[] {archiveFile};
-				if (ArchiveHelper.IsArchive(archiveFile))
-					extractedFiles = Directory.GetFiles(archiveFile + ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*",
-						SearchOption.AllDirectories);
-
-				logs.AddRange(extractedFiles.Select(s => GetLog(session, s, supplierId, mimeMessage)).Where(l => l != null));
-			}
-			return logs;
-		}
-
-		private DocumentReceiveLog GetLog(ISession session, string file, uint supplierId, MimeMessage mimeMessage)
-		{
-			uint addressId = 0;
-			Document doc = null;
-			if (!string.IsNullOrEmpty(file) && new FileInfo(file)?.Extension?.ToLower() == ".sst") {
-				doc = new WaybillSstParser().Parse(file, new Document());
-			}
-			if (doc == null) {
-				//Распарсить, получить значение адреса, который связан с клиентом (необходимо для корректного проведения накладной)
-				var parserType =
-					new WaybillFormatDetector().GetSuitableParserByGroup(file, WaybillFormatDetector.SuitableParserGroups.Sst)
-						.FirstOrDefault();
-				if (parserType == null)
-					return null;
-				var constructor = parserType.GetConstructors().FirstOrDefault(c => c.GetParameters().Count() == 0);
-				if (constructor == null)
-					throw new Exception("Не найден парсер на этапе создание логов: у типа {0} нет конструктора без аргументов.");
-				var parser = (IDocumentParser) constructor.Invoke(new object[0]);
-
-				var document = new Document();
-				doc = parser.Parse(file, document);
-			}
-
-			if (doc?.Invoice?.RecipientId == null) {
-				NotifyAdmin($"В разобранном документе {file} не заполнено поле RecipientId для поставщика {supplierId}.", mimeMessage);
-				return null;
-			}
-			var result = session.Connection.Query<uint?>(@"
-				select ai.AddressId
-				from Customers.Intersection i
-				join Customers.AddressIntersection ai on ai.IntersectionId = i.Id
-				join Usersettings.Pricesdata pd on pd.PriceCode = i.PriceId
-				join Customers.Suppliers s on s.Id = pd.FirmCode
-				where  ai.SupplierDeliveryId = @supplierDeliveryId
-				 and s.Id  = @supplierId
-				group by ai.AddressId", new {@supplierDeliveryId = doc.Invoice.RecipientId, @supplierId = supplierId})
-				.FirstOrDefault();
-
-			if (result.HasValue)
-				addressId = result.Value;
-
-			if (addressId == 0) {
-				return null;
-			}
-
-
-			_logger.InfoFormat($"{nameof(WaybillEmailProtekHandler)}: обработка файла {file}");
-			return DocumentReceiveLog.LogNoCommit(supplierId, addressId, file, DocType.Waybill, "Получен по Email",
-				Convert.ToInt32(CurrentMesdsageId.Id));
 		}
 
 		private class SupplierSelector
@@ -302,7 +165,7 @@ namespace Inforoom.PriceProcessor.Downloader
 			public string EmailTo { get; set; }
 		}
 
-		public void ProcessMessage(ISession session, MimeMessage message)
+		public void ProcessMessage(ISession session, MimeMessage message, UniqueId messageId = default(UniqueId))
 		{
 			//используется промежуточный почтовый ящик для транзита
 			//в поле To будет именно он, этот же ящик используется для транзита прайс-листов
@@ -310,6 +173,11 @@ namespace Inforoom.PriceProcessor.Downloader
 				message.To.OfType<MailboxAddress>().Where(s => !string.IsNullOrEmpty(s.Address)).Select(a => a.Address).ToArray();
 			if (emails.Length == 0) {
 				NotifyAdmin("У сообщения не указано ни одного получателя.", message);
+				return;
+			}
+			var attachments = message.Attachments.Where(m => !String.IsNullOrEmpty(GetFileName(m)) && m.IsAttachment);
+			if (!attachments.Any()) {
+				NotifyAdmin($"Отсутствуют вложения в письме от адреса {message.To.Implode()}", message);
 				return;
 			}
 
@@ -334,7 +202,6 @@ WHERE
 				.ToList();
 
 			if (sources.Count > 1) {
-				// Нет адреса, клиента или другой информации об адресе доставки на этом этапе	//	SelectWaybillSourceForClient(sources, _addressId);
 				NotifyAdmin(
 					$"Для получателей {emails.Implode()} определено более одного поставщика." +
 					$" Определенные поставщики {sources.Select(x => x.FirmCode).Implode()}.", message);
@@ -348,10 +215,77 @@ WHERE
 			}
 
 			var source = sources.First();
-			//Один из аттачментов письма совпал с источником, иначе - письмо не распознано
-			var matched = ProcessAttachments(session, message, source.FirmCode);
-			if (!matched) {
-				NotifyAdmin($"Для получателя {emails.Implode()} (поставщика {source.FirmCode}) не найден соответствующий адрес доставки.", message);
+			var supplierId = source.FirmCode;
+			var supplier = session.Load<Supplier>(supplierId);
+			using (var cleaner = new FileCleaner()) {
+				foreach (var mimeEntity in attachments) {
+					//получение текущей директории
+					var filename = Path.Combine(DownHandlerPath, GetFileName(mimeEntity));
+					var files = new List<string> { filename };
+
+					//сохранение содержимого в текущую директорию
+					using (var fs = new FileStream(filename, FileMode.Create))
+						((MimePart) mimeEntity).ContentObject.DecodeTo(fs);
+
+					try {
+						files = FileHelper.TryExtractArchive(filename, cleaner.RandomDir())?.ToList()
+							?? files;
+					} catch(ArchiveHelper.ArchiveException e) {
+						_logger.Warn($"Не удалось распаковать файл {filename}", e);
+						NotifyAdmin($"Не удалось распаковать файл {filename}.", message, supplier);
+						continue;
+					}
+
+					var logs = new List<DocumentReceiveLog>();
+					foreach (var file in files) {
+						//нам нужно считать файл что бы узнать кто его отправил, по хорошему нам и не нужен пока что клиент
+						var doc = new WaybillFormatDetector().Parse(session, file, new DocumentReceiveLog(supplier, new Address(new Client()), DocType.Waybill));
+						if (doc == null) {
+							NotifyAdmin($"Не удалось разобрать документ {file} нет подходящего формата.", message, supplier);
+							continue;
+						}
+						if (doc.Invoice?.RecipientId == null) {
+							if (doc.Parser == nameof(WaybillSstParser)) {
+								NotifyAdmin($"В файле {file} не заполнено поле Код получателя.", message, supplier);
+							} else {
+								NotifyAdmin($"Формат файла {file} не соответствует согласованному формату sst. " +
+									$"Поле 'Код получателя' не заполнено, возможно выбранный формат {doc.Parser} не считывает поле либо оно не заполнено в файла. " +
+									$"Проверьте настройки формата {doc.Parser} и заполнение поля 'Код получателя' в файле.", message, supplier);
+							}
+							continue;
+						}
+
+						var result = session.Connection.Query<uint?>(@"
+select ai.AddressId
+from Customers.Intersection i
+	join Customers.AddressIntersection ai on ai.IntersectionId = i.Id
+	join Usersettings.Pricesdata pd on pd.PriceCode = i.PriceId
+		join Customers.Suppliers s on s.Id = pd.FirmCode
+where ai.SupplierDeliveryId = @supplierDeliveryId
+	and s.Id  = @supplierId
+group by ai.AddressId", new {@supplierDeliveryId = doc.Invoice.RecipientId, @supplierId = supplierId})
+							.FirstOrDefault();
+
+						if (result == null) {
+							NotifyAdmin($"Не удалось обработать документ {file} для кода получателя {doc.Invoice.RecipientId} не найден адрес доставки. " +
+								$"Проверьте заполнение поля 'Код адреса доставки' в личном кабинете поставщика {supplierId}.",
+								message, supplier);
+							continue;
+						}
+
+						_logger.InfoFormat($"Файл {file} обработан для кода получателя {doc.Invoice.RecipientId} выбран адрес {result.Value}");
+						logs.Add(DocumentReceiveLog.LogNoCommit(supplierId, result.Value, file, DocType.Waybill, "Получен по Email",
+							(int?)messageId.Id));
+					}
+					//если логи есть, значит файл распознан и найден соответствующий адрес доставки
+					if (logs.Count > 0) {
+						var service = new WaybillService();
+						service.Process(logs);
+						if (service.Exceptions.Count > 0) {
+							NotifyAdmin(service.Exceptions.First().Message, message, supplier);
+						}
+					}
+				}
 			}
 		}
 	}

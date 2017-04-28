@@ -197,26 +197,14 @@ GROUP BY SupplierId
 			foreach (var addressId in addressIds) {
 				// Если накладная - это архив, разархивируем логируем каждый файл и копируем в папку клиенту
 				var waybillFiles = new[] { downloadedFile.FileName };
-				if (ArchiveHelper.IsArchive(downloadedFile.FileName)) {
-					if (!ArchiveHelper.TestArchive(downloadedFile.FileName)) {
-						_logger.DebugFormat("Некорректный архив {0}", downloadedFile.FileName);
-						WaybillService.SaveWaybill(downloadedFile.FileName);
-						continue;
-					}
-					// Разархивируем
-					try {
-						FileHelper.ExtractFromArhive(downloadedFile.FileName, downloadedFile.FileName + BaseSourceHandler.ExtrDirSuffix);
-					}
-					catch (ArchiveHelper.ArchiveException) {
-						_logger.DebugFormat("Ошибка при извлечении файлов из архива {0}", downloadedFile.FileName);
-						WaybillService.SaveWaybill(downloadedFile.FileName);
-						continue;
-					}
-					if (ArchiveHelper.IsArchive(downloadedFile.FileName)) {
-						// Получаем файлы, распакованные из архива
-						waybillFiles = Directory.GetFiles(downloadedFile.FileName + BaseSourceHandler.ExtrDirSuffix + Path.DirectorySeparatorChar, "*.*",
-							SearchOption.AllDirectories);
-					}
+				try {
+					waybillFiles = FileHelper.TryExtractArchive(downloadedFile.FileName, downloadedFile.FileName + BaseSourceHandler.ExtrDirSuffix)
+						?? waybillFiles;
+				}
+				catch (ArchiveHelper.ArchiveException e) {
+					_logger.Warn($"Ошибка при извлечении файлов из архива {downloadedFile.FileName}", e);
+					WaybillService.SaveWaybill(downloadedFile.FileName);
+					continue;
 				}
 
 				foreach (var file in waybillFiles) {

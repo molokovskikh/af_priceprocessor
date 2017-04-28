@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using Castle.ActiveRecord;
 using Common.Tools;
-using Common.Tools.Test;
 using Inforoom.Formalizer;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Formalizer;

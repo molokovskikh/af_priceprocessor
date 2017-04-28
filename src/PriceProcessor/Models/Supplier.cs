@@ -32,5 +32,10 @@ namespace Inforoom.PriceProcessor.Models
 
 		[HasMany(Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<WaybillExcludeFile> ExcludeFiles { get; set; }
+
+		public override string ToString()
+		{
+			return $"{Name} ({Id})";
+		}
 	}
 }

@@ -224,10 +224,10 @@ namespace Inforoom.PriceProcessor.Downloader
 						foreach (var body in blanding.@return.blading) {
 							using (var scope = new TransactionScope(OnDispose.Rollback)) {
 								var document = ToDocument(body, config);
-								document = WaybillFormatDetector.ProcessDocument(document, orders);
 								if (document == null)
 									continue;
 
+								WaybillFormatDetector.Process(document, orders);
 								document.Log.Save();
 								document.Save();
 								try {
@@ -283,8 +283,7 @@ namespace Inforoom.PriceProcessor.Downloader
 				return null;
 			}
 
-			var log = new DocumentReceiveLog(supplier, address) {
-				DocumentType = DocType.Waybill,
+			var log = new DocumentReceiveLog(supplier, address, DocType.Waybill) {
 				IsFake = true,
 				Comment = "Получен через сервис Протек"
 			};

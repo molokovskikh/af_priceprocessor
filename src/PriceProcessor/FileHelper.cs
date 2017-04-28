@@ -33,44 +33,21 @@ namespace Inforoom.PriceProcessor
 			return String.Empty;
 		}
 
-		public static void ExtractFromArhive(string ArchName, string TempDir)
+		public static string[] TryExtractArchive(string file, string dstDir, string password = null)
 		{
-			if (Directory.Exists(TempDir))
-				Directory.Delete(TempDir, true);
-			Directory.CreateDirectory(TempDir);
-			ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar);
+			if (ArchiveHelper.IsArchive(file)) {
+				if (ArchiveHelper.TestArchive(file)) {
+					return ExtractFromArhive(file, dstDir, password);
+				}
+			}
+			return null;
 		}
 
-		public static void ExtractFromArhive(string ArchName, string TempDir, string password)
+		public static string[] ExtractFromArhive(string file, string dstDir, string password = null)
 		{
-			if (Directory.Exists(TempDir))
-				Directory.Delete(TempDir, true);
-			Directory.CreateDirectory(TempDir);
-			ArchiveHelper.Extract(ArchName, "*.*", TempDir + Path.DirectorySeparatorChar, password);
-		}
-
-		public static string GetSuccessAddition(string ArchName, string FileName)
-		{
-			return String.Format("{0} > {1}", Path.GetFileName(ArchName), Path.GetFileName(FileName));
-		}
-
-		public static string NormalizeFileName(string InputFilename)
-		{
-			var PathPart = String.Empty;
-			foreach (var ic in Path.GetInvalidPathChars()) {
-				InputFilename = InputFilename.Replace(ic.ToString(), "");
-			}
-			//Пытаемся найти последний разделитель директории в пути
-			var EndDirPos = InputFilename.LastIndexOfAny(
-				new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar });
-			if (EndDirPos > -1) {
-				PathPart = InputFilename.Substring(0, EndDirPos + 1);
-				InputFilename = InputFilename.Substring(EndDirPos + 1);
-			}
-			foreach (var ic in Path.GetInvalidFileNameChars()) {
-				InputFilename = InputFilename.Replace(ic.ToString(), "");
-			}
-			return (PathPart + InputFilename);
+			global::Common.Tools.FileHelper.InitDir(dstDir);
+			ArchiveHelper.Extract(file, "*.*", dstDir + Path.DirectorySeparatorChar, password);
+			return Directory.GetFiles(dstDir, "*.*", SearchOption.AllDirectories);
 		}
 
 		public static void Safe(Action action)
@@ -83,7 +60,7 @@ namespace Inforoom.PriceProcessor
 			}
 		}
 
-		public static bool ProcessArchiveIfNeeded(string file, string sufix, string password)
+		public static bool ProcessArchiveIfNeeded(string file, string sufix, string password = null)
 		{
 			var result = true;
 			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
@@ -91,25 +68,6 @@ namespace Inforoom.PriceProcessor
 				if (ArchiveHelper.TestArchive(file, password)) {
 					try {
 						ExtractFromArhive(file, file + sufix, password);
-					}
-					catch (ArchiveHelper.ArchiveException) {
-						result = false;
-					}
-				}
-				else
-					result = false;
-			}
-			return result;
-		}
-
-		public static bool ProcessArchiveIfNeeded(string file, string sufix)
-		{
-			var result = true;
-			//Является ли скачанный файл корректным, если нет, то обрабатывать не будем
-			if (ArchiveHelper.IsArchive(file)) {
-				if (ArchiveHelper.TestArchive(file)) {
-					try {
-						ExtractFromArhive(file, file + sufix);
 					}
 					catch (ArchiveHelper.ArchiveException) {
 						result = false;
