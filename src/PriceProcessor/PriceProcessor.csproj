@@ -294,6 +294,7 @@
     <Compile Include="Waybills\Parser\DbfParsers\UgFarmParser.cs" />
     <Compile Include="Waybills\Parser\LekFarmParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\BushmanovParser.cs" />
+    <Compile Include="Waybills\Parser\TxtParsers\MedlineShustovaParser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\Protek3Parser.cs" />
     <Compile Include="Waybills\Parser\TxtParsers\PulsBryanskParser.cs" />
     <Compile Include="Waybills\Parser\KatrenStavropolSpecialParser.cs" />
