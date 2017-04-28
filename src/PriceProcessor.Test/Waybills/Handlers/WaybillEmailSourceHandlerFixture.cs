@@ -33,12 +33,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 		}
 
-		public void Process()
-		{
-			CreateDirectoryPath();
-			ProcessData();
-		}
-
 		protected override void Send(Mime mime)
 		{
 			Sended.Add(mime);
@@ -543,7 +537,8 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			session.Transaction.Commit();
 			handler = new WaybillEmailSourceHandlerForTesting(Settings.Default.TestIMAPUser, Settings.Default.TestIMAPPass);
-			handler.Process();
+			handler.CreateDirectoryPath();
+			handler.ProcessData();
 		}
 
 		private Mime PatchTo(string file, string to, string from)

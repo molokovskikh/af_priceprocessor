@@ -79,6 +79,7 @@ namespace Inforoom.PriceProcessor.Waybills.Models
 		{
 			Supplier = supplier;
 			Address = address;
+			DocumentType = docType;
 			if (address != null)
 				ClientCode = address.Client.Id;
 		}
