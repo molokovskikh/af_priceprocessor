@@ -273,7 +273,6 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[Test]
 		public void Parse_if_one_waydill_exclude()
 		{
-			session.CreateSQLQuery("truncate table usersettings.waybilldirtyfile").ExecuteUpdate();
 			var files = new[] { @"..\..\Data\Waybills\h1016416.DBF", @"..\..\Data\Waybills\bi055540.DBF", };
 			SetUp(files);
 
@@ -287,18 +286,11 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			var logs = CheckDocumentLogEntry(2);
 			CheckDocumentEntry(1);
 
-			Assert.IsTrue(logs.Any(l => l.Addition.Contains("Разбор накладной не произведен по причине несоответствия маски файла (*40.DBF) для Поставщика")));
+			Assert.IsTrue(logs.Any(l => l.Addition.Contains($"Разбор документа не производился, применена маска исключения '{"*40.DBF"}'.")));
 
 			With.Connection(c => {
 				var helper = new MySqlHelper(c);
-				var ds = ((CommandHelper)helper.Command("select * from usersettings.waybilldirtyfile")).Fill();
-				Assert.AreEqual(ds.Tables[0].Rows.Count, 1);
-				foreach (DataRow row in ds.Tables[0].Rows) {
-					Assert.AreEqual(row["Supplier"].ToString(), supplier.Id.ToString());
-					Assert.AreEqual(row["Mask"].ToString(), "*40.DBF");
-					Assert.That(row["File"].ToString(), Is.StringContaining("bi055540.DBF"));
-				}
-				helper.Command("delete from usersettings.WaybillExcludeFile; delete from usersettings.waybilldirtyfile;").Execute();
+				helper.Command("delete from usersettings.WaybillExcludeFile;").Execute();
 			});
 		}
 

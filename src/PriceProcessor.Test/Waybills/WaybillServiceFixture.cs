@@ -8,6 +8,7 @@ using Castle.ActiveRecord;
 using Castle.Components.DictionaryAdapter;
 using Common.MySql;
 using Common.Tools;
+using Dapper;
 using Inforoom.PriceProcessor;
 using Inforoom.PriceProcessor.Models;
 using Inforoom.PriceProcessor.Waybills;
@@ -45,7 +46,8 @@ namespace PriceProcessor.Test.Waybills
 		}
 
 		private DocumentReceiveLog ParseFileForRedmine(string filename, bool createIssue = true,
-			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true, bool priority = false, bool priorityFull = true)
+			bool changeValues = true, DocType documentType = DocType.Waybill, bool deleteCreatedDirectory = true,
+			bool priority = false, bool priorityFull = true, bool exceptionAdd = false)
 		{
 			var addressRed =
 				session.Query<Address>()
@@ -57,6 +59,26 @@ namespace PriceProcessor.Test.Waybills
 
 			supplierRed.RegionMask = addressRed.Client.MaskRegion;
 			session.Save(supplierRed);
+
+			if (exceptionAdd) {
+				if (!session.Transaction.IsActive) {
+					session.BeginTransaction();
+				}
+				session.Transaction.Commit();
+				session.BeginTransaction();
+				session.Connection.Query(
+					$"INSERT INTO usersettings.WaybillExcludeFile (Supplier,Mask)  Values({supplierRed.Id} , '{"*.dbf"}')")
+					.FirstOrDefault();
+				//	session.Refresh(supplierRed);
+
+				session.Transaction.Commit();
+				session.BeginTransaction();
+				supplierRed =
+					session.Query<Supplier>()
+						.FirstOrDefault(s => (changeValues && s.Id != supplier.Id) || (!changeValues && s.Id == supplier.Id));
+				session.Refresh(supplierRed);
+			}
+
 			var curretnClient = addressRed.Client;
 			curretnClient.RedmineNotificationForUnresolved = true;
 			session.Save(curretnClient);
@@ -132,6 +154,10 @@ namespace PriceProcessor.Test.Waybills
 					com.ExecuteScalar();
 					sqlConnection.Close();
 				}
+				var extSupplier = session.Query<Supplier>().First(s => s.Id == supplier.Id);
+				extSupplier.ExcludeFiles.Clear();
+				session.Save(extSupplier);
+				session.Flush();
 			}
 		}
 
@@ -175,6 +201,40 @@ namespace PriceProcessor.Test.Waybills
 					Assert.That(doubleTest, Is.EqualTo(new MetadataOfLog(log).Hash));
 				}
 				doubleTest = new MetadataOfLog(log).Hash;
+			}
+		}
+
+		[Test]
+		public void Parse_waybillIssueForRedmine_NoIssueForException()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+			
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++) {
+				var fileName = "1008foBroken.DBF";
+				var log = ParseFileForRedmine(fileName, createIssue: true, exceptionAdd : true);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue,
+					new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(0));
+				Assert.IsTrue(log.Comment.IndexOf($"Разбор документа не производился, применена маска исключения '{"*.dbf"}'.") != -1);
+			}
+		}
+
+		[Test]
+		public void Parse_waybillIssueForRedmine_rejectNoIssueForException()
+		{
+			Parse_waybillCleanRedmineIssueTable();
+
+			var doubleTest = "";
+			for (var i = 0; i < 2; i++) {
+				var fileName = "1008foBroken.DBF";
+				var log = ParseFileForRedmine(fileName, createIssue: true, documentType: DocType.Reject, exceptionAdd: true);
+				var res = MetadataOfLog.GetMetaFromDataBaseCount(Settings.Default.RedmineProjectForWaybillIssue,
+					new MetadataOfLog(log).Hash);
+				//должен создаваться только один
+				Assert.That(res, Is.EqualTo(0));
+				Assert.IsTrue(log.Comment.IndexOf($"Разбор документа не производился, применена маска исключения '{"*.dbf"}'.") !=-1 );
 			}
 		}
 
