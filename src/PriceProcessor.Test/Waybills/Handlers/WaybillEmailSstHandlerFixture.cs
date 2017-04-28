@@ -9,8 +9,11 @@ using LumiSoft.Net.Mime;
 using NUnit.Framework;
 using System.IO;
 using System.Text;
+using Common.NHibernate;
+using Dapper;
 using ICSharpCode.SharpZipLib.Zip;
 using Inforoom.PriceProcessor.Downloader;
+using Inforoom.PriceProcessor.Models;
 using PriceProcessor.Test.TestHelpers;
 using Test.Support;
 using Test.Support.Suppliers;
@@ -73,6 +76,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		[TearDown]
 		public void TearDown()
 		{
+			var waybillExcludeFileToRemove = session.Query<WaybillExcludeFile>().ToList();
+			session.DeleteEach(waybillExcludeFileToRemove);
+
 			filter.Reset();
 			var events = filter.Events
 				.Where(e => e.ExceptionObject.Message != "Не удалось определить тип парсера")
@@ -245,6 +251,59 @@ namespace PriceProcessor.Test.Waybills.Handlers
 			Assert.IsTrue(currentDocument.Address.Id == aIntersection.Address.Id);
 			Assert.IsTrue(currentDocument.ClientCode == client.Id);
 			Assert.IsTrue(currentDocument.FirmCode == supplier.Id);
+		}
+
+		[Test]
+		public void MessageClientCheckWithExtensionExceptions()
+		{
+			SetSupplierAndClientConnection();
+			//проверка на отсутствие документов до запуска обработчика
+			var currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			Assert.IsTrue(!currentDocuments.Any());
+
+			//новая накладная
+			var document = GetDocument(recipientId);
+			//прикрепление накладной к письму
+			var msData = GetMemoryStreamForDocument(document);
+
+			var message = BuildMessageWithAttachments($"to_{supplier.Id}@sup.com",
+				$"from_{supplier.Id}@sup.com", "text.sst", msData.ToArray());
+
+
+			if (!session.Transaction.IsActive)
+				session.BeginTransaction();
+			session.Transaction.Commit();
+			session.BeginTransaction();
+
+			var waybillExcludeFileToRemove = session.Query<WaybillExcludeFile>().ToList();
+			session.DeleteEach(waybillExcludeFileToRemove);
+
+			session.Connection.Query(
+				$"INSERT INTO usersettings.WaybillExcludeFile (Supplier,Mask)  Values({supplier.Id} , '{"*.sst"}')")
+				.FirstOrDefault();
+
+			ImapHelper.StoreMessage(
+				Settings.Default.TestIMAPUser,
+				Settings.Default.TestIMAPPass,
+				Settings.Default.IMAPSourceFolder, message.ToByteData());
+
+			//запуск обработчика
+			session.Transaction.Commit();
+
+#if DEBUG
+			handler.SetSessionForTest(session);
+#endif
+			handler.ProcessData();
+			session.Flush();
+			//проверка на наличие документов после запуска обработчика
+			currentDocuments = session.Query<Document>().Where(s => s.Invoice.RecipientId == recipientId);
+			//документ отсутствует
+			var currentDocument = currentDocuments.FirstOrDefault();
+			Assert.IsTrue(currentDocument == null);
+
+
+			var logs = session.Query<DocumentReceiveLog>().Where(s => s.ClientCode == client.Id &&  s.Supplier.Id == supplier.Id).ToList();
+			Assert.IsTrue(logs.All(s=>s.Comment.IndexOf($"Разбор документа не производился, применена маска исключения '{"*.sst"}'.") !=-1));
 		}
 
 		[Test]

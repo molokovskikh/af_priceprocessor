@@ -69,7 +69,6 @@ namespace PriceProcessor.Test.Waybills
 				session.Connection.Query(
 					$"INSERT INTO usersettings.WaybillExcludeFile (Supplier,Mask)  Values({supplierRed.Id} , '{"*.dbf"}')")
 					.FirstOrDefault();
-				//	session.Refresh(supplierRed);
 
 				session.Transaction.Commit();
 				session.BeginTransaction();
