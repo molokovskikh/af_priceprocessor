@@ -81,7 +81,7 @@ namespace Inforoom.PriceProcessor.Waybills
 			foreach (var reject in rejects) {
 				
 				if (WaybillExcludeFile(reject))
-					return null;
+					continue;
 
 				try {
 					SessionHelper.WithSession(s => ProcessReject(s, reject, metaForRedmineErrorIssueList));
