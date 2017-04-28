@@ -30,6 +30,7 @@ namespace PriceProcessor.Test.Waybills
 		public void TestSetup()
 		{
 			session.CreateSQLQuery("DELETE FROM farm.synonym").UniqueResult();
+			session.CreateSQLQuery("DELETE FROM usersettings.WaybillExcludeFile").UniqueResult();
 		}
 
 		private uint[] ParseFile(string filename)
