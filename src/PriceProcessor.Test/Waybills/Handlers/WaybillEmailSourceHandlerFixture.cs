@@ -61,9 +61,9 @@ namespace PriceProcessor.Test.Waybills.Handlers
 		{
 			filter.Reset();
 			var events = filter.Events
-				.Where(e => e.ExceptionObject.Message != "Не удалось определить тип парсера")
+				.Where(e => !e.ExceptionObject.Message.Contains("Не удалось определить тип парсера"))
 				.ToArray();
-			Assert.That(events, Is.Empty, filter.Events.Implode(e => e.ExceptionObject));
+			Assert.That(events, Is.Empty, events.Implode(e => e.ExceptionObject, Environment.NewLine));
 		}
 
 		public void SetUp(IList<string> fileNames)
