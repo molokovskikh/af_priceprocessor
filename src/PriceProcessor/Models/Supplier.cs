@@ -7,6 +7,11 @@ namespace Inforoom.PriceProcessor.Models
 	[ActiveRecord("Suppliers", Schema = "Customers")]
 	public class Supplier : ActiveRecordLinqBase<Supplier>
 	{
+		public Supplier()
+		{
+			ExcludeFiles = new List<WaybillExcludeFile>();
+		}
+
 		[PrimaryKey]
 		public virtual uint Id { get; set; }
 
@@ -27,8 +32,5 @@ namespace Inforoom.PriceProcessor.Models
 
 		[HasMany(Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
 		public virtual IList<WaybillExcludeFile> ExcludeFiles { get; set; }
-
-		[HasMany(Lazy = true, Cascade = ManyRelationCascadeEnum.All)]
-		public virtual IList<WaybillDirtyFile> DirtyFiles { get; set; }
 	}
 }

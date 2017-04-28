@@ -75,9 +75,14 @@ namespace Inforoom.PriceProcessor.Waybills
 
 		private IEnumerable<Document> ParseWaybills(List<DocumentReceiveLog> logs)
 		{
+
 			var metaForRedmineErrorIssueList = new List<MetadataOfLog>();
 			var rejects = logs.Where(l => l.DocumentType == DocType.Reject).ToArray();
 			foreach (var reject in rejects) {
+				
+				if (WaybillExcludeFile(reject))
+					return null;
+
 				try {
 					SessionHelper.WithSession(s => ProcessReject(s, reject, metaForRedmineErrorIssueList));
 				} catch (Exception e) {
@@ -91,6 +96,10 @@ namespace Inforoom.PriceProcessor.Waybills
 			var docsForParsing = MultifileDocument.Merge(logs);
 			var docs = docsForParsing.Select(d => {
 				try {
+
+					if (WaybillExcludeFile(d.DocumentLog))
+						return null;
+
 					var docToReturn = ProcessWaybill(d.DocumentLog, d.FileName);
 					//если не получилось распарсить документ
 					if (docToReturn == null && d.DocumentLog?.DocumentType == DocType.Waybill) {
@@ -157,12 +166,9 @@ namespace Inforoom.PriceProcessor.Waybills
 			return SessionHelper.WithSession(s => {
 				var supplier = s.Get<Supplier>(log.Supplier.Id);
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
-					if (FitsMask(log.FileName, waybillExcludeFile.Mask)) {
+					if (FitsMask(log.FileName.ToLower(), waybillExcludeFile.Mask.ToLower())) {
 						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
-						log.Comment +=
-							string.Format("Разбор накладной не произведен по причине несоответствия маски файла ({0}) для Поставщика",
-								waybillExcludeFile.Mask);
-						s.Save(new WaybillDirtyFile(log.Supplier, log.FileName, waybillExcludeFile.Mask));
+						log.Comment += $"Разбор документа не производился, применена маска исключения '{waybillExcludeFile.Mask}'.";
 						return true;
 					}
 				}
@@ -176,8 +182,6 @@ namespace Inforoom.PriceProcessor.Waybills
 				return null;
 
 			var settings = WaybillSettings.Find(log.ClientCode.Value);
-			if (WaybillExcludeFile(log))
-				return null;
 
 			if (log.DocumentSize == 0)
 				return null;
