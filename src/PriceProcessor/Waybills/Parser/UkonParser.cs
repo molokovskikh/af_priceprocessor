@@ -222,8 +222,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.SstParsers
 				// http://redmine.analit.net/issues/53074
 				if (header.Length == 9 && body.Length == 22) {
 					var s = "";
-					var startIndexOfEmptyCells = 4; // индекс ячейки, скоторой и далее все ячейки пустые 
-					for (int i = startIndexOfEmptyCells; i < 9; i++)
+					for (int i = 3; i < 9; i++)
 						s += header[i];
 					if (s.Length == 0)
 						return false;
