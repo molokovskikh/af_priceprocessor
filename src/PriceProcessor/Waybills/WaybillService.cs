@@ -167,8 +167,8 @@ namespace Inforoom.PriceProcessor.Waybills
 				var supplier = s.Get<Supplier>(log.Supplier.Id);
 				foreach (var waybillExcludeFile in supplier.ExcludeFiles) {
 					if (FitsMask(log.FileName.ToLower(), waybillExcludeFile.Mask.ToLower())) {
-						log.Comment += string.IsNullOrEmpty(log.Comment) ? string.Empty : Environment.NewLine;
-						log.Comment += $"Разбор документа не производился, применена маска исключения '{waybillExcludeFile.Mask}'.";
+						log.Comment =$"{(log.Comment ?? "")} | Разбор документа не производился, применена маска исключения '{waybillExcludeFile.Mask}'.";
+						s.Update(log);
 						return true;
 					}
 				}
