@@ -75,7 +75,7 @@ namespace Inforoom.PriceProcessor.Waybills.Parser.TxtParsers
 					if (ulong.TryParse(GetString(parts[EAN13Index]), out barcode)) {
 						docLine.EAN13 = barcode;
 					}
-					docLine.ProducerCost = GetDecimal(parts[ProducerCostIndex]);
+					docLine.ProducerCostWithoutNDS = GetDecimal(parts[ProducerCostIndex]);
 					docLine.NdsAmount = GetDecimal(parts[NDSAmount18Index]);
 				}
 			}

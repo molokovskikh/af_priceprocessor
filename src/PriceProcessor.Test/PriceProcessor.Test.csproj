@@ -93,7 +93,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\LumiSoft.Net.dll</HintPath>
     </Reference>
-    <Reference Include="MailKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="MailKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=4e064fe7c44a8f1b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\MailKit.1.2.21\lib\net45\MailKit.dll</HintPath>
+    </Reference>
     <Reference Include="MimeKit, Version=1.2.0.0, Culture=neutral, PublicKeyToken=bede1c8a46c66814, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>True</Private>
