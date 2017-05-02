@@ -105,12 +105,12 @@ namespace PriceProcessor.Test.Waybills
 			session.Save(log);
 
 			if (priority) {
-				session.CreateSQLQuery($"INSERT INTO customers.Promoters (Name,Login) values('TestUser','{curretnClient.Id}')")
-					.ExecuteUpdate();
-				var newPromoterId = session.CreateSQLQuery($"SELECT Id FROM customers.Promoters WHERE Login = '{curretnClient.Id}'")
+				session.CreateSQLQuery($"INSERT INTO customers.Associations (Name) values('TestUser')")
+				.ExecuteUpdate();
+				var newAssociationId = session.CreateSQLQuery($"SELECT Id FROM customers.Associations WHERE Name = 'TestUser' LIMIT 1")
 					.UniqueResult<uint>();
 				session.CreateSQLQuery(
-					$"INSERT INTO customers.PromotionMembers (PromoterId,ClientId) values({newPromoterId},'{curretnClient.Id}')")
+					$"INSERT INTO customers.PromotionMembers (AssociationId,ClientId) values({newAssociationId},'{curretnClient.Id}')")
 					.ExecuteUpdate();
 				session.CreateSQLQuery(
 					$"Update usersettings.RetClientsSet SET IsStockEnabled = {(priorityFull ? "1" : "0")} , InvisibleOnFirm = 1 WHERE ClientCode = {curretnClient.Id} ")
@@ -208,7 +208,7 @@ namespace PriceProcessor.Test.Waybills
 		public void Parse_waybillIssueForRedmine_NoIssueForException()
 		{
 			Parse_waybillCleanRedmineIssueTable();
-			
+
 			var doubleTest = "";
 			for (var i = 0; i < 2; i++) {
 				var fileName = "1008foBroken.DBF";
@@ -329,7 +329,7 @@ namespace PriceProcessor.Test.Waybills
 				doubleTest = new MetadataOfLog(log).Hash;
 			}
 		}
-		
+
 		[Test]
 		public void Parse_waybillIssueForRedmine_NoIssueNoClientFlag()
 		{

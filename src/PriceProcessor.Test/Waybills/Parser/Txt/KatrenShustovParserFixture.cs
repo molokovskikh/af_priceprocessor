@@ -36,7 +36,7 @@ namespace PriceProcessor.Test.Waybills.Parser.Txt
 			Assert.That(doc.Lines[0].RegistryCost, Is.EqualTo(0));
 			Assert.That(doc.Lines[0].RegistryDate, Is.EqualTo(null));
 			Assert.That(doc.Lines[0].EAN13, Is.EqualTo(4600665203721));
-			Assert.That(doc.Lines[0].ProducerCost, Is.EqualTo(35.90M));
+			Assert.That(doc.Lines[0].ProducerCostWithoutNDS, Is.EqualTo(35.90M));
 			Assert.That(doc.Lines[0].NdsAmount, Is.EqualTo(394.90M));
 
 			Assert.That(doc.Lines[1].RegistryDate, Is.EqualTo(Convert.ToDateTime("11.06.2015 0:00:00")));
